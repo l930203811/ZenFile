@@ -13,6 +13,7 @@ import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'bulk_crypt_actions.dart';
 
 class SelectionActionBar extends StatelessWidget {
   final FileManagerProvider provider;
@@ -167,7 +168,7 @@ class SelectionActionBar extends StatelessWidget {
                     icon: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Broken.more, size: 24),
+                        Icon(Broken.more, size: 24, color: theme.colorScheme.primary),
                         if (!provider.hideActionText) ...[
                           const SizedBox(height: 4),
                           AutoSizeText(
@@ -178,6 +179,7 @@ class SelectionActionBar extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.primary,
                             ),
                           ),
                         ],
@@ -189,7 +191,28 @@ class SelectionActionBar extends StatelessWidget {
                     position: PopupMenuPosition.under,
                     elevation: 8,
                     onSelected: (action) async {
-                      if (action == 'extract') {
+                      if (action == 'encrypt') {
+                        if (provider.activeTab.isCryptRemote) {
+                          // 远程加密目录：加密＝选择本地文件加密后上传
+                          await BulkCryptActions.encryptUploadRemoteCrypt(context, provider);
+                        } else {
+                          await BulkCryptActions.encryptSelected(context, provider);
+                        }
+                      } else if (action == 'encrypt_upload') {
+                        await BulkCryptActions.encryptUploadRemoteCrypt(context, provider);
+                      } else if (action == 'decrypt') {
+                        if (provider.activeTab.isCryptRemote) {
+                          // 远程加密目录：解密＝把远程密文解密后保存到本地
+                          await BulkCryptActions.decryptDownloadRemoteCrypt(
+                            context,
+                            provider,
+                            provider.selectedPaths.toList(),
+                          );
+                          provider.clearSelection();
+                        } else {
+                          await BulkCryptActions.decryptSelected(context, provider);
+                        }
+                      } else if (action == 'extract') {
                         final selectedPaths = provider.selectedPaths.toList();
                         final archivePath = selectedPaths.firstWhere(
                           (p) => FileUtils.isArchive(p),
@@ -351,14 +374,79 @@ class SelectionActionBar extends StatelessWidget {
                       final hasArchive = selected.any(
                         (p) => FileUtils.isArchive(p),
                       );
-                      final selectedFiles = provider.currentFiles
+                      final selectedModels = provider.currentFiles
                           .where((f) => selected.contains(f.path))
                           .toList();
+                      final anyEncrypted = selectedModels.any((m) => m.isEncrypted);
+                      final anyPlain = selectedModels.any((m) => !m.isEncrypted);
                       final hasSingleDirectory =
                           selected.length == 1 &&
-                          selectedFiles.isNotEmpty &&
-                          selectedFiles.first.isDirectory;
+                          selectedModels.isNotEmpty &&
+                          selectedModels.first.isDirectory;
+                      final isCryptRemote = provider.activeTab.isCryptRemote;
                       return [
+                        // 远程加密目录：额外提供「加密上传」
+                        if (isCryptRemote)
+                          PopupMenuItem(
+                            value: 'encrypt_upload',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.upload_outlined,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  L10n.of(context).crypt_remote_upload,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (anyPlain && !isCryptRemote)
+                          PopupMenuItem(
+                            value: 'encrypt',
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  L10n.of(context).vault_action_encrypt,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (anyEncrypted)
+                          PopupMenuItem(
+                            value: 'decrypt',
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.lock_open,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  // 远程加密目录里「解密」＝解密并下载到本地
+                                  isCryptRemote
+                                      ? L10n.of(context).crypt_remote_download
+                                      : L10n.of(context).crypt_action_decrypt,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         if (hasArchive)
                           PopupMenuItem(
                             value: 'extract',
@@ -850,7 +938,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final displayColor = color ?? theme.colorScheme.onSurface;
+    final displayColor = color ?? theme.colorScheme.primary;
 
     return InkWell(
       onTap: onTap,

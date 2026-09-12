@@ -4867,7 +4867,7 @@ class L10nZh extends L10n {
   String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
 
   @override
-  String get ui_remote_guard_change_pin => '修改PIN码';
+  String get ui_remote_guard_change_pin => '修改密码';
 
   @override
   String get ui_remote_guard_pin_hint => '可含字母、数字或符号的密码';
@@ -4906,7 +4906,7 @@ class L10nZh extends L10n {
   String get ui_remote_guard_change_pin_failed => '部分文件重新加密失败，PIN 码未更改';
 
   @override
-  String get ui_change_vault_pin_desc => '修改私人保险箱 PIN（将重新加密所有已隐藏文件）';
+  String get ui_change_vault_pin_desc => '修改安全设置与保险箱解锁密码，不影响已加密文件';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -5939,7 +5939,7 @@ class L10nZh extends L10n {
   String get vault_uninstall_warning_title => '卸载警告';
 
   @override
-  String get vault_uninstall_warning => '卸载应用会清空保险箱，建议先导出备份';
+  String get vault_uninstall_warning => '卸载应用会清空沙盒加密，建议先导出备份';
 
   @override
   String get vault_backup_exported => '备份已导出到';
@@ -6291,7 +6291,324 @@ class L10nZh extends L10n {
   String get ui_preset_colors => '预设颜色';
 
   @override
-  String get crypt_settings_title => '加密设置';
+  String get crypt_settings_title => '密码配置';
+
+  @override
+  String get vault_config_password => '密码配置';
+
+  @override
+  String get vault_help => '帮助';
+
+  @override
+  String get vault_help_title => '保险箱帮助';
+
+  @override
+  String get vault_help_intro =>
+      '保险箱采用与 rclone 相同的 crypt 加密格式，加解密全部在本机完成，密钥不会离开本机。';
+
+  @override
+  String get vault_help_highlights => '功能亮点';
+
+  @override
+  String get vault_help_hl1_title => '零知识加密';
+
+  @override
+  String get vault_help_hl1_desc => '主密码与加盐仅保存在本机，云服务与任何第三方都无法解密你的文件。';
+
+  @override
+  String get vault_help_hl2_title => '兼容 rclone 与 OpenList';
+
+  @override
+  String get vault_help_hl2_desc => '使用相同的 crypt 格式，电脑上的 rclone 可直接解密同一批文件。';
+
+  @override
+  String get vault_help_hl3_title => '多套密码 + 远程直读';
+
+  @override
+  String get vault_help_hl3_desc => '可为不同目录绑定不同密码档案；远程密文目录无需整体下载即可解密浏览与播放。';
+
+  @override
+  String get vault_help_basics => '基本操作';
+
+  @override
+  String get vault_help_b1_title => '① 先配置主密码';
+
+  @override
+  String get vault_help_b1_desc => '在「密码配置」中设置主密码与加盐并牢记，它与保险箱解锁密码相互独立。';
+
+  @override
+  String get vault_help_b2_title => '② 加密文件';
+
+  @override
+  String get vault_help_b2_desc => '在浏览页选择文件后点击加密，再选择「原地加密」或「沙盒加密」。';
+
+  @override
+  String get vault_help_b3_title => '③ 查看与打开';
+
+  @override
+  String get vault_help_b3_desc => '加密条目集中在保险箱中列出，点击会自动临时解密后预览。';
+
+  @override
+  String get vault_help_b4_title => '④ 解密还原';
+
+  @override
+  String get vault_help_b4_desc => '选中条目点击解密，即可还原为普通文件并放回原位置。';
+
+  @override
+  String get vault_help_b5_title => '⑤ 备份与恢复';
+
+  @override
+  String get vault_help_b5_desc => '通过「备份/恢复」导出含加密配置的备份，卸载应用前务必先导出。';
+
+  @override
+  String get vault_help_compat => '兼容性';
+
+  @override
+  String get vault_help_c1_title => '加密格式';
+
+  @override
+  String get vault_help_c1_desc =>
+      '内容为 XSalsa20-Poly1305，文件名经 EME 加密后以 base32/base64 编码，可带 .bin 后缀。';
+
+  @override
+  String get vault_help_c2_title => '网盘与同步';
+
+  @override
+  String get vault_help_c2_desc => '密文可被任意网盘或同步工具正常同步，服务端只能看到密文，不会泄露真实文件名。';
+
+  @override
+  String get vault_help_c3_title => '已知限制';
+
+  @override
+  String get vault_help_c3_desc =>
+      '加密后文件名会显著变长，超长文件名可能失败；请在本应用内重命名，直接改密文名会导致无法解密。';
+
+  @override
+  String get vault_help_inplace => '原地加密';
+
+  @override
+  String get vault_help_inplace_intro =>
+      '原地加密会把文件「就地」加密：内容替换为密文、文件名替换为密文名，文件仍留在原来的文件夹中，不会进入保险箱私有目录。';
+
+  @override
+  String get vault_help_ip1_title => '与原目录的关系';
+
+  @override
+  String get vault_help_ip1_desc => '文件位置与目录结构保持不变，浏览页会给已加密文件加上🔐徽标。';
+
+  @override
+  String get vault_help_ip2_title => '其它应用看到什么';
+
+  @override
+  String get vault_help_ip2_desc => '其它文件管理器与播放器只能看到无意义的密文文件名且无法打开，这正是保护效果。';
+
+  @override
+  String get vault_help_ip3_title => '适合的场景';
+
+  @override
+  String get vault_help_ip3_desc => '需要保留原目录结构，并让第三方网盘继续同步这些文件的场景。';
+
+  @override
+  String get vault_help_ip4_title => '风险与建议';
+
+  @override
+  String get vault_help_ip4_desc =>
+      '加密会直接替换原文件，中断可能留下残留文件；重要文件请先备份，解密时目标目录需有写入权限。';
+
+  @override
+  String get vault_help_notice => '注意事项';
+
+  @override
+  String get vault_help_n1 => '已用于加密文件的密码与加盐不可修改，若需更换请新建一份加密配置。';
+
+  @override
+  String get vault_help_n2 => '沙盒加密的文件存放在应用私有目录，卸载应用会一并清除。';
+
+  @override
+  String get vault_help_n3 => '忘记主密码将无法恢复任何已加密文件，请务必导出备份并妥善保存。';
+
+  @override
+  String get vault_remote_encrypt => '远程加密';
+
+  @override
+  String get vault_import_source_title => '选择加密来源';
+
+  @override
+  String get vault_import_source_remote => '远程';
+
+  @override
+  String get vault_import_source_remote_desc => '关联远程加密目录，或将本地文件加密后上传到远程';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      '关联服务器上已有的 rclone crypt 密文目录（在客户端解密）';
+
+  @override
+  String get vault_encrypt_upload => '加密上传到远程';
+
+  @override
+  String get vault_encrypt_upload_desc => '选择本地文件，加密后上传到远程服务器';
+
+  @override
+  String get vault_encrypt_uploading => '正在加密上传…';
+
+  @override
+  String get vault_encrypt_upload_done => '加密上传完成';
+
+  @override
+  String get vault_encrypt_upload_failed => '加密上传失败';
+
+  @override
+  String get crypt_remote_upload => '加密上传';
+
+  @override
+  String get crypt_remote_download => '解密下载';
+
+  @override
+  String get crypt_remote_downloading => '正在解密下载…';
+
+  @override
+  String get crypt_remote_download_done => '解密下载完成';
+
+  @override
+  String get crypt_remote_download_failed => '解密下载失败';
+
+  @override
+  String get vault_remote_crypt_open_failed => '打开远程加密文件失败';
+
+  @override
+  String get vault_remote_crypt_unsupported => '该类型暂不支持远程加密流式播放';
+
+  @override
+  String get vault_link_remote_crypt => '关联远程加密目录';
+
+  @override
+  String get vault_link_remote_crypt_success => '已关联远程加密目录';
+
+  @override
+  String get vault_unlink_remote_crypt => '取消关联';
+
+  @override
+  String get vault_exporting => '正在导出...';
+
+  @override
+  String get vault_importing => '正在导入...';
+
+  @override
+  String get vault_importing_backup => '正在导入备份...';
+
+  @override
+  String get vault_restoring => '正在恢复...';
+
+  @override
+  String get vault_decrypting => '正在解密...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      '导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？';
+
+  @override
+  String vault_load_error(Object error) {
+    return '加载保险箱出错：$error';
+  }
+
+  @override
+  String get vault_restore_folder_hint => '文件夹请长按后选择「恢复」到原位置查看';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return '解密并打开项目失败：$error';
+  }
+
+  @override
+  String get vault_badge_inplace => '原地';
+
+  @override
+  String get vault_badge_sandbox => '沙盒';
+
+  @override
+  String get vault_item_folder => '文件夹';
+
+  @override
+  String get crypt_need_master_title => '尚未设置加密主密码';
+
+  @override
+  String get crypt_need_master_body => '原地加密与沙盒加密都使用「加密设置」中的主密码，请先前往设置。';
+
+  @override
+  String get crypt_master_banner =>
+      '此处配置的主密码与加盐用于原地加密和沙盒加密，请务必牢记；它与保险箱解锁密码相互独立。';
+
+  @override
+  String get crypt_profile_name => '加密名称';
+
+  @override
+  String get crypt_profile_name_hint => '例如：工作 / 私人';
+
+  @override
+  String get crypt_profile_name_required => '请输入加密名称';
+
+  @override
+  String get crypt_profile_name_duplicate => '该名称已存在，请更换';
+
+  @override
+  String get crypt_profile_title_new => '新建加密配置';
+
+  @override
+  String get crypt_profile_title_edit => '编辑加密配置';
+
+  @override
+  String get crypt_profile_section => '密码配置';
+
+  @override
+  String get crypt_profile_add => '新建配置';
+
+  @override
+  String get crypt_profile_default => '默认';
+
+  @override
+  String get crypt_profile_set_default => '设为默认配置';
+
+  @override
+  String get crypt_profile_set_default_desc => '未绑定配置的文件将使用此配置';
+
+  @override
+  String get crypt_profile_default_done => '已更新默认配置';
+
+  @override
+  String get crypt_profile_delete_message => '删除该配置后，使用它加密的文件将无法解密。';
+
+  @override
+  String get crypt_profile_empty => '暂无加密配置';
+
+  @override
+  String get crypt_profile_action_config => '配置';
+
+  @override
+  String get crypt_profile_select_title => '选择加密配置';
+
+  @override
+  String get crypt_profile_bound_done => '已绑定该加密配置';
+
+  @override
+  String get crypt_profile_credential_locked => '不可修改';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      '密码与加盐决定密钥，修改后已加密文件将无法解密；如需更换请新建配置。';
+
+  @override
+  String get crypt_profile_suffix_none => '无后缀';
+
+  @override
+  String get crypt_profile_sandbox_title => '切换沙盒配置';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      '沙盒整体只使用一套配置，切换后沙盒内其他文件可能显示为密文。是否继续？';
+
+  @override
+  String get crypt_mount_section => '加密位置';
 
   @override
   String get crypt_settings_subtitle => '管理加密文件夹和挂载点';
@@ -6569,6 +6886,7 @@ class L10nZh extends L10n {
   String vault_import_failed_detail(Object error) {
     return '导入失败：$error';
   }
+
   @override
   String get vault_no_files => '暂无文件';
 
@@ -6577,6 +6895,80 @@ class L10nZh extends L10n {
 
   @override
   String get vault_remove_from_list => '移除';
+
+  @override
+  String get security_vault_switch_desc => '启用私人保险箱功能';
+
+  @override
+  String get security_verify_password_desc => '请输入密码以进入安全设置';
+
+  @override
+  String get vault_verify_password_title => '验证密码';
+
+  @override
+  String get vault_verify_password_hint => '请输入安全设置密码';
+
+  @override
+  String get vault_go_security_settings => '前往安全设置';
+
+  @override
+  String get security_settings_subtitle => '保险箱、远程守卫、启动应用保护与指纹解锁';
+
+  @override
+  String get vault_disabled_hint => '保险箱已关闭，请在「设置 → 安全设置」中开启';
+
+  @override
+  String get security_set_password_desc => '请设置安全设置密码，用于进入安全设置与解锁保险箱';
+
+  @override
+  String get security_confirm_password => '请再次输入密码以确认';
+
+  @override
+  String get biometric_reason_security_settings => '验证指纹以进入安全设置';
+
+  @override
+  String get toolbox_scan => '扫一扫';
+
+  @override
+  String get scan_result_title => '扫描结果';
+
+  @override
+  String get scan_copy => '复制';
+
+  @override
+  String get scan_copied => '已复制到剪贴板';
+
+  @override
+  String get scan_open_link => '打开链接';
+
+  @override
+  String get scan_continue => '继续扫描';
+
+  @override
+  String get scan_torch => '手电筒';
+
+  @override
+  String get scan_switch_camera => '切换摄像头';
+
+  @override
+  String get scan_camera_error => '无法访问相机，请检查相机权限';
+
+  @override
+  String get scan_hint => '将二维码/条形码放入框内即可自动扫描';
+
+  @override
+  String get scan_from_gallery => '从相册选择';
+
+  @override
+  String get scan_no_barcode => '未在图片中检测到二维码或条形码';
+
+  @override
+  String get ui_backup_confirm_title => '确认备份';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return '将备份到以下路径：\n$path\n\n是否继续？';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11401,7 +11793,7 @@ class L10nZhTw extends L10nZh {
   String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
 
   @override
-  String get ui_remote_guard_change_pin => '修改PIN码';
+  String get ui_remote_guard_change_pin => '修改密碼';
 
   @override
   String get ui_remote_guard_pin_hint => '可含字母、數字或符號的密碼';
@@ -11440,7 +11832,7 @@ class L10nZhTw extends L10nZh {
   String get ui_remote_guard_change_pin_failed => '部分檔案重新加密失敗，PIN 碼未變更';
 
   @override
-  String get ui_change_vault_pin_desc => '修改私人保險箱 PIN（將重新加密所有已隱藏檔案）';
+  String get ui_change_vault_pin_desc => '修改安全設定與保險箱解鎖密碼，不影響已加密檔案';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -12482,7 +12874,7 @@ class L10nZhTw extends L10nZh {
   String get vault_uninstall_warning_title => '卸载警告';
 
   @override
-  String get vault_uninstall_warning => '卸载应用会清空保险箱，建议先导出备份';
+  String get vault_uninstall_warning => '卸載應用會清空沙盒加密，建議先匯出備份';
 
   @override
   String get vault_backup_exported => '备份已导出到';
@@ -12834,7 +13226,324 @@ class L10nZhTw extends L10nZh {
   String get ui_preset_colors => '預設顏色';
 
   @override
-  String get crypt_settings_title => '加密设置';
+  String get crypt_settings_title => '密碼配置';
+
+  @override
+  String get vault_config_password => '密碼配置';
+
+  @override
+  String get vault_help => '說明';
+
+  @override
+  String get vault_help_title => '保險箱說明';
+
+  @override
+  String get vault_help_intro =>
+      '保險箱採用與 rclone 相同的 crypt 加密格式，加解密全部在本機完成，金鑰不會離開本機。';
+
+  @override
+  String get vault_help_highlights => '功能亮點';
+
+  @override
+  String get vault_help_hl1_title => '零知識加密';
+
+  @override
+  String get vault_help_hl1_desc => '主密碼與加鹽僅儲存在本機，雲端服務與任何第三方都無法解密你的檔案。';
+
+  @override
+  String get vault_help_hl2_title => '相容 rclone 與 OpenList';
+
+  @override
+  String get vault_help_hl2_desc => '使用相同的 crypt 格式，電腦上的 rclone 可直接解密同一批檔案。';
+
+  @override
+  String get vault_help_hl3_title => '多組密碼 + 遠端直讀';
+
+  @override
+  String get vault_help_hl3_desc => '可為不同目錄綁定不同密碼設定；遠端密文目錄無須整包下載即可解密瀏覽與播放。';
+
+  @override
+  String get vault_help_basics => '基本操作';
+
+  @override
+  String get vault_help_b1_title => '① 先設定主密碼';
+
+  @override
+  String get vault_help_b1_desc => '在「密碼設定」中設定主密碼與加鹽並牢記，它與保險箱解鎖密碼彼此獨立。';
+
+  @override
+  String get vault_help_b2_title => '② 加密檔案';
+
+  @override
+  String get vault_help_b2_desc => '在瀏覽頁選取檔案後點選加密，再選擇「原地加密」或「沙盒加密」。';
+
+  @override
+  String get vault_help_b3_title => '③ 檢視與開啟';
+
+  @override
+  String get vault_help_b3_desc => '加密項目會集中在保險箱中列出，點選後會自動暫時解密並預覽。';
+
+  @override
+  String get vault_help_b4_title => '④ 解密還原';
+
+  @override
+  String get vault_help_b4_desc => '選取項目後點選解密，即可還原為一般檔案並放回原位置。';
+
+  @override
+  String get vault_help_b5_title => '⑤ 備份與還原';
+
+  @override
+  String get vault_help_b5_desc => '透過「備份/還原」匯出含加密設定的備份，解除安裝前務必先匯出。';
+
+  @override
+  String get vault_help_compat => '相容性';
+
+  @override
+  String get vault_help_c1_title => '加密格式';
+
+  @override
+  String get vault_help_c1_desc =>
+      '內容為 XSalsa20-Poly1305，檔名經 EME 加密後以 base32/base64 編碼，可帶 .bin 後綴。';
+
+  @override
+  String get vault_help_c2_title => '雲端與同步';
+
+  @override
+  String get vault_help_c2_desc => '密文可由任意雲端或同步工具正常同步，伺服器只會看到密文，不會洩漏真實檔名。';
+
+  @override
+  String get vault_help_c3_title => '已知限制';
+
+  @override
+  String get vault_help_c3_desc =>
+      '加密後檔名會明顯變長，過長檔名可能失敗；請在本應用程式內重新命名，直接改密文名將導致無法解密。';
+
+  @override
+  String get vault_help_inplace => '原地加密';
+
+  @override
+  String get vault_help_inplace_intro =>
+      '原地加密會把檔案「就地」加密：內容替換為密文、檔名替換為密文名，檔案仍留在原本的資料夾中，不會進入保險箱私有目錄。';
+
+  @override
+  String get vault_help_ip1_title => '與原目錄的關係';
+
+  @override
+  String get vault_help_ip1_desc => '檔案位置與目錄結構維持不變，瀏覽頁會為已加密檔案加上🔐徽標。';
+
+  @override
+  String get vault_help_ip2_title => '其他應用程式看到什麼';
+
+  @override
+  String get vault_help_ip2_desc => '其他檔案管理器與播放器只會看到無意義的密文檔名且無法開啟，這正是保護效果。';
+
+  @override
+  String get vault_help_ip3_title => '適合的情境';
+
+  @override
+  String get vault_help_ip3_desc => '需要保留原目錄結構，並讓第三方雲端繼續同步這些檔案的情境。';
+
+  @override
+  String get vault_help_ip4_title => '風險與建議';
+
+  @override
+  String get vault_help_ip4_desc =>
+      '加密會直接取代原檔，中斷可能留下殘檔；重要檔案請先備份，解密時目標目錄需有寫入權限。';
+
+  @override
+  String get vault_help_notice => '注意事項';
+
+  @override
+  String get vault_help_n1 => '已用於加密檔案的密碼與加鹽不可修改，若需更換請新增一組加密設定。';
+
+  @override
+  String get vault_help_n2 => '沙盒加密的檔案存放於應用程式私有目錄，解除安裝時會一併清除。';
+
+  @override
+  String get vault_help_n3 => '忘記主密碼將無法還原任何已加密檔案，請務必匯出備份並妥善保存。';
+
+  @override
+  String get vault_remote_encrypt => '遠端加密';
+
+  @override
+  String get vault_import_source_title => '選擇加密來源';
+
+  @override
+  String get vault_import_source_remote => '遠端';
+
+  @override
+  String get vault_import_source_remote_desc => '關聯遠端加密目錄，或將本機檔案加密後上傳到遠端';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      '關聯伺服器上已有的 rclone crypt 密文目錄（在用戶端解密）';
+
+  @override
+  String get vault_encrypt_upload => '加密上傳到遠端';
+
+  @override
+  String get vault_encrypt_upload_desc => '選擇本機檔案，加密後上傳到遠端伺服器';
+
+  @override
+  String get vault_encrypt_uploading => '正在加密上傳…';
+
+  @override
+  String get vault_encrypt_upload_done => '加密上傳完成';
+
+  @override
+  String get vault_encrypt_upload_failed => '加密上傳失敗';
+
+  @override
+  String get crypt_remote_upload => '加密上傳';
+
+  @override
+  String get crypt_remote_download => '解密下載';
+
+  @override
+  String get crypt_remote_downloading => '正在解密下載…';
+
+  @override
+  String get crypt_remote_download_done => '解密下載完成';
+
+  @override
+  String get crypt_remote_download_failed => '解密下載失敗';
+
+  @override
+  String get vault_remote_crypt_open_failed => '開啟遠端加密檔案失敗';
+
+  @override
+  String get vault_remote_crypt_unsupported => '此類型暫不支援遠端加密串流播放';
+
+  @override
+  String get vault_link_remote_crypt => '關聯遠端加密目錄';
+
+  @override
+  String get vault_link_remote_crypt_success => '已關聯遠端加密目錄';
+
+  @override
+  String get vault_unlink_remote_crypt => '取消關聯';
+
+  @override
+  String get vault_exporting => '正在匯出...';
+
+  @override
+  String get vault_importing => '正在匯入...';
+
+  @override
+  String get vault_importing_backup => '正在匯入備份...';
+
+  @override
+  String get vault_restoring => '正在還原...';
+
+  @override
+  String get vault_decrypting => '正在解密...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      '匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？';
+
+  @override
+  String vault_load_error(Object error) {
+    return '載入保險箱出錯：$error';
+  }
+
+  @override
+  String get vault_restore_folder_hint => '資料夾請長按後選擇「還原」到原始位置查看';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return '解密並開啟項目失敗：$error';
+  }
+
+  @override
+  String get vault_badge_inplace => '原地';
+
+  @override
+  String get vault_badge_sandbox => '沙盒';
+
+  @override
+  String get vault_item_folder => '資料夾';
+
+  @override
+  String get crypt_need_master_title => '尚未設定加密主密碼';
+
+  @override
+  String get crypt_need_master_body => '原地加密與沙盒加密都使用「加密設定」中的主密碼，請先前往設定。';
+
+  @override
+  String get crypt_master_banner =>
+      '此處配置的主密碼與加鹽用於原地加密和沙盒加密，請務必牢記；它與保險箱解鎖密碼相互獨立。';
+
+  @override
+  String get crypt_profile_name => '加密名稱';
+
+  @override
+  String get crypt_profile_name_hint => '例如：工作 / 私人';
+
+  @override
+  String get crypt_profile_name_required => '請輸入加密名稱';
+
+  @override
+  String get crypt_profile_name_duplicate => '此名稱已存在，請更換';
+
+  @override
+  String get crypt_profile_title_new => '新增加密配置';
+
+  @override
+  String get crypt_profile_title_edit => '編輯加密配置';
+
+  @override
+  String get crypt_profile_section => '密碼配置';
+
+  @override
+  String get crypt_profile_add => '新增配置';
+
+  @override
+  String get crypt_profile_default => '預設';
+
+  @override
+  String get crypt_profile_set_default => '設為預設配置';
+
+  @override
+  String get crypt_profile_set_default_desc => '未綁定配置的檔案將使用此配置';
+
+  @override
+  String get crypt_profile_default_done => '已更新預設配置';
+
+  @override
+  String get crypt_profile_delete_message => '刪除此配置後，使用它加密的檔案將無法解密。';
+
+  @override
+  String get crypt_profile_empty => '尚無加密配置';
+
+  @override
+  String get crypt_profile_action_config => '配置';
+
+  @override
+  String get crypt_profile_select_title => '選擇加密配置';
+
+  @override
+  String get crypt_profile_bound_done => '已綁定此加密配置';
+
+  @override
+  String get crypt_profile_credential_locked => '不可修改';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      '密碼與加鹽決定金鑰，修改後已加密檔案將無法解密；如需更換請新增配置。';
+
+  @override
+  String get crypt_profile_suffix_none => '無後綴';
+
+  @override
+  String get crypt_profile_sandbox_title => '切換沙盒配置';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      '沙盒整體只使用一套配置，切換後沙盒內其他檔案可能顯示為密文。是否繼續？';
+
+  @override
+  String get crypt_mount_section => '加密位置';
 
   @override
   String get crypt_settings_subtitle => '管理加密文件夹和挂载点';
@@ -13112,6 +13821,7 @@ class L10nZhTw extends L10nZh {
   String vault_import_failed_detail(Object error) {
     return '導入失敗：$error';
   }
+
   @override
   String get vault_no_files => '暫無檔案';
 
@@ -13120,4 +13830,78 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_remove_from_list => '移除';
+
+  @override
+  String get security_vault_switch_desc => '啟用私人保險箱功能';
+
+  @override
+  String get security_verify_password_desc => '請輸入密碼以進入安全設定';
+
+  @override
+  String get vault_verify_password_title => '驗證密碼';
+
+  @override
+  String get vault_verify_password_hint => '請輸入安全設定密碼';
+
+  @override
+  String get vault_go_security_settings => '前往安全設定';
+
+  @override
+  String get security_settings_subtitle => '保險箱、遠端守衛、啟動應用保護與指紋解鎖';
+
+  @override
+  String get vault_disabled_hint => '保險箱已關閉，請在「設定 → 安全設定」中開啟';
+
+  @override
+  String get security_set_password_desc => '請設定安全設定密碼，用於進入安全設定與解鎖保險箱';
+
+  @override
+  String get security_confirm_password => '請再次輸入密碼以確認';
+
+  @override
+  String get biometric_reason_security_settings => '驗證指紋以進入安全設定';
+
+  @override
+  String get toolbox_scan => '掃一掃';
+
+  @override
+  String get scan_result_title => '掃描結果';
+
+  @override
+  String get scan_copy => '複製';
+
+  @override
+  String get scan_copied => '已複製到剪貼簿';
+
+  @override
+  String get scan_open_link => '開啟連結';
+
+  @override
+  String get scan_continue => '繼續掃描';
+
+  @override
+  String get scan_torch => '手電筒';
+
+  @override
+  String get scan_switch_camera => '切換攝影機';
+
+  @override
+  String get scan_camera_error => '無法存取相機，請檢查相機權限';
+
+  @override
+  String get scan_hint => '將 QR Code/條碼放入框內即可自動掃描';
+
+  @override
+  String get scan_from_gallery => '從相簿選擇';
+
+  @override
+  String get scan_no_barcode => '未在圖片中偵測到 QR Code 或條碼';
+
+  @override
+  String get ui_backup_confirm_title => '確認備份';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return '將備份到以下路徑：\n$path\n\n是否繼續？';
+  }
 }

@@ -4931,7 +4931,7 @@ class L10nJa extends L10n {
   String get ui_remote_guard_wrong_pin => 'PINが正しくありません。もう一度お試しください。';
 
   @override
-  String get ui_remote_guard_change_pin => 'PINを変更';
+  String get ui_remote_guard_change_pin => 'パスワードを変更';
 
   @override
   String get ui_remote_guard_pin_hint => 'パスワード（英数字または記号）';
@@ -4974,7 +4974,8 @@ class L10nJa extends L10n {
       '再暗号化に失敗したファイルがあります。PINは変更されていません。';
 
   @override
-  String get ui_change_vault_pin_desc => 'プライベート金庫のPINを変更（全隠しファイルを再暗号化）';
+  String get ui_change_vault_pin_desc =>
+      '安全設定と金庫のロック解除パスワードを変更します。暗号化ファイルには影響しません';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -6037,7 +6038,7 @@ class L10nJa extends L10n {
 
   @override
   String get vault_uninstall_warning =>
-      'アプリをアンインストールすると金庫が消去されます。先にバックアップを書き出してください。';
+      'アプリをアンインストールするとサンドボックス暗号化が消去されます。先にバックアップを書き出してください。';
 
   @override
   String get vault_backup_exported => 'バックアップを書き出し先：';
@@ -6072,19 +6073,17 @@ class L10nJa extends L10n {
       'ファイルが空であるか解凍できません（ファイルが大きすぎる、破損している、対応していない圧縮形式を使用している可能性があります）';
 
   @override
-  String get vault_export_backup_confirm =>
-      'The backup file will be saved to the following location:';
+  String get vault_export_backup_confirm => 'バックアップファイルは次の場所に保存されます：';
 
   @override
-  String get vault_import_only_zip => 'Only .zip backup files are supported';
+  String get vault_import_only_zip => '.zip バックアップファイルのみ対応しています';
 
   @override
   String get vault_import_password_hint =>
-      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+      'このバックアップは別のパスワードを使用しています。バックアップ作成時のパスワードで保管庫のロックを再度解除してください';
 
   @override
-  String get vault_open_backup_location =>
-      'Open the folder where the backup is saved?';
+  String get vault_open_backup_location => 'バックアップの保存先フォルダを開きますか？';
 
   @override
   String get open_file => 'Open';
@@ -6400,175 +6399,504 @@ class L10nJa extends L10n {
   String get ui_preset_colors => 'プリセットカラー';
 
   @override
-  String get crypt_settings_title => 'Encryption';
+  String get crypt_settings_title => 'パスワード設定';
 
   @override
-  String get crypt_settings_subtitle =>
-      'Manage encrypted folders and mount points';
+  String get vault_config_password => 'パスワード設定';
 
   @override
-  String get crypt_add_mount => 'Add Encrypted Folder';
+  String get vault_help => 'ヘルプ';
 
   @override
-  String get crypt_edit_mount => 'Edit Encrypted Folder';
+  String get vault_help_title => '金庫ヘルプ';
 
   @override
-  String get crypt_no_mounts_title => 'No Encrypted Folders';
+  String get vault_help_intro =>
+      '金庫は rclone と同じ crypt 形式を採用しています。暗号化と復号はすべて端末内で行われ、鍵が外に出ることはありません。';
 
   @override
-  String get crypt_no_mounts_subtitle =>
-      'Tap the button below to add your first encrypted folder';
+  String get vault_help_highlights => '主な特長';
 
   @override
-  String get crypt_field_name => 'Name';
+  String get vault_help_hl1_title => 'ゼロ知識暗号';
 
   @override
-  String get crypt_field_name_hint => 'Optional, uses folder name if empty';
+  String get vault_help_hl1_desc =>
+      'マスターパスワードとソルトは端末内のみに保存され、クラウド事業者を含む第三者は復号できません。';
 
   @override
-  String get crypt_field_path => 'Folder Path';
+  String get vault_help_hl2_title => 'rclone / OpenList 互換';
 
   @override
-  String get crypt_field_path_hint => 'Select folder to encrypt';
+  String get vault_help_hl2_desc =>
+      '同じ crypt 形式のため、PC の rclone でも同じファイルを復号できます。';
 
   @override
-  String get crypt_field_password => 'Password';
+  String get vault_help_hl3_title => '複数パスワードとリモート直読';
 
   @override
-  String get crypt_field_confirm_password => 'Confirm Password';
+  String get vault_help_hl3_desc =>
+      'フォルダごとに異なるパスワード設定を割り当て可能。リモートの暗号化フォルダも丸ごとダウンロードせずに閲覧・再生できます。';
 
   @override
-  String get crypt_error_path_required => 'Please select a folder path';
+  String get vault_help_basics => '基本操作';
 
   @override
-  String get crypt_error_password_required => 'Please enter a password';
+  String get vault_help_b1_title => '① まずマスターパスワードを設定';
 
   @override
-  String get crypt_error_password_short =>
-      'Password must be at least 4 characters';
+  String get vault_help_b1_desc =>
+      '「パスワード設定」でマスターパスワードとソルトを設定し、必ず控えてください。金庫のロック解除パスワードとは別物です。';
 
   @override
-  String get crypt_error_password_mismatch => 'Passwords do not match';
+  String get vault_help_b2_title => '② ファイルを暗号化';
 
   @override
-  String get crypt_section_mode => 'Encryption Mode';
+  String get vault_help_b2_desc =>
+      'ブラウザでファイルを選んで暗号化をタップし、「その場で暗号化」か「サンドボックス暗号化」を選びます。';
 
   @override
-  String get crypt_mode_inplace => 'In-place Encryption';
+  String get vault_help_b3_title => '③ 表示とオープン';
 
   @override
-  String get crypt_mode_inplace_desc =>
-      'Files stay in place, names and content are encrypted';
+  String get vault_help_b3_desc => '暗号化した項目は金庫に一覧表示され、タップすると一時的に復号してプレビューします。';
 
   @override
-  String get crypt_mode_sandbox => 'Sandbox Encryption';
+  String get vault_help_b4_title => '④ 復号して元に戻す';
 
   @override
-  String get crypt_mode_sandbox_desc =>
-      'Files moved to sandbox, more secure but slightly slower';
+  String get vault_help_b4_desc => '項目を選んで復号すると、通常のファイルとして元の場所へ戻ります。';
 
   @override
-  String get crypt_section_advanced => 'Advanced Options';
+  String get vault_help_b5_title => '⑤ バックアップと復元';
 
   @override
-  String get crypt_advanced_toggle => 'Show advanced encryption options';
+  String get vault_help_b5_desc =>
+      '「バックアップ/復元」から暗号化設定を含むバックアップを書き出してください。アンインストール前に必ず実行してください。';
 
   @override
-  String get crypt_field_filename_enc => 'Filename Encryption';
+  String get vault_help_compat => '互換性';
 
   @override
-  String get crypt_field_dirname_enc => 'Encrypt Directory Names';
+  String get vault_help_c1_title => '暗号化形式';
 
   @override
-  String get crypt_field_filename_encoding => 'Filename Encoding';
+  String get vault_help_c1_desc =>
+      '本文は XSalsa20-Poly1305、ファイル名は EME 暗号化後に base32/base64 で符号化され、.bin を付けることもできます。';
 
   @override
-  String get crypt_field_suffix => 'Encrypted Suffix';
+  String get vault_help_c2_title => 'クラウドと同期';
 
   @override
-  String get crypt_field_salt => 'Salt (optional)';
+  String get vault_help_c2_desc =>
+      '暗号文はどのクラウドや同期ツールでもそのまま同期できます。サーバーには暗号文しか見えず、実ファイル名は漏れません。';
 
   @override
-  String get crypt_field_salt_hint => 'Auto-generated if empty';
+  String get vault_help_c3_title => '既知の制限';
 
   @override
-  String get crypt_action_browse => 'Browse';
+  String get vault_help_c3_desc =>
+      '暗号化するとファイル名が大幅に長くなります。長すぎる名前は失敗する場合があります。名前の変更は本アプリ内で行い、暗号文の名前を直接書き換えると復号できなくなります。';
 
   @override
-  String get crypt_delete_title => 'Delete Encrypted Folder';
+  String get vault_help_inplace => 'その場で暗号化';
+
+  @override
+  String get vault_help_inplace_intro =>
+      'その場で暗号化はファイルを元の場所で暗号化します。中身とファイル名が暗号文に置き換わり、ファイルは元のフォルダに残ったまま金庫の専用ディレクトリには移動しません。';
+
+  @override
+  String get vault_help_ip1_title => '元フォルダとの関係';
+
+  @override
+  String get vault_help_ip1_desc =>
+      '場所とフォルダ構成は変わらず、ブラウザでは暗号化済みファイルに🔐マークが付きます。';
+
+  @override
+  String get vault_help_ip2_title => '他のアプリからはどう見えるか';
+
+  @override
+  String get vault_help_ip2_desc =>
+      '他のファイル管理アプリやプレイヤーには意味のない暗号名が見えるだけで開けません。これが保護の仕組みです。';
+
+  @override
+  String get vault_help_ip3_title => '向いている場面';
+
+  @override
+  String get vault_help_ip3_desc =>
+      'フォルダ構成を保ちながら、サードパーティのクラウドアプリに同期させ続けたい場合に最適です。';
+
+  @override
+  String get vault_help_ip4_title => 'リスクと注意点';
+
+  @override
+  String get vault_help_ip4_desc =>
+      '暗号化は元ファイルを直接置き換えるため、中断すると中途半端なファイルが残ることがあります。重要なファイルは事前バックアップを、復号時は書き込み権限を確認してください。';
+
+  @override
+  String get vault_help_notice => 'ご注意';
+
+  @override
+  String get vault_help_n1 =>
+      '暗号化に使用したパスワードとソルトは変更できません。変更したい場合は新しい設定を作成してください。';
+
+  @override
+  String get vault_help_n2 =>
+      'サンドボックス暗号化のファイルはアプリ専用ディレクトリにあり、アンインストールすると消去されます。';
+
+  @override
+  String get vault_help_n3 =>
+      'マスターパスワードを忘れると暗号化ファイルは復元できません。必ずバックアップを書き出して保管してください。';
+
+  @override
+  String get vault_remote_encrypt => 'リモート暗号化';
+
+  @override
+  String get vault_import_source_title => '暗号化元を選択';
+
+  @override
+  String get vault_import_source_remote => 'リモート';
+
+  @override
+  String get vault_import_source_remote_desc =>
+      'リモート暗号化フォルダを紐付ける、またはローカルファイルを暗号化してアップロード';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      'サーバー上の既存 rclone crypt フォルダを紐付け（端末側で復号）';
+
+  @override
+  String get vault_encrypt_upload => '暗号化してリモートへアップロード';
+
+  @override
+  String get vault_encrypt_upload_desc => 'ローカルファイルを選択し、暗号化してリモートサーバーへアップロード';
+
+  @override
+  String get vault_encrypt_uploading => '暗号化してアップロード中…';
+
+  @override
+  String get vault_encrypt_upload_done => '暗号化アップロードが完了しました';
+
+  @override
+  String get vault_encrypt_upload_failed => '暗号化アップロードに失敗しました';
+
+  @override
+  String get crypt_remote_upload => '暗号化してアップロード';
+
+  @override
+  String get crypt_remote_download => '復号してダウンロード';
+
+  @override
+  String get crypt_remote_downloading => '復号してダウンロード中…';
+
+  @override
+  String get crypt_remote_download_done => '復号ダウンロードが完了しました';
+
+  @override
+  String get crypt_remote_download_failed => '復号ダウンロードに失敗しました';
+
+  @override
+  String get vault_remote_crypt_open_failed => 'リモート暗号化ファイルを開けませんでした';
+
+  @override
+  String get vault_remote_crypt_unsupported =>
+      'この形式はリモート暗号化のストリーミング再生に対応していません';
+
+  @override
+  String get vault_link_remote_crypt => 'リモート暗号化フォルダを紐付け';
+
+  @override
+  String get vault_link_remote_crypt_success => 'リモート暗号化フォルダを紐付けました';
+
+  @override
+  String get vault_unlink_remote_crypt => '紐付けを解除';
+
+  @override
+  String get vault_exporting => 'エクスポート中...';
+
+  @override
+  String get vault_importing => 'インポート中...';
+
+  @override
+  String get vault_importing_backup => 'バックアップをインポート中...';
+
+  @override
+  String get vault_restoring => '復元中...';
+
+  @override
+  String get vault_decrypting => '復号中...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      'インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？';
+
+  @override
+  String vault_load_error(Object error) {
+    return '保管庫の読み込みエラー：$error';
+  }
+
+  @override
+  String get vault_restore_folder_hint => 'フォルダは長押しで「復元」を選ぶと元の場所で表示できます';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return '復号して開くのに失敗しました：$error';
+  }
+
+  @override
+  String get vault_badge_inplace => 'その場';
+
+  @override
+  String get vault_badge_sandbox => 'サンドボックス';
+
+  @override
+  String get vault_item_folder => 'フォルダ';
+
+  @override
+  String get crypt_need_master_title => '暗号化マスターパスワードが未設定です';
+
+  @override
+  String get crypt_need_master_body =>
+      'その場暗号化とサンドボックス暗号化の両方で「暗号化設定」のマスターパスワードを使用します。先に設定してください。';
+
+  @override
+  String get crypt_master_banner =>
+      'ここで設定するマスターパスワードとソルトは、その場暗号化とサンドボックス暗号化に使用されます。必ず覚えてください。保管庫のロック解除パスワードとは独立しています。';
+
+  @override
+  String get crypt_profile_name => '暗号化名';
+
+  @override
+  String get crypt_profile_name_hint => '例：仕事 / プライベート';
+
+  @override
+  String get crypt_profile_name_required => '暗号化名を入力してください';
+
+  @override
+  String get crypt_profile_name_duplicate => 'この名前は既に存在します';
+
+  @override
+  String get crypt_profile_title_new => '暗号化設定を新規作成';
+
+  @override
+  String get crypt_profile_title_edit => '暗号化設定を編集';
+
+  @override
+  String get crypt_profile_section => 'パスワード設定';
+
+  @override
+  String get crypt_profile_add => '新規設定';
+
+  @override
+  String get crypt_profile_default => 'デフォルト';
+
+  @override
+  String get crypt_profile_set_default => 'デフォルトに設定';
+
+  @override
+  String get crypt_profile_set_default_desc => '設定が未指定のファイルはこれを使用します';
+
+  @override
+  String get crypt_profile_default_done => 'デフォルト設定を更新しました';
+
+  @override
+  String get crypt_profile_delete_message =>
+      'この設定を削除すると、それで暗号化したファイルは復号できなくなります。';
+
+  @override
+  String get crypt_profile_empty => '暗号化設定がありません';
+
+  @override
+  String get crypt_profile_action_config => '設定';
+
+  @override
+  String get crypt_profile_select_title => '暗号化設定を選択';
+
+  @override
+  String get crypt_profile_bound_done => '暗号化設定を紐付けました';
+
+  @override
+  String get crypt_profile_credential_locked => '変更不可';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      'パスワードとソルトが鍵を決定します。変更すると既存の暗号化ファイルは復号できなくなります。変更する場合は新しい設定を作成してください。';
+
+  @override
+  String get crypt_profile_suffix_none => '拡張子なし';
+
+  @override
+  String get crypt_profile_sandbox_title => 'サンドボックスの設定を切り替え';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      'サンドボックスは全体で1つの設定を使用します。切り替えると他のファイルが暗号名で表示される場合があります。続けますか？';
+
+  @override
+  String get crypt_mount_section => '暗号化された場所';
+
+  @override
+  String get crypt_settings_subtitle => '暗号化フォルダとマウントポイントを管理';
+
+  @override
+  String get crypt_add_mount => '暗号化フォルダを追加';
+
+  @override
+  String get crypt_edit_mount => '暗号化フォルダを編集';
+
+  @override
+  String get crypt_no_mounts_title => '暗号化フォルダがありません';
+
+  @override
+  String get crypt_no_mounts_subtitle => '下のボタンをタップして最初の暗号化フォルダを追加しましょう';
+
+  @override
+  String get crypt_field_name => '名前';
+
+  @override
+  String get crypt_field_name_hint => '空の場合はフォルダ名を使用';
+
+  @override
+  String get crypt_field_path => 'フォルダパス';
+
+  @override
+  String get crypt_field_path_hint => '暗号化するフォルダを選択';
+
+  @override
+  String get crypt_field_password => 'パスワード';
+
+  @override
+  String get crypt_field_confirm_password => 'パスワード（確認）';
+
+  @override
+  String get crypt_error_path_required => 'フォルダパスを選択してください';
+
+  @override
+  String get crypt_error_password_required => 'パスワードを入力してください';
+
+  @override
+  String get crypt_error_password_short => 'パスワードは4文字以上である必要があります';
+
+  @override
+  String get crypt_error_password_mismatch => 'パスワードが一致しません';
+
+  @override
+  String get crypt_section_mode => '暗号化モード';
+
+  @override
+  String get crypt_mode_inplace => 'その場暗号化';
+
+  @override
+  String get crypt_mode_inplace_desc => 'ファイルはそのまま残り、名前と内容が暗号化されます';
+
+  @override
+  String get crypt_mode_sandbox => 'サンドボックス暗号化';
+
+  @override
+  String get crypt_mode_sandbox_desc => 'ファイルをサンドボックスへ移動。より安全ですがやや遅くなります';
+
+  @override
+  String get crypt_section_advanced => '詳細オプション';
+
+  @override
+  String get crypt_advanced_toggle => '高度な暗号化オプションを表示';
+
+  @override
+  String get crypt_field_filename_enc => 'ファイル名暗号化';
+
+  @override
+  String get crypt_field_dirname_enc => 'ディレクトリ名を暗号化';
+
+  @override
+  String get crypt_field_filename_encoding => 'ファイル名エンコーディング';
+
+  @override
+  String get crypt_field_suffix => '暗号化拡張子';
+
+  @override
+  String get crypt_field_salt => 'ソルト（任意）';
+
+  @override
+  String get crypt_field_salt_hint => '空の場合は自動生成';
+
+  @override
+  String get crypt_action_browse => '表示';
+
+  @override
+  String get crypt_delete_title => '暗号化フォルダを削除';
 
   @override
   String crypt_delete_message(Object name) {
-    return 'Delete encryption config for \"$name\"? Files will not be deleted.';
+    return '「$name」の暗号化設定を削除しますか？ファイルは削除されません。';
   }
 
   @override
-  String get crypt_filename_enc => 'Filename Enc';
+  String get crypt_filename_enc => 'ファイル名暗号化';
 
   @override
-  String get crypt_share_title => 'Share Encrypted Folder';
+  String get crypt_share_title => '暗号化フォルダを共有';
 
   @override
   String get crypt_share_hint =>
-      'Scan the QR code to import encryption config. Password is required to decrypt files.';
+      'QRコードをスキャンして暗号化設定を取り込みます。ファイルの復号にはパスワードが必要です。';
 
   @override
-  String get crypt_action_share => 'Share';
+  String get crypt_action_share => '共有';
 
   @override
   String get crypt_share_password_note =>
-      'Password is NOT included in the QR code. Share it separately via a secure channel.';
+      'QRコードにパスワードは含まれません。安全な手段で別途共有してください。';
 
   @override
-  String get crypt_action_encrypt => 'Encrypt Now';
+  String get crypt_action_encrypt => '今すぐ暗号化';
 
   @override
-  String get crypt_action_decrypt => 'Decrypt';
+  String get crypt_action_decrypt => '復号';
 
   @override
-  String get crypt_encrypt_title => 'Encryption Confirmation';
+  String get crypt_encrypt_title => '暗号化の確認';
 
   @override
   String get crypt_encrypt_message =>
-      'This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?';
+      'すべてのファイルとサブフォルダを暗号化します。暗号化後、他のファイルマネージャーでは内容と名前を表示できません。続けますか？';
 
   @override
-  String get crypt_encrypting => 'Encrypting...';
+  String get crypt_encrypting => '暗号化中...';
 
   @override
-  String get crypt_encrypt_success => 'Encryption completed';
+  String get crypt_encrypt_success => '暗号化が完了しました';
 
   @override
   String crypt_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return '暗号化に失敗しました: $error';
   }
 
   @override
-  String get crypt_decrypt_title => 'Decryption Confirmation';
+  String get crypt_decrypt_title => '復号の確認';
 
   @override
   String get crypt_decrypt_message =>
-      'This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?';
+      'すべてのファイルとサブフォルダを復号します。復号後、ファイルは通常の状態に戻ります。続けますか？';
 
   @override
-  String get crypt_decrypting => 'Decrypting...';
+  String get crypt_decrypting => '復号中...';
 
   @override
-  String get crypt_decrypt_success => 'Decryption completed';
+  String get crypt_decrypt_success => '復号が完了しました';
 
   @override
   String crypt_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return '復号に失敗しました: $error';
   }
 
   @override
-  String get crypt_filename_enc_off => 'Off';
+  String get crypt_filename_enc_off => 'オフ';
 
   @override
-  String get crypt_filename_enc_standard => 'Standard';
+  String get crypt_filename_enc_standard => '標準';
 
   @override
-  String get crypt_filename_enc_obfuscate => 'Obfuscate';
+  String get crypt_filename_enc_obfuscate => '難読化';
 
   @override
   String get crypt_filename_enc_base64 => 'Base64';
@@ -6580,85 +6908,84 @@ class L10nJa extends L10n {
   String get crypt_filename_enc_base32768 => 'Base32768';
 
   @override
-  String get crypt_dirname_enc_yes => 'Yes';
+  String get crypt_dirname_enc_yes => 'はい';
 
   @override
-  String get crypt_dirname_enc_no => 'No';
+  String get crypt_dirname_enc_no => 'いいえ';
 
   @override
-  String get vault_encrypt_files => '+ Encrypt Files';
+  String get vault_encrypt_files => '+ ファイルを暗号化';
 
   @override
-  String get vault_select_encryption_method => 'Select Encryption Method';
+  String get vault_select_encryption_method => '暗号化方式を選択';
 
   @override
-  String get vault_inplace_encrypt => 'In-place Encryption';
+  String get vault_inplace_encrypt => 'その場暗号化';
 
   @override
   String get vault_inplace_encrypt_desc =>
-      'Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser';
+      'ファイルは元のディレクトリに残り、暗号化後にファイル名が暗号化されます。ブラウザには 🔐 バッジが表示されます';
 
   @override
-  String get vault_sandbox_encrypt => 'Sandbox Encryption';
+  String get vault_sandbox_encrypt => 'サンドボックス暗号化';
 
   @override
   String get vault_sandbox_encrypt_desc =>
-      'Files moved to vault private directory, filenames hidden, only visible in vault page';
+      'ファイルは保管庫専用ディレクトリに移動され、ファイル名は隠され、保管庫ページでのみ表示されます';
 
   @override
-  String get vault_need_set_password => 'Need to Set Master Password First';
+  String get vault_need_set_password => '先にマスターパスワードを設定する必要があります';
 
   @override
   String get vault_need_set_password_desc =>
-      'Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.';
+      '先に暗号化設定でマスターパスワードとソルトを設定してください。設定後、その場暗号化が利用できます。';
 
   @override
-  String get vault_go_set_password => 'Set Password';
+  String get vault_go_set_password => 'パスワードを設定';
 
   @override
-  String get vault_encrypting => 'Encrypting...';
+  String get vault_encrypting => '暗号化中...';
 
   @override
-  String get vault_encrypting_desc =>
-      'Encrypting selected files/folders, please wait...';
+  String get vault_encrypting_desc => '選択したファイル/フォルダを暗号化しています。お待ちください...';
 
   @override
   String vault_inplace_encrypt_done(Object count) {
-    return 'In-place encryption completed, $count files/folders encrypted';
+    return 'その場暗号化が完了しました。$count 個のファイル/フォルダを暗号化しました';
   }
 
   @override
   String vault_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return '暗号化に失敗しました: $error';
   }
 
   @override
-  String get vault_inplace_section => 'In-place Encryption';
+  String get vault_inplace_section => 'その場暗号化';
 
   @override
-  String get vault_open_location => 'Open Location';
+  String get vault_open_location => '場所を開く';
 
   @override
-  String get vault_decrypt_action => 'Decrypt';
+  String get vault_decrypt_action => '復号';
 
   @override
-  String get vault_decrypt_confirm_title => 'Decrypt File';
+  String get vault_decrypt_confirm_title => 'ファイルを復号';
 
   @override
   String vault_decrypt_confirm_desc(Object name) {
-    return 'Are you sure you want to decrypt \"$name\"? The file will be restored to normal after decryption.';
+    return '「$name」を復号しますか？復号後、ファイルは通常の状態に戻ります。';
   }
 
   @override
-  String get vault_decrypt_success => 'Decryption successful';
+  String get vault_decrypt_success => '復号に成功しました';
 
   @override
   String vault_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return '復号に失敗しました: $error';
   }
 
   @override
-  String get crypt_set_master_password => 'Set Encryption Master Password';
+  String get crypt_set_master_password => '暗号化マスターパスワードを設定';
 
   @override
   String get vault_section_unencrypted => '未暗号化ファイル';
@@ -6689,6 +7016,7 @@ class L10nJa extends L10n {
   String vault_import_failed_detail(Object error) {
     return 'インポートに失敗しました：$error';
   }
+
   @override
   String get vault_no_files => 'ファイルがありません';
 
@@ -6698,4 +7026,80 @@ class L10nJa extends L10n {
 
   @override
   String get vault_remove_from_list => '削除';
+
+  @override
+  String get security_vault_switch_desc => 'プライベート金庫機能を有効にします';
+
+  @override
+  String get security_verify_password_desc => '安全設定を開くにはパスワードを入力してください';
+
+  @override
+  String get vault_verify_password_title => 'パスワードの確認';
+
+  @override
+  String get vault_verify_password_hint => '安全設定のパスワードを入力してください';
+
+  @override
+  String get vault_go_security_settings => '安全設定へ';
+
+  @override
+  String get security_settings_subtitle => '金庫、リモートガード、アプリ起動保護、指紋ロック解除';
+
+  @override
+  String get vault_disabled_hint => '金庫は無効になっています。「設定 → 安全設定」で有効にしてください';
+
+  @override
+  String get security_set_password_desc =>
+      'セキュリティ設定へのアクセスと金庫のロック解除に使用するパスワードを設定してください';
+
+  @override
+  String get security_confirm_password => '確認のため、もう一度パスワードを入力してください';
+
+  @override
+  String get biometric_reason_security_settings =>
+      'セキュリティ設定にアクセスするには指紋を認証してください';
+
+  @override
+  String get toolbox_scan => 'スキャン';
+
+  @override
+  String get scan_result_title => 'スキャン結果';
+
+  @override
+  String get scan_copy => 'コピー';
+
+  @override
+  String get scan_copied => 'クリップボードにコピーしました';
+
+  @override
+  String get scan_open_link => 'リンクを開く';
+
+  @override
+  String get scan_continue => '続ける';
+
+  @override
+  String get scan_torch => 'ライト';
+
+  @override
+  String get scan_switch_camera => 'カメラを切り替え';
+
+  @override
+  String get scan_camera_error => 'カメラにアクセスできません。カメラ権限を確認してください。';
+
+  @override
+  String get scan_hint => 'QRコード/バーコードをフレーム内に配置すると自動的にスキャンされます';
+
+  @override
+  String get scan_from_gallery => 'アルバムから選択';
+
+  @override
+  String get scan_no_barcode => '画像からQRコードまたはバーコードが検出されませんでした';
+
+  @override
+  String get ui_backup_confirm_title => 'バックアップの確認';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return '以下のパスにバックアップします：\n$path\n\n続行しますか？';
+  }
 }

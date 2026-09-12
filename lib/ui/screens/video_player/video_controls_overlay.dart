@@ -12,7 +12,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final bool isFullScreen;
   final bool isLocked;
   final bool isMuted;
-  final int repeatMode; // 0=none, 1=one, 2=all
+  final int repeatMode; // 0=sequential, 1=list loop, 2=single loop, 3=shuffle
   final int rotationTurns; // 0=0°, 1=90°, 2=180°, 3=270°
   final int aspectRatioMode; // 0=fit, 1=fill, 2=center, 3=16:9, 4=4:3
   final bool subtitleEnabled;
@@ -506,15 +506,17 @@ class VideoControlsOverlay extends StatelessWidget {
                           onRotate();
                         },
                       ),
-                      // Repeat Button
+                      // Repeat / Playback Mode Button
                       IconButton(
                         padding: const EdgeInsets.all(6),
                         icon: Icon(
                           repeatMode == 0
                               ? Icons.repeat_rounded
                               : repeatMode == 1
-                                  ? Icons.repeat_one_rounded
-                                  : Icons.repeat_rounded,
+                                  ? Icons.repeat_rounded
+                                  : repeatMode == 2
+                                      ? Icons.repeat_one_rounded
+                                      : Icons.shuffle_rounded,
                           color: repeatMode != 0 ? accentColor : itemsColor.withValues(alpha: 0.7),
                           size: 22,
                         ),

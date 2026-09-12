@@ -774,7 +774,11 @@ class WebDavRemoteClient extends RemoteClient {
         request.headers.set('Authorization', auth);
       }
       final response = await request.close();
-      if (response.statusCode >= 400) return -1;
+      if (response.statusCode >= 400) {
+        WebdavDebugLog.log(
+            'getFileSize: PROPFIND 返回 ${response.statusCode} path=$normalizedPath');
+        return -1;
+      }
       final body = await response.transform(utf8.decoder).join();
       final document = xml.XmlDocument.parse(body);
       final sizeText = document.descendants
@@ -786,8 +790,11 @@ class WebDavRemoteClient extends RemoteClient {
       if (sizeText.isNotEmpty) {
         return int.tryParse(sizeText) ?? -1;
       }
+      WebdavDebugLog.log(
+          'getFileSize: 207 响应里没有 getcontentlength path=$normalizedPath');
     } catch (e) {
       debugPrint('[WebDAV] getFileSize 失败: $e');
+      WebdavDebugLog.log('getFileSize 异常 path=$normalizedPath: $e');
     }
     return -1;
   }

@@ -4,6 +4,7 @@ import '../../l10n/generated/app_localizations.dart';
 import 'vault_lock_screen.dart';
 import 'wake_on_lan_screen.dart';
 import 'quick_transfer_screen.dart';
+import 'qr_scanner_screen.dart';
 
 /// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 快传」三个入口，
 /// 点击进入对应页面。进入/退出本页的动画由调用方（网格/抽屉）统一控制，
@@ -34,6 +35,12 @@ class ToolboxScreen extends StatelessWidget {
         title: l10n.quick_transfer,
         color: Colors.blue,
         buildPage: () => const QuickTransferScreen(),
+      ),
+      _ToolboxItem(
+        icon: Broken.scan,
+        title: l10n.toolbox_scan,
+        color: Colors.teal,
+        buildPage: () => const QrScannerScreen(),
       ),
     ];
 

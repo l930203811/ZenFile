@@ -210,6 +210,34 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
   }
 
   Future<void> _performBackup() async {
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+
+    // 先弹窗确认当前备份路径
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        title: Text(l10n.ui_backup_confirm_title, style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: Text(
+          l10n.ui_backup_confirm_message(_backupDirPath),
+          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.ui_confirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     final success = await SettingsBackupService.backupSettings(context);
     if (success) {
       await _loadBackupInfo();
@@ -231,50 +259,37 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
       return;
     }
 
-    final success = await SettingsBackupService.restoreSettings(context, _selectedBackupPath!);
-    if (success && mounted) {
-      _showRestartDialog();
-    }
-  }
-
-  void _showRestartDialog() {
-    final l10n = L10n.of(context);
-    final theme = Theme.of(context);
-
-    showDialog(
+    // 先弹窗提示需要重启应用，复用恢复成功后的重启提示文案
+    final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         backgroundColor: theme.scaffoldBackgroundColor,
-        title: Text(
-          l10n.ui_restore_restart_title,
-          style: TextStyle(color: theme.colorScheme.onSurface),
-        ),
+        title: Text(l10n.ui_restore_restart_title, style: TextStyle(color: theme.colorScheme.onSurface)),
         content: Text(
           l10n.ui_restore_restart_message,
           style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              l10n.ui_later,
-              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              SystemNavigator.pop();
-            },
-            child: Text(
-              l10n.ui_restart,
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.ui_confirm),
           ),
         ],
       ),
     );
+
+    if (confirmed != true) return;
+
+    final success = await SettingsBackupService.restoreSettings(context, _selectedBackupPath!);
+    if (success && mounted) {
+      // 恢复成功后直接重启应用，不再额外弹窗
+      SystemNavigator.pop();
+    }
   }
 
   @override

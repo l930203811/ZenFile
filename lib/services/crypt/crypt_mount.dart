@@ -27,13 +27,63 @@ class CryptMountPoint {
   /// 是否为沙盒模式（沙盒模式下加密文件移动到专用沙盒目录）
   final bool isSandboxMode;
 
+  // ── 远程加密目录（客户端解密，v1 只读） ──────────────────────────────
+  //
+  // 密文存放在原始后端（SFTP/WebDAV/SMB/FTP）上，由客户端按块拉取并解密。
+  // 与本地挂载点的区别：没有磁盘物理路径，[physicalPath] 对远程挂载点而言
+  // 就是虚拟根 `cryptremote://{connId}|{serverBasePath}`。
+
+  /// 远程连接 id（对应 [NetworkConnectionsService] 中的连接）
+  final String? remoteConnId;
+
+  /// 服务器端的**密文**根目录（其内容为 rclone crypt 加密名）
+  final String? remoteBasePath;
+
+  /// 使用的加密配置档案 id（用于按档案取回密码/盐）
+  final String? remoteProfileId;
+
   CryptMountPoint({
     required this.physicalPath,
     required this.config,
     String? name,
     this.isSandboxMode = false,
-  }) : name = name ?? p.basename(physicalPath) {
+    this.remoteConnId,
+    this.remoteBasePath,
+    this.remoteProfileId,
+  }) : name = name ?? (remoteBasePath ?? p.basename(physicalPath)) {
     crypt = RcloneCrypt(config: config);
+  }
+
+  /// 创建一个**远程**加密挂载点（密文在后端，客户端解密）。
+  factory CryptMountPoint.remote({
+    required String connId,
+    required String basePath,
+    required RcloneCryptConfig config,
+    String? profileId,
+    String? name,
+  }) {
+    return CryptMountPoint(
+      physicalPath: 'cryptremote://$connId|$basePath',
+      config: config,
+      name: name ?? basePath,
+      remoteConnId: connId,
+      remoteBasePath: basePath,
+      remoteProfileId: profileId,
+    );
+  }
+
+  /// 是否远程（客户端解密）挂载点
+  bool get isRemote => remoteConnId != null && remoteBasePath != null;
+
+  /// 远程挂载点的虚拟根：`cryptremote://{connId}|{serverBasePath}`
+  String get remoteVirtualRoot => 'cryptremote://$remoteConnId|$remoteBasePath';
+
+  /// 把虚拟路径（`cryptremote://{connId}|{serverEncryptedPath}`）还原成
+  /// 服务器真实路径（密文名），用于远程枚举/流式解密时传给 [RemoteClient]。
+  String virtualToRemoteServerPath(String virtualPath) {
+    final sep = virtualPath.indexOf('|');
+    if (sep < 0) return virtualPath;
+    return virtualPath.substring(sep + 1);
   }
 
   /// 创建副本并修改指定字段
@@ -43,21 +93,42 @@ class CryptMountPoint {
     String? name,
     bool? isSandboxMode,
     String? password,
+    String? remoteConnId,
+    String? remoteBasePath,
+    String? remoteProfileId,
   }) {
     // 仅传 password 时（如 _loadMountsWithPassword 用当前保险箱密码重建），
     // 必须基于已有 config 派生副本。旧写法 `config!` 在 config 为 null 时
     // 会抛 Null check 异常，导致导入/列表加载整体失败。
     final baseConfig = config ?? this.config;
+    final connId = remoteConnId ?? this.remoteConnId;
+    final basePath = remoteBasePath ?? this.remoteBasePath;
+    final profId = remoteProfileId ?? this.remoteProfileId;
+    final String phys;
+    if (remoteConnId != null && remoteBasePath != null) {
+      // 显式更换远程后端时重算虚拟根
+      phys = 'cryptremote://$remoteConnId|$remoteBasePath';
+    } else {
+      phys = physicalPath ?? this.physicalPath;
+    }
     return CryptMountPoint(
-      physicalPath: physicalPath ?? this.physicalPath,
+      physicalPath: phys,
       config: password != null ? baseConfig.copyWith(password: password) : baseConfig,
       name: name ?? this.name,
       isSandboxMode: isSandboxMode ?? this.isSandboxMode,
+      remoteConnId: connId,
+      remoteBasePath: basePath,
+      remoteProfileId: profId,
     );
   }
 
   /// 判断给定路径是否在此挂载点内
   bool containsPath(String path) {
+    // 远程挂载点：按虚拟根前缀匹配（`://` 不能被 p.normalize 处理）。
+    if (isRemote) {
+      final root = remoteVirtualRoot;
+      return path == root || path.startsWith('$root/');
+    }
     final normalizedPhysical = p.normalize(physicalPath);
     final normalizedPath = p.normalize(path);
     if (normalizedPath == normalizedPhysical) return true;
@@ -145,10 +216,8 @@ class CryptMountPoint {
   ///    （与 CryptDirectoryLister 的枚举逻辑互为逆运算，必定命中）；
   /// 5. 都不存在时返回映射结果（调用方自行判空/报错）。
   Future<String> resolvePhysicalPath(String virtualPath) async {
-    // 1) 已解密的明文文件
-    try {
-      if (await File(virtualPath).exists()) return virtualPath;
-    } catch (_) {}
+    // 1) 已解密的明文文件/目录
+    if (await _pathExists(virtualPath)) return virtualPath;
 
     // 2) 标准映射
     String mapped;
@@ -157,27 +226,25 @@ class CryptMountPoint {
     } catch (_) {
       return virtualPath;
     }
-    try {
-      if (await File(mapped).exists()) return mapped;
-    } catch (_) {}
+    if (await _pathExists(mapped)) return mapped;
 
     // 3) 后缀不一致：尝试去掉 / 补上配置的加密后缀
+    //
+    // ⚠️ 目录场景必须有这一步：目录名在 rclone 里**不带**加密后缀，
+    // 但 virtualToPhysical 对最后一段统一走 encryptFileName（会加后缀），
+    // 于是「进入加密文件夹」算出的路径必然不存在。去掉后缀后即为目录密文名。
     final suffix = config.encryptedSuffix;
     if (suffix.isNotEmpty) {
       final withoutSuffix = mapped.endsWith(suffix)
           ? mapped.substring(0, mapped.length - suffix.length)
           : mapped;
-      try {
-        if (withoutSuffix != mapped && await File(withoutSuffix).exists()) {
-          return withoutSuffix;
-        }
-      } catch (_) {}
-      try {
-        final withSuffix = mapped.endsWith(suffix) ? mapped : '$mapped$suffix';
-        if (withSuffix != mapped && await File(withSuffix).exists()) {
-          return withSuffix;
-        }
-      } catch (_) {}
+      if (withoutSuffix != mapped && await _pathExists(withoutSuffix)) {
+        return withoutSuffix;
+      }
+      final withSuffix = mapped.endsWith(suffix) ? mapped : '$mapped$suffix';
+      if (withSuffix != mapped && await _pathExists(withSuffix)) {
+        return withSuffix;
+      }
     }
 
     // 4) 目录扫描兜底：按解密名反查
@@ -201,6 +268,21 @@ class CryptMountPoint {
     return mapped;
   }
 
+  /// 路径是否以文件或目录形式存在。
+  ///
+  /// ⚠️ 不能只用 `File(path).exists()`：对**目录**它恒为 false，会让
+  /// [resolvePhysicalPath] 跳过正确映射、退化到昂贵的目录扫描，
+  /// 甚至在扫描也失败时返回一个不存在的路径。
+  static Future<bool> _pathExists(String path) async {
+    try {
+      if (await File(path).exists()) return true;
+    } catch (_) {}
+    try {
+      if (await Directory(path).exists()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   /// 序列化为 JSON（用于持久化存储，不含密码）
   Map<String, dynamic> toJson() {
     return {
@@ -208,6 +290,9 @@ class CryptMountPoint {
       'name': name,
       'isSandboxMode': isSandboxMode,
       'config': config.toJson(),
+      if (remoteConnId != null) 'remoteConnId': remoteConnId,
+      if (remoteBasePath != null) 'remoteBasePath': remoteBasePath,
+      if (remoteProfileId != null) 'remoteProfileId': remoteProfileId,
     };
   }
 
@@ -218,6 +303,9 @@ class CryptMountPoint {
       name: json['name'] as String?,
       isSandboxMode: json['isSandboxMode'] as bool? ?? false,
       config: RcloneCryptConfig.fromJson(json['config'] as Map<String, dynamic>, password),
+      remoteConnId: json['remoteConnId'] as String?,
+      remoteBasePath: json['remoteBasePath'] as String?,
+      remoteProfileId: json['remoteProfileId'] as String?,
     );
   }
 }

@@ -22,6 +22,9 @@ class FolderTab {
   RemoteClient? remoteClient;
   NetworkConnectionModel? remoteConnection;
 
+  // ── 远程加密目录（cryptremote://，客户端解密，支持读写）──
+  bool isCryptRemote;
+
   // ── Per-tab navigation history ──
   final List<String> pathHistory;
   int historyIndex;
@@ -43,6 +46,7 @@ class FolderTab {
     this.isRemote = false,
     this.remoteClient,
     this.remoteConnection,
+    this.isCryptRemote = false,
     List<String>? pathHistory,
     this.historyIndex = -1,
   })  : selectedPaths = selectedPaths ?? {},

@@ -9163,7 +9163,7 @@ abstract class L10n {
   /// ui\screens\remote_guard_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'修改PIN码'**
+  /// **'修改密码'**
   String get ui_remote_guard_change_pin;
 
   /// ui\screens\remote_guard_screen.dart
@@ -9241,7 +9241,7 @@ abstract class L10n {
   /// ui/screens/vault_explorer_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'修改私人保险箱 PIN（将重新加密所有已隐藏文件）'**
+  /// **'修改安全设置与保险箱解锁密码，不影响已加密文件'**
   String get ui_change_vault_pin_desc;
 
   /// ui\screens\media_category_screen.dart
@@ -11137,7 +11137,7 @@ abstract class L10n {
   /// No description provided for @vault_uninstall_warning.
   ///
   /// In zh, this message translates to:
-  /// **'卸载应用会清空保险箱，建议先导出备份'**
+  /// **'卸载应用会清空沙盒加密，建议先导出备份'**
   String get vault_uninstall_warning;
 
   /// No description provided for @vault_backup_exported.
@@ -11803,8 +11803,614 @@ abstract class L10n {
   /// crypt: crypt_settings_title
   ///
   /// In zh, this message translates to:
-  /// **'加密设置'**
+  /// **'密码配置'**
   String get crypt_settings_title;
+
+  /// No description provided for @vault_config_password.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码配置'**
+  String get vault_config_password;
+
+  /// vault help: vault_help
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助'**
+  String get vault_help;
+
+  /// vault help: vault_help_title
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱帮助'**
+  String get vault_help_title;
+
+  /// vault help: vault_help_intro
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱采用与 rclone 相同的 crypt 加密格式，加解密全部在本机完成，密钥不会离开本机。'**
+  String get vault_help_intro;
+
+  /// vault help: vault_help_highlights
+  ///
+  /// In zh, this message translates to:
+  /// **'功能亮点'**
+  String get vault_help_highlights;
+
+  /// vault help: vault_help_hl1_title
+  ///
+  /// In zh, this message translates to:
+  /// **'零知识加密'**
+  String get vault_help_hl1_title;
+
+  /// vault help: vault_help_hl1_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'主密码与加盐仅保存在本机，云服务与任何第三方都无法解密你的文件。'**
+  String get vault_help_hl1_desc;
+
+  /// vault help: vault_help_hl2_title
+  ///
+  /// In zh, this message translates to:
+  /// **'兼容 rclone 与 OpenList'**
+  String get vault_help_hl2_title;
+
+  /// vault help: vault_help_hl2_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'使用相同的 crypt 格式，电脑上的 rclone 可直接解密同一批文件。'**
+  String get vault_help_hl2_desc;
+
+  /// vault help: vault_help_hl3_title
+  ///
+  /// In zh, this message translates to:
+  /// **'多套密码 + 远程直读'**
+  String get vault_help_hl3_title;
+
+  /// vault help: vault_help_hl3_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'可为不同目录绑定不同密码档案；远程密文目录无需整体下载即可解密浏览与播放。'**
+  String get vault_help_hl3_desc;
+
+  /// vault help: vault_help_basics
+  ///
+  /// In zh, this message translates to:
+  /// **'基本操作'**
+  String get vault_help_basics;
+
+  /// vault help: vault_help_b1_title
+  ///
+  /// In zh, this message translates to:
+  /// **'① 先配置主密码'**
+  String get vault_help_b1_title;
+
+  /// vault help: vault_help_b1_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'在「密码配置」中设置主密码与加盐并牢记，它与保险箱解锁密码相互独立。'**
+  String get vault_help_b1_desc;
+
+  /// vault help: vault_help_b2_title
+  ///
+  /// In zh, this message translates to:
+  /// **'② 加密文件'**
+  String get vault_help_b2_title;
+
+  /// vault help: vault_help_b2_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览页选择文件后点击加密，再选择「原地加密」或「沙盒加密」。'**
+  String get vault_help_b2_desc;
+
+  /// vault help: vault_help_b3_title
+  ///
+  /// In zh, this message translates to:
+  /// **'③ 查看与打开'**
+  String get vault_help_b3_title;
+
+  /// vault help: vault_help_b3_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'加密条目集中在保险箱中列出，点击会自动临时解密后预览。'**
+  String get vault_help_b3_desc;
+
+  /// vault help: vault_help_b4_title
+  ///
+  /// In zh, this message translates to:
+  /// **'④ 解密还原'**
+  String get vault_help_b4_title;
+
+  /// vault help: vault_help_b4_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'选中条目点击解密，即可还原为普通文件并放回原位置。'**
+  String get vault_help_b4_desc;
+
+  /// vault help: vault_help_b5_title
+  ///
+  /// In zh, this message translates to:
+  /// **'⑤ 备份与恢复'**
+  String get vault_help_b5_title;
+
+  /// vault help: vault_help_b5_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'通过「备份/恢复」导出含加密配置的备份，卸载应用前务必先导出。'**
+  String get vault_help_b5_desc;
+
+  /// vault help: vault_help_compat
+  ///
+  /// In zh, this message translates to:
+  /// **'兼容性'**
+  String get vault_help_compat;
+
+  /// vault help: vault_help_c1_title
+  ///
+  /// In zh, this message translates to:
+  /// **'加密格式'**
+  String get vault_help_c1_title;
+
+  /// vault help: vault_help_c1_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'内容为 XSalsa20-Poly1305，文件名经 EME 加密后以 base32/base64 编码，可带 .bin 后缀。'**
+  String get vault_help_c1_desc;
+
+  /// vault help: vault_help_c2_title
+  ///
+  /// In zh, this message translates to:
+  /// **'网盘与同步'**
+  String get vault_help_c2_title;
+
+  /// vault help: vault_help_c2_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'密文可被任意网盘或同步工具正常同步，服务端只能看到密文，不会泄露真实文件名。'**
+  String get vault_help_c2_desc;
+
+  /// vault help: vault_help_c3_title
+  ///
+  /// In zh, this message translates to:
+  /// **'已知限制'**
+  String get vault_help_c3_title;
+
+  /// vault help: vault_help_c3_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'加密后文件名会显著变长，超长文件名可能失败；请在本应用内重命名，直接改密文名会导致无法解密。'**
+  String get vault_help_c3_desc;
+
+  /// vault help: vault_help_inplace
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密'**
+  String get vault_help_inplace;
+
+  /// vault help: vault_help_inplace_intro
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密会把文件「就地」加密：内容替换为密文、文件名替换为密文名，文件仍留在原来的文件夹中，不会进入保险箱私有目录。'**
+  String get vault_help_inplace_intro;
+
+  /// vault help: vault_help_ip1_title
+  ///
+  /// In zh, this message translates to:
+  /// **'与原目录的关系'**
+  String get vault_help_ip1_title;
+
+  /// vault help: vault_help_ip1_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件位置与目录结构保持不变，浏览页会给已加密文件加上🔐徽标。'**
+  String get vault_help_ip1_desc;
+
+  /// vault help: vault_help_ip2_title
+  ///
+  /// In zh, this message translates to:
+  /// **'其它应用看到什么'**
+  String get vault_help_ip2_title;
+
+  /// vault help: vault_help_ip2_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'其它文件管理器与播放器只能看到无意义的密文文件名且无法打开，这正是保护效果。'**
+  String get vault_help_ip2_desc;
+
+  /// vault help: vault_help_ip3_title
+  ///
+  /// In zh, this message translates to:
+  /// **'适合的场景'**
+  String get vault_help_ip3_title;
+
+  /// vault help: vault_help_ip3_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'需要保留原目录结构，并让第三方网盘继续同步这些文件的场景。'**
+  String get vault_help_ip3_desc;
+
+  /// vault help: vault_help_ip4_title
+  ///
+  /// In zh, this message translates to:
+  /// **'风险与建议'**
+  String get vault_help_ip4_title;
+
+  /// vault help: vault_help_ip4_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'加密会直接替换原文件，中断可能留下残留文件；重要文件请先备份，解密时目标目录需有写入权限。'**
+  String get vault_help_ip4_desc;
+
+  /// vault help: vault_help_notice
+  ///
+  /// In zh, this message translates to:
+  /// **'注意事项'**
+  String get vault_help_notice;
+
+  /// vault help: vault_help_n1
+  ///
+  /// In zh, this message translates to:
+  /// **'已用于加密文件的密码与加盐不可修改，若需更换请新建一份加密配置。'**
+  String get vault_help_n1;
+
+  /// vault help: vault_help_n2
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒加密的文件存放在应用私有目录，卸载应用会一并清除。'**
+  String get vault_help_n2;
+
+  /// vault help: vault_help_n3
+  ///
+  /// In zh, this message translates to:
+  /// **'忘记主密码将无法恢复任何已加密文件，请务必导出备份并妥善保存。'**
+  String get vault_help_n3;
+
+  /// crypt: vault_remote_encrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'远程加密'**
+  String get vault_remote_encrypt;
+
+  /// crypt: vault_import_source_title
+  ///
+  /// In zh, this message translates to:
+  /// **'选择加密来源'**
+  String get vault_import_source_title;
+
+  /// crypt: vault_import_source_remote
+  ///
+  /// In zh, this message translates to:
+  /// **'远程'**
+  String get vault_import_source_remote;
+
+  /// crypt: vault_import_source_remote_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'关联远程加密目录，或将本地文件加密后上传到远程'**
+  String get vault_import_source_remote_desc;
+
+  /// crypt: vault_link_remote_crypt_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'关联服务器上已有的 rclone crypt 密文目录（在客户端解密）'**
+  String get vault_link_remote_crypt_desc;
+
+  /// crypt: vault_encrypt_upload
+  ///
+  /// In zh, this message translates to:
+  /// **'加密上传到远程'**
+  String get vault_encrypt_upload;
+
+  /// crypt: vault_encrypt_upload_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'选择本地文件，加密后上传到远程服务器'**
+  String get vault_encrypt_upload_desc;
+
+  /// crypt: vault_encrypt_uploading
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加密上传…'**
+  String get vault_encrypt_uploading;
+
+  /// crypt: vault_encrypt_upload_done
+  ///
+  /// In zh, this message translates to:
+  /// **'加密上传完成'**
+  String get vault_encrypt_upload_done;
+
+  /// crypt: vault_encrypt_upload_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'加密上传失败'**
+  String get vault_encrypt_upload_failed;
+
+  /// crypt: crypt_remote_upload
+  ///
+  /// In zh, this message translates to:
+  /// **'加密上传'**
+  String get crypt_remote_upload;
+
+  /// crypt: crypt_remote_download
+  ///
+  /// In zh, this message translates to:
+  /// **'解密下载'**
+  String get crypt_remote_download;
+
+  /// crypt: crypt_remote_downloading
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解密下载…'**
+  String get crypt_remote_downloading;
+
+  /// crypt: crypt_remote_download_done
+  ///
+  /// In zh, this message translates to:
+  /// **'解密下载完成'**
+  String get crypt_remote_download_done;
+
+  /// crypt: crypt_remote_download_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'解密下载失败'**
+  String get crypt_remote_download_failed;
+
+  /// crypt: vault_remote_crypt_open_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'打开远程加密文件失败'**
+  String get vault_remote_crypt_open_failed;
+
+  /// crypt: vault_remote_crypt_unsupported
+  ///
+  /// In zh, this message translates to:
+  /// **'该类型暂不支持远程加密流式播放'**
+  String get vault_remote_crypt_unsupported;
+
+  /// crypt: vault_link_remote_crypt
+  ///
+  /// In zh, this message translates to:
+  /// **'关联远程加密目录'**
+  String get vault_link_remote_crypt;
+
+  /// crypt: vault_link_remote_crypt_success
+  ///
+  /// In zh, this message translates to:
+  /// **'已关联远程加密目录'**
+  String get vault_link_remote_crypt_success;
+
+  /// crypt: vault_unlink_remote_crypt
+  ///
+  /// In zh, this message translates to:
+  /// **'取消关联'**
+  String get vault_unlink_remote_crypt;
+
+  /// vault/crypt: vault_exporting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在导出...'**
+  String get vault_exporting;
+
+  /// vault/crypt: vault_importing
+  ///
+  /// In zh, this message translates to:
+  /// **'正在导入...'**
+  String get vault_importing;
+
+  /// vault/crypt: vault_importing_backup
+  ///
+  /// In zh, this message translates to:
+  /// **'正在导入备份...'**
+  String get vault_importing_backup;
+
+  /// vault/crypt: vault_restoring
+  ///
+  /// In zh, this message translates to:
+  /// **'正在恢复...'**
+  String get vault_restoring;
+
+  /// vault/crypt: vault_decrypting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解密...'**
+  String get vault_decrypting;
+
+  /// vault/crypt: vault_import_backup_confirm
+  ///
+  /// In zh, this message translates to:
+  /// **'导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？'**
+  String get vault_import_backup_confirm;
+
+  /// vault/crypt: vault_load_error
+  ///
+  /// In zh, this message translates to:
+  /// **'加载保险箱出错：{error}'**
+  String vault_load_error(Object error);
+
+  /// vault/crypt: vault_restore_folder_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹请长按后选择「恢复」到原位置查看'**
+  String get vault_restore_folder_hint;
+
+  /// vault/crypt: vault_decrypt_open_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'解密并打开项目失败：{error}'**
+  String vault_decrypt_open_failed(Object error);
+
+  /// vault/crypt: vault_badge_inplace
+  ///
+  /// In zh, this message translates to:
+  /// **'原地'**
+  String get vault_badge_inplace;
+
+  /// vault/crypt: vault_badge_sandbox
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒'**
+  String get vault_badge_sandbox;
+
+  /// vault/crypt: vault_item_folder
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get vault_item_folder;
+
+  /// vault/crypt: crypt_need_master_title
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未设置加密主密码'**
+  String get crypt_need_master_title;
+
+  /// vault/crypt: crypt_need_master_body
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密与沙盒加密都使用「加密设置」中的主密码，请先前往设置。'**
+  String get crypt_need_master_body;
+
+  /// vault/crypt: crypt_master_banner
+  ///
+  /// In zh, this message translates to:
+  /// **'此处配置的主密码与加盐用于原地加密和沙盒加密，请务必牢记；它与保险箱解锁密码相互独立。'**
+  String get crypt_master_banner;
+
+  /// crypt: crypt_profile_name
+  ///
+  /// In zh, this message translates to:
+  /// **'加密名称'**
+  String get crypt_profile_name;
+
+  /// crypt: crypt_profile_name_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：工作 / 私人'**
+  String get crypt_profile_name_hint;
+
+  /// crypt: crypt_profile_name_required
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入加密名称'**
+  String get crypt_profile_name_required;
+
+  /// crypt: crypt_profile_name_duplicate
+  ///
+  /// In zh, this message translates to:
+  /// **'该名称已存在，请更换'**
+  String get crypt_profile_name_duplicate;
+
+  /// crypt: crypt_profile_title_new
+  ///
+  /// In zh, this message translates to:
+  /// **'新建加密配置'**
+  String get crypt_profile_title_new;
+
+  /// crypt: crypt_profile_title_edit
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑加密配置'**
+  String get crypt_profile_title_edit;
+
+  /// crypt: crypt_profile_section
+  ///
+  /// In zh, this message translates to:
+  /// **'密码配置'**
+  String get crypt_profile_section;
+
+  /// crypt: crypt_profile_add
+  ///
+  /// In zh, this message translates to:
+  /// **'新建配置'**
+  String get crypt_profile_add;
+
+  /// crypt: crypt_profile_default
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get crypt_profile_default;
+
+  /// crypt: crypt_profile_set_default
+  ///
+  /// In zh, this message translates to:
+  /// **'设为默认配置'**
+  String get crypt_profile_set_default;
+
+  /// crypt: crypt_profile_set_default_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'未绑定配置的文件将使用此配置'**
+  String get crypt_profile_set_default_desc;
+
+  /// crypt: crypt_profile_default_done
+  ///
+  /// In zh, this message translates to:
+  /// **'已更新默认配置'**
+  String get crypt_profile_default_done;
+
+  /// crypt: crypt_profile_delete_message
+  ///
+  /// In zh, this message translates to:
+  /// **'删除该配置后，使用它加密的文件将无法解密。'**
+  String get crypt_profile_delete_message;
+
+  /// crypt: crypt_profile_empty
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无加密配置'**
+  String get crypt_profile_empty;
+
+  /// crypt: crypt_profile_action_config
+  ///
+  /// In zh, this message translates to:
+  /// **'配置'**
+  String get crypt_profile_action_config;
+
+  /// crypt: crypt_profile_select_title
+  ///
+  /// In zh, this message translates to:
+  /// **'选择加密配置'**
+  String get crypt_profile_select_title;
+
+  /// crypt: crypt_profile_bound_done
+  ///
+  /// In zh, this message translates to:
+  /// **'已绑定该加密配置'**
+  String get crypt_profile_bound_done;
+
+  /// crypt: crypt_profile_credential_locked
+  ///
+  /// In zh, this message translates to:
+  /// **'不可修改'**
+  String get crypt_profile_credential_locked;
+
+  /// crypt: crypt_profile_credential_locked_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'密码与加盐决定密钥，修改后已加密文件将无法解密；如需更换请新建配置。'**
+  String get crypt_profile_credential_locked_desc;
+
+  /// crypt: crypt_profile_suffix_none
+  ///
+  /// In zh, this message translates to:
+  /// **'无后缀'**
+  String get crypt_profile_suffix_none;
+
+  /// crypt: crypt_profile_sandbox_title
+  ///
+  /// In zh, this message translates to:
+  /// **'切换沙盒配置'**
+  String get crypt_profile_sandbox_title;
+
+  /// crypt: crypt_profile_sandbox_message
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒整体只使用一套配置，切换后沙盒内其他文件可能显示为密文。是否继续？'**
+  String get crypt_profile_sandbox_message;
+
+  /// crypt: crypt_mount_section
+  ///
+  /// In zh, this message translates to:
+  /// **'加密位置'**
+  String get crypt_mount_section;
 
   /// crypt: crypt_settings_subtitle
   ///
@@ -12315,6 +12921,7 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'导入失败：{error}'**
   String vault_import_failed_detail(Object error);
+
   /// vault: vault_no_files
   ///
   /// In zh, this message translates to:
@@ -12332,6 +12939,150 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'移除'**
   String get vault_remove_from_list;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'启用私人保险箱功能'**
+  String get security_vault_switch_desc;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入密码以进入安全设置'**
+  String get security_verify_password_desc;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'验证密码'**
+  String get vault_verify_password_title;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入安全设置密码'**
+  String get vault_verify_password_hint;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'前往安全设置'**
+  String get vault_go_security_settings;
+
+  /// security settings
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱、远程守卫、启动应用保护与指纹解锁'**
+  String get security_settings_subtitle;
+
+  /// vault: vault_disabled_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱已关闭，请在「设置 → 安全设置」中开启'**
+  String get vault_disabled_hint;
+
+  /// security settings: security_set_password_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'请设置安全设置密码，用于进入安全设置与解锁保险箱'**
+  String get security_set_password_desc;
+
+  /// security settings: security_confirm_password
+  ///
+  /// In zh, this message translates to:
+  /// **'请再次输入密码以确认'**
+  String get security_confirm_password;
+
+  /// biometric: biometric_reason_security_settings
+  ///
+  /// In zh, this message translates to:
+  /// **'验证指纹以进入安全设置'**
+  String get biometric_reason_security_settings;
+
+  /// scan: toolbox_scan
+  ///
+  /// In zh, this message translates to:
+  /// **'扫一扫'**
+  String get toolbox_scan;
+
+  /// scan: scan_result_title
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描结果'**
+  String get scan_result_title;
+
+  /// scan: scan_copy
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get scan_copy;
+
+  /// scan: scan_copied
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get scan_copied;
+
+  /// scan: scan_open_link
+  ///
+  /// In zh, this message translates to:
+  /// **'打开链接'**
+  String get scan_open_link;
+
+  /// scan: scan_continue
+  ///
+  /// In zh, this message translates to:
+  /// **'继续扫描'**
+  String get scan_continue;
+
+  /// scan: scan_torch
+  ///
+  /// In zh, this message translates to:
+  /// **'手电筒'**
+  String get scan_torch;
+
+  /// scan: scan_switch_camera
+  ///
+  /// In zh, this message translates to:
+  /// **'切换摄像头'**
+  String get scan_switch_camera;
+
+  /// scan: scan_camera_error
+  ///
+  /// In zh, this message translates to:
+  /// **'无法访问相机，请检查相机权限'**
+  String get scan_camera_error;
+
+  /// scan: scan_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'将二维码/条形码放入框内即可自动扫描'**
+  String get scan_hint;
+
+  /// scan: scan_from_gallery
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册选择'**
+  String get scan_from_gallery;
+
+  /// scan: scan_no_barcode
+  ///
+  /// In zh, this message translates to:
+  /// **'未在图片中检测到二维码或条形码'**
+  String get scan_no_barcode;
+
+  /// No description provided for @ui_backup_confirm_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认备份'**
+  String get ui_backup_confirm_title;
+
+  /// No description provided for @ui_backup_confirm_message.
+  ///
+  /// In zh, this message translates to:
+  /// **'将备份到以下路径：\n{path}\n\n是否继续？'**
+  String ui_backup_confirm_message(String path);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

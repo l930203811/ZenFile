@@ -5126,7 +5126,7 @@ class L10nDe extends L10n {
       'Falsche PIN. Bitte erneut versuchen.';
 
   @override
-  String get ui_remote_guard_change_pin => 'PIN ändern';
+  String get ui_remote_guard_change_pin => 'Passwort ändern';
 
   @override
   String get ui_remote_guard_pin_hint =>
@@ -5172,7 +5172,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_change_vault_pin_desc =>
-      'Private Tresor-PIN ändern (verschlüsselt alle versteckten Dateien neu)';
+      'Sicherheits- und Tresor-Entsperrpasswort ändern. Verschlüsselte Dateien sind nicht betroffen';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -6262,7 +6262,7 @@ class L10nDe extends L10n {
 
   @override
   String get vault_uninstall_warning =>
-      'Bei Deinstallation der App wird der Tresor gelöscht. Exportieren Sie zuerst eine Sicherung.';
+      'Bei Deinstallation der App wird die Sandbox-Verschlüsselung gelöscht. Exportieren Sie zuerst eine Sicherung.';
 
   @override
   String get vault_backup_exported => 'Sicherung exportiert nach';
@@ -6298,18 +6298,19 @@ class L10nDe extends L10n {
 
   @override
   String get vault_export_backup_confirm =>
-      'The backup file will be saved to the following location:';
+      'Die Sicherungsdatei wird am folgenden Ort gespeichert:';
 
   @override
-  String get vault_import_only_zip => 'Only .zip backup files are supported';
+  String get vault_import_only_zip =>
+      'Nur .zip-Sicherungsdateien werden unterstützt';
 
   @override
   String get vault_import_password_hint =>
-      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+      'Diese Sicherung verwendet ein anderes Passwort. Entsperre den Tresor mit dem Passwort, das beim Erstellen der Sicherung verwendet wurde';
 
   @override
   String get vault_open_backup_location =>
-      'Open the folder where the backup is saved?';
+      'Ordner öffnen, in dem die Sicherung gespeichert ist?';
 
   @override
   String get open_file => 'Open';
@@ -6653,175 +6654,526 @@ class L10nDe extends L10n {
   String get ui_preset_colors => 'Voreingestellte Farben';
 
   @override
-  String get crypt_settings_title => 'Encryption';
+  String get crypt_settings_title => 'Passwortkonfiguration';
+
+  @override
+  String get vault_config_password => 'Passwortkonfiguration';
+
+  @override
+  String get vault_help => 'Hilfe';
+
+  @override
+  String get vault_help_title => 'Tresor-Hilfe';
+
+  @override
+  String get vault_help_intro =>
+      'Der Tresor nutzt dasselbe crypt-Format wie rclone. Ver- und Entschlüsselung erfolgen ausschließlich auf diesem Gerät, der Schlüssel verlässt es nie.';
+
+  @override
+  String get vault_help_highlights => 'Funktions-Highlights';
+
+  @override
+  String get vault_help_hl1_title => 'Verschlüsselung ohne Wissen Dritter';
+
+  @override
+  String get vault_help_hl1_desc =>
+      'Hauptpasswort und Salt bleiben nur auf diesem Gerät, kein Cloud-Dienst und kein Dritter kann deine Dateien entschlüsseln.';
+
+  @override
+  String get vault_help_hl2_title => 'Kompatibel mit rclone und OpenList';
+
+  @override
+  String get vault_help_hl2_desc =>
+      'Es wird dasselbe crypt-Format verwendet, daher kann rclone am Computer dieselben Dateien entschlüsseln.';
+
+  @override
+  String get vault_help_hl3_title => 'Mehrere Passwörter, Direktzugriff';
+
+  @override
+  String get vault_help_hl3_desc =>
+      'Pro Ordner kann ein eigenes Passwortprofil gebunden werden; entfernte Verzeichnisse lassen sich ohne kompletten Download durchsuchen und abspielen.';
+
+  @override
+  String get vault_help_basics => 'Grundlegende Bedienung';
+
+  @override
+  String get vault_help_b1_title => '1. Zuerst Hauptpasswort festlegen';
+
+  @override
+  String get vault_help_b1_desc =>
+      'Lege das Hauptpasswort und das Salt unter „Passwortprofile“ fest und merke sie dir; sie sind unabhängig vom Tresor-Sperrcode.';
+
+  @override
+  String get vault_help_b2_title => '2. Dateien verschlüsseln';
+
+  @override
+  String get vault_help_b2_desc =>
+      'Dateien im Browser auswählen, auf Verschlüsseln tippen und „Direkt am Ort“ oder „Sandbox“ wählen.';
+
+  @override
+  String get vault_help_b3_title => '3. Ansehen und öffnen';
+
+  @override
+  String get vault_help_b3_desc =>
+      'Verschlüsselte Einträge werden im Tresor gelistet; antippen entschlüsselt sie temporär für die Vorschau.';
+
+  @override
+  String get vault_help_b4_title => '4. Entschlüsseln';
+
+  @override
+  String get vault_help_b4_desc =>
+      'Eintrag auswählen und Entschlüsseln tippen, um die Datei als normale Datei an ihren Ursprungsort zurückzuführen.';
+
+  @override
+  String get vault_help_b5_title => '5. Sichern und wiederherstellen';
+
+  @override
+  String get vault_help_b5_desc =>
+      'Exportiere unter „Sichern/Wiederherstellen“ ein Backup mit deinen Verschlüsselungsprofilen, bevor du die App deinstallierst.';
+
+  @override
+  String get vault_help_compat => 'Kompatibilität';
+
+  @override
+  String get vault_help_c1_title => 'Verschlüsselungsformat';
+
+  @override
+  String get vault_help_c1_desc =>
+      'Inhalte nutzen XSalsa20-Poly1305; Namen werden per EME verschlüsselt und base32/base64 kodiert, optional mit der Endung .bin.';
+
+  @override
+  String get vault_help_c2_title => 'Cloud und Synchronisation';
+
+  @override
+  String get vault_help_c2_desc =>
+      'Der Schlüsseltext lässt sich mit jedem Speicher oder Sync-Tool synchronisieren; der Server sieht nur Chiffre, nie die echten Dateinamen.';
+
+  @override
+  String get vault_help_c3_title => 'Bekannte Grenzen';
+
+  @override
+  String get vault_help_c3_desc =>
+      'Verschlüsselte Namen sind deutlich länger, sehr lange Namen können fehlschlagen. Umbenennen nur in dieser App, sonst ist die Datei nicht mehr entschlüsselbar.';
+
+  @override
+  String get vault_help_inplace => 'Direkt am Ort verschlüsseln';
+
+  @override
+  String get vault_help_inplace_intro =>
+      'Beim Verschlüsseln am Ort bleiben die Dateien im ursprünglichen Ordner: Inhalt und Name werden durch Chiffre ersetzt, die Datei wandert nicht in das private Tresorverzeichnis.';
+
+  @override
+  String get vault_help_ip1_title => 'Verhältnis zum Ursprungsordner';
+
+  @override
+  String get vault_help_ip1_desc =>
+      'Ort und Ordnerstruktur bleiben unverändert; verschlüsselte Dateien erhalten im Browser ein Schloss-Symbol.';
+
+  @override
+  String get vault_help_ip2_title => 'Was andere Apps sehen';
+
+  @override
+  String get vault_help_ip2_desc =>
+      'Andere Dateimanager und Player sehen nur bedeutungslose Chiffrenamen und können die Dateien nicht öffnen, genau das ist der Schutz.';
+
+  @override
+  String get vault_help_ip3_title => 'Wann sinnvoll';
+
+  @override
+  String get vault_help_ip3_desc =>
+      'Wenn die Ordnerstruktur erhalten bleiben und Cloud-Apps von Drittanbietern diese Dateien weiter synchronisieren sollen.';
+
+  @override
+  String get vault_help_ip4_title => 'Risiken und Empfehlung';
+
+  @override
+  String get vault_help_ip4_desc =>
+      'Die Verschlüsselung ersetzt die Originaldatei direkt, ein Abbruch kann Reste hinterlassen. Sichere Wichtiges vorher und prüfe beim Entschlüsseln die Schreibrechte.';
+
+  @override
+  String get vault_help_notice => 'Hinweise';
+
+  @override
+  String get vault_help_n1 =>
+      'Passwort und Salt bereits verschlüsselter Dateien sind nicht änderbar; erstelle bei Bedarf ein neues Profil.';
+
+  @override
+  String get vault_help_n2 =>
+      'In der Sandbox verschlüsselte Dateien liegen im privaten App-Verzeichnis und werden beim Deinstallieren gelöscht.';
+
+  @override
+  String get vault_help_n3 =>
+      'Bei vergessenem Hauptpasswort ist keine verschlüsselte Datei mehr rettbar, exportiere daher immer ein Backup.';
+
+  @override
+  String get vault_remote_encrypt => 'Remote-Verschlüsselung';
+
+  @override
+  String get vault_import_source_title => 'Verschlüsselungsquelle wählen';
+
+  @override
+  String get vault_import_source_remote => 'Remote';
+
+  @override
+  String get vault_import_source_remote_desc =>
+      'Remote-Ordner verknüpfen oder lokale Dateien verschlüsselt hochladen';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      'Bestehenden rclone-crypt-Ordner auf dem Server verknüpfen (lokal entschlüsselt)';
+
+  @override
+  String get vault_encrypt_upload => 'Verschlüsselt auf Remote hochladen';
+
+  @override
+  String get vault_encrypt_upload_desc =>
+      'Lokale Dateien auswählen, verschlüsseln und auf den Remote-Server hochladen';
+
+  @override
+  String get vault_encrypt_uploading => 'Verschlüssele und lade hoch…';
+
+  @override
+  String get vault_encrypt_upload_done =>
+      'Verschlüsselter Upload abgeschlossen';
+
+  @override
+  String get vault_encrypt_upload_failed =>
+      'Verschlüsselter Upload fehlgeschlagen';
+
+  @override
+  String get crypt_remote_upload => 'Verschlüsselt hochladen';
+
+  @override
+  String get crypt_remote_download => 'Entschlüsselt herunterladen';
+
+  @override
+  String get crypt_remote_downloading => 'Entschlüssele und lade herunter…';
+
+  @override
+  String get crypt_remote_download_done =>
+      'Entschlüsselter Download abgeschlossen';
+
+  @override
+  String get crypt_remote_download_failed =>
+      'Entschlüsselter Download fehlgeschlagen';
+
+  @override
+  String get vault_remote_crypt_open_failed =>
+      'Verschlüsselte Remote-Datei konnte nicht geöffnet werden';
+
+  @override
+  String get vault_remote_crypt_unsupported =>
+      'Dieser Dateityp wird für verschlüsseltes Remote-Streaming nicht unterstützt';
+
+  @override
+  String get vault_link_remote_crypt =>
+      'Verschlüsselten Remote-Ordner verknüpfen';
+
+  @override
+  String get vault_link_remote_crypt_success =>
+      'Verschlüsselter Remote-Ordner verknüpft';
+
+  @override
+  String get vault_unlink_remote_crypt => 'Verknüpfung aufheben';
+
+  @override
+  String get vault_exporting => 'Wird exportiert...';
+
+  @override
+  String get vault_importing => 'Wird importiert...';
+
+  @override
+  String get vault_importing_backup => 'Backup wird importiert...';
+
+  @override
+  String get vault_restoring => 'Wird wiederhergestellt...';
+
+  @override
+  String get vault_decrypting => 'Wird entschlüsselt...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      'Beim Import werden die aktuelle Sandbox und die Verschlüsselungskonfiguration mit dem Backup-Inhalt überschrieben (das Entsperren-Passwort bleibt unberührt). Fortfahren?';
+
+  @override
+  String vault_load_error(Object error) {
+    return 'Fehler beim Laden des Tresors: $error';
+  }
+
+  @override
+  String get vault_restore_folder_hint =>
+      'Bei Ordnern lange drücken und „Wiederherstellen\" wählen, um sie am ursprünglichen Ort zu sehen';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return 'Entschlüsseln und Öffnen fehlgeschlagen: $error';
+  }
+
+  @override
+  String get vault_badge_inplace => 'Vor Ort';
+
+  @override
+  String get vault_badge_sandbox => 'Sandbox';
+
+  @override
+  String get vault_item_folder => 'Ordner';
+
+  @override
+  String get crypt_need_master_title =>
+      'Verschlüsselungs-Masterpasswort nicht festgelegt';
+
+  @override
+  String get crypt_need_master_body =>
+      'Vor-Ort- und Sandbox-Verschlüsselung verwenden beide das Masterpasswort aus den Verschlüsselungseinstellungen. Bitte zuerst festlegen.';
+
+  @override
+  String get crypt_master_banner =>
+      'Das hier festgelegte Masterpasswort und Salz werden für Vor-Ort- und Sandbox-Verschlüsselung verwendet. Unbedingt merken; sie sind unabhängig vom Entsperren-Passwort des Tresors.';
+
+  @override
+  String get crypt_profile_name => 'Verschlüsselungsname';
+
+  @override
+  String get crypt_profile_name_hint => 'z. B. Arbeit / Privat';
+
+  @override
+  String get crypt_profile_name_required =>
+      'Bitte Verschlüsselungsnamen eingeben';
+
+  @override
+  String get crypt_profile_name_duplicate => 'Dieser Name existiert bereits';
+
+  @override
+  String get crypt_profile_title_new => 'Neues Verschlüsselungsprofil';
+
+  @override
+  String get crypt_profile_title_edit => 'Verschlüsselungsprofil bearbeiten';
+
+  @override
+  String get crypt_profile_section => 'Passwortkonfiguration';
+
+  @override
+  String get crypt_profile_add => 'Neues Profil';
+
+  @override
+  String get crypt_profile_default => 'Standard';
+
+  @override
+  String get crypt_profile_set_default => 'Als Standard festlegen';
+
+  @override
+  String get crypt_profile_set_default_desc =>
+      'Dateien ohne zugeordnetes Profil nutzen dieses';
+
+  @override
+  String get crypt_profile_default_done => 'Standardprofil aktualisiert';
+
+  @override
+  String get crypt_profile_delete_message =>
+      'Beim Löschen dieses Profils können damit verschlüsselte Dateien nicht mehr entschlüsselt werden.';
+
+  @override
+  String get crypt_profile_empty => 'Noch kein Verschlüsselungsprofil';
+
+  @override
+  String get crypt_profile_action_config => 'Profil';
+
+  @override
+  String get crypt_profile_select_title => 'Verschlüsselungsprofil wählen';
+
+  @override
+  String get crypt_profile_bound_done => 'Profil zugeordnet';
+
+  @override
+  String get crypt_profile_credential_locked => 'Gesperrt';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      'Passwort und Salt bestimmen den Schlüssel. Nach einer Änderung sind verschlüsselte Dateien nicht mehr lesbar - erstelle stattdessen ein neues Profil.';
+
+  @override
+  String get crypt_profile_suffix_none => 'kein Suffix';
+
+  @override
+  String get crypt_profile_sandbox_title => 'Sandbox-Profil wechseln';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      'Die Sandbox nutzt insgesamt ein Profil. Nach dem Wechsel können andere Dateien als Chiffre angezeigt werden. Fortfahren?';
+
+  @override
+  String get crypt_mount_section => 'Verschlüsselte Orte';
 
   @override
   String get crypt_settings_subtitle =>
-      'Manage encrypted folders and mount points';
+      'Verschlüsselte Ordner und Mount-Punkte verwalten';
 
   @override
-  String get crypt_add_mount => 'Add Encrypted Folder';
+  String get crypt_add_mount => 'Verschlüsselten Ordner hinzufügen';
 
   @override
-  String get crypt_edit_mount => 'Edit Encrypted Folder';
+  String get crypt_edit_mount => 'Verschlüsselten Ordner bearbeiten';
 
   @override
-  String get crypt_no_mounts_title => 'No Encrypted Folders';
+  String get crypt_no_mounts_title => 'Keine verschlüsselten Ordner';
 
   @override
   String get crypt_no_mounts_subtitle =>
-      'Tap the button below to add your first encrypted folder';
+      'Tippe auf die Schaltfläche unten, um deinen ersten verschlüsselten Ordner hinzuzufügen';
 
   @override
   String get crypt_field_name => 'Name';
 
   @override
-  String get crypt_field_name_hint => 'Optional, uses folder name if empty';
+  String get crypt_field_name_hint =>
+      'Optional; bei leer wird der Ordnername verwendet';
 
   @override
-  String get crypt_field_path => 'Folder Path';
+  String get crypt_field_path => 'Ordnerpfad';
 
   @override
-  String get crypt_field_path_hint => 'Select folder to encrypt';
+  String get crypt_field_path_hint => 'Zu verschlüsselnden Ordner auswählen';
 
   @override
-  String get crypt_field_password => 'Password';
+  String get crypt_field_password => 'Passwort';
 
   @override
-  String get crypt_field_confirm_password => 'Confirm Password';
+  String get crypt_field_confirm_password => 'Passwort bestätigen';
 
   @override
-  String get crypt_error_path_required => 'Please select a folder path';
+  String get crypt_error_path_required => 'Bitte Ordnerpfad auswählen';
 
   @override
-  String get crypt_error_password_required => 'Please enter a password';
+  String get crypt_error_password_required => 'Bitte Passwort eingeben';
 
   @override
   String get crypt_error_password_short =>
-      'Password must be at least 4 characters';
+      'Das Passwort muss mindestens 4 Zeichen lang sein';
 
   @override
-  String get crypt_error_password_mismatch => 'Passwords do not match';
+  String get crypt_error_password_mismatch =>
+      'Passwörter stimmen nicht überein';
 
   @override
-  String get crypt_section_mode => 'Encryption Mode';
+  String get crypt_section_mode => 'Verschlüsselungsmodus';
 
   @override
-  String get crypt_mode_inplace => 'In-place Encryption';
+  String get crypt_mode_inplace => 'Vor-Ort-Verschlüsselung';
 
   @override
   String get crypt_mode_inplace_desc =>
-      'Files stay in place, names and content are encrypted';
+      'Dateien bleiben an ihrem Platz; Namen und Inhalt werden verschlüsselt';
 
   @override
-  String get crypt_mode_sandbox => 'Sandbox Encryption';
+  String get crypt_mode_sandbox => 'Sandbox-Verschlüsselung';
 
   @override
   String get crypt_mode_sandbox_desc =>
-      'Files moved to sandbox, more secure but slightly slower';
+      'Dateien werden in die Sandbox verschoben; sicherer, aber etwas langsamer';
 
   @override
-  String get crypt_section_advanced => 'Advanced Options';
+  String get crypt_section_advanced => 'Erweiterte Optionen';
 
   @override
-  String get crypt_advanced_toggle => 'Show advanced encryption options';
+  String get crypt_advanced_toggle =>
+      'Erweiterte Verschlüsselungsoptionen anzeigen';
 
   @override
-  String get crypt_field_filename_enc => 'Filename Encryption';
+  String get crypt_field_filename_enc => 'Dateinamen-Verschlüsselung';
 
   @override
-  String get crypt_field_dirname_enc => 'Encrypt Directory Names';
+  String get crypt_field_dirname_enc => 'Ordnernamen verschlüsseln';
 
   @override
-  String get crypt_field_filename_encoding => 'Filename Encoding';
+  String get crypt_field_filename_encoding => 'Dateinamen-Kodierung';
 
   @override
-  String get crypt_field_suffix => 'Encrypted Suffix';
+  String get crypt_field_suffix => 'Verschlüsselungs-Suffix';
 
   @override
   String get crypt_field_salt => 'Salt (optional)';
 
   @override
-  String get crypt_field_salt_hint => 'Auto-generated if empty';
+  String get crypt_field_salt_hint => 'Bei leer automatisch erzeugt';
 
   @override
-  String get crypt_action_browse => 'Browse';
+  String get crypt_action_browse => 'Durchsehen';
 
   @override
-  String get crypt_delete_title => 'Delete Encrypted Folder';
+  String get crypt_delete_title => 'Verschlüsselten Ordner löschen';
 
   @override
   String crypt_delete_message(Object name) {
-    return 'Delete encryption config for \"$name\"? Files will not be deleted.';
+    return 'Verschlüsselungskonfiguration für „$name\" löschen? Dateien werden nicht gelöscht.';
   }
 
   @override
-  String get crypt_filename_enc => 'Filename Enc';
+  String get crypt_filename_enc => 'Dateinamen';
 
   @override
-  String get crypt_share_title => 'Share Encrypted Folder';
+  String get crypt_share_title => 'Verschlüsselten Ordner teilen';
 
   @override
   String get crypt_share_hint =>
-      'Scan the QR code to import encryption config. Password is required to decrypt files.';
+      'Scanne den QR-Code, um die Verschlüsselungskonfiguration zu importieren. Zum Entschlüsseln wird das Passwort benötigt.';
 
   @override
-  String get crypt_action_share => 'Share';
+  String get crypt_action_share => 'Teilen';
 
   @override
   String get crypt_share_password_note =>
-      'Password is NOT included in the QR code. Share it separately via a secure channel.';
+      'Das Passwort ist NICHT im QR-Code enthalten. Teile es separat über einen sicheren Kanal.';
 
   @override
-  String get crypt_action_encrypt => 'Encrypt Now';
+  String get crypt_action_encrypt => 'Jetzt verschlüsseln';
 
   @override
-  String get crypt_action_decrypt => 'Decrypt';
+  String get crypt_action_decrypt => 'Entschlüsseln';
 
   @override
-  String get crypt_encrypt_title => 'Encryption Confirmation';
+  String get crypt_encrypt_title => 'Verschlüsselung bestätigen';
 
   @override
   String get crypt_encrypt_message =>
-      'This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?';
+      'Alle Dateien und Unterordner werden verschlüsselt. Andere Dateimanager können Inhalte und Namen danach nicht sehen. Fortfahren?';
 
   @override
-  String get crypt_encrypting => 'Encrypting...';
+  String get crypt_encrypting => 'Wird verschlüsselt...';
 
   @override
-  String get crypt_encrypt_success => 'Encryption completed';
+  String get crypt_encrypt_success => 'Verschlüsselung abgeschlossen';
 
   @override
   String crypt_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'Verschlüsselung fehlgeschlagen: $error';
   }
 
   @override
-  String get crypt_decrypt_title => 'Decryption Confirmation';
+  String get crypt_decrypt_title => 'Entschlüsselung bestätigen';
 
   @override
   String get crypt_decrypt_message =>
-      'This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?';
+      'Alle Dateien und Unterordner werden entschlüsselt und danach wieder normal angezeigt. Fortfahren?';
 
   @override
-  String get crypt_decrypting => 'Decrypting...';
+  String get crypt_decrypting => 'Wird entschlüsselt...';
 
   @override
-  String get crypt_decrypt_success => 'Decryption completed';
+  String get crypt_decrypt_success => 'Entschlüsselung abgeschlossen';
 
   @override
   String crypt_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'Entschlüsselung fehlgeschlagen: $error';
   }
 
   @override
-  String get crypt_filename_enc_off => 'Off';
+  String get crypt_filename_enc_off => 'Aus';
 
   @override
   String get crypt_filename_enc_standard => 'Standard';
 
   @override
-  String get crypt_filename_enc_obfuscate => 'Obfuscate';
+  String get crypt_filename_enc_obfuscate => 'Verschleiert';
 
   @override
   String get crypt_filename_enc_base64 => 'Base64';
@@ -6833,85 +7185,86 @@ class L10nDe extends L10n {
   String get crypt_filename_enc_base32768 => 'Base32768';
 
   @override
-  String get crypt_dirname_enc_yes => 'Yes';
+  String get crypt_dirname_enc_yes => 'Ja';
 
   @override
-  String get crypt_dirname_enc_no => 'No';
+  String get crypt_dirname_enc_no => 'Nein';
 
   @override
-  String get vault_encrypt_files => '+ Encrypt Files';
+  String get vault_encrypt_files => '+ Dateien verschlüsseln';
 
   @override
-  String get vault_select_encryption_method => 'Select Encryption Method';
+  String get vault_select_encryption_method => 'Verschlüsselungsmethode wählen';
 
   @override
-  String get vault_inplace_encrypt => 'In-place Encryption';
+  String get vault_inplace_encrypt => 'Vor-Ort-Verschlüsselung';
 
   @override
   String get vault_inplace_encrypt_desc =>
-      'Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser';
+      'Dateien bleiben im ursprünglichen Ordner, Namen werden verschlüsselt, 🔐-Abzeichen im Browser';
 
   @override
-  String get vault_sandbox_encrypt => 'Sandbox Encryption';
+  String get vault_sandbox_encrypt => 'Sandbox-Verschlüsselung';
 
   @override
   String get vault_sandbox_encrypt_desc =>
-      'Files moved to vault private directory, filenames hidden, only visible in vault page';
+      'Dateien werden in den privaten Tresor-Ordner verschoben, Namen versteckt, nur auf der Tresor-Seite sichtbar';
 
   @override
-  String get vault_need_set_password => 'Need to Set Master Password First';
+  String get vault_need_set_password => 'Zuerst Masterpasswort festlegen';
 
   @override
   String get vault_need_set_password_desc =>
-      'Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.';
+      'Bitte zuerst in den Verschlüsselungseinstellungen Masterpasswort und Salz festlegen, dann kann die Vor-Ort-Verschlüsselung genutzt werden.';
 
   @override
-  String get vault_go_set_password => 'Set Password';
+  String get vault_go_set_password => 'Passwort festlegen';
 
   @override
-  String get vault_encrypting => 'Encrypting...';
+  String get vault_encrypting => 'Wird verschlüsselt...';
 
   @override
   String get vault_encrypting_desc =>
-      'Encrypting selected files/folders, please wait...';
+      'Ausgewählte Dateien/Ordner werden verschlüsselt, bitte warten...';
 
   @override
   String vault_inplace_encrypt_done(Object count) {
-    return 'In-place encryption completed, $count files/folders encrypted';
+    return 'Vor-Ort-Verschlüsselung abgeschlossen, $count Dateien/Ordner verschlüsselt';
   }
 
   @override
   String vault_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'Verschlüsselung fehlgeschlagen: $error';
   }
 
   @override
-  String get vault_inplace_section => 'In-place Encryption';
+  String get vault_inplace_section => 'Vor-Ort-Verschlüsselung';
 
   @override
-  String get vault_open_location => 'Open Location';
+  String get vault_open_location => 'Ort öffnen';
 
   @override
-  String get vault_decrypt_action => 'Decrypt';
+  String get vault_decrypt_action => 'Entschlüsseln';
 
   @override
-  String get vault_decrypt_confirm_title => 'Decrypt File';
+  String get vault_decrypt_confirm_title => 'Datei entschlüsseln';
 
   @override
   String vault_decrypt_confirm_desc(Object name) {
-    return 'Are you sure you want to decrypt \"$name\"? The file will be restored to normal after decryption.';
+    return '„$name\" wirklich entschlüsseln? Die Datei ist danach wieder normal.';
   }
 
   @override
-  String get vault_decrypt_success => 'Decryption successful';
+  String get vault_decrypt_success => 'Erfolgreich entschlüsselt';
 
   @override
   String vault_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'Entschlüsselung fehlgeschlagen: $error';
   }
 
   @override
-  String get crypt_set_master_password => 'Set Encryption Master Password';
+  String get crypt_set_master_password =>
+      'Verschlüsselungs-Masterpasswort festlegen';
 
   @override
   String get vault_section_unencrypted => 'Unverschlüsselte Dateien';
@@ -6942,6 +7295,7 @@ class L10nDe extends L10n {
   String vault_import_failed_detail(Object error) {
     return 'Import fehlgeschlagen: $error';
   }
+
   @override
   String get vault_no_files => 'Keine Dateien';
 
@@ -6951,4 +7305,87 @@ class L10nDe extends L10n {
 
   @override
   String get vault_remove_from_list => 'Entfernen';
+
+  @override
+  String get security_vault_switch_desc => 'Privaten Tresor aktivieren';
+
+  @override
+  String get security_verify_password_desc =>
+      'Geben Sie Ihr Passwort ein, um die Sicherheitseinstellungen zu öffnen';
+
+  @override
+  String get vault_verify_password_title => 'Passwort bestätigen';
+
+  @override
+  String get vault_verify_password_hint =>
+      'Geben Sie Ihr Sicherheitspasswort ein';
+
+  @override
+  String get vault_go_security_settings => 'Zu den Sicherheitseinstellungen';
+
+  @override
+  String get security_settings_subtitle =>
+      'Tresor, Remote Guard, App-Schutz und Fingerabdruck-Entsperrung';
+
+  @override
+  String get vault_disabled_hint =>
+      'Der Tresor ist deaktiviert. Aktivieren Sie ihn unter Einstellungen → Sicherheitseinstellungen';
+
+  @override
+  String get security_set_password_desc =>
+      'Legen Sie ein Sicherheitskennwort für den Zugriff auf die Sicherheitseinstellungen und die Entsperrung des Tresors fest';
+
+  @override
+  String get security_confirm_password =>
+      'Geben Sie das Kennwort zur Bestätigung erneut ein';
+
+  @override
+  String get biometric_reason_security_settings =>
+      'Fingerabdruck verifizieren, um auf die Sicherheitseinstellungen zuzugreifen';
+
+  @override
+  String get toolbox_scan => 'Scannen';
+
+  @override
+  String get scan_result_title => 'Scan-Ergebnis';
+
+  @override
+  String get scan_copy => 'Kopieren';
+
+  @override
+  String get scan_copied => 'In die Zwischenablage kopiert';
+
+  @override
+  String get scan_open_link => 'Link öffnen';
+
+  @override
+  String get scan_continue => 'Weiter';
+
+  @override
+  String get scan_torch => 'Taschenlampe';
+
+  @override
+  String get scan_switch_camera => 'Kamera wechseln';
+
+  @override
+  String get scan_camera_error =>
+      'Kann nicht auf die Kamera zugreifen. Bitte Kameraberechtigung prüfen.';
+
+  @override
+  String get scan_hint =>
+      'Platzieren Sie QR-Code/Barcode im Rahmen zum automatischen Scannen';
+
+  @override
+  String get scan_from_gallery => 'Aus Galerie';
+
+  @override
+  String get scan_no_barcode => 'Kein QR-Code oder Barcode im Bild erkannt';
+
+  @override
+  String get ui_backup_confirm_title => 'Backup bestätigen';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return 'Sicherung in folgenden Pfad:\n$path\n\nFortfahren?';
+  }
 }

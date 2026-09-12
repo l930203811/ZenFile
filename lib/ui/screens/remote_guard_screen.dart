@@ -19,8 +19,14 @@ enum RemoteGuardMode {
   /// 仅设置 PIN（不改动远程守卫/启动保护开关），设置成功后 pop(true)
   setupPinOnly,
 
+  /// 安全设置首次设置密码：标题与文案均为「安全设置」，设置成功后 pop(true)
+  setupSecurityPin,
+
   /// 启动应用保护闸门：验证 PIN 后回调 [onUnlocked]，不 pop
   appLock,
+
+  /// 安全设置闸门：验证 PIN 后 pop(true)，用于进入安全设置页面
+  securityGate,
 
   /// 修改 PIN：验证当前 PIN 后直接进入「输入新 PIN → 确认 → 重加密」流程
   changePin,
@@ -79,6 +85,9 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
 
+  // 将自动弹出指纹验证（避免同时弹出系统键盘）
+  bool _willAutoBiometric = false;
+
   late final AnimationController _shakeController;
 
   @override
@@ -134,31 +143,47 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       }
     }
 
-    // 访问守卫 / 启动闸门：若偏好指纹且可用，进页面即自动弹出生物识别
-    if ((widget.mode == RemoteGuardMode.gate || widget.mode == RemoteGuardMode.appLock) &&
-        pinSet &&
-        available &&
-        enabled &&
-        preferred == 'biometric') {
+    // 访问守卫 / 启动闸门 / 安全设置闸门：若偏好指纹且可用，进页面即自动弹出生物识别
+    final willAutoBiometric =
+        (widget.mode == RemoteGuardMode.gate ||
+                widget.mode == RemoteGuardMode.appLock ||
+                widget.mode == RemoteGuardMode.securityGate) &&
+            pinSet &&
+            available &&
+            enabled &&
+            preferred == 'biometric';
+    setState(() => _willAutoBiometric = willAutoBiometric);
+    if (willAutoBiometric) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _onFingerprint();
       });
     }
   }
 
-  /// 页面主标题：启动应用保护闸门显示「启动应用保护」，其余场景显示「远程守卫」。
+  /// 页面主标题：启动应用保护闸门显示「启动应用保护」，安全设置相关显示「安全设置」，其余场景显示「远程守卫」。
   String get _screenTitle {
     final l10n = L10n.of(context);
-    return widget.mode == RemoteGuardMode.appLock
-        ? l10n.ui_app_lock
-        : l10n.ui_remote_guard;
+    if (widget.mode == RemoteGuardMode.appLock) return l10n.ui_app_lock;
+    if (widget.mode == RemoteGuardMode.securityGate ||
+        widget.mode == RemoteGuardMode.setupSecurityPin) {
+      return l10n.ui_security_settings;
+    }
+    return l10n.ui_remote_guard;
   }
 
   String _initialMessage() {
     final l10n = L10n.of(context);
-    if (!_isPinSet) return l10n.ui_remote_guard_set_pin;
+    if (!_isPinSet) {
+      if (widget.mode == RemoteGuardMode.setupSecurityPin) {
+        return l10n.security_set_password_desc;
+      }
+      return l10n.ui_remote_guard_set_pin;
+    }
     if (widget.mode == RemoteGuardMode.appLock) {
       return l10n.ui_app_lock_desc;
+    }
+    if (widget.mode == RemoteGuardMode.securityGate) {
+      return l10n.security_verify_password_desc;
     }
     return l10n.ui_remote_guard_enter_pin;
   }
@@ -175,15 +200,6 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     setState(() {
       _isError = false;
       _inputBuffer = cleaned;
-    });
-  }
-
-  void _onClear() {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _isError = false;
-      _inputBuffer = '';
-      _textController.clear();
     });
   }
 
@@ -217,7 +233,9 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _inputBuffer = '';
         _textController.clear();
         _isConfirmMode = true;
-        _message = l10n.ui_remote_guard_confirm_pin;
+        _message = widget.mode == RemoteGuardMode.setupSecurityPin
+            ? l10n.security_confirm_password
+            : l10n.ui_remote_guard_confirm_pin;
       });
       return;
     }
@@ -239,8 +257,9 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
           _inputBuffer = '';
           _textController.clear();
         });
-        if (widget.mode == RemoteGuardMode.setupPinOnly) {
-          // 仅设置 PIN，由调用方决定启用哪个开关
+        if (widget.mode == RemoteGuardMode.setupPinOnly ||
+            widget.mode == RemoteGuardMode.setupSecurityPin) {
+          // 仅设置 PIN / 安全设置首次密码，由调用方决定后续动作
           Navigator.pop(context, true);
         } else if (widget.mode == RemoteGuardMode.gate) {
           Navigator.pop(context, true);
@@ -280,7 +299,8 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _inputBuffer = '';
         _textController.clear();
       });
-      if (widget.mode == RemoteGuardMode.gate) {
+      if (widget.mode == RemoteGuardMode.gate ||
+          widget.mode == RemoteGuardMode.securityGate) {
         Navigator.pop(context, true);
       } else {
         setState(() => _showManage = true);
@@ -294,13 +314,20 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   Future<void> _onFingerprint() async {
     final l10n = L10n.of(context);
     try {
-      // 启动应用保护闸门与远程守卫共用本页，弹窗文案需按场景区分，
-      // 否则冷启动时会在「启动应用保护」弹窗上看到「远程守卫」字样。
+      // 启动应用保护闸门与安全设置共用本页，弹窗文案需按场景区分，
+      // 否则会在「安全设置」弹窗上看到「远程守卫」字样。
+      final BiometricScenario scenario;
+      if (widget.mode == RemoteGuardMode.appLock) {
+        scenario = BiometricScenario.appLock;
+      } else if (widget.mode == RemoteGuardMode.securityGate ||
+          widget.mode == RemoteGuardMode.setupSecurityPin) {
+        scenario = BiometricScenario.securitySettings;
+      } else {
+        scenario = BiometricScenario.remoteGuard;
+      }
       final did = await BiometricAuthHelper.authenticate(
         context,
-        scenario: widget.mode == RemoteGuardMode.appLock
-            ? BiometricScenario.appLock
-            : BiometricScenario.remoteGuard,
+        scenario: scenario,
       );
       if (!did) return;
       final pw = await VaultBiometricStore.read();
@@ -321,7 +348,8 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _inputBuffer = '';
         _textController.clear();
       });
-      if (widget.mode == RemoteGuardMode.gate) {
+      if (widget.mode == RemoteGuardMode.gate ||
+          widget.mode == RemoteGuardMode.securityGate) {
         Navigator.pop(context, true);
       } else if (widget.mode == RemoteGuardMode.changePin) {
         // 生物识别等价于当前 PIN 验证通过，直接进入输入新 PIN
@@ -393,7 +421,9 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     }
   }
 
-  /// 执行改密：用旧 PIN 还原、新 PIN 重新加锁全部已隐藏文件（委托 VaultService.changePassword）
+  /// 执行改密（委托 VaultService.changePassword）
+  ///
+  /// 门禁密码与加密密钥已完全解耦，改密是瞬时操作，不再需要重新加密任何文件。
   Future<void> _doChangePin(String oldPin, String newPin, L10n l10n) async {
     setState(() {
       _changingProgress = true;
@@ -414,8 +444,8 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _changingProgress = false;
         _message = l10n.ui_remote_guard_pin_changed;
       });
-      // 稍作停顿让用户看到成功提示，再把新 PIN 返回给外层（VaultExplorerScreen）
-      // 由其用新密码重建保险箱页面，避免 widget.password 过期导致预览/还原失败
+      // 稍作停顿让用户看到成功提示再返回
+      // （改密不影响加密文件，外层无需重建保险箱页面）
       await Future.delayed(const Duration(milliseconds: 1200));
       if (!mounted) return;
       Navigator.pop(context, newPin);
@@ -662,7 +692,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
               keyboardType: TextInputType.visiblePassword,
               autocorrect: false,
               enableSuggestions: false,
-              autofocus: true,
+              autofocus: !_willAutoBiometric,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20, letterSpacing: 4, fontWeight: FontWeight.bold),
               decoration: InputDecoration(

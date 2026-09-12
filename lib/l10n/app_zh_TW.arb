@@ -5082,7 +5082,7 @@
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "修改PIN码",
+  "ui_remote_guard_change_pin": "修改密碼",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5134,7 +5134,7 @@
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "修改私人保險箱 PIN（將重新加密所有已隱藏檔案）",
+  "ui_change_vault_pin_desc": "修改安全設定與保險箱解鎖密碼，不影響已加密檔案",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -6334,7 +6334,7 @@
   "vault_backup_restore": "備份/還原",
   "vault_import_backup_desc": "从备份文件 (.zip) 还原保险箱",
   "vault_uninstall_warning_title": "卸载警告",
-  "vault_uninstall_warning": "卸载应用会清空保险箱，建议先导出备份",
+  "vault_uninstall_warning": "卸載應用會清空沙盒加密，建議先匯出備份",
   "vault_backup_exported": "备份已导出到",
   "vault_backup_imported": "已导入条目",
   "vault_export_failed": "备份导出失败",
@@ -6758,9 +6758,410 @@
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
   },
-  "crypt_settings_title": "加密设置",
+  "crypt_settings_title": "密碼配置",
+  "vault_config_password": "密碼配置",
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
+  },
+  "vault_help": "說明",
+  "@vault_help": {
+    "description": "vault help: vault_help"
+  },
+  "vault_help_title": "保險箱說明",
+  "@vault_help_title": {
+    "description": "vault help: vault_help_title"
+  },
+  "vault_help_intro": "保險箱採用與 rclone 相同的 crypt 加密格式，加解密全部在本機完成，金鑰不會離開本機。",
+  "@vault_help_intro": {
+    "description": "vault help: vault_help_intro"
+  },
+  "vault_help_highlights": "功能亮點",
+  "@vault_help_highlights": {
+    "description": "vault help: vault_help_highlights"
+  },
+  "vault_help_hl1_title": "零知識加密",
+  "@vault_help_hl1_title": {
+    "description": "vault help: vault_help_hl1_title"
+  },
+  "vault_help_hl1_desc": "主密碼與加鹽僅儲存在本機，雲端服務與任何第三方都無法解密你的檔案。",
+  "@vault_help_hl1_desc": {
+    "description": "vault help: vault_help_hl1_desc"
+  },
+  "vault_help_hl2_title": "相容 rclone 與 OpenList",
+  "@vault_help_hl2_title": {
+    "description": "vault help: vault_help_hl2_title"
+  },
+  "vault_help_hl2_desc": "使用相同的 crypt 格式，電腦上的 rclone 可直接解密同一批檔案。",
+  "@vault_help_hl2_desc": {
+    "description": "vault help: vault_help_hl2_desc"
+  },
+  "vault_help_hl3_title": "多組密碼 + 遠端直讀",
+  "@vault_help_hl3_title": {
+    "description": "vault help: vault_help_hl3_title"
+  },
+  "vault_help_hl3_desc": "可為不同目錄綁定不同密碼設定；遠端密文目錄無須整包下載即可解密瀏覽與播放。",
+  "@vault_help_hl3_desc": {
+    "description": "vault help: vault_help_hl3_desc"
+  },
+  "vault_help_basics": "基本操作",
+  "@vault_help_basics": {
+    "description": "vault help: vault_help_basics"
+  },
+  "vault_help_b1_title": "① 先設定主密碼",
+  "@vault_help_b1_title": {
+    "description": "vault help: vault_help_b1_title"
+  },
+  "vault_help_b1_desc": "在「密碼設定」中設定主密碼與加鹽並牢記，它與保險箱解鎖密碼彼此獨立。",
+  "@vault_help_b1_desc": {
+    "description": "vault help: vault_help_b1_desc"
+  },
+  "vault_help_b2_title": "② 加密檔案",
+  "@vault_help_b2_title": {
+    "description": "vault help: vault_help_b2_title"
+  },
+  "vault_help_b2_desc": "在瀏覽頁選取檔案後點選加密，再選擇「原地加密」或「沙盒加密」。",
+  "@vault_help_b2_desc": {
+    "description": "vault help: vault_help_b2_desc"
+  },
+  "vault_help_b3_title": "③ 檢視與開啟",
+  "@vault_help_b3_title": {
+    "description": "vault help: vault_help_b3_title"
+  },
+  "vault_help_b3_desc": "加密項目會集中在保險箱中列出，點選後會自動暫時解密並預覽。",
+  "@vault_help_b3_desc": {
+    "description": "vault help: vault_help_b3_desc"
+  },
+  "vault_help_b4_title": "④ 解密還原",
+  "@vault_help_b4_title": {
+    "description": "vault help: vault_help_b4_title"
+  },
+  "vault_help_b4_desc": "選取項目後點選解密，即可還原為一般檔案並放回原位置。",
+  "@vault_help_b4_desc": {
+    "description": "vault help: vault_help_b4_desc"
+  },
+  "vault_help_b5_title": "⑤ 備份與還原",
+  "@vault_help_b5_title": {
+    "description": "vault help: vault_help_b5_title"
+  },
+  "vault_help_b5_desc": "透過「備份/還原」匯出含加密設定的備份，解除安裝前務必先匯出。",
+  "@vault_help_b5_desc": {
+    "description": "vault help: vault_help_b5_desc"
+  },
+  "vault_help_compat": "相容性",
+  "@vault_help_compat": {
+    "description": "vault help: vault_help_compat"
+  },
+  "vault_help_c1_title": "加密格式",
+  "@vault_help_c1_title": {
+    "description": "vault help: vault_help_c1_title"
+  },
+  "vault_help_c1_desc": "內容為 XSalsa20-Poly1305，檔名經 EME 加密後以 base32/base64 編碼，可帶 .bin 後綴。",
+  "@vault_help_c1_desc": {
+    "description": "vault help: vault_help_c1_desc"
+  },
+  "vault_help_c2_title": "雲端與同步",
+  "@vault_help_c2_title": {
+    "description": "vault help: vault_help_c2_title"
+  },
+  "vault_help_c2_desc": "密文可由任意雲端或同步工具正常同步，伺服器只會看到密文，不會洩漏真實檔名。",
+  "@vault_help_c2_desc": {
+    "description": "vault help: vault_help_c2_desc"
+  },
+  "vault_help_c3_title": "已知限制",
+  "@vault_help_c3_title": {
+    "description": "vault help: vault_help_c3_title"
+  },
+  "vault_help_c3_desc": "加密後檔名會明顯變長，過長檔名可能失敗；請在本應用程式內重新命名，直接改密文名將導致無法解密。",
+  "@vault_help_c3_desc": {
+    "description": "vault help: vault_help_c3_desc"
+  },
+  "vault_help_inplace": "原地加密",
+  "@vault_help_inplace": {
+    "description": "vault help: vault_help_inplace"
+  },
+  "vault_help_inplace_intro": "原地加密會把檔案「就地」加密：內容替換為密文、檔名替換為密文名，檔案仍留在原本的資料夾中，不會進入保險箱私有目錄。",
+  "@vault_help_inplace_intro": {
+    "description": "vault help: vault_help_inplace_intro"
+  },
+  "vault_help_ip1_title": "與原目錄的關係",
+  "@vault_help_ip1_title": {
+    "description": "vault help: vault_help_ip1_title"
+  },
+  "vault_help_ip1_desc": "檔案位置與目錄結構維持不變，瀏覽頁會為已加密檔案加上🔐徽標。",
+  "@vault_help_ip1_desc": {
+    "description": "vault help: vault_help_ip1_desc"
+  },
+  "vault_help_ip2_title": "其他應用程式看到什麼",
+  "@vault_help_ip2_title": {
+    "description": "vault help: vault_help_ip2_title"
+  },
+  "vault_help_ip2_desc": "其他檔案管理器與播放器只會看到無意義的密文檔名且無法開啟，這正是保護效果。",
+  "@vault_help_ip2_desc": {
+    "description": "vault help: vault_help_ip2_desc"
+  },
+  "vault_help_ip3_title": "適合的情境",
+  "@vault_help_ip3_title": {
+    "description": "vault help: vault_help_ip3_title"
+  },
+  "vault_help_ip3_desc": "需要保留原目錄結構，並讓第三方雲端繼續同步這些檔案的情境。",
+  "@vault_help_ip3_desc": {
+    "description": "vault help: vault_help_ip3_desc"
+  },
+  "vault_help_ip4_title": "風險與建議",
+  "@vault_help_ip4_title": {
+    "description": "vault help: vault_help_ip4_title"
+  },
+  "vault_help_ip4_desc": "加密會直接取代原檔，中斷可能留下殘檔；重要檔案請先備份，解密時目標目錄需有寫入權限。",
+  "@vault_help_ip4_desc": {
+    "description": "vault help: vault_help_ip4_desc"
+  },
+  "vault_help_notice": "注意事項",
+  "@vault_help_notice": {
+    "description": "vault help: vault_help_notice"
+  },
+  "vault_help_n1": "已用於加密檔案的密碼與加鹽不可修改，若需更換請新增一組加密設定。",
+  "@vault_help_n1": {
+    "description": "vault help: vault_help_n1"
+  },
+  "vault_help_n2": "沙盒加密的檔案存放於應用程式私有目錄，解除安裝時會一併清除。",
+  "@vault_help_n2": {
+    "description": "vault help: vault_help_n2"
+  },
+  "vault_help_n3": "忘記主密碼將無法還原任何已加密檔案，請務必匯出備份並妥善保存。",
+  "@vault_help_n3": {
+    "description": "vault help: vault_help_n3"
+  },
+  "vault_remote_encrypt": "遠端加密",
+  "@vault_remote_encrypt": {
+    "description": "crypt: vault_remote_encrypt"
+  },
+  "vault_import_source_title": "選擇加密來源",
+  "@vault_import_source_title": {
+    "description": "crypt: vault_import_source_title"
+  },
+  "vault_import_source_remote": "遠端",
+  "@vault_import_source_remote": {
+    "description": "crypt: vault_import_source_remote"
+  },
+  "vault_import_source_remote_desc": "關聯遠端加密目錄，或將本機檔案加密後上傳到遠端",
+  "@vault_import_source_remote_desc": {
+    "description": "crypt: vault_import_source_remote_desc"
+  },
+  "vault_link_remote_crypt_desc": "關聯伺服器上已有的 rclone crypt 密文目錄（在用戶端解密）",
+  "@vault_link_remote_crypt_desc": {
+    "description": "crypt: vault_link_remote_crypt_desc"
+  },
+  "vault_encrypt_upload": "加密上傳到遠端",
+  "@vault_encrypt_upload": {
+    "description": "crypt: vault_encrypt_upload"
+  },
+  "vault_encrypt_upload_desc": "選擇本機檔案，加密後上傳到遠端伺服器",
+  "@vault_encrypt_upload_desc": {
+    "description": "crypt: vault_encrypt_upload_desc"
+  },
+  "vault_encrypt_uploading": "正在加密上傳…",
+  "@vault_encrypt_uploading": {
+    "description": "crypt: vault_encrypt_uploading"
+  },
+  "vault_encrypt_upload_done": "加密上傳完成",
+  "@vault_encrypt_upload_done": {
+    "description": "crypt: vault_encrypt_upload_done"
+  },
+  "vault_encrypt_upload_failed": "加密上傳失敗",
+  "@vault_encrypt_upload_failed": {
+    "description": "crypt: vault_encrypt_upload_failed"
+  },
+  "crypt_remote_upload": "加密上傳",
+  "@crypt_remote_upload": {
+    "description": "crypt: crypt_remote_upload"
+  },
+  "crypt_remote_download": "解密下載",
+  "@crypt_remote_download": {
+    "description": "crypt: crypt_remote_download"
+  },
+  "crypt_remote_downloading": "正在解密下載…",
+  "@crypt_remote_downloading": {
+    "description": "crypt: crypt_remote_downloading"
+  },
+  "crypt_remote_download_done": "解密下載完成",
+  "@crypt_remote_download_done": {
+    "description": "crypt: crypt_remote_download_done"
+  },
+  "crypt_remote_download_failed": "解密下載失敗",
+  "@crypt_remote_download_failed": {
+    "description": "crypt: crypt_remote_download_failed"
+  },
+  "vault_remote_crypt_open_failed": "開啟遠端加密檔案失敗",
+  "@vault_remote_crypt_open_failed": {
+    "description": "crypt: vault_remote_crypt_open_failed"
+  },
+  "vault_remote_crypt_unsupported": "此類型暫不支援遠端加密串流播放",
+  "@vault_remote_crypt_unsupported": {
+    "description": "crypt: vault_remote_crypt_unsupported"
+  },
+  "vault_link_remote_crypt": "關聯遠端加密目錄",
+  "@vault_link_remote_crypt": {
+    "description": "crypt: vault_link_remote_crypt"
+  },
+  "vault_link_remote_crypt_success": "已關聯遠端加密目錄",
+  "@vault_link_remote_crypt_success": {
+    "description": "crypt: vault_link_remote_crypt_success"
+  },
+  "vault_unlink_remote_crypt": "取消關聯",
+  "@vault_unlink_remote_crypt": {
+    "description": "crypt: vault_unlink_remote_crypt"
+  },
+  "vault_exporting": "正在匯出...",
+  "@vault_exporting": {
+    "description": "vault/crypt: vault_exporting"
+  },
+  "vault_importing": "正在匯入...",
+  "@vault_importing": {
+    "description": "vault/crypt: vault_importing"
+  },
+  "vault_importing_backup": "正在匯入備份...",
+  "@vault_importing_backup": {
+    "description": "vault/crypt: vault_importing_backup"
+  },
+  "vault_restoring": "正在還原...",
+  "@vault_restoring": {
+    "description": "vault/crypt: vault_restoring"
+  },
+  "vault_decrypting": "正在解密...",
+  "@vault_decrypting": {
+    "description": "vault/crypt: vault_decrypting"
+  },
+  "vault_import_backup_confirm": "匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？",
+  "@vault_import_backup_confirm": {
+    "description": "vault/crypt: vault_import_backup_confirm"
+  },
+  "vault_load_error": "載入保險箱出錯：{error}",
+  "@vault_load_error": {
+    "description": "vault/crypt: vault_load_error"
+  },
+  "vault_restore_folder_hint": "資料夾請長按後選擇「還原」到原始位置查看",
+  "@vault_restore_folder_hint": {
+    "description": "vault/crypt: vault_restore_folder_hint"
+  },
+  "vault_decrypt_open_failed": "解密並開啟項目失敗：{error}",
+  "@vault_decrypt_open_failed": {
+    "description": "vault/crypt: vault_decrypt_open_failed"
+  },
+  "vault_badge_inplace": "原地",
+  "@vault_badge_inplace": {
+    "description": "vault/crypt: vault_badge_inplace"
+  },
+  "vault_badge_sandbox": "沙盒",
+  "@vault_badge_sandbox": {
+    "description": "vault/crypt: vault_badge_sandbox"
+  },
+  "vault_item_folder": "資料夾",
+  "@vault_item_folder": {
+    "description": "vault/crypt: vault_item_folder"
+  },
+  "crypt_need_master_title": "尚未設定加密主密碼",
+  "@crypt_need_master_title": {
+    "description": "vault/crypt: crypt_need_master_title"
+  },
+  "crypt_need_master_body": "原地加密與沙盒加密都使用「加密設定」中的主密碼，請先前往設定。",
+  "@crypt_need_master_body": {
+    "description": "vault/crypt: crypt_need_master_body"
+  },
+  "crypt_master_banner": "此處配置的主密碼與加鹽用於原地加密和沙盒加密，請務必牢記；它與保險箱解鎖密碼相互獨立。",
+  "@crypt_master_banner": {
+    "description": "vault/crypt: crypt_master_banner"
+  },
+  "crypt_profile_name": "加密名稱",
+  "@crypt_profile_name": {
+    "description": "crypt: crypt_profile_name"
+  },
+  "crypt_profile_name_hint": "例如：工作 / 私人",
+  "@crypt_profile_name_hint": {
+    "description": "crypt: crypt_profile_name_hint"
+  },
+  "crypt_profile_name_required": "請輸入加密名稱",
+  "@crypt_profile_name_required": {
+    "description": "crypt: crypt_profile_name_required"
+  },
+  "crypt_profile_name_duplicate": "此名稱已存在，請更換",
+  "@crypt_profile_name_duplicate": {
+    "description": "crypt: crypt_profile_name_duplicate"
+  },
+  "crypt_profile_title_new": "新增加密配置",
+  "@crypt_profile_title_new": {
+    "description": "crypt: crypt_profile_title_new"
+  },
+  "crypt_profile_title_edit": "編輯加密配置",
+  "@crypt_profile_title_edit": {
+    "description": "crypt: crypt_profile_title_edit"
+  },
+  "crypt_profile_section": "密碼配置",
+  "@crypt_profile_section": {
+    "description": "crypt: crypt_profile_section"
+  },
+  "crypt_profile_add": "新增配置",
+  "@crypt_profile_add": {
+    "description": "crypt: crypt_profile_add"
+  },
+  "crypt_profile_default": "預設",
+  "@crypt_profile_default": {
+    "description": "crypt: crypt_profile_default"
+  },
+  "crypt_profile_set_default": "設為預設配置",
+  "@crypt_profile_set_default": {
+    "description": "crypt: crypt_profile_set_default"
+  },
+  "crypt_profile_set_default_desc": "未綁定配置的檔案將使用此配置",
+  "@crypt_profile_set_default_desc": {
+    "description": "crypt: crypt_profile_set_default_desc"
+  },
+  "crypt_profile_default_done": "已更新預設配置",
+  "@crypt_profile_default_done": {
+    "description": "crypt: crypt_profile_default_done"
+  },
+  "crypt_profile_delete_message": "刪除此配置後，使用它加密的檔案將無法解密。",
+  "@crypt_profile_delete_message": {
+    "description": "crypt: crypt_profile_delete_message"
+  },
+  "crypt_profile_empty": "尚無加密配置",
+  "@crypt_profile_empty": {
+    "description": "crypt: crypt_profile_empty"
+  },
+  "crypt_profile_action_config": "配置",
+  "@crypt_profile_action_config": {
+    "description": "crypt: crypt_profile_action_config"
+  },
+  "crypt_profile_select_title": "選擇加密配置",
+  "@crypt_profile_select_title": {
+    "description": "crypt: crypt_profile_select_title"
+  },
+  "crypt_profile_bound_done": "已綁定此加密配置",
+  "@crypt_profile_bound_done": {
+    "description": "crypt: crypt_profile_bound_done"
+  },
+  "crypt_profile_credential_locked": "不可修改",
+  "@crypt_profile_credential_locked": {
+    "description": "crypt: crypt_profile_credential_locked"
+  },
+  "crypt_profile_credential_locked_desc": "密碼與加鹽決定金鑰，修改後已加密檔案將無法解密；如需更換請新增配置。",
+  "@crypt_profile_credential_locked_desc": {
+    "description": "crypt: crypt_profile_credential_locked_desc"
+  },
+  "crypt_profile_suffix_none": "無後綴",
+  "@crypt_profile_suffix_none": {
+    "description": "crypt: crypt_profile_suffix_none"
+  },
+  "crypt_profile_sandbox_title": "切換沙盒配置",
+  "@crypt_profile_sandbox_title": {
+    "description": "crypt: crypt_profile_sandbox_title"
+  },
+  "crypt_profile_sandbox_message": "沙盒整體只使用一套配置，切換後沙盒內其他檔案可能顯示為密文。是否繼續？",
+  "@crypt_profile_sandbox_message": {
+    "description": "crypt: crypt_profile_sandbox_message"
+  },
+  "crypt_mount_section": "加密位置",
+  "@crypt_mount_section": {
+    "description": "crypt: crypt_mount_section"
   },
   "crypt_settings_subtitle": "管理加密文件夹和挂载点",
   "@crypt_settings_subtitle": {
@@ -7113,5 +7514,103 @@
   "vault_remove_from_list": "移除",
   "@vault_remove_from_list": {
     "description": "vault: vault_remove_from_list"
-  }
+  },
+  "security_vault_switch_desc": "啟用私人保險箱功能",
+  "@security_vault_switch_desc": {
+    "description": "security settings"
+  },
+  "security_verify_password_desc": "請輸入密碼以進入安全設定",
+  "@security_verify_password_desc": {
+    "description": "security settings"
+  },
+  "vault_verify_password_title": "驗證密碼",
+  "@vault_verify_password_title": {
+    "description": "security settings"
+  },
+  "vault_verify_password_hint": "請輸入安全設定密碼",
+  "@vault_verify_password_hint": {
+    "description": "security settings"
+  },
+  "vault_go_security_settings": "前往安全設定",
+  "@vault_go_security_settings": {
+    "description": "security settings"
+  },
+  "security_settings_subtitle": "保險箱、遠端守衛、啟動應用保護與指紋解鎖",
+  "@security_settings_subtitle": {
+    "description": "security settings"
+  },
+  "vault_disabled_hint": "保險箱已關閉，請在「設定 → 安全設定」中開啟",
+  "@vault_disabled_hint": {
+    "description": "vault: vault_disabled_hint"
+  },
+  "security_set_password_desc": "請設定安全設定密碼，用於進入安全設定與解鎖保險箱",
+  "@security_set_password_desc": {
+    "description": "security settings: security_set_password_desc"
+  },
+  "security_confirm_password": "請再次輸入密碼以確認",
+  "@security_confirm_password": {
+    "description": "security settings: security_confirm_password"
+  },
+  "biometric_reason_security_settings": "驗證指紋以進入安全設定",
+  "@biometric_reason_security_settings": {
+    "description": "biometric: biometric_reason_security_settings"
+  },
+  "toolbox_scan": "掃一掃",
+  "@toolbox_scan": {
+    "description": "scan: toolbox_scan"
+  },
+  "scan_result_title": "掃描結果",
+  "@scan_result_title": {
+    "description": "scan: scan_result_title"
+  },
+  "scan_copy": "複製",
+  "@scan_copy": {
+    "description": "scan: scan_copy"
+  },
+  "scan_copied": "已複製到剪貼簿",
+  "@scan_copied": {
+    "description": "scan: scan_copied"
+  },
+  "scan_open_link": "開啟連結",
+  "@scan_open_link": {
+    "description": "scan: scan_open_link"
+  },
+  "scan_continue": "繼續掃描",
+  "@scan_continue": {
+    "description": "scan: scan_continue"
+  },
+  "scan_torch": "手電筒",
+  "@scan_torch": {
+    "description": "scan: scan_torch"
+  },
+  "scan_switch_camera": "切換攝影機",
+  "@scan_switch_camera": {
+    "description": "scan: scan_switch_camera"
+  },
+  "scan_camera_error": "無法存取相機，請檢查相機權限",
+  "@scan_camera_error": {
+    "description": "scan: scan_camera_error"
+  },
+  "scan_hint": "將 QR Code/條碼放入框內即可自動掃描",
+  "@scan_hint": {
+    "description": "scan: scan_hint"
+  },
+  "scan_from_gallery": "從相簿選擇",
+  "@scan_from_gallery": {
+    "description": "scan: scan_from_gallery"
+  },
+  "scan_no_barcode": "未在圖片中偵測到 QR Code 或條碼",
+  "@scan_no_barcode": {
+    "description": "scan: scan_no_barcode"
+  },
+  "ui_backup_confirm_title": "確認備份",
+  "ui_backup_confirm_message": "將備份到以下路徑：\n{path}\n\n是否繼續？",
+  "@ui_backup_confirm_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "vault_remote_encrypt": "遠端加密"
 }

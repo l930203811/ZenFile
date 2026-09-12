@@ -22,6 +22,7 @@ import 'folder_grid_item.dart';
 import 'drag_drop_handler.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
+import 'unknown_file_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'file_operation_progress_dialog.dart';
 import 'file_action_dialogs.dart';
@@ -29,8 +30,10 @@ import 'progress_overlay.dart';
 import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
+import 'bulk_crypt_actions.dart';
 import '../../services/crypt/crypt.dart';
-import '../../services/vault_service.dart';
+import '../screens/crypt_mount_edit_screen.dart';
+import '../screens/vault_session_unlock_dialog.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/remote/remote_client.dart';
@@ -534,86 +537,51 @@ class _PaneBrowserState extends State<PaneBrowser> {
     }
   }
 
-  /// 验证保险箱主密码（如果未解锁）
-  Future<String?> _verifyVaultPassword(BuildContext context) async {
-    if (VaultCryptService.instance.isUnlocked) {
-      return VaultCryptService.instance.unlockedPassword;
-    }
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
+  /// 确认「加密设置」中已配置主密码。
+  ///
+  /// 加解密一律使用加密设置的主密码，与保险箱解锁密码无关，因此这里
+  /// 不再要求用户输入任何密码：已配置直接放行；未配置则引导去设置。
+  /// 返回 false 表示未配置且用户未完成设置，调用方应中止操作。
+  Future<bool> _ensureMasterPassword(BuildContext context) async {
+    if (await VaultCryptService.instance.hasMasterPassword()) return true;
+    if (!context.mounted) return false;
+    final l10n = L10n.of(context);
+
+    final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('验证保险箱密码'),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          decoration: const InputDecoration(
-            hintText: '请输入保险箱主密码',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
+        title: Text(l10n.crypt_need_master_title),
+        content: Text(l10n.crypt_need_master_body),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
           ),
           FilledButton(
-            onPressed: () async {
-              final pw = controller.text;
-              if (await VaultService.verifyPassword(pw)) {
-                VaultCryptService.instance.markUnlocked(pw);
-                Navigator.pop(ctx, pw);
-              } else {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(content: Text('密码错误')),
-                );
-              }
-            },
-            child: const Text('确认'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.vault_go_set_password),
           ),
         ],
       ),
     );
-    return result;
+
+    if (go != true || !context.mounted) return false;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CryptMountEditScreen()),
+    );
+    return VaultCryptService.instance.hasMasterPassword();
   }
 
   /// 处理加密操作
   Future<void> _handleEncrypt(BuildContext context, FileManagerProvider provider, String path) async {
-    final password = await _verifyVaultPassword(context);
-    if (password == null) return;
+    // 需求5：加密前先过保险箱会话闸门——本次启动已解锁则免验证，
+    // 未解锁则弹窗验证，重启应用后必须重新验证一次。
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
 
     // 选择加密模式
-    final mode = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('选择加密方式'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: const Text('原地加密'),
-              subtitle: const Text('文件留在原目录，不显示在保险箱列表'),
-              onTap: () => Navigator.pop(ctx, 'inplace'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.lock),
-              title: const Text('沙盒加密'),
-              subtitle: const Text('文件移动到保险箱，显示在保险箱列表'),
-              onTap: () => Navigator.pop(ctx, 'sandbox'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-        ],
-      ),
-    );
-
+    final mode = await BulkCryptActions.promptEncryptionMode(context);
     if (mode == null) return;
 
     // 显示进度对话框（带百分比，避免用户面对一个没有反馈的转圈）
@@ -623,7 +591,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<double?>(
         valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: '正在加密...', value: v),
+        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_encrypting, value: v),
       ),
     );
 
@@ -631,14 +599,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
       if (mode == 'inplace') {
         await VaultCryptService.instance.encryptInPlace(
           sourcePath: path,
-          password: password,
           onProgress: (done, total) =>
               progress.value = total > 0 ? done / total : null,
         );
       } else {
         await VaultCryptService.instance.encryptToSandbox(
           sourcePath: path,
-          password: password,
           onProgress: (done, total) =>
               progress.value = total > 0 ? done / total : null,
         );
@@ -666,8 +632,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
   /// 处理解密操作
   Future<void> _handleDecrypt(BuildContext context, FileManagerProvider provider, String path) async {
-    final password = await _verifyVaultPassword(context);
-    if (password == null) return;
+    // 需求5：解密同样先过保险箱会话闸门
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
 
     // 显示进度对话框（带百分比）
     final progress = ValueNotifier<double?>(null);
@@ -676,14 +643,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<double?>(
         valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: '正在解密...', value: v),
+        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_decrypting, value: v),
       ),
     );
 
     try {
       await VaultCryptService.instance.decryptInPlace(
         encryptedPath: path,
-        password: password,
         onProgress: (done, total) =>
             progress.value = total > 0 ? done / total : null,
       );
@@ -1634,6 +1600,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       isArchive: false,
                       showSetAsHome: true,
                       showShare: !folder.isRemote,
+                      // 需传 filePath 才会显示加/解密项；远程加密目录据此显示「解密下载」
+                      filePath: folder.path,
+                      isEncrypted: folder.isEncrypted,
                     );
                   },
                 ),
@@ -1658,7 +1627,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
         provider.forceHighlightedPaths.contains(file.path) ||
         (provider.enableFolderHighlight &&
             provider.highlightedPaths.contains(file.path));
-    final iconColor = FileUtils.getColorForFile(file.path, context);
+    final displayPath = file.displayPath;
+    final iconColor = FileUtils.getColorForFile(displayPath, context);
 
     final itemLongPress = () {
       _activatePane(provider);
@@ -1803,9 +1773,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     FileActionSheet.show(
                       context,
                       (action) => _handleAction(context, action, file.path),
-                      isArchive: FileUtils.isArchive(file.path),
+                      isArchive: FileUtils.isArchive(displayPath),
                       openWith: !file.isDirectory,
                       showShare: !file.isRemote,
+                      // 需传 filePath 才会显示加/解密项；远程加密文件据此显示「解密下载」
+                      filePath: file.path,
+                      isEncrypted: file.isEncrypted,
                     );
                   },
                 ),
@@ -1943,6 +1916,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
   Uint8List? _apkIcon;
   Uint8List? _remoteThumb;
 
+  String get _displayPath => widget.file.displayPath;
+
   @override
   void initState() {
     super.initState();
@@ -1950,15 +1925,15 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     // 与 file_grid_item.dart / file_item.dart 的模式保持一致。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lowerPath = widget.file.path.toLowerCase();
+      final lowerPath = _displayPath.toLowerCase();
       // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumb();
-      } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
+      } else if (!widget.file.isRemote && FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
-      } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
+      } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') ||
           lowerPath.endsWith('.xapk') ||
@@ -1985,14 +1960,14 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _apkIcon = null;
         _remoteThumb = null;
       });
-      final lowerPath = widget.file.path.toLowerCase();
+      final lowerPath = _displayPath.toLowerCase();
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumb();
-      } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
+      } else if (!widget.file.isRemote && FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
-      } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
+      } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') ||
           lowerPath.endsWith('.xapk') ||
@@ -2007,6 +1982,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     if (!mounted) return;
     final client = widget.remoteClient;
     if (client == null) return;
+    // 远程加密条目 [path] 是密文虚拟路径（cryptremote://…），远程客户端只认后端密文全路径，
+    // 故下载必须用 [remoteSource.path]（与 provider 里 download/copy 的统一写法保持一致）。
+    final dlPath = widget.file.remoteSource?.path ?? widget.file.path;
     try {
       // 缩略图缓存目录（已迁移至 .nomedia 下，避免被媒体库索引）
       final thumbDir = await MediaThumbnailService.getThumbDir();
@@ -2026,9 +2004,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       if (await thumbFile.exists()) {
         final bytes = await thumbFile.readAsBytes();
         if (mounted && bytes.isNotEmpty) {
-          if (FileUtils.isVideo(widget.file.path)) {
+          if (FileUtils.isVideo(_displayPath)) {
             setState(() => _videoThumb = bytes);
-          } else if (FileUtils.isAudio(widget.file.path)) {
+          } else if (FileUtils.isAudio(_displayPath)) {
             setState(() => _audioThumb = bytes);
           } else {
             setState(() => _remoteThumb = bytes);
@@ -2055,26 +2033,26 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       );
 
       // 远程连接已建立，直接下载
-      final isVideo = FileUtils.isVideo(widget.file.path);
-      final isAudio = FileUtils.isAudio(widget.file.path);
+      final isVideo = FileUtils.isVideo(_displayPath);
+      final isAudio = FileUtils.isAudio(_displayPath);
       if (isVideo || isAudio) {
         // 视频/音频只需头部 2MB 即可提取缩略图/封面
         // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
         await MediaThumbnailService.withRemoteThrottle(() async {
           try {
             await client.downloadRange(
-              widget.file.path,
+              dlPath,
               tempPath,
               0,
               2 * 1024 * 1024,
             );
           } catch (e) {
-            await client.downloadFile(widget.file.path, tempPath, (_) {});
+            await client.downloadFile(dlPath, tempPath, (_) {});
           }
         });
       } else {
         // 图片等完整下载
-        await client.downloadFile(widget.file.path, tempPath, (_) {});
+        await client.downloadFile(dlPath, tempPath, (_) {});
       }
 
       // 生成缩略图
@@ -2087,7 +2065,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           if ((tb == null || tb.length <= 20) &&
               widget.file.size <= 100 * 1024 * 1024) {
             try {
-              await client.downloadFile(widget.file.path, tempPath, (_) {});
+              await client.downloadFile(dlPath, tempPath, (_) {});
               tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
             } catch (_) {}
           }
@@ -2225,14 +2203,14 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     final showMediaPreviews = context.select<FileManagerProvider, bool>(
       (p) => p.showMediaPreviews,
     );
-    final isImg = FileUtils.isImage(widget.file.path);
-    final isVid = FileUtils.isVideo(widget.file.path);
-    final isAud = FileUtils.isAudio(widget.file.path);
+    final isImg = FileUtils.isImage(_displayPath);
+    final isVid = FileUtils.isVideo(_displayPath);
+    final isAud = FileUtils.isAudio(_displayPath);
     final isApk =
-        widget.file.path.toLowerCase().endsWith('.apk') ||
-        widget.file.path.toLowerCase().endsWith('.xapk') ||
-        widget.file.path.toLowerCase().endsWith('.apks') ||
-        widget.file.path.toLowerCase().endsWith('.apkm');
+        _displayPath.toLowerCase().endsWith('.apk') ||
+        _displayPath.toLowerCase().endsWith('.xapk') ||
+        _displayPath.toLowerCase().endsWith('.apks') ||
+        _displayPath.toLowerCase().endsWith('.apkm');
 
     if (widget.isSelected) {
       return Icon(
@@ -2243,19 +2221,19 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     // 压缩包：显示带格式标签的自定义图标
-    if (FileUtils.isArchive(widget.file.path)) {
+    if (FileUtils.isArchive(_displayPath)) {
       return ArchiveTypeIcon(
-        label: FileUtils.getArchiveTypeLabel(widget.file.path),
+        label: FileUtils.getArchiveTypeLabel(_displayPath),
         color: widget.iconColor,
         iconScale: 18 / 28,
       );
     }
 
     // 文档：显示带格式标签的自定义图标
-    if (FileUtils.isDocument(widget.file.path)) {
+    if (FileUtils.isDocument(_displayPath)) {
       return FileTypeIcon(
-        icon: FileUtils.getIconForFile(widget.file.path),
-        label: FileUtils.getDocumentTypeLabel(widget.file.path),
+        icon: FileUtils.getIconForFile(_displayPath),
+        label: FileUtils.getDocumentTypeLabel(_displayPath),
         color: widget.iconColor,
         iconScale: 18 / 28,
       );
@@ -2265,16 +2243,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: 18 / 28,
         );
       }
-      return Icon(
-        FileUtils.getIconForFile(widget.file.path),
-        color: widget.iconColor,
-        size: 18,
-      );
+      return UnknownFileIcon(size: 18);
     }
 
     // 远程文件缩略图额外受「远程媒体缩略图」开关控制
@@ -2285,16 +2259,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: 18 / 28,
         );
       }
-      return Icon(
-        FileUtils.getIconForFile(widget.file.path),
-        color: widget.iconColor,
-        size: 18,
-      );
+      return UnknownFileIcon(size: 18);
     }
 
     if (isApk && _apkIcon != null) {
@@ -2322,11 +2292,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             height: double.infinity,
             cacheWidth: 80,
             cacheHeight: 80,
-            errorBuilder: (context, error, stackTrace) => Icon(
-              FileUtils.getIconForFile(widget.file.path),
-              color: widget.iconColor,
-              size: 18,
-            ),
+            errorBuilder: (context, error, stackTrace) => UnknownFileIcon(size: 18),
           ),
           if (isVid)
             Center(
@@ -2344,7 +2310,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     if (isImg && widget.file.size > 16) {
-      if (widget.file.path.toLowerCase().endsWith('.avif')) {
+      if (_displayPath.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
           File(widget.file.path),
           fit: BoxFit.cover,
@@ -2352,7 +2318,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           height: double.infinity,
           errorBuilder: (context, error, stackTrace) => FileTypeIcon(
             icon: Broken.image,
-            label: FileUtils.getImageTypeLabel(widget.file.path),
+            label: FileUtils.getImageTypeLabel(_displayPath),
             color: widget.iconColor,
             iconScale: 18 / 28,
           ),
@@ -2366,7 +2332,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         cacheWidth: 80,
         errorBuilder: (context, error, stackTrace) => FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: 18 / 28,
         ),
@@ -2430,7 +2396,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     return Icon(
-      FileUtils.getIconForFile(widget.file.path),
+      FileUtils.getIconForFile(_displayPath),
       color: widget.iconColor,
       size: 18,
     );

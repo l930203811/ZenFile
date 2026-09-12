@@ -14,7 +14,7 @@ import 'backup_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../../main.dart';
 import 'apk_install_settings_screen.dart';
-import 'crypt_settings_screen.dart';
+import 'security_settings_screen.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   const MoreSettingsScreen({super.key});
@@ -421,6 +421,13 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   subtitle: L10n.of(context).vt_install_settings_subtitle,
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApkInstallSettingsScreen())),
+                ),
+                SettingsTile(
+                  icon: Broken.lock,
+                  title: L10n.of(context).ui_security_settings,
+                  subtitle: L10n.of(context).security_settings_subtitle,
+                  trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                  onTap: () => SecuritySettingsScreen.show(context),
                 ),
                 SettingsTile(
                   icon: Broken.refresh_circle,

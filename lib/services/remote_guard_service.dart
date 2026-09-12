@@ -5,9 +5,10 @@ import '../ui/screens/remote_guard_screen.dart';
 
 /// 远程访问保护服务：用 PIN 码保护「已保存的远程服务器」与「分类页的远程内容」。
 ///
-/// PIN 与私人保险箱（VaultService，键前缀 vault_）**共用同一套**：本服务的
-/// isPinSet / setPin / verifyPin / changePin 全部委托 VaultService，因此「修改 PIN 码」
-/// 即修改保险箱密码（会重新加密所有已隐藏文件）。
+/// PIN 与私人保险箱（VaultService）**共用同一套解锁密码**：本服务的
+/// isPinSet / setPin / verifyPin / changePin 全部委托 VaultService。
+/// 由于保险箱门禁与加密已完全解耦，「修改 PIN 码」是**瞬时操作**，
+/// 不会再重新加密任何文件。
 ///  - 保护开关 remote_guard_enabled / 启动应用保护 remote_guard_app_lock 仍各自独立
 ///  - 解锁状态：内存级会话标志，验证通过后本次运行内不再重复弹 PIN；
 ///    应用重启后自动重新锁定（冷启动保护）。
@@ -64,8 +65,8 @@ class RemoteGuardService {
     return VaultService.verifyPassword(pin);
   }
 
-  /// 修改 PIN：等价于修改保险箱密码（会重新加密所有已隐藏文件）；
-  /// 返回 true 表示全部成功，false 表示存在失败（密码未更改）。
+  /// 修改 PIN：等价于修改保险箱解锁密码（瞬时生效，不影响任何加密文件）。
+  /// 返回 false 表示旧密码校验失败。
   static Future<bool> changePin(String oldPin, String newPin) async =>
       VaultService.changePassword(oldPin, newPin);
 

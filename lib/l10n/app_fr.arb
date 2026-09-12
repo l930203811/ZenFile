@@ -4934,7 +4934,7 @@
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "Modifier le code PIN",
+  "ui_remote_guard_change_pin": "Modifier le mot de passe",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4986,7 +4986,7 @@
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "Modifier le code PIN du coffre privé (recrypte tous les fichiers masqués)",
+  "ui_change_vault_pin_desc": "Modifier le mot de passe de sécurité et de déverrouillage du coffre. Les fichiers chiffrés ne sont pas affectés",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -6186,7 +6186,7 @@
   "vault_backup_restore": "Sauvegarde / Restauration",
   "vault_import_backup_desc": "Restaurer le coffre à partir d'une sauvegarde (.zip)",
   "vault_uninstall_warning_title": "Avertissement de désinstallation",
-  "vault_uninstall_warning": "La désinstallation de l'application efface le coffre. Exportez une sauvegarde d'abord.",
+  "vault_uninstall_warning": "La désinstallation de l'application efface le chiffrement en bac à sable. Exportez une sauvegarde d'abord.",
   "vault_backup_exported": "Sauvegarde exportée vers",
   "vault_backup_imported": "Éléments importés",
   "vault_export_failed": "Échec de l'exportation de la sauvegarde",
@@ -6221,19 +6221,19 @@
   "@archive_unsupported_format": {
     "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
   },
-  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "vault_export_backup_confirm": "La sauvegarde sera enregistrée à l'emplacement suivant :",
   "@vault_export_backup_confirm": {
     "description": "vault backup UI string"
   },
-  "vault_import_only_zip": "Only .zip backup files are supported",
+  "vault_import_only_zip": "Seuls les fichiers de sauvegarde .zip sont pris en charge",
   "@vault_import_only_zip": {
     "description": "vault backup UI string"
   },
-  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "vault_import_password_hint": "Cette sauvegarde utilise un mot de passe différent. Déverrouillez à nouveau le coffre avec le mot de passe utilisé lors de sa création",
   "@vault_import_password_hint": {
     "description": "vault backup UI string"
   },
-  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "vault_open_backup_location": "Ouvrir le dossier où la sauvegarde est enregistrée ?",
   "@vault_open_backup_location": {
     "description": "vault backup UI string"
   },
@@ -6610,203 +6610,604 @@
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
   },
-  "crypt_settings_title": "Encryption",
+  "crypt_settings_title": "Configuration du mot de passe",
+  "vault_config_password": "Configuration du mot de passe",
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
-  "crypt_settings_subtitle": "Manage encrypted folders and mount points",
+  "vault_help": "Aide",
+  "@vault_help": {
+    "description": "vault help: vault_help"
+  },
+  "vault_help_title": "Aide du coffre-fort",
+  "@vault_help_title": {
+    "description": "vault help: vault_help_title"
+  },
+  "vault_help_intro": "Le coffre utilise le même format crypt que rclone. Le chiffrement et le déchiffrement ont lieu entièrement sur l appareil et la clé n en sort jamais.",
+  "@vault_help_intro": {
+    "description": "vault help: vault_help_intro"
+  },
+  "vault_help_highlights": "Points forts",
+  "@vault_help_highlights": {
+    "description": "vault help: vault_help_highlights"
+  },
+  "vault_help_hl1_title": "Chiffrement zéro connaissance",
+  "@vault_help_hl1_title": {
+    "description": "vault help: vault_help_hl1_title"
+  },
+  "vault_help_hl1_desc": "Le mot de passe principal et le sel restent sur l appareil : aucun service cloud ni tiers ne peut déchiffrer vos fichiers.",
+  "@vault_help_hl1_desc": {
+    "description": "vault help: vault_help_hl1_desc"
+  },
+  "vault_help_hl2_title": "Compatible rclone et OpenList",
+  "@vault_help_hl2_title": {
+    "description": "vault help: vault_help_hl2_title"
+  },
+  "vault_help_hl2_desc": "Le format crypt est identique, rclone sur ordinateur peut donc déchiffrer exactement les mêmes fichiers.",
+  "@vault_help_hl2_desc": {
+    "description": "vault help: vault_help_hl2_desc"
+  },
+  "vault_help_hl3_title": "Plusieurs mots de passe, lecture à distance",
+  "@vault_help_hl3_title": {
+    "description": "vault help: vault_help_hl3_title"
+  },
+  "vault_help_hl3_desc": "Associez un profil différent à chaque dossier et parcourez ou lisez les dossiers chiffrés distants sans tout télécharger.",
+  "@vault_help_hl3_desc": {
+    "description": "vault help: vault_help_hl3_desc"
+  },
+  "vault_help_basics": "Opérations de base",
+  "@vault_help_basics": {
+    "description": "vault help: vault_help_basics"
+  },
+  "vault_help_b1_title": "1. Définir d abord le mot de passe principal",
+  "@vault_help_b1_title": {
+    "description": "vault help: vault_help_b1_title"
+  },
+  "vault_help_b1_desc": "Configurez le mot de passe principal et le sel dans « Profils de mot de passe » et retenez-les : ils sont indépendants du code de déverrouillage.",
+  "@vault_help_b1_desc": {
+    "description": "vault help: vault_help_b1_desc"
+  },
+  "vault_help_b2_title": "2. Chiffrer des fichiers",
+  "@vault_help_b2_title": {
+    "description": "vault help: vault_help_b2_title"
+  },
+  "vault_help_b2_desc": "Sélectionnez les fichiers dans le navigateur, touchez Chiffrer, puis choisissez chiffrement sur place ou en bac à sable.",
+  "@vault_help_b2_desc": {
+    "description": "vault help: vault_help_b2_desc"
+  },
+  "vault_help_b3_title": "3. Consulter et ouvrir",
+  "@vault_help_b3_title": {
+    "description": "vault help: vault_help_b3_title"
+  },
+  "vault_help_b3_desc": "Les éléments chiffrés sont listés dans le coffre ; les toucher les déchiffre temporairement pour l aperçu.",
+  "@vault_help_b3_desc": {
+    "description": "vault help: vault_help_b3_desc"
+  },
+  "vault_help_b4_title": "4. Déchiffrer",
+  "@vault_help_b4_title": {
+    "description": "vault help: vault_help_b4_title"
+  },
+  "vault_help_b4_desc": "Sélectionnez un élément et touchez Déchiffrer pour le restaurer en fichier normal à son emplacement d origine.",
+  "@vault_help_b4_desc": {
+    "description": "vault help: vault_help_b4_desc"
+  },
+  "vault_help_b5_title": "5. Sauvegarder et restaurer",
+  "@vault_help_b5_title": {
+    "description": "vault help: vault_help_b5_title"
+  },
+  "vault_help_b5_desc": "Exportez depuis « Sauvegarde / Restauration » une sauvegarde contenant vos profils avant de désinstaller l application.",
+  "@vault_help_b5_desc": {
+    "description": "vault help: vault_help_b5_desc"
+  },
+  "vault_help_compat": "Compatibilité",
+  "@vault_help_compat": {
+    "description": "vault help: vault_help_compat"
+  },
+  "vault_help_c1_title": "Format de chiffrement",
+  "@vault_help_c1_title": {
+    "description": "vault help: vault_help_c1_title"
+  },
+  "vault_help_c1_desc": "Le contenu utilise XSalsa20-Poly1305 ; les noms sont chiffrés par EME puis encodés en base32/base64, avec suffixe .bin facultatif.",
+  "@vault_help_c1_desc": {
+    "description": "vault help: vault_help_c1_desc"
+  },
+  "vault_help_c2_title": "Cloud et synchronisation",
+  "@vault_help_c2_title": {
+    "description": "vault help: vault_help_c2_title"
+  },
+  "vault_help_c2_desc": "Le texte chiffré se synchronise avec n importe quel cloud ou outil ; le serveur ne voit que du chiffré, jamais les vrais noms.",
+  "@vault_help_c2_desc": {
+    "description": "vault help: vault_help_c2_desc"
+  },
+  "vault_help_c3_title": "Limites connues",
+  "@vault_help_c3_title": {
+    "description": "vault help: vault_help_c3_title"
+  },
+  "vault_help_c3_desc": "Les noms chiffrés sont bien plus longs et les noms très longs peuvent échouer ; renommez uniquement dans l application, modifier le nom chiffré le rend indéchiffrable.",
+  "@vault_help_c3_desc": {
+    "description": "vault help: vault_help_c3_desc"
+  },
+  "vault_help_inplace": "Chiffrement sur place",
+  "@vault_help_inplace": {
+    "description": "vault help: vault_help_inplace"
+  },
+  "vault_help_inplace_intro": "Le chiffrement sur place chiffre les fichiers là où ils se trouvent : contenu et nom deviennent du texte chiffré et le fichier reste dans son dossier d origine au lieu d entrer dans le répertoire privé du coffre.",
+  "@vault_help_inplace_intro": {
+    "description": "vault help: vault_help_inplace_intro"
+  },
+  "vault_help_ip1_title": "Lien avec le dossier d origine",
+  "@vault_help_ip1_title": {
+    "description": "vault help: vault_help_ip1_title"
+  },
+  "vault_help_ip1_desc": "L emplacement et la structure des dossiers ne changent pas ; les fichiers chiffrés reçoivent un badge cadenas dans le navigateur.",
+  "@vault_help_ip1_desc": {
+    "description": "vault help: vault_help_ip1_desc"
+  },
+  "vault_help_ip2_title": "Ce que voient les autres applications",
+  "@vault_help_ip2_title": {
+    "description": "vault help: vault_help_ip2_title"
+  },
+  "vault_help_ip2_desc": "Les autres gestionnaires et lecteurs ne voient que des noms chiffrés sans signification et ne peuvent pas les ouvrir : c est précisément la protection.",
+  "@vault_help_ip2_desc": {
+    "description": "vault help: vault_help_ip2_desc"
+  },
+  "vault_help_ip3_title": "Quand l utiliser",
+  "@vault_help_ip3_title": {
+    "description": "vault help: vault_help_ip3_title"
+  },
+  "vault_help_ip3_desc": "Pour conserver la structure des dossiers tout en laissant des applications cloud tierces continuer à synchroniser ces fichiers.",
+  "@vault_help_ip3_desc": {
+    "description": "vault help: vault_help_ip3_desc"
+  },
+  "vault_help_ip4_title": "Risques et conseils",
+  "@vault_help_ip4_title": {
+    "description": "vault help: vault_help_ip4_title"
+  },
+  "vault_help_ip4_desc": "Le chiffrement remplace directement le fichier d origine, une interruption peut laisser des restes. Sauvegardez avant et vérifiez les droits d écriture au déchiffrement.",
+  "@vault_help_ip4_desc": {
+    "description": "vault help: vault_help_ip4_desc"
+  },
+  "vault_help_notice": "Remarques",
+  "@vault_help_notice": {
+    "description": "vault help: vault_help_notice"
+  },
+  "vault_help_n1": "Le mot de passe et le sel déjà utilisés pour chiffrer ne sont pas modifiables ; créez un nouveau profil si besoin.",
+  "@vault_help_n1": {
+    "description": "vault help: vault_help_n1"
+  },
+  "vault_help_n2": "Les fichiers chiffrés en bac à sable résident dans le répertoire privé de l application et sont supprimés à la désinstallation.",
+  "@vault_help_n2": {
+    "description": "vault help: vault_help_n2"
+  },
+  "vault_help_n3": "En cas d oubli du mot de passe principal, aucun fichier chiffré n est récupérable : exportez toujours une sauvegarde.",
+  "@vault_help_n3": {
+    "description": "vault help: vault_help_n3"
+  },
+  "vault_remote_encrypt": "Chiffrement distant",
+  "@vault_remote_encrypt": {
+    "description": "crypt: vault_remote_encrypt"
+  },
+  "vault_import_source_title": "Choisir la source de chiffrement",
+  "@vault_import_source_title": {
+    "description": "crypt: vault_import_source_title"
+  },
+  "vault_import_source_remote": "Distant",
+  "@vault_import_source_remote": {
+    "description": "crypt: vault_import_source_remote"
+  },
+  "vault_import_source_remote_desc": "Associer un dossier chiffré distant ou chiffrer et envoyer des fichiers locaux",
+  "@vault_import_source_remote_desc": {
+    "description": "crypt: vault_import_source_remote_desc"
+  },
+  "vault_link_remote_crypt_desc": "Associer un dossier rclone crypt existant sur le serveur (déchiffré sur l appareil)",
+  "@vault_link_remote_crypt_desc": {
+    "description": "crypt: vault_link_remote_crypt_desc"
+  },
+  "vault_encrypt_upload": "Chiffrer et envoyer vers le serveur distant",
+  "@vault_encrypt_upload": {
+    "description": "crypt: vault_encrypt_upload"
+  },
+  "vault_encrypt_upload_desc": "Choisir des fichiers locaux, les chiffrer puis les envoyer vers le serveur distant",
+  "@vault_encrypt_upload_desc": {
+    "description": "crypt: vault_encrypt_upload_desc"
+  },
+  "vault_encrypt_uploading": "Chiffrement et envoi en cours…",
+  "@vault_encrypt_uploading": {
+    "description": "crypt: vault_encrypt_uploading"
+  },
+  "vault_encrypt_upload_done": "Envoi chiffré terminé",
+  "@vault_encrypt_upload_done": {
+    "description": "crypt: vault_encrypt_upload_done"
+  },
+  "vault_encrypt_upload_failed": "Échec de l envoi chiffré",
+  "@vault_encrypt_upload_failed": {
+    "description": "crypt: vault_encrypt_upload_failed"
+  },
+  "crypt_remote_upload": "Chiffrer et envoyer",
+  "@crypt_remote_upload": {
+    "description": "crypt: crypt_remote_upload"
+  },
+  "crypt_remote_download": "Déchiffrer et télécharger",
+  "@crypt_remote_download": {
+    "description": "crypt: crypt_remote_download"
+  },
+  "crypt_remote_downloading": "Déchiffrement et téléchargement en cours…",
+  "@crypt_remote_downloading": {
+    "description": "crypt: crypt_remote_downloading"
+  },
+  "crypt_remote_download_done": "Téléchargement déchiffré terminé",
+  "@crypt_remote_download_done": {
+    "description": "crypt: crypt_remote_download_done"
+  },
+  "crypt_remote_download_failed": "Échec du téléchargement déchiffré",
+  "@crypt_remote_download_failed": {
+    "description": "crypt: crypt_remote_download_failed"
+  },
+  "vault_remote_crypt_open_failed": "Échec de l'ouverture du fichier chiffré distant",
+  "@vault_remote_crypt_open_failed": {
+    "description": "crypt: vault_remote_crypt_open_failed"
+  },
+  "vault_remote_crypt_unsupported": "Ce type de fichier n'est pas pris en charge pour la lecture en streaming chiffré distant",
+  "@vault_remote_crypt_unsupported": {
+    "description": "crypt: vault_remote_crypt_unsupported"
+  },
+  "vault_link_remote_crypt": "Associer un dossier chiffre distant",
+  "@vault_link_remote_crypt": {
+    "description": "crypt: vault_link_remote_crypt"
+  },
+  "vault_link_remote_crypt_success": "Dossier chiffre distant associe",
+  "@vault_link_remote_crypt_success": {
+    "description": "crypt: vault_link_remote_crypt_success"
+  },
+  "vault_unlink_remote_crypt": "Dissocier",
+  "@vault_unlink_remote_crypt": {
+    "description": "crypt: vault_unlink_remote_crypt"
+  },
+  "vault_exporting": "Exportation...",
+  "@vault_exporting": {
+    "description": "vault/crypt: vault_exporting"
+  },
+  "vault_importing": "Importation...",
+  "@vault_importing": {
+    "description": "vault/crypt: vault_importing"
+  },
+  "vault_importing_backup": "Importation de la sauvegarde...",
+  "@vault_importing_backup": {
+    "description": "vault/crypt: vault_importing_backup"
+  },
+  "vault_restoring": "Restauration...",
+  "@vault_restoring": {
+    "description": "vault/crypt: vault_restoring"
+  },
+  "vault_decrypting": "Déchiffrement...",
+  "@vault_decrypting": {
+    "description": "vault/crypt: vault_decrypting"
+  },
+  "vault_import_backup_confirm": "L'importation remplacera le sandbox et la configuration de chiffrement actuels par le contenu de la sauvegarde (le mot de passe de déverrouillage n'est pas affecté). Continuer ?",
+  "@vault_import_backup_confirm": {
+    "description": "vault/crypt: vault_import_backup_confirm"
+  },
+  "vault_load_error": "Erreur de chargement du coffre : {error}",
+  "@vault_load_error": {
+    "description": "vault/crypt: vault_load_error"
+  },
+  "vault_restore_folder_hint": "Pour les dossiers, appuyez longuement et choisissez « Restaurer » pour les voir à leur emplacement d'origine",
+  "@vault_restore_folder_hint": {
+    "description": "vault/crypt: vault_restore_folder_hint"
+  },
+  "vault_decrypt_open_failed": "Échec du déchiffrement et de l'ouverture : {error}",
+  "@vault_decrypt_open_failed": {
+    "description": "vault/crypt: vault_decrypt_open_failed"
+  },
+  "vault_badge_inplace": "Sur place",
+  "@vault_badge_inplace": {
+    "description": "vault/crypt: vault_badge_inplace"
+  },
+  "vault_badge_sandbox": "Sandbox",
+  "@vault_badge_sandbox": {
+    "description": "vault/crypt: vault_badge_sandbox"
+  },
+  "vault_item_folder": "Dossier",
+  "@vault_item_folder": {
+    "description": "vault/crypt: vault_item_folder"
+  },
+  "crypt_need_master_title": "Mot de passe maître de chiffrement non défini",
+  "@crypt_need_master_title": {
+    "description": "vault/crypt: crypt_need_master_title"
+  },
+  "crypt_need_master_body": "Le chiffrement sur place et le sandbox utilisent le mot de passe maître des paramètres de chiffrement. Veuillez d'abord le configurer.",
+  "@crypt_need_master_body": {
+    "description": "vault/crypt: crypt_need_master_body"
+  },
+  "crypt_master_banner": "Le mot de passe maître et le sel configurés ici servent au chiffrement sur place et au sandbox. Gardez-les en mémoire ; ils sont indépendants du mot de passe de déverrouillage du coffre.",
+  "@crypt_master_banner": {
+    "description": "vault/crypt: crypt_master_banner"
+  },
+  "crypt_profile_name": "Nom du chiffrement",
+  "@crypt_profile_name": {
+    "description": "crypt: crypt_profile_name"
+  },
+  "crypt_profile_name_hint": "ex. Travail / Personnel",
+  "@crypt_profile_name_hint": {
+    "description": "crypt: crypt_profile_name_hint"
+  },
+  "crypt_profile_name_required": "Veuillez saisir un nom de chiffrement",
+  "@crypt_profile_name_required": {
+    "description": "crypt: crypt_profile_name_required"
+  },
+  "crypt_profile_name_duplicate": "Ce nom existe déjà",
+  "@crypt_profile_name_duplicate": {
+    "description": "crypt: crypt_profile_name_duplicate"
+  },
+  "crypt_profile_title_new": "Nouveau profil de chiffrement",
+  "@crypt_profile_title_new": {
+    "description": "crypt: crypt_profile_title_new"
+  },
+  "crypt_profile_title_edit": "Modifier le profil de chiffrement",
+  "@crypt_profile_title_edit": {
+    "description": "crypt: crypt_profile_title_edit"
+  },
+  "crypt_profile_section": "Configuration du mot de passe",
+  "@crypt_profile_section": {
+    "description": "crypt: crypt_profile_section"
+  },
+  "crypt_profile_add": "Nouveau profil",
+  "@crypt_profile_add": {
+    "description": "crypt: crypt_profile_add"
+  },
+  "crypt_profile_default": "Par défaut",
+  "@crypt_profile_default": {
+    "description": "crypt: crypt_profile_default"
+  },
+  "crypt_profile_set_default": "Définir par défaut",
+  "@crypt_profile_set_default": {
+    "description": "crypt: crypt_profile_set_default"
+  },
+  "crypt_profile_set_default_desc": "Les fichiers sans profil associé utilisent celui-ci",
+  "@crypt_profile_set_default_desc": {
+    "description": "crypt: crypt_profile_set_default_desc"
+  },
+  "crypt_profile_default_done": "Profil par défaut mis à jour",
+  "@crypt_profile_default_done": {
+    "description": "crypt: crypt_profile_default_done"
+  },
+  "crypt_profile_delete_message": "Supprimer ce profil rendra illisibles les fichiers chiffrés avec celui-ci.",
+  "@crypt_profile_delete_message": {
+    "description": "crypt: crypt_profile_delete_message"
+  },
+  "crypt_profile_empty": "Aucun profil de chiffrement",
+  "@crypt_profile_empty": {
+    "description": "crypt: crypt_profile_empty"
+  },
+  "crypt_profile_action_config": "Profil",
+  "@crypt_profile_action_config": {
+    "description": "crypt: crypt_profile_action_config"
+  },
+  "crypt_profile_select_title": "Choisir un profil de chiffrement",
+  "@crypt_profile_select_title": {
+    "description": "crypt: crypt_profile_select_title"
+  },
+  "crypt_profile_bound_done": "Profil associé",
+  "@crypt_profile_bound_done": {
+    "description": "crypt: crypt_profile_bound_done"
+  },
+  "crypt_profile_credential_locked": "Verrouillé",
+  "@crypt_profile_credential_locked": {
+    "description": "crypt: crypt_profile_credential_locked"
+  },
+  "crypt_profile_credential_locked_desc": "Le mot de passe et le sel déterminent la clé. Les modifier rendra les fichiers chiffrés illisibles - créez plutôt un nouveau profil.",
+  "@crypt_profile_credential_locked_desc": {
+    "description": "crypt: crypt_profile_credential_locked_desc"
+  },
+  "crypt_profile_suffix_none": "sans suffixe",
+  "@crypt_profile_suffix_none": {
+    "description": "crypt: crypt_profile_suffix_none"
+  },
+  "crypt_profile_sandbox_title": "Changer le profil du sandbox",
+  "@crypt_profile_sandbox_title": {
+    "description": "crypt: crypt_profile_sandbox_title"
+  },
+  "crypt_profile_sandbox_message": "Le sandbox utilise un seul profil dans son ensemble. Après le changement, d'autres fichiers peuvent s'afficher en texte chiffré. Continuer ?",
+  "@crypt_profile_sandbox_message": {
+    "description": "crypt: crypt_profile_sandbox_message"
+  },
+  "crypt_mount_section": "Emplacements chiffrés",
+  "@crypt_mount_section": {
+    "description": "crypt: crypt_mount_section"
+  },
+  "crypt_settings_subtitle": "Gérer les dossiers chiffrés et les points de montage",
   "@crypt_settings_subtitle": {
     "description": "crypt: crypt_settings_subtitle"
   },
-  "crypt_add_mount": "Add Encrypted Folder",
+  "crypt_add_mount": "Ajouter un dossier chiffré",
   "@crypt_add_mount": {
     "description": "crypt: crypt_add_mount"
   },
-  "crypt_edit_mount": "Edit Encrypted Folder",
+  "crypt_edit_mount": "Modifier le dossier chiffré",
   "@crypt_edit_mount": {
     "description": "crypt: crypt_edit_mount"
   },
-  "crypt_no_mounts_title": "No Encrypted Folders",
+  "crypt_no_mounts_title": "Aucun dossier chiffré",
   "@crypt_no_mounts_title": {
     "description": "crypt: crypt_no_mounts_title"
   },
-  "crypt_no_mounts_subtitle": "Tap the button below to add your first encrypted folder",
+  "crypt_no_mounts_subtitle": "Appuyez sur le bouton ci-dessous pour ajouter votre premier dossier chiffré",
   "@crypt_no_mounts_subtitle": {
     "description": "crypt: crypt_no_mounts_subtitle"
   },
-  "crypt_field_name": "Name",
+  "crypt_field_name": "Nom",
   "@crypt_field_name": {
     "description": "crypt: crypt_field_name"
   },
-  "crypt_field_name_hint": "Optional, uses folder name if empty",
+  "crypt_field_name_hint": "Facultatif ; le nom du dossier sera utilisé si vide",
   "@crypt_field_name_hint": {
     "description": "crypt: crypt_field_name_hint"
   },
-  "crypt_field_path": "Folder Path",
+  "crypt_field_path": "Chemin du dossier",
   "@crypt_field_path": {
     "description": "crypt: crypt_field_path"
   },
-  "crypt_field_path_hint": "Select folder to encrypt",
+  "crypt_field_path_hint": "Sélectionner le dossier à chiffrer",
   "@crypt_field_path_hint": {
     "description": "crypt: crypt_field_path_hint"
   },
-  "crypt_field_password": "Password",
+  "crypt_field_password": "Mot de passe",
   "@crypt_field_password": {
     "description": "crypt: crypt_field_password"
   },
-  "crypt_field_confirm_password": "Confirm Password",
+  "crypt_field_confirm_password": "Confirmer le mot de passe",
   "@crypt_field_confirm_password": {
     "description": "crypt: crypt_field_confirm_password"
   },
-  "crypt_error_path_required": "Please select a folder path",
+  "crypt_error_path_required": "Veuillez sélectionner un chemin de dossier",
   "@crypt_error_path_required": {
     "description": "crypt: crypt_error_path_required"
   },
-  "crypt_error_password_required": "Please enter a password",
+  "crypt_error_password_required": "Veuillez saisir un mot de passe",
   "@crypt_error_password_required": {
     "description": "crypt: crypt_error_password_required"
   },
-  "crypt_error_password_short": "Password must be at least 4 characters",
+  "crypt_error_password_short": "Le mot de passe doit contenir au moins 4 caractères",
   "@crypt_error_password_short": {
     "description": "crypt: crypt_error_password_short"
   },
-  "crypt_error_password_mismatch": "Passwords do not match",
+  "crypt_error_password_mismatch": "Les mots de passe ne correspondent pas",
   "@crypt_error_password_mismatch": {
     "description": "crypt: crypt_error_password_mismatch"
   },
-  "crypt_section_mode": "Encryption Mode",
+  "crypt_section_mode": "Mode de chiffrement",
   "@crypt_section_mode": {
     "description": "crypt: crypt_section_mode"
   },
-  "crypt_mode_inplace": "In-place Encryption",
+  "crypt_mode_inplace": "Chiffrement sur place",
   "@crypt_mode_inplace": {
     "description": "crypt: crypt_mode_inplace"
   },
-  "crypt_mode_inplace_desc": "Files stay in place, names and content are encrypted",
+  "crypt_mode_inplace_desc": "Les fichiers restent en place, noms et contenus sont chiffrés",
   "@crypt_mode_inplace_desc": {
     "description": "crypt: crypt_mode_inplace_desc"
   },
-  "crypt_mode_sandbox": "Sandbox Encryption",
+  "crypt_mode_sandbox": "Chiffrement en sandbox",
   "@crypt_mode_sandbox": {
     "description": "crypt: crypt_mode_sandbox"
   },
-  "crypt_mode_sandbox_desc": "Files moved to sandbox, more secure but slightly slower",
+  "crypt_mode_sandbox_desc": "Les fichiers sont déplacés dans le sandbox ; plus sûr mais un peu plus lent",
   "@crypt_mode_sandbox_desc": {
     "description": "crypt: crypt_mode_sandbox_desc"
   },
-  "crypt_section_advanced": "Advanced Options",
+  "crypt_section_advanced": "Options avancées",
   "@crypt_section_advanced": {
     "description": "crypt: crypt_section_advanced"
   },
-  "crypt_advanced_toggle": "Show advanced encryption options",
+  "crypt_advanced_toggle": "Afficher les options de chiffrement avancées",
   "@crypt_advanced_toggle": {
     "description": "crypt: crypt_advanced_toggle"
   },
-  "crypt_field_filename_enc": "Filename Encryption",
+  "crypt_field_filename_enc": "Chiffrement des noms de fichiers",
   "@crypt_field_filename_enc": {
     "description": "crypt: crypt_field_filename_enc"
   },
-  "crypt_field_dirname_enc": "Encrypt Directory Names",
+  "crypt_field_dirname_enc": "Chiffrer les noms de dossiers",
   "@crypt_field_dirname_enc": {
     "description": "crypt: crypt_field_dirname_enc"
   },
-  "crypt_field_filename_encoding": "Filename Encoding",
+  "crypt_field_filename_encoding": "Encodage des noms de fichiers",
   "@crypt_field_filename_encoding": {
     "description": "crypt: crypt_field_filename_encoding"
   },
-  "crypt_field_suffix": "Encrypted Suffix",
+  "crypt_field_suffix": "Suffixe de chiffrement",
   "@crypt_field_suffix": {
     "description": "crypt: crypt_field_suffix"
   },
-  "crypt_field_salt": "Salt (optional)",
+  "crypt_field_salt": "Sel (facultatif)",
   "@crypt_field_salt": {
     "description": "crypt: crypt_field_salt"
   },
-  "crypt_field_salt_hint": "Auto-generated if empty",
+  "crypt_field_salt_hint": "Généré automatiquement si vide",
   "@crypt_field_salt_hint": {
     "description": "crypt: crypt_field_salt_hint"
   },
-  "crypt_action_browse": "Browse",
+  "crypt_action_browse": "Parcourir",
   "@crypt_action_browse": {
     "description": "crypt: crypt_action_browse"
   },
-  "crypt_delete_title": "Delete Encrypted Folder",
+  "crypt_delete_title": "Supprimer le dossier chiffré",
   "@crypt_delete_title": {
     "description": "crypt: crypt_delete_title"
   },
-  "crypt_delete_message": "Delete encryption config for \"{name}\"? Files will not be deleted.",
+  "crypt_delete_message": "Supprimer la configuration de chiffrement de « {name} » ? Les fichiers ne seront pas supprimés.",
   "@crypt_delete_message": {
     "description": "crypt: crypt_delete_message"
   },
-  "crypt_filename_enc": "Filename Enc",
+  "crypt_filename_enc": "Noms de fichiers",
   "@crypt_filename_enc": {
     "description": "crypt: crypt_filename_enc"
   },
-  "crypt_share_title": "Share Encrypted Folder",
+  "crypt_share_title": "Partager le dossier chiffré",
   "@crypt_share_title": {
     "description": "crypt: crypt_share_title"
   },
-  "crypt_share_hint": "Scan the QR code to import encryption config. Password is required to decrypt files.",
+  "crypt_share_hint": "Scannez le QR code pour importer la configuration de chiffrement. Le mot de passe est requis pour déchiffrer les fichiers.",
   "@crypt_share_hint": {
     "description": "crypt: crypt_share_hint"
   },
-  "crypt_action_share": "Share",
+  "crypt_action_share": "Partager",
   "@crypt_action_share": {
     "description": "crypt: crypt_action_share"
   },
-  "crypt_share_password_note": "Password is NOT included in the QR code. Share it separately via a secure channel.",
+  "crypt_share_password_note": "Le mot de passe n'est PAS inclus dans le QR code. Partagez-le séparément via un canal sécurisé.",
   "@crypt_share_password_note": {
     "description": "crypt: crypt_share_password_note"
   },
-  "crypt_action_encrypt": "Encrypt Now",
+  "crypt_action_encrypt": "Chiffrer maintenant",
   "@crypt_action_encrypt": {
     "description": "crypt: crypt_action_encrypt"
   },
-  "crypt_action_decrypt": "Decrypt",
+  "crypt_action_decrypt": "Déchiffrer",
   "@crypt_action_decrypt": {
     "description": "crypt: crypt_action_decrypt"
   },
-  "crypt_encrypt_title": "Encryption Confirmation",
+  "crypt_encrypt_title": "Confirmation du chiffrement",
   "@crypt_encrypt_title": {
     "description": "crypt: crypt_encrypt_title"
   },
-  "crypt_encrypt_message": "This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?",
+  "crypt_encrypt_message": "Tous les fichiers et sous-dossiers seront chiffrés. Les autres gestionnaires de fichiers ne pourront plus voir leur contenu ni leur nom. Continuer ?",
   "@crypt_encrypt_message": {
     "description": "crypt: crypt_encrypt_message"
   },
-  "crypt_encrypting": "Encrypting...",
+  "crypt_encrypting": "Chiffrement...",
   "@crypt_encrypting": {
     "description": "crypt: crypt_encrypting"
   },
-  "crypt_encrypt_success": "Encryption completed",
+  "crypt_encrypt_success": "Chiffrement terminé",
   "@crypt_encrypt_success": {
     "description": "crypt: crypt_encrypt_success"
   },
-  "crypt_encrypt_failed": "Encryption failed: {error}",
+  "crypt_encrypt_failed": "Échec du chiffrement : {error}",
   "@crypt_encrypt_failed": {
     "description": "crypt: crypt_encrypt_failed"
   },
-  "crypt_decrypt_title": "Decryption Confirmation",
+  "crypt_decrypt_title": "Confirmation du déchiffrement",
   "@crypt_decrypt_title": {
     "description": "crypt: crypt_decrypt_title"
   },
-  "crypt_decrypt_message": "This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?",
+  "crypt_decrypt_message": "Tous les fichiers et sous-dossiers seront déchiffrés et redeviendront normaux. Continuer ?",
   "@crypt_decrypt_message": {
     "description": "crypt: crypt_decrypt_message"
   },
-  "crypt_decrypting": "Decrypting...",
+  "crypt_decrypting": "Déchiffrement...",
   "@crypt_decrypting": {
     "description": "crypt: crypt_decrypting"
   },
-  "crypt_decrypt_success": "Decryption completed",
+  "crypt_decrypt_success": "Déchiffrement terminé",
   "@crypt_decrypt_success": {
     "description": "crypt: crypt_decrypt_success"
   },
-  "crypt_decrypt_failed": "Decryption failed: {error}",
+  "crypt_decrypt_failed": "Échec du déchiffrement : {error}",
   "@crypt_decrypt_failed": {
     "description": "crypt: crypt_decrypt_failed"
   },
-  "crypt_filename_enc_off": "Off",
+  "crypt_filename_enc_off": "Désactivé",
   "@crypt_filename_enc_off": {
     "description": "crypt: crypt_filename_enc_off"
   },
@@ -6814,7 +7215,7 @@
   "@crypt_filename_enc_standard": {
     "description": "crypt: crypt_filename_enc_standard"
   },
-  "crypt_filename_enc_obfuscate": "Obfuscate",
+  "crypt_filename_enc_obfuscate": "Obfuscation",
   "@crypt_filename_enc_obfuscate": {
     "description": "crypt: crypt_filename_enc_obfuscate"
   },
@@ -6830,95 +7231,95 @@
   "@crypt_filename_enc_base32768": {
     "description": "crypt: crypt_filename_enc_base32768"
   },
-  "crypt_dirname_enc_yes": "Yes",
+  "crypt_dirname_enc_yes": "Oui",
   "@crypt_dirname_enc_yes": {
     "description": "crypt: crypt_dirname_enc_yes"
   },
-  "crypt_dirname_enc_no": "No",
+  "crypt_dirname_enc_no": "Non",
   "@crypt_dirname_enc_no": {
     "description": "crypt: crypt_dirname_enc_no"
   },
-  "vault_encrypt_files": "+ Encrypt Files",
+  "vault_encrypt_files": "+ Chiffrer des fichiers",
   "@vault_encrypt_files": {
     "description": "vault/crypt: vault_encrypt_files"
   },
-  "vault_select_encryption_method": "Select Encryption Method",
+  "vault_select_encryption_method": "Sélectionner la méthode de chiffrement",
   "@vault_select_encryption_method": {
     "description": "vault/crypt: vault_select_encryption_method"
   },
-  "vault_inplace_encrypt": "In-place Encryption",
+  "vault_inplace_encrypt": "Chiffrement sur place",
   "@vault_inplace_encrypt": {
     "description": "vault/crypt: vault_inplace_encrypt"
   },
-  "vault_inplace_encrypt_desc": "Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser",
+  "vault_inplace_encrypt_desc": "Les fichiers restent dans le dossier d'origine, les noms sont chiffrés après chiffrement, badge 🔐 affiché dans le navigateur",
   "@vault_inplace_encrypt_desc": {
     "description": "vault/crypt: vault_inplace_encrypt_desc"
   },
-  "vault_sandbox_encrypt": "Sandbox Encryption",
+  "vault_sandbox_encrypt": "Chiffrement en sandbox",
   "@vault_sandbox_encrypt": {
     "description": "vault/crypt: vault_sandbox_encrypt"
   },
-  "vault_sandbox_encrypt_desc": "Files moved to vault private directory, filenames hidden, only visible in vault page",
+  "vault_sandbox_encrypt_desc": "Les fichiers sont déplacés dans le dossier privé du coffre, les noms sont masqués, visibles uniquement sur la page du coffre",
   "@vault_sandbox_encrypt_desc": {
     "description": "vault/crypt: vault_sandbox_encrypt_desc"
   },
-  "vault_need_set_password": "Need to Set Master Password First",
+  "vault_need_set_password": "Définir d'abord le mot de passe maître",
   "@vault_need_set_password": {
     "description": "vault/crypt: vault_need_set_password"
   },
-  "vault_need_set_password_desc": "Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.",
+  "vault_need_set_password_desc": "Configurez d'abord le mot de passe maître et le sel dans les paramètres de chiffrement, puis vous pourrez effectuer un chiffrement sur place.",
   "@vault_need_set_password_desc": {
     "description": "vault/crypt: vault_need_set_password_desc"
   },
-  "vault_go_set_password": "Set Password",
+  "vault_go_set_password": "Définir le mot de passe",
   "@vault_go_set_password": {
     "description": "vault/crypt: vault_go_set_password"
   },
-  "vault_encrypting": "Encrypting...",
+  "vault_encrypting": "Chiffrement...",
   "@vault_encrypting": {
     "description": "vault/crypt: vault_encrypting"
   },
-  "vault_encrypting_desc": "Encrypting selected files/folders, please wait...",
+  "vault_encrypting_desc": "Chiffrement des fichiers/dossiers sélectionnés, veuillez patienter...",
   "@vault_encrypting_desc": {
     "description": "vault/crypt: vault_encrypting_desc"
   },
-  "vault_inplace_encrypt_done": "In-place encryption completed, {count} files/folders encrypted",
+  "vault_inplace_encrypt_done": "Chiffrement sur place terminé, {count} fichiers/dossiers chiffrés",
   "@vault_inplace_encrypt_done": {
     "description": "vault/crypt: vault_inplace_encrypt_done"
   },
-  "vault_encrypt_failed": "Encryption failed: {error}",
+  "vault_encrypt_failed": "Échec du chiffrement : {error}",
   "@vault_encrypt_failed": {
     "description": "vault/crypt: vault_encrypt_failed"
   },
-  "vault_inplace_section": "In-place Encryption",
+  "vault_inplace_section": "Chiffrement sur place",
   "@vault_inplace_section": {
     "description": "vault/crypt: vault_inplace_section"
   },
-  "vault_open_location": "Open Location",
+  "vault_open_location": "Ouvrir l'emplacement",
   "@vault_open_location": {
     "description": "vault/crypt: vault_open_location"
   },
-  "vault_decrypt_action": "Decrypt",
+  "vault_decrypt_action": "Déchiffrer",
   "@vault_decrypt_action": {
     "description": "vault/crypt: vault_decrypt_action"
   },
-  "vault_decrypt_confirm_title": "Decrypt File",
+  "vault_decrypt_confirm_title": "Déchiffrer le fichier",
   "@vault_decrypt_confirm_title": {
     "description": "vault/crypt: vault_decrypt_confirm_title"
   },
-  "vault_decrypt_confirm_desc": "Are you sure you want to decrypt \"{name}\"? The file will be restored to normal after decryption.",
+  "vault_decrypt_confirm_desc": "Déchiffrer « {name} » ? Le fichier redeviendra normal après le déchiffrement.",
   "@vault_decrypt_confirm_desc": {
     "description": "vault/crypt: vault_decrypt_confirm_desc"
   },
-  "vault_decrypt_success": "Decryption successful",
+  "vault_decrypt_success": "Déchiffrement réussi",
   "@vault_decrypt_success": {
     "description": "vault/crypt: vault_decrypt_success"
   },
-  "vault_decrypt_failed": "Decryption failed: {error}",
+  "vault_decrypt_failed": "Échec du déchiffrement : {error}",
   "@vault_decrypt_failed": {
     "description": "vault/crypt: vault_decrypt_failed"
   },
-  "crypt_set_master_password": "Set Encryption Master Password",
+  "crypt_set_master_password": "Définir le mot de passe maître de chiffrement",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
   },
@@ -6965,5 +7366,103 @@
   "vault_remove_from_list": "Retirer",
   "@vault_remove_from_list": {
     "description": "vault: vault_remove_from_list"
-  }
+  },
+  "security_vault_switch_desc": "Activer la fonction coffre-fort privé",
+  "@security_vault_switch_desc": {
+    "description": "security settings"
+  },
+  "security_verify_password_desc": "Saisissez votre mot de passe pour ouvrir les paramètres de sécurité",
+  "@security_verify_password_desc": {
+    "description": "security settings"
+  },
+  "vault_verify_password_title": "Vérifier le mot de passe",
+  "@vault_verify_password_title": {
+    "description": "security settings"
+  },
+  "vault_verify_password_hint": "Saisissez votre mot de passe de sécurité",
+  "@vault_verify_password_hint": {
+    "description": "security settings"
+  },
+  "vault_go_security_settings": "Accéder aux paramètres de sécurité",
+  "@vault_go_security_settings": {
+    "description": "security settings"
+  },
+  "security_settings_subtitle": "Coffre, garde à distance, protection de l'application et déverrouillage par empreinte",
+  "@security_settings_subtitle": {
+    "description": "security settings"
+  },
+  "vault_disabled_hint": "Le coffre est désactivé. Activez-le dans Paramètres → Paramètres de sécurité",
+  "@vault_disabled_hint": {
+    "description": "vault: vault_disabled_hint"
+  },
+  "security_set_password_desc": "Définissez un mot de passe de sécurité pour accéder aux paramètres de sécurité et déverrouiller le coffre",
+  "@security_set_password_desc": {
+    "description": "security settings: security_set_password_desc"
+  },
+  "security_confirm_password": "Saisissez à nouveau le mot de passe pour confirmer",
+  "@security_confirm_password": {
+    "description": "security settings: security_confirm_password"
+  },
+  "biometric_reason_security_settings": "Vérifiez votre empreinte pour accéder aux paramètres de sécurité",
+  "@biometric_reason_security_settings": {
+    "description": "biometric: biometric_reason_security_settings"
+  },
+  "toolbox_scan": "Scanner",
+  "@toolbox_scan": {
+    "description": "scan: toolbox_scan"
+  },
+  "scan_result_title": "Résultat du scan",
+  "@scan_result_title": {
+    "description": "scan: scan_result_title"
+  },
+  "scan_copy": "Copier",
+  "@scan_copy": {
+    "description": "scan: scan_copy"
+  },
+  "scan_copied": "Copié dans le presse-papiers",
+  "@scan_copied": {
+    "description": "scan: scan_copied"
+  },
+  "scan_open_link": "Ouvrir le lien",
+  "@scan_open_link": {
+    "description": "scan: scan_open_link"
+  },
+  "scan_continue": "Continuer",
+  "@scan_continue": {
+    "description": "scan: scan_continue"
+  },
+  "scan_torch": "Lampe de poche",
+  "@scan_torch": {
+    "description": "scan: scan_torch"
+  },
+  "scan_switch_camera": "Changer de caméra",
+  "@scan_switch_camera": {
+    "description": "scan: scan_switch_camera"
+  },
+  "scan_camera_error": "Impossible d'accéder à la caméra. Veuillez vérifier l'autorisation.",
+  "@scan_camera_error": {
+    "description": "scan: scan_camera_error"
+  },
+  "scan_hint": "Placez le code QR/barre dans le cadre pour scanner automatiquement",
+  "@scan_hint": {
+    "description": "scan: scan_hint"
+  },
+  "scan_from_gallery": "Depuis la galerie",
+  "@scan_from_gallery": {
+    "description": "scan: scan_from_gallery"
+  },
+  "scan_no_barcode": "Aucun code QR ou code-barres détecté dans l'image",
+  "@scan_no_barcode": {
+    "description": "scan: scan_no_barcode"
+  },
+  "ui_backup_confirm_title": "Confirmer la sauvegarde",
+  "ui_backup_confirm_message": "Sauvegarde vers le chemin suivant :\n{path}\n\nContinuer ?",
+  "@ui_backup_confirm_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "vault_remote_encrypt": "Chiffrement distant"
 }

@@ -5133,7 +5133,7 @@ class L10nRu extends L10n {
   String get ui_remote_guard_wrong_pin => 'Неверный PIN. Попробуйте снова.';
 
   @override
-  String get ui_remote_guard_change_pin => 'Изменить PIN';
+  String get ui_remote_guard_change_pin => 'Изменить пароль';
 
   @override
   String get ui_remote_guard_pin_hint => 'Пароль (буквы, цифры или символы)';
@@ -5178,7 +5178,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_change_vault_pin_desc =>
-      'Изменить PIN личного сейфа (повторно шифрует все скрытые файлы)';
+      'Изменить пароль безопасности и разблокировки сейфа. Зашифрованные файлы не затрагиваются';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -6261,7 +6261,7 @@ class L10nRu extends L10n {
 
   @override
   String get vault_uninstall_warning =>
-      'При удалении приложения хранилище очищается. Сначала экспортируйте резервную копию.';
+      'При удалении приложения данные шифрования песочницы очищаются. Сначала экспортируйте резервную копию.';
 
   @override
   String get vault_backup_exported => 'Резервная копия экспортирована в';
@@ -6297,18 +6297,19 @@ class L10nRu extends L10n {
 
   @override
   String get vault_export_backup_confirm =>
-      'The backup file will be saved to the following location:';
+      'Резервная копия будет сохранена в следующее место:';
 
   @override
-  String get vault_import_only_zip => 'Only .zip backup files are supported';
+  String get vault_import_only_zip =>
+      'Поддерживаются только файлы резервных копий .zip';
 
   @override
   String get vault_import_password_hint =>
-      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+      'Эта копия создана с другим паролем. Разблокируйте хранилище паролем, использованным при её создании';
 
   @override
   String get vault_open_backup_location =>
-      'Open the folder where the backup is saved?';
+      'Открыть папку, куда сохранена копия?';
 
   @override
   String get open_file => 'Open';
@@ -6650,175 +6651,519 @@ class L10nRu extends L10n {
   String get ui_preset_colors => 'Предустановленные цвета';
 
   @override
-  String get crypt_settings_title => 'Encryption';
+  String get crypt_settings_title => 'Настройка пароля';
+
+  @override
+  String get vault_config_password => 'Настройка пароля';
+
+  @override
+  String get vault_help => 'Справка';
+
+  @override
+  String get vault_help_title => 'Справка по сейфу';
+
+  @override
+  String get vault_help_intro =>
+      'Сейф использует тот же формат crypt, что и rclone. Шифрование и расшифровка выполняются только на устройстве, ключ никогда его не покидает.';
+
+  @override
+  String get vault_help_highlights => 'Основные возможности';
+
+  @override
+  String get vault_help_hl1_title => 'Шифрование с нулевым разглашением';
+
+  @override
+  String get vault_help_hl1_desc =>
+      'Мастер-пароль и соль хранятся только на устройстве, поэтому ни облако, ни третьи лица не могут расшифровать файлы.';
+
+  @override
+  String get vault_help_hl2_title => 'Совместимость с rclone и OpenList';
+
+  @override
+  String get vault_help_hl2_desc =>
+      'Используется тот же формат crypt, поэтому rclone на компьютере расшифрует те же файлы.';
+
+  @override
+  String get vault_help_hl3_title => 'Несколько паролей и удалённое чтение';
+
+  @override
+  String get vault_help_hl3_desc =>
+      'Для каждой папки можно закрепить свой профиль пароля, а удалённые зашифрованные папки доступны для просмотра и воспроизведения без полной загрузки.';
+
+  @override
+  String get vault_help_basics => 'Основные действия';
+
+  @override
+  String get vault_help_b1_title => '1. Сначала задайте мастер-пароль';
+
+  @override
+  String get vault_help_b1_desc =>
+      'Задайте мастер-пароль и соль в разделе «Профили паролей» и запомните их; они не связаны с паролем разблокировки сейфа.';
+
+  @override
+  String get vault_help_b2_title => '2. Зашифровать файлы';
+
+  @override
+  String get vault_help_b2_desc =>
+      'Выберите файлы в браузере, нажмите «Зашифровать» и выберите шифрование на месте или в песочнице.';
+
+  @override
+  String get vault_help_b3_title => '3. Просмотр и открытие';
+
+  @override
+  String get vault_help_b3_desc =>
+      'Зашифрованные элементы перечислены в сейфе; нажатие временно расшифровывает их для предпросмотра.';
+
+  @override
+  String get vault_help_b4_title => '4. Расшифровать';
+
+  @override
+  String get vault_help_b4_desc =>
+      'Выберите элемент и нажмите «Расшифровать», чтобы вернуть обычный файл на исходное место.';
+
+  @override
+  String get vault_help_b5_title => '5. Резервная копия и восстановление';
+
+  @override
+  String get vault_help_b5_desc =>
+      'Экспортируйте резервную копию с профилями шифрования в разделе «Резервное копирование» перед удалением приложения.';
+
+  @override
+  String get vault_help_compat => 'Совместимость';
+
+  @override
+  String get vault_help_c1_title => 'Формат шифрования';
+
+  @override
+  String get vault_help_c1_desc =>
+      'Содержимое — XSalsa20-Poly1305; имена шифруются через EME и кодируются в base32/base64, при необходимости с суффиксом .bin.';
+
+  @override
+  String get vault_help_c2_title => 'Облако и синхронизация';
+
+  @override
+  String get vault_help_c2_desc =>
+      'Шифротекст синхронизируется любым облаком или инструментом; сервер видит только шифротекст, но не реальные имена.';
+
+  @override
+  String get vault_help_c3_title => 'Известные ограничения';
+
+  @override
+  String get vault_help_c3_desc =>
+      'Зашифрованные имена намного длиннее, слишком длинные могут не обработаться; переименовывайте только в приложении, правка шифрованного имени сделает файл нечитаемым.';
+
+  @override
+  String get vault_help_inplace => 'Шифрование на месте';
+
+  @override
+  String get vault_help_inplace_intro =>
+      'Шифрование на месте шифрует файлы там, где они лежат: содержимое и имя заменяются шифротекстом, файл остаётся в исходной папке и не переносится в приватный каталог сейфа.';
+
+  @override
+  String get vault_help_ip1_title => 'Связь с исходной папкой';
+
+  @override
+  String get vault_help_ip1_desc =>
+      'Расположение и структура папок не меняются; в браузере зашифрованные файлы помечаются значком замка.';
+
+  @override
+  String get vault_help_ip2_title => 'Что видят другие приложения';
+
+  @override
+  String get vault_help_ip2_desc =>
+      'Другие менеджеры и плееры видят лишь бессмысленные шифрованные имена и не могут их открыть — в этом и состоит защита.';
+
+  @override
+  String get vault_help_ip3_title => 'Когда применять';
+
+  @override
+  String get vault_help_ip3_desc =>
+      'Когда нужно сохранить структуру папок и чтобы сторонние облачные приложения продолжали синхронизировать эти файлы.';
+
+  @override
+  String get vault_help_ip4_title => 'Риски и советы';
+
+  @override
+  String get vault_help_ip4_desc =>
+      'Шифрование напрямую заменяет исходный файл, и прерывание может оставить частичные файлы. Сделайте резервную копию и проверьте права на запись при расшифровке.';
+
+  @override
+  String get vault_help_notice => 'Замечания';
+
+  @override
+  String get vault_help_n1 =>
+      'Пароль и соль, уже использованные для шифрования, изменить нельзя; при необходимости создайте новый профиль.';
+
+  @override
+  String get vault_help_n2 =>
+      'Файлы, зашифрованные в песочнице, хранятся в приватном каталоге приложения и удаляются вместе с ним.';
+
+  @override
+  String get vault_help_n3 =>
+      'Если мастер-пароль утерян, восстановить зашифрованные файлы невозможно — всегда экспортируйте резервную копию.';
+
+  @override
+  String get vault_remote_encrypt => 'Удаленное шифрование';
+
+  @override
+  String get vault_import_source_title => 'Выберите источник шифрования';
+
+  @override
+  String get vault_import_source_remote => 'Удалённый';
+
+  @override
+  String get vault_import_source_remote_desc =>
+      'Связать удалённую зашифрованную папку или зашифровать и загрузить локальные файлы';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      'Связать существующую папку rclone crypt на сервере (расшифровка на устройстве)';
+
+  @override
+  String get vault_encrypt_upload =>
+      'Зашифровать и загрузить на удалённый сервер';
+
+  @override
+  String get vault_encrypt_upload_desc =>
+      'Выберите локальные файлы, зашифруйте и загрузите на удалённый сервер';
+
+  @override
+  String get vault_encrypt_uploading => 'Шифрование и загрузка…';
+
+  @override
+  String get vault_encrypt_upload_done => 'Зашифрованная загрузка завершена';
+
+  @override
+  String get vault_encrypt_upload_failed => 'Ошибка зашифрованной загрузки';
+
+  @override
+  String get crypt_remote_upload => 'Зашифровать и загрузить';
+
+  @override
+  String get crypt_remote_download => 'Расшифровать и скачать';
+
+  @override
+  String get crypt_remote_downloading => 'Расшифровка и загрузка…';
+
+  @override
+  String get crypt_remote_download_done => 'Расшифрованная загрузка завершена';
+
+  @override
+  String get crypt_remote_download_failed => 'Ошибка расшифрованной загрузки';
+
+  @override
+  String get vault_remote_crypt_open_failed =>
+      'Не удалось открыть удалённый зашифрованный файл';
+
+  @override
+  String get vault_remote_crypt_unsupported =>
+      'Этот тип файла не поддерживается для удалённого зашифрованного потокового воспроизведения';
+
+  @override
+  String get vault_link_remote_crypt => 'Связать удалённую зашифрованную папку';
+
+  @override
+  String get vault_link_remote_crypt_success =>
+      'Удалённая зашифрованная папка связана';
+
+  @override
+  String get vault_unlink_remote_crypt => 'Отвязать';
+
+  @override
+  String get vault_exporting => 'Экспорт...';
+
+  @override
+  String get vault_importing => 'Импорт...';
+
+  @override
+  String get vault_importing_backup => 'Импорт резервной копии...';
+
+  @override
+  String get vault_restoring => 'Восстановление...';
+
+  @override
+  String get vault_decrypting => 'Расшифровка...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      'Импорт перезапишет текущую песочницу и настройки шифрования содержимым резервной копии (пароль разблокировки не изменится). Продолжить?';
+
+  @override
+  String vault_load_error(Object error) {
+    return 'Ошибка загрузки хранилища: $error';
+  }
+
+  @override
+  String get vault_restore_folder_hint =>
+      'Для папок используйте долгое нажатие → «Восстановить», чтобы увидеть их в исходном месте';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return 'Не удалось расшифровать и открыть: $error';
+  }
+
+  @override
+  String get vault_badge_inplace => 'На месте';
+
+  @override
+  String get vault_badge_sandbox => 'Песочница';
+
+  @override
+  String get vault_item_folder => 'Папка';
+
+  @override
+  String get crypt_need_master_title => 'Не задан мастер-пароль шифрования';
+
+  @override
+  String get crypt_need_master_body =>
+      'Шифрование на месте и в песочнице используют мастер-пароль из настроек шифрования. Сначала задайте его.';
+
+  @override
+  String get crypt_master_banner =>
+      'Мастер-пароль и соль здесь используются для шифрования на месте и в песочнице. Обязательно запомните их; они не зависят от пароля разблокировки хранилища.';
+
+  @override
+  String get crypt_profile_name => 'Имя шифрования';
+
+  @override
+  String get crypt_profile_name_hint => 'например: Работа / Личное';
+
+  @override
+  String get crypt_profile_name_required => 'Введите имя шифрования';
+
+  @override
+  String get crypt_profile_name_duplicate => 'Такое имя уже существует';
+
+  @override
+  String get crypt_profile_title_new => 'Новый профиль шифрования';
+
+  @override
+  String get crypt_profile_title_edit => 'Изменить профиль шифрования';
+
+  @override
+  String get crypt_profile_section => 'Настройка пароля';
+
+  @override
+  String get crypt_profile_add => 'Новый профиль';
+
+  @override
+  String get crypt_profile_default => 'По умолчанию';
+
+  @override
+  String get crypt_profile_set_default => 'Сделать по умолчанию';
+
+  @override
+  String get crypt_profile_set_default_desc =>
+      'Файлы без привязанного профиля используют этот';
+
+  @override
+  String get crypt_profile_default_done => 'Профиль по умолчанию обновлён';
+
+  @override
+  String get crypt_profile_delete_message =>
+      'После удаления этого профиля зашифрованные им файлы нельзя будет расшифровать.';
+
+  @override
+  String get crypt_profile_empty => 'Профилей шифрования пока нет';
+
+  @override
+  String get crypt_profile_action_config => 'Профиль';
+
+  @override
+  String get crypt_profile_select_title => 'Выберите профиль шифрования';
+
+  @override
+  String get crypt_profile_bound_done => 'Профиль привязан';
+
+  @override
+  String get crypt_profile_credential_locked => 'Заблокировано';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      'Пароль и соль определяют ключ. Изменение сделает зашифрованные файлы нечитаемыми — создайте новый профиль.';
+
+  @override
+  String get crypt_profile_suffix_none => 'без суффикса';
+
+  @override
+  String get crypt_profile_sandbox_title => 'Сменить профиль песочницы';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      'Песочница использует один профиль целиком. После смены другие файлы могут отображаться как шифротекст. Продолжить?';
+
+  @override
+  String get crypt_mount_section => 'Зашифрованные расположения';
 
   @override
   String get crypt_settings_subtitle =>
-      'Manage encrypted folders and mount points';
+      'Управление шифрованными папками и точками монтирования';
 
   @override
-  String get crypt_add_mount => 'Add Encrypted Folder';
+  String get crypt_add_mount => 'Добавить шифрованную папку';
 
   @override
-  String get crypt_edit_mount => 'Edit Encrypted Folder';
+  String get crypt_edit_mount => 'Изменить шифрованную папку';
 
   @override
-  String get crypt_no_mounts_title => 'No Encrypted Folders';
+  String get crypt_no_mounts_title => 'Нет шифрованных папок';
 
   @override
   String get crypt_no_mounts_subtitle =>
-      'Tap the button below to add your first encrypted folder';
+      'Нажмите кнопку ниже, чтобы добавить первую шифрованную папку';
 
   @override
-  String get crypt_field_name => 'Name';
+  String get crypt_field_name => 'Название';
 
   @override
-  String get crypt_field_name_hint => 'Optional, uses folder name if empty';
+  String get crypt_field_name_hint =>
+      'Необязательно; если пусто, используется имя папки';
 
   @override
-  String get crypt_field_path => 'Folder Path';
+  String get crypt_field_path => 'Путь к папке';
 
   @override
-  String get crypt_field_path_hint => 'Select folder to encrypt';
+  String get crypt_field_path_hint => 'Выберите папку для шифрования';
 
   @override
-  String get crypt_field_password => 'Password';
+  String get crypt_field_password => 'Пароль';
 
   @override
-  String get crypt_field_confirm_password => 'Confirm Password';
+  String get crypt_field_confirm_password => 'Подтвердите пароль';
 
   @override
-  String get crypt_error_path_required => 'Please select a folder path';
+  String get crypt_error_path_required => 'Выберите путь к папке';
 
   @override
-  String get crypt_error_password_required => 'Please enter a password';
+  String get crypt_error_password_required => 'Введите пароль';
 
   @override
   String get crypt_error_password_short =>
-      'Password must be at least 4 characters';
+      'Пароль должен содержать не менее 4 символов';
 
   @override
-  String get crypt_error_password_mismatch => 'Passwords do not match';
+  String get crypt_error_password_mismatch => 'Пароли не совпадают';
 
   @override
-  String get crypt_section_mode => 'Encryption Mode';
+  String get crypt_section_mode => 'Режим шифрования';
 
   @override
-  String get crypt_mode_inplace => 'In-place Encryption';
+  String get crypt_mode_inplace => 'Шифрование на месте';
 
   @override
   String get crypt_mode_inplace_desc =>
-      'Files stay in place, names and content are encrypted';
+      'Файлы остаются на месте, шифруются имена и содержимое';
 
   @override
-  String get crypt_mode_sandbox => 'Sandbox Encryption';
+  String get crypt_mode_sandbox => 'Шифрование в песочнице';
 
   @override
   String get crypt_mode_sandbox_desc =>
-      'Files moved to sandbox, more secure but slightly slower';
+      'Файлы перемещаются в песочницу; безопаснее, но чуть медленнее';
 
   @override
-  String get crypt_section_advanced => 'Advanced Options';
+  String get crypt_section_advanced => 'Дополнительные параметры';
 
   @override
-  String get crypt_advanced_toggle => 'Show advanced encryption options';
+  String get crypt_advanced_toggle =>
+      'Показать дополнительные параметры шифрования';
 
   @override
-  String get crypt_field_filename_enc => 'Filename Encryption';
+  String get crypt_field_filename_enc => 'Шифрование имён файлов';
 
   @override
-  String get crypt_field_dirname_enc => 'Encrypt Directory Names';
+  String get crypt_field_dirname_enc => 'Шифровать имена папок';
 
   @override
-  String get crypt_field_filename_encoding => 'Filename Encoding';
+  String get crypt_field_filename_encoding => 'Кодирование имён файлов';
 
   @override
-  String get crypt_field_suffix => 'Encrypted Suffix';
+  String get crypt_field_suffix => 'Суффикс шифрования';
 
   @override
-  String get crypt_field_salt => 'Salt (optional)';
+  String get crypt_field_salt => 'Соль (необязательно)';
 
   @override
-  String get crypt_field_salt_hint => 'Auto-generated if empty';
+  String get crypt_field_salt_hint => 'Если пусто, создаётся автоматически';
 
   @override
-  String get crypt_action_browse => 'Browse';
+  String get crypt_action_browse => 'Просмотр';
 
   @override
-  String get crypt_delete_title => 'Delete Encrypted Folder';
+  String get crypt_delete_title => 'Удалить шифрованную папку';
 
   @override
   String crypt_delete_message(Object name) {
-    return 'Delete encryption config for \"$name\"? Files will not be deleted.';
+    return 'Удалить конфигурацию шифрования для «$name»? Файлы удалены не будут.';
   }
 
   @override
-  String get crypt_filename_enc => 'Filename Enc';
+  String get crypt_filename_enc => 'Имена файлов';
 
   @override
-  String get crypt_share_title => 'Share Encrypted Folder';
+  String get crypt_share_title => 'Поделиться шифрованной папкой';
 
   @override
   String get crypt_share_hint =>
-      'Scan the QR code to import encryption config. Password is required to decrypt files.';
+      'Отсканируйте QR-код, чтобы импортировать конфигурацию шифрования. Для расшифровки файлов нужен пароль.';
 
   @override
-  String get crypt_action_share => 'Share';
+  String get crypt_action_share => 'Поделиться';
 
   @override
   String get crypt_share_password_note =>
-      'Password is NOT included in the QR code. Share it separately via a secure channel.';
+      'Пароль НЕ включён в QR-код. Передайте его отдельно по защищённому каналу.';
 
   @override
-  String get crypt_action_encrypt => 'Encrypt Now';
+  String get crypt_action_encrypt => 'Зашифровать сейчас';
 
   @override
-  String get crypt_action_decrypt => 'Decrypt';
+  String get crypt_action_decrypt => 'Расшифровать';
 
   @override
-  String get crypt_encrypt_title => 'Encryption Confirmation';
+  String get crypt_encrypt_title => 'Подтверждение шифрования';
 
   @override
   String get crypt_encrypt_message =>
-      'This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?';
+      'Все файлы и подпапки будут зашифрованы. Другие файловые менеджеры не смогут видеть их содержимое и имена. Продолжить?';
 
   @override
-  String get crypt_encrypting => 'Encrypting...';
+  String get crypt_encrypting => 'Шифрование...';
 
   @override
-  String get crypt_encrypt_success => 'Encryption completed';
+  String get crypt_encrypt_success => 'Шифрование завершено';
 
   @override
   String crypt_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'Не удалось зашифровать: $error';
   }
 
   @override
-  String get crypt_decrypt_title => 'Decryption Confirmation';
+  String get crypt_decrypt_title => 'Подтверждение расшифровки';
 
   @override
   String get crypt_decrypt_message =>
-      'This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?';
+      'Все файлы и подпапки будут расшифрованы и вернутся к обычному виду. Продолжить?';
 
   @override
-  String get crypt_decrypting => 'Decrypting...';
+  String get crypt_decrypting => 'Расшифровка...';
 
   @override
-  String get crypt_decrypt_success => 'Decryption completed';
+  String get crypt_decrypt_success => 'Расшифровка завершена';
 
   @override
   String crypt_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'Не удалось расшифровать: $error';
   }
 
   @override
-  String get crypt_filename_enc_off => 'Off';
+  String get crypt_filename_enc_off => 'Выкл.';
 
   @override
-  String get crypt_filename_enc_standard => 'Standard';
+  String get crypt_filename_enc_standard => 'Стандарт';
 
   @override
-  String get crypt_filename_enc_obfuscate => 'Obfuscate';
+  String get crypt_filename_enc_obfuscate => 'Обфускация';
 
   @override
   String get crypt_filename_enc_base64 => 'Base64';
@@ -6830,85 +7175,85 @@ class L10nRu extends L10n {
   String get crypt_filename_enc_base32768 => 'Base32768';
 
   @override
-  String get crypt_dirname_enc_yes => 'Yes';
+  String get crypt_dirname_enc_yes => 'Да';
 
   @override
-  String get crypt_dirname_enc_no => 'No';
+  String get crypt_dirname_enc_no => 'Нет';
 
   @override
-  String get vault_encrypt_files => '+ Encrypt Files';
+  String get vault_encrypt_files => '+ Зашифровать файлы';
 
   @override
-  String get vault_select_encryption_method => 'Select Encryption Method';
+  String get vault_select_encryption_method => 'Выберите способ шифрования';
 
   @override
-  String get vault_inplace_encrypt => 'In-place Encryption';
+  String get vault_inplace_encrypt => 'Шифрование на месте';
 
   @override
   String get vault_inplace_encrypt_desc =>
-      'Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser';
+      'Файлы остаются в исходной папке, имена шифруются; в браузере показывается значок 🔐';
 
   @override
-  String get vault_sandbox_encrypt => 'Sandbox Encryption';
+  String get vault_sandbox_encrypt => 'Шифрование в песочнице';
 
   @override
   String get vault_sandbox_encrypt_desc =>
-      'Files moved to vault private directory, filenames hidden, only visible in vault page';
+      'Файлы перемещаются в закрытую папку хранилища, имена скрыты; видны только на странице хранилища';
 
   @override
-  String get vault_need_set_password => 'Need to Set Master Password First';
+  String get vault_need_set_password => 'Сначала задайте мастер-пароль';
 
   @override
   String get vault_need_set_password_desc =>
-      'Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.';
+      'Сначала настройте мастер-пароль и соль в настройках шифрования, затем можно выполнять шифрование на месте.';
 
   @override
-  String get vault_go_set_password => 'Set Password';
+  String get vault_go_set_password => 'Задать пароль';
 
   @override
-  String get vault_encrypting => 'Encrypting...';
+  String get vault_encrypting => 'Шифрование...';
 
   @override
   String get vault_encrypting_desc =>
-      'Encrypting selected files/folders, please wait...';
+      'Шифрование выбранных файлов/папок, подождите...';
 
   @override
   String vault_inplace_encrypt_done(Object count) {
-    return 'In-place encryption completed, $count files/folders encrypted';
+    return 'Шифрование на месте завершено, зашифровано файлов/папок: $count';
   }
 
   @override
   String vault_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'Не удалось зашифровать: $error';
   }
 
   @override
-  String get vault_inplace_section => 'In-place Encryption';
+  String get vault_inplace_section => 'Шифрование на месте';
 
   @override
-  String get vault_open_location => 'Open Location';
+  String get vault_open_location => 'Открыть расположение';
 
   @override
-  String get vault_decrypt_action => 'Decrypt';
+  String get vault_decrypt_action => 'Расшифровать';
 
   @override
-  String get vault_decrypt_confirm_title => 'Decrypt File';
+  String get vault_decrypt_confirm_title => 'Расшифровать файл';
 
   @override
   String vault_decrypt_confirm_desc(Object name) {
-    return 'Are you sure you want to decrypt \"$name\"? The file will be restored to normal after decryption.';
+    return 'Расшифровать «$name»? После расшифровки файл вернётся к обычному виду.';
   }
 
   @override
-  String get vault_decrypt_success => 'Decryption successful';
+  String get vault_decrypt_success => 'Расшифровка выполнена';
 
   @override
   String vault_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'Не удалось расшифровать: $error';
   }
 
   @override
-  String get crypt_set_master_password => 'Set Encryption Master Password';
+  String get crypt_set_master_password => 'Задать мастер-пароль шифрования';
 
   @override
   String get vault_section_unencrypted => 'Незашифрованные файлы';
@@ -6939,6 +7284,7 @@ class L10nRu extends L10n {
   String vault_import_failed_detail(Object error) {
     return 'Ошибка импорта: $error';
   }
+
   @override
   String get vault_no_files => 'Нет файлов';
 
@@ -6948,4 +7294,87 @@ class L10nRu extends L10n {
 
   @override
   String get vault_remove_from_list => 'Удалить';
+
+  @override
+  String get security_vault_switch_desc => 'Включить функцию личного сейфа';
+
+  @override
+  String get security_verify_password_desc =>
+      'Введите пароль, чтобы открыть настройки безопасности';
+
+  @override
+  String get vault_verify_password_title => 'Подтверждение пароля';
+
+  @override
+  String get vault_verify_password_hint => 'Введите пароль безопасности';
+
+  @override
+  String get vault_go_security_settings => 'Перейти в настройки безопасности';
+
+  @override
+  String get security_settings_subtitle =>
+      'Сейф, удалённая защита, защита приложения и разблокировка по отпечатку';
+
+  @override
+  String get vault_disabled_hint =>
+      'Сейф отключён. Включите его в Настройках → Настройки безопасности';
+
+  @override
+  String get security_set_password_desc =>
+      'Задайте пароль безопасности для доступа к настройкам безопасности и разблокировки сейфа';
+
+  @override
+  String get security_confirm_password =>
+      'Введите пароль ещё раз для подтверждения';
+
+  @override
+  String get biometric_reason_security_settings =>
+      'Подтвердите отпечаток пальца для доступа к настройкам безопасности';
+
+  @override
+  String get toolbox_scan => 'Сканировать';
+
+  @override
+  String get scan_result_title => 'Результат сканирования';
+
+  @override
+  String get scan_copy => 'Копировать';
+
+  @override
+  String get scan_copied => 'Скопировано в буфер обмена';
+
+  @override
+  String get scan_open_link => 'Открыть ссылку';
+
+  @override
+  String get scan_continue => 'Продолжить';
+
+  @override
+  String get scan_torch => 'Фонарик';
+
+  @override
+  String get scan_switch_camera => 'Сменить камеру';
+
+  @override
+  String get scan_camera_error =>
+      'Не удалось получить доступ к камере. Проверьте разрешение.';
+
+  @override
+  String get scan_hint =>
+      'Поместите QR-код/штрихкод в рамку для автоматического сканирования';
+
+  @override
+  String get scan_from_gallery => 'Из галереи';
+
+  @override
+  String get scan_no_barcode =>
+      'На изображении не обнаружен QR-код или штрихкод';
+
+  @override
+  String get ui_backup_confirm_title => 'Подтвердить резервное копирование';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return 'Резервная копия будет создана по пути:\n$path\n\nПродолжить?';
+  }
 }

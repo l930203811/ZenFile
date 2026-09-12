@@ -5096,7 +5096,7 @@ class L10nEn extends L10n {
   String get ui_remote_guard_wrong_pin => 'Incorrect PIN. Please try again.';
 
   @override
-  String get ui_remote_guard_change_pin => 'Change PIN';
+  String get ui_remote_guard_change_pin => 'Change Password';
 
   @override
   String get ui_remote_guard_pin_hint =>
@@ -5141,7 +5141,7 @@ class L10nEn extends L10n {
 
   @override
   String get ui_change_vault_pin_desc =>
-      'Change the private vault PIN (re-encrypts all hidden files)';
+      'Change the security and vault unlock password. Encrypted files are unaffected';
 
   @override
   String get ui_auto_backup => 'Auto Backup';
@@ -6216,7 +6216,7 @@ class L10nEn extends L10n {
 
   @override
   String get vault_uninstall_warning =>
-      'Uninstalling the app clears the vault. Export a backup first.';
+      'Uninstalling the app clears sandbox-encrypted files. Export a backup first.';
 
   @override
   String get vault_backup_exported => 'Backup exported to';
@@ -6599,7 +6599,348 @@ class L10nEn extends L10n {
   String get ui_preset_colors => 'Preset Colors';
 
   @override
-  String get crypt_settings_title => 'Encryption';
+  String get crypt_settings_title => 'Password Configuration';
+
+  @override
+  String get vault_config_password => 'Password Configuration';
+
+  @override
+  String get vault_help => 'Help';
+
+  @override
+  String get vault_help_title => 'Vault Help';
+
+  @override
+  String get vault_help_intro =>
+      'The vault uses the same crypt format as rclone. Encryption and decryption happen entirely on this device, and the key never leaves it.';
+
+  @override
+  String get vault_help_highlights => 'Highlights';
+
+  @override
+  String get vault_help_hl1_title => 'Zero-knowledge encryption';
+
+  @override
+  String get vault_help_hl1_desc =>
+      'The master password and salt stay on this device only, so no cloud service or third party can decrypt your files.';
+
+  @override
+  String get vault_help_hl2_title => 'Works with rclone and OpenList';
+
+  @override
+  String get vault_help_hl2_desc =>
+      'The same crypt format is used, so rclone on a computer can decrypt exactly the same files.';
+
+  @override
+  String get vault_help_hl3_title => 'Multiple passwords, remote reading';
+
+  @override
+  String get vault_help_hl3_desc =>
+      'Bind a different password profile to each folder, and browse or stream remote folders without downloading them first.';
+
+  @override
+  String get vault_help_basics => 'Basic operations';
+
+  @override
+  String get vault_help_b1_title => '1. Set the master password first';
+
+  @override
+  String get vault_help_b1_desc =>
+      'Configure the master password and salt in Password profiles and memorise them; they are independent of the vault unlock password.';
+
+  @override
+  String get vault_help_b2_title => '2. Encrypt files';
+
+  @override
+  String get vault_help_b2_desc =>
+      'Select files in the browser, tap Encrypt, then choose in-place or sandbox encryption.';
+
+  @override
+  String get vault_help_b3_title => '3. View and open';
+
+  @override
+  String get vault_help_b3_desc =>
+      'Encrypted items are listed in the vault; tapping one decrypts it temporarily for preview.';
+
+  @override
+  String get vault_help_b4_title => '4. Decrypt';
+
+  @override
+  String get vault_help_b4_desc =>
+      'Select an item and tap Decrypt to restore it as a normal file in its original place.';
+
+  @override
+  String get vault_help_b5_title => '5. Back up and restore';
+
+  @override
+  String get vault_help_b5_desc =>
+      'Export a backup containing your encryption profiles from Backup / Restore before uninstalling the app.';
+
+  @override
+  String get vault_help_compat => 'Compatibility';
+
+  @override
+  String get vault_help_c1_title => 'Encryption format';
+
+  @override
+  String get vault_help_c1_desc =>
+      'Content uses XSalsa20-Poly1305; names are EME-encrypted and encoded as base32/base64, optionally with a .bin suffix.';
+
+  @override
+  String get vault_help_c2_title => 'Cloud drives and sync';
+
+  @override
+  String get vault_help_c2_desc =>
+      'Ciphertext syncs fine with any drive or sync tool; the server only sees ciphertext and never the real file names.';
+
+  @override
+  String get vault_help_c3_title => 'Known limits';
+
+  @override
+  String get vault_help_c3_desc =>
+      'Encrypted names are much longer, so very long names may fail; rename only inside this app, since editing a ciphertext name makes it undecryptable.';
+
+  @override
+  String get vault_help_inplace => 'In-place encryption';
+
+  @override
+  String get vault_help_inplace_intro =>
+      'In-place encryption encrypts files where they are: content and name are replaced by ciphertext, and the file stays in its original folder instead of moving into the private vault directory.';
+
+  @override
+  String get vault_help_ip1_title => 'Relation to the original folder';
+
+  @override
+  String get vault_help_ip1_desc =>
+      'Location and folder structure stay unchanged; encrypted files get a lock badge in the browser.';
+
+  @override
+  String get vault_help_ip2_title => 'What other apps see';
+
+  @override
+  String get vault_help_ip2_desc =>
+      'Other file managers and players only see meaningless ciphertext names and cannot open them, which is exactly the protection.';
+
+  @override
+  String get vault_help_ip3_title => 'When to use it';
+
+  @override
+  String get vault_help_ip3_desc =>
+      'When you want to keep the folder structure and let third-party cloud apps keep syncing those files.';
+
+  @override
+  String get vault_help_ip4_title => 'Risks and advice';
+
+  @override
+  String get vault_help_ip4_desc =>
+      'Encryption replaces the original file directly, so an interruption may leave partial files. Back up first and make sure the target folder is writable when decrypting.';
+
+  @override
+  String get vault_help_notice => 'Notes';
+
+  @override
+  String get vault_help_n1 =>
+      'The password and salt already used for encrypted files cannot be changed; create a new profile if you need a different one.';
+
+  @override
+  String get vault_help_n2 =>
+      'Sandbox-encrypted files live in the private app directory and are removed when the app is uninstalled.';
+
+  @override
+  String get vault_help_n3 =>
+      'If the master password is forgotten, no encrypted file can be recovered, so always export a backup and keep it safe.';
+
+  @override
+  String get vault_remote_encrypt => 'Remote Encryption';
+
+  @override
+  String get vault_import_source_title => 'Choose encryption source';
+
+  @override
+  String get vault_import_source_remote => 'Remote';
+
+  @override
+  String get vault_import_source_remote_desc =>
+      'Link a remote encrypted folder, or encrypt local files and upload';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      'Link an existing rclone crypt folder on the server (decrypted on device)';
+
+  @override
+  String get vault_encrypt_upload => 'Encrypt and upload to remote';
+
+  @override
+  String get vault_encrypt_upload_desc =>
+      'Pick local files, encrypt them and upload to the remote server';
+
+  @override
+  String get vault_encrypt_uploading => 'Encrypting and uploading...';
+
+  @override
+  String get vault_encrypt_upload_done => 'Encrypted upload complete';
+
+  @override
+  String get vault_encrypt_upload_failed => 'Encrypted upload failed';
+
+  @override
+  String get crypt_remote_upload => 'Encrypt and upload';
+
+  @override
+  String get crypt_remote_download => 'Decrypt and download';
+
+  @override
+  String get crypt_remote_downloading => 'Decrypting and downloading...';
+
+  @override
+  String get crypt_remote_download_done => 'Decrypted download complete';
+
+  @override
+  String get crypt_remote_download_failed => 'Decrypted download failed';
+
+  @override
+  String get vault_remote_crypt_open_failed =>
+      'Failed to open remote encrypted file';
+
+  @override
+  String get vault_remote_crypt_unsupported =>
+      'This file type is not supported for remote encrypted streaming';
+
+  @override
+  String get vault_link_remote_crypt => 'Link remote encrypted folder';
+
+  @override
+  String get vault_link_remote_crypt_success =>
+      'Remote encrypted folder linked';
+
+  @override
+  String get vault_unlink_remote_crypt => 'Unlink';
+
+  @override
+  String get vault_exporting => 'Exporting...';
+
+  @override
+  String get vault_importing => 'Importing...';
+
+  @override
+  String get vault_importing_backup => 'Importing backup...';
+
+  @override
+  String get vault_restoring => 'Restoring...';
+
+  @override
+  String get vault_decrypting => 'Decrypting...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      'Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?';
+
+  @override
+  String vault_load_error(Object error) {
+    return 'Failed to load vault: $error';
+  }
+
+  @override
+  String get vault_restore_folder_hint =>
+      'For folders, long-press and choose \"Restore\" to view them at the original location';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return 'Failed to decrypt and open: $error';
+  }
+
+  @override
+  String get vault_badge_inplace => 'In-place';
+
+  @override
+  String get vault_badge_sandbox => 'Sandbox';
+
+  @override
+  String get vault_item_folder => 'Folder';
+
+  @override
+  String get crypt_need_master_title => 'Encryption master password not set';
+
+  @override
+  String get crypt_need_master_body =>
+      'In-place and sandbox encryption both use the master password from Encryption settings. Please set it up first.';
+
+  @override
+  String get crypt_master_banner =>
+      'The master password and salt configured here are used for in-place and sandbox encryption. Keep them safe; they are independent of the vault unlock password.';
+
+  @override
+  String get crypt_profile_name => 'Encryption name';
+
+  @override
+  String get crypt_profile_name_hint => 'e.g. Work / Personal';
+
+  @override
+  String get crypt_profile_name_required => 'Please enter an encryption name';
+
+  @override
+  String get crypt_profile_name_duplicate => 'This name already exists';
+
+  @override
+  String get crypt_profile_title_new => 'New encryption profile';
+
+  @override
+  String get crypt_profile_title_edit => 'Edit encryption profile';
+
+  @override
+  String get crypt_profile_section => 'Password Configuration';
+
+  @override
+  String get crypt_profile_add => 'New profile';
+
+  @override
+  String get crypt_profile_default => 'Default';
+
+  @override
+  String get crypt_profile_set_default => 'Set as default';
+
+  @override
+  String get crypt_profile_set_default_desc =>
+      'Files without a bound profile use this one';
+
+  @override
+  String get crypt_profile_default_done => 'Default profile updated';
+
+  @override
+  String get crypt_profile_delete_message =>
+      'Deleting this profile makes files encrypted with it undecryptable.';
+
+  @override
+  String get crypt_profile_empty => 'No encryption profile yet';
+
+  @override
+  String get crypt_profile_action_config => 'Profile';
+
+  @override
+  String get crypt_profile_select_title => 'Select encryption profile';
+
+  @override
+  String get crypt_profile_bound_done => 'Profile bound';
+
+  @override
+  String get crypt_profile_credential_locked => 'Locked';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      'Password and salt define the key. Changing them makes existing files undecryptable - create a new profile instead.';
+
+  @override
+  String get crypt_profile_suffix_none => 'no suffix';
+
+  @override
+  String get crypt_profile_sandbox_title => 'Switch sandbox profile';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      'The sandbox uses one profile as a whole. Other sandbox files may show as ciphertext after switching. Continue?';
+
+  @override
+  String get crypt_mount_section => 'Encrypted locations';
 
   @override
   String get crypt_settings_subtitle =>
@@ -6888,6 +7229,7 @@ class L10nEn extends L10n {
   String vault_import_failed_detail(Object error) {
     return 'Import failed: $error';
   }
+
   @override
   String get vault_no_files => 'No files';
 
@@ -6897,4 +7239,85 @@ class L10nEn extends L10n {
 
   @override
   String get vault_remove_from_list => 'Remove';
+
+  @override
+  String get security_vault_switch_desc => 'Enable the private vault feature';
+
+  @override
+  String get security_verify_password_desc =>
+      'Enter your password to open Security Settings';
+
+  @override
+  String get vault_verify_password_title => 'Verify Password';
+
+  @override
+  String get vault_verify_password_hint => 'Enter your security password';
+
+  @override
+  String get vault_go_security_settings => 'Go to Security Settings';
+
+  @override
+  String get security_settings_subtitle =>
+      'Vault, Remote Guard, app protection and fingerprint unlock';
+
+  @override
+  String get vault_disabled_hint =>
+      'The vault is disabled. Enable it in Settings → Security Settings';
+
+  @override
+  String get security_set_password_desc =>
+      'Set a security password for accessing Security Settings and unlocking the vault';
+
+  @override
+  String get security_confirm_password => 'Enter the password again to confirm';
+
+  @override
+  String get biometric_reason_security_settings =>
+      'Verify fingerprint to access Security Settings';
+
+  @override
+  String get toolbox_scan => 'Scan';
+
+  @override
+  String get scan_result_title => 'Scan Result';
+
+  @override
+  String get scan_copy => 'Copy';
+
+  @override
+  String get scan_copied => 'Copied to clipboard';
+
+  @override
+  String get scan_open_link => 'Open Link';
+
+  @override
+  String get scan_continue => 'Continue';
+
+  @override
+  String get scan_torch => 'Flashlight';
+
+  @override
+  String get scan_switch_camera => 'Switch Camera';
+
+  @override
+  String get scan_camera_error =>
+      'Cannot access camera. Please check camera permission.';
+
+  @override
+  String get scan_hint =>
+      'Place QR code/barcode inside the frame to scan automatically';
+
+  @override
+  String get scan_from_gallery => 'From Gallery';
+
+  @override
+  String get scan_no_barcode => 'No QR code or barcode detected in the image';
+
+  @override
+  String get ui_backup_confirm_title => 'Confirm Backup';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return 'Will backup to the following path:\n$path\n\nContinue?';
+  }
 }

@@ -5063,7 +5063,7 @@ class L10nAr extends L10n {
   String get ui_remote_guard_wrong_pin => 'رمز PIN غير صحيح. حاول مرة أخرى.';
 
   @override
-  String get ui_remote_guard_change_pin => 'تغيير رمز PIN';
+  String get ui_remote_guard_change_pin => 'تغيير كلمة المرور';
 
   @override
   String get ui_remote_guard_pin_hint => 'كلمة مرور (أحرف أو أرقام أو رموز)';
@@ -5107,7 +5107,7 @@ class L10nAr extends L10n {
 
   @override
   String get ui_change_vault_pin_desc =>
-      'تغيير PIN الخزنة الخاصة (يعيد تشفير جميع الملفات المخفية)';
+      'تغيير كلمة مرور الأمان وفتح الخزنة. لا تتأثر الملفات المشفرة';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -6180,7 +6180,7 @@ class L10nAr extends L10n {
 
   @override
   String get vault_uninstall_warning =>
-      'إزالة التطبيق تمحو الخزنة. صدّر نسخة احتياطية أولاً.';
+      'إزالة التطبيق تمحو تشفير الصندوق الرملي. صدّر نسخة احتياطية أولاً.';
 
   @override
   String get vault_backup_exported => 'تم تصدير النسخة الاحتياطية إلى';
@@ -6216,18 +6216,18 @@ class L10nAr extends L10n {
 
   @override
   String get vault_export_backup_confirm =>
-      'The backup file will be saved to the following location:';
+      'سيتم حفظ ملف النسخة الاحتياطية في الموقع التالي:';
 
   @override
-  String get vault_import_only_zip => 'Only .zip backup files are supported';
+  String get vault_import_only_zip => 'تدعم ملفات النسخ الاحتياطي .zip فقط';
 
   @override
   String get vault_import_password_hint =>
-      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+      'تستخدم هذه النسخة كلمة مرور مختلفة. أعد فتح قفل الخزنة بكلمة المرور المستخدمة عند إنشائها';
 
   @override
   String get vault_open_backup_location =>
-      'Open the folder where the backup is saved?';
+      'فتح المجلد الذي حُفظت فيه النسخة الاحتياطية؟';
 
   @override
   String get open_file => 'Open';
@@ -6564,175 +6564,513 @@ class L10nAr extends L10n {
   String get ui_preset_colors => 'ألوان مسبقة';
 
   @override
-  String get crypt_settings_title => 'Encryption';
+  String get crypt_settings_title => 'إعداد كلمة المرور';
 
   @override
-  String get crypt_settings_subtitle =>
-      'Manage encrypted folders and mount points';
+  String get vault_config_password => 'إعداد كلمة المرور';
 
   @override
-  String get crypt_add_mount => 'Add Encrypted Folder';
+  String get vault_help => 'مساعدة';
 
   @override
-  String get crypt_edit_mount => 'Edit Encrypted Folder';
+  String get vault_help_title => 'مساعدة الخزنة';
 
   @override
-  String get crypt_no_mounts_title => 'No Encrypted Folders';
+  String get vault_help_intro =>
+      'تستخدم الخزنة تنسيق crypt نفسه المستخدم في rclone. يتم التشفير وفك التشفير بالكامل على الجهاز، ولا يخرج المفتاح منه أبدًا.';
 
   @override
-  String get crypt_no_mounts_subtitle =>
-      'Tap the button below to add your first encrypted folder';
+  String get vault_help_highlights => 'أبرز المزايا';
 
   @override
-  String get crypt_field_name => 'Name';
+  String get vault_help_hl1_title => 'تشفير بدون معرفة مسبقة';
 
   @override
-  String get crypt_field_name_hint => 'Optional, uses folder name if empty';
+  String get vault_help_hl1_desc =>
+      'تبقى كلمة المرور الرئيسية والملح على هذا الجهاز فقط، فلا يمكن لأي خدمة سحابية أو طرف ثالث فك تشفير ملفاتك.';
 
   @override
-  String get crypt_field_path => 'Folder Path';
+  String get vault_help_hl2_title => 'متوافق مع rclone و OpenList';
 
   @override
-  String get crypt_field_path_hint => 'Select folder to encrypt';
+  String get vault_help_hl2_desc =>
+      'يستخدم نفس تنسيق crypt، لذلك يمكن لـ rclone على الكمبيوتر فك تشفير الملفات نفسها.';
 
   @override
-  String get crypt_field_password => 'Password';
+  String get vault_help_hl3_title => 'كلمات مرور متعددة وقراءة عن بُعد';
 
   @override
-  String get crypt_field_confirm_password => 'Confirm Password';
+  String get vault_help_hl3_desc =>
+      'يمكن ربط ملف كلمة مرور مختلف بكل مجلد، ويمكن تصفح المجلدات المشفّرة عن بُعد وتشغيلها دون تنزيلها كاملة.';
 
   @override
-  String get crypt_error_path_required => 'Please select a folder path';
+  String get vault_help_basics => 'العمليات الأساسية';
 
   @override
-  String get crypt_error_password_required => 'Please enter a password';
+  String get vault_help_b1_title => '١. اضبط كلمة المرور الرئيسية أولًا';
 
   @override
-  String get crypt_error_password_short =>
-      'Password must be at least 4 characters';
+  String get vault_help_b1_desc =>
+      'اضبط كلمة المرور الرئيسية والملح في «ملفات كلمات المرور» واحفظهما جيدًا؛ فهما مستقلتان عن كلمة مرور فتح الخزنة.';
 
   @override
-  String get crypt_error_password_mismatch => 'Passwords do not match';
+  String get vault_help_b2_title => '٢. تشفير الملفات';
 
   @override
-  String get crypt_section_mode => 'Encryption Mode';
+  String get vault_help_b2_desc =>
+      'حدد الملفات في المتصفح، ثم اضغط تشفير واختر التشفير في مكانه أو في وضع الحماية.';
 
   @override
-  String get crypt_mode_inplace => 'In-place Encryption';
+  String get vault_help_b3_title => '٣. العرض والفتح';
+
+  @override
+  String get vault_help_b3_desc =>
+      'تُدرج العناصر المشفّرة في الخزنة، وعند الضغط عليها تُفك تشفيرها مؤقتًا للمعاينة.';
+
+  @override
+  String get vault_help_b4_title => '٤. فك التشفير';
+
+  @override
+  String get vault_help_b4_desc =>
+      'حدد عنصرًا واضغط فك التشفير لإعادته ملفًا عاديًا إلى مكانه الأصلي.';
+
+  @override
+  String get vault_help_b5_title => '٥. النسخ الاحتياطي والاستعادة';
+
+  @override
+  String get vault_help_b5_desc =>
+      'صدّر من «النسخ الاحتياطي / الاستعادة» نسخة تتضمن ملفات التشفير قبل إزالة التطبيق.';
+
+  @override
+  String get vault_help_compat => 'التوافق';
+
+  @override
+  String get vault_help_c1_title => 'تنسيق التشفير';
+
+  @override
+  String get vault_help_c1_desc =>
+      'يستخدم المحتوى XSalsa20-Poly1305، وتُشفَّر الأسماء عبر EME ثم تُرمَّز بـ base32/base64، ويمكن إضافة اللاحقة .bin.';
+
+  @override
+  String get vault_help_c2_title => 'السحابة والمزامنة';
+
+  @override
+  String get vault_help_c2_desc =>
+      'تتم مزامنة النص المشفّر مع أي سحابة أو أداة مزامنة؛ والخادم لا يرى سوى النص المشفّر ولا يعرف الأسماء الحقيقية.';
+
+  @override
+  String get vault_help_c3_title => 'القيود المعروفة';
+
+  @override
+  String get vault_help_c3_desc =>
+      'الأسماء المشفّرة أطول بكثير، وقد تفشل الأسماء الطويلة جدًا؛ أعد التسمية داخل التطبيق فقط، فتعديل الاسم المشفّر يجعل الملف غير قابل لفك التشفير.';
+
+  @override
+  String get vault_help_inplace => 'التشفير في مكانه';
+
+  @override
+  String get vault_help_inplace_intro =>
+      'يشفّر التشفير في مكانه الملفات حيث توجد: يستبدل المحتوى والاسم بنص مشفّر، ويبقى الملف في مجلده الأصلي دون الانتقال إلى مجلد الخزنة الخاص.';
+
+  @override
+  String get vault_help_ip1_title => 'العلاقة بالمجلد الأصلي';
+
+  @override
+  String get vault_help_ip1_desc =>
+      'يبقى الموقع وهيكل المجلدات كما هو، وتظهر على الملفات المشفّرة شارة قفل في المتصفح.';
+
+  @override
+  String get vault_help_ip2_title => 'ما تراه التطبيقات الأخرى';
+
+  @override
+  String get vault_help_ip2_desc =>
+      'ترى برامج إدارة الملفات والمشغلات الأخرى أسماءً مشفّرة بلا معنى ولا يمكنها فتحها، وهذا هو المقصود من الحماية.';
+
+  @override
+  String get vault_help_ip3_title => 'متى تستخدمه';
+
+  @override
+  String get vault_help_ip3_desc =>
+      'عند الرغبة في الحفاظ على هيكل المجلدات مع استمرار تطبيقات السحابة الخارجية في مزامنة هذه الملفات.';
+
+  @override
+  String get vault_help_ip4_title => 'المخاطر والنصائح';
+
+  @override
+  String get vault_help_ip4_desc =>
+      'يستبدل التشفير الملف الأصلي مباشرة، وقد يترك الانقطاع ملفات ناقصة. احتفظ بنسخة احتياطية أولًا وتحقق من صلاحية الكتابة عند فك التشفير.';
+
+  @override
+  String get vault_help_notice => 'ملاحظات';
+
+  @override
+  String get vault_help_n1 =>
+      'لا يمكن تغيير كلمة المرور والملح اللذين استُخدما بالفعل في التشفير؛ أنشئ ملفًا جديدًا عند الحاجة.';
+
+  @override
+  String get vault_help_n2 =>
+      'تخزَّن الملفات المشفّرة في وضع الحماية داخل مجلد التطبيق الخاص وتُحذف عند إزالة التطبيق.';
+
+  @override
+  String get vault_help_n3 =>
+      'في حال نسيان كلمة المرور الرئيسية لن يمكن استعادة أي ملف مشفّر، لذا صدّر نسخة احتياطية دائمًا.';
+
+  @override
+  String get vault_remote_encrypt => 'تشفير بعيد';
+
+  @override
+  String get vault_import_source_title => 'اختر مصدر التشفير';
+
+  @override
+  String get vault_import_source_remote => 'بعيد';
+
+  @override
+  String get vault_import_source_remote_desc =>
+      'ربط مجلد مشفّر بعيد أو تشفير الملفات المحلية ورفعها';
+
+  @override
+  String get vault_link_remote_crypt_desc =>
+      'ربط مجلد rclone crypt موجود على الخادم (فك التشفير على الجهاز)';
+
+  @override
+  String get vault_encrypt_upload => 'تشفير ورفع إلى الخادم البعيد';
+
+  @override
+  String get vault_encrypt_upload_desc =>
+      'اختيار ملفات محلية وتشفيرها ورفعها إلى الخادم البعيد';
+
+  @override
+  String get vault_encrypt_uploading => 'جارٍ التشفير والرفع…';
+
+  @override
+  String get vault_encrypt_upload_done => 'اكتمل الرفع المشفّر';
+
+  @override
+  String get vault_encrypt_upload_failed => 'فشل الرفع المشفّر';
+
+  @override
+  String get crypt_remote_upload => 'تشفير ورفع';
+
+  @override
+  String get crypt_remote_download => 'فك التشفير والتنزيل';
+
+  @override
+  String get crypt_remote_downloading => 'جارٍ فك التشفير والتنزيل…';
+
+  @override
+  String get crypt_remote_download_done => 'اكتمل التنزيل مع فك التشفير';
+
+  @override
+  String get crypt_remote_download_failed => 'فشل التنزيل مع فك التشفير';
+
+  @override
+  String get vault_remote_crypt_open_failed => 'فشل فتح الملف المشفّر البعيد';
+
+  @override
+  String get vault_remote_crypt_unsupported =>
+      'هذا النوع من الملفات غير مدعوم للبث المشفّر عن بُعد';
+
+  @override
+  String get vault_link_remote_crypt => 'ربط مجلد مشفّر بعيد';
+
+  @override
+  String get vault_link_remote_crypt_success => 'تم ربط المجلد المشفّر البعيد';
+
+  @override
+  String get vault_unlink_remote_crypt => 'إلغاء الربط';
+
+  @override
+  String get vault_exporting => 'جارٍ التصدير...';
+
+  @override
+  String get vault_importing => 'جارٍ الاستيراد...';
+
+  @override
+  String get vault_importing_backup => 'جارٍ استيراد النسخة الاحتياطية...';
+
+  @override
+  String get vault_restoring => 'جارٍ الاستعادة...';
+
+  @override
+  String get vault_decrypting => 'جارٍ فك التشفير...';
+
+  @override
+  String get vault_import_backup_confirm =>
+      'سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟';
+
+  @override
+  String vault_load_error(Object error) {
+    return 'فشل تحميل الخزنة: $error';
+  }
+
+  @override
+  String get vault_restore_folder_hint =>
+      'للمجلدات، اضغط مطولاً واختر «استعادة» لعرضها في الموقع الأصلي';
+
+  @override
+  String vault_decrypt_open_failed(Object error) {
+    return 'فشل فك التشفير والفتح: $error';
+  }
+
+  @override
+  String get vault_badge_inplace => 'في المكان';
+
+  @override
+  String get vault_badge_sandbox => 'صندوق الحماية';
+
+  @override
+  String get vault_item_folder => 'مجلد';
+
+  @override
+  String get crypt_need_master_title =>
+      'لم يتم تعيين كلمة المرور الرئيسية للتشفير';
+
+  @override
+  String get crypt_need_master_body =>
+      'يستخدم التشفير في المكان وصندوق الحماية كلاهما كلمة المرور الرئيسية من إعدادات التشفير. يرجى تعيينها أولاً.';
+
+  @override
+  String get crypt_master_banner =>
+      'كلمة المرور الرئيسية والملح المُعدَّان هنا يُستخدمان للتشفير في المكان وصندوق الحماية. احفظهما جيداً؛ فهما مستقلان عن كلمة مرور فتح قفل الخزنة.';
+
+  @override
+  String get crypt_profile_name => 'اسم التشفير';
+
+  @override
+  String get crypt_profile_name_hint => 'مثال: العمل / شخصي';
+
+  @override
+  String get crypt_profile_name_required => 'يرجى إدخال اسم التشفير';
+
+  @override
+  String get crypt_profile_name_duplicate => 'هذا الاسم موجود بالفعل';
+
+  @override
+  String get crypt_profile_title_new => 'ملف تعريف تشفير جديد';
+
+  @override
+  String get crypt_profile_title_edit => 'تحرير ملف تعريف التشفير';
+
+  @override
+  String get crypt_profile_section => 'إعداد كلمة المرور';
+
+  @override
+  String get crypt_profile_add => 'ملف تعريف جديد';
+
+  @override
+  String get crypt_profile_default => 'الافتراضي';
+
+  @override
+  String get crypt_profile_set_default => 'تعيين كافتراضي';
+
+  @override
+  String get crypt_profile_set_default_desc =>
+      'الملفات بدون ملف تعريف مرتبط تستخدم هذا';
+
+  @override
+  String get crypt_profile_default_done => 'تم تحديث الملف الافتراضي';
+
+  @override
+  String get crypt_profile_delete_message =>
+      'حذف ملف التعريف هذا يجعل الملفات المشفرة به غير قابلة للفك.';
+
+  @override
+  String get crypt_profile_empty => 'لا يوجد ملف تعريف تشفير بعد';
+
+  @override
+  String get crypt_profile_action_config => 'ملف التعريف';
+
+  @override
+  String get crypt_profile_select_title => 'اختيار ملف تعريف التشفير';
+
+  @override
+  String get crypt_profile_bound_done => 'تم ربط ملف التعريف';
+
+  @override
+  String get crypt_profile_credential_locked => 'مقفل';
+
+  @override
+  String get crypt_profile_credential_locked_desc =>
+      'كلمة المرور والملح يحددان المفتاح. تغييرهما يجعل الملفات المشفرة غير قابلة للفك — أنشئ ملف تعريف جديدًا بدلًا من ذلك.';
+
+  @override
+  String get crypt_profile_suffix_none => 'بدون لاحقة';
+
+  @override
+  String get crypt_profile_sandbox_title => 'تغيير ملف تعريف Sandbox';
+
+  @override
+  String get crypt_profile_sandbox_message =>
+      'تستخدم Sandbox ملف تعريف واحدًا ككل. بعد التغيير قد تظهر ملفات أخرى كنص مشفر. المتابعة؟';
+
+  @override
+  String get crypt_mount_section => 'المواقع المشفرة';
+
+  @override
+  String get crypt_settings_subtitle => 'إدارة المجلدات المشفرة ونقاط التثبيت';
+
+  @override
+  String get crypt_add_mount => 'إضافة مجلد مشفر';
+
+  @override
+  String get crypt_edit_mount => 'تعديل المجلد المشفر';
+
+  @override
+  String get crypt_no_mounts_title => 'لا توجد مجلدات مشفرة';
+
+  @override
+  String get crypt_no_mounts_subtitle => 'اضغط الزر أدناه لإضافة أول مجلد مشفر';
+
+  @override
+  String get crypt_field_name => 'الاسم';
+
+  @override
+  String get crypt_field_name_hint =>
+      'اختياري؛ يُستخدم اسم المجلد إذا تُرك فارغاً';
+
+  @override
+  String get crypt_field_path => 'مسار المجلد';
+
+  @override
+  String get crypt_field_path_hint => 'اختر المجلد لتشفيره';
+
+  @override
+  String get crypt_field_password => 'كلمة المرور';
+
+  @override
+  String get crypt_field_confirm_password => 'تأكيد كلمة المرور';
+
+  @override
+  String get crypt_error_path_required => 'يرجى اختيار مسار المجلد';
+
+  @override
+  String get crypt_error_password_required => 'يرجى إدخال كلمة المرور';
+
+  @override
+  String get crypt_error_password_short => 'يجب ألا تقل كلمة المرور عن 4 أحرف';
+
+  @override
+  String get crypt_error_password_mismatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get crypt_section_mode => 'وضع التشفير';
+
+  @override
+  String get crypt_mode_inplace => 'التشفير في المكان';
 
   @override
   String get crypt_mode_inplace_desc =>
-      'Files stay in place, names and content are encrypted';
+      'تبقى الملفات في مكانها؛ تُشفَّر الأسماء والمحتويات';
 
   @override
-  String get crypt_mode_sandbox => 'Sandbox Encryption';
+  String get crypt_mode_sandbox => 'تشفير صندوق الحماية';
 
   @override
   String get crypt_mode_sandbox_desc =>
-      'Files moved to sandbox, more secure but slightly slower';
+      'تُنقل الملفات إلى صندوق الحماية؛ أكثر أماناً لكن أبطأ قليلاً';
 
   @override
-  String get crypt_section_advanced => 'Advanced Options';
+  String get crypt_section_advanced => 'خيارات متقدمة';
 
   @override
-  String get crypt_advanced_toggle => 'Show advanced encryption options';
+  String get crypt_advanced_toggle => 'إظهار خيارات التشفير المتقدمة';
 
   @override
-  String get crypt_field_filename_enc => 'Filename Encryption';
+  String get crypt_field_filename_enc => 'تشفير أسماء الملفات';
 
   @override
-  String get crypt_field_dirname_enc => 'Encrypt Directory Names';
+  String get crypt_field_dirname_enc => 'تشفير أسماء المجلدات';
 
   @override
-  String get crypt_field_filename_encoding => 'Filename Encoding';
+  String get crypt_field_filename_encoding => 'ترميز أسماء الملفات';
 
   @override
-  String get crypt_field_suffix => 'Encrypted Suffix';
+  String get crypt_field_suffix => 'لاحقة التشفير';
 
   @override
-  String get crypt_field_salt => 'Salt (optional)';
+  String get crypt_field_salt => 'الملح (اختياري)';
 
   @override
-  String get crypt_field_salt_hint => 'Auto-generated if empty';
+  String get crypt_field_salt_hint => 'يُنشأ تلقائياً إذا تُرك فارغاً';
 
   @override
-  String get crypt_action_browse => 'Browse';
+  String get crypt_action_browse => 'تصفح';
 
   @override
-  String get crypt_delete_title => 'Delete Encrypted Folder';
+  String get crypt_delete_title => 'حذف المجلد المشفر';
 
   @override
   String crypt_delete_message(Object name) {
-    return 'Delete encryption config for \"$name\"? Files will not be deleted.';
+    return 'حذف إعدادات التشفير لـ«$name»؟ لن يتم حذف الملفات.';
   }
 
   @override
-  String get crypt_filename_enc => 'Filename Enc';
+  String get crypt_filename_enc => 'أسماء الملفات';
 
   @override
-  String get crypt_share_title => 'Share Encrypted Folder';
+  String get crypt_share_title => 'مشاركة المجلد المشفر';
 
   @override
   String get crypt_share_hint =>
-      'Scan the QR code to import encryption config. Password is required to decrypt files.';
+      'امسح رمز QR لاستيراد إعدادات التشفير. كلمة المرور مطلوبة لفك تشفير الملفات.';
 
   @override
-  String get crypt_action_share => 'Share';
+  String get crypt_action_share => 'مشاركة';
 
   @override
   String get crypt_share_password_note =>
-      'Password is NOT included in the QR code. Share it separately via a secure channel.';
+      'كلمة المرور غير مضمَّنة في رمز QR. شاركها بشكل منفصل عبر قناة آمنة.';
 
   @override
-  String get crypt_action_encrypt => 'Encrypt Now';
+  String get crypt_action_encrypt => 'تشفير الآن';
 
   @override
-  String get crypt_action_decrypt => 'Decrypt';
+  String get crypt_action_decrypt => 'فك التشفير';
 
   @override
-  String get crypt_encrypt_title => 'Encryption Confirmation';
+  String get crypt_encrypt_title => 'تأكيد التشفير';
 
   @override
   String get crypt_encrypt_message =>
-      'This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?';
+      'سيتم تشفير جميع الملفات والمجلدات الفرعية. لن تتمكن أدوات إدارة الملفات الأخرى من رؤية المحتوى أو الأسماء. المتابعة؟';
 
   @override
-  String get crypt_encrypting => 'Encrypting...';
+  String get crypt_encrypting => 'جارٍ التشفير...';
 
   @override
-  String get crypt_encrypt_success => 'Encryption completed';
+  String get crypt_encrypt_success => 'اكتمل التشفير';
 
   @override
   String crypt_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'فشل التشفير: $error';
   }
 
   @override
-  String get crypt_decrypt_title => 'Decryption Confirmation';
+  String get crypt_decrypt_title => 'تأكيد فك التشفير';
 
   @override
   String get crypt_decrypt_message =>
-      'This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?';
+      'سيتم فك تشفير جميع الملفات والمجلدات الفرعية وستعود إلى حالتها الطبيعية. المتابعة؟';
 
   @override
-  String get crypt_decrypting => 'Decrypting...';
+  String get crypt_decrypting => 'جارٍ فك التشفير...';
 
   @override
-  String get crypt_decrypt_success => 'Decryption completed';
+  String get crypt_decrypt_success => 'اكتمل فك التشفير';
 
   @override
   String crypt_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'فشل فك التشفير: $error';
   }
 
   @override
-  String get crypt_filename_enc_off => 'Off';
+  String get crypt_filename_enc_off => 'إيقاف';
 
   @override
-  String get crypt_filename_enc_standard => 'Standard';
+  String get crypt_filename_enc_standard => 'قياسي';
 
   @override
-  String get crypt_filename_enc_obfuscate => 'Obfuscate';
+  String get crypt_filename_enc_obfuscate => 'تشويش';
 
   @override
   String get crypt_filename_enc_base64 => 'Base64';
@@ -6744,85 +7082,85 @@ class L10nAr extends L10n {
   String get crypt_filename_enc_base32768 => 'Base32768';
 
   @override
-  String get crypt_dirname_enc_yes => 'Yes';
+  String get crypt_dirname_enc_yes => 'نعم';
 
   @override
-  String get crypt_dirname_enc_no => 'No';
+  String get crypt_dirname_enc_no => 'لا';
 
   @override
-  String get vault_encrypt_files => '+ Encrypt Files';
+  String get vault_encrypt_files => '+ تشفير الملفات';
 
   @override
-  String get vault_select_encryption_method => 'Select Encryption Method';
+  String get vault_select_encryption_method => 'اختر طريقة التشفير';
 
   @override
-  String get vault_inplace_encrypt => 'In-place Encryption';
+  String get vault_inplace_encrypt => 'التشفير في المكان';
 
   @override
   String get vault_inplace_encrypt_desc =>
-      'Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser';
+      'تبقى الملفات في المجلد الأصلي، وتُشفَّر أسماؤها بعد التشفير، مع شعار 🔐 في المتصفح';
 
   @override
-  String get vault_sandbox_encrypt => 'Sandbox Encryption';
+  String get vault_sandbox_encrypt => 'تشفير صندوق الحماية';
 
   @override
   String get vault_sandbox_encrypt_desc =>
-      'Files moved to vault private directory, filenames hidden, only visible in vault page';
+      'تُنقل الملفات إلى مجلد الخزنة الخاص، وتُخفى الأسماء، وتظهر فقط في صفحة الخزنة';
 
   @override
-  String get vault_need_set_password => 'Need to Set Master Password First';
+  String get vault_need_set_password => 'يجب تعيين كلمة المرور الرئيسية أولاً';
 
   @override
   String get vault_need_set_password_desc =>
-      'Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.';
+      'يرجى أولاً إعداد كلمة المرور الرئيسية والملح في إعدادات التشفير، ثم يمكنك التشفير في المكان.';
 
   @override
-  String get vault_go_set_password => 'Set Password';
+  String get vault_go_set_password => 'تعيين كلمة المرور';
 
   @override
-  String get vault_encrypting => 'Encrypting...';
+  String get vault_encrypting => 'جارٍ التشفير...';
 
   @override
   String get vault_encrypting_desc =>
-      'Encrypting selected files/folders, please wait...';
+      'جارٍ تشفير الملفات/المجلدات المحددة، يرجى الانتظار...';
 
   @override
   String vault_inplace_encrypt_done(Object count) {
-    return 'In-place encryption completed, $count files/folders encrypted';
+    return 'اكتمل التشفير في المكان، تم تشفير $count ملف/مجلد';
   }
 
   @override
   String vault_encrypt_failed(Object error) {
-    return 'Encryption failed: $error';
+    return 'فشل التشفير: $error';
   }
 
   @override
-  String get vault_inplace_section => 'In-place Encryption';
+  String get vault_inplace_section => 'التشفير في المكان';
 
   @override
-  String get vault_open_location => 'Open Location';
+  String get vault_open_location => 'فتح الموقع';
 
   @override
-  String get vault_decrypt_action => 'Decrypt';
+  String get vault_decrypt_action => 'فك التشفير';
 
   @override
-  String get vault_decrypt_confirm_title => 'Decrypt File';
+  String get vault_decrypt_confirm_title => 'فك تشفير الملف';
 
   @override
   String vault_decrypt_confirm_desc(Object name) {
-    return 'Are you sure you want to decrypt \"$name\"? The file will be restored to normal after decryption.';
+    return 'هل تريد فك تشفير «$name»؟ سيعود الملف إلى حالته الطبيعية بعد فك التشفير.';
   }
 
   @override
-  String get vault_decrypt_success => 'Decryption successful';
+  String get vault_decrypt_success => 'تم فك التشفير بنجاح';
 
   @override
   String vault_decrypt_failed(Object error) {
-    return 'Decryption failed: $error';
+    return 'فشل فك التشفير: $error';
   }
 
   @override
-  String get crypt_set_master_password => 'Set Encryption Master Password';
+  String get crypt_set_master_password => 'تعيين كلمة المرور الرئيسية للتشفير';
 
   @override
   String get vault_section_unencrypted => 'ملفات غير مشفرة';
@@ -6853,6 +7191,7 @@ class L10nAr extends L10n {
   String vault_import_failed_detail(Object error) {
     return 'فشل الاستيراد: $error';
   }
+
   @override
   String get vault_no_files => 'لا توجد ملفات';
 
@@ -6862,4 +7201,85 @@ class L10nAr extends L10n {
 
   @override
   String get vault_remove_from_list => 'إزالة';
+
+  @override
+  String get security_vault_switch_desc => 'تفعيل ميزة الخزنة الخاصة';
+
+  @override
+  String get security_verify_password_desc =>
+      'أدخل كلمة المرور لفتح إعدادات الأمان';
+
+  @override
+  String get vault_verify_password_title => 'تحقق من كلمة المرور';
+
+  @override
+  String get vault_verify_password_hint => 'أدخل كلمة مرور الأمان';
+
+  @override
+  String get vault_go_security_settings => 'الانتقال إلى إعدادات الأمان';
+
+  @override
+  String get security_settings_subtitle =>
+      'الخزنة، الحارس عن بُعد، حماية التطبيق وفتح القفل ببصمة الإصبع';
+
+  @override
+  String get vault_disabled_hint =>
+      'الخزنة معطّلة. فعّلها في الإعدادات ← إعدادات الأمان';
+
+  @override
+  String get security_set_password_desc =>
+      'عيّن كلمة مرور أمان للوصول إلى إعدادات الأمان وفك قفل الخزنة';
+
+  @override
+  String get security_confirm_password => 'أدخل كلمة المرور مرة أخرى للتأكيد';
+
+  @override
+  String get biometric_reason_security_settings =>
+      'تحقّق من البصمة للوصول إلى إعدادات الأمان';
+
+  @override
+  String get toolbox_scan => 'مسح';
+
+  @override
+  String get scan_result_title => 'نتيجة المسح';
+
+  @override
+  String get scan_copy => 'نسخ';
+
+  @override
+  String get scan_copied => 'تم النسخ إلى الحافظة';
+
+  @override
+  String get scan_open_link => 'فتح الرابط';
+
+  @override
+  String get scan_continue => 'متابعة';
+
+  @override
+  String get scan_torch => 'الكشاف';
+
+  @override
+  String get scan_switch_camera => 'تبديل الكاميرا';
+
+  @override
+  String get scan_camera_error =>
+      'تعذّر الوصول إلى الكاميرا. يرجى التحقق من إذن الكاميرا.';
+
+  @override
+  String get scan_hint =>
+      'ضع رمز الاستجابة السريعة/الباركود داخل الإطار للمسح التلقائي';
+
+  @override
+  String get scan_from_gallery => 'من المعرض';
+
+  @override
+  String get scan_no_barcode => 'لم يتم اكتشاف رمز QR أو باركود في الصورة';
+
+  @override
+  String get ui_backup_confirm_title => 'تأكيد النسخ الاحتياطي';
+
+  @override
+  String ui_backup_confirm_message(String path) {
+    return 'سيتم النسخ الاحتياطي إلى المسار التالي:\n$path\n\nهل تريد المتابعة؟';
+  }
 }

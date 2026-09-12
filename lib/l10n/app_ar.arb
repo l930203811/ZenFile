@@ -4934,7 +4934,7 @@
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "تغيير رمز PIN",
+  "ui_remote_guard_change_pin": "تغيير كلمة المرور",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4986,7 +4986,7 @@
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "تغيير PIN الخزنة الخاصة (يعيد تشفير جميع الملفات المخفية)",
+  "ui_change_vault_pin_desc": "تغيير كلمة مرور الأمان وفتح الخزنة. لا تتأثر الملفات المشفرة",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -6186,7 +6186,7 @@
   "vault_backup_restore": "نسخ احتياطي / استعادة",
   "vault_import_backup_desc": "استعادة الخزنة من نسخة احتياطية (.zip)",
   "vault_uninstall_warning_title": "تحذير إلغاء التثبيت",
-  "vault_uninstall_warning": "إزالة التطبيق تمحو الخزنة. صدّر نسخة احتياطية أولاً.",
+  "vault_uninstall_warning": "إزالة التطبيق تمحو تشفير الصندوق الرملي. صدّر نسخة احتياطية أولاً.",
   "vault_backup_exported": "تم تصدير النسخة الاحتياطية إلى",
   "vault_backup_imported": "تم استيراد عناصر",
   "vault_export_failed": "فشل تصدير النسخة الاحتياطية",
@@ -6221,19 +6221,19 @@
   "@archive_unsupported_format": {
     "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
   },
-  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "vault_export_backup_confirm": "سيتم حفظ ملف النسخة الاحتياطية في الموقع التالي:",
   "@vault_export_backup_confirm": {
     "description": "vault backup UI string"
   },
-  "vault_import_only_zip": "Only .zip backup files are supported",
+  "vault_import_only_zip": "تدعم ملفات النسخ الاحتياطي .zip فقط",
   "@vault_import_only_zip": {
     "description": "vault backup UI string"
   },
-  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "vault_import_password_hint": "تستخدم هذه النسخة كلمة مرور مختلفة. أعد فتح قفل الخزنة بكلمة المرور المستخدمة عند إنشائها",
   "@vault_import_password_hint": {
     "description": "vault backup UI string"
   },
-  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "vault_open_backup_location": "فتح المجلد الذي حُفظت فيه النسخة الاحتياطية؟",
   "@vault_open_backup_location": {
     "description": "vault backup UI string"
   },
@@ -6610,211 +6610,612 @@
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
   },
-  "crypt_settings_title": "Encryption",
+  "crypt_settings_title": "إعداد كلمة المرور",
+  "vault_config_password": "إعداد كلمة المرور",
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
-  "crypt_settings_subtitle": "Manage encrypted folders and mount points",
+  "vault_help": "مساعدة",
+  "@vault_help": {
+    "description": "vault help: vault_help"
+  },
+  "vault_help_title": "مساعدة الخزنة",
+  "@vault_help_title": {
+    "description": "vault help: vault_help_title"
+  },
+  "vault_help_intro": "تستخدم الخزنة تنسيق crypt نفسه المستخدم في rclone. يتم التشفير وفك التشفير بالكامل على الجهاز، ولا يخرج المفتاح منه أبدًا.",
+  "@vault_help_intro": {
+    "description": "vault help: vault_help_intro"
+  },
+  "vault_help_highlights": "أبرز المزايا",
+  "@vault_help_highlights": {
+    "description": "vault help: vault_help_highlights"
+  },
+  "vault_help_hl1_title": "تشفير بدون معرفة مسبقة",
+  "@vault_help_hl1_title": {
+    "description": "vault help: vault_help_hl1_title"
+  },
+  "vault_help_hl1_desc": "تبقى كلمة المرور الرئيسية والملح على هذا الجهاز فقط، فلا يمكن لأي خدمة سحابية أو طرف ثالث فك تشفير ملفاتك.",
+  "@vault_help_hl1_desc": {
+    "description": "vault help: vault_help_hl1_desc"
+  },
+  "vault_help_hl2_title": "متوافق مع rclone و OpenList",
+  "@vault_help_hl2_title": {
+    "description": "vault help: vault_help_hl2_title"
+  },
+  "vault_help_hl2_desc": "يستخدم نفس تنسيق crypt، لذلك يمكن لـ rclone على الكمبيوتر فك تشفير الملفات نفسها.",
+  "@vault_help_hl2_desc": {
+    "description": "vault help: vault_help_hl2_desc"
+  },
+  "vault_help_hl3_title": "كلمات مرور متعددة وقراءة عن بُعد",
+  "@vault_help_hl3_title": {
+    "description": "vault help: vault_help_hl3_title"
+  },
+  "vault_help_hl3_desc": "يمكن ربط ملف كلمة مرور مختلف بكل مجلد، ويمكن تصفح المجلدات المشفّرة عن بُعد وتشغيلها دون تنزيلها كاملة.",
+  "@vault_help_hl3_desc": {
+    "description": "vault help: vault_help_hl3_desc"
+  },
+  "vault_help_basics": "العمليات الأساسية",
+  "@vault_help_basics": {
+    "description": "vault help: vault_help_basics"
+  },
+  "vault_help_b1_title": "١. اضبط كلمة المرور الرئيسية أولًا",
+  "@vault_help_b1_title": {
+    "description": "vault help: vault_help_b1_title"
+  },
+  "vault_help_b1_desc": "اضبط كلمة المرور الرئيسية والملح في «ملفات كلمات المرور» واحفظهما جيدًا؛ فهما مستقلتان عن كلمة مرور فتح الخزنة.",
+  "@vault_help_b1_desc": {
+    "description": "vault help: vault_help_b1_desc"
+  },
+  "vault_help_b2_title": "٢. تشفير الملفات",
+  "@vault_help_b2_title": {
+    "description": "vault help: vault_help_b2_title"
+  },
+  "vault_help_b2_desc": "حدد الملفات في المتصفح، ثم اضغط تشفير واختر التشفير في مكانه أو في وضع الحماية.",
+  "@vault_help_b2_desc": {
+    "description": "vault help: vault_help_b2_desc"
+  },
+  "vault_help_b3_title": "٣. العرض والفتح",
+  "@vault_help_b3_title": {
+    "description": "vault help: vault_help_b3_title"
+  },
+  "vault_help_b3_desc": "تُدرج العناصر المشفّرة في الخزنة، وعند الضغط عليها تُفك تشفيرها مؤقتًا للمعاينة.",
+  "@vault_help_b3_desc": {
+    "description": "vault help: vault_help_b3_desc"
+  },
+  "vault_help_b4_title": "٤. فك التشفير",
+  "@vault_help_b4_title": {
+    "description": "vault help: vault_help_b4_title"
+  },
+  "vault_help_b4_desc": "حدد عنصرًا واضغط فك التشفير لإعادته ملفًا عاديًا إلى مكانه الأصلي.",
+  "@vault_help_b4_desc": {
+    "description": "vault help: vault_help_b4_desc"
+  },
+  "vault_help_b5_title": "٥. النسخ الاحتياطي والاستعادة",
+  "@vault_help_b5_title": {
+    "description": "vault help: vault_help_b5_title"
+  },
+  "vault_help_b5_desc": "صدّر من «النسخ الاحتياطي / الاستعادة» نسخة تتضمن ملفات التشفير قبل إزالة التطبيق.",
+  "@vault_help_b5_desc": {
+    "description": "vault help: vault_help_b5_desc"
+  },
+  "vault_help_compat": "التوافق",
+  "@vault_help_compat": {
+    "description": "vault help: vault_help_compat"
+  },
+  "vault_help_c1_title": "تنسيق التشفير",
+  "@vault_help_c1_title": {
+    "description": "vault help: vault_help_c1_title"
+  },
+  "vault_help_c1_desc": "يستخدم المحتوى XSalsa20-Poly1305، وتُشفَّر الأسماء عبر EME ثم تُرمَّز بـ base32/base64، ويمكن إضافة اللاحقة .bin.",
+  "@vault_help_c1_desc": {
+    "description": "vault help: vault_help_c1_desc"
+  },
+  "vault_help_c2_title": "السحابة والمزامنة",
+  "@vault_help_c2_title": {
+    "description": "vault help: vault_help_c2_title"
+  },
+  "vault_help_c2_desc": "تتم مزامنة النص المشفّر مع أي سحابة أو أداة مزامنة؛ والخادم لا يرى سوى النص المشفّر ولا يعرف الأسماء الحقيقية.",
+  "@vault_help_c2_desc": {
+    "description": "vault help: vault_help_c2_desc"
+  },
+  "vault_help_c3_title": "القيود المعروفة",
+  "@vault_help_c3_title": {
+    "description": "vault help: vault_help_c3_title"
+  },
+  "vault_help_c3_desc": "الأسماء المشفّرة أطول بكثير، وقد تفشل الأسماء الطويلة جدًا؛ أعد التسمية داخل التطبيق فقط، فتعديل الاسم المشفّر يجعل الملف غير قابل لفك التشفير.",
+  "@vault_help_c3_desc": {
+    "description": "vault help: vault_help_c3_desc"
+  },
+  "vault_help_inplace": "التشفير في مكانه",
+  "@vault_help_inplace": {
+    "description": "vault help: vault_help_inplace"
+  },
+  "vault_help_inplace_intro": "يشفّر التشفير في مكانه الملفات حيث توجد: يستبدل المحتوى والاسم بنص مشفّر، ويبقى الملف في مجلده الأصلي دون الانتقال إلى مجلد الخزنة الخاص.",
+  "@vault_help_inplace_intro": {
+    "description": "vault help: vault_help_inplace_intro"
+  },
+  "vault_help_ip1_title": "العلاقة بالمجلد الأصلي",
+  "@vault_help_ip1_title": {
+    "description": "vault help: vault_help_ip1_title"
+  },
+  "vault_help_ip1_desc": "يبقى الموقع وهيكل المجلدات كما هو، وتظهر على الملفات المشفّرة شارة قفل في المتصفح.",
+  "@vault_help_ip1_desc": {
+    "description": "vault help: vault_help_ip1_desc"
+  },
+  "vault_help_ip2_title": "ما تراه التطبيقات الأخرى",
+  "@vault_help_ip2_title": {
+    "description": "vault help: vault_help_ip2_title"
+  },
+  "vault_help_ip2_desc": "ترى برامج إدارة الملفات والمشغلات الأخرى أسماءً مشفّرة بلا معنى ولا يمكنها فتحها، وهذا هو المقصود من الحماية.",
+  "@vault_help_ip2_desc": {
+    "description": "vault help: vault_help_ip2_desc"
+  },
+  "vault_help_ip3_title": "متى تستخدمه",
+  "@vault_help_ip3_title": {
+    "description": "vault help: vault_help_ip3_title"
+  },
+  "vault_help_ip3_desc": "عند الرغبة في الحفاظ على هيكل المجلدات مع استمرار تطبيقات السحابة الخارجية في مزامنة هذه الملفات.",
+  "@vault_help_ip3_desc": {
+    "description": "vault help: vault_help_ip3_desc"
+  },
+  "vault_help_ip4_title": "المخاطر والنصائح",
+  "@vault_help_ip4_title": {
+    "description": "vault help: vault_help_ip4_title"
+  },
+  "vault_help_ip4_desc": "يستبدل التشفير الملف الأصلي مباشرة، وقد يترك الانقطاع ملفات ناقصة. احتفظ بنسخة احتياطية أولًا وتحقق من صلاحية الكتابة عند فك التشفير.",
+  "@vault_help_ip4_desc": {
+    "description": "vault help: vault_help_ip4_desc"
+  },
+  "vault_help_notice": "ملاحظات",
+  "@vault_help_notice": {
+    "description": "vault help: vault_help_notice"
+  },
+  "vault_help_n1": "لا يمكن تغيير كلمة المرور والملح اللذين استُخدما بالفعل في التشفير؛ أنشئ ملفًا جديدًا عند الحاجة.",
+  "@vault_help_n1": {
+    "description": "vault help: vault_help_n1"
+  },
+  "vault_help_n2": "تخزَّن الملفات المشفّرة في وضع الحماية داخل مجلد التطبيق الخاص وتُحذف عند إزالة التطبيق.",
+  "@vault_help_n2": {
+    "description": "vault help: vault_help_n2"
+  },
+  "vault_help_n3": "في حال نسيان كلمة المرور الرئيسية لن يمكن استعادة أي ملف مشفّر، لذا صدّر نسخة احتياطية دائمًا.",
+  "@vault_help_n3": {
+    "description": "vault help: vault_help_n3"
+  },
+  "vault_remote_encrypt": "تشفير بعيد",
+  "@vault_remote_encrypt": {
+    "description": "crypt: vault_remote_encrypt"
+  },
+  "vault_import_source_title": "اختر مصدر التشفير",
+  "@vault_import_source_title": {
+    "description": "crypt: vault_import_source_title"
+  },
+  "vault_import_source_remote": "بعيد",
+  "@vault_import_source_remote": {
+    "description": "crypt: vault_import_source_remote"
+  },
+  "vault_import_source_remote_desc": "ربط مجلد مشفّر بعيد أو تشفير الملفات المحلية ورفعها",
+  "@vault_import_source_remote_desc": {
+    "description": "crypt: vault_import_source_remote_desc"
+  },
+  "vault_link_remote_crypt_desc": "ربط مجلد rclone crypt موجود على الخادم (فك التشفير على الجهاز)",
+  "@vault_link_remote_crypt_desc": {
+    "description": "crypt: vault_link_remote_crypt_desc"
+  },
+  "vault_encrypt_upload": "تشفير ورفع إلى الخادم البعيد",
+  "@vault_encrypt_upload": {
+    "description": "crypt: vault_encrypt_upload"
+  },
+  "vault_encrypt_upload_desc": "اختيار ملفات محلية وتشفيرها ورفعها إلى الخادم البعيد",
+  "@vault_encrypt_upload_desc": {
+    "description": "crypt: vault_encrypt_upload_desc"
+  },
+  "vault_encrypt_uploading": "جارٍ التشفير والرفع…",
+  "@vault_encrypt_uploading": {
+    "description": "crypt: vault_encrypt_uploading"
+  },
+  "vault_encrypt_upload_done": "اكتمل الرفع المشفّر",
+  "@vault_encrypt_upload_done": {
+    "description": "crypt: vault_encrypt_upload_done"
+  },
+  "vault_encrypt_upload_failed": "فشل الرفع المشفّر",
+  "@vault_encrypt_upload_failed": {
+    "description": "crypt: vault_encrypt_upload_failed"
+  },
+  "crypt_remote_upload": "تشفير ورفع",
+  "@crypt_remote_upload": {
+    "description": "crypt: crypt_remote_upload"
+  },
+  "crypt_remote_download": "فك التشفير والتنزيل",
+  "@crypt_remote_download": {
+    "description": "crypt: crypt_remote_download"
+  },
+  "crypt_remote_downloading": "جارٍ فك التشفير والتنزيل…",
+  "@crypt_remote_downloading": {
+    "description": "crypt: crypt_remote_downloading"
+  },
+  "crypt_remote_download_done": "اكتمل التنزيل مع فك التشفير",
+  "@crypt_remote_download_done": {
+    "description": "crypt: crypt_remote_download_done"
+  },
+  "crypt_remote_download_failed": "فشل التنزيل مع فك التشفير",
+  "@crypt_remote_download_failed": {
+    "description": "crypt: crypt_remote_download_failed"
+  },
+  "vault_remote_crypt_open_failed": "فشل فتح الملف المشفّر البعيد",
+  "@vault_remote_crypt_open_failed": {
+    "description": "crypt: vault_remote_crypt_open_failed"
+  },
+  "vault_remote_crypt_unsupported": "هذا النوع من الملفات غير مدعوم للبث المشفّر عن بُعد",
+  "@vault_remote_crypt_unsupported": {
+    "description": "crypt: vault_remote_crypt_unsupported"
+  },
+  "vault_link_remote_crypt": "ربط مجلد مشفّر بعيد",
+  "@vault_link_remote_crypt": {
+    "description": "crypt: vault_link_remote_crypt"
+  },
+  "vault_link_remote_crypt_success": "تم ربط المجلد المشفّر البعيد",
+  "@vault_link_remote_crypt_success": {
+    "description": "crypt: vault_link_remote_crypt_success"
+  },
+  "vault_unlink_remote_crypt": "إلغاء الربط",
+  "@vault_unlink_remote_crypt": {
+    "description": "crypt: vault_unlink_remote_crypt"
+  },
+  "vault_exporting": "جارٍ التصدير...",
+  "@vault_exporting": {
+    "description": "vault/crypt: vault_exporting"
+  },
+  "vault_importing": "جارٍ الاستيراد...",
+  "@vault_importing": {
+    "description": "vault/crypt: vault_importing"
+  },
+  "vault_importing_backup": "جارٍ استيراد النسخة الاحتياطية...",
+  "@vault_importing_backup": {
+    "description": "vault/crypt: vault_importing_backup"
+  },
+  "vault_restoring": "جارٍ الاستعادة...",
+  "@vault_restoring": {
+    "description": "vault/crypt: vault_restoring"
+  },
+  "vault_decrypting": "جارٍ فك التشفير...",
+  "@vault_decrypting": {
+    "description": "vault/crypt: vault_decrypting"
+  },
+  "vault_import_backup_confirm": "سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟",
+  "@vault_import_backup_confirm": {
+    "description": "vault/crypt: vault_import_backup_confirm"
+  },
+  "vault_load_error": "فشل تحميل الخزنة: {error}",
+  "@vault_load_error": {
+    "description": "vault/crypt: vault_load_error"
+  },
+  "vault_restore_folder_hint": "للمجلدات، اضغط مطولاً واختر «استعادة» لعرضها في الموقع الأصلي",
+  "@vault_restore_folder_hint": {
+    "description": "vault/crypt: vault_restore_folder_hint"
+  },
+  "vault_decrypt_open_failed": "فشل فك التشفير والفتح: {error}",
+  "@vault_decrypt_open_failed": {
+    "description": "vault/crypt: vault_decrypt_open_failed"
+  },
+  "vault_badge_inplace": "في المكان",
+  "@vault_badge_inplace": {
+    "description": "vault/crypt: vault_badge_inplace"
+  },
+  "vault_badge_sandbox": "صندوق الحماية",
+  "@vault_badge_sandbox": {
+    "description": "vault/crypt: vault_badge_sandbox"
+  },
+  "vault_item_folder": "مجلد",
+  "@vault_item_folder": {
+    "description": "vault/crypt: vault_item_folder"
+  },
+  "crypt_need_master_title": "لم يتم تعيين كلمة المرور الرئيسية للتشفير",
+  "@crypt_need_master_title": {
+    "description": "vault/crypt: crypt_need_master_title"
+  },
+  "crypt_need_master_body": "يستخدم التشفير في المكان وصندوق الحماية كلاهما كلمة المرور الرئيسية من إعدادات التشفير. يرجى تعيينها أولاً.",
+  "@crypt_need_master_body": {
+    "description": "vault/crypt: crypt_need_master_body"
+  },
+  "crypt_master_banner": "كلمة المرور الرئيسية والملح المُعدَّان هنا يُستخدمان للتشفير في المكان وصندوق الحماية. احفظهما جيداً؛ فهما مستقلان عن كلمة مرور فتح قفل الخزنة.",
+  "@crypt_master_banner": {
+    "description": "vault/crypt: crypt_master_banner"
+  },
+  "crypt_profile_name": "اسم التشفير",
+  "@crypt_profile_name": {
+    "description": "crypt: crypt_profile_name"
+  },
+  "crypt_profile_name_hint": "مثال: العمل / شخصي",
+  "@crypt_profile_name_hint": {
+    "description": "crypt: crypt_profile_name_hint"
+  },
+  "crypt_profile_name_required": "يرجى إدخال اسم التشفير",
+  "@crypt_profile_name_required": {
+    "description": "crypt: crypt_profile_name_required"
+  },
+  "crypt_profile_name_duplicate": "هذا الاسم موجود بالفعل",
+  "@crypt_profile_name_duplicate": {
+    "description": "crypt: crypt_profile_name_duplicate"
+  },
+  "crypt_profile_title_new": "ملف تعريف تشفير جديد",
+  "@crypt_profile_title_new": {
+    "description": "crypt: crypt_profile_title_new"
+  },
+  "crypt_profile_title_edit": "تحرير ملف تعريف التشفير",
+  "@crypt_profile_title_edit": {
+    "description": "crypt: crypt_profile_title_edit"
+  },
+  "crypt_profile_section": "إعداد كلمة المرور",
+  "@crypt_profile_section": {
+    "description": "crypt: crypt_profile_section"
+  },
+  "crypt_profile_add": "ملف تعريف جديد",
+  "@crypt_profile_add": {
+    "description": "crypt: crypt_profile_add"
+  },
+  "crypt_profile_default": "الافتراضي",
+  "@crypt_profile_default": {
+    "description": "crypt: crypt_profile_default"
+  },
+  "crypt_profile_set_default": "تعيين كافتراضي",
+  "@crypt_profile_set_default": {
+    "description": "crypt: crypt_profile_set_default"
+  },
+  "crypt_profile_set_default_desc": "الملفات بدون ملف تعريف مرتبط تستخدم هذا",
+  "@crypt_profile_set_default_desc": {
+    "description": "crypt: crypt_profile_set_default_desc"
+  },
+  "crypt_profile_default_done": "تم تحديث الملف الافتراضي",
+  "@crypt_profile_default_done": {
+    "description": "crypt: crypt_profile_default_done"
+  },
+  "crypt_profile_delete_message": "حذف ملف التعريف هذا يجعل الملفات المشفرة به غير قابلة للفك.",
+  "@crypt_profile_delete_message": {
+    "description": "crypt: crypt_profile_delete_message"
+  },
+  "crypt_profile_empty": "لا يوجد ملف تعريف تشفير بعد",
+  "@crypt_profile_empty": {
+    "description": "crypt: crypt_profile_empty"
+  },
+  "crypt_profile_action_config": "ملف التعريف",
+  "@crypt_profile_action_config": {
+    "description": "crypt: crypt_profile_action_config"
+  },
+  "crypt_profile_select_title": "اختيار ملف تعريف التشفير",
+  "@crypt_profile_select_title": {
+    "description": "crypt: crypt_profile_select_title"
+  },
+  "crypt_profile_bound_done": "تم ربط ملف التعريف",
+  "@crypt_profile_bound_done": {
+    "description": "crypt: crypt_profile_bound_done"
+  },
+  "crypt_profile_credential_locked": "مقفل",
+  "@crypt_profile_credential_locked": {
+    "description": "crypt: crypt_profile_credential_locked"
+  },
+  "crypt_profile_credential_locked_desc": "كلمة المرور والملح يحددان المفتاح. تغييرهما يجعل الملفات المشفرة غير قابلة للفك — أنشئ ملف تعريف جديدًا بدلًا من ذلك.",
+  "@crypt_profile_credential_locked_desc": {
+    "description": "crypt: crypt_profile_credential_locked_desc"
+  },
+  "crypt_profile_suffix_none": "بدون لاحقة",
+  "@crypt_profile_suffix_none": {
+    "description": "crypt: crypt_profile_suffix_none"
+  },
+  "crypt_profile_sandbox_title": "تغيير ملف تعريف Sandbox",
+  "@crypt_profile_sandbox_title": {
+    "description": "crypt: crypt_profile_sandbox_title"
+  },
+  "crypt_profile_sandbox_message": "تستخدم Sandbox ملف تعريف واحدًا ككل. بعد التغيير قد تظهر ملفات أخرى كنص مشفر. المتابعة؟",
+  "@crypt_profile_sandbox_message": {
+    "description": "crypt: crypt_profile_sandbox_message"
+  },
+  "crypt_mount_section": "المواقع المشفرة",
+  "@crypt_mount_section": {
+    "description": "crypt: crypt_mount_section"
+  },
+  "crypt_settings_subtitle": "إدارة المجلدات المشفرة ونقاط التثبيت",
   "@crypt_settings_subtitle": {
     "description": "crypt: crypt_settings_subtitle"
   },
-  "crypt_add_mount": "Add Encrypted Folder",
+  "crypt_add_mount": "إضافة مجلد مشفر",
   "@crypt_add_mount": {
     "description": "crypt: crypt_add_mount"
   },
-  "crypt_edit_mount": "Edit Encrypted Folder",
+  "crypt_edit_mount": "تعديل المجلد المشفر",
   "@crypt_edit_mount": {
     "description": "crypt: crypt_edit_mount"
   },
-  "crypt_no_mounts_title": "No Encrypted Folders",
+  "crypt_no_mounts_title": "لا توجد مجلدات مشفرة",
   "@crypt_no_mounts_title": {
     "description": "crypt: crypt_no_mounts_title"
   },
-  "crypt_no_mounts_subtitle": "Tap the button below to add your first encrypted folder",
+  "crypt_no_mounts_subtitle": "اضغط الزر أدناه لإضافة أول مجلد مشفر",
   "@crypt_no_mounts_subtitle": {
     "description": "crypt: crypt_no_mounts_subtitle"
   },
-  "crypt_field_name": "Name",
+  "crypt_field_name": "الاسم",
   "@crypt_field_name": {
     "description": "crypt: crypt_field_name"
   },
-  "crypt_field_name_hint": "Optional, uses folder name if empty",
+  "crypt_field_name_hint": "اختياري؛ يُستخدم اسم المجلد إذا تُرك فارغاً",
   "@crypt_field_name_hint": {
     "description": "crypt: crypt_field_name_hint"
   },
-  "crypt_field_path": "Folder Path",
+  "crypt_field_path": "مسار المجلد",
   "@crypt_field_path": {
     "description": "crypt: crypt_field_path"
   },
-  "crypt_field_path_hint": "Select folder to encrypt",
+  "crypt_field_path_hint": "اختر المجلد لتشفيره",
   "@crypt_field_path_hint": {
     "description": "crypt: crypt_field_path_hint"
   },
-  "crypt_field_password": "Password",
+  "crypt_field_password": "كلمة المرور",
   "@crypt_field_password": {
     "description": "crypt: crypt_field_password"
   },
-  "crypt_field_confirm_password": "Confirm Password",
+  "crypt_field_confirm_password": "تأكيد كلمة المرور",
   "@crypt_field_confirm_password": {
     "description": "crypt: crypt_field_confirm_password"
   },
-  "crypt_error_path_required": "Please select a folder path",
+  "crypt_error_path_required": "يرجى اختيار مسار المجلد",
   "@crypt_error_path_required": {
     "description": "crypt: crypt_error_path_required"
   },
-  "crypt_error_password_required": "Please enter a password",
+  "crypt_error_password_required": "يرجى إدخال كلمة المرور",
   "@crypt_error_password_required": {
     "description": "crypt: crypt_error_password_required"
   },
-  "crypt_error_password_short": "Password must be at least 4 characters",
+  "crypt_error_password_short": "يجب ألا تقل كلمة المرور عن 4 أحرف",
   "@crypt_error_password_short": {
     "description": "crypt: crypt_error_password_short"
   },
-  "crypt_error_password_mismatch": "Passwords do not match",
+  "crypt_error_password_mismatch": "كلمتا المرور غير متطابقتين",
   "@crypt_error_password_mismatch": {
     "description": "crypt: crypt_error_password_mismatch"
   },
-  "crypt_section_mode": "Encryption Mode",
+  "crypt_section_mode": "وضع التشفير",
   "@crypt_section_mode": {
     "description": "crypt: crypt_section_mode"
   },
-  "crypt_mode_inplace": "In-place Encryption",
+  "crypt_mode_inplace": "التشفير في المكان",
   "@crypt_mode_inplace": {
     "description": "crypt: crypt_mode_inplace"
   },
-  "crypt_mode_inplace_desc": "Files stay in place, names and content are encrypted",
+  "crypt_mode_inplace_desc": "تبقى الملفات في مكانها؛ تُشفَّر الأسماء والمحتويات",
   "@crypt_mode_inplace_desc": {
     "description": "crypt: crypt_mode_inplace_desc"
   },
-  "crypt_mode_sandbox": "Sandbox Encryption",
+  "crypt_mode_sandbox": "تشفير صندوق الحماية",
   "@crypt_mode_sandbox": {
     "description": "crypt: crypt_mode_sandbox"
   },
-  "crypt_mode_sandbox_desc": "Files moved to sandbox, more secure but slightly slower",
+  "crypt_mode_sandbox_desc": "تُنقل الملفات إلى صندوق الحماية؛ أكثر أماناً لكن أبطأ قليلاً",
   "@crypt_mode_sandbox_desc": {
     "description": "crypt: crypt_mode_sandbox_desc"
   },
-  "crypt_section_advanced": "Advanced Options",
+  "crypt_section_advanced": "خيارات متقدمة",
   "@crypt_section_advanced": {
     "description": "crypt: crypt_section_advanced"
   },
-  "crypt_advanced_toggle": "Show advanced encryption options",
+  "crypt_advanced_toggle": "إظهار خيارات التشفير المتقدمة",
   "@crypt_advanced_toggle": {
     "description": "crypt: crypt_advanced_toggle"
   },
-  "crypt_field_filename_enc": "Filename Encryption",
+  "crypt_field_filename_enc": "تشفير أسماء الملفات",
   "@crypt_field_filename_enc": {
     "description": "crypt: crypt_field_filename_enc"
   },
-  "crypt_field_dirname_enc": "Encrypt Directory Names",
+  "crypt_field_dirname_enc": "تشفير أسماء المجلدات",
   "@crypt_field_dirname_enc": {
     "description": "crypt: crypt_field_dirname_enc"
   },
-  "crypt_field_filename_encoding": "Filename Encoding",
+  "crypt_field_filename_encoding": "ترميز أسماء الملفات",
   "@crypt_field_filename_encoding": {
     "description": "crypt: crypt_field_filename_encoding"
   },
-  "crypt_field_suffix": "Encrypted Suffix",
+  "crypt_field_suffix": "لاحقة التشفير",
   "@crypt_field_suffix": {
     "description": "crypt: crypt_field_suffix"
   },
-  "crypt_field_salt": "Salt (optional)",
+  "crypt_field_salt": "الملح (اختياري)",
   "@crypt_field_salt": {
     "description": "crypt: crypt_field_salt"
   },
-  "crypt_field_salt_hint": "Auto-generated if empty",
+  "crypt_field_salt_hint": "يُنشأ تلقائياً إذا تُرك فارغاً",
   "@crypt_field_salt_hint": {
     "description": "crypt: crypt_field_salt_hint"
   },
-  "crypt_action_browse": "Browse",
+  "crypt_action_browse": "تصفح",
   "@crypt_action_browse": {
     "description": "crypt: crypt_action_browse"
   },
-  "crypt_delete_title": "Delete Encrypted Folder",
+  "crypt_delete_title": "حذف المجلد المشفر",
   "@crypt_delete_title": {
     "description": "crypt: crypt_delete_title"
   },
-  "crypt_delete_message": "Delete encryption config for \"{name}\"? Files will not be deleted.",
+  "crypt_delete_message": "حذف إعدادات التشفير لـ«{name}»؟ لن يتم حذف الملفات.",
   "@crypt_delete_message": {
     "description": "crypt: crypt_delete_message"
   },
-  "crypt_filename_enc": "Filename Enc",
+  "crypt_filename_enc": "أسماء الملفات",
   "@crypt_filename_enc": {
     "description": "crypt: crypt_filename_enc"
   },
-  "crypt_share_title": "Share Encrypted Folder",
+  "crypt_share_title": "مشاركة المجلد المشفر",
   "@crypt_share_title": {
     "description": "crypt: crypt_share_title"
   },
-  "crypt_share_hint": "Scan the QR code to import encryption config. Password is required to decrypt files.",
+  "crypt_share_hint": "امسح رمز QR لاستيراد إعدادات التشفير. كلمة المرور مطلوبة لفك تشفير الملفات.",
   "@crypt_share_hint": {
     "description": "crypt: crypt_share_hint"
   },
-  "crypt_action_share": "Share",
+  "crypt_action_share": "مشاركة",
   "@crypt_action_share": {
     "description": "crypt: crypt_action_share"
   },
-  "crypt_share_password_note": "Password is NOT included in the QR code. Share it separately via a secure channel.",
+  "crypt_share_password_note": "كلمة المرور غير مضمَّنة في رمز QR. شاركها بشكل منفصل عبر قناة آمنة.",
   "@crypt_share_password_note": {
     "description": "crypt: crypt_share_password_note"
   },
-  "crypt_action_encrypt": "Encrypt Now",
+  "crypt_action_encrypt": "تشفير الآن",
   "@crypt_action_encrypt": {
     "description": "crypt: crypt_action_encrypt"
   },
-  "crypt_action_decrypt": "Decrypt",
+  "crypt_action_decrypt": "فك التشفير",
   "@crypt_action_decrypt": {
     "description": "crypt: crypt_action_decrypt"
   },
-  "crypt_encrypt_title": "Encryption Confirmation",
+  "crypt_encrypt_title": "تأكيد التشفير",
   "@crypt_encrypt_title": {
     "description": "crypt: crypt_encrypt_title"
   },
-  "crypt_encrypt_message": "This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?",
+  "crypt_encrypt_message": "سيتم تشفير جميع الملفات والمجلدات الفرعية. لن تتمكن أدوات إدارة الملفات الأخرى من رؤية المحتوى أو الأسماء. المتابعة؟",
   "@crypt_encrypt_message": {
     "description": "crypt: crypt_encrypt_message"
   },
-  "crypt_encrypting": "Encrypting...",
+  "crypt_encrypting": "جارٍ التشفير...",
   "@crypt_encrypting": {
     "description": "crypt: crypt_encrypting"
   },
-  "crypt_encrypt_success": "Encryption completed",
+  "crypt_encrypt_success": "اكتمل التشفير",
   "@crypt_encrypt_success": {
     "description": "crypt: crypt_encrypt_success"
   },
-  "crypt_encrypt_failed": "Encryption failed: {error}",
+  "crypt_encrypt_failed": "فشل التشفير: {error}",
   "@crypt_encrypt_failed": {
     "description": "crypt: crypt_encrypt_failed"
   },
-  "crypt_decrypt_title": "Decryption Confirmation",
+  "crypt_decrypt_title": "تأكيد فك التشفير",
   "@crypt_decrypt_title": {
     "description": "crypt: crypt_decrypt_title"
   },
-  "crypt_decrypt_message": "This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?",
+  "crypt_decrypt_message": "سيتم فك تشفير جميع الملفات والمجلدات الفرعية وستعود إلى حالتها الطبيعية. المتابعة؟",
   "@crypt_decrypt_message": {
     "description": "crypt: crypt_decrypt_message"
   },
-  "crypt_decrypting": "Decrypting...",
+  "crypt_decrypting": "جارٍ فك التشفير...",
   "@crypt_decrypting": {
     "description": "crypt: crypt_decrypting"
   },
-  "crypt_decrypt_success": "Decryption completed",
+  "crypt_decrypt_success": "اكتمل فك التشفير",
   "@crypt_decrypt_success": {
     "description": "crypt: crypt_decrypt_success"
   },
-  "crypt_decrypt_failed": "Decryption failed: {error}",
+  "crypt_decrypt_failed": "فشل فك التشفير: {error}",
   "@crypt_decrypt_failed": {
     "description": "crypt: crypt_decrypt_failed"
   },
-  "crypt_filename_enc_off": "Off",
+  "crypt_filename_enc_off": "إيقاف",
   "@crypt_filename_enc_off": {
     "description": "crypt: crypt_filename_enc_off"
   },
-  "crypt_filename_enc_standard": "Standard",
+  "crypt_filename_enc_standard": "قياسي",
   "@crypt_filename_enc_standard": {
     "description": "crypt: crypt_filename_enc_standard"
   },
-  "crypt_filename_enc_obfuscate": "Obfuscate",
+  "crypt_filename_enc_obfuscate": "تشويش",
   "@crypt_filename_enc_obfuscate": {
     "description": "crypt: crypt_filename_enc_obfuscate"
   },
@@ -6830,95 +7231,95 @@
   "@crypt_filename_enc_base32768": {
     "description": "crypt: crypt_filename_enc_base32768"
   },
-  "crypt_dirname_enc_yes": "Yes",
+  "crypt_dirname_enc_yes": "نعم",
   "@crypt_dirname_enc_yes": {
     "description": "crypt: crypt_dirname_enc_yes"
   },
-  "crypt_dirname_enc_no": "No",
+  "crypt_dirname_enc_no": "لا",
   "@crypt_dirname_enc_no": {
     "description": "crypt: crypt_dirname_enc_no"
   },
-  "vault_encrypt_files": "+ Encrypt Files",
+  "vault_encrypt_files": "+ تشفير الملفات",
   "@vault_encrypt_files": {
     "description": "vault/crypt: vault_encrypt_files"
   },
-  "vault_select_encryption_method": "Select Encryption Method",
+  "vault_select_encryption_method": "اختر طريقة التشفير",
   "@vault_select_encryption_method": {
     "description": "vault/crypt: vault_select_encryption_method"
   },
-  "vault_inplace_encrypt": "In-place Encryption",
+  "vault_inplace_encrypt": "التشفير في المكان",
   "@vault_inplace_encrypt": {
     "description": "vault/crypt: vault_inplace_encrypt"
   },
-  "vault_inplace_encrypt_desc": "Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser",
+  "vault_inplace_encrypt_desc": "تبقى الملفات في المجلد الأصلي، وتُشفَّر أسماؤها بعد التشفير، مع شعار 🔐 في المتصفح",
   "@vault_inplace_encrypt_desc": {
     "description": "vault/crypt: vault_inplace_encrypt_desc"
   },
-  "vault_sandbox_encrypt": "Sandbox Encryption",
+  "vault_sandbox_encrypt": "تشفير صندوق الحماية",
   "@vault_sandbox_encrypt": {
     "description": "vault/crypt: vault_sandbox_encrypt"
   },
-  "vault_sandbox_encrypt_desc": "Files moved to vault private directory, filenames hidden, only visible in vault page",
+  "vault_sandbox_encrypt_desc": "تُنقل الملفات إلى مجلد الخزنة الخاص، وتُخفى الأسماء، وتظهر فقط في صفحة الخزنة",
   "@vault_sandbox_encrypt_desc": {
     "description": "vault/crypt: vault_sandbox_encrypt_desc"
   },
-  "vault_need_set_password": "Need to Set Master Password First",
+  "vault_need_set_password": "يجب تعيين كلمة المرور الرئيسية أولاً",
   "@vault_need_set_password": {
     "description": "vault/crypt: vault_need_set_password"
   },
-  "vault_need_set_password_desc": "Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.",
+  "vault_need_set_password_desc": "يرجى أولاً إعداد كلمة المرور الرئيسية والملح في إعدادات التشفير، ثم يمكنك التشفير في المكان.",
   "@vault_need_set_password_desc": {
     "description": "vault/crypt: vault_need_set_password_desc"
   },
-  "vault_go_set_password": "Set Password",
+  "vault_go_set_password": "تعيين كلمة المرور",
   "@vault_go_set_password": {
     "description": "vault/crypt: vault_go_set_password"
   },
-  "vault_encrypting": "Encrypting...",
+  "vault_encrypting": "جارٍ التشفير...",
   "@vault_encrypting": {
     "description": "vault/crypt: vault_encrypting"
   },
-  "vault_encrypting_desc": "Encrypting selected files/folders, please wait...",
+  "vault_encrypting_desc": "جارٍ تشفير الملفات/المجلدات المحددة، يرجى الانتظار...",
   "@vault_encrypting_desc": {
     "description": "vault/crypt: vault_encrypting_desc"
   },
-  "vault_inplace_encrypt_done": "In-place encryption completed, {count} files/folders encrypted",
+  "vault_inplace_encrypt_done": "اكتمل التشفير في المكان، تم تشفير {count} ملف/مجلد",
   "@vault_inplace_encrypt_done": {
     "description": "vault/crypt: vault_inplace_encrypt_done"
   },
-  "vault_encrypt_failed": "Encryption failed: {error}",
+  "vault_encrypt_failed": "فشل التشفير: {error}",
   "@vault_encrypt_failed": {
     "description": "vault/crypt: vault_encrypt_failed"
   },
-  "vault_inplace_section": "In-place Encryption",
+  "vault_inplace_section": "التشفير في المكان",
   "@vault_inplace_section": {
     "description": "vault/crypt: vault_inplace_section"
   },
-  "vault_open_location": "Open Location",
+  "vault_open_location": "فتح الموقع",
   "@vault_open_location": {
     "description": "vault/crypt: vault_open_location"
   },
-  "vault_decrypt_action": "Decrypt",
+  "vault_decrypt_action": "فك التشفير",
   "@vault_decrypt_action": {
     "description": "vault/crypt: vault_decrypt_action"
   },
-  "vault_decrypt_confirm_title": "Decrypt File",
+  "vault_decrypt_confirm_title": "فك تشفير الملف",
   "@vault_decrypt_confirm_title": {
     "description": "vault/crypt: vault_decrypt_confirm_title"
   },
-  "vault_decrypt_confirm_desc": "Are you sure you want to decrypt \"{name}\"? The file will be restored to normal after decryption.",
+  "vault_decrypt_confirm_desc": "هل تريد فك تشفير «{name}»؟ سيعود الملف إلى حالته الطبيعية بعد فك التشفير.",
   "@vault_decrypt_confirm_desc": {
     "description": "vault/crypt: vault_decrypt_confirm_desc"
   },
-  "vault_decrypt_success": "Decryption successful",
+  "vault_decrypt_success": "تم فك التشفير بنجاح",
   "@vault_decrypt_success": {
     "description": "vault/crypt: vault_decrypt_success"
   },
-  "vault_decrypt_failed": "Decryption failed: {error}",
+  "vault_decrypt_failed": "فشل فك التشفير: {error}",
   "@vault_decrypt_failed": {
     "description": "vault/crypt: vault_decrypt_failed"
   },
-  "crypt_set_master_password": "Set Encryption Master Password",
+  "crypt_set_master_password": "تعيين كلمة المرور الرئيسية للتشفير",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
   },
@@ -6965,5 +7366,103 @@
   "vault_remove_from_list": "إزالة",
   "@vault_remove_from_list": {
     "description": "vault: vault_remove_from_list"
-  }
+  },
+  "security_vault_switch_desc": "تفعيل ميزة الخزنة الخاصة",
+  "@security_vault_switch_desc": {
+    "description": "security settings"
+  },
+  "security_verify_password_desc": "أدخل كلمة المرور لفتح إعدادات الأمان",
+  "@security_verify_password_desc": {
+    "description": "security settings"
+  },
+  "vault_verify_password_title": "تحقق من كلمة المرور",
+  "@vault_verify_password_title": {
+    "description": "security settings"
+  },
+  "vault_verify_password_hint": "أدخل كلمة مرور الأمان",
+  "@vault_verify_password_hint": {
+    "description": "security settings"
+  },
+  "vault_go_security_settings": "الانتقال إلى إعدادات الأمان",
+  "@vault_go_security_settings": {
+    "description": "security settings"
+  },
+  "security_settings_subtitle": "الخزنة، الحارس عن بُعد، حماية التطبيق وفتح القفل ببصمة الإصبع",
+  "@security_settings_subtitle": {
+    "description": "security settings"
+  },
+  "vault_disabled_hint": "الخزنة معطّلة. فعّلها في الإعدادات ← إعدادات الأمان",
+  "@vault_disabled_hint": {
+    "description": "vault: vault_disabled_hint"
+  },
+  "security_set_password_desc": "عيّن كلمة مرور أمان للوصول إلى إعدادات الأمان وفك قفل الخزنة",
+  "@security_set_password_desc": {
+    "description": "security settings: security_set_password_desc"
+  },
+  "security_confirm_password": "أدخل كلمة المرور مرة أخرى للتأكيد",
+  "@security_confirm_password": {
+    "description": "security settings: security_confirm_password"
+  },
+  "biometric_reason_security_settings": "تحقّق من البصمة للوصول إلى إعدادات الأمان",
+  "@biometric_reason_security_settings": {
+    "description": "biometric: biometric_reason_security_settings"
+  },
+  "toolbox_scan": "مسح",
+  "@toolbox_scan": {
+    "description": "scan: toolbox_scan"
+  },
+  "scan_result_title": "نتيجة المسح",
+  "@scan_result_title": {
+    "description": "scan: scan_result_title"
+  },
+  "scan_copy": "نسخ",
+  "@scan_copy": {
+    "description": "scan: scan_copy"
+  },
+  "scan_copied": "تم النسخ إلى الحافظة",
+  "@scan_copied": {
+    "description": "scan: scan_copied"
+  },
+  "scan_open_link": "فتح الرابط",
+  "@scan_open_link": {
+    "description": "scan: scan_open_link"
+  },
+  "scan_continue": "متابعة",
+  "@scan_continue": {
+    "description": "scan: scan_continue"
+  },
+  "scan_torch": "الكشاف",
+  "@scan_torch": {
+    "description": "scan: scan_torch"
+  },
+  "scan_switch_camera": "تبديل الكاميرا",
+  "@scan_switch_camera": {
+    "description": "scan: scan_switch_camera"
+  },
+  "scan_camera_error": "تعذّر الوصول إلى الكاميرا. يرجى التحقق من إذن الكاميرا.",
+  "@scan_camera_error": {
+    "description": "scan: scan_camera_error"
+  },
+  "scan_hint": "ضع رمز الاستجابة السريعة/الباركود داخل الإطار للمسح التلقائي",
+  "@scan_hint": {
+    "description": "scan: scan_hint"
+  },
+  "scan_from_gallery": "من المعرض",
+  "@scan_from_gallery": {
+    "description": "scan: scan_from_gallery"
+  },
+  "scan_no_barcode": "لم يتم اكتشاف رمز QR أو باركود في الصورة",
+  "@scan_no_barcode": {
+    "description": "scan: scan_no_barcode"
+  },
+  "ui_backup_confirm_title": "تأكيد النسخ الاحتياطي",
+  "ui_backup_confirm_message": "سيتم النسخ الاحتياطي إلى المسار التالي:\n{path}\n\nهل تريد المتابعة؟",
+  "@ui_backup_confirm_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "vault_remote_encrypt": "تشفير بعيد"
 }

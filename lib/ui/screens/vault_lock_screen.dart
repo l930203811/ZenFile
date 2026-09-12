@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
-import '../../services/crypt/crypt.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
 import 'vault_explorer_screen.dart';
+import 'security_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VaultLockScreen extends StatefulWidget {
@@ -21,10 +22,6 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
   bool _isPasswordSet = false;
   bool _checkingPasswordStatus = true;
 
-  // Setup Flow State
-  bool _isConfirmMode = false;
-  String _tempPassword = '';
-
   // 密码输入：系统输入法（TextField），允许字母/数字/符号，不再使用自定义键盘
   String _inputBuffer = '';
   String _message = '';
@@ -34,6 +31,9 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
   // 生物识别
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
+
+  // 将自动弹出指纹验证（避免同时弹出系统键盘）
+  bool _willAutoBiometric = false;
 
   @override
   void initState() {
@@ -49,7 +49,30 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
 
   /// 一次性初始化：密码状态 → 生物识别状态 → 偏好方式，并在解锁流程下自动优先弹出指纹。
   Future<void> _initAll() async {
+    // 保险箱开关：关闭时提示并返回，需在设置-安全设置中开启
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool('vault_enabled') ?? true)) {
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(L10n.of(context).msgbb590f19),
+          content: Text(L10n.of(context).vault_disabled_hint),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(L10n.of(context).ui_confirm),
+            ),
+          ],
+        ),
+      );
+      if (mounted) Navigator.pop(context);
+      return;
+    }
     final isSet = await VaultService.isPasswordSet();
+    // 旧版升级用户：存在旧加密数据但没有门禁凭据 → 引导重设解锁密码。
+    // 门禁与加密已完全解耦，重设不会影响任何已加密文件。
+    final needsReset = !isSet && await VaultService.needsUnlockPasswordReset();
     if (!mounted) return;
     final available = <BiometricType>[];
     bool enabled = false;
@@ -61,16 +84,23 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     }
     final preferred = await VaultBiometricStore.readPreferredUnlock();
     if (!mounted) return;
+    // 已设置密码 + 已启用指纹 + 偏好指纹 → 进页面即自动触发生物识别
+    final willAutoBiometric =
+        isSet && available.isNotEmpty && enabled && preferred == 'biometric';
     setState(() {
       _isPasswordSet = isSet;
       _checkingPasswordStatus = false;
       _biometricAvailable = available.isNotEmpty;
       _biometricEnabled = enabled;
-      _message = isSet ? L10n.of(context).vault_enter_password : L10n.of(context).vault_set_password;
+      _willAutoBiometric = willAutoBiometric;
+      _message = isSet
+          ? L10n.of(context).vault_enter_password
+          : (needsReset
+              ? '保险箱已升级，请先到「安全设置」重新设置密码（不影响已加密文件）'
+              : L10n.of(context).vault_go_security_settings);
     });
 
-    // 已设置密码 + 已启用指纹 + 偏好指纹 → 进页面即自动触发生物识别
-    if (isSet && available.isNotEmpty && enabled && preferred == 'biometric') {
+    if (willAutoBiometric) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _onFingerprint();
       });
@@ -105,52 +135,18 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     }
   }
 
-  /// 提交当前输入（下一步 / 确认 / 解锁）。
+  /// 提交当前输入（解锁，或未配置密码时跳转安全设置）。
   Future<void> _submit() async {
     final pw = _inputBuffer;
-    if (pw.length < 4) {
-      _showError(L10n.of(context).vault_min_length);
+
+    if (!_isPasswordSet) {
+      // 未配置密码：跳转到安全设置页面进行配置
+      await _goToSecuritySettings();
       return;
     }
 
-    if (!_isPasswordSet) {
-      // 设置密码流程
-      if (!_isConfirmMode) {
-        setState(() {
-          _tempPassword = pw;
-          _inputBuffer = '';
-          _textController.clear();
-          _isConfirmMode = true;
-          _message = L10n.of(context).vault_confirm_password;
-        });
-      } else {
-        if (pw == _tempPassword) {
-          HapticFeedback.mediumImpact();
-          await VaultService.setPassword(_inputBuffer);
-          // 启用指纹解锁：把密码存入 Keystore 加密存储，之后可指纹直接解锁
-          if (_biometricAvailable) {
-            try {
-              await VaultBiometricStore.save(pw);
-            } catch (_) {
-              // 存储失败不阻断设置流程
-            }
-          }
-          // 用户本次用密码设置 → 记住偏好为密码
-          try {
-            await VaultBiometricStore.savePreferredUnlock('password');
-          } catch (_) {}
-          if (mounted) {
-            setState(() {
-              _isPasswordSet = true;
-              _isConfirmMode = false;
-              _message = L10n.of(context).vault_password_set;
-            });
-            _unlockWallet(pw);
-          }
-        } else {
-          _showError(L10n.of(context).vault_pins_mismatch);
-        }
-      }
+    if (pw.length < 4) {
+      _showError(L10n.of(context).vault_min_length);
       return;
     }
 
@@ -162,7 +158,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
       try {
         await VaultBiometricStore.savePreferredUnlock('password');
       } catch (_) {}
-      _unlockWallet(pw);
+      _unlockWallet();
     } else {
       _showError(L10n.of(context).vault_incorrect_password);
     }
@@ -182,7 +178,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
         try {
           await VaultBiometricStore.savePreferredUnlock('biometric');
         } catch (_) {}
-        _unlockWallet(pw);
+        _unlockWallet();
       } else {
         // 存储凭据异常，回退手动输入
         _showError(L10n.of(context).vault_incorrect_password);
@@ -192,14 +188,33 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     }
   }
 
-  void _unlockWallet(String password) {
-    // 标记 VaultCryptService 为已解锁，供浏览页加密/解密操作使用
-    VaultCryptService.instance.markUnlocked(password);
+  /// 跳转到安全设置页面配置密码，返回后刷新状态。
+  Future<void> _goToSecuritySettings() async {
+    if (!mounted) return;
+    await SecuritySettingsScreen.show(context);
+    if (!mounted) return;
+    // 配置完成后刷新密码状态与消息
+    setState(() {
+      _checkingPasswordStatus = true;
+      _isPasswordSet = false;
+      _message = '';
+    });
+    await _initAll();
+  }
+
+  /// 进入保险箱
+  ///
+  /// ⚠️ 不再把解锁密码传给保险箱页面：加解密一律使用「加密设置」中的主密码，
+  /// 解锁密码仅用于这道门禁，二者完全解耦（改门禁密码不影响任何加密文件）。
+  void _unlockWallet() {
+    // 记录本次会话已解锁：后续「打开 / 重命名 / 复制 / 移动 / 删除 / 粘贴」等
+    // 触达加密文件的操作不再重复弹窗验证（重启应用后此状态即失效）。
+    VaultService.markSessionUnlocked();
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 400),
-        pageBuilder: (context, animation, secondaryAnimation) => VaultExplorerScreen(password: password),
+        pageBuilder: (context, animation, secondaryAnimation) => const VaultExplorerScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -229,7 +244,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
 
     final canSubmit = _inputBuffer.length >= 4;
     final confirmLabel = !_isPasswordSet
-        ? (_isConfirmMode ? l10n.ui_confirm : l10n.vault_next)
+        ? l10n.vault_go_security_settings
         : l10n.vault_unlock;
 
     return Scaffold(
@@ -303,38 +318,39 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
               ),
               const SizedBox(height: 28),
 
-              // 密码输入框（系统输入法，支持字母、数字或符号）
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                child: TextField(
-                  controller: _textController,
-                  onChanged: _onTextChanged,
-                  obscureText: true,
-                  keyboardType: TextInputType.visiblePassword,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  autofocus: true,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, letterSpacing: 4, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    hintText: l10n.vault_pwd_alphanumeric,
-                    hintStyle: TextStyle(
-                      fontSize: 14,
-                      letterSpacing: 0.3,
-                      fontWeight: FontWeight.normal,
-                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+              // 密码输入框（系统输入法，支持字母、数字或符号；未配置密码时隐藏）
+              if (_isPasswordSet)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                  child: TextField(
+                    controller: _textController,
+                    onChanged: _onTextChanged,
+                    obscureText: true,
+                    keyboardType: TextInputType.visiblePassword,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofocus: !_willAutoBiometric,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20, letterSpacing: 4, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: l10n.vault_pwd_alphanumeric,
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        letterSpacing: 0.3,
+                        fontWeight: FontWeight.normal,
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
+                      ),
+                      hintMaxLines: 2,
+                      filled: true,
+                      fillColor: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.02),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    hintMaxLines: 2,
-                    filled: true,
-                    fillColor: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.02),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 28),
 
@@ -345,7 +361,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(
-                    onPressed: canSubmit ? _submit : null,
+                    onPressed: _isPasswordSet ? (canSubmit ? _submit : null) : _goToSecuritySettings,
                     style: FilledButton.styleFrom(
                       backgroundColor: theme.colorScheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

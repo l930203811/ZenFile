@@ -4938,7 +4938,7 @@
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "PINを変更",
+  "ui_remote_guard_change_pin": "パスワードを変更",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4990,7 +4990,7 @@
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "プライベート金庫のPINを変更（全隠しファイルを再暗号化）",
+  "ui_change_vault_pin_desc": "安全設定と金庫のロック解除パスワードを変更します。暗号化ファイルには影響しません",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -6190,7 +6190,7 @@
   "vault_backup_restore": "バックアップ/復元",
   "vault_import_backup_desc": "バックアップから金庫を復元 (.zip)",
   "vault_uninstall_warning_title": "アンインストールの警告",
-  "vault_uninstall_warning": "アプリをアンインストールすると金庫が消去されます。先にバックアップを書き出してください。",
+  "vault_uninstall_warning": "アプリをアンインストールするとサンドボックス暗号化が消去されます。先にバックアップを書き出してください。",
   "vault_backup_exported": "バックアップを書き出し先：",
   "vault_backup_imported": "読み込んだ項目",
   "vault_export_failed": "バックアップの書き出しに失敗",
@@ -6225,19 +6225,19 @@
   "@archive_unsupported_format": {
     "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
   },
-  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "vault_export_backup_confirm": "バックアップファイルは次の場所に保存されます：",
   "@vault_export_backup_confirm": {
     "description": "vault backup UI string"
   },
-  "vault_import_only_zip": "Only .zip backup files are supported",
+  "vault_import_only_zip": ".zip バックアップファイルのみ対応しています",
   "@vault_import_only_zip": {
     "description": "vault backup UI string"
   },
-  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "vault_import_password_hint": "このバックアップは別のパスワードを使用しています。バックアップ作成時のパスワードで保管庫のロックを再度解除してください",
   "@vault_import_password_hint": {
     "description": "vault backup UI string"
   },
-  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "vault_open_backup_location": "バックアップの保存先フォルダを開きますか？",
   "@vault_open_backup_location": {
     "description": "vault backup UI string"
   },
@@ -6614,211 +6614,612 @@
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
   },
-  "crypt_settings_title": "Encryption",
+  "crypt_settings_title": "パスワード設定",
+  "vault_config_password": "パスワード設定",
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
-  "crypt_settings_subtitle": "Manage encrypted folders and mount points",
+  "vault_help": "ヘルプ",
+  "@vault_help": {
+    "description": "vault help: vault_help"
+  },
+  "vault_help_title": "金庫ヘルプ",
+  "@vault_help_title": {
+    "description": "vault help: vault_help_title"
+  },
+  "vault_help_intro": "金庫は rclone と同じ crypt 形式を採用しています。暗号化と復号はすべて端末内で行われ、鍵が外に出ることはありません。",
+  "@vault_help_intro": {
+    "description": "vault help: vault_help_intro"
+  },
+  "vault_help_highlights": "主な特長",
+  "@vault_help_highlights": {
+    "description": "vault help: vault_help_highlights"
+  },
+  "vault_help_hl1_title": "ゼロ知識暗号",
+  "@vault_help_hl1_title": {
+    "description": "vault help: vault_help_hl1_title"
+  },
+  "vault_help_hl1_desc": "マスターパスワードとソルトは端末内のみに保存され、クラウド事業者を含む第三者は復号できません。",
+  "@vault_help_hl1_desc": {
+    "description": "vault help: vault_help_hl1_desc"
+  },
+  "vault_help_hl2_title": "rclone / OpenList 互換",
+  "@vault_help_hl2_title": {
+    "description": "vault help: vault_help_hl2_title"
+  },
+  "vault_help_hl2_desc": "同じ crypt 形式のため、PC の rclone でも同じファイルを復号できます。",
+  "@vault_help_hl2_desc": {
+    "description": "vault help: vault_help_hl2_desc"
+  },
+  "vault_help_hl3_title": "複数パスワードとリモート直読",
+  "@vault_help_hl3_title": {
+    "description": "vault help: vault_help_hl3_title"
+  },
+  "vault_help_hl3_desc": "フォルダごとに異なるパスワード設定を割り当て可能。リモートの暗号化フォルダも丸ごとダウンロードせずに閲覧・再生できます。",
+  "@vault_help_hl3_desc": {
+    "description": "vault help: vault_help_hl3_desc"
+  },
+  "vault_help_basics": "基本操作",
+  "@vault_help_basics": {
+    "description": "vault help: vault_help_basics"
+  },
+  "vault_help_b1_title": "① まずマスターパスワードを設定",
+  "@vault_help_b1_title": {
+    "description": "vault help: vault_help_b1_title"
+  },
+  "vault_help_b1_desc": "「パスワード設定」でマスターパスワードとソルトを設定し、必ず控えてください。金庫のロック解除パスワードとは別物です。",
+  "@vault_help_b1_desc": {
+    "description": "vault help: vault_help_b1_desc"
+  },
+  "vault_help_b2_title": "② ファイルを暗号化",
+  "@vault_help_b2_title": {
+    "description": "vault help: vault_help_b2_title"
+  },
+  "vault_help_b2_desc": "ブラウザでファイルを選んで暗号化をタップし、「その場で暗号化」か「サンドボックス暗号化」を選びます。",
+  "@vault_help_b2_desc": {
+    "description": "vault help: vault_help_b2_desc"
+  },
+  "vault_help_b3_title": "③ 表示とオープン",
+  "@vault_help_b3_title": {
+    "description": "vault help: vault_help_b3_title"
+  },
+  "vault_help_b3_desc": "暗号化した項目は金庫に一覧表示され、タップすると一時的に復号してプレビューします。",
+  "@vault_help_b3_desc": {
+    "description": "vault help: vault_help_b3_desc"
+  },
+  "vault_help_b4_title": "④ 復号して元に戻す",
+  "@vault_help_b4_title": {
+    "description": "vault help: vault_help_b4_title"
+  },
+  "vault_help_b4_desc": "項目を選んで復号すると、通常のファイルとして元の場所へ戻ります。",
+  "@vault_help_b4_desc": {
+    "description": "vault help: vault_help_b4_desc"
+  },
+  "vault_help_b5_title": "⑤ バックアップと復元",
+  "@vault_help_b5_title": {
+    "description": "vault help: vault_help_b5_title"
+  },
+  "vault_help_b5_desc": "「バックアップ/復元」から暗号化設定を含むバックアップを書き出してください。アンインストール前に必ず実行してください。",
+  "@vault_help_b5_desc": {
+    "description": "vault help: vault_help_b5_desc"
+  },
+  "vault_help_compat": "互換性",
+  "@vault_help_compat": {
+    "description": "vault help: vault_help_compat"
+  },
+  "vault_help_c1_title": "暗号化形式",
+  "@vault_help_c1_title": {
+    "description": "vault help: vault_help_c1_title"
+  },
+  "vault_help_c1_desc": "本文は XSalsa20-Poly1305、ファイル名は EME 暗号化後に base32/base64 で符号化され、.bin を付けることもできます。",
+  "@vault_help_c1_desc": {
+    "description": "vault help: vault_help_c1_desc"
+  },
+  "vault_help_c2_title": "クラウドと同期",
+  "@vault_help_c2_title": {
+    "description": "vault help: vault_help_c2_title"
+  },
+  "vault_help_c2_desc": "暗号文はどのクラウドや同期ツールでもそのまま同期できます。サーバーには暗号文しか見えず、実ファイル名は漏れません。",
+  "@vault_help_c2_desc": {
+    "description": "vault help: vault_help_c2_desc"
+  },
+  "vault_help_c3_title": "既知の制限",
+  "@vault_help_c3_title": {
+    "description": "vault help: vault_help_c3_title"
+  },
+  "vault_help_c3_desc": "暗号化するとファイル名が大幅に長くなります。長すぎる名前は失敗する場合があります。名前の変更は本アプリ内で行い、暗号文の名前を直接書き換えると復号できなくなります。",
+  "@vault_help_c3_desc": {
+    "description": "vault help: vault_help_c3_desc"
+  },
+  "vault_help_inplace": "その場で暗号化",
+  "@vault_help_inplace": {
+    "description": "vault help: vault_help_inplace"
+  },
+  "vault_help_inplace_intro": "その場で暗号化はファイルを元の場所で暗号化します。中身とファイル名が暗号文に置き換わり、ファイルは元のフォルダに残ったまま金庫の専用ディレクトリには移動しません。",
+  "@vault_help_inplace_intro": {
+    "description": "vault help: vault_help_inplace_intro"
+  },
+  "vault_help_ip1_title": "元フォルダとの関係",
+  "@vault_help_ip1_title": {
+    "description": "vault help: vault_help_ip1_title"
+  },
+  "vault_help_ip1_desc": "場所とフォルダ構成は変わらず、ブラウザでは暗号化済みファイルに🔐マークが付きます。",
+  "@vault_help_ip1_desc": {
+    "description": "vault help: vault_help_ip1_desc"
+  },
+  "vault_help_ip2_title": "他のアプリからはどう見えるか",
+  "@vault_help_ip2_title": {
+    "description": "vault help: vault_help_ip2_title"
+  },
+  "vault_help_ip2_desc": "他のファイル管理アプリやプレイヤーには意味のない暗号名が見えるだけで開けません。これが保護の仕組みです。",
+  "@vault_help_ip2_desc": {
+    "description": "vault help: vault_help_ip2_desc"
+  },
+  "vault_help_ip3_title": "向いている場面",
+  "@vault_help_ip3_title": {
+    "description": "vault help: vault_help_ip3_title"
+  },
+  "vault_help_ip3_desc": "フォルダ構成を保ちながら、サードパーティのクラウドアプリに同期させ続けたい場合に最適です。",
+  "@vault_help_ip3_desc": {
+    "description": "vault help: vault_help_ip3_desc"
+  },
+  "vault_help_ip4_title": "リスクと注意点",
+  "@vault_help_ip4_title": {
+    "description": "vault help: vault_help_ip4_title"
+  },
+  "vault_help_ip4_desc": "暗号化は元ファイルを直接置き換えるため、中断すると中途半端なファイルが残ることがあります。重要なファイルは事前バックアップを、復号時は書き込み権限を確認してください。",
+  "@vault_help_ip4_desc": {
+    "description": "vault help: vault_help_ip4_desc"
+  },
+  "vault_help_notice": "ご注意",
+  "@vault_help_notice": {
+    "description": "vault help: vault_help_notice"
+  },
+  "vault_help_n1": "暗号化に使用したパスワードとソルトは変更できません。変更したい場合は新しい設定を作成してください。",
+  "@vault_help_n1": {
+    "description": "vault help: vault_help_n1"
+  },
+  "vault_help_n2": "サンドボックス暗号化のファイルはアプリ専用ディレクトリにあり、アンインストールすると消去されます。",
+  "@vault_help_n2": {
+    "description": "vault help: vault_help_n2"
+  },
+  "vault_help_n3": "マスターパスワードを忘れると暗号化ファイルは復元できません。必ずバックアップを書き出して保管してください。",
+  "@vault_help_n3": {
+    "description": "vault help: vault_help_n3"
+  },
+  "vault_remote_encrypt": "リモート暗号化",
+  "@vault_remote_encrypt": {
+    "description": "crypt: vault_remote_encrypt"
+  },
+  "vault_import_source_title": "暗号化元を選択",
+  "@vault_import_source_title": {
+    "description": "crypt: vault_import_source_title"
+  },
+  "vault_import_source_remote": "リモート",
+  "@vault_import_source_remote": {
+    "description": "crypt: vault_import_source_remote"
+  },
+  "vault_import_source_remote_desc": "リモート暗号化フォルダを紐付ける、またはローカルファイルを暗号化してアップロード",
+  "@vault_import_source_remote_desc": {
+    "description": "crypt: vault_import_source_remote_desc"
+  },
+  "vault_link_remote_crypt_desc": "サーバー上の既存 rclone crypt フォルダを紐付け（端末側で復号）",
+  "@vault_link_remote_crypt_desc": {
+    "description": "crypt: vault_link_remote_crypt_desc"
+  },
+  "vault_encrypt_upload": "暗号化してリモートへアップロード",
+  "@vault_encrypt_upload": {
+    "description": "crypt: vault_encrypt_upload"
+  },
+  "vault_encrypt_upload_desc": "ローカルファイルを選択し、暗号化してリモートサーバーへアップロード",
+  "@vault_encrypt_upload_desc": {
+    "description": "crypt: vault_encrypt_upload_desc"
+  },
+  "vault_encrypt_uploading": "暗号化してアップロード中…",
+  "@vault_encrypt_uploading": {
+    "description": "crypt: vault_encrypt_uploading"
+  },
+  "vault_encrypt_upload_done": "暗号化アップロードが完了しました",
+  "@vault_encrypt_upload_done": {
+    "description": "crypt: vault_encrypt_upload_done"
+  },
+  "vault_encrypt_upload_failed": "暗号化アップロードに失敗しました",
+  "@vault_encrypt_upload_failed": {
+    "description": "crypt: vault_encrypt_upload_failed"
+  },
+  "crypt_remote_upload": "暗号化してアップロード",
+  "@crypt_remote_upload": {
+    "description": "crypt: crypt_remote_upload"
+  },
+  "crypt_remote_download": "復号してダウンロード",
+  "@crypt_remote_download": {
+    "description": "crypt: crypt_remote_download"
+  },
+  "crypt_remote_downloading": "復号してダウンロード中…",
+  "@crypt_remote_downloading": {
+    "description": "crypt: crypt_remote_downloading"
+  },
+  "crypt_remote_download_done": "復号ダウンロードが完了しました",
+  "@crypt_remote_download_done": {
+    "description": "crypt: crypt_remote_download_done"
+  },
+  "crypt_remote_download_failed": "復号ダウンロードに失敗しました",
+  "@crypt_remote_download_failed": {
+    "description": "crypt: crypt_remote_download_failed"
+  },
+  "vault_remote_crypt_open_failed": "リモート暗号化ファイルを開けませんでした",
+  "@vault_remote_crypt_open_failed": {
+    "description": "crypt: vault_remote_crypt_open_failed"
+  },
+  "vault_remote_crypt_unsupported": "この形式はリモート暗号化のストリーミング再生に対応していません",
+  "@vault_remote_crypt_unsupported": {
+    "description": "crypt: vault_remote_crypt_unsupported"
+  },
+  "vault_link_remote_crypt": "リモート暗号化フォルダを紐付け",
+  "@vault_link_remote_crypt": {
+    "description": "crypt: vault_link_remote_crypt"
+  },
+  "vault_link_remote_crypt_success": "リモート暗号化フォルダを紐付けました",
+  "@vault_link_remote_crypt_success": {
+    "description": "crypt: vault_link_remote_crypt_success"
+  },
+  "vault_unlink_remote_crypt": "紐付けを解除",
+  "@vault_unlink_remote_crypt": {
+    "description": "crypt: vault_unlink_remote_crypt"
+  },
+  "vault_exporting": "エクスポート中...",
+  "@vault_exporting": {
+    "description": "vault/crypt: vault_exporting"
+  },
+  "vault_importing": "インポート中...",
+  "@vault_importing": {
+    "description": "vault/crypt: vault_importing"
+  },
+  "vault_importing_backup": "バックアップをインポート中...",
+  "@vault_importing_backup": {
+    "description": "vault/crypt: vault_importing_backup"
+  },
+  "vault_restoring": "復元中...",
+  "@vault_restoring": {
+    "description": "vault/crypt: vault_restoring"
+  },
+  "vault_decrypting": "復号中...",
+  "@vault_decrypting": {
+    "description": "vault/crypt: vault_decrypting"
+  },
+  "vault_import_backup_confirm": "インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？",
+  "@vault_import_backup_confirm": {
+    "description": "vault/crypt: vault_import_backup_confirm"
+  },
+  "vault_load_error": "保管庫の読み込みエラー：{error}",
+  "@vault_load_error": {
+    "description": "vault/crypt: vault_load_error"
+  },
+  "vault_restore_folder_hint": "フォルダは長押しで「復元」を選ぶと元の場所で表示できます",
+  "@vault_restore_folder_hint": {
+    "description": "vault/crypt: vault_restore_folder_hint"
+  },
+  "vault_decrypt_open_failed": "復号して開くのに失敗しました：{error}",
+  "@vault_decrypt_open_failed": {
+    "description": "vault/crypt: vault_decrypt_open_failed"
+  },
+  "vault_badge_inplace": "その場",
+  "@vault_badge_inplace": {
+    "description": "vault/crypt: vault_badge_inplace"
+  },
+  "vault_badge_sandbox": "サンドボックス",
+  "@vault_badge_sandbox": {
+    "description": "vault/crypt: vault_badge_sandbox"
+  },
+  "vault_item_folder": "フォルダ",
+  "@vault_item_folder": {
+    "description": "vault/crypt: vault_item_folder"
+  },
+  "crypt_need_master_title": "暗号化マスターパスワードが未設定です",
+  "@crypt_need_master_title": {
+    "description": "vault/crypt: crypt_need_master_title"
+  },
+  "crypt_need_master_body": "その場暗号化とサンドボックス暗号化の両方で「暗号化設定」のマスターパスワードを使用します。先に設定してください。",
+  "@crypt_need_master_body": {
+    "description": "vault/crypt: crypt_need_master_body"
+  },
+  "crypt_master_banner": "ここで設定するマスターパスワードとソルトは、その場暗号化とサンドボックス暗号化に使用されます。必ず覚えてください。保管庫のロック解除パスワードとは独立しています。",
+  "@crypt_master_banner": {
+    "description": "vault/crypt: crypt_master_banner"
+  },
+  "crypt_profile_name": "暗号化名",
+  "@crypt_profile_name": {
+    "description": "crypt: crypt_profile_name"
+  },
+  "crypt_profile_name_hint": "例：仕事 / プライベート",
+  "@crypt_profile_name_hint": {
+    "description": "crypt: crypt_profile_name_hint"
+  },
+  "crypt_profile_name_required": "暗号化名を入力してください",
+  "@crypt_profile_name_required": {
+    "description": "crypt: crypt_profile_name_required"
+  },
+  "crypt_profile_name_duplicate": "この名前は既に存在します",
+  "@crypt_profile_name_duplicate": {
+    "description": "crypt: crypt_profile_name_duplicate"
+  },
+  "crypt_profile_title_new": "暗号化設定を新規作成",
+  "@crypt_profile_title_new": {
+    "description": "crypt: crypt_profile_title_new"
+  },
+  "crypt_profile_title_edit": "暗号化設定を編集",
+  "@crypt_profile_title_edit": {
+    "description": "crypt: crypt_profile_title_edit"
+  },
+  "crypt_profile_section": "パスワード設定",
+  "@crypt_profile_section": {
+    "description": "crypt: crypt_profile_section"
+  },
+  "crypt_profile_add": "新規設定",
+  "@crypt_profile_add": {
+    "description": "crypt: crypt_profile_add"
+  },
+  "crypt_profile_default": "デフォルト",
+  "@crypt_profile_default": {
+    "description": "crypt: crypt_profile_default"
+  },
+  "crypt_profile_set_default": "デフォルトに設定",
+  "@crypt_profile_set_default": {
+    "description": "crypt: crypt_profile_set_default"
+  },
+  "crypt_profile_set_default_desc": "設定が未指定のファイルはこれを使用します",
+  "@crypt_profile_set_default_desc": {
+    "description": "crypt: crypt_profile_set_default_desc"
+  },
+  "crypt_profile_default_done": "デフォルト設定を更新しました",
+  "@crypt_profile_default_done": {
+    "description": "crypt: crypt_profile_default_done"
+  },
+  "crypt_profile_delete_message": "この設定を削除すると、それで暗号化したファイルは復号できなくなります。",
+  "@crypt_profile_delete_message": {
+    "description": "crypt: crypt_profile_delete_message"
+  },
+  "crypt_profile_empty": "暗号化設定がありません",
+  "@crypt_profile_empty": {
+    "description": "crypt: crypt_profile_empty"
+  },
+  "crypt_profile_action_config": "設定",
+  "@crypt_profile_action_config": {
+    "description": "crypt: crypt_profile_action_config"
+  },
+  "crypt_profile_select_title": "暗号化設定を選択",
+  "@crypt_profile_select_title": {
+    "description": "crypt: crypt_profile_select_title"
+  },
+  "crypt_profile_bound_done": "暗号化設定を紐付けました",
+  "@crypt_profile_bound_done": {
+    "description": "crypt: crypt_profile_bound_done"
+  },
+  "crypt_profile_credential_locked": "変更不可",
+  "@crypt_profile_credential_locked": {
+    "description": "crypt: crypt_profile_credential_locked"
+  },
+  "crypt_profile_credential_locked_desc": "パスワードとソルトが鍵を決定します。変更すると既存の暗号化ファイルは復号できなくなります。変更する場合は新しい設定を作成してください。",
+  "@crypt_profile_credential_locked_desc": {
+    "description": "crypt: crypt_profile_credential_locked_desc"
+  },
+  "crypt_profile_suffix_none": "拡張子なし",
+  "@crypt_profile_suffix_none": {
+    "description": "crypt: crypt_profile_suffix_none"
+  },
+  "crypt_profile_sandbox_title": "サンドボックスの設定を切り替え",
+  "@crypt_profile_sandbox_title": {
+    "description": "crypt: crypt_profile_sandbox_title"
+  },
+  "crypt_profile_sandbox_message": "サンドボックスは全体で1つの設定を使用します。切り替えると他のファイルが暗号名で表示される場合があります。続けますか？",
+  "@crypt_profile_sandbox_message": {
+    "description": "crypt: crypt_profile_sandbox_message"
+  },
+  "crypt_mount_section": "暗号化された場所",
+  "@crypt_mount_section": {
+    "description": "crypt: crypt_mount_section"
+  },
+  "crypt_settings_subtitle": "暗号化フォルダとマウントポイントを管理",
   "@crypt_settings_subtitle": {
     "description": "crypt: crypt_settings_subtitle"
   },
-  "crypt_add_mount": "Add Encrypted Folder",
+  "crypt_add_mount": "暗号化フォルダを追加",
   "@crypt_add_mount": {
     "description": "crypt: crypt_add_mount"
   },
-  "crypt_edit_mount": "Edit Encrypted Folder",
+  "crypt_edit_mount": "暗号化フォルダを編集",
   "@crypt_edit_mount": {
     "description": "crypt: crypt_edit_mount"
   },
-  "crypt_no_mounts_title": "No Encrypted Folders",
+  "crypt_no_mounts_title": "暗号化フォルダがありません",
   "@crypt_no_mounts_title": {
     "description": "crypt: crypt_no_mounts_title"
   },
-  "crypt_no_mounts_subtitle": "Tap the button below to add your first encrypted folder",
+  "crypt_no_mounts_subtitle": "下のボタンをタップして最初の暗号化フォルダを追加しましょう",
   "@crypt_no_mounts_subtitle": {
     "description": "crypt: crypt_no_mounts_subtitle"
   },
-  "crypt_field_name": "Name",
+  "crypt_field_name": "名前",
   "@crypt_field_name": {
     "description": "crypt: crypt_field_name"
   },
-  "crypt_field_name_hint": "Optional, uses folder name if empty",
+  "crypt_field_name_hint": "空の場合はフォルダ名を使用",
   "@crypt_field_name_hint": {
     "description": "crypt: crypt_field_name_hint"
   },
-  "crypt_field_path": "Folder Path",
+  "crypt_field_path": "フォルダパス",
   "@crypt_field_path": {
     "description": "crypt: crypt_field_path"
   },
-  "crypt_field_path_hint": "Select folder to encrypt",
+  "crypt_field_path_hint": "暗号化するフォルダを選択",
   "@crypt_field_path_hint": {
     "description": "crypt: crypt_field_path_hint"
   },
-  "crypt_field_password": "Password",
+  "crypt_field_password": "パスワード",
   "@crypt_field_password": {
     "description": "crypt: crypt_field_password"
   },
-  "crypt_field_confirm_password": "Confirm Password",
+  "crypt_field_confirm_password": "パスワード（確認）",
   "@crypt_field_confirm_password": {
     "description": "crypt: crypt_field_confirm_password"
   },
-  "crypt_error_path_required": "Please select a folder path",
+  "crypt_error_path_required": "フォルダパスを選択してください",
   "@crypt_error_path_required": {
     "description": "crypt: crypt_error_path_required"
   },
-  "crypt_error_password_required": "Please enter a password",
+  "crypt_error_password_required": "パスワードを入力してください",
   "@crypt_error_password_required": {
     "description": "crypt: crypt_error_password_required"
   },
-  "crypt_error_password_short": "Password must be at least 4 characters",
+  "crypt_error_password_short": "パスワードは4文字以上である必要があります",
   "@crypt_error_password_short": {
     "description": "crypt: crypt_error_password_short"
   },
-  "crypt_error_password_mismatch": "Passwords do not match",
+  "crypt_error_password_mismatch": "パスワードが一致しません",
   "@crypt_error_password_mismatch": {
     "description": "crypt: crypt_error_password_mismatch"
   },
-  "crypt_section_mode": "Encryption Mode",
+  "crypt_section_mode": "暗号化モード",
   "@crypt_section_mode": {
     "description": "crypt: crypt_section_mode"
   },
-  "crypt_mode_inplace": "In-place Encryption",
+  "crypt_mode_inplace": "その場暗号化",
   "@crypt_mode_inplace": {
     "description": "crypt: crypt_mode_inplace"
   },
-  "crypt_mode_inplace_desc": "Files stay in place, names and content are encrypted",
+  "crypt_mode_inplace_desc": "ファイルはそのまま残り、名前と内容が暗号化されます",
   "@crypt_mode_inplace_desc": {
     "description": "crypt: crypt_mode_inplace_desc"
   },
-  "crypt_mode_sandbox": "Sandbox Encryption",
+  "crypt_mode_sandbox": "サンドボックス暗号化",
   "@crypt_mode_sandbox": {
     "description": "crypt: crypt_mode_sandbox"
   },
-  "crypt_mode_sandbox_desc": "Files moved to sandbox, more secure but slightly slower",
+  "crypt_mode_sandbox_desc": "ファイルをサンドボックスへ移動。より安全ですがやや遅くなります",
   "@crypt_mode_sandbox_desc": {
     "description": "crypt: crypt_mode_sandbox_desc"
   },
-  "crypt_section_advanced": "Advanced Options",
+  "crypt_section_advanced": "詳細オプション",
   "@crypt_section_advanced": {
     "description": "crypt: crypt_section_advanced"
   },
-  "crypt_advanced_toggle": "Show advanced encryption options",
+  "crypt_advanced_toggle": "高度な暗号化オプションを表示",
   "@crypt_advanced_toggle": {
     "description": "crypt: crypt_advanced_toggle"
   },
-  "crypt_field_filename_enc": "Filename Encryption",
+  "crypt_field_filename_enc": "ファイル名暗号化",
   "@crypt_field_filename_enc": {
     "description": "crypt: crypt_field_filename_enc"
   },
-  "crypt_field_dirname_enc": "Encrypt Directory Names",
+  "crypt_field_dirname_enc": "ディレクトリ名を暗号化",
   "@crypt_field_dirname_enc": {
     "description": "crypt: crypt_field_dirname_enc"
   },
-  "crypt_field_filename_encoding": "Filename Encoding",
+  "crypt_field_filename_encoding": "ファイル名エンコーディング",
   "@crypt_field_filename_encoding": {
     "description": "crypt: crypt_field_filename_encoding"
   },
-  "crypt_field_suffix": "Encrypted Suffix",
+  "crypt_field_suffix": "暗号化拡張子",
   "@crypt_field_suffix": {
     "description": "crypt: crypt_field_suffix"
   },
-  "crypt_field_salt": "Salt (optional)",
+  "crypt_field_salt": "ソルト（任意）",
   "@crypt_field_salt": {
     "description": "crypt: crypt_field_salt"
   },
-  "crypt_field_salt_hint": "Auto-generated if empty",
+  "crypt_field_salt_hint": "空の場合は自動生成",
   "@crypt_field_salt_hint": {
     "description": "crypt: crypt_field_salt_hint"
   },
-  "crypt_action_browse": "Browse",
+  "crypt_action_browse": "表示",
   "@crypt_action_browse": {
     "description": "crypt: crypt_action_browse"
   },
-  "crypt_delete_title": "Delete Encrypted Folder",
+  "crypt_delete_title": "暗号化フォルダを削除",
   "@crypt_delete_title": {
     "description": "crypt: crypt_delete_title"
   },
-  "crypt_delete_message": "Delete encryption config for \"{name}\"? Files will not be deleted.",
+  "crypt_delete_message": "「{name}」の暗号化設定を削除しますか？ファイルは削除されません。",
   "@crypt_delete_message": {
     "description": "crypt: crypt_delete_message"
   },
-  "crypt_filename_enc": "Filename Enc",
+  "crypt_filename_enc": "ファイル名暗号化",
   "@crypt_filename_enc": {
     "description": "crypt: crypt_filename_enc"
   },
-  "crypt_share_title": "Share Encrypted Folder",
+  "crypt_share_title": "暗号化フォルダを共有",
   "@crypt_share_title": {
     "description": "crypt: crypt_share_title"
   },
-  "crypt_share_hint": "Scan the QR code to import encryption config. Password is required to decrypt files.",
+  "crypt_share_hint": "QRコードをスキャンして暗号化設定を取り込みます。ファイルの復号にはパスワードが必要です。",
   "@crypt_share_hint": {
     "description": "crypt: crypt_share_hint"
   },
-  "crypt_action_share": "Share",
+  "crypt_action_share": "共有",
   "@crypt_action_share": {
     "description": "crypt: crypt_action_share"
   },
-  "crypt_share_password_note": "Password is NOT included in the QR code. Share it separately via a secure channel.",
+  "crypt_share_password_note": "QRコードにパスワードは含まれません。安全な手段で別途共有してください。",
   "@crypt_share_password_note": {
     "description": "crypt: crypt_share_password_note"
   },
-  "crypt_action_encrypt": "Encrypt Now",
+  "crypt_action_encrypt": "今すぐ暗号化",
   "@crypt_action_encrypt": {
     "description": "crypt: crypt_action_encrypt"
   },
-  "crypt_action_decrypt": "Decrypt",
+  "crypt_action_decrypt": "復号",
   "@crypt_action_decrypt": {
     "description": "crypt: crypt_action_decrypt"
   },
-  "crypt_encrypt_title": "Encryption Confirmation",
+  "crypt_encrypt_title": "暗号化の確認",
   "@crypt_encrypt_title": {
     "description": "crypt: crypt_encrypt_title"
   },
-  "crypt_encrypt_message": "This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?",
+  "crypt_encrypt_message": "すべてのファイルとサブフォルダを暗号化します。暗号化後、他のファイルマネージャーでは内容と名前を表示できません。続けますか？",
   "@crypt_encrypt_message": {
     "description": "crypt: crypt_encrypt_message"
   },
-  "crypt_encrypting": "Encrypting...",
+  "crypt_encrypting": "暗号化中...",
   "@crypt_encrypting": {
     "description": "crypt: crypt_encrypting"
   },
-  "crypt_encrypt_success": "Encryption completed",
+  "crypt_encrypt_success": "暗号化が完了しました",
   "@crypt_encrypt_success": {
     "description": "crypt: crypt_encrypt_success"
   },
-  "crypt_encrypt_failed": "Encryption failed: {error}",
+  "crypt_encrypt_failed": "暗号化に失敗しました: {error}",
   "@crypt_encrypt_failed": {
     "description": "crypt: crypt_encrypt_failed"
   },
-  "crypt_decrypt_title": "Decryption Confirmation",
+  "crypt_decrypt_title": "復号の確認",
   "@crypt_decrypt_title": {
     "description": "crypt: crypt_decrypt_title"
   },
-  "crypt_decrypt_message": "This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?",
+  "crypt_decrypt_message": "すべてのファイルとサブフォルダを復号します。復号後、ファイルは通常の状態に戻ります。続けますか？",
   "@crypt_decrypt_message": {
     "description": "crypt: crypt_decrypt_message"
   },
-  "crypt_decrypting": "Decrypting...",
+  "crypt_decrypting": "復号中...",
   "@crypt_decrypting": {
     "description": "crypt: crypt_decrypting"
   },
-  "crypt_decrypt_success": "Decryption completed",
+  "crypt_decrypt_success": "復号が完了しました",
   "@crypt_decrypt_success": {
     "description": "crypt: crypt_decrypt_success"
   },
-  "crypt_decrypt_failed": "Decryption failed: {error}",
+  "crypt_decrypt_failed": "復号に失敗しました: {error}",
   "@crypt_decrypt_failed": {
     "description": "crypt: crypt_decrypt_failed"
   },
-  "crypt_filename_enc_off": "Off",
+  "crypt_filename_enc_off": "オフ",
   "@crypt_filename_enc_off": {
     "description": "crypt: crypt_filename_enc_off"
   },
-  "crypt_filename_enc_standard": "Standard",
+  "crypt_filename_enc_standard": "標準",
   "@crypt_filename_enc_standard": {
     "description": "crypt: crypt_filename_enc_standard"
   },
-  "crypt_filename_enc_obfuscate": "Obfuscate",
+  "crypt_filename_enc_obfuscate": "難読化",
   "@crypt_filename_enc_obfuscate": {
     "description": "crypt: crypt_filename_enc_obfuscate"
   },
@@ -6834,95 +7235,95 @@
   "@crypt_filename_enc_base32768": {
     "description": "crypt: crypt_filename_enc_base32768"
   },
-  "crypt_dirname_enc_yes": "Yes",
+  "crypt_dirname_enc_yes": "はい",
   "@crypt_dirname_enc_yes": {
     "description": "crypt: crypt_dirname_enc_yes"
   },
-  "crypt_dirname_enc_no": "No",
+  "crypt_dirname_enc_no": "いいえ",
   "@crypt_dirname_enc_no": {
     "description": "crypt: crypt_dirname_enc_no"
   },
-  "vault_encrypt_files": "+ Encrypt Files",
+  "vault_encrypt_files": "+ ファイルを暗号化",
   "@vault_encrypt_files": {
     "description": "vault/crypt: vault_encrypt_files"
   },
-  "vault_select_encryption_method": "Select Encryption Method",
+  "vault_select_encryption_method": "暗号化方式を選択",
   "@vault_select_encryption_method": {
     "description": "vault/crypt: vault_select_encryption_method"
   },
-  "vault_inplace_encrypt": "In-place Encryption",
+  "vault_inplace_encrypt": "その場暗号化",
   "@vault_inplace_encrypt": {
     "description": "vault/crypt: vault_inplace_encrypt"
   },
-  "vault_inplace_encrypt_desc": "Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser",
+  "vault_inplace_encrypt_desc": "ファイルは元のディレクトリに残り、暗号化後にファイル名が暗号化されます。ブラウザには 🔐 バッジが表示されます",
   "@vault_inplace_encrypt_desc": {
     "description": "vault/crypt: vault_inplace_encrypt_desc"
   },
-  "vault_sandbox_encrypt": "Sandbox Encryption",
+  "vault_sandbox_encrypt": "サンドボックス暗号化",
   "@vault_sandbox_encrypt": {
     "description": "vault/crypt: vault_sandbox_encrypt"
   },
-  "vault_sandbox_encrypt_desc": "Files moved to vault private directory, filenames hidden, only visible in vault page",
+  "vault_sandbox_encrypt_desc": "ファイルは保管庫専用ディレクトリに移動され、ファイル名は隠され、保管庫ページでのみ表示されます",
   "@vault_sandbox_encrypt_desc": {
     "description": "vault/crypt: vault_sandbox_encrypt_desc"
   },
-  "vault_need_set_password": "Need to Set Master Password First",
+  "vault_need_set_password": "先にマスターパスワードを設定する必要があります",
   "@vault_need_set_password": {
     "description": "vault/crypt: vault_need_set_password"
   },
-  "vault_need_set_password_desc": "Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.",
+  "vault_need_set_password_desc": "先に暗号化設定でマスターパスワードとソルトを設定してください。設定後、その場暗号化が利用できます。",
   "@vault_need_set_password_desc": {
     "description": "vault/crypt: vault_need_set_password_desc"
   },
-  "vault_go_set_password": "Set Password",
+  "vault_go_set_password": "パスワードを設定",
   "@vault_go_set_password": {
     "description": "vault/crypt: vault_go_set_password"
   },
-  "vault_encrypting": "Encrypting...",
+  "vault_encrypting": "暗号化中...",
   "@vault_encrypting": {
     "description": "vault/crypt: vault_encrypting"
   },
-  "vault_encrypting_desc": "Encrypting selected files/folders, please wait...",
+  "vault_encrypting_desc": "選択したファイル/フォルダを暗号化しています。お待ちください...",
   "@vault_encrypting_desc": {
     "description": "vault/crypt: vault_encrypting_desc"
   },
-  "vault_inplace_encrypt_done": "In-place encryption completed, {count} files/folders encrypted",
+  "vault_inplace_encrypt_done": "その場暗号化が完了しました。{count} 個のファイル/フォルダを暗号化しました",
   "@vault_inplace_encrypt_done": {
     "description": "vault/crypt: vault_inplace_encrypt_done"
   },
-  "vault_encrypt_failed": "Encryption failed: {error}",
+  "vault_encrypt_failed": "暗号化に失敗しました: {error}",
   "@vault_encrypt_failed": {
     "description": "vault/crypt: vault_encrypt_failed"
   },
-  "vault_inplace_section": "In-place Encryption",
+  "vault_inplace_section": "その場暗号化",
   "@vault_inplace_section": {
     "description": "vault/crypt: vault_inplace_section"
   },
-  "vault_open_location": "Open Location",
+  "vault_open_location": "場所を開く",
   "@vault_open_location": {
     "description": "vault/crypt: vault_open_location"
   },
-  "vault_decrypt_action": "Decrypt",
+  "vault_decrypt_action": "復号",
   "@vault_decrypt_action": {
     "description": "vault/crypt: vault_decrypt_action"
   },
-  "vault_decrypt_confirm_title": "Decrypt File",
+  "vault_decrypt_confirm_title": "ファイルを復号",
   "@vault_decrypt_confirm_title": {
     "description": "vault/crypt: vault_decrypt_confirm_title"
   },
-  "vault_decrypt_confirm_desc": "Are you sure you want to decrypt \"{name}\"? The file will be restored to normal after decryption.",
+  "vault_decrypt_confirm_desc": "「{name}」を復号しますか？復号後、ファイルは通常の状態に戻ります。",
   "@vault_decrypt_confirm_desc": {
     "description": "vault/crypt: vault_decrypt_confirm_desc"
   },
-  "vault_decrypt_success": "Decryption successful",
+  "vault_decrypt_success": "復号に成功しました",
   "@vault_decrypt_success": {
     "description": "vault/crypt: vault_decrypt_success"
   },
-  "vault_decrypt_failed": "Decryption failed: {error}",
+  "vault_decrypt_failed": "復号に失敗しました: {error}",
   "@vault_decrypt_failed": {
     "description": "vault/crypt: vault_decrypt_failed"
   },
-  "crypt_set_master_password": "Set Encryption Master Password",
+  "crypt_set_master_password": "暗号化マスターパスワードを設定",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
   },
@@ -6969,5 +7370,103 @@
   "vault_remove_from_list": "削除",
   "@vault_remove_from_list": {
     "description": "vault: vault_remove_from_list"
-  }
+  },
+  "security_vault_switch_desc": "プライベート金庫機能を有効にします",
+  "@security_vault_switch_desc": {
+    "description": "security settings"
+  },
+  "security_verify_password_desc": "安全設定を開くにはパスワードを入力してください",
+  "@security_verify_password_desc": {
+    "description": "security settings"
+  },
+  "vault_verify_password_title": "パスワードの確認",
+  "@vault_verify_password_title": {
+    "description": "security settings"
+  },
+  "vault_verify_password_hint": "安全設定のパスワードを入力してください",
+  "@vault_verify_password_hint": {
+    "description": "security settings"
+  },
+  "vault_go_security_settings": "安全設定へ",
+  "@vault_go_security_settings": {
+    "description": "security settings"
+  },
+  "security_settings_subtitle": "金庫、リモートガード、アプリ起動保護、指紋ロック解除",
+  "@security_settings_subtitle": {
+    "description": "security settings"
+  },
+  "vault_disabled_hint": "金庫は無効になっています。「設定 → 安全設定」で有効にしてください",
+  "@vault_disabled_hint": {
+    "description": "vault: vault_disabled_hint"
+  },
+  "security_set_password_desc": "セキュリティ設定へのアクセスと金庫のロック解除に使用するパスワードを設定してください",
+  "@security_set_password_desc": {
+    "description": "security settings: security_set_password_desc"
+  },
+  "security_confirm_password": "確認のため、もう一度パスワードを入力してください",
+  "@security_confirm_password": {
+    "description": "security settings: security_confirm_password"
+  },
+  "biometric_reason_security_settings": "セキュリティ設定にアクセスするには指紋を認証してください",
+  "@biometric_reason_security_settings": {
+    "description": "biometric: biometric_reason_security_settings"
+  },
+  "toolbox_scan": "スキャン",
+  "@toolbox_scan": {
+    "description": "scan: toolbox_scan"
+  },
+  "scan_result_title": "スキャン結果",
+  "@scan_result_title": {
+    "description": "scan: scan_result_title"
+  },
+  "scan_copy": "コピー",
+  "@scan_copy": {
+    "description": "scan: scan_copy"
+  },
+  "scan_copied": "クリップボードにコピーしました",
+  "@scan_copied": {
+    "description": "scan: scan_copied"
+  },
+  "scan_open_link": "リンクを開く",
+  "@scan_open_link": {
+    "description": "scan: scan_open_link"
+  },
+  "scan_continue": "続ける",
+  "@scan_continue": {
+    "description": "scan: scan_continue"
+  },
+  "scan_torch": "ライト",
+  "@scan_torch": {
+    "description": "scan: scan_torch"
+  },
+  "scan_switch_camera": "カメラを切り替え",
+  "@scan_switch_camera": {
+    "description": "scan: scan_switch_camera"
+  },
+  "scan_camera_error": "カメラにアクセスできません。カメラ権限を確認してください。",
+  "@scan_camera_error": {
+    "description": "scan: scan_camera_error"
+  },
+  "scan_hint": "QRコード/バーコードをフレーム内に配置すると自動的にスキャンされます",
+  "@scan_hint": {
+    "description": "scan: scan_hint"
+  },
+  "scan_from_gallery": "アルバムから選択",
+  "@scan_from_gallery": {
+    "description": "scan: scan_from_gallery"
+  },
+  "scan_no_barcode": "画像からQRコードまたはバーコードが検出されませんでした",
+  "@scan_no_barcode": {
+    "description": "scan: scan_no_barcode"
+  },
+  "ui_backup_confirm_title": "バックアップの確認",
+  "ui_backup_confirm_message": "以下のパスにバックアップします：\n{path}\n\n続行しますか？",
+  "@ui_backup_confirm_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "vault_remote_encrypt": "リモート暗号化"
 }

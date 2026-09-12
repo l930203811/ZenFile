@@ -4934,7 +4934,7 @@
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "PIN 변경",
+  "ui_remote_guard_change_pin": "비밀번호 변경",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4986,7 +4986,7 @@
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "개인 금고 PIN 변경(숨긴 모든 파일을 재암호화)",
+  "ui_change_vault_pin_desc": "보안 설정 및 금고 잠금 해제 비밀번호를 변경합니다. 암호화된 파일에는 영향을 주지 않습니다",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -6186,7 +6186,7 @@
   "vault_backup_restore": "백업/복원",
   "vault_import_backup_desc": "백업에서 금고 복원 (.zip)",
   "vault_uninstall_warning_title": "제거 경고",
-  "vault_uninstall_warning": "앱을 제거하면 금고가 삭제됩니다. 먼저 백업을 내보내세요.",
+  "vault_uninstall_warning": "앱을 제거하면 샌드박스 암호화가 삭제됩니다. 먼저 백업을 내보내세요.",
   "vault_backup_exported": "백업 내보낸 위치:",
   "vault_backup_imported": "가져온 항목",
   "vault_export_failed": "백업 내보내기 실패",
@@ -6221,19 +6221,19 @@
   "@archive_unsupported_format": {
     "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
   },
-  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "vault_export_backup_confirm": "백업 파일이 다음 위치에 저장됩니다:",
   "@vault_export_backup_confirm": {
     "description": "vault backup UI string"
   },
-  "vault_import_only_zip": "Only .zip backup files are supported",
+  "vault_import_only_zip": ".zip 백업 파일만 지원됩니다",
   "@vault_import_only_zip": {
     "description": "vault backup UI string"
   },
-  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "vault_import_password_hint": "이 백업은 다른 비밀번호를 사용합니다. 백업을 만들 때 사용한 비밀번호로 금고를 다시 잠금 해제해 주세요",
   "@vault_import_password_hint": {
     "description": "vault backup UI string"
   },
-  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "vault_open_backup_location": "백업이 저장된 폴더를 열까요?",
   "@vault_open_backup_location": {
     "description": "vault backup UI string"
   },
@@ -6610,211 +6610,612 @@
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
   },
-  "crypt_settings_title": "Encryption",
+  "crypt_settings_title": "비밀번호 설정",
+  "vault_config_password": "비밀번호 설정",
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
-  "crypt_settings_subtitle": "Manage encrypted folders and mount points",
+  "vault_help": "도움말",
+  "@vault_help": {
+    "description": "vault help: vault_help"
+  },
+  "vault_help_title": "금고 도움말",
+  "@vault_help_title": {
+    "description": "vault help: vault_help_title"
+  },
+  "vault_help_intro": "금고는 rclone과 동일한 crypt 형식을 사용합니다. 암호화와 복호화는 모두 기기에서 이루어지며 키는 기기 밖으로 나가지 않습니다.",
+  "@vault_help_intro": {
+    "description": "vault help: vault_help_intro"
+  },
+  "vault_help_highlights": "주요 기능",
+  "@vault_help_highlights": {
+    "description": "vault help: vault_help_highlights"
+  },
+  "vault_help_hl1_title": "제로 지식 암호화",
+  "@vault_help_hl1_title": {
+    "description": "vault help: vault_help_hl1_title"
+  },
+  "vault_help_hl1_desc": "마스터 비밀번호와 솔트는 기기에만 저장되므로 클라우드 서비스나 제3자는 파일을 복호화할 수 없습니다.",
+  "@vault_help_hl1_desc": {
+    "description": "vault help: vault_help_hl1_desc"
+  },
+  "vault_help_hl2_title": "rclone · OpenList 호환",
+  "@vault_help_hl2_title": {
+    "description": "vault help: vault_help_hl2_title"
+  },
+  "vault_help_hl2_desc": "동일한 crypt 형식을 사용하므로 PC의 rclone으로 같은 파일을 그대로 복호화할 수 있습니다.",
+  "@vault_help_hl2_desc": {
+    "description": "vault help: vault_help_hl2_desc"
+  },
+  "vault_help_hl3_title": "여러 비밀번호와 원격 직접 읽기",
+  "@vault_help_hl3_title": {
+    "description": "vault help: vault_help_hl3_title"
+  },
+  "vault_help_hl3_desc": "폴더마다 다른 비밀번호 프로필을 지정할 수 있고, 원격 암호 폴더는 전체를 내려받지 않고도 탐색·재생할 수 있습니다.",
+  "@vault_help_hl3_desc": {
+    "description": "vault help: vault_help_hl3_desc"
+  },
+  "vault_help_basics": "기본 조작",
+  "@vault_help_basics": {
+    "description": "vault help: vault_help_basics"
+  },
+  "vault_help_b1_title": "① 마스터 비밀번호 먼저 설정",
+  "@vault_help_b1_title": {
+    "description": "vault help: vault_help_b1_title"
+  },
+  "vault_help_b1_desc": "「비밀번호 설정」에서 마스터 비밀번호와 솔트를 설정하고 반드시 기억하세요. 금고 잠금 해제 비밀번호와는 별개입니다.",
+  "@vault_help_b1_desc": {
+    "description": "vault help: vault_help_b1_desc"
+  },
+  "vault_help_b2_title": "② 파일 암호화",
+  "@vault_help_b2_title": {
+    "description": "vault help: vault_help_b2_title"
+  },
+  "vault_help_b2_desc": "브라우저에서 파일을 선택한 뒤 암호화를 누르고 「원위치 암호화」 또는 「샌드박스 암호화」를 고릅니다.",
+  "@vault_help_b2_desc": {
+    "description": "vault help: vault_help_b2_desc"
+  },
+  "vault_help_b3_title": "③ 보기와 열기",
+  "@vault_help_b3_title": {
+    "description": "vault help: vault_help_b3_title"
+  },
+  "vault_help_b3_desc": "암호화된 항목은 금고에 목록으로 표시되며, 누르면 임시로 복호화되어 미리보기가 열립니다.",
+  "@vault_help_b3_desc": {
+    "description": "vault help: vault_help_b3_desc"
+  },
+  "vault_help_b4_title": "④ 복호화하여 복원",
+  "@vault_help_b4_title": {
+    "description": "vault help: vault_help_b4_title"
+  },
+  "vault_help_b4_desc": "항목을 선택하고 복호화하면 일반 파일로 원래 위치에 복원됩니다.",
+  "@vault_help_b4_desc": {
+    "description": "vault help: vault_help_b4_desc"
+  },
+  "vault_help_b5_title": "⑤ 백업과 복원",
+  "@vault_help_b5_title": {
+    "description": "vault help: vault_help_b5_title"
+  },
+  "vault_help_b5_desc": "「백업/복원」에서 암호화 설정이 포함된 백업을 내보내세요. 앱을 삭제하기 전에 반드시 실행하세요.",
+  "@vault_help_b5_desc": {
+    "description": "vault help: vault_help_b5_desc"
+  },
+  "vault_help_compat": "호환성",
+  "@vault_help_compat": {
+    "description": "vault help: vault_help_compat"
+  },
+  "vault_help_c1_title": "암호화 형식",
+  "@vault_help_c1_title": {
+    "description": "vault help: vault_help_c1_title"
+  },
+  "vault_help_c1_desc": "내용은 XSalsa20-Poly1305, 파일 이름은 EME 암호화 후 base32/base64로 인코딩되며 .bin 접미사를 붙일 수 있습니다.",
+  "@vault_help_c1_desc": {
+    "description": "vault help: vault_help_c1_desc"
+  },
+  "vault_help_c2_title": "클라우드와 동기화",
+  "@vault_help_c2_title": {
+    "description": "vault help: vault_help_c2_title"
+  },
+  "vault_help_c2_desc": "암호문은 어떤 클라우드나 동기화 도구로도 그대로 동기화됩니다. 서버에는 암호문만 보이며 실제 파일 이름은 노출되지 않습니다.",
+  "@vault_help_c2_desc": {
+    "description": "vault help: vault_help_c2_desc"
+  },
+  "vault_help_c3_title": "알려진 제한",
+  "@vault_help_c3_title": {
+    "description": "vault help: vault_help_c3_title"
+  },
+  "vault_help_c3_desc": "암호화하면 파일 이름이 훨씬 길어져 너무 긴 이름은 실패할 수 있습니다. 이름 변경은 반드시 이 앱에서 하세요. 암호문 이름을 직접 고치면 복호화할 수 없습니다.",
+  "@vault_help_c3_desc": {
+    "description": "vault help: vault_help_c3_desc"
+  },
+  "vault_help_inplace": "원위치 암호화",
+  "@vault_help_inplace": {
+    "description": "vault help: vault_help_inplace"
+  },
+  "vault_help_inplace_intro": "원위치 암호화는 파일을 있던 자리에서 암호화합니다. 내용과 파일 이름이 암호문으로 바뀌고, 파일은 원래 폴더에 그대로 남아 금고 전용 디렉터리로 이동하지 않습니다.",
+  "@vault_help_inplace_intro": {
+    "description": "vault help: vault_help_inplace_intro"
+  },
+  "vault_help_ip1_title": "원본 폴더와의 관계",
+  "@vault_help_ip1_title": {
+    "description": "vault help: vault_help_ip1_title"
+  },
+  "vault_help_ip1_desc": "위치와 폴더 구조는 그대로이며, 브라우저에서는 암호화된 파일에 🔐 배지가 표시됩니다.",
+  "@vault_help_ip1_desc": {
+    "description": "vault help: vault_help_ip1_desc"
+  },
+  "vault_help_ip2_title": "다른 앱에서 보이는 모습",
+  "@vault_help_ip2_title": {
+    "description": "vault help: vault_help_ip2_title"
+  },
+  "vault_help_ip2_desc": "다른 파일 관리자나 플레이어에는 의미 없는 암호문 이름만 보이고 열 수 없습니다. 이것이 바로 보호 효과입니다.",
+  "@vault_help_ip2_desc": {
+    "description": "vault help: vault_help_ip2_desc"
+  },
+  "vault_help_ip3_title": "적합한 상황",
+  "@vault_help_ip3_title": {
+    "description": "vault help: vault_help_ip3_title"
+  },
+  "vault_help_ip3_desc": "폴더 구조를 유지하면서 서드파티 클라우드 앱이 계속 동기화하도록 하고 싶을 때 적합합니다.",
+  "@vault_help_ip3_desc": {
+    "description": "vault help: vault_help_ip3_desc"
+  },
+  "vault_help_ip4_title": "위험과 권장 사항",
+  "@vault_help_ip4_title": {
+    "description": "vault help: vault_help_ip4_title"
+  },
+  "vault_help_ip4_desc": "암호화는 원본 파일을 직접 바꾸므로 중단되면 일부 파일이 남을 수 있습니다. 중요한 파일은 미리 백업하고, 복호화할 때는 대상 폴더에 쓰기 권한이 있는지 확인하세요.",
+  "@vault_help_ip4_desc": {
+    "description": "vault help: vault_help_ip4_desc"
+  },
+  "vault_help_notice": "주의 사항",
+  "@vault_help_notice": {
+    "description": "vault help: vault_help_notice"
+  },
+  "vault_help_n1": "이미 암호화에 사용한 비밀번호와 솔트는 변경할 수 없습니다. 바꾸려면 새 프로필을 만드세요.",
+  "@vault_help_n1": {
+    "description": "vault help: vault_help_n1"
+  },
+  "vault_help_n2": "샌드박스 암호화 파일은 앱 전용 디렉터리에 저장되며 앱을 삭제하면 함께 지워집니다.",
+  "@vault_help_n2": {
+    "description": "vault help: vault_help_n2"
+  },
+  "vault_help_n3": "마스터 비밀번호를 잊으면 어떤 암호화 파일도 복구할 수 없습니다. 반드시 백업을 내보내어 보관하세요.",
+  "@vault_help_n3": {
+    "description": "vault help: vault_help_n3"
+  },
+  "vault_remote_encrypt": "원격 암호화",
+  "@vault_remote_encrypt": {
+    "description": "crypt: vault_remote_encrypt"
+  },
+  "vault_import_source_title": "암호화 소스 선택",
+  "@vault_import_source_title": {
+    "description": "crypt: vault_import_source_title"
+  },
+  "vault_import_source_remote": "원격",
+  "@vault_import_source_remote": {
+    "description": "crypt: vault_import_source_remote"
+  },
+  "vault_import_source_remote_desc": "원격 암호화 폴더를 연결하거나 로컬 파일을 암호화하여 업로드",
+  "@vault_import_source_remote_desc": {
+    "description": "crypt: vault_import_source_remote_desc"
+  },
+  "vault_link_remote_crypt_desc": "서버의 기존 rclone crypt 폴더 연결 (기기에서 복호화)",
+  "@vault_link_remote_crypt_desc": {
+    "description": "crypt: vault_link_remote_crypt_desc"
+  },
+  "vault_encrypt_upload": "암호화하여 원격에 업로드",
+  "@vault_encrypt_upload": {
+    "description": "crypt: vault_encrypt_upload"
+  },
+  "vault_encrypt_upload_desc": "로컬 파일을 선택하여 암호화한 뒤 원격 서버에 업로드",
+  "@vault_encrypt_upload_desc": {
+    "description": "crypt: vault_encrypt_upload_desc"
+  },
+  "vault_encrypt_uploading": "암호화 및 업로드 중…",
+  "@vault_encrypt_uploading": {
+    "description": "crypt: vault_encrypt_uploading"
+  },
+  "vault_encrypt_upload_done": "암호화 업로드 완료",
+  "@vault_encrypt_upload_done": {
+    "description": "crypt: vault_encrypt_upload_done"
+  },
+  "vault_encrypt_upload_failed": "암호화 업로드 실패",
+  "@vault_encrypt_upload_failed": {
+    "description": "crypt: vault_encrypt_upload_failed"
+  },
+  "crypt_remote_upload": "암호화 업로드",
+  "@crypt_remote_upload": {
+    "description": "crypt: crypt_remote_upload"
+  },
+  "crypt_remote_download": "복호화 다운로드",
+  "@crypt_remote_download": {
+    "description": "crypt: crypt_remote_download"
+  },
+  "crypt_remote_downloading": "복호화 및 다운로드 중…",
+  "@crypt_remote_downloading": {
+    "description": "crypt: crypt_remote_downloading"
+  },
+  "crypt_remote_download_done": "복호화 다운로드 완료",
+  "@crypt_remote_download_done": {
+    "description": "crypt: crypt_remote_download_done"
+  },
+  "crypt_remote_download_failed": "복호화 다운로드 실패",
+  "@crypt_remote_download_failed": {
+    "description": "crypt: crypt_remote_download_failed"
+  },
+  "vault_remote_crypt_open_failed": "원격 암호화 파일을 열지 못했습니다",
+  "@vault_remote_crypt_open_failed": {
+    "description": "crypt: vault_remote_crypt_open_failed"
+  },
+  "vault_remote_crypt_unsupported": "이 형식은 원격 암호화 스트리밍 재생을 지원하지 않습니다",
+  "@vault_remote_crypt_unsupported": {
+    "description": "crypt: vault_remote_crypt_unsupported"
+  },
+  "vault_link_remote_crypt": "원격 암호화 폴더 연결",
+  "@vault_link_remote_crypt": {
+    "description": "crypt: vault_link_remote_crypt"
+  },
+  "vault_link_remote_crypt_success": "원격 암호화 폴더를 연결했습니다",
+  "@vault_link_remote_crypt_success": {
+    "description": "crypt: vault_link_remote_crypt_success"
+  },
+  "vault_unlink_remote_crypt": "연결 해제",
+  "@vault_unlink_remote_crypt": {
+    "description": "crypt: vault_unlink_remote_crypt"
+  },
+  "vault_exporting": "내보내는 중...",
+  "@vault_exporting": {
+    "description": "vault/crypt: vault_exporting"
+  },
+  "vault_importing": "가져오는 중...",
+  "@vault_importing": {
+    "description": "vault/crypt: vault_importing"
+  },
+  "vault_importing_backup": "백업 가져오는 중...",
+  "@vault_importing_backup": {
+    "description": "vault/crypt: vault_importing_backup"
+  },
+  "vault_restoring": "복원하는 중...",
+  "@vault_restoring": {
+    "description": "vault/crypt: vault_restoring"
+  },
+  "vault_decrypting": "복호화하는 중...",
+  "@vault_decrypting": {
+    "description": "vault/crypt: vault_decrypting"
+  },
+  "vault_import_backup_confirm": "가져오면 백업 내용으로 현재 금고 샌드박스와 암호화 설정을 덮어씁니다(잠금 해제 비밀번호는 영향 없음). 계속하시겠습니까?",
+  "@vault_import_backup_confirm": {
+    "description": "vault/crypt: vault_import_backup_confirm"
+  },
+  "vault_load_error": "금고 로드 오류: {error}",
+  "@vault_load_error": {
+    "description": "vault/crypt: vault_load_error"
+  },
+  "vault_restore_folder_hint": "폴더는 길게 눌러 「복원」을 선택하면 원래 위치에서 볼 수 있습니다",
+  "@vault_restore_folder_hint": {
+    "description": "vault/crypt: vault_restore_folder_hint"
+  },
+  "vault_decrypt_open_failed": "복호화 후 열기 실패: {error}",
+  "@vault_decrypt_open_failed": {
+    "description": "vault/crypt: vault_decrypt_open_failed"
+  },
+  "vault_badge_inplace": "제자리",
+  "@vault_badge_inplace": {
+    "description": "vault/crypt: vault_badge_inplace"
+  },
+  "vault_badge_sandbox": "샌드박스",
+  "@vault_badge_sandbox": {
+    "description": "vault/crypt: vault_badge_sandbox"
+  },
+  "vault_item_folder": "폴더",
+  "@vault_item_folder": {
+    "description": "vault/crypt: vault_item_folder"
+  },
+  "crypt_need_master_title": "암호화 마스터 비밀번호 미설정",
+  "@crypt_need_master_title": {
+    "description": "vault/crypt: crypt_need_master_title"
+  },
+  "crypt_need_master_body": "제자리 암호화와 샌드박스 암호화는 모두 「암호화 설정」의 마스터 비밀번호를 사용합니다. 먼저 설정해 주세요.",
+  "@crypt_need_master_body": {
+    "description": "vault/crypt: crypt_need_master_body"
+  },
+  "crypt_master_banner": "여기서 설정한 마스터 비밀번호와 솔트는 제자리 암호화와 샌드박스 암호화에 사용됩니다. 반드시 기억하세요. 금고 잠금 해제 비밀번호와는 독립적입니다.",
+  "@crypt_master_banner": {
+    "description": "vault/crypt: crypt_master_banner"
+  },
+  "crypt_profile_name": "암호화 이름",
+  "@crypt_profile_name": {
+    "description": "crypt: crypt_profile_name"
+  },
+  "crypt_profile_name_hint": "예: 업무 / 개인",
+  "@crypt_profile_name_hint": {
+    "description": "crypt: crypt_profile_name_hint"
+  },
+  "crypt_profile_name_required": "암호화 이름을 입력하세요",
+  "@crypt_profile_name_required": {
+    "description": "crypt: crypt_profile_name_required"
+  },
+  "crypt_profile_name_duplicate": "이미 존재하는 이름입니다",
+  "@crypt_profile_name_duplicate": {
+    "description": "crypt: crypt_profile_name_duplicate"
+  },
+  "crypt_profile_title_new": "암호화 설정 새로 만들기",
+  "@crypt_profile_title_new": {
+    "description": "crypt: crypt_profile_title_new"
+  },
+  "crypt_profile_title_edit": "암호화 설정 편집",
+  "@crypt_profile_title_edit": {
+    "description": "crypt: crypt_profile_title_edit"
+  },
+  "crypt_profile_section": "비밀번호 설정",
+  "@crypt_profile_section": {
+    "description": "crypt: crypt_profile_section"
+  },
+  "crypt_profile_add": "새 설정",
+  "@crypt_profile_add": {
+    "description": "crypt: crypt_profile_add"
+  },
+  "crypt_profile_default": "기본",
+  "@crypt_profile_default": {
+    "description": "crypt: crypt_profile_default"
+  },
+  "crypt_profile_set_default": "기본으로 설정",
+  "@crypt_profile_set_default": {
+    "description": "crypt: crypt_profile_set_default"
+  },
+  "crypt_profile_set_default_desc": "설정이 지정되지 않은 파일은 이 설정을 사용합니다",
+  "@crypt_profile_set_default_desc": {
+    "description": "crypt: crypt_profile_set_default_desc"
+  },
+  "crypt_profile_default_done": "기본 설정이 변경되었습니다",
+  "@crypt_profile_default_done": {
+    "description": "crypt: crypt_profile_default_done"
+  },
+  "crypt_profile_delete_message": "이 설정을 삭제하면 해당 설정으로 암호화된 파일은 복호화할 수 없습니다.",
+  "@crypt_profile_delete_message": {
+    "description": "crypt: crypt_profile_delete_message"
+  },
+  "crypt_profile_empty": "암호화 설정이 없습니다",
+  "@crypt_profile_empty": {
+    "description": "crypt: crypt_profile_empty"
+  },
+  "crypt_profile_action_config": "설정",
+  "@crypt_profile_action_config": {
+    "description": "crypt: crypt_profile_action_config"
+  },
+  "crypt_profile_select_title": "암호화 설정 선택",
+  "@crypt_profile_select_title": {
+    "description": "crypt: crypt_profile_select_title"
+  },
+  "crypt_profile_bound_done": "암호화 설정이 연결되었습니다",
+  "@crypt_profile_bound_done": {
+    "description": "crypt: crypt_profile_bound_done"
+  },
+  "crypt_profile_credential_locked": "수정 불가",
+  "@crypt_profile_credential_locked": {
+    "description": "crypt: crypt_profile_credential_locked"
+  },
+  "crypt_profile_credential_locked_desc": "비밀번호와 솔트가 키를 결정합니다. 변경하면 기존 암호화 파일을 복호화할 수 없습니다. 변경이 필요하면 새 설정을 만드세요.",
+  "@crypt_profile_credential_locked_desc": {
+    "description": "crypt: crypt_profile_credential_locked_desc"
+  },
+  "crypt_profile_suffix_none": "접미사 없음",
+  "@crypt_profile_suffix_none": {
+    "description": "crypt: crypt_profile_suffix_none"
+  },
+  "crypt_profile_sandbox_title": "샌드박스 설정 변경",
+  "@crypt_profile_sandbox_title": {
+    "description": "crypt: crypt_profile_sandbox_title"
+  },
+  "crypt_profile_sandbox_message": "샌드박스는 전체가 하나의 설정을 사용합니다. 변경하면 다른 파일이 암호문으로 표시될 수 있습니다. 계속하시겠습니까?",
+  "@crypt_profile_sandbox_message": {
+    "description": "crypt: crypt_profile_sandbox_message"
+  },
+  "crypt_mount_section": "암호화 위치",
+  "@crypt_mount_section": {
+    "description": "crypt: crypt_mount_section"
+  },
+  "crypt_settings_subtitle": "암호화 폴더 및 마운트 지점 관리",
   "@crypt_settings_subtitle": {
     "description": "crypt: crypt_settings_subtitle"
   },
-  "crypt_add_mount": "Add Encrypted Folder",
+  "crypt_add_mount": "암호화 폴더 추가",
   "@crypt_add_mount": {
     "description": "crypt: crypt_add_mount"
   },
-  "crypt_edit_mount": "Edit Encrypted Folder",
+  "crypt_edit_mount": "암호화 폴더 편집",
   "@crypt_edit_mount": {
     "description": "crypt: crypt_edit_mount"
   },
-  "crypt_no_mounts_title": "No Encrypted Folders",
+  "crypt_no_mounts_title": "암호화 폴더 없음",
   "@crypt_no_mounts_title": {
     "description": "crypt: crypt_no_mounts_title"
   },
-  "crypt_no_mounts_subtitle": "Tap the button below to add your first encrypted folder",
+  "crypt_no_mounts_subtitle": "아래 버튼을 눌러 첫 암호화 폴더를 추가하세요",
   "@crypt_no_mounts_subtitle": {
     "description": "crypt: crypt_no_mounts_subtitle"
   },
-  "crypt_field_name": "Name",
+  "crypt_field_name": "이름",
   "@crypt_field_name": {
     "description": "crypt: crypt_field_name"
   },
-  "crypt_field_name_hint": "Optional, uses folder name if empty",
+  "crypt_field_name_hint": "비워 두면 폴더 이름 사용",
   "@crypt_field_name_hint": {
     "description": "crypt: crypt_field_name_hint"
   },
-  "crypt_field_path": "Folder Path",
+  "crypt_field_path": "폴더 경로",
   "@crypt_field_path": {
     "description": "crypt: crypt_field_path"
   },
-  "crypt_field_path_hint": "Select folder to encrypt",
+  "crypt_field_path_hint": "암호화할 폴더 선택",
   "@crypt_field_path_hint": {
     "description": "crypt: crypt_field_path_hint"
   },
-  "crypt_field_password": "Password",
+  "crypt_field_password": "비밀번호",
   "@crypt_field_password": {
     "description": "crypt: crypt_field_password"
   },
-  "crypt_field_confirm_password": "Confirm Password",
+  "crypt_field_confirm_password": "비밀번호 확인",
   "@crypt_field_confirm_password": {
     "description": "crypt: crypt_field_confirm_password"
   },
-  "crypt_error_path_required": "Please select a folder path",
+  "crypt_error_path_required": "폴더 경로를 선택하세요",
   "@crypt_error_path_required": {
     "description": "crypt: crypt_error_path_required"
   },
-  "crypt_error_password_required": "Please enter a password",
+  "crypt_error_password_required": "비밀번호를 입력하세요",
   "@crypt_error_password_required": {
     "description": "crypt: crypt_error_password_required"
   },
-  "crypt_error_password_short": "Password must be at least 4 characters",
+  "crypt_error_password_short": "비밀번호는 4자 이상이어야 합니다",
   "@crypt_error_password_short": {
     "description": "crypt: crypt_error_password_short"
   },
-  "crypt_error_password_mismatch": "Passwords do not match",
+  "crypt_error_password_mismatch": "비밀번호가 일치하지 않습니다",
   "@crypt_error_password_mismatch": {
     "description": "crypt: crypt_error_password_mismatch"
   },
-  "crypt_section_mode": "Encryption Mode",
+  "crypt_section_mode": "암호화 방식",
   "@crypt_section_mode": {
     "description": "crypt: crypt_section_mode"
   },
-  "crypt_mode_inplace": "In-place Encryption",
+  "crypt_mode_inplace": "제자리 암호화",
   "@crypt_mode_inplace": {
     "description": "crypt: crypt_mode_inplace"
   },
-  "crypt_mode_inplace_desc": "Files stay in place, names and content are encrypted",
+  "crypt_mode_inplace_desc": "파일은 제자리에 유지되며 이름과 내용이 암호화됩니다",
   "@crypt_mode_inplace_desc": {
     "description": "crypt: crypt_mode_inplace_desc"
   },
-  "crypt_mode_sandbox": "Sandbox Encryption",
+  "crypt_mode_sandbox": "샌드박스 암호화",
   "@crypt_mode_sandbox": {
     "description": "crypt: crypt_mode_sandbox"
   },
-  "crypt_mode_sandbox_desc": "Files moved to sandbox, more secure but slightly slower",
+  "crypt_mode_sandbox_desc": "파일을 샌드박스로 이동합니다. 더 안전하지만 약간 느립니다",
   "@crypt_mode_sandbox_desc": {
     "description": "crypt: crypt_mode_sandbox_desc"
   },
-  "crypt_section_advanced": "Advanced Options",
+  "crypt_section_advanced": "고급 옵션",
   "@crypt_section_advanced": {
     "description": "crypt: crypt_section_advanced"
   },
-  "crypt_advanced_toggle": "Show advanced encryption options",
+  "crypt_advanced_toggle": "고급 암호화 옵션 표시",
   "@crypt_advanced_toggle": {
     "description": "crypt: crypt_advanced_toggle"
   },
-  "crypt_field_filename_enc": "Filename Encryption",
+  "crypt_field_filename_enc": "파일 이름 암호화",
   "@crypt_field_filename_enc": {
     "description": "crypt: crypt_field_filename_enc"
   },
-  "crypt_field_dirname_enc": "Encrypt Directory Names",
+  "crypt_field_dirname_enc": "폴더 이름 암호화",
   "@crypt_field_dirname_enc": {
     "description": "crypt: crypt_field_dirname_enc"
   },
-  "crypt_field_filename_encoding": "Filename Encoding",
+  "crypt_field_filename_encoding": "파일 이름 인코딩",
   "@crypt_field_filename_encoding": {
     "description": "crypt: crypt_field_filename_encoding"
   },
-  "crypt_field_suffix": "Encrypted Suffix",
+  "crypt_field_suffix": "암호화 접미사",
   "@crypt_field_suffix": {
     "description": "crypt: crypt_field_suffix"
   },
-  "crypt_field_salt": "Salt (optional)",
+  "crypt_field_salt": "솔트(선택)",
   "@crypt_field_salt": {
     "description": "crypt: crypt_field_salt"
   },
-  "crypt_field_salt_hint": "Auto-generated if empty",
+  "crypt_field_salt_hint": "비워 두면 자동 생성",
   "@crypt_field_salt_hint": {
     "description": "crypt: crypt_field_salt_hint"
   },
-  "crypt_action_browse": "Browse",
+  "crypt_action_browse": "둘러보기",
   "@crypt_action_browse": {
     "description": "crypt: crypt_action_browse"
   },
-  "crypt_delete_title": "Delete Encrypted Folder",
+  "crypt_delete_title": "암호화 폴더 삭제",
   "@crypt_delete_title": {
     "description": "crypt: crypt_delete_title"
   },
-  "crypt_delete_message": "Delete encryption config for \"{name}\"? Files will not be deleted.",
+  "crypt_delete_message": "\"{name}\"의 암호화 구성을 삭제할까요? 파일은 삭제되지 않습니다.",
   "@crypt_delete_message": {
     "description": "crypt: crypt_delete_message"
   },
-  "crypt_filename_enc": "Filename Enc",
+  "crypt_filename_enc": "파일 이름 암호화",
   "@crypt_filename_enc": {
     "description": "crypt: crypt_filename_enc"
   },
-  "crypt_share_title": "Share Encrypted Folder",
+  "crypt_share_title": "암호화 폴더 공유",
   "@crypt_share_title": {
     "description": "crypt: crypt_share_title"
   },
-  "crypt_share_hint": "Scan the QR code to import encryption config. Password is required to decrypt files.",
+  "crypt_share_hint": "QR 코드를 스캔하면 암호화 구성을 가져옵니다. 파일 복호화에는 비밀번호가 필요합니다.",
   "@crypt_share_hint": {
     "description": "crypt: crypt_share_hint"
   },
-  "crypt_action_share": "Share",
+  "crypt_action_share": "공유",
   "@crypt_action_share": {
     "description": "crypt: crypt_action_share"
   },
-  "crypt_share_password_note": "Password is NOT included in the QR code. Share it separately via a secure channel.",
+  "crypt_share_password_note": "QR 코드에는 비밀번호가 포함되지 않습니다. 안전한 채널로 별도로 공유하세요.",
   "@crypt_share_password_note": {
     "description": "crypt: crypt_share_password_note"
   },
-  "crypt_action_encrypt": "Encrypt Now",
+  "crypt_action_encrypt": "지금 암호화",
   "@crypt_action_encrypt": {
     "description": "crypt: crypt_action_encrypt"
   },
-  "crypt_action_decrypt": "Decrypt",
+  "crypt_action_decrypt": "복호화",
   "@crypt_action_decrypt": {
     "description": "crypt: crypt_action_decrypt"
   },
-  "crypt_encrypt_title": "Encryption Confirmation",
+  "crypt_encrypt_title": "암호화 확인",
   "@crypt_encrypt_title": {
     "description": "crypt: crypt_encrypt_title"
   },
-  "crypt_encrypt_message": "This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?",
+  "crypt_encrypt_message": "모든 파일과 하위 폴더를 암호화합니다. 암호화 후 다른 파일 관리자에서는 내용과 이름을 볼 수 없습니다. 계속하시겠습니까?",
   "@crypt_encrypt_message": {
     "description": "crypt: crypt_encrypt_message"
   },
-  "crypt_encrypting": "Encrypting...",
+  "crypt_encrypting": "암호화하는 중...",
   "@crypt_encrypting": {
     "description": "crypt: crypt_encrypting"
   },
-  "crypt_encrypt_success": "Encryption completed",
+  "crypt_encrypt_success": "암호화 완료",
   "@crypt_encrypt_success": {
     "description": "crypt: crypt_encrypt_success"
   },
-  "crypt_encrypt_failed": "Encryption failed: {error}",
+  "crypt_encrypt_failed": "암호화 실패: {error}",
   "@crypt_encrypt_failed": {
     "description": "crypt: crypt_encrypt_failed"
   },
-  "crypt_decrypt_title": "Decryption Confirmation",
+  "crypt_decrypt_title": "복호화 확인",
   "@crypt_decrypt_title": {
     "description": "crypt: crypt_decrypt_title"
   },
-  "crypt_decrypt_message": "This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?",
+  "crypt_decrypt_message": "모든 파일과 하위 폴더를 복호화합니다. 복호화 후 파일은 일반 상태로 복원됩니다. 계속하시겠습니까?",
   "@crypt_decrypt_message": {
     "description": "crypt: crypt_decrypt_message"
   },
-  "crypt_decrypting": "Decrypting...",
+  "crypt_decrypting": "복호화하는 중...",
   "@crypt_decrypting": {
     "description": "crypt: crypt_decrypting"
   },
-  "crypt_decrypt_success": "Decryption completed",
+  "crypt_decrypt_success": "복호화 완료",
   "@crypt_decrypt_success": {
     "description": "crypt: crypt_decrypt_success"
   },
-  "crypt_decrypt_failed": "Decryption failed: {error}",
+  "crypt_decrypt_failed": "복호화 실패: {error}",
   "@crypt_decrypt_failed": {
     "description": "crypt: crypt_decrypt_failed"
   },
-  "crypt_filename_enc_off": "Off",
+  "crypt_filename_enc_off": "끔",
   "@crypt_filename_enc_off": {
     "description": "crypt: crypt_filename_enc_off"
   },
-  "crypt_filename_enc_standard": "Standard",
+  "crypt_filename_enc_standard": "표준",
   "@crypt_filename_enc_standard": {
     "description": "crypt: crypt_filename_enc_standard"
   },
-  "crypt_filename_enc_obfuscate": "Obfuscate",
+  "crypt_filename_enc_obfuscate": "난독화",
   "@crypt_filename_enc_obfuscate": {
     "description": "crypt: crypt_filename_enc_obfuscate"
   },
@@ -6830,95 +7231,95 @@
   "@crypt_filename_enc_base32768": {
     "description": "crypt: crypt_filename_enc_base32768"
   },
-  "crypt_dirname_enc_yes": "Yes",
+  "crypt_dirname_enc_yes": "예",
   "@crypt_dirname_enc_yes": {
     "description": "crypt: crypt_dirname_enc_yes"
   },
-  "crypt_dirname_enc_no": "No",
+  "crypt_dirname_enc_no": "아니요",
   "@crypt_dirname_enc_no": {
     "description": "crypt: crypt_dirname_enc_no"
   },
-  "vault_encrypt_files": "+ Encrypt Files",
+  "vault_encrypt_files": "+ 파일 암호화",
   "@vault_encrypt_files": {
     "description": "vault/crypt: vault_encrypt_files"
   },
-  "vault_select_encryption_method": "Select Encryption Method",
+  "vault_select_encryption_method": "암호화 방식 선택",
   "@vault_select_encryption_method": {
     "description": "vault/crypt: vault_select_encryption_method"
   },
-  "vault_inplace_encrypt": "In-place Encryption",
+  "vault_inplace_encrypt": "제자리 암호화",
   "@vault_inplace_encrypt": {
     "description": "vault/crypt: vault_inplace_encrypt"
   },
-  "vault_inplace_encrypt_desc": "Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser",
+  "vault_inplace_encrypt_desc": "파일은 원래 디렉터리에 그대로 있고, 암호화 후 파일 이름이 암호화되며, 브라우저에 🔐 배지가 표시됩니다",
   "@vault_inplace_encrypt_desc": {
     "description": "vault/crypt: vault_inplace_encrypt_desc"
   },
-  "vault_sandbox_encrypt": "Sandbox Encryption",
+  "vault_sandbox_encrypt": "샌드박스 암호화",
   "@vault_sandbox_encrypt": {
     "description": "vault/crypt: vault_sandbox_encrypt"
   },
-  "vault_sandbox_encrypt_desc": "Files moved to vault private directory, filenames hidden, only visible in vault page",
+  "vault_sandbox_encrypt_desc": "파일은 금고 전용 디렉터리로 이동되고, 파일 이름이 숨겨지며, 금고 페이지에서만 보입니다",
   "@vault_sandbox_encrypt_desc": {
     "description": "vault/crypt: vault_sandbox_encrypt_desc"
   },
-  "vault_need_set_password": "Need to Set Master Password First",
+  "vault_need_set_password": "먼저 마스터 비밀번호 설정 필요",
   "@vault_need_set_password": {
     "description": "vault/crypt: vault_need_set_password"
   },
-  "vault_need_set_password_desc": "Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.",
+  "vault_need_set_password_desc": "먼저 암호화 설정에서 암호화 마스터 비밀번호와 솔트를 구성하세요. 구성 후 제자리 암호화를 사용할 수 있습니다.",
   "@vault_need_set_password_desc": {
     "description": "vault/crypt: vault_need_set_password_desc"
   },
-  "vault_go_set_password": "Set Password",
+  "vault_go_set_password": "비밀번호 설정",
   "@vault_go_set_password": {
     "description": "vault/crypt: vault_go_set_password"
   },
-  "vault_encrypting": "Encrypting...",
+  "vault_encrypting": "암호화하는 중...",
   "@vault_encrypting": {
     "description": "vault/crypt: vault_encrypting"
   },
-  "vault_encrypting_desc": "Encrypting selected files/folders, please wait...",
+  "vault_encrypting_desc": "선택한 파일/폴더를 암호화하는 중입니다. 잠시만 기다려 주세요...",
   "@vault_encrypting_desc": {
     "description": "vault/crypt: vault_encrypting_desc"
   },
-  "vault_inplace_encrypt_done": "In-place encryption completed, {count} files/folders encrypted",
+  "vault_inplace_encrypt_done": "제자리 암호화 완료, {count}개 파일/폴더 암호화됨",
   "@vault_inplace_encrypt_done": {
     "description": "vault/crypt: vault_inplace_encrypt_done"
   },
-  "vault_encrypt_failed": "Encryption failed: {error}",
+  "vault_encrypt_failed": "암호화 실패: {error}",
   "@vault_encrypt_failed": {
     "description": "vault/crypt: vault_encrypt_failed"
   },
-  "vault_inplace_section": "In-place Encryption",
+  "vault_inplace_section": "제자리 암호화",
   "@vault_inplace_section": {
     "description": "vault/crypt: vault_inplace_section"
   },
-  "vault_open_location": "Open Location",
+  "vault_open_location": "위치 열기",
   "@vault_open_location": {
     "description": "vault/crypt: vault_open_location"
   },
-  "vault_decrypt_action": "Decrypt",
+  "vault_decrypt_action": "복호화",
   "@vault_decrypt_action": {
     "description": "vault/crypt: vault_decrypt_action"
   },
-  "vault_decrypt_confirm_title": "Decrypt File",
+  "vault_decrypt_confirm_title": "파일 복호화",
   "@vault_decrypt_confirm_title": {
     "description": "vault/crypt: vault_decrypt_confirm_title"
   },
-  "vault_decrypt_confirm_desc": "Are you sure you want to decrypt \"{name}\"? The file will be restored to normal after decryption.",
+  "vault_decrypt_confirm_desc": "\"{name}\"을(를) 복호화하시겠습니까? 복호화 후 파일은 일반 상태로 복원됩니다.",
   "@vault_decrypt_confirm_desc": {
     "description": "vault/crypt: vault_decrypt_confirm_desc"
   },
-  "vault_decrypt_success": "Decryption successful",
+  "vault_decrypt_success": "복호화 성공",
   "@vault_decrypt_success": {
     "description": "vault/crypt: vault_decrypt_success"
   },
-  "vault_decrypt_failed": "Decryption failed: {error}",
+  "vault_decrypt_failed": "복호화 실패: {error}",
   "@vault_decrypt_failed": {
     "description": "vault/crypt: vault_decrypt_failed"
   },
-  "crypt_set_master_password": "Set Encryption Master Password",
+  "crypt_set_master_password": "암호화 마스터 비밀번호 설정",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
   },
@@ -6965,5 +7366,103 @@
   "vault_remove_from_list": "제거",
   "@vault_remove_from_list": {
     "description": "vault: vault_remove_from_list"
-  }
+  },
+  "security_vault_switch_desc": "개인 금고 기능을 활성화합니다",
+  "@security_vault_switch_desc": {
+    "description": "security settings"
+  },
+  "security_verify_password_desc": "보안 설정을 열려면 비밀번호를 입력하세요",
+  "@security_verify_password_desc": {
+    "description": "security settings"
+  },
+  "vault_verify_password_title": "비밀번호 확인",
+  "@vault_verify_password_title": {
+    "description": "security settings"
+  },
+  "vault_verify_password_hint": "보안 설정 비밀번호를 입력하세요",
+  "@vault_verify_password_hint": {
+    "description": "security settings"
+  },
+  "vault_go_security_settings": "보안 설정으로 이동",
+  "@vault_go_security_settings": {
+    "description": "security settings"
+  },
+  "security_settings_subtitle": "금고, 원격 가드, 앱 보호 및 지문 잠금 해제",
+  "@security_settings_subtitle": {
+    "description": "security settings"
+  },
+  "vault_disabled_hint": "금고가 비활성화되어 있습니다. 설정 → 보안 설정에서 활성화하세요",
+  "@vault_disabled_hint": {
+    "description": "vault: vault_disabled_hint"
+  },
+  "security_set_password_desc": "보안 설정 접근 및 금고 잠금 해제에 사용할 보안 비밀번호를 설정하세요",
+  "@security_set_password_desc": {
+    "description": "security settings: security_set_password_desc"
+  },
+  "security_confirm_password": "확인을 위해 비밀번호를 다시 입력하세요",
+  "@security_confirm_password": {
+    "description": "security settings: security_confirm_password"
+  },
+  "biometric_reason_security_settings": "보안 설정에 접근하려면 지문을 인증하세요",
+  "@biometric_reason_security_settings": {
+    "description": "biometric: biometric_reason_security_settings"
+  },
+  "toolbox_scan": "스캔",
+  "@toolbox_scan": {
+    "description": "scan: toolbox_scan"
+  },
+  "scan_result_title": "스캔 결과",
+  "@scan_result_title": {
+    "description": "scan: scan_result_title"
+  },
+  "scan_copy": "복사",
+  "@scan_copy": {
+    "description": "scan: scan_copy"
+  },
+  "scan_copied": "클립보드에 복사됨",
+  "@scan_copied": {
+    "description": "scan: scan_copied"
+  },
+  "scan_open_link": "링크 열기",
+  "@scan_open_link": {
+    "description": "scan: scan_open_link"
+  },
+  "scan_continue": "계속",
+  "@scan_continue": {
+    "description": "scan: scan_continue"
+  },
+  "scan_torch": "플래시",
+  "@scan_torch": {
+    "description": "scan: scan_torch"
+  },
+  "scan_switch_camera": "카메라 전환",
+  "@scan_switch_camera": {
+    "description": "scan: scan_switch_camera"
+  },
+  "scan_camera_error": "카메라에 접근할 수 없습니다. 카메라 권한을 확인하세요.",
+  "@scan_camera_error": {
+    "description": "scan: scan_camera_error"
+  },
+  "scan_hint": "QR 코드/바코드를 프레임 안에 넣으면 자동으로 스캔됩니다",
+  "@scan_hint": {
+    "description": "scan: scan_hint"
+  },
+  "scan_from_gallery": "갤러리에서 선택",
+  "@scan_from_gallery": {
+    "description": "scan: scan_from_gallery"
+  },
+  "scan_no_barcode": "이미지에서 QR 코드 또는 바코드가 감지되지 않았습니다",
+  "@scan_no_barcode": {
+    "description": "scan: scan_no_barcode"
+  },
+  "ui_backup_confirm_title": "백업 확인",
+  "ui_backup_confirm_message": "다음 경로에 백업됩니다:\n{path}\n\n계속하시겠습니까?",
+  "@ui_backup_confirm_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "vault_remote_encrypt": "원격 암호화"
 }

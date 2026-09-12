@@ -9,10 +9,12 @@ import 'selection_action_bar.dart'; // To access PropertiesModalDialog
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
+import '../../models/file_item_model.dart';
 import '../../services/folder_share_service.dart';
 import '../../services/pin_service.dart';
 import '../../core/navigator_key.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'bulk_crypt_actions.dart';
 
 class SelectionContextBottomSheet extends StatelessWidget {
   final FileManagerProvider provider;
@@ -304,7 +306,31 @@ class SelectionContextBottomSheet extends StatelessWidget {
       onSelected: (action) async {
         Navigator.pop(context);
         final effectiveContext = outerContext ?? context;
-        if (action == 'compress') {
+        if (action == 'encrypt') {
+          final effectiveContext = outerContext ?? context;
+          if (provider.activeTab.isCryptRemote) {
+            // 远程加密目录：加密＝选择本地文件加密后上传到当前远程目录
+            await BulkCryptActions.encryptUploadRemoteCrypt(effectiveContext, provider);
+          } else {
+            await BulkCryptActions.encryptSelected(effectiveContext, provider);
+          }
+        } else if (action == 'encrypt_upload') {
+          final effectiveContext = outerContext ?? context;
+          await BulkCryptActions.encryptUploadRemoteCrypt(effectiveContext, provider);
+        } else if (action == 'decrypt') {
+          final effectiveContext = outerContext ?? context;
+          if (provider.activeTab.isCryptRemote) {
+            // 远程加密目录：解密＝把远程密文解密后保存到本地（目录递归）
+            await BulkCryptActions.decryptDownloadRemoteCrypt(
+              effectiveContext,
+              provider,
+              provider.selectedPaths.toList(),
+            );
+            provider.clearSelection();
+          } else {
+            await BulkCryptActions.decryptSelected(effectiveContext, provider);
+          }
+        } else if (action == 'compress') {
           final selectedPaths = provider.selectedPaths.toList();
           final firstSelected = selectedPaths.isNotEmpty
               ? p.basename(selectedPaths.first)
@@ -356,7 +382,55 @@ class SelectionContextBottomSheet extends StatelessWidget {
         }
       },
       itemBuilder: (context) {
+        final selectedModels = provider.selectedPaths
+            .map((p) => provider.currentFiles.firstWhere(
+                  (f) => f.path == p,
+                  orElse: () => FileItemModel(
+                    entity: File(p),
+                    name: p,
+                    path: p,
+                    isDirectory: Directory(p).existsSync(),
+                    size: 0,
+                    modified: DateTime.now(),
+                  ),
+                ))
+            .toList();
+        final anyEncrypted = selectedModels.any((m) => m.isEncrypted);
+        final anyPlain = selectedModels.any((m) => !m.isEncrypted);
+        final isCryptRemote = provider.activeTab.isCryptRemote;
         return [
+          // 远程加密目录：额外提供「加密上传」（把本地文件加密后上传到当前远程目录）
+          if (isCryptRemote)
+            PopupMenuItem(
+              value: 'encrypt_upload',
+              child: Row(children: [
+                Icon(Icons.upload_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
+                SizedBox(width: 12),
+                Text(L10n.of(context).crypt_remote_upload),
+              ]),
+            ),
+          if (anyPlain && !isCryptRemote)
+            PopupMenuItem(
+              value: 'encrypt',
+              child: Row(children: [
+                Icon(Icons.lock, size: 20, color: Theme.of(context).colorScheme.primary),
+                SizedBox(width: 12),
+                Text(L10n.of(context).vault_action_encrypt),
+              ]),
+            ),
+          if (anyEncrypted)
+            PopupMenuItem(
+              value: 'decrypt',
+              child: Row(children: [
+                Icon(Icons.lock_open, size: 20, color: Theme.of(context).colorScheme.primary),
+                SizedBox(width: 12),
+                // 远程加密目录里「解密」＝解密并下载到本地，用更贴切的文案
+                Text(isCryptRemote
+                    ? L10n.of(context).crypt_remote_download
+                    : L10n.of(context).crypt_action_decrypt),
+              ]),
+            ),
+          if (anyPlain || anyEncrypted) const PopupMenuDivider(),
           PopupMenuItem(value: 'compress', child: Row(children: [Icon(Broken.box_add, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_compress)])),
           PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_share)])),
           PopupMenuItem(value: 'select_all', child: Row(children: [Icon(Broken.tick_square, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg_select_all)])),

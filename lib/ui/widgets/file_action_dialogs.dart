@@ -555,14 +555,14 @@ class FileActionSheet {
                     value: 'archive',
                     onAction: onAction,
                   ),
-                  // 加密/解密选项
+                  // 加密/解密选项（已加密文件显示「解密」，否则显示「加密」）
                   if (filePath != null)
                     if (isEncrypted)
                       _buildTile(
                         ctx,
                         theme,
                         icon: Icons.lock_open,
-                        title: '解密',
+                        title: L10n.of(ctx).crypt_action_decrypt,
                         value: 'decrypt',
                         onAction: onAction,
                       )
@@ -571,7 +571,7 @@ class FileActionSheet {
                         ctx,
                         theme,
                         icon: Icons.lock,
-                        title: '加密',
+                        title: L10n.of(ctx).vault_action_encrypt,
                         value: 'encrypt',
                         onAction: onAction,
                       ),

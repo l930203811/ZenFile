@@ -82,28 +82,27 @@ Future<String?> showRemotePathPicker(BuildContext context) async {
 
   if (selectedConn == null) return null;
 
-  // Step 2: 浏览远程目录选择文件夹
-  return showDialog<String?>(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) {
-      return _RemoteDirectoryPickerDialog(connection: selectedConn);
-    },
+  // Step 2: 浏览远程目录选择文件夹（全屏页面）
+  return Navigator.push<String?>(
+    context,
+    MaterialPageRoute(
+      builder: (ctx) => _RemoteDirectoryPickerPage(connection: selectedConn),
+    ),
   );
 }
 
-/// 远程目录选择对话框，连接远程服务器并让用户选择一个目录。
+/// 远程目录选择全屏页面，连接远程服务器并让用户选择一个目录。
 /// 返回 `remote://{connectionId}|{path}` 格式的路径字符串。
-class _RemoteDirectoryPickerDialog extends StatefulWidget {
+class _RemoteDirectoryPickerPage extends StatefulWidget {
   final NetworkConnectionModel connection;
 
-  const _RemoteDirectoryPickerDialog({required this.connection});
+  const _RemoteDirectoryPickerPage({required this.connection});
 
   @override
-  State<_RemoteDirectoryPickerDialog> createState() => _RemoteDirectoryPickerDialogState();
+  State<_RemoteDirectoryPickerPage> createState() => _RemoteDirectoryPickerPageState();
 }
 
-class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDialog> {
+class _RemoteDirectoryPickerPageState extends State<_RemoteDirectoryPickerPage> {
   RemoteClient? _client;
   bool _isConnecting = true;
   bool _isLoading = false;
@@ -196,109 +195,116 @@ class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDial
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
 
-    return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(24, 16, 16, 0),
-      contentPadding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-      title: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.ui_select_remote_server, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text(
-                  '${widget.connection.name} · $_currentPath',
-                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.ui_select_remote_server, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 2),
+            Text(
+              '${widget.connection.name} · $_currentPath',
+              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
+          ],
+        ),
+        actions: [
           IconButton(
             icon: const Icon(Icons.close, size: 22),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
       ),
-      content: SizedBox(
-        width: double.maxFinite,
-        height: MediaQuery.of(context).size.height * 0.5,
-        child: _isConnecting
-            ? const Center(child: CircularProgressIndicator())
-            : _errorMsg.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-                        const SizedBox(height: 12),
-                        Text(_errorMsg, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                        const SizedBox(height: 16),
-                        TextButton(onPressed: _connectAndList, child: Text(l10n.ui_retry)),
-                      ],
-                    ),
-                  )
-                : Column(
+      body: _isConnecting
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMsg.isNotEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 面包屑导航
-                      if (_currentPath != '/' && _currentPath != widget.connection.rootPath)
-                        Material(
-                          color: theme.colorScheme.primary.withOpacity(0.05),
-                          child: InkWell(
-                            onTap: _goUp,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.arrow_upward, size: 16, color: theme.colorScheme.primary),
-                                  const SizedBox(width: 8),
-                                  Text(l10n.msg1f4c1042, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.primary)),
-                                ],
-                              ),
+                      Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(_errorMsg, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _connectAndList,
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: Text(l10n.ui_retry),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    // 面包屑导航
+                    if (_currentPath != '/' && _currentPath != widget.connection.rootPath)
+                      Material(
+                        color: theme.colorScheme.primary.withOpacity(0.05),
+                        child: InkWell(
+                          onTap: _goUp,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_upward, size: 18, color: theme.colorScheme.primary),
+                                const SizedBox(width: 8),
+                                Text(l10n.msg1f4c1042, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.colorScheme.primary)),
+                              ],
                             ),
                           ),
                         ),
-                      if (_isLoading)
-                        const Expanded(child: Center(child: CircularProgressIndicator()))
-                      else
-                        Expanded(
-                          child: _items.isEmpty
-                              ? Center(
-                                  child: Text(l10n.ui_no_subfolders, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 13)),
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: _items.length,
-                                  itemBuilder: (ctx, index) {
-                                    final item = _items[index];
-                                    return ListTile(
-                                      leading: Icon(Icons.folder, color: theme.colorScheme.primary.withOpacity(0.7), size: 24),
-                                      title: Text(item.name, style: const TextStyle(fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                      trailing: const Icon(Icons.chevron_right, size: 20),
-                                      dense: true,
-                                      onTap: () {
-                                        _currentPath = item.path;
-                                        _listDir(_currentPath);
-                                      },
-                                    );
-                                  },
-                                ),
-                        ),
-                    ],
-                  ),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ui_cancel)),
-        FilledButton.icon(
-          onPressed: _isConnecting || _errorMsg.isNotEmpty ? null : _selectCurrent,
-          icon: const Icon(Icons.check, size: 18),
-          label: Text(l10n.ui_select_this_folder),
+                      ),
+                    if (_isLoading)
+                      const Expanded(child: Center(child: CircularProgressIndicator()))
+                    else
+                      Expanded(
+                        child: _items.isEmpty
+                            ? Center(
+                                child: Text(l10n.ui_no_subfolders, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 14)),
+                              )
+                            : ListView.builder(
+                                itemCount: _items.length,
+                                itemBuilder: (ctx, index) {
+                                  final item = _items[index];
+                                  return ListTile(
+                                    leading: Icon(Icons.folder, color: theme.colorScheme.primary.withOpacity(0.7), size: 26),
+                                    title: Text(item.name, style: const TextStyle(fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    trailing: const Icon(Icons.chevron_right, size: 22),
+                                    onTap: () {
+                                      _currentPath = item.path;
+                                      _listDir(_currentPath);
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                  ],
+                ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ui_cancel)),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                onPressed: _isConnecting || _errorMsg.isNotEmpty ? null : _selectCurrent,
+                icon: const Icon(Icons.check, size: 18),
+                label: Text(l10n.ui_select_this_folder),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -20,6 +20,9 @@ enum BiometricScenario {
 
   /// 启动应用保护：冷启动进入应用前的验证
   appLock,
+
+  /// 安全设置：进入安全设置页面前的验证
+  securitySettings,
 }
 
 /// 统一的生物识别验证入口。
@@ -61,6 +64,10 @@ class BiometricAuthHelper {
       case BiometricScenario.appLock:
         title = l10n.ui_app_lock;
         reason = l10n.biometric_reason_app_lock;
+        break;
+      case BiometricScenario.securitySettings:
+        title = l10n.ui_security_settings;
+        reason = l10n.biometric_reason_security_settings;
         break;
     }
 

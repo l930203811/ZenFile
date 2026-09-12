@@ -347,6 +347,8 @@ class FolderItem extends StatelessWidget {
                       onAction,
                       showSetAsHome: true,
                       showShare: !folder.isRemote,
+                      filePath: folder.path,
+                      isEncrypted: folder.isEncrypted,
                     );
                   },
                 ),

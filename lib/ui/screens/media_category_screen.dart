@@ -2698,16 +2698,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     icon: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Broken.more, size: 24),
+                        Icon(Broken.more, size: 24, color: theme.colorScheme.primary),
                         const SizedBox(height: 4),
                         AutoSizeText(
                           l10n.ui_more,
                           minFontSize: 8,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
                       ],

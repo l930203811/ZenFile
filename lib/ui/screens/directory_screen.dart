@@ -14,12 +14,14 @@ import '../widgets/file_grid_item.dart';
 import '../widgets/folder_grid_item.dart';
 import '../widgets/drag_drop_handler.dart';
 import '../widgets/file_action_dialogs.dart';
-import '../../services/vault_service.dart';
 import '../../services/crypt/crypt.dart';
+import 'crypt_mount_edit_screen.dart';
+import 'vault_session_unlock_dialog.dart';
 import '../widgets/drag_drop_action_dialog.dart';
 import '../widgets/create_archive_dialog.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/selection_action_bar.dart';
+import '../widgets/bulk_crypt_actions.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
@@ -406,12 +408,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             position: PopupMenuPosition.under,
             elevation: 8,
             onSelected: (val) => _handleMenuAction(context, val, provider),
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-              PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
-            ],
+            // 远程加密目录：只暴露该场景支持的操作（加密上传 / 新建文件夹）。
+            // 「新建文件」「压缩包」「新建收藏」依赖本地写入或本地路径解析，
+            // 在 cryptremote:// 虚拟路径下不可用，故隐藏。
+            itemBuilder: (context) => provider.activeTab.isCryptRemote
+                ? [
+                    PopupMenuItem(value: 'encrypt_upload', child: Row(children: [Icon(Icons.upload_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).crypt_remote_upload, style: TextStyle(fontWeight: FontWeight.w600))])),
+                    PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                  ]
+                : [
+                    PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                    PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                    PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                    PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
+                  ],
           ),
           // 复制标签页
           IconButton(
@@ -825,90 +835,60 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         await _handleEncrypt(context, provider, path);
         break;
       case 'decrypt':
-        await _handleDecrypt(context, provider, path);
+        // 远程加密标签页：密文在后端，解密＝把远程密文解密后保存到本地
+        if (provider.activeTab.isCryptRemote) {
+          await _decryptDownloadRemoteCrypt(context, provider, [path]);
+        } else {
+          await _handleDecrypt(context, provider, path);
+        }
         break;
     }
   }
 
-  /// 验证保险箱主密码（如果未解锁）
-  Future<String?> _verifyVaultPassword(BuildContext context) async {
-    if (VaultCryptService.instance.isUnlocked) {
-      return VaultCryptService.instance.unlockedPassword;
-    }
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
+  /// 确认「加密设置」中已配置主密码。
+  ///
+  /// 加解密一律使用加密设置的主密码，与保险箱解锁密码无关，因此这里
+  /// 不再要求用户输入任何密码：已配置直接放行；未配置则引导去设置。
+  /// 返回 false 表示未配置且用户未完成设置，调用方应中止操作。
+  Future<bool> _ensureMasterPassword(BuildContext context) async {
+    if (await VaultCryptService.instance.hasMasterPassword()) return true;
+    if (!context.mounted) return false;
+    final l10n = L10n.of(context);
+
+    final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('验证保险箱密码'),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          decoration: const InputDecoration(
-            hintText: '请输入保险箱主密码',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
+        title: Text(l10n.crypt_need_master_title),
+        content: Text(l10n.crypt_need_master_body),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
           ),
           FilledButton(
-            onPressed: () async {
-              final pw = controller.text;
-              if (await VaultService.verifyPassword(pw)) {
-                VaultCryptService.instance.markUnlocked(pw);
-                Navigator.pop(ctx, pw);
-              } else {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(content: Text('密码错误')),
-                );
-              }
-            },
-            child: const Text('确认'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.vault_go_set_password),
           ),
         ],
       ),
     );
-    return result;
+
+    if (go != true || !context.mounted) return false;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CryptMountEditScreen()),
+    );
+    // 返回后再次确认（用户可能设置了，也可能直接返回）
+    return VaultCryptService.instance.hasMasterPassword();
   }
 
   /// 处理加密操作
   Future<void> _handleEncrypt(BuildContext context, FileManagerProvider provider, String path) async {
-    final password = await _verifyVaultPassword(context);
-    if (password == null) return;
+    // 需求5：加密前先过保险箱会话闸门（已解锁免验证 / 未解锁弹窗 / 重启后重验）
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
 
-    final mode = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('选择加密方式'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: const Text('原地加密'),
-              subtitle: const Text('文件留在原目录，不显示在保险箱列表'),
-              onTap: () => Navigator.pop(ctx, 'inplace'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.lock),
-              title: const Text('沙盒加密'),
-              subtitle: const Text('文件移动到保险箱，显示在保险箱列表'),
-              onTap: () => Navigator.pop(ctx, 'sandbox'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-        ],
-      ),
-    );
-
+    final mode = await BulkCryptActions.promptEncryptionMode(context);
     if (mode == null) return;
 
     final progress = ValueNotifier<double?>(null);
@@ -917,7 +897,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<double?>(
         valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: '正在加密...', value: v),
+        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_encrypting, value: v),
       ),
     );
 
@@ -925,14 +905,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       if (mode == 'inplace') {
         await VaultCryptService.instance.encryptInPlace(
           sourcePath: path,
-          password: password,
           onProgress: (done, total) =>
               progress.value = total > 0 ? done / total : null,
         );
       } else {
         await VaultCryptService.instance.encryptToSandbox(
           sourcePath: path,
-          password: password,
           onProgress: (done, total) =>
               progress.value = total > 0 ? done / total : null,
         );
@@ -960,8 +938,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   /// 处理解密操作
   Future<void> _handleDecrypt(BuildContext context, FileManagerProvider provider, String path) async {
-    final password = await _verifyVaultPassword(context);
-    if (password == null) return;
+    // 需求5：解密同样先过保险箱会话闸门
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
 
     final progress = ValueNotifier<double?>(null);
     showDialog(
@@ -969,14 +948,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<double?>(
         valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: '正在解密...', value: v),
+        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_decrypting, value: v),
       ),
     );
 
     try {
       await VaultCryptService.instance.decryptInPlace(
         encryptedPath: path,
-        password: password,
         onProgress: (done, total) =>
             progress.value = total > 0 ? done / total : null,
       );
@@ -1001,8 +979,29 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
   }
 
+  /// 远程加密目录：把选中的远程密文条目解密后保存到本地
+  Future<void> _decryptDownloadRemoteCrypt(
+    BuildContext context,
+    FileManagerProvider provider,
+    List<String> virtualPaths,
+  ) async {
+    await BulkCryptActions.decryptDownloadRemoteCrypt(context, provider, virtualPaths);
+  }
+
+  /// 远程加密目录：选择本地文件，加密后上传到当前远程加密目录
+  Future<void> _encryptUploadRemoteCrypt(
+    BuildContext context,
+    FileManagerProvider provider,
+  ) async {
+    await BulkCryptActions.encryptUploadRemoteCrypt(context, provider);
+  }
+
   void _handleMenuAction(BuildContext context, String action, FileManagerProvider provider) async {
     switch (action) {
+      case 'encrypt_upload':
+        // 远程加密目录：选择本地文件，加密后上传到当前远程加密目录
+        await _encryptUploadRemoteCrypt(context, provider);
+        break;
       case 'file':
         final fileName = await FileActionDialogs.showTextInputDialog(
           context,

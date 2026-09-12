@@ -100,6 +100,10 @@ class ImageViewerScreen extends StatefulWidget {
   final List<dynamic>? siblingItems;
   final String? initialAssetId;
 
+  /// 加密文件的流式解密 URL（CryptStreamServer 的 http://127.0.0.1 地址）。
+  /// 非空时直接以 NetworkImage 渲染，跳过本地文件扫描/元信息读取（无本地文件）。
+  final String? streamUrl;
+
   const ImageViewerScreen({
     super.key,
     required this.imagePath,
@@ -107,6 +111,7 @@ class ImageViewerScreen extends StatefulWidget {
     this.siblingAssets,
     this.siblingItems,
     this.initialAssetId,
+    this.streamUrl,
   });
 
   @override
@@ -149,6 +154,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   void _findSiblings() {
+    // 流式解密 URL（加密文件）没有本地目录，直接作为单张图片展示
+    if (widget.streamUrl != null) {
+      _imageList = [widget.imagePath];
+      _currentIndex = 0;
+      return;
+    }
+
     if (widget.siblingItems != null && widget.siblingItems!.isNotEmpty) {
       _currentIndex = widget.siblingItems!.indexWhere((e) {
         if (e is AssetEntity) return e.id == widget.initialAssetId;
@@ -336,6 +348,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 获取当前图片的 File 对象
   File? _getCurrentFile() {
+    // 流式解密 URL 没有本地文件，所有依赖本地文件的操作应安全降级为 no-op
+    if (widget.streamUrl != null) return null;
+
     if (widget.siblingItems != null &&
         _currentIndex < widget.siblingItems!.length) {
       final item = widget.siblingItems![_currentIndex];
@@ -1002,6 +1017,36 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     File? imgFile;
                     Uint8List? thumbData;
                     String tagKey = 'img_$index';
+
+                    // 加密图片：直接以 NetworkImage 渲染流式解密 URL
+                    if (widget.streamUrl != null) {
+                      return PhotoViewGalleryPageOptions.customChild(
+                        child: Transform.rotate(
+                          angle: _rotation,
+                          child: Image(
+                            image: NetworkImage(widget.streamUrl!),
+                            fit: BoxFit.contain,
+                            loadingBuilder: (ctx, child, loading) {
+                              if (loading == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white70,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        initialScale: PhotoViewComputedScale.contained,
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.covered * 4,
+                        heroAttributes: const PhotoViewHeroAttributes(tag: 'crypt_stream'),
+                        onTapUp: (context, details, controllerValue) {
+                          setState(() {
+                            _showUI = !_showUI;
+                          });
+                        },
+                      );
+                    }
 
                     if (widget.siblingItems != null) {
                       final item = widget.siblingItems![index];

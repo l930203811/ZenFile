@@ -20,6 +20,9 @@ class WebdavDebugLog {
   static const int _maxBytes = 2 * 1024 * 1024;
 
   /// 总开关。排查完毕可在发布前置 false（保留代码便于下次排查）。
+  ///
+  /// 排查远程加密（cryptremote）播放问题期间曾临时打开，问题已解决并改回 false。
+  /// 下次排查时置 true 即可，日志会写到 [filePath]。
   static bool enabled = false;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。

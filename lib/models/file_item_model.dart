@@ -18,6 +18,12 @@ class FileItemModel {
 
   bool get isRemote => remoteSource != null;
 
+  /// 用于图标/类型判断的显示路径。
+  /// 远程加密条目的 [path] 是密文虚拟路径（如 `cryptremote://conn|/a/b/cipherName`），
+  /// 直接用 [path] 取扩展名会得到 base32 密文扩展名，导致图标全部显示为未知格式。
+  /// 此时 [name] 是解密后的真实文件名，因此类型判断应使用 [displayPath]。
+  String get displayPath => path.startsWith('cryptremote://') ? name : path;
+
   FileItemModel({
     required this.entity,
     required this.name,

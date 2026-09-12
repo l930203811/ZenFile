@@ -120,7 +120,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   // Utilities
   bool _isMuted = false;
-  int _repeatMode = 0; // 0=none, 1=one, 2=all
+  // Playback mode: 0=sequential, 1=list loop, 2=single loop, 3=shuffle
+  int _playbackMode = 0;
+  int _repeatMode = 0; // 0=none, 1=one, 2=all (derived from _playbackMode)
+  bool _isShuffled = false;
+  List<int> _shuffleQueue = const [];
+  int _shufflePos = 0;
   int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
   int _aspectRatioMode = 0; // 0=原始比例, 1=拉伸填充, 2=居中, 3=填充屏幕, 4=16:9, 5=4:3, 6=自定义
   double _customAspectRatio = 16 / 9;
@@ -1139,10 +1144,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     player.stream.completed.listen((v) {
       if (!v || !mounted) return;
       _clearPlaybackPosition();
-      if (_repeatMode == 1 || _repeatMode == 2) {
-        player.seek(Duration.zero);
-        player.play();
-      }
+      _handlePlaybackCompleted();
     });
   }
 
@@ -1961,15 +1963,148 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   void _onNext() {
-    final playlistLength = _effectivePlaylist?.length ?? widget.assetPlaylist?.length ?? 0;
-    if (_currentIndex + 1 < playlistLength) {
-      _playAtIndex(_currentIndex + 1);
+    final len = _playlistLength;
+    if (len == 0) return;
+    if (_isShuffled) {
+      if (_shuffleQueue.isEmpty) _buildShuffleQueue();
+      _shufflePos++;
+      if (_shufflePos >= _shuffleQueue.length) {
+        _buildShuffleQueue();
+        _shufflePos = 1;
+      }
+      _playAtIndex(_shuffleQueue[_shufflePos]);
+    } else {
+      if (_currentIndex + 1 < len) {
+        _playAtIndex(_currentIndex + 1);
+      } else if (_playbackMode == 1) {
+        // list loop: wrap to first
+        _playAtIndex(0);
+      }
     }
   }
 
   void _onPrevious() {
+    if (_isShuffled) {
+      if (_shuffleQueue.isEmpty) _buildShuffleQueue();
+      if (_shufflePos > 0) {
+        _shufflePos--;
+        _playAtIndex(_shuffleQueue[_shufflePos]);
+      }
+      return;
+    }
     if (_currentIndex - 1 >= 0) {
       _playAtIndex(_currentIndex - 1);
+    }
+  }
+
+  // ─── Playback mode (sequential / list loop / single loop / shuffle) ───
+
+  int get _playlistLength => _effectivePlaylist?.length ?? widget.assetPlaylist?.length ?? 0;
+
+  void _buildShuffleQueue() {
+    final len = _playlistLength;
+    if (len == 0) return;
+    _shuffleQueue = List.generate(len, (i) => i);
+    _shuffleQueue.shuffle();
+    // Move current video to front so it plays now, rest is shuffled
+    _shuffleQueue.remove(_currentIndex);
+    _shuffleQueue.insert(0, _currentIndex);
+    _shufflePos = 0;
+  }
+
+  /// Map unified playback mode to _repeatMode / _isShuffled (same scheme as audio player).
+  void _applyPlaybackMode(int mode) {
+    switch (mode) {
+      case 0: // sequential
+        _repeatMode = 0;
+        _isShuffled = false;
+        break;
+      case 1: // list loop
+        _repeatMode = 2;
+        _isShuffled = false;
+        break;
+      case 2: // single loop
+        _repeatMode = 1;
+        _isShuffled = false;
+        break;
+      case 3: // shuffle
+        _repeatMode = 0;
+        _isShuffled = true;
+        _buildShuffleQueue();
+        break;
+    }
+  }
+
+  void _cyclePlaybackMode() {
+    final l10n = L10n.of(context);
+    setState(() {
+      _playbackMode = (_playbackMode + 1) % 4;
+      _applyPlaybackMode(_playbackMode);
+    });
+    final String message;
+    switch (_playbackMode) {
+      case 0:
+        message = l10n.ui_play_mode_sequential;
+        break;
+      case 1:
+        message = l10n.ui_play_mode_list_loop;
+        break;
+      case 2:
+        message = l10n.ui_play_mode_single_loop;
+        break;
+      case 3:
+      default:
+        message = l10n.ui_play_mode_shuffle;
+        break;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+    _showControls();
+  }
+
+  /// Called when current video finishes. Decides next action based on playback mode.
+  void _handlePlaybackCompleted() {
+    final len = _playlistLength;
+    if (len <= 1) {
+      // Only one video: single loop replays, otherwise stop
+      if (_playbackMode == 2) {
+        player.seek(Duration.zero);
+        player.play();
+      }
+      return;
+    }
+
+    switch (_playbackMode) {
+      case 0: // sequential: play next, stop at last
+        if (_currentIndex + 1 < len) {
+          _playAtIndex(_currentIndex + 1);
+        }
+        break;
+      case 1: // list loop: play next, wrap to first
+        _playAtIndex((_currentIndex + 1) % len);
+        break;
+      case 2: // single loop: replay current
+        player.seek(Duration.zero);
+        player.play();
+        break;
+      case 3: // shuffle: play next shuffled index
+        if (_shuffleQueue.isEmpty) _buildShuffleQueue();
+        _shufflePos++;
+        if (_shufflePos >= _shuffleQueue.length) {
+          // End of shuffle queue: rebuild and start from beginning
+          _buildShuffleQueue();
+          _shufflePos = 1; // skip current (at index 0)
+        }
+        final nextIndex = _shuffleQueue[_shufflePos];
+        _playAtIndex(nextIndex);
+        break;
     }
   }
 
@@ -2794,7 +2929,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     isFullScreen: _isFullScreen,
                     isLocked: false,
                     isMuted: _isMuted,
-                    repeatMode: _repeatMode,
+                    repeatMode: _playbackMode,
                     rotationTurns: _rotationTurns,
                     aspectRatioMode: _aspectRatioMode,
                     onChanged: (v) => setState(() => _sliderValue = v),
@@ -2846,10 +2981,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       }
                       _showControls();
                     },
-                    onToggleRepeat: () {
-                      setState(() => _repeatMode = (_repeatMode + 1) % 3);
-                      _showControls();
-                    },
+                    onToggleRepeat: _cyclePlaybackMode,
                     onRotate: () {
                       setState(() => _rotationTurns = (_rotationTurns + 1) % 4);
                       _showControls();

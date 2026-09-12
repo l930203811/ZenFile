@@ -907,6 +907,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.0"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      name: mobile_scanner
+      sha256: "6b943ee30e7d9fa6bcab4238b6428e8df223be3731b9b75446fe8781dbd2286f"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "7.4.1"
   nested:
     dependency: transitive
     description:

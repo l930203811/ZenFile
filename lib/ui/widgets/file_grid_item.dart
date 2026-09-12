@@ -21,6 +21,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'file_action_dialogs.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
+import 'unknown_file_icon.dart';
 import 'remote_cloud_badge.dart';
 
 class FileGridItem extends StatelessWidget {
@@ -50,8 +51,9 @@ class FileGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final iconColor = FileUtils.getColorForFile(file.path, context);
-    final isArchive = FileUtils.isArchive(file.path);
+    final displayPath = file.displayPath;
+    final iconColor = FileUtils.getColorForFile(displayPath, context);
+    final isArchive = FileUtils.isArchive(displayPath);
     final isHighlighted = context.select<FileManagerProvider, bool>(
       (p) =>
           p.forceHighlightedPaths.contains(file.path) ||
@@ -246,6 +248,9 @@ class FileGridItem extends StatelessWidget {
                       isArchive: isArchive,
                       openWith: !file.isDirectory,
                       showShare: !file.isRemote,
+                      // 需传 filePath 才会显示加/解密项；远程加密文件据此显示「解密下载」
+                      filePath: file.path,
+                      isEncrypted: file.isEncrypted,
                     );
                   },
                 ),
@@ -308,6 +313,8 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   Uint8List? _apkIcon;
   Uint8List? _remoteThumb; // 远程文件缩略图
 
+  String get _displayPath => widget.file.displayPath;
+
   @override
   void initState() {
     super.initState();
@@ -320,10 +327,10 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = widget.file.path.toLowerCase();
-      if (FileUtils.isVideo(widget.file.path)) {
+      final lowerPath = _displayPath.toLowerCase();
+      if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
-      } else if (FileUtils.isAudio(widget.file.path)) {
+      } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') ||
           lowerPath.endsWith('.xapk') ||
@@ -358,10 +365,10 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = widget.file.path.toLowerCase();
-      if (FileUtils.isVideo(widget.file.path)) {
+      final lowerPath = _displayPath.toLowerCase();
+      if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
-      } else if (FileUtils.isAudio(widget.file.path)) {
+      } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') ||
           lowerPath.endsWith('.xapk') ||
@@ -465,6 +472,9 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       final activeTab = provider.activeTab;
       if (activeTab.remoteClient == null) return;
       final client = activeTab.remoteClient!;
+      // 远程加密条目 [path] 是密文虚拟路径（cryptremote://…），远程客户端只认后端密文全路径，
+      // 故下载必须用 [remoteSource.path]（与 provider 里 download/copy 的统一写法保持一致）。
+      final dlPath = widget.file.remoteSource?.path ?? widget.file.path;
 
       // 缩略图缓存目录（已迁移至 .nomedia 下，避免被媒体库索引）
       final thumbDir = await MediaThumbnailService.getThumbDir();
@@ -483,9 +493,9 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (await thumbFile.exists()) {
         final bytes = await thumbFile.readAsBytes();
         if (mounted && bytes.isNotEmpty) {
-          if (FileUtils.isVideo(widget.file.path)) {
+          if (FileUtils.isVideo(_displayPath)) {
             setState(() => _videoThumb = bytes);
-          } else if (FileUtils.isAudio(widget.file.path)) {
+          } else if (FileUtils.isAudio(_displayPath)) {
             setState(() => _audioThumb = bytes);
           } else {
             setState(() => _remoteThumb = bytes);
@@ -504,14 +514,14 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       try {
         // 视频/音频只需下载头部 2MB 即可由 MediaMetadataRetriever 提取缩略图/封面
         // 图片/SVG 需要完整文件用于直接显示
-        final isVideo = FileUtils.isVideo(widget.file.path);
-        final isAudio = FileUtils.isAudio(widget.file.path);
+        final isVideo = FileUtils.isVideo(_displayPath);
+        final isAudio = FileUtils.isAudio(_displayPath);
         if (isVideo || isAudio) {
           // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
           await MediaThumbnailService.withRemoteThrottle(() async {
             try {
               await client.downloadRange(
-                widget.file.path,
+                dlPath,
                 tempPath,
                 0,
                 2 * 1024 * 1024,
@@ -519,11 +529,11 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
             } catch (e) {
               // 部分服务器/客户端不支持 range 下载，回退到完整下载
               debugPrint('downloadRange 失败，回退完整下载: $e');
-              await client.downloadFile(widget.file.path, tempPath, (_) {});
+              await client.downloadFile(dlPath, tempPath, (_) {});
             }
           });
         } else {
-          await client.downloadFile(widget.file.path, tempPath, (_) {});
+          await client.downloadFile(dlPath, tempPath, (_) {});
         }
 
         // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
@@ -564,7 +574,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
               if ((tb == null || tb.isEmpty) &&
                   widget.file.size <= 100 * 1024 * 1024) {
                 try {
-                  await client.downloadFile(widget.file.path, tempPath, (_) {});
+                  await client.downloadFile(dlPath, tempPath, (_) {});
                   tb = await MediaThumbnailService.generateVideoThumbnail(
                     tempPath,
                   );
@@ -577,7 +587,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
             await thumbFile.writeAsBytes(thumbBytes, flush: true);
             if (mounted) setState(() => _videoThumb = thumbBytes);
           }
-        } else if (FileUtils.isAudio(widget.file.path)) {
+        } else if (FileUtils.isAudio(_displayPath)) {
           // 音频缩略图：通过原生 MediaMetadataRetriever 提取内嵌封面
           final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(
             tempPath,
@@ -591,9 +601,9 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         if (await thumbFile.exists()) {
           final bytes = await thumbFile.readAsBytes();
           if (mounted && bytes.isNotEmpty) {
-            if (FileUtils.isVideo(widget.file.path)) {
+            if (FileUtils.isVideo(_displayPath)) {
               setState(() => _videoThumb = bytes);
-            } else if (FileUtils.isAudio(widget.file.path)) {
+            } else if (FileUtils.isAudio(_displayPath)) {
               setState(() => _audioThumb = bytes);
             } else {
               setState(() => _remoteThumb = bytes);
@@ -613,7 +623,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   /// 安装包用安卓机器人图标；图片/视频/音频用各自类型图标并标注格式（MP4/MP3/JPG 等）。
   /// 仅当缩略图不可用时调用——一旦拿到缩略图，上层已优先返回缩略图。
   Widget _noThumbIcon() {
-    final path = widget.file.path;
+    final path = _displayPath;
     final color = widget.iconColor;
     final scale = widget.iconScale;
     if (FileUtils.isInstallPackage(path)) {
@@ -648,7 +658,8 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         iconScale: scale,
       );
     }
-    return Icon(FileUtils.getIconForFile(path), color: color, size: 28 * scale);
+    // 未知格式：灰色文件图标 + 中间问号
+    return UnknownFileIcon(size: 28 * scale);
   }
 
   @override
@@ -658,14 +669,14 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         // 远程文件额外受「远程媒体缩略图」开关控制
         (!widget.file.isRemote ||
             PreferencesService.getRemoteMediaThumbnailPreview());
-    final isImg = FileUtils.isImage(widget.file.path);
-    final isVid = FileUtils.isVideo(widget.file.path);
-    final isAud = FileUtils.isAudio(widget.file.path);
+    final isImg = FileUtils.isImage(_displayPath);
+    final isVid = FileUtils.isVideo(_displayPath);
+    final isAud = FileUtils.isAudio(_displayPath);
     final isApk =
-        widget.file.path.toLowerCase().endsWith('.apk') ||
-        widget.file.path.toLowerCase().endsWith('.xapk') ||
-        widget.file.path.toLowerCase().endsWith('.apks') ||
-        widget.file.path.toLowerCase().endsWith('.apkm');
+        _displayPath.toLowerCase().endsWith('.apk') ||
+        _displayPath.toLowerCase().endsWith('.xapk') ||
+        _displayPath.toLowerCase().endsWith('.apks') ||
+        _displayPath.toLowerCase().endsWith('.apkm');
 
     if (widget.isSelected) {
       return Icon(
@@ -676,19 +687,19 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     }
 
     // 压缩包：显示带格式标签的自定义图标
-    if (FileUtils.isArchive(widget.file.path)) {
+    if (FileUtils.isArchive(_displayPath)) {
       return ArchiveTypeIcon(
-        label: FileUtils.getArchiveTypeLabel(widget.file.path),
+        label: FileUtils.getArchiveTypeLabel(_displayPath),
         color: widget.iconColor,
         iconScale: widget.iconScale,
       );
     }
 
     // 文档：显示带格式标签的自定义图标
-    if (FileUtils.isDocument(widget.file.path)) {
+    if (FileUtils.isDocument(_displayPath)) {
       return FileTypeIcon(
-        icon: FileUtils.getIconForFile(widget.file.path),
-        label: FileUtils.getDocumentTypeLabel(widget.file.path),
+        icon: FileUtils.getIconForFile(_displayPath),
+        label: FileUtils.getDocumentTypeLabel(_displayPath),
         color: widget.iconColor,
         iconScale: widget.iconScale,
       );
@@ -698,7 +709,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: widget.iconScale,
         );
@@ -720,7 +731,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
 
     if (isImg && widget.file.size > 16) {
       // SVG 需要特殊处理（支持本地和远程）
-      if (widget.file.path.toLowerCase().endsWith('.svg')) {
+      if (_displayPath.toLowerCase().endsWith('.svg')) {
         // 远程 SVG 使用已下载的缓存字节
         if (widget.file.isRemote && _remoteThumb != null) {
           return SvgPicture.memory(
@@ -728,7 +739,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
             fit: BoxFit.cover,
             placeholderBuilder: (context) => FileTypeIcon(
               icon: Broken.image,
-              label: FileUtils.getImageTypeLabel(widget.file.path),
+              label: FileUtils.getImageTypeLabel(_displayPath),
               color: widget.iconColor,
               iconScale: widget.iconScale,
             ),
@@ -739,13 +750,13 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           fit: BoxFit.cover,
           placeholderBuilder: (context) => FileTypeIcon(
             icon: Broken.image,
-            label: FileUtils.getImageTypeLabel(widget.file.path),
+            label: FileUtils.getImageTypeLabel(_displayPath),
             color: widget.iconColor,
             iconScale: widget.iconScale,
           ),
         );
       }
-      if (widget.file.path.toLowerCase().endsWith('.avif')) {
+      if (_displayPath.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
           File(widget.file.path),
           fit: BoxFit.cover,
@@ -753,7 +764,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           height: double.infinity,
           errorBuilder: (context, error, stackTrace) => FileTypeIcon(
             icon: Broken.image,
-            label: FileUtils.getImageTypeLabel(widget.file.path),
+            label: FileUtils.getImageTypeLabel(_displayPath),
             color: widget.iconColor,
             iconScale: widget.iconScale,
           ),
@@ -770,7 +781,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           cacheHeight: 160,
           errorBuilder: (context, error, stackTrace) => FileTypeIcon(
             icon: Broken.image,
-            label: FileUtils.getImageTypeLabel(widget.file.path),
+            label: FileUtils.getImageTypeLabel(_displayPath),
             color: widget.iconColor,
             iconScale: widget.iconScale,
           ),
@@ -784,7 +795,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         cacheWidth: 160,
         errorBuilder: (context, error, stackTrace) => FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: widget.iconScale,
         ),
@@ -792,14 +803,14 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     }
 
     // SVG 文件（当 isImg 返回 false 时的兜底处理）
-    if (widget.file.path.toLowerCase().endsWith('.svg')) {
+    if (_displayPath.toLowerCase().endsWith('.svg')) {
       if (widget.file.isRemote && _remoteThumb != null) {
         return SvgPicture.memory(
           _remoteThumb!,
           fit: BoxFit.cover,
           placeholderBuilder: (context) => FileTypeIcon(
             icon: Broken.image,
-            label: FileUtils.getImageTypeLabel(widget.file.path),
+            label: FileUtils.getImageTypeLabel(_displayPath),
             color: widget.iconColor,
             iconScale: widget.iconScale,
           ),
@@ -810,7 +821,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         fit: BoxFit.cover,
         placeholderBuilder: (context) => FileTypeIcon(
           icon: Broken.image,
-          label: FileUtils.getImageTypeLabel(widget.file.path),
+          label: FileUtils.getImageTypeLabel(_displayPath),
           color: widget.iconColor,
           iconScale: widget.iconScale,
         ),
