@@ -6297,6 +6297,67 @@ class L10nZh extends L10n {
   String get vault_config_password => '密码配置';
 
   @override
+  String get cl200_notice => '版本与包名变更（务必阅读）';
+
+  @override
+  String get cl200_notice_1 =>
+      '版本号升级至 2.0.0，包名（应用 ID）由 com.sequl.zenfile 变更为 com.sequl.zenfile2。2.0 会作为独立应用安装，不会覆盖旧的 1.x 版本。';
+
+  @override
+  String get cl200_notice_2 =>
+      '变更原因：保险箱的加密架构在本版本大改，已不再兼容旧版保险箱数据。改用新包名可让新旧两版并存，避免覆盖安装导致旧版保险箱数据丢失。';
+
+  @override
+  String get cl200_notice_3 =>
+      '请先自行备份：在旧版中打开「保险箱 → 备份/恢复 → 导出备份」，再在新版中打开「保险箱 → 备份/恢复 → 导入备份」。';
+
+  @override
+  String get cl200_notice_4 =>
+      '确认新版数据完整无误后再卸载旧版。沙盒加密文件存放在应用私有目录，卸载应用会一并清除，切勿先卸载。';
+
+  @override
+  String get cl200_notice_5 => '包名变更后，Shizuku 等按包名授予的权限需要在新版中重新授权一次。';
+
+  @override
+  String get cl200_vault => '保险箱';
+
+  @override
+  String get cl200_vault_1 => '多密码档案：可为不同目录绑定不同的密码档案，加解密全部在本机完成，主密码与加盐只保存在本机。';
+
+  @override
+  String get cl200_vault_2 =>
+      '远程加密目录：可直接关联网盘上的 rclone crypt 加密目录，客户端解密后以明文列出，音视频支持流式播放，无需整体下载。';
+
+  @override
+  String get cl200_vault_3 =>
+      '原地加密：把文件「就地」加密，位置与目录结构保持不变，浏览页会加上🔐徽标，其它应用只能看到密文文件名。';
+
+  @override
+  String get cl200_vault_4 => '帮助页：保险箱首页右上角的「已激活」已换成「帮助」入口，里面有功能亮点、基本操作与兼容性说明。';
+
+  @override
+  String get cl200_settings => '设置调整';
+
+  @override
+  String get cl200_settings_1 => '原保险箱首页的「安全设置」已迁移到「设置」页面，入口更统一。';
+
+  @override
+  String get cl200_fixes => '修复与优化';
+
+  @override
+  String get cl200_fix_1 => '修复浏览页远程加密目录的文件图标全部显示为未知格式的问题。';
+
+  @override
+  String get cl200_fix_2 =>
+      '修复远程加密音视频无法流式播放、图片无法渲染的问题（部分网盘不返回文件大小，会导致解密大小为 0）。';
+
+  @override
+  String get cl200_fix_3 => '修复远程加密目录缩略图无法加载的问题。';
+
+  @override
+  String get cl200_fix_4 => '优化流式传输性能：去掉每块的冗余网络请求，远程加密媒体的播放与拖动体验大幅提升。';
+
+  @override
   String get vault_help => '帮助';
 
   @override
@@ -6969,6 +7030,12 @@ class L10nZh extends L10n {
   String ui_backup_confirm_message(String path) {
     return '将备份到以下路径：\n$path\n\n是否继续？';
   }
+
+  @override
+  String get ui_cancel_set_as_home => '取消设为首页';
+
+  @override
+  String get ui_unpin => '取消置顶';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -13232,6 +13299,66 @@ class L10nZhTw extends L10nZh {
   String get vault_config_password => '密碼配置';
 
   @override
+  String get cl200_notice => '版本與套件名稱變更（請務必閱讀）';
+
+  @override
+  String get cl200_notice_1 =>
+      '版本號升級至 2.0.0，套件名稱（應用程式 ID）由 com.sequl.zenfile 變更為 com.sequl.zenfile2。2.0 會以獨立應用程式安裝，不會覆蓋舊的 1.x 版本。';
+
+  @override
+  String get cl200_notice_2 =>
+      '變更原因：保險箱的加密架構在本版本大幅調整，已不再相容舊版保險箱資料。改用新套件名稱可讓新舊兩版並存，避免覆蓋安裝造成舊版保險箱資料遺失。';
+
+  @override
+  String get cl200_notice_3 =>
+      '請先自行備份：在舊版開啟「保險箱 → 備份/還原 → 匯出備份」，再到新版開啟「保險箱 → 備份/還原 → 匯入備份」。';
+
+  @override
+  String get cl200_notice_4 =>
+      '確認新版資料完整無誤後再移除舊版。沙盒加密檔案存放於應用程式私有目錄，移除應用程式時會一併清除，切勿先移除。';
+
+  @override
+  String get cl200_notice_5 => '套件名稱變更後，Shizuku 等依套件名稱授予的權限需要在新版重新授權一次。';
+
+  @override
+  String get cl200_vault => '保險箱';
+
+  @override
+  String get cl200_vault_1 => '多組密碼設定：可為不同目錄綁定不同的密碼設定，加解密全部在本機完成，主密碼與加鹽只儲存在本機。';
+
+  @override
+  String get cl200_vault_2 =>
+      '遠端加密目錄：可直接關聯雲端上的 rclone crypt 加密目錄，由用戶端解密後以明文列出，影音支援串流播放，無須整包下載。';
+
+  @override
+  String get cl200_vault_3 =>
+      '原地加密：把檔案「就地」加密，位置與目錄結構維持不變，瀏覽頁會加上🔐徽標，其他應用程式只會看到密文檔名。';
+
+  @override
+  String get cl200_vault_4 => '說明頁：保險箱首頁右上角的「已啟用」已改成「說明」入口，內含功能亮點、基本操作與相容性說明。';
+
+  @override
+  String get cl200_settings => '設定調整';
+
+  @override
+  String get cl200_settings_1 => '原保險箱首頁的「安全性設定」已移至「設定」頁面，入口更統一。';
+
+  @override
+  String get cl200_fixes => '修復與最佳化';
+
+  @override
+  String get cl200_fix_1 => '修復瀏覽頁遠端加密目錄的檔案圖示全部顯示為未知格式的問題。';
+
+  @override
+  String get cl200_fix_2 => '修復遠端加密影音無法串流播放、圖片無法顯示的問題（部分雲端不回傳檔案大小，會導致解密大小為 0）。';
+
+  @override
+  String get cl200_fix_3 => '修復遠端加密目錄縮圖無法載入的問題。';
+
+  @override
+  String get cl200_fix_4 => '最佳化串流效能：移除每個分塊多餘的網路請求，遠端加密媒體的播放與拖曳體驗大幅提升。';
+
+  @override
   String get vault_help => '說明';
 
   @override
@@ -13904,4 +14031,10 @@ class L10nZhTw extends L10nZh {
   String ui_backup_confirm_message(String path) {
     return '將備份到以下路徑：\n$path\n\n是否繼續？';
   }
+
+  @override
+  String get ui_cancel_set_as_home => '取消設為首頁';
+
+  @override
+  String get ui_unpin => '取消置頂';
 }

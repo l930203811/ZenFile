@@ -6763,6 +6763,78 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl200_notice": "版本與套件名稱變更（請務必閱讀）",
+  "@cl200_notice": {
+    "description": "changelog 2.0.0: cl200_notice"
+  },
+  "cl200_notice_1": "版本號升級至 2.0.0，套件名稱（應用程式 ID）由 com.sequl.zenfile 變更為 com.sequl.zenfile2。2.0 會以獨立應用程式安裝，不會覆蓋舊的 1.x 版本。",
+  "@cl200_notice_1": {
+    "description": "changelog 2.0.0: cl200_notice_1"
+  },
+  "cl200_notice_2": "變更原因：保險箱的加密架構在本版本大幅調整，已不再相容舊版保險箱資料。改用新套件名稱可讓新舊兩版並存，避免覆蓋安裝造成舊版保險箱資料遺失。",
+  "@cl200_notice_2": {
+    "description": "changelog 2.0.0: cl200_notice_2"
+  },
+  "cl200_notice_3": "請先自行備份：在舊版開啟「保險箱 → 備份/還原 → 匯出備份」，再到新版開啟「保險箱 → 備份/還原 → 匯入備份」。",
+  "@cl200_notice_3": {
+    "description": "changelog 2.0.0: cl200_notice_3"
+  },
+  "cl200_notice_4": "確認新版資料完整無誤後再移除舊版。沙盒加密檔案存放於應用程式私有目錄，移除應用程式時會一併清除，切勿先移除。",
+  "@cl200_notice_4": {
+    "description": "changelog 2.0.0: cl200_notice_4"
+  },
+  "cl200_notice_5": "套件名稱變更後，Shizuku 等依套件名稱授予的權限需要在新版重新授權一次。",
+  "@cl200_notice_5": {
+    "description": "changelog 2.0.0: cl200_notice_5"
+  },
+  "cl200_vault": "保險箱",
+  "@cl200_vault": {
+    "description": "changelog 2.0.0: cl200_vault"
+  },
+  "cl200_vault_1": "多組密碼設定：可為不同目錄綁定不同的密碼設定，加解密全部在本機完成，主密碼與加鹽只儲存在本機。",
+  "@cl200_vault_1": {
+    "description": "changelog 2.0.0: cl200_vault_1"
+  },
+  "cl200_vault_2": "遠端加密目錄：可直接關聯雲端上的 rclone crypt 加密目錄，由用戶端解密後以明文列出，影音支援串流播放，無須整包下載。",
+  "@cl200_vault_2": {
+    "description": "changelog 2.0.0: cl200_vault_2"
+  },
+  "cl200_vault_3": "原地加密：把檔案「就地」加密，位置與目錄結構維持不變，瀏覽頁會加上🔐徽標，其他應用程式只會看到密文檔名。",
+  "@cl200_vault_3": {
+    "description": "changelog 2.0.0: cl200_vault_3"
+  },
+  "cl200_vault_4": "說明頁：保險箱首頁右上角的「已啟用」已改成「說明」入口，內含功能亮點、基本操作與相容性說明。",
+  "@cl200_vault_4": {
+    "description": "changelog 2.0.0: cl200_vault_4"
+  },
+  "cl200_settings": "設定調整",
+  "@cl200_settings": {
+    "description": "changelog 2.0.0: cl200_settings"
+  },
+  "cl200_settings_1": "原保險箱首頁的「安全性設定」已移至「設定」頁面，入口更統一。",
+  "@cl200_settings_1": {
+    "description": "changelog 2.0.0: cl200_settings_1"
+  },
+  "cl200_fixes": "修復與最佳化",
+  "@cl200_fixes": {
+    "description": "changelog 2.0.0: cl200_fixes"
+  },
+  "cl200_fix_1": "修復瀏覽頁遠端加密目錄的檔案圖示全部顯示為未知格式的問題。",
+  "@cl200_fix_1": {
+    "description": "changelog 2.0.0: cl200_fix_1"
+  },
+  "cl200_fix_2": "修復遠端加密影音無法串流播放、圖片無法顯示的問題（部分雲端不回傳檔案大小，會導致解密大小為 0）。",
+  "@cl200_fix_2": {
+    "description": "changelog 2.0.0: cl200_fix_2"
+  },
+  "cl200_fix_3": "修復遠端加密目錄縮圖無法載入的問題。",
+  "@cl200_fix_3": {
+    "description": "changelog 2.0.0: cl200_fix_3"
+  },
+  "cl200_fix_4": "最佳化串流效能：移除每個分塊多餘的網路請求，遠端加密媒體的播放與拖曳體驗大幅提升。",
+  "@cl200_fix_4": {
+    "description": "changelog 2.0.0: cl200_fix_4"
+  },
   "vault_help": "說明",
   "@vault_help": {
     "description": "vault help: vault_help"
@@ -7612,5 +7684,6 @@
       }
     }
   },
-  "vault_remote_encrypt": "遠端加密"
+  "ui_cancel_set_as_home": "取消設為首頁",
+  "ui_unpin": "取消置頂"
 }

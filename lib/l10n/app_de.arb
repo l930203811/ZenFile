@@ -6612,6 +6612,78 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl200_notice": "Änderung von Version und Paketnamen (bitte lesen)",
+  "@cl200_notice": {
+    "description": "changelog 2.0.0: cl200_notice"
+  },
+  "cl200_notice_1": "Die Version steigt auf 2.0.0 und der Paketname (Anwendungs-ID) wechselt von com.sequl.zenfile zu com.sequl.zenfile2. Version 2.0 wird als eigenständige App installiert und überschreibt 1.x nicht.",
+  "@cl200_notice_1": {
+    "description": "changelog 2.0.0: cl200_notice_1"
+  },
+  "cl200_notice_2": "Grund: Die Verschlüsselungsarchitektur des Tresors wurde überarbeitet und ist nicht mehr kompatibel mit Tresordaten aus älteren Versionen. Der neue Paketname lässt beide Versionen nebeneinander bestehen, damit eine überschreibende Installation keine alten Daten vernichtet.",
+  "@cl200_notice_2": {
+    "description": "changelog 2.0.0: cl200_notice_2"
+  },
+  "cl200_notice_3": "Sichere zuerst selbst: Öffne in der alten Version „Tresor → Sichern/Wiederherstellen → Backup exportieren\" und danach in der neuen Version „Tresor → Sichern/Wiederherstellen → Backup importieren\".",
+  "@cl200_notice_3": {
+    "description": "changelog 2.0.0: cl200_notice_3"
+  },
+  "cl200_notice_4": "Deinstalliere die alte Version erst, wenn du dich vergewissert hast, dass in der neuen alles vollständig ist. In der Sandbox verschlüsselte Dateien liegen im privaten App-Verzeichnis und werden beim Deinstallieren gelöscht, also niemals zuerst deinstallieren.",
+  "@cl200_notice_4": {
+    "description": "changelog 2.0.0: cl200_notice_4"
+  },
+  "cl200_notice_5": "Wegen des neuen Paketnamens müssen pro Paket erteilte Berechtigungen wie Shizuku in der neuen Version erneut erteilt werden.",
+  "@cl200_notice_5": {
+    "description": "changelog 2.0.0: cl200_notice_5"
+  },
+  "cl200_vault": "Tresor",
+  "@cl200_vault": {
+    "description": "changelog 2.0.0: cl200_vault"
+  },
+  "cl200_vault_1": "Mehrere Passwortprofile: Für jeden Ordner kann ein eigenes Passwortprofil gebunden werden. Ver- und Entschlüsselung laufen ausschließlich auf dem Gerät, Hauptpasswort und Salt bleiben dort.",
+  "@cl200_vault_1": {
+    "description": "changelog 2.0.0: cl200_vault_1"
+  },
+  "cl200_vault_2": "Entfernte verschlüsselte Ordner: Verknüpfe einen rclone-crypt-Ordner in der Cloud direkt; er wird auf dem Gerät entschlüsselt und mit Klarnamen gelistet. Audio und Video werden gestreamt, ein kompletter Download ist nicht nötig.",
+  "@cl200_vault_2": {
+    "description": "changelog 2.0.0: cl200_vault_2"
+  },
+  "cl200_vault_3": "Direkt am Ort verschlüsseln: Dateien werden an ihrem Platz verschlüsselt, Ort und Ordnerstruktur bleiben unverändert. Der Browser zeigt ein Schloss-Symbol, andere Apps sehen nur Chiffrenamen.",
+  "@cl200_vault_3": {
+    "description": "changelog 2.0.0: cl200_vault_3"
+  },
+  "cl200_vault_4": "Hilfeseite: Das Aktiviert-Abzeichen oben rechts im Tresor wurde durch einen Hilfe-Button ersetzt, der Funktionen, Bedienung und Kompatibilität erklärt.",
+  "@cl200_vault_4": {
+    "description": "changelog 2.0.0: cl200_vault_4"
+  },
+  "cl200_settings": "Änderungen in den Einstellungen",
+  "@cl200_settings": {
+    "description": "changelog 2.0.0: cl200_settings"
+  },
+  "cl200_settings_1": "Die Sicherheitseinstellungen der Tresor-Startseite sind in die Seite Einstellungen umgezogen.",
+  "@cl200_settings_1": {
+    "description": "changelog 2.0.0: cl200_settings_1"
+  },
+  "cl200_fixes": "Fehlerbehebungen und Verbesserungen",
+  "@cl200_fixes": {
+    "description": "changelog 2.0.0: cl200_fixes"
+  },
+  "cl200_fix_1": "Behoben: Im Browser wurden alle Dateien eines entfernten verschlüsselten Ordners mit dem Symbol für unbekanntes Format angezeigt.",
+  "@cl200_fix_1": {
+    "description": "changelog 2.0.0: cl200_fix_1"
+  },
+  "cl200_fix_2": "Behoben: Entfernt verschlüsselte Audio- und Videodateien ließen sich nicht streamen und Bilder nicht anzeigen, wenn ein Cloud-Dienst die Dateigröße nicht meldet und die entschlüsselte Größe dadurch 0 wurde.",
+  "@cl200_fix_2": {
+    "description": "changelog 2.0.0: cl200_fix_2"
+  },
+  "cl200_fix_3": "Behoben: In entfernten verschlüsselten Ordnern wurden keine Miniaturansichten geladen.",
+  "@cl200_fix_3": {
+    "description": "changelog 2.0.0: cl200_fix_3"
+  },
+  "cl200_fix_4": "Die Streaming-Leistung wurde verbessert, indem eine überflüssige Netzwerkanfrage pro Datenblock entfällt; Wiedergabe und Spulen von entfernt verschlüsselten Medien laufen deutlich flüssiger.",
+  "@cl200_fix_4": {
+    "description": "changelog 2.0.0: cl200_fix_4"
+  },
   "vault_help": "Hilfe",
   "@vault_help": {
     "description": "vault help: vault_help"
@@ -7461,5 +7533,6 @@
       }
     }
   },
-  "vault_remote_encrypt": "Remote-Verschlüsselung"
+  "ui_cancel_set_as_home": "Als Startseite entfernen",
+  "ui_unpin": "Loslösen"
 }

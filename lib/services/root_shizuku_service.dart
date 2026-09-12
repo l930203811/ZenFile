@@ -343,7 +343,8 @@ class RootShizukuService {
     if (sub != 'data' && !sub.startsWith('data/') && sub != 'obb' && !sub.startsWith('obb/')) {
       return false;
     }
-    return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
+    // ⚠️ 必须与 applicationId 一致（v2.0.0 起为 zenfile2）。
+    return !sub.startsWith('data/com.sequl.zenfile2') && !sub.startsWith('obb/com.sequl.zenfile2');
   }
 
   /// 复制文件/目录。

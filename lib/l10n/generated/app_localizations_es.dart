@@ -6677,6 +6677,75 @@ class L10nEs extends L10n {
   String get vault_config_password => 'Configuración de contraseña';
 
   @override
+  String get cl200_notice =>
+      'Cambio de versión y de nombre de paquete (lee esto)';
+
+  @override
+  String get cl200_notice_1 =>
+      'La versión pasa a 2.0.0 y el nombre del paquete (ID de aplicación) cambia de com.sequl.zenfile a com.sequl.zenfile2. La versión 2.0 se instala como una aplicación independiente y no sobrescribirá la 1.x.';
+
+  @override
+  String get cl200_notice_2 =>
+      'Motivo: la arquitectura de cifrado de la caja fuerte se ha rediseñado y ya no es compatible con los datos de versiones anteriores. Un nombre de paquete nuevo permite que ambas versiones convivan y evita que una instalación por encima destruya tus datos antiguos.';
+
+  @override
+  String get cl200_notice_3 =>
+      'Haz primero tu propia copia: en la versión antigua abre «Caja fuerte → Copia/Restaurar → Exportar copia» y después en la nueva «Caja fuerte → Copia/Restaurar → Importar copia».';
+
+  @override
+  String get cl200_notice_4 =>
+      'Desinstala la versión antigua solo cuando hayas comprobado que en la nueva está todo completo. Los archivos cifrados en zona aislada están en el directorio privado de la app y se borran al desinstalarla; nunca la desinstales primero.';
+
+  @override
+  String get cl200_notice_5 =>
+      'Al cambiar el nombre del paquete, los permisos concedidos por paquete como Shizuku deben volver a concederse en la versión nueva.';
+
+  @override
+  String get cl200_vault => 'Caja fuerte';
+
+  @override
+  String get cl200_vault_1 =>
+      'Varios perfiles de contraseña: puedes asignar un perfil distinto a cada carpeta. El cifrado y descifrado ocurren por completo en el dispositivo y la contraseña maestra y la sal nunca salen de él.';
+
+  @override
+  String get cl200_vault_2 =>
+      'Carpetas cifradas remotas: enlaza directamente una carpeta rclone crypt de tu nube; se descifra en el cliente y se lista con nombres normales, con reproducción en streaming de audio y vídeo y sin descargar el archivo completo.';
+
+  @override
+  String get cl200_vault_3 =>
+      'Cifrado en el lugar: los archivos se cifran donde están, así que la ubicación y la estructura de carpetas no cambian. El navegador muestra un icono de candado y otras aplicaciones solo ven nombres cifrados.';
+
+  @override
+  String get cl200_vault_4 =>
+      'Página de ayuda: el distintivo «Activada» de la esquina superior derecha se ha sustituido por un botón «Ayuda» que explica las funciones destacadas, el uso básico y la compatibilidad.';
+
+  @override
+  String get cl200_settings => 'Cambios en los ajustes';
+
+  @override
+  String get cl200_settings_1 =>
+      'Los ajustes de seguridad que estaban en la portada de la caja fuerte se han trasladado a la página «Ajustes».';
+
+  @override
+  String get cl200_fixes => 'Correcciones y mejoras';
+
+  @override
+  String get cl200_fix_1 =>
+      'Corregido: en el navegador, todos los archivos de una carpeta cifrada remota mostraban el icono de formato desconocido.';
+
+  @override
+  String get cl200_fix_2 =>
+      'Corregido: el audio y el vídeo cifrados remotos no se reproducían en streaming y las imágenes no se mostraban, lo que ocurría cuando un servicio en la nube no informa del tamaño y el tamaño descifrado quedaba en 0.';
+
+  @override
+  String get cl200_fix_3 =>
+      'Corregido: las miniaturas nunca se cargaban en las carpetas cifradas remotas.';
+
+  @override
+  String get cl200_fix_4 =>
+      'Mejorado el rendimiento del streaming eliminando una petición de red innecesaria por bloque; la reproducción y el desplazamiento de medios cifrados remotos son mucho más fluidos.';
+
+  @override
   String get vault_help => 'Ayuda';
 
   @override
@@ -7404,4 +7473,10 @@ class L10nEs extends L10n {
   String ui_backup_confirm_message(String path) {
     return 'Se hará copia de seguridad en la siguiente ruta:\n$path\n\n¿Continuar?';
   }
+
+  @override
+  String get ui_cancel_set_as_home => 'Quitar como inicio';
+
+  @override
+  String get ui_unpin => 'Desanclar';
 }

@@ -6660,6 +6660,75 @@ class L10nDe extends L10n {
   String get vault_config_password => 'Passwortkonfiguration';
 
   @override
+  String get cl200_notice =>
+      'Änderung von Version und Paketnamen (bitte lesen)';
+
+  @override
+  String get cl200_notice_1 =>
+      'Die Version steigt auf 2.0.0 und der Paketname (Anwendungs-ID) wechselt von com.sequl.zenfile zu com.sequl.zenfile2. Version 2.0 wird als eigenständige App installiert und überschreibt 1.x nicht.';
+
+  @override
+  String get cl200_notice_2 =>
+      'Grund: Die Verschlüsselungsarchitektur des Tresors wurde überarbeitet und ist nicht mehr kompatibel mit Tresordaten aus älteren Versionen. Der neue Paketname lässt beide Versionen nebeneinander bestehen, damit eine überschreibende Installation keine alten Daten vernichtet.';
+
+  @override
+  String get cl200_notice_3 =>
+      'Sichere zuerst selbst: Öffne in der alten Version „Tresor → Sichern/Wiederherstellen → Backup exportieren\" und danach in der neuen Version „Tresor → Sichern/Wiederherstellen → Backup importieren\".';
+
+  @override
+  String get cl200_notice_4 =>
+      'Deinstalliere die alte Version erst, wenn du dich vergewissert hast, dass in der neuen alles vollständig ist. In der Sandbox verschlüsselte Dateien liegen im privaten App-Verzeichnis und werden beim Deinstallieren gelöscht, also niemals zuerst deinstallieren.';
+
+  @override
+  String get cl200_notice_5 =>
+      'Wegen des neuen Paketnamens müssen pro Paket erteilte Berechtigungen wie Shizuku in der neuen Version erneut erteilt werden.';
+
+  @override
+  String get cl200_vault => 'Tresor';
+
+  @override
+  String get cl200_vault_1 =>
+      'Mehrere Passwortprofile: Für jeden Ordner kann ein eigenes Passwortprofil gebunden werden. Ver- und Entschlüsselung laufen ausschließlich auf dem Gerät, Hauptpasswort und Salt bleiben dort.';
+
+  @override
+  String get cl200_vault_2 =>
+      'Entfernte verschlüsselte Ordner: Verknüpfe einen rclone-crypt-Ordner in der Cloud direkt; er wird auf dem Gerät entschlüsselt und mit Klarnamen gelistet. Audio und Video werden gestreamt, ein kompletter Download ist nicht nötig.';
+
+  @override
+  String get cl200_vault_3 =>
+      'Direkt am Ort verschlüsseln: Dateien werden an ihrem Platz verschlüsselt, Ort und Ordnerstruktur bleiben unverändert. Der Browser zeigt ein Schloss-Symbol, andere Apps sehen nur Chiffrenamen.';
+
+  @override
+  String get cl200_vault_4 =>
+      'Hilfeseite: Das Aktiviert-Abzeichen oben rechts im Tresor wurde durch einen Hilfe-Button ersetzt, der Funktionen, Bedienung und Kompatibilität erklärt.';
+
+  @override
+  String get cl200_settings => 'Änderungen in den Einstellungen';
+
+  @override
+  String get cl200_settings_1 =>
+      'Die Sicherheitseinstellungen der Tresor-Startseite sind in die Seite Einstellungen umgezogen.';
+
+  @override
+  String get cl200_fixes => 'Fehlerbehebungen und Verbesserungen';
+
+  @override
+  String get cl200_fix_1 =>
+      'Behoben: Im Browser wurden alle Dateien eines entfernten verschlüsselten Ordners mit dem Symbol für unbekanntes Format angezeigt.';
+
+  @override
+  String get cl200_fix_2 =>
+      'Behoben: Entfernt verschlüsselte Audio- und Videodateien ließen sich nicht streamen und Bilder nicht anzeigen, wenn ein Cloud-Dienst die Dateigröße nicht meldet und die entschlüsselte Größe dadurch 0 wurde.';
+
+  @override
+  String get cl200_fix_3 =>
+      'Behoben: In entfernten verschlüsselten Ordnern wurden keine Miniaturansichten geladen.';
+
+  @override
+  String get cl200_fix_4 =>
+      'Die Streaming-Leistung wurde verbessert, indem eine überflüssige Netzwerkanfrage pro Datenblock entfällt; Wiedergabe und Spulen von entfernt verschlüsselten Medien laufen deutlich flüssiger.';
+
+  @override
   String get vault_help => 'Hilfe';
 
   @override
@@ -7388,4 +7457,10 @@ class L10nDe extends L10n {
   String ui_backup_confirm_message(String path) {
     return 'Sicherung in folgenden Pfad:\n$path\n\nFortfahren?';
   }
+
+  @override
+  String get ui_cancel_set_as_home => 'Als Startseite entfernen';
+
+  @override
+  String get ui_unpin => 'Loslösen';
 }

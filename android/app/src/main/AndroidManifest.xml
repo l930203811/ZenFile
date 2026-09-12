@@ -168,7 +168,7 @@
 
         <provider
             android:name=".ZenFileDocumentsProvider"
-            android:authorities="com.sequl.zenfile.documents"
+            android:authorities="${applicationId}.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">

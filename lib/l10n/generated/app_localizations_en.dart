@@ -6605,6 +6605,74 @@ class L10nEn extends L10n {
   String get vault_config_password => 'Password Configuration';
 
   @override
+  String get cl200_notice => 'Version and package name change (please read)';
+
+  @override
+  String get cl200_notice_1 =>
+      'This release is 2.0.0 and the package name (application ID) changes from com.sequl.zenfile to com.sequl.zenfile2. Version 2.0 installs as a separate app and will not overwrite 1.x.';
+
+  @override
+  String get cl200_notice_2 =>
+      'Why: the vault encryption architecture has been reworked and is no longer compatible with vault data from older versions. A new package name lets both versions coexist, so an overwriting install cannot destroy your old vault data.';
+
+  @override
+  String get cl200_notice_3 =>
+      'Back up first: in the old version open Vault, then Backup / Restore, then Export backup; then in the new version open Vault, then Backup / Restore, then Import backup.';
+
+  @override
+  String get cl200_notice_4 =>
+      'Uninstall the old version only after you have confirmed the new one is complete. Sandbox-encrypted files live in the private app directory and are erased when the app is uninstalled, so never uninstall first.';
+
+  @override
+  String get cl200_notice_5 =>
+      'Because the package name changed, permissions granted per package such as Shizuku must be granted again in the new version.';
+
+  @override
+  String get cl200_vault => 'Vault';
+
+  @override
+  String get cl200_vault_1 =>
+      'Multiple password profiles: bind a different password profile to each folder. Encryption and decryption happen entirely on this device, and the master password and salt never leave it.';
+
+  @override
+  String get cl200_vault_2 =>
+      'Remote encrypted folders: link an rclone crypt folder on your cloud drive and browse it with plain names, with streaming playback for audio and video and no need to download the whole file.';
+
+  @override
+  String get cl200_vault_3 =>
+      'In-place encryption: files are encrypted where they are, so the location and folder structure stay unchanged. The browser adds a lock badge and other apps only see ciphertext names.';
+
+  @override
+  String get cl200_vault_4 =>
+      'Help page: the \"Activated\" badge in the top-right corner of the vault is replaced by a \"Help\" button that explains the highlights, basic operations and compatibility.';
+
+  @override
+  String get cl200_settings => 'Settings changes';
+
+  @override
+  String get cl200_settings_1 =>
+      'Security settings has moved from the vault home page to the Settings page, so every entry is now in one place.';
+
+  @override
+  String get cl200_fixes => 'Fixes and improvements';
+
+  @override
+  String get cl200_fix_1 =>
+      'Fixed all files in a remote encrypted folder showing the unknown-format icon in the browser.';
+
+  @override
+  String get cl200_fix_2 =>
+      'Fixed remote encrypted audio and video failing to stream and images failing to render, which happened when a cloud drive does not report the file size and the decrypted size became 0.';
+
+  @override
+  String get cl200_fix_3 =>
+      'Fixed thumbnails never loading in remote encrypted folders.';
+
+  @override
+  String get cl200_fix_4 =>
+      'Improved streaming performance by removing a redundant network request per chunk, making playback and seeking of remote encrypted media much smoother.';
+
+  @override
   String get vault_help => 'Help';
 
   @override
@@ -7320,4 +7388,10 @@ class L10nEn extends L10n {
   String ui_backup_confirm_message(String path) {
     return 'Will backup to the following path:\n$path\n\nContinue?';
   }
+
+  @override
+  String get ui_cancel_set_as_home => 'Unset as Home';
+
+  @override
+  String get ui_unpin => 'Unpin';
 }

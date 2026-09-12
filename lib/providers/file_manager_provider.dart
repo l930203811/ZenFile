@@ -4071,6 +4071,16 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 取消当前激活 pane 的首页设置
+  Future<void> clearHomeDirectory() async {
+    if (_activeTabIndex == 0) {
+      await PreferencesService.saveHomeDirectoryLeft('');
+    } else {
+      await PreferencesService.saveHomeDirectoryRight('');
+    }
+    notifyListeners();
+  }
+
   /// 跳转到当前激活 pane 的首页目录
   Future<void> goToHome() async {
     final home = homeDirectory;
@@ -4505,7 +4515,8 @@ class FileManagerProvider extends ChangeNotifier {
     // Do not treat them as restricted: using shell `cp` on /data/user/0/<pkg>/cache
     // fails on Android 10+ because the shell process lacks permission to read the
     // app's private data. Dart IO can read these files directly.
-    const packageName = 'com.sequl.zenfile';
+    // ⚠️ 必须与 android/app/build.gradle.kts 的 applicationId 一致（v2.0.0 起为 zenfile2）。
+    const packageName = 'com.sequl.zenfile2';
     final ownPrivateRoots = [
       '/data/data/$packageName',
       '/data/user/0/$packageName',
@@ -7602,8 +7613,8 @@ class FileManagerProvider extends ChangeNotifier {
     final sub = path.substring('/storage/emulated/0/Android/'.length).replaceAll(RegExp(r'/+$'), '');
     // 匹配 data 或 data/... 以及 obb 或 obb/...
     if (sub != 'data' && !sub.startsWith('data/') && sub != 'obb' && !sub.startsWith('obb/')) return false;
-    // 自身外部目录（如 Android/data/com.sequl.zenfile/cache）可正常访问
-    return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
+    // 自身外部目录（如 Android/data/com.sequl.zenfile2/cache）可正常访问
+    return !sub.startsWith('data/com.sequl.zenfile2') && !sub.startsWith('obb/com.sequl.zenfile2');
   }
 
   /// 是否为 Android/{data,obb} 根目录本身（非深层子路径）。

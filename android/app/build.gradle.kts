@@ -45,7 +45,10 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sequl.zenfile"
+        // ⚠️ v2.0.0 起保险箱不兼容旧版数据，改为独立包名以便与 1.x 共存安装，
+        // 用户可在旧版导出保险箱备份后再卸载旧版。**此包名需长期沿用**，
+        // 改回 com.sequl.zenfile 会导致用户再次全新安装并丢失数据。
+        applicationId = "com.sequl.zenfile2"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.42',
+                    'v2.0.0',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -730,7 +730,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1142Changelog(ctx, theme),
+                  _buildV200Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -741,9 +741,10 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1142Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV200Changelog(BuildContext ctx, ThemeData theme) {
+    final l10n = L10n.of(ctx);
+    const amber = Color(0xFFF5A623);
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
     Widget gap([double h = 6]) => SizedBox(height: h);
@@ -751,9 +752,9 @@ class AboutZenFileScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text('\u00b7 $text', style: textStyle),
     );
-    Widget section(String title) => Padding(
+    Widget section(String title, [Color? color]) => Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(title, style: sectionStyle),
+      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: color ?? theme.colorScheme.primary, fontWeight: FontWeight.w700)),
     );
     Widget divider() => Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -779,52 +780,59 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.42', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v2.0.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-07', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-13', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          // ── 中文部分 ──
-          section('\u{1f3ac} 视频播放器'),
-          item('软解画质与流畅度优化：修复 framedrop 属性名写错（frame-drop→framedrop）导致丢帧设置从未生效；默认画质优先（不跳环路滤波 + spline36 缩放），高码率自动降质保流畅，流畅后自动恢复；硬解模式同步应用 spline36 缩放质量。'),
-          gap(8),
+          // ── 版本与包名变更（重点提示：整块装进琥珀色警示框）──
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            decoration: BoxDecoration(
+              color: amber.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: amber.withOpacity(0.45), width: 1),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                section('\u26a0\ufe0f ${l10n.cl200_notice}', amber),
+                item(l10n.cl200_notice_1),
+                item(l10n.cl200_notice_2),
+                item(l10n.cl200_notice_3),
+                item(l10n.cl200_notice_4),
+                item(l10n.cl200_notice_5),
+              ],
+            ),
+          ),
 
-          section('\u{1f4c1} 文件管理与导航'),
-          item('前进/后退按钮逻辑重构：修复重启 App 后历史栈丢失导致双按钮变灰；修复后退一步后下拉刷新清空前进历史；修复后退到父目录后再后退回子目录的乒乓现象；后退历史耗尽自动进入父目录，前进可回到子目录。'),
-          item('左右滑动切页迟钝修复：修复 v1.1.41 拖放防误触引入的回归——从文件项上起手滑动几乎完全失效；速度改为按整段手势计算，最小位移 80→64px，位移≥110px 忽略速度门槛，竖向 1.2 倍斜向容差。'),
-          gap(8),
-
-          section('\u{1f4be} 存储设备'),
-          item('新增 U 盘/OTG/SD 卡支持：修复反射 API 中 U 盘 getDirectory() 返回 null 被跳过的问题；支持多种挂载路径（/storage/XXXX-XXXX、/mnt/media_rw/XXXX-XXXX）；U 盘/SD 卡热插拔自动检测，插入后立即显示在面包屑下拉菜单和存储概览中，无需重启 App。'),
-          gap(8),
-
-          section('\u{1f3a8} 外观与主题'),
-          item('主题颜色更新：翠绿 → 霓虹青（#03FCE3），森林绿 → 青柠绿（#A9FC03），10 语言名称同步更新。'),
-          item('新增自定义主题颜色：主题列表底部新增「自定义」按钮，支持 18 个预设颜色快速选择 + RGB 三通道滑块精确调节，颜色实时预览，确认后立即应用并持久化保存。'),
-
-          // ── 分割线 ──
           divider(),
 
-          // ── 英文部分 ──
-          section('\u{1f3ac} Video Player'),
-          item('Software decode quality & fluency optimization: Fixed `framedrop` property typo (`frame-drop`→`framedrop`) causing frame-drop setting to never take effect; quality-first by default (no loop filter skip + spline36 scaling), auto quality degradation for high bitrate to maintain fluency, auto recovery when smooth; spline36 scaling also applied to hardware decode mode.'),
-          gap(8),
+          // ── 保险箱 ──
+          section('\u{1f510} ${l10n.cl200_vault}'),
+          item(l10n.cl200_vault_1),
+          item(l10n.cl200_vault_2),
+          item(l10n.cl200_vault_3),
+          item(l10n.cl200_vault_4),
 
-          section('\u{1f4c1} File Management & Navigation'),
-          item('Back/Forward button logic refactor: Fixed history stack loss after app restart causing both buttons greyed out; fixed forward history being cleared after back + pull-to-refresh; fixed ping-pong phenomenon where back to parent then back returns to child; auto enter parent when back history exhausted, forward can return to child.'),
-          item('Fixed left/right swipe to switch pane lag: Fixed regression introduced by v1.1.41 drag-and-drop anti-mistouch — swipe starting on file items almost completely failed; velocity now calculated over entire gesture, min displacement 80→64px, velocity threshold ignored when displacement ≥110px, 1.2x diagonal tolerance for vertical.'),
-          gap(8),
+          divider(),
 
-          section('\u{1f4be} Storage Devices'),
-          item('Added USB/OTG/SD card support: Fixed the issue where USB drive getDirectory() returns null in reflection API and is skipped; supports multiple mount paths (/storage/XXXX-XXXX, /mnt/media_rw/XXXX-XXXX); USB/SD card hot-plug auto-detection, displayed in breadcrumb dropdown and storage overview immediately after insertion, no app restart required.'),
-          gap(8),
+          // ── 设置调整 ──
+          section('\u2699\ufe0f ${l10n.cl200_settings}'),
+          item(l10n.cl200_settings_1),
 
-          section('\u{1f3a8} Appearance & Themes'),
-          item('Theme color update: Emerald Green → Neon Cyan (#03FCE3), Forest Green → Lime Green (#A9FC03), 10-language names synced.'),
-          item('New custom theme color: Added "Custom" button at bottom of theme list, supports 18 preset colors for quick selection + RGB three-channel sliders for precise adjustment, real-time color preview, applied immediately and persisted after confirmation.'),
+          divider(),
+
+          // ── 修复与优化 ──
+          section('\u{1f41b} ${l10n.cl200_fixes}'),
+          item(l10n.cl200_fix_1),
+          item(l10n.cl200_fix_2),
+          item(l10n.cl200_fix_3),
+          item(l10n.cl200_fix_4),
         ],
       ),
     );

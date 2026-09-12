@@ -6681,6 +6681,78 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl200_notice": "Version and package name change (please read)",
+  "@cl200_notice": {
+    "description": "changelog 2.0.0: cl200_notice"
+  },
+  "cl200_notice_1": "This release is 2.0.0 and the package name (application ID) changes from com.sequl.zenfile to com.sequl.zenfile2. Version 2.0 installs as a separate app and will not overwrite 1.x.",
+  "@cl200_notice_1": {
+    "description": "changelog 2.0.0: cl200_notice_1"
+  },
+  "cl200_notice_2": "Why: the vault encryption architecture has been reworked and is no longer compatible with vault data from older versions. A new package name lets both versions coexist, so an overwriting install cannot destroy your old vault data.",
+  "@cl200_notice_2": {
+    "description": "changelog 2.0.0: cl200_notice_2"
+  },
+  "cl200_notice_3": "Back up first: in the old version open Vault, then Backup / Restore, then Export backup; then in the new version open Vault, then Backup / Restore, then Import backup.",
+  "@cl200_notice_3": {
+    "description": "changelog 2.0.0: cl200_notice_3"
+  },
+  "cl200_notice_4": "Uninstall the old version only after you have confirmed the new one is complete. Sandbox-encrypted files live in the private app directory and are erased when the app is uninstalled, so never uninstall first.",
+  "@cl200_notice_4": {
+    "description": "changelog 2.0.0: cl200_notice_4"
+  },
+  "cl200_notice_5": "Because the package name changed, permissions granted per package such as Shizuku must be granted again in the new version.",
+  "@cl200_notice_5": {
+    "description": "changelog 2.0.0: cl200_notice_5"
+  },
+  "cl200_vault": "Vault",
+  "@cl200_vault": {
+    "description": "changelog 2.0.0: cl200_vault"
+  },
+  "cl200_vault_1": "Multiple password profiles: bind a different password profile to each folder. Encryption and decryption happen entirely on this device, and the master password and salt never leave it.",
+  "@cl200_vault_1": {
+    "description": "changelog 2.0.0: cl200_vault_1"
+  },
+  "cl200_vault_2": "Remote encrypted folders: link an rclone crypt folder on your cloud drive and browse it with plain names, with streaming playback for audio and video and no need to download the whole file.",
+  "@cl200_vault_2": {
+    "description": "changelog 2.0.0: cl200_vault_2"
+  },
+  "cl200_vault_3": "In-place encryption: files are encrypted where they are, so the location and folder structure stay unchanged. The browser adds a lock badge and other apps only see ciphertext names.",
+  "@cl200_vault_3": {
+    "description": "changelog 2.0.0: cl200_vault_3"
+  },
+  "cl200_vault_4": "Help page: the \"Activated\" badge in the top-right corner of the vault is replaced by a \"Help\" button that explains the highlights, basic operations and compatibility.",
+  "@cl200_vault_4": {
+    "description": "changelog 2.0.0: cl200_vault_4"
+  },
+  "cl200_settings": "Settings changes",
+  "@cl200_settings": {
+    "description": "changelog 2.0.0: cl200_settings"
+  },
+  "cl200_settings_1": "Security settings has moved from the vault home page to the Settings page, so every entry is now in one place.",
+  "@cl200_settings_1": {
+    "description": "changelog 2.0.0: cl200_settings_1"
+  },
+  "cl200_fixes": "Fixes and improvements",
+  "@cl200_fixes": {
+    "description": "changelog 2.0.0: cl200_fixes"
+  },
+  "cl200_fix_1": "Fixed all files in a remote encrypted folder showing the unknown-format icon in the browser.",
+  "@cl200_fix_1": {
+    "description": "changelog 2.0.0: cl200_fix_1"
+  },
+  "cl200_fix_2": "Fixed remote encrypted audio and video failing to stream and images failing to render, which happened when a cloud drive does not report the file size and the decrypted size became 0.",
+  "@cl200_fix_2": {
+    "description": "changelog 2.0.0: cl200_fix_2"
+  },
+  "cl200_fix_3": "Fixed thumbnails never loading in remote encrypted folders.",
+  "@cl200_fix_3": {
+    "description": "changelog 2.0.0: cl200_fix_3"
+  },
+  "cl200_fix_4": "Improved streaming performance by removing a redundant network request per chunk, making playback and seeking of remote encrypted media much smoother.",
+  "@cl200_fix_4": {
+    "description": "changelog 2.0.0: cl200_fix_4"
+  },
   "vault_help": "Help",
   "@vault_help": {
     "description": "vault help: vault_help"
@@ -7530,5 +7602,6 @@
       }
     }
   },
-  "vault_remote_encrypt": "Remote Encryption"
+  "ui_cancel_set_as_home": "Unset as Home",
+  "ui_unpin": "Unpin"
 }

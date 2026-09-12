@@ -538,7 +538,7 @@ class SelectionActionBar extends StatelessWidget {
                               const SizedBox(width: 12),
                               Text(
                                 allPinned
-                                    ? L10n.of(context).msga9b87614
+                                    ? L10n.of(context).ui_unpin
                                     : L10n.of(context).ui_pin_to_top,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w500,

@@ -501,6 +501,18 @@ class _PaneBrowserState extends State<PaneBrowser> {
           );
         }
         break;
+      case 'clear_home':
+        await provider.clearHomeDirectory();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.of(context).ui_cancel_set_as_home),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        break;
       case 'share':
         await FolderShareService.sharePaths(context, [path]);
         break;
@@ -1599,6 +1611,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       (action) => _handleAction(context, action, folder.path),
                       isArchive: false,
                       showSetAsHome: true,
+                      isCurrentHome: provider.homeDirectory == folder.path,
                       showShare: !folder.isRemote,
                       // 需传 filePath 才会显示加/解密项；远程加密目录据此显示「解密下载」
                       filePath: folder.path,

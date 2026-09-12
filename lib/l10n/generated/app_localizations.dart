@@ -11812,6 +11812,114 @@ abstract class L10n {
   /// **'密码配置'**
   String get vault_config_password;
 
+  /// changelog 2.0.0: cl200_notice
+  ///
+  /// In zh, this message translates to:
+  /// **'版本与包名变更（务必阅读）'**
+  String get cl200_notice;
+
+  /// changelog 2.0.0: cl200_notice_1
+  ///
+  /// In zh, this message translates to:
+  /// **'版本号升级至 2.0.0，包名（应用 ID）由 com.sequl.zenfile 变更为 com.sequl.zenfile2。2.0 会作为独立应用安装，不会覆盖旧的 1.x 版本。'**
+  String get cl200_notice_1;
+
+  /// changelog 2.0.0: cl200_notice_2
+  ///
+  /// In zh, this message translates to:
+  /// **'变更原因：保险箱的加密架构在本版本大改，已不再兼容旧版保险箱数据。改用新包名可让新旧两版并存，避免覆盖安装导致旧版保险箱数据丢失。'**
+  String get cl200_notice_2;
+
+  /// changelog 2.0.0: cl200_notice_3
+  ///
+  /// In zh, this message translates to:
+  /// **'请先自行备份：在旧版中打开「保险箱 → 备份/恢复 → 导出备份」，再在新版中打开「保险箱 → 备份/恢复 → 导入备份」。'**
+  String get cl200_notice_3;
+
+  /// changelog 2.0.0: cl200_notice_4
+  ///
+  /// In zh, this message translates to:
+  /// **'确认新版数据完整无误后再卸载旧版。沙盒加密文件存放在应用私有目录，卸载应用会一并清除，切勿先卸载。'**
+  String get cl200_notice_4;
+
+  /// changelog 2.0.0: cl200_notice_5
+  ///
+  /// In zh, this message translates to:
+  /// **'包名变更后，Shizuku 等按包名授予的权限需要在新版中重新授权一次。'**
+  String get cl200_notice_5;
+
+  /// changelog 2.0.0: cl200_vault
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱'**
+  String get cl200_vault;
+
+  /// changelog 2.0.0: cl200_vault_1
+  ///
+  /// In zh, this message translates to:
+  /// **'多密码档案：可为不同目录绑定不同的密码档案，加解密全部在本机完成，主密码与加盐只保存在本机。'**
+  String get cl200_vault_1;
+
+  /// changelog 2.0.0: cl200_vault_2
+  ///
+  /// In zh, this message translates to:
+  /// **'远程加密目录：可直接关联网盘上的 rclone crypt 加密目录，客户端解密后以明文列出，音视频支持流式播放，无需整体下载。'**
+  String get cl200_vault_2;
+
+  /// changelog 2.0.0: cl200_vault_3
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密：把文件「就地」加密，位置与目录结构保持不变，浏览页会加上🔐徽标，其它应用只能看到密文文件名。'**
+  String get cl200_vault_3;
+
+  /// changelog 2.0.0: cl200_vault_4
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助页：保险箱首页右上角的「已激活」已换成「帮助」入口，里面有功能亮点、基本操作与兼容性说明。'**
+  String get cl200_vault_4;
+
+  /// changelog 2.0.0: cl200_settings
+  ///
+  /// In zh, this message translates to:
+  /// **'设置调整'**
+  String get cl200_settings;
+
+  /// changelog 2.0.0: cl200_settings_1
+  ///
+  /// In zh, this message translates to:
+  /// **'原保险箱首页的「安全设置」已迁移到「设置」页面，入口更统一。'**
+  String get cl200_settings_1;
+
+  /// changelog 2.0.0: cl200_fixes
+  ///
+  /// In zh, this message translates to:
+  /// **'修复与优化'**
+  String get cl200_fixes;
+
+  /// changelog 2.0.0: cl200_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复浏览页远程加密目录的文件图标全部显示为未知格式的问题。'**
+  String get cl200_fix_1;
+
+  /// changelog 2.0.0: cl200_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程加密音视频无法流式播放、图片无法渲染的问题（部分网盘不返回文件大小，会导致解密大小为 0）。'**
+  String get cl200_fix_2;
+
+  /// changelog 2.0.0: cl200_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程加密目录缩略图无法加载的问题。'**
+  String get cl200_fix_3;
+
+  /// changelog 2.0.0: cl200_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'优化流式传输性能：去掉每块的冗余网络请求，远程加密媒体的播放与拖动体验大幅提升。'**
+  String get cl200_fix_4;
+
   /// vault help: vault_help
   ///
   /// In zh, this message translates to:
@@ -13083,6 +13191,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'将备份到以下路径：\n{path}\n\n是否继续？'**
   String ui_backup_confirm_message(String path);
+
+  /// No description provided for @ui_cancel_set_as_home.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消设为首页'**
+  String get ui_cancel_set_as_home;
+
+  /// No description provided for @ui_unpin.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get ui_unpin;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

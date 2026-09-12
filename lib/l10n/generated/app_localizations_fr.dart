@@ -6692,6 +6692,75 @@ class L10nFr extends L10n {
   String get vault_config_password => 'Configuration du mot de passe';
 
   @override
+  String get cl200_notice =>
+      'Changement de version et de nom de paquet (à lire)';
+
+  @override
+  String get cl200_notice_1 =>
+      'La version passe à 2.0.0 et le nom du paquet (ID d application) change de com.sequl.zenfile à com.sequl.zenfile2. La version 2.0 s installe comme une application distincte et n écrase pas la 1.x.';
+
+  @override
+  String get cl200_notice_2 =>
+      'Raison : l architecture de chiffrement du coffre a été repensée et n est plus compatible avec les données des anciennes versions. Un nouveau nom de paquet permet aux deux versions de cohabiter et évite qu une installation par-dessus ne détruise vos anciennes données.';
+
+  @override
+  String get cl200_notice_3 =>
+      'Faites d abord votre propre sauvegarde : dans l ancienne version ouvrez « Coffre → Sauvegarde / Restauration → Exporter », puis dans la nouvelle « Coffre → Sauvegarde / Restauration → Importer ».';
+
+  @override
+  String get cl200_notice_4 =>
+      'Ne désinstallez l ancienne version qu après avoir vérifié que tout est complet dans la nouvelle. Les fichiers chiffrés en bac à sable se trouvent dans le répertoire privé de l application et sont supprimés à la désinstallation : ne désinstallez jamais en premier.';
+
+  @override
+  String get cl200_notice_5 =>
+      'Le nom du paquet ayant changé, les autorisations accordées par paquet comme Shizuku doivent être accordées à nouveau dans la nouvelle version.';
+
+  @override
+  String get cl200_vault => 'Coffre-fort';
+
+  @override
+  String get cl200_vault_1 =>
+      'Plusieurs profils de mot de passe : vous pouvez associer un profil différent à chaque dossier. Le chiffrement et le déchiffrement ont lieu entièrement sur l appareil et le mot de passe principal ainsi que le sel n en sortent jamais.';
+
+  @override
+  String get cl200_vault_2 =>
+      'Dossiers chiffrés distants : associez directement un dossier rclone crypt de votre cloud ; il est déchiffré sur l appareil et listé avec des noms lisibles, avec lecture en continu de l audio et de la vidéo et sans télécharger le fichier entier.';
+
+  @override
+  String get cl200_vault_3 =>
+      'Chiffrement sur place : les fichiers sont chiffrés là où ils se trouvent, l emplacement et la structure des dossiers ne changent pas. Le navigateur affiche un badge cadenas et les autres applications ne voient que des noms chiffrés.';
+
+  @override
+  String get cl200_vault_4 =>
+      'Page d aide : le badge « Activé » en haut à droite du coffre est remplacé par un bouton « Aide » qui présente les points forts, les opérations de base et la compatibilité.';
+
+  @override
+  String get cl200_settings => 'Changements dans les paramètres';
+
+  @override
+  String get cl200_settings_1 =>
+      'Les paramètres de sécurité qui se trouvaient sur la page d accueil du coffre ont été déplacés vers la page « Paramètres ».';
+
+  @override
+  String get cl200_fixes => 'Corrections et améliorations';
+
+  @override
+  String get cl200_fix_1 =>
+      'Corrigé : dans le navigateur, tous les fichiers d un dossier chiffré distant affichaient l icône de format inconnu.';
+
+  @override
+  String get cl200_fix_2 =>
+      'Corrigé : l audio et la vidéo chiffrés à distance ne pouvaient pas être lus en continu et les images ne s affichaient pas, ce qui se produisait lorsqu un service cloud n indique pas la taille et que la taille déchiffrée tombait à 0.';
+
+  @override
+  String get cl200_fix_3 =>
+      'Corrigé : les miniatures ne se chargeaient jamais dans les dossiers chiffrés distants.';
+
+  @override
+  String get cl200_fix_4 =>
+      'Performances de lecture en continu améliorées grâce à la suppression d une requête réseau inutile par bloc : la lecture et le déplacement dans les médias chiffrés à distance sont bien plus fluides.';
+
+  @override
   String get vault_help => 'Aide';
 
   @override
@@ -7425,4 +7494,10 @@ class L10nFr extends L10n {
   String ui_backup_confirm_message(String path) {
     return 'Sauvegarde vers le chemin suivant :\n$path\n\nContinuer ?';
   }
+
+  @override
+  String get ui_cancel_set_as_home => 'Retirer l\'accueil';
+
+  @override
+  String get ui_unpin => 'Détacher';
 }

@@ -6405,6 +6405,72 @@ class L10nJa extends L10n {
   String get vault_config_password => 'パスワード設定';
 
   @override
+  String get cl200_notice => 'バージョンとパッケージ名の変更（必ずお読みください）';
+
+  @override
+  String get cl200_notice_1 =>
+      'バージョンが 2.0.0 になり、パッケージ名（アプリケーション ID）が com.sequl.zenfile から com.sequl.zenfile2 に変わります。2.0 は独立したアプリとしてインストールされ、1.x を上書きしません。';
+
+  @override
+  String get cl200_notice_2 =>
+      '変更の理由：金庫の暗号化アーキテクチャを大幅に刷新したため、旧版の金庫データとは互換性がありません。パッケージ名を変えることで両バージョンを共存させ、上書きインストールによる旧データの消失を防ぎます。';
+
+  @override
+  String get cl200_notice_3 =>
+      '必ずご自身でバックアップしてください：旧版で「金庫 → バックアップ/復元 → 書き出し」を実行し、新版で「金庫 → バックアップ/復元 → 読み込み」を実行してください。';
+
+  @override
+  String get cl200_notice_4 =>
+      '新版でデータがそろっていることを確認してから旧版をアンインストールしてください。サンドボックス暗号化のファイルはアプリ専用ディレクトリにあり、アンインストールすると消去されます。先にアンインストールしないでください。';
+
+  @override
+  String get cl200_notice_5 =>
+      'パッケージ名が変わったため、Shizuku などパッケージ単位で付与される権限は新版で再許可が必要です。';
+
+  @override
+  String get cl200_vault => '金庫';
+
+  @override
+  String get cl200_vault_1 =>
+      '複数のパスワード設定：フォルダごとに異なるパスワード設定を割り当てできます。暗号化と復号はすべて端末内で行われ、マスターパスワードとソルトは端末外に出ません。';
+
+  @override
+  String get cl200_vault_2 =>
+      'リモート暗号化フォルダ：クラウド上の rclone crypt フォルダを直接関連付け、端末で復号して平文の名前で一覧表示します。音声と動画はストリーミング再生に対応し、全体をダウンロードする必要はありません。';
+
+  @override
+  String get cl200_vault_3 =>
+      'その場で暗号化：ファイルを元の場所で暗号化するため、位置とフォルダ構成は変わりません。ブラウザでは🔐マークが付き、他のアプリには暗号文の名前しか見えません。';
+
+  @override
+  String get cl200_vault_4 =>
+      'ヘルプ：金庫ホーム右上の「有効」バッジを「ヘルプ」ボタンに変更しました。主な特長、基本操作、互換性を説明しています。';
+
+  @override
+  String get cl200_settings => '設定の変更';
+
+  @override
+  String get cl200_settings_1 => '金庫ホームにあった「セキュリティ設定」は「設定」ページに移動しました。';
+
+  @override
+  String get cl200_fixes => '修正と改善';
+
+  @override
+  String get cl200_fix_1 =>
+      'ブラウザのリモート暗号化フォルダで、すべてのファイルアイコンが不明な形式として表示される問題を修正しました。';
+
+  @override
+  String get cl200_fix_2 =>
+      'リモート暗号化の音声・動画をストリーミング再生できない、画像が表示されない問題を修正しました（クラウドがファイルサイズを返さないと復号サイズが 0 になるのが原因でした）。';
+
+  @override
+  String get cl200_fix_3 => 'リモート暗号化フォルダでサムネイルが読み込まれない問題を修正しました。';
+
+  @override
+  String get cl200_fix_4 =>
+      'チャンクごとの不要なネットワーク要求をなくし、ストリーミング性能を改善しました。リモート暗号化メディアの再生とシークが大幅に快適になります。';
+
+  @override
   String get vault_help => 'ヘルプ';
 
   @override
@@ -7102,4 +7168,10 @@ class L10nJa extends L10n {
   String ui_backup_confirm_message(String path) {
     return '以下のパスにバックアップします：\n$path\n\n続行しますか？';
   }
+
+  @override
+  String get ui_cancel_set_as_home => 'ホーム解除';
+
+  @override
+  String get ui_unpin => 'ピン留め解除';
 }

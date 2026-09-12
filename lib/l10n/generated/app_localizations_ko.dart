@@ -6400,6 +6400,72 @@ class L10nKo extends L10n {
   String get vault_config_password => '비밀번호 설정';
 
   @override
+  String get cl200_notice => '버전 및 패키지 이름 변경 (반드시 읽어주세요)';
+
+  @override
+  String get cl200_notice_1 =>
+      '버전이 2.0.0으로 올라가고 패키지 이름(애플리케이션 ID)이 com.sequl.zenfile에서 com.sequl.zenfile2로 바뀝니다. 2.0은 별도 앱으로 설치되며 1.x를 덮어쓰지 않습니다.';
+
+  @override
+  String get cl200_notice_2 =>
+      '변경 이유: 금고의 암호화 구조가 크게 개편되어 이전 버전의 금고 데이터와 호환되지 않습니다. 패키지 이름을 바꾸면 두 버전을 함께 둘 수 있어, 덮어쓰기 설치로 인한 기존 금고 데이터 손실을 막을 수 있습니다.';
+
+  @override
+  String get cl200_notice_3 =>
+      '먼저 직접 백업하세요: 이전 버전에서 「금고 → 백업/복원 → 백업 내보내기」를 실행한 뒤, 새 버전에서 「금고 → 백업/복원 → 백업 가져오기」를 실행하세요.';
+
+  @override
+  String get cl200_notice_4 =>
+      '새 버전에서 데이터가 모두 확인된 뒤에야 이전 버전을 삭제하세요. 샌드박스 암호화 파일은 앱 전용 디렉터리에 있어 앱을 삭제하면 함께 지워지므로, 먼저 삭제하지 마세요.';
+
+  @override
+  String get cl200_notice_5 =>
+      '패키지 이름이 바뀌었으므로 Shizuku처럼 패키지 단위로 부여되는 권한은 새 버전에서 다시 허용해야 합니다.';
+
+  @override
+  String get cl200_vault => '금고';
+
+  @override
+  String get cl200_vault_1 =>
+      '여러 비밀번호 프로필: 폴더마다 다른 비밀번호 프로필을 지정할 수 있습니다. 암호화와 복호화는 모두 기기에서 이루어지며 마스터 비밀번호와 솔트는 기기 밖으로 나가지 않습니다.';
+
+  @override
+  String get cl200_vault_2 =>
+      '원격 암호 폴더: 클라우드의 rclone crypt 폴더를 바로 연결해 클라이언트에서 복호화하여 일반 이름으로 표시합니다. 오디오와 비디오는 스트리밍 재생을 지원하므로 전체를 내려받을 필요가 없습니다.';
+
+  @override
+  String get cl200_vault_3 =>
+      '원위치 암호화: 파일을 있던 자리에서 암호화하므로 위치와 폴더 구조가 그대로 유지됩니다. 브라우저에는 🔐 배지가 표시되고 다른 앱에는 암호문 이름만 보입니다.';
+
+  @override
+  String get cl200_vault_4 =>
+      '도움말: 금고 홈 오른쪽 위의 「활성화됨」 배지가 「도움말」 버튼으로 바뀌었습니다. 주요 기능, 기본 조작, 호환성을 설명합니다.';
+
+  @override
+  String get cl200_settings => '설정 변경';
+
+  @override
+  String get cl200_settings_1 => '금고 홈에 있던 「보안 설정」이 「설정」 페이지로 이동했습니다.';
+
+  @override
+  String get cl200_fixes => '수정 및 개선';
+
+  @override
+  String get cl200_fix_1 =>
+      '브라우저의 원격 암호 폴더에서 모든 파일 아이콘이 알 수 없는 형식으로 표시되던 문제를 수정했습니다.';
+
+  @override
+  String get cl200_fix_2 =>
+      '원격 암호 오디오·비디오를 스트리밍 재생할 수 없고 이미지가 표시되지 않던 문제를 수정했습니다(클라우드가 파일 크기를 반환하지 않아 복호화 크기가 0이 되는 경우였습니다).';
+
+  @override
+  String get cl200_fix_3 => '원격 암호 폴더에서 썸네일이 불러와지지 않던 문제를 수정했습니다.';
+
+  @override
+  String get cl200_fix_4 =>
+      '청크마다 불필요한 네트워크 요청을 없애 스트리밍 성능을 개선했습니다. 원격 암호 미디어의 재생과 탐색이 훨씬 부드러워집니다.';
+
+  @override
   String get vault_help => '도움말';
 
   @override
@@ -7097,4 +7163,10 @@ class L10nKo extends L10n {
   String ui_backup_confirm_message(String path) {
     return '다음 경로에 백업됩니다:\n$path\n\n계속하시겠습니까?';
   }
+
+  @override
+  String get ui_cancel_set_as_home => '홈 설정 해제';
+
+  @override
+  String get ui_unpin => '상단 고정 해제';
 }

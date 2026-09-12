@@ -457,6 +457,7 @@ class FileActionSheet {
     bool showInLocation = false,
     bool openWith = false,
     bool showSetAsHome = false,
+    bool isCurrentHome = false,
     String? filePath,
     bool isEncrypted = false,
   }) {
@@ -587,9 +588,11 @@ class FileActionSheet {
                     _buildTile(
                       ctx,
                       theme,
-                      icon: Broken.home_2,
-                      title: L10n.of(ctx).ui_set_as_home,
-                      value: 'set_as_home',
+                      icon: isCurrentHome ? Icons.home_outlined : Broken.home_2,
+                      title: isCurrentHome
+                          ? L10n.of(ctx).ui_cancel_set_as_home
+                          : L10n.of(ctx).ui_set_as_home,
+                      value: isCurrentHome ? 'clear_home' : 'set_as_home',
                       onAction: onAction,
                     ),
                   if (showShare)
