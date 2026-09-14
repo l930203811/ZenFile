@@ -656,68 +656,88 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     int bytes = 0;
     int folders = 0;
     int files = 0;
+    // 统一通过全局 navigator 取 L10n；做空安全，避免在异步段抛未捕获异常
+    // 导致对话框卡在加载态（表现为「点击无响应」）。
+    final navCtx = navigatorKey.currentContext;
+    L10n? l10n() => navCtx == null ? null : L10n.of(navCtx);
 
-    final currentFilesMap = {
-      for (var f in widget.provider.currentFiles) f.path: f,
-    };
+    try {
+      final currentFilesMap = {
+        for (var f in widget.provider.currentFiles) f.path: f,
+      };
 
-    for (final path in widget.selectedPaths) {
-      try {
-        final type = FileSystemEntity.typeSync(path);
-        if (type == FileSystemEntityType.directory) {
-          folders++;
-          final dir = Directory(path);
-          if (dir.existsSync()) {
-            if (widget.selectedPaths.length == 1) {
-              final stat = dir.statSync();
-              _lastModified = stat.modified;
-              final canRead = (stat.mode & 0x100) != 0;
-              final canWrite = (stat.mode & 0x80) != 0;
-              if (canRead && canWrite) {
-                _permissions =
-                    '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
-              } else if (canRead) {
-                _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
-              } else if (canWrite) {
-                _permissions = L10n.of(navigatorKey.currentContext!).prop_write;
-              }
-            }
-            try {
-              await for (final entity in dir.list(
-                recursive: true,
-                followLinks: false,
-              )) {
-                if (entity is File) {
-                  files++;
-                  bytes += await entity.length();
-                } else if (entity is Directory) {
-                  folders++;
+      for (final path in widget.selectedPaths) {
+        try {
+          final type = FileSystemEntity.typeSync(path);
+          if (type == FileSystemEntityType.directory) {
+            folders++;
+            final dir = Directory(path);
+            if (dir.existsSync()) {
+              if (widget.selectedPaths.length == 1) {
+                final stat = dir.statSync();
+                _lastModified = stat.modified;
+                final canRead = (stat.mode & 0x100) != 0;
+                final canWrite = (stat.mode & 0x80) != 0;
+                final l = l10n();
+                if (l != null) {
+                  if (canRead && canWrite) {
+                    _permissions = '${l.prop_read} / ${l.prop_write}';
+                  } else if (canRead) {
+                    _permissions = l.prop_read;
+                  } else if (canWrite) {
+                    _permissions = l.prop_write;
+                  }
                 }
               }
-            } catch (_) {}
-          }
-        } else if (type == FileSystemEntityType.file) {
-          files++;
-          final f = File(path);
-          if (f.existsSync()) {
-            bytes += f.lengthSync();
-            if (widget.selectedPaths.length == 1) {
-              final stat = f.statSync();
-              _lastModified = stat.modified;
-              final canRead = (stat.mode & 0x100) != 0;
-              final canWrite = (stat.mode & 0x80) != 0;
-              if (canRead && canWrite) {
-                _permissions =
-                    '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
-              } else if (canRead) {
-                _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
-              } else if (canWrite) {
-                _permissions = L10n.of(navigatorKey.currentContext!).prop_write;
+              try {
+                await for (final entity in dir.list(
+                  recursive: true,
+                  followLinks: false,
+                )) {
+                  if (entity is File) {
+                    files++;
+                    bytes += await entity.length();
+                  } else if (entity is Directory) {
+                    folders++;
+                  }
+                }
+              } catch (_) {}
+            }
+          } else if (type == FileSystemEntityType.file) {
+            files++;
+            final f = File(path);
+            if (f.existsSync()) {
+              bytes += f.lengthSync();
+              if (widget.selectedPaths.length == 1) {
+                final stat = f.statSync();
+                _lastModified = stat.modified;
+                final canRead = (stat.mode & 0x100) != 0;
+                final canWrite = (stat.mode & 0x80) != 0;
+                final l = l10n();
+                if (l != null) {
+                  if (canRead && canWrite) {
+                    _permissions = '${l.prop_read} / ${l.prop_write}';
+                  } else if (canRead) {
+                    _permissions = l.prop_read;
+                  } else if (canWrite) {
+                    _permissions = l.prop_write;
+                  }
+                }
+              }
+            }
+          } else {
+            // Fallback if restricted/Shizuku
+            final item = currentFilesMap[path];
+            if (item != null) {
+              if (item.isDirectory) {
+                folders++;
+              } else {
+                files++;
+                bytes += item.size;
               }
             }
           }
-        } else {
-          // Fallback if restricted/Shizuku
+        } catch (_) {
           final item = currentFilesMap[path];
           if (item != null) {
             if (item.isDirectory) {
@@ -728,41 +748,33 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
             }
           }
         }
-      } catch (_) {
-        final item = currentFilesMap[path];
-        if (item != null) {
-          if (item.isDirectory) {
-            folders++;
+      }
+
+      if (widget.selectedPaths.length == 1) {
+        final pStr = widget.selectedPaths.first;
+        final ext = pStr.contains('.')
+            ? pStr.substring(pStr.lastIndexOf('.')).toLowerCase()
+            : '';
+        final l = l10n();
+        if (l != null) {
+          if (folders > 0) {
+            _mimeType = l.prop_folder_directory;
           } else {
-            files++;
-            bytes += item.size;
+            _mimeType = ext.isNotEmpty ? '${l.prop_file} ($ext)' : l.prop_file;
           }
         }
       }
-    }
-
-    if (widget.selectedPaths.length == 1) {
-      final pStr = widget.selectedPaths.first;
-      final ext = pStr.contains('.')
-          ? pStr.substring(pStr.lastIndexOf('.')).toLowerCase()
-          : '';
-      final l10n = L10n.of(navigatorKey.currentContext!);
-      if (folders > 0) {
-        _mimeType = l10n.prop_folder_directory;
-      } else {
-        _mimeType = ext.isNotEmpty
-            ? '${l10n.prop_file} ($ext)'
-            : l10n.prop_file;
+    } catch (_) {
+      // 忽略计算过程中的异常，保证对话框一定能渲染出内容
+    } finally {
+      if (mounted) {
+        setState(() {
+          _totalBytes = bytes;
+          _folderCount = folders;
+          _fileCount = files;
+          _isLoading = false;
+        });
       }
-    }
-
-    if (mounted) {
-      setState(() {
-        _totalBytes = bytes;
-        _folderCount = folders;
-        _fileCount = files;
-        _isLoading = false;
-      });
     }
   }
 

@@ -81,10 +81,15 @@ class ZenFileAudioHandler extends BaseAudioHandler
 
   /// Call this whenever you want background mode to start (or restart with a
   /// new player / queue).
+  ///
+  /// [persistAsAudio] 默认 true：音频后台播放会持久化 lastPlayedAudio 与
+  /// 播放进度，供音频播放器下次恢复。视频进入后台播放时传 false，
+  /// 避免视频路径污染音频的"上次播放"记录。
   void attach({
     required Player player,
     required List<MediaItem> queue,
     required int currentIndex,
+    bool persistAsAudio = true,
   }) {
     final oldPlayer = _player;
     if (oldPlayer != null && oldPlayer != player) {
@@ -104,7 +109,9 @@ class ZenFileAudioHandler extends BaseAudioHandler
     this.queue.add(queue);
     if (queue.isNotEmpty) {
       mediaItem.add(queue[currentIndex]);
-      _persistCurrentMediaItem();
+      if (persistAsAudio) {
+        _persistCurrentMediaItem();
+      }
     }
 
     // Mirror playing state
@@ -128,14 +135,17 @@ class ZenFileAudioHandler extends BaseAudioHandler
     _emitPlaybackState(playing: player.state.playing);
 
     // 后台播放期间定期保存进度，即使界面被销毁也能记住位置
-    _positionSaveTimer?.cancel();
-    _positionSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      final path = mediaItem.value?.id;
-      final pos = _player?.state.position;
-      if (path != null && pos != null && pos.inMilliseconds > 1000) {
-        PreferencesService.savePlaybackPosition(path, pos.inMilliseconds);
-      }
-    });
+    // （仅音频后台模式启用，视频不写入音频播放记录）
+    if (persistAsAudio) {
+      _positionSaveTimer?.cancel();
+      _positionSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+        final path = mediaItem.value?.id;
+        final pos = _player?.state.position;
+        if (path != null && pos != null && pos.inMilliseconds > 1000) {
+          PreferencesService.savePlaybackPosition(path, pos.inMilliseconds);
+        }
+      });
+    }
 
     // ── 申请通知栏权限（安卓13+ 必须，否则系统拦截通知不显示）──
     unawaited(_requestNotificationPermission());

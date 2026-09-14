@@ -245,7 +245,7 @@ class FileItem extends StatelessWidget {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 18),
+                  icon: const Icon(Icons.more_vert, size: 18),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 32,

@@ -6763,6 +6763,82 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl210_feat_6": "新增分貝儀：可從工具箱或側邊欄開啟，即時測量環境噪音分貝值，並顯示噪音曲線、環境判定與對聽力的影響提示。",
+  "@cl210_feat_6": {
+    "description": "changelog 2.1.0: cl210_feat_6"
+  },
+  "cl210_features": "新增功能",
+  "@cl210_features": {
+    "description": "changelog 2.1.0: cl210_features"
+  },
+  "cl210_feat_1": "影片支援背景播放：選單新增「背景播放」，關閉播放頁後仍可從通知列控制播放、暫停與進度。",
+  "@cl210_feat_1": {
+    "description": "changelog 2.1.0: cl210_feat_1"
+  },
+  "cl210_feat_2": "影片定時關閉：可設定 15 / 30 / 45 / 60 分鐘後停止播放，已設定時可隨時取消。",
+  "@cl210_feat_2": {
+    "description": "changelog 2.1.0: cl210_feat_2"
+  },
+  "cl210_feat_3": "資料夾新增「開啟方式」：此前僅檔案有此項目，網格、清單與雙窗格檢視皆已支援。",
+  "@cl210_feat_3": {
+    "description": "changelog 2.1.0: cl210_feat_3"
+  },
+  "cl210_feat_4": "屬性入口補齊：瀏覽頁、最近頁與分類頁的三點選單皆可檢視檔案或資料夾的屬性。",
+  "@cl210_feat_4": {
+    "description": "changelog 2.1.0: cl210_feat_4"
+  },
+  "cl210_feat_5": "設為首頁支援取消：已設為首頁的資料夾，選單會顯示「取消設為首頁」。",
+  "@cl210_feat_5": {
+    "description": "changelog 2.1.0: cl210_feat_5"
+  },
+  "cl210_ui": "介面與操作",
+  "@cl210_ui": {
+    "description": "changelog 2.1.0: cl210_ui"
+  },
+  "cl210_ui_1": "三點選單改為圖示方格：圖示在上、文字在下，長標題以兩行顯示，並依項目數量自動排為三欄或四欄。",
+  "@cl210_ui_1": {
+    "description": "changelog 2.1.0: cl210_ui_1"
+  },
+  "cl210_ui_2": "統一瀏覽頁與分類頁的選單順序，「設為首頁」與「在位置中顯示」位於相同位置。",
+  "@cl210_ui_2": {
+    "description": "changelog 2.1.0: cl210_ui_2"
+  },
+  "cl210_ui_3": "最佳化圖示方格對齊：翻譯後長標題換行時，同一排圖示仍維持在同一水平線。",
+  "@cl210_ui_3": {
+    "description": "changelog 2.1.0: cl210_ui_3"
+  },
+  "cl210_ui_4": "檔案與資料夾的三點按鈕改為直向，涵蓋網格、清單與精簡三種檢視。",
+  "@cl210_ui_4": {
+    "description": "changelog 2.1.0: cl210_ui_4"
+  },
+  "cl210_ui_5": "影片播放最佳化：左右拖曳快轉與倒轉不再中斷播放；鎖定按鈕移至左側中央並常駐顯示。",
+  "@cl210_ui_5": {
+    "description": "changelog 2.1.0: cl210_ui_5"
+  },
+  "cl210_fixes": "問題修復",
+  "@cl210_fixes": {
+    "description": "changelog 2.1.0: cl210_fixes"
+  },
+  "cl210_fix_1": "修復在受限的 Android/data、Android/obb 目錄中無法建立檔案、資料夾與壓縮檔的問題：修正寫入路徑策略，並將授權方式改為依應用程式目錄逐個授權。",
+  "@cl210_fix_1": {
+    "description": "changelog 2.1.0: cl210_fix_1"
+  },
+  "cl210_fix_2": "建立失敗不再沒有回應：失敗時會顯示原因；在 Android/data 根目錄建立時會提示先進入應用程式目錄。",
+  "@cl210_fix_2": {
+    "description": "changelog 2.1.0: cl210_fix_2"
+  },
+  "cl210_fix_3": "修復分類頁多選選單「置頂」無效的問題（置頂已儲存但清單未重新排序），並修正選單文字為「取消置頂」。",
+  "@cl210_fix_3": {
+    "description": "changelog 2.1.0: cl210_fix_3"
+  },
+  "cl210_fix_4": "修復「取消設為首頁」無效的問題：首頁設定此前未被真正清除。",
+  "@cl210_fix_4": {
+    "description": "changelog 2.1.0: cl210_fix_4"
+  },
+  "cl210_fix_5": "修復部分頁面「屬性」點擊沒有回應的問題。",
+  "@cl210_fix_5": {
+    "description": "changelog 2.1.0: cl210_fix_5"
+  },
   "cl200_notice": "版本與套件名稱變更（請務必閱讀）",
   "@cl200_notice": {
     "description": "changelog 2.0.0: cl200_notice"
@@ -7685,5 +7761,30 @@
     }
   },
   "ui_cancel_set_as_home": "取消設為首頁",
-  "ui_unpin": "取消置頂"
+  "ui_unpin": "取消置頂",
+  "decibel_meter_title": "分貝儀",
+  "decibel_meter_current": "目前分貝值",
+  "decibel_meter_verdict": "環境判定",
+  "decibel_meter_curve": "噪音曲線",
+  "decibel_meter_start": "開始測量",
+  "decibel_meter_stop": "停止測量",
+  "decibel_meter_level_quiet": "安靜",
+  "decibel_meter_level_normal": "一般",
+  "decibel_meter_level_noisy": "較吵",
+  "decibel_meter_level_very_noisy": "很吵",
+  "decibel_meter_level_dangerous": "危險",
+  "decibel_meter_health_impact": "對人體的影響",
+  "decibel_meter_health_safe": "正常環境，對人體無危害。",
+  "decibel_meter_health_moderate": "較嘈雜，長時間暴露可能影響聽力。",
+  "decibel_meter_health_harmful": "非常吵，長時間暴露會損傷聽力。",
+  "decibel_meter_health_dangerous": "危險等級，請立即遠離並保護聽力！",
+  "decibel_meter_examples": "常見場景舉例",
+  "decibel_meter_examples_text": "普通室內談話（約50-60 dB）、安靜的辦公室、冰箱嗡嗡聲。",
+  "decibel_meter_perm_denied": "需要麥克風權限才能測量環境音量，請在設定中開啟。",
+  "decibel_meter_perm_title": "需要麥克風權限",
+  "decibel_meter_perm_settings": "麥克風權限已被永久拒絕，請前往系統設定中為 ZenFile 開啟麥克風權限後重試。",
+  "decibel_meter_perm_open_settings": "前往設定",
+  "msg_background_play": "背景播放",
+  "msg_sleep_timer": "定時關閉",
+  "msg_background_play_active": "已進入背景播放，可透過通知欄控制"
 }

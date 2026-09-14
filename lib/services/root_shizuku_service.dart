@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item_model.dart';
 import 'package:path/path.dart' as p;
+import 'webdav_debug_log.dart';
 
 class RootShizukuStatus {
   final bool isRootAvailable;
@@ -117,6 +118,52 @@ class RootShizukuService {
       debugPrint('[ZenFile] runCommand exception: $e');
       throw Exception('Execution failed: $e');
     }
+  }
+
+  /// 统一诊断日志：debugPrint + 落盘到 /storage/emulated/0/ZenFile/webdav_debug.log。
+  /// 排查受限目录（Android/{data,obb}）读写问题时把 WebdavDebugLog.enabled 置 true，
+  /// 即可用任意文件管理器取出日志；注释掉右值可恢复静默。
+  static void _logDiag(String msg) {
+    debugPrint('[ZenFile] $msg');
+    WebdavDebugLog.log('[root_shizuku] $msg');
+  }
+
+  /// 受限目录下「写」类操作（mkdir / touch / cp）的通用执行器。
+  ///
+  /// **为什么不能用一条 `| |` 命令串两条路径**（listFiles/du 已踩过同类坑）：
+  /// 部分 ROM 的 shell 在 FUSE 路径上创建失败却返回 exit 0，`||` 的回退分支
+  /// 永不触发；且 fail-first 分支的 stderr 被 `2>/dev/null` 吞掉，失败原因不可见。
+  /// 这正是过去几轮「新建文件/文件夹点了没反应」的直接原因之一。
+  ///
+  /// 改为 Dart 层逐条尝试并**每次都用 shell stat 复核真实结果**：
+  /// ① FUSE 直达路径 `/storage/emulated/0/...`（MT/ES 管理器 Shizuku 方案的可行路径）；
+  /// ② 底层 `/data/media/0/...`（小米/华为等 ROM 只放行这一条）。
+  /// 全部尝试均未产生目标时抛出带 stderr 的异常 —— **绝不静默返回**，
+  /// 否则上层会误判成功、界面不报错但实际什么都没创建。
+  static Future<void> _writeWithFallback(
+    String fuseTarget,
+    String rawTarget,
+    bool useRoot,
+    String Function(String target) cmdOf,
+  ) async {
+    String lastOutput = '';
+    final candidates = <String>[fuseTarget, if (rawTarget != fuseTarget) rawTarget];
+    for (final target in candidates) {
+      final cmd = cmdOf(target);
+      try {
+        lastOutput = (await runCommand(cmd, useRoot: useRoot)) ?? '';
+      } catch (e) {
+        lastOutput = 'EXCEPTION: $e';
+      }
+      // 校验始终针对 fuseTarget（用户可见路径）——_exists 内部已做双路径 stat。
+      final verified = await _exists(fuseTarget, useRoot: useRoot);
+      _logDiag(
+        'write try ${target == fuseTarget ? "FUSE" : "RAW"} useRoot=$useRoot: '
+        '"$cmd" verified=$verified out=${lastOutput.trim()}',
+      );
+      if (verified) return;
+    }
+    throw Exception('Write failed: $fuseTarget | ${lastOutput.trim()}');
   }
 
   /// 通过标准 Dart IO 访问原始路径（绕开 FUSE 层）。
@@ -301,37 +348,112 @@ class RootShizukuService {
   }
 
   static Future<void> createFolder(String parentPath, String name, {required bool useRoot}) async {
-    // 纯 Shizuku（无 root）受限目录：shell(uid 2000) 经 FUSE 层无其它应用
-    // Android/{data,obb} 子目录的写权限，mkdir 必然失败。改走 SAF 的
-    // DocumentsContract.createDocument（与 MT 管理器同源方案，需已授权树）。
+    final fuseParent = _normalize(parentPath);
+    final rawParent = _toFuseBypassPath(fuseParent);
+    final fuseTarget = p.join(fuseParent, name);
+    final rawTarget = p.join(rawParent, name);
+    _logDiag('createFolder parent=$parentPath fuse=$fuseTarget raw=$rawTarget');
+
+    if (isAndroidDataObbRoot(parentPath)) {
+      throw Exception(
+        'Android/data 或 Android/obb 根目录下不允许直接创建，请进入具体应用目录后再试',
+      );
+    }
+
+    // ⚠️ 旧实现只对底层 /data/media/0 路径 mkdir —— 与其它应用 Android/{data,obb}
+    // 属主为对应 app uid（0771）、shell(uid 2000) 无写权限的现实恰好相反，必然失败
+    // 且无结果校验，表现为「点了新建没反应」。改为 FUSE 直达优先 + 底层回退 + 复核。
+    //
+    // 顺序：先 shell 再 SAF。MT 管理器同为「shell(Shizuku) 直接写 + stat 复核」，
+    // 成功则用户完全无感；SAF 需按包名目录逐个授权，放在兜底位可避免
+    // 每进一个应用目录就弹一次系统选择器。_writeWithFallback 已用 shell stat
+    // 复核结果，shell 假失败会被捕获并落到 SAF，不存在「看似成功实则没建」。
+    try {
+      await _writeWithFallback(
+        fuseTarget,
+        rawTarget,
+        useRoot,
+        (target) => 'mkdir -p "$target" 2>&1',
+      );
+      return;
+    } catch (e) {
+      _logDiag('createFolder shell failed: $e');
+    }
+    // shell 两条路径都写不动：纯 Shizuku 受限目录退到 SAF（需已授权目录树）。
     if (!useRoot && _isRestrictedAndroidPath(parentPath)) {
       final ok = await SafAndroidDataService.createFolderViaSaf(
         parentPath,
         name,
-        isObb: parentPath.contains('/Android/obb/'),
+        isObb: _isObbSubPath(parentPath),
       );
-      if (ok) return;
-      // SAF 不可用/被拒：回退 shell（多半失败，由上层抛错提示用户授权）
+      if (ok) {
+        _logDiag('createFolder via SAF ok: $fuseTarget');
+        return;
+      }
+      _logDiag('createFolder via SAF failed too: $fuseTarget');
     }
-    final cleanParent = _toFuseBypassPath(_normalize(parentPath));
-    final cleanPath = p.join(cleanParent, name);
-    final cmd = 'mkdir -p "$cleanPath"';
-    await runCommand(cmd, useRoot: useRoot);
+    throw Exception(
+      '创建文件夹失败，已尝试 shell(FUSE/底层) 与 SAF 均不可写：$fuseTarget',
+    );
   }
 
   static Future<void> createFile(String parentPath, String name, {required bool useRoot}) async {
+    final fuseParent = _normalize(parentPath);
+    final rawParent = _toFuseBypassPath(fuseParent);
+    final fuseTarget = p.join(fuseParent, name);
+    final rawTarget = p.join(rawParent, name);
+    _logDiag('createFile parent=$parentPath fuse=$fuseTarget raw=$rawTarget');
+
+    if (isAndroidDataObbRoot(parentPath)) {
+      throw Exception(
+        'Android/data 或 Android/obb 根目录下不允许直接创建，请进入具体应用目录后再试',
+      );
+    }
+
+    // 同 createFolder：shell(FUSE 优先 + 底层回退 + stat 复核) → SAF 兜底。
+    try {
+      await _writeWithFallback(
+        fuseTarget,
+        rawTarget,
+        useRoot,
+        (target) => 'mkdir -p "${p.dirname(target)}" 2>/dev/null; touch "$target" 2>&1',
+      );
+      return;
+    } catch (e) {
+      _logDiag('createFile shell failed: $e');
+    }
     if (!useRoot && _isRestrictedAndroidPath(parentPath)) {
       final ok = await SafAndroidDataService.createFileViaSaf(
         parentPath,
         name,
-        isObb: parentPath.contains('/Android/obb/'),
+        isObb: _isObbSubPath(parentPath),
       );
-      if (ok) return;
+      if (ok) {
+        _logDiag('createFile via SAF ok: $fuseTarget');
+        return;
+      }
+      _logDiag('createFile via SAF failed too: $fuseTarget');
     }
-    final cleanParent = _toFuseBypassPath(_normalize(parentPath));
-    final cleanPath = p.join(cleanParent, name);
-    final cmd = 'touch "$cleanPath"';
-    await runCommand(cmd, useRoot: useRoot);
+    throw Exception(
+      '新建文件失败，已尝试 shell(FUSE/底层) 与 SAF 均不可写：$fuseTarget',
+    );
+  }
+
+  /// Android/{data,obb} **根层**。
+  /// Android 11+ 连 SAF 都禁止授予这两层（只能授权到其内部的具体包名目录），
+  /// 因此任何在这两层直接新建/写入的尝试都注定失败。过去会静默无反应，
+  /// 现显式抛错，由 UI 提示用户「请进入具体应用目录后再操作」。
+  static bool isAndroidDataObbRoot(String path) {
+    final n = path.replaceAll(RegExp(r'/+'), '/').replaceAll(RegExp(r'/+$'), '');
+    return n == '/storage/emulated/0/Android/data' ||
+        n == '/storage/emulated/0/Android/obb';
+  }
+
+  /// 是否位于 Android/obb 之下（含 obb 根本身，旧的 contains('/Android/obb/')
+  /// 判定会漏掉 obb 根目录，导致 obb 根误用 data 的 SAF 树）。
+  static bool _isObbSubPath(String path) {
+    final n = path.replaceAll(RegExp(r'/+'), '/');
+    return n.contains('/Android/obb/') || n.endsWith('/Android/obb');
   }
 
   /// 是否为 FUSE 受限区（其它应用的 Android/data、Android/obb 文件）。
@@ -630,6 +752,14 @@ class SafAndroidDataService {
       final uri = result['uri'] as String?;
       if (uri != null) {
         await _saveTreeUri(_prefKeyAndroidDataUri, uri);
+        // 同时按「用户实际选择的树根」归档到按包名粒度的存储。
+        // 一个 tree 只覆盖它自己的包名目录，必须逐个归档，后续 _treeUriForRel
+        // 才能精确命中；否则每次进新包名目录都会重复弹一次选择器。
+        final actual = _treeRootDocId(uri);
+        if (actual != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('$_prefTreePrefix$actual', uri);
+        }
         debugPrint('[ZenFile] SAF Android/data authorized: $uri');
       }
       return uri;
@@ -651,6 +781,12 @@ class SafAndroidDataService {
       final uri = result['uri'] as String?;
       if (uri != null) {
         await _saveTreeUri(_prefKeyAndroidObbUri, uri);
+        // 同 [requestAndroidDataAccess]：按实际树根归档，避免重复授权。
+        final actual = _treeRootDocId(uri);
+        if (actual != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('$_prefTreePrefix$actual', uri);
+        }
       }
       return uri;
     } catch (e) {
@@ -660,19 +796,132 @@ class SafAndroidDataService {
   }
 
   /// 获取已存储的 Android/data SAF tree URI。
+  ///
+  /// ⚠️ 兼容语义：历史上此处读写的是「一整个 Android/data 根」的 tree URI，但
+  /// Android 11+ 的 ACTION_OPEN_DOCUMENT_TREE **禁止授予 Android/data 根目录**，
+  /// 只能授予到『具体包名目录』这一层——因此不存在一个能覆盖所有包名的 tree。
+  /// 现改为返回已授权集合中第一个 data 树的 URI，仅供「是否授权过」的判断使用；
+  /// 真正的读/写操作必须走 [_treeUriForRel] 按目标包名精确取树。
   static Future<String?> getAndroidDataTreeUri() async {
-    return _getTreeUri(_prefKeyAndroidDataUri);
+    for (final e in (await _loadTreeMap()).entries) {
+      if (e.key.startsWith('Android/data/')) return e.value;
+    }
+    return null;
   }
 
-  /// 获取已存储的 Android/obb SAF tree URI。
+  /// 获取已存储的 Android/obb SAF tree URI（语义同 [getAndroidDataTreeUri]）。
   static Future<String?> getAndroidObbTreeUri() async {
-    return _getTreeUri(_prefKeyAndroidObbUri);
+    for (final e in (await _loadTreeMap()).entries) {
+      if (e.key.startsWith('Android/obb/')) return e.value;
+    }
+    return null;
   }
 
   /// 检查是否已有 Android/data 的 SAF 授权。
   static Future<bool> hasAndroidDataAccess() async {
     final uri = await getAndroidDataTreeUri();
     return uri != null && uri.isNotEmpty;
+  }
+
+  // ───────────────────────── SAF 按包名粒度的树管理 ─────────────────────────
+
+  /// 已授权树归档：key=树根相对路径（如 `Android/data/com.tencent.mm`），value=treeUri。
+  static const String _prefTreePrefix = 'saf_tree_';
+
+  static Future<Map<String, String>> _loadTreeMap() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = <String, String>{};
+      for (final key in prefs.getKeys()) {
+        if (!key.startsWith(_prefTreePrefix)) continue;
+        final uri = prefs.getString(key);
+        if (uri != null && uri.isNotEmpty) {
+          map[key.substring(_prefTreePrefix.length)] = uri;
+        }
+      }
+      return map;
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// 本地绝对路径 → 相对 `/storage/emulated/0` 的路径。非该前缀则原样返回。
+  static String _relFromLocal(String localPath) {
+    const root = '/storage/emulated/0/';
+    final n = localPath.replaceAll(RegExp(r'/+'), '/');
+    return n.startsWith(root) ? n.substring(root.length) : n;
+  }
+
+  /// 由 treeUri 反解它实际代表的树根相对路径（去掉 `primary:` 前缀）。
+  /// 用于识别「用户实际选了哪个目录」——EXTRA_INITIAL_URI 只是导航起点，
+  /// 用户完全可能选到别的目录。
+  static String? _treeRootDocId(String treeUri) {
+    try {
+      final segs = Uri.parse(treeUri).pathSegments;
+      if (segs.length >= 2 && segs[0] == 'tree') {
+        final docId = segs[1];
+        return docId.startsWith('primary:')
+            ? docId.substring('primary:'.length)
+            : docId;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// 解析一个相对路径所属的「可授权树根」。
+  /// `Android/data/com.tencent.mm/files/x` → 树根 `Android/data/com.tencent.mm`。
+  /// 返回 null 表示该层级不可被 SAF 授权（Android/data 根、Android/obb 根、
+  /// 或非 Android 区路径）——这类路径只能靠 root/shizuku shell 写入。
+  static String? _treeRootForRel(String rel) {
+    final segs = rel.split('/').where((s) => s.isNotEmpty).toList();
+    if (segs.length < 3) return null;
+    if (segs[0] != 'Android') return null;
+    if (segs[1] != 'data' && segs[1] != 'obb') return null;
+    return '${segs[0]}/${segs[1]}/${segs[2]}';
+  }
+
+  /// 公开入口：确保 [localPath] 所属的 SAF 树已授权（未授权则按需弹一次选择器）。
+  /// 返回是否已可用。用于批量操作（复制/压缩）前统一预授权，避免逐文件时反复弹窗。
+  static Future<bool> ensureTreeForPath(String localPath) async {
+    final rel = _relFromLocal(localPath);
+    if (!rel.startsWith('Android/')) return false;
+    final uri = await _treeUriForRel(rel);
+    return uri != null && uri.isNotEmpty;
+  }
+
+  /// 取得（必要时引导用户授权）覆盖 [rel] 的 SAF tree URI；不可用时返回 null。
+  ///
+  /// 授权粒度固定在**包名目录层**（如 `Android/data/com.tencent.mm`）：这正是
+  /// Android 11+ 唯一允许的层级，也是 MT 管理器采用的方案。系统会 EXTRA_INITIAL_URI
+  /// 把选择器直接定位到该包名目录，用户只需点「使用此文件夹」。
+  static Future<String?> _treeUriForRel(String rel) async {
+    final wanted = _treeRootForRel(rel);
+    if (wanted == null) {
+      debugPrint('[ZenFile] SAF: rel "$rel" has no authorizable tree root (root-level not grantable)');
+      return null;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString('$_prefTreePrefix$wanted');
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    final res = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+      'requestSafWithInitialUri',
+      {'initialDocId': 'primary:$wanted'},
+    );
+    final uri = res?['uri'] as String?;
+    if (uri == null || uri.isEmpty) return null;
+    await prefs.setString('$_prefTreePrefix$wanted', uri);
+
+    // 用户可能没按建议选（选到了别的包名目录）：按实际树根再归档一份，
+    // 并检查本次目标是否在树的覆盖范围内，不在则明确失败而不是硬着头皮调用。
+    final actual = _treeRootDocId(uri);
+    if (actual != null && actual != wanted) {
+      await prefs.setString('$_prefTreePrefix$actual', uri);
+      final covered = rel == actual || rel.startsWith('$actual/');
+      debugPrint('[ZenFile] SAF: granted tree=$actual, need=$wanted, covered=$covered');
+      if (!covered) return null;
+    }
+    return uri;
   }
 
   /// 使用 SAF 列出 Android/data 目录内容。
@@ -768,17 +1017,11 @@ class SafAndroidDataService {
   /// 复用原生 `downloadFile`：把本地路径映射为 SAF document URI 后由 ContentResolver 读取。
   /// 未授权时自动弹系统选择器请求授权；拒绝或失败返回 false，由调用方决定是否抛异常。
   static Future<bool> copyFileViaSaf(String srcLocalPath, String destLocalPath, {bool isObb = false}) async {
-    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
-    if (treeUri == null || treeUri.isEmpty) {
-      // 未授权则尝试请求（首次复制会弹系统选择器）
-      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
-    }
+    final rel = _relFromLocal(srcLocalPath);
+    if (!rel.startsWith('Android/')) return false;
+    final treeUri = await _treeUriForRel(rel);
     if (treeUri == null || treeUri.isEmpty) return false;
     try {
-      final rel = srcLocalPath.startsWith('/storage/emulated/0/')
-          ? srcLocalPath.substring('/storage/emulated/0/'.length)
-          : srcLocalPath;
-      if (!rel.startsWith('Android/')) return false;
       final docId = 'primary:$rel';
       final docUri = _buildSafDocUri(treeUri, docId);
       final out = await _channel.invokeMethod('downloadFile', {
@@ -796,19 +1039,16 @@ class SafAndroidDataService {
   /// 将本地路径映射到 SAF 父目录的 document URI（基于已授权的 Android/data 或 obb 树）。
   /// [parentLocalPath] 形如 /storage/emulated/0/Android/data/com.tencent.mm/Telegram Images。
   /// 返回 {'treeUri':..., 'parentUri':...}；未授权（且用户拒绝授权）则返回 null。
+  /// [isObb] 已废弃：树按目标路径自动判定（旧的 contains('/Android/obb/') 会把
+  /// obb 根误判成 data）。保留参数仅为兼容既有调用点，不再参与取树。
   static Future<Map<String, String>?> _resolveSafParent(String parentLocalPath, {bool isObb = false}) async {
-    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
-    if (treeUri == null || treeUri.isEmpty) {
-      // 未授权则尝试请求（首次创建会弹系统选择器）
-      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
-    }
-    if (treeUri == null || treeUri.isEmpty) return null;
-    final rel = parentLocalPath.startsWith('/storage/emulated/0/')
-        ? parentLocalPath.substring('/storage/emulated/0/'.length)
-        : parentLocalPath;
+    final rel = _relFromLocal(parentLocalPath);
     if (!rel.startsWith('Android/')) return null;
-    final docId = 'primary:$rel';
-    final parentUri = _buildSafDocUri(treeUri, docId);
+    // 按目标包名精确取/请求树：不再依赖「一个全局 Android/data 授权」，
+    // 后者在 Android 11+ 上根本无法获得（根层级被系统禁止授权）。
+    final treeUri = await _treeUriForRel(rel);
+    if (treeUri == null || treeUri.isEmpty) return null;
+    final parentUri = _buildSafDocUri(treeUri, 'primary:$rel');
     return {'treeUri': treeUri, 'parentUri': parentUri};
   }
 
@@ -817,16 +1057,10 @@ class SafAndroidDataService {
   /// 内的源文件——dart:io 读不到内容（shell 在 FUSE 只得到元数据、底层 0660 无权限），
   /// 必须走 ContentResolver 读取真实字节。未授权自动请求；失败返回 false。
   static Future<bool> downloadPathViaSaf(String srcLocalPath, String destLocalPath, {bool isObb = false}) async {
-    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
-    if (treeUri == null || treeUri.isEmpty) {
-      // 未授权则尝试请求（首次压缩会弹系统选择器）
-      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
-    }
-    if (treeUri == null || treeUri.isEmpty) return false;
-    final rel = srcLocalPath.startsWith('/storage/emulated/0/')
-        ? srcLocalPath.substring('/storage/emulated/0/'.length)
-        : srcLocalPath;
+    final rel = _relFromLocal(srcLocalPath);
     if (!rel.startsWith('Android/')) return false;
+    final treeUri = await _treeUriForRel(rel);
+    if (treeUri == null || treeUri.isEmpty) return false;
     final docId = 'primary:$rel';
     final docUri = _buildSafDocUri(treeUri, docId);
     try {

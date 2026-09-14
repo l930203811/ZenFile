@@ -335,7 +335,7 @@ class FolderItem extends StatelessWidget {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 18),
+                  icon: const Icon(Icons.more_vert, size: 18),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 32,
@@ -346,6 +346,11 @@ class FolderItem extends StatelessWidget {
                       context,
                       onAction,
                       showSetAsHome: true,
+                      // 文件夹也提供「打开方式」（用第三方应用打开目录）
+                      openWith: true,
+                      isCurrentHome:
+                          context.read<FileManagerProvider>().homeDirectory ==
+                              folder.path,
                       showShare: !folder.isRemote,
                       filePath: folder.path,
                       isEncrypted: folder.isEncrypted,

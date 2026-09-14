@@ -6902,6 +6902,82 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl210_feat_6": "新增分贝仪：可在工具箱或侧边栏打开，实时测量环境噪音分贝值，并显示噪声曲线、环境判定与对听力的影响提示。",
+  "@cl210_feat_6": {
+    "description": "changelog 2.1.0: cl210_feat_6"
+  },
+  "cl210_features": "新增功能",
+  "@cl210_features": {
+    "description": "changelog 2.1.0: cl210_features"
+  },
+  "cl210_feat_1": "视频支持后台播放：菜单新增「后台播放」，关闭播放页后仍可在通知栏控制播放、暂停与进度。",
+  "@cl210_feat_1": {
+    "description": "changelog 2.1.0: cl210_feat_1"
+  },
+  "cl210_feat_2": "视频定时关闭：可设置 15 / 30 / 45 / 60 分钟后停止播放，已设置时可随时取消。",
+  "@cl210_feat_2": {
+    "description": "changelog 2.1.0: cl210_feat_2"
+  },
+  "cl210_feat_3": "文件夹新增「打开方式」：此前只有文件有该入口，网格、列表与双窗格视图均已支持。",
+  "@cl210_feat_3": {
+    "description": "changelog 2.1.0: cl210_feat_3"
+  },
+  "cl210_feat_4": "属性入口补全：浏览页、最近页与分类页的三点菜单均可查看文件或文件夹属性。",
+  "@cl210_feat_4": {
+    "description": "changelog 2.1.0: cl210_feat_4"
+  },
+  "cl210_feat_5": "设为首页支持取消：已设为首页的文件夹，菜单中会显示「取消设为首页」。",
+  "@cl210_feat_5": {
+    "description": "changelog 2.1.0: cl210_feat_5"
+  },
+  "cl210_ui": "界面与交互",
+  "@cl210_ui": {
+    "description": "changelog 2.1.0: cl210_ui"
+  },
+  "cl210_ui_1": "三点菜单改为图标宫格：图标在上、文字在下，长标题两行显示，并按项数自动排列为三列或四列。",
+  "@cl210_ui_1": {
+    "description": "changelog 2.1.0: cl210_ui_1"
+  },
+  "cl210_ui_2": "统一浏览页与分类页的菜单顺序，「设为首页」与「在位置中显示」位于同一位置。",
+  "@cl210_ui_2": {
+    "description": "changelog 2.1.0: cl210_ui_2"
+  },
+  "cl210_ui_3": "优化图标宫格对齐：多语言长标题换行时，同一排图标仍保持在同一水平线。",
+  "@cl210_ui_3": {
+    "description": "changelog 2.1.0: cl210_ui_3"
+  },
+  "cl210_ui_4": "文件与文件夹的三点按钮改为竖排样式，覆盖网格、列表与紧凑三种视图。",
+  "@cl210_ui_4": {
+    "description": "changelog 2.1.0: cl210_ui_4"
+  },
+  "cl210_ui_5": "视频播放优化：左右拖动快进快退不再中断播放；锁定按钮移至左侧中部并常驻显示。",
+  "@cl210_ui_5": {
+    "description": "changelog 2.1.0: cl210_ui_5"
+  },
+  "cl210_fixes": "问题修复",
+  "@cl210_fixes": {
+    "description": "changelog 2.1.0: cl210_fixes"
+  },
+  "cl210_fix_1": "修复在受限的 Android/data、Android/obb 目录中无法新建文件、文件夹与压缩包的问题：修正写入路径策略，并将授权方式改为按应用目录逐个授权。",
+  "@cl210_fix_1": {
+    "description": "changelog 2.1.0: cl210_fix_1"
+  },
+  "cl210_fix_2": "新建不再无提示地失败：失败时会显示具体原因；在 Android/data 根目录新建时会提示先进入具体应用目录。",
+  "@cl210_fix_2": {
+    "description": "changelog 2.1.0: cl210_fix_2"
+  },
+  "cl210_fix_3": "修复分类页多选「置顶」无效的问题（置顶已保存但列表未重新排序），并修正菜单文案为「取消置顶」。",
+  "@cl210_fix_3": {
+    "description": "changelog 2.1.0: cl210_fix_3"
+  },
+  "cl210_fix_4": "修复「取消设为首页」无效的问题：此前首页设置未被真正清除。",
+  "@cl210_fix_4": {
+    "description": "changelog 2.1.0: cl210_fix_4"
+  },
+  "cl210_fix_5": "修复部分页面「属性」点击无响应的问题。",
+  "@cl210_fix_5": {
+    "description": "changelog 2.1.0: cl210_fix_5"
+  },
   "cl200_notice": "版本与包名变更（务必阅读）",
   "@cl200_notice": {
     "description": "changelog 2.0.0: cl200_notice"
@@ -7824,5 +7900,30 @@
     }
   },
   "ui_cancel_set_as_home": "取消设为首页",
-  "ui_unpin": "取消置顶"
+  "ui_unpin": "取消置顶",
+  "decibel_meter_title": "分贝仪",
+  "decibel_meter_current": "当前分贝值",
+  "decibel_meter_verdict": "环境判定",
+  "decibel_meter_curve": "噪声曲线",
+  "decibel_meter_start": "开始测量",
+  "decibel_meter_stop": "停止测量",
+  "decibel_meter_level_quiet": "安静",
+  "decibel_meter_level_normal": "一般",
+  "decibel_meter_level_noisy": "较吵",
+  "decibel_meter_level_very_noisy": "很吵",
+  "decibel_meter_level_dangerous": "危险",
+  "decibel_meter_health_impact": "对人体的影响",
+  "decibel_meter_health_safe": "正常环境，对人体无危害。",
+  "decibel_meter_health_moderate": "较嘈杂，长时间暴露可能影响听力。",
+  "decibel_meter_health_harmful": "非常吵，长时间暴露会损伤听力。",
+  "decibel_meter_health_dangerous": "危险级别，立即远离并保护听力！",
+  "decibel_meter_examples": "常见场景举例",
+  "decibel_meter_examples_text": "普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。",
+  "decibel_meter_perm_denied": "需要麦克风权限才能测量环境音量，请在设置中开启。",
+  "decibel_meter_perm_title": "需要麦克风权限",
+  "decibel_meter_perm_settings": "麦克风权限已被永久拒绝，请前往系统设置中为 ZenFile 开启麦克风权限后重试。",
+  "decibel_meter_perm_open_settings": "去设置",
+  "msg_background_play": "后台播放",
+  "msg_sleep_timer": "定时关闭",
+  "msg_background_play_active": "已进入后台播放，可通过通知栏控制"
 }

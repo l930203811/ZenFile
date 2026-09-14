@@ -6615,6 +6615,82 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl210_feat_6": "Sonómetro: ábrelo desde la caja de herramientas o el menú lateral para medir el ruido ambiente en tiempo real, con la curva de ruido, la valoración del entorno y avisos sobre cómo afecta al oído.",
+  "@cl210_feat_6": {
+    "description": "changelog 2.1.0: cl210_feat_6"
+  },
+  "cl210_features": "Novedades",
+  "@cl210_features": {
+    "description": "changelog 2.1.0: cl210_features"
+  },
+  "cl210_feat_1": "Reproducción de vídeo en segundo plano: una nueva opción mantiene la reproducción al salir del reproductor y la notificación permite reproducir, pausar y mover la posición.",
+  "@cl210_feat_1": {
+    "description": "changelog 2.1.0: cl210_feat_1"
+  },
+  "cl210_feat_2": "Temporizador de apagado para vídeo: detén la reproducción a los 15, 30, 45 o 60 minutos y cancela el temporizador cuando quieras.",
+  "@cl210_feat_2": {
+    "description": "changelog 2.1.0: cl210_feat_2"
+  },
+  "cl210_feat_3": "«Abrir con» en carpetas: antes solo existía para archivos; ahora funciona en las vistas de cuadrícula, lista y doble panel.",
+  "@cl210_feat_3": {
+    "description": "changelog 2.1.0: cl210_feat_3"
+  },
+  "cl210_feat_4": "Propiedades en todas partes: el menú de tres puntos del navegador, de Recientes y de las categorías muestra las propiedades de archivos y carpetas.",
+  "@cl210_feat_4": {
+    "description": "changelog 2.1.0: cl210_feat_4"
+  },
+  "cl210_feat_5": "La carpeta de inicio se puede quitar: una carpeta ya fijada como inicio ofrece «Quitar como inicio» en su menú.",
+  "@cl210_feat_5": {
+    "description": "changelog 2.1.0: cl210_feat_5"
+  },
+  "cl210_ui": "Interfaz y uso",
+  "@cl210_ui": {
+    "description": "changelog 2.1.0: cl210_ui"
+  },
+  "cl210_ui_1": "El menú de tres puntos es ahora una cuadrícula de iconos: el icono arriba y el texto debajo, los textos largos ocupan dos líneas y se colocan en tres o cuatro columnas según el número de elementos.",
+  "@cl210_ui_1": {
+    "description": "changelog 2.1.0: cl210_ui_1"
+  },
+  "cl210_ui_2": "Los menús del navegador y de las categorías comparten el mismo orden; «Establecer como inicio» ocupa el lugar de «Mostrar en la carpeta».",
+  "@cl210_ui_2": {
+    "description": "changelog 2.1.0: cl210_ui_2"
+  },
+  "cl210_ui_3": "Mejor alineación en la cuadrícula: aunque los textos traducidos ocupen dos líneas, los iconos de una fila siguen en la misma altura.",
+  "@cl210_ui_3": {
+    "description": "changelog 2.1.0: cl210_ui_3"
+  },
+  "cl210_ui_4": "El botón de tres puntos de archivos y carpetas ahora es vertical, en las vistas de cuadrícula, lista y compacta.",
+  "@cl210_ui_4": {
+    "description": "changelog 2.1.0: cl210_ui_4"
+  },
+  "cl210_ui_5": "Reproducción de vídeo mejorada: desplazar para avanzar ya no interrumpe la reproducción y el botón de bloqueo se ha movido al centro del borde izquierdo, donde permanece visible.",
+  "@cl210_ui_5": {
+    "description": "changelog 2.1.0: cl210_ui_5"
+  },
+  "cl210_fixes": "Correcciones",
+  "@cl210_fixes": {
+    "description": "changelog 2.1.0: cl210_fixes"
+  },
+  "cl210_fix_1": "Corregido: no se podían crear archivos, carpetas ni comprimidos dentro de las carpetas restringidas Android/data y Android/obb. Se ha corregido la estrategia de ruta de escritura y el permiso se concede ahora por carpeta de aplicación.",
+  "@cl210_fix_1": {
+    "description": "changelog 2.1.0: cl210_fix_1"
+  },
+  "cl210_fix_2": "Los fallos al crear ya no son silenciosos: se muestra el motivo y, si intentas crear directamente en Android/data, se te indica que entres antes en una carpeta de aplicación.",
+  "@cl210_fix_2": {
+    "description": "changelog 2.1.0: cl210_fix_2"
+  },
+  "cl210_fix_3": "Corregido: «Anclar arriba» en el menú de selección múltiple de las categorías no hacía nada (el anclaje se guardaba pero la lista no se reordenaba); además la etiqueta correcta es «Quitar anclaje».",
+  "@cl210_fix_3": {
+    "description": "changelog 2.1.0: cl210_fix_3"
+  },
+  "cl210_fix_4": "Corregido: «Quitar como inicio» no funcionaba porque el ajuste no se borraba de verdad.",
+  "@cl210_fix_4": {
+    "description": "changelog 2.1.0: cl210_fix_4"
+  },
+  "cl210_fix_5": "Corregido: «Propiedades» no respondía en algunas páginas.",
+  "@cl210_fix_5": {
+    "description": "changelog 2.1.0: cl210_fix_5"
+  },
   "cl200_notice": "Cambio de versión y de nombre de paquete (lee esto)",
   "@cl200_notice": {
     "description": "changelog 2.0.0: cl200_notice"
@@ -7537,5 +7613,30 @@
     }
   },
   "ui_cancel_set_as_home": "Quitar como inicio",
-  "ui_unpin": "Desanclar"
+  "ui_unpin": "Desanclar",
+  "decibel_meter_title": "Sonómetro",
+  "decibel_meter_current": "Nivel actual",
+  "decibel_meter_verdict": "Evaluación",
+  "decibel_meter_curve": "Curva de ruido",
+  "decibel_meter_start": "Iniciar",
+  "decibel_meter_stop": "Detener",
+  "decibel_meter_level_quiet": "Tranquilo",
+  "decibel_meter_level_normal": "Normal",
+  "decibel_meter_level_noisy": "Ruidoso",
+  "decibel_meter_level_very_noisy": "Muy ruidoso",
+  "decibel_meter_level_dangerous": "Peligroso",
+  "decibel_meter_health_impact": "Impacto en la salud",
+  "decibel_meter_health_safe": "Entorno normal, sin riesgo para la salud.",
+  "decibel_meter_health_moderate": "Ruidoso, la exposición prolongada puede afectar la audición.",
+  "decibel_meter_health_harmful": "Muy ruidoso, la exposición prolongada puede dañar la audición.",
+  "decibel_meter_health_dangerous": "Nivel peligroso, ¡aléjate y protege tu audición!",
+  "decibel_meter_examples": "Ejemplos comunes",
+  "decibel_meter_examples_text": "Conversación normal (aprox. 50-60 dB), oficina tranquila, zumbido de nevera.",
+  "decibel_meter_perm_denied": "Se requiere el permiso de micrófono para medir el sonido ambiente. Actívalo en los ajustes.",
+  "decibel_meter_perm_title": "Permiso de micrófono necesario",
+  "decibel_meter_perm_settings": "El permiso de micrófono fue denegado permanentemente. Actívalo para ZenFile en los ajustes del sistema e inténtalo de nuevo.",
+  "decibel_meter_perm_open_settings": "Abrir ajustes",
+  "msg_background_play": "Reproducción en segundo plano",
+  "msg_sleep_timer": "Temporizador de reposo",
+  "msg_background_play_active": "Reproduciendo en segundo plano, controla desde la notificación"
 }

@@ -15,6 +15,7 @@ import 'package:zenfile/services/network_connections_service.dart';
 import 'package:zenfile/services/subtitle_parser.dart';
 import 'package:zenfile/services/audio_background_handler.dart';
 import 'package:zenfile/services/audio_equalizer_service.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:zenfile/providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
 import '../internal_file_picker_screen.dart';
@@ -69,6 +70,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   // 最近一次系统方向，供手动全屏/退出全屏决策使用。
   Orientation _currentOrientation = Orientation.portrait;
   bool _isLocked = false;
+  // 后台播放模式：页面退出后保留 player，由通知栏媒体控制器继续控制
+  bool _isBackgroundMode = false;
+  // 定时关闭
+  Timer? _sleepTimer;
+  int? _sleepTimerMinutes;
+  // 横向拖动快进快退前是否正在播放（拖动结束后恢复播放状态）
+  bool _wasPlayingBeforeDrag = false;
   double _playbackSpeed = 1.0;
   // 音频均衡器（复用音频播放器的 mpv lavfi equalizer 服务）
   final AudioEqualizerService _eqService = AudioEqualizerService();
@@ -1710,7 +1718,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   void _toggleControls() {
-    if (_isLocked) return;
+    // 锁定时点击屏幕同样切换显隐：唤出的仅是解锁按钮，
+    // 控制条本体由 AnimatedOpacity(opacity: _controlsVisible && !_isLocked) 保持隐藏，
+    // 避免锁定状态下的误触，点击解锁按钮后恢复完整控制条。
     if (_controlsVisible) {
       _hideControls();
     } else {
@@ -2121,14 +2131,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _dragStartPosition = _position;
     _dragSeekDelta = 0;
     _hideTimer?.cancel();
-    // Pause & show frame preview container
-    player.pause();
-    setState(() {
-      _isPreviewDragging = true;
-      _previewImage = null;
-      _previewTarget = _position;
-    });
-    _schedulePreviewCapture();
+    _wasPlayingBeforeDrag = player.state.playing;
+    if (_wasPlayingBeforeDrag) {
+      // 播放中拖动：不暂停视频，避免拖动结束后停留在暂停状态
+      setState(() {
+        _isPreviewDragging = false;
+        _previewImage = null;
+      });
+    } else {
+      // 已暂停状态拖动：保持帧预览截图
+      player.pause();
+      setState(() {
+        _isPreviewDragging = true;
+        _previewImage = null;
+        _previewTarget = _position;
+      });
+      _schedulePreviewCapture();
+    }
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
@@ -2163,6 +2182,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _isPreviewDragging = false;
       _previewImage = null;
     });
+    // 拖动前正在播放：seek 后自动恢复播放，不再停留在暂停状态
+    if (_wasPlayingBeforeDrag && !player.state.playing) {
+      player.play();
+    }
     _seekIndicatorTimer?.cancel();
     _seekIndicatorTimer = Timer(const Duration(milliseconds: 400), () {
       if (mounted) {
@@ -2346,14 +2369,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _cacheCheckTimer?.cancel();
     _aspectToastTimer?.cancel();
     _progressSaveTimer?.cancel();
+    _sleepTimer?.cancel();
     _saveCurrentPlaybackPosition();
     _controlsAnimController.dispose();
-    // 清理远程流式会话：fire-and-forget 但确保异步执行。
-    // dispose() 不能是 async（Framework 要求 void），
-    // 但 stopStreaming 内部会调用 client.disconnect() 取消下载。
-    _stopCurrentStream();
-    _eqService.detach();
-    player.dispose();
+    if (_isBackgroundMode) {
+      // 后台播放：保留 player、均衡器与远程流会话，由通知栏媒体控制器继续控制。
+      // 不清除 skip 回调（无队列时通知栏不会触发切歌）。
+      getAudioHandler().setSkipCallback(null);
+    } else {
+      // 清理远程流式会话：fire-and-forget 但确保异步执行。
+      // dispose() 不能是 async（Framework 要求 void），
+      // 但 stopStreaming 内部会调用 client.disconnect() 取消下载。
+      _stopCurrentStream();
+      _eqService.detach();
+      player.dispose();
+      getAudioHandler().detach();
+    }
     // 离开播放页复位 edge-to-edge，避免影响其它页面布局。
     _setEdgeToEdge(false);
     final hideNav = PreferencesService.getHideNavigationBar();
@@ -2617,6 +2648,240 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         ],
       ),
     );
+  }
+
+  // ─── 后台播放：复用 audio_service 通知栏媒体控制器 ────────────────────────
+
+  /// 进入后台播放：将当前视频播放器挂到 audio_service，
+  /// 关闭页面后通知栏仍可播放/暂停/拖动进度。
+  Future<void> _startBackgroundMode() async {
+    final l10n = L10n.of(context);
+    final handler = getAudioHandler();
+    final currentPath = _currentStreamUrl ?? widget.videoPath;
+    if (currentPath.isEmpty) return;
+
+    // 确保视频正在播放（后台模式要求音频流持续）
+    if (!player.state.playing) {
+      await player.play();
+    }
+
+    handler.attach(
+      player: player,
+      queue: [
+        MediaItem(
+          id: currentPath,
+          title: _fileName,
+          duration: _duration,
+        ),
+      ],
+      currentIndex: 0,
+      // 视频后台播放不写入音频"上次播放"记录
+      persistAsAudio: false,
+    );
+    handler.setSkipCallback(null);
+    if (!mounted) return;
+
+    setState(() => _isBackgroundMode = true);
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.msg_background_play_active,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // ─── 定时关闭 ─────────────────────────────────────────────────────────────
+
+  /// 设置睡眠定时器，指定分钟后暂停播放并退出播放器。
+  void _setSleepTimer(int minutes) {
+    _sleepTimer?.cancel();
+    _sleepTimer = Timer(Duration(minutes: minutes), () {
+      try {
+        player.pause();
+      } catch (_) {}
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              L10n.of(context).ui_sleep_timer_end,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: Colors.deepPurpleAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        // 关闭播放器界面
+        Navigator.of(context).pop();
+        setState(() => _sleepTimerMinutes = null);
+      }
+      _sleepTimer = null;
+    });
+    setState(() => _sleepTimerMinutes = minutes);
+  }
+
+  /// 取消已设置的睡眠定时器。
+  void _cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    if (mounted) {
+      setState(() => _sleepTimerMinutes = null);
+    } else {
+      _sleepTimerMinutes = null;
+    }
+  }
+
+  /// 显示定时关闭对话框（15/30/45/60 分钟 + 取消）
+  void _showSleepTimerDialog() {
+    final l10n = L10n.of(context);
+    final isTimerActive = _sleepTimer != null && _sleepTimer!.isActive;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Icon(Broken.timer, color: Colors.deepPurpleAccent),
+            const SizedBox(width: 10),
+            Text(
+              l10n.msg47cab5ae,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...[15, 30, 45, 60].map((mins) => ListTile(
+                  title: Text(
+                    isTimerActive && _sleepTimerMinutes == mins
+                        ? '${l10n.ui_minutes_format(mins)} ✓'
+                        : l10n.ui_minutes_format(mins),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _setSleepTimer(mins);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          l10n.ui_sleep_timer_set(mins),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                        backgroundColor: Colors.deepPurpleAccent,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    );
+                  },
+                )),
+            const Divider(color: Colors.white24, height: 1),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: Colors.white70),
+              title: Text(
+                l10n.msgf1d4ff50,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+              onTap: () {
+                Navigator.pop(context);
+                _showCustomSleepTimerInput();
+              },
+            ),
+            if (isTimerActive)
+              ListTile(
+                leading: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
+                title: Text(
+                  l10n.ui_cancel,
+                  style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _cancelSleepTimer();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 显示自定义分钟数输入对话框（与音频播放器一致）
+  Future<void> _showCustomSleepTimerInput() async {
+    final l10n = L10n.of(context);
+    final controller = TextEditingController();
+    final minutes = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Icon(Broken.timer, color: Colors.deepPurpleAccent),
+            const SizedBox(width: 10),
+            Text(
+              l10n.msg47cab5ae,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: l10n.ui_enter_minutes,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.05),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.ui_cancel, style: const TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text.trim());
+              if (value != null && value > 0) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: Text(l10n.ui_confirm, style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (minutes != null && mounted) {
+      _setSleepTimer(minutes);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.ui_sleep_timer_set(minutes),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: Colors.deepPurpleAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   @override
@@ -2912,14 +3177,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             ),
 
           // Modular Controls Overlay
-          FadeTransition(
-            opacity: _controlsOpacity,
+          // 锁定时控制条本体保持隐藏（仅由主页面解锁按钮负责唤出/解锁）
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            opacity: (_controlsVisible && !_isLocked) ? 1.0 : 0.0,
             child: IgnorePointer(
-              ignoring: !_controlsVisible,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  VideoControlsOverlay(
+              ignoring: !_controlsVisible || _isLocked,
+              child: FadeTransition(
+                opacity: _controlsOpacity,
+                child: IgnorePointer(
+                  ignoring: !_controlsVisible,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      VideoControlsOverlay(
                     title: _fileName,
                     isPlaying: _isPlaying,
                     position: _position,
@@ -2927,7 +3199,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     sliderValue: _sliderValue,
                     playbackSpeed: _playbackSpeed,
                     isFullScreen: _isFullScreen,
-                    isLocked: false,
+                    isLocked: _isLocked,
                     isMuted: _isMuted,
                     repeatMode: _playbackMode,
                     rotationTurns: _rotationTurns,
@@ -2961,7 +3233,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     },
                     onToggleLock: () {
                       setState(() => _isLocked = !_isLocked);
-                      _showControls();
+                      if (_isLocked) {
+                        // 锁定后隐藏控制条，仅保留左侧中间解锁按钮
+                        _hideControls();
+                      } else {
+                        _showControls();
+                      }
                     },
                     onToggleMute: () {
                       if (_isMuted) {
@@ -2995,6 +3272,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     onSelectAudioTrack: _showAudioTrackSelector,
                     onSelectSubtitleTrack: _showSubtitleTrackSelector,
                     onOpenPlaylist: _showPlaylist,
+                    onBackground: _startBackgroundMode,
+                    onSleepTimer: _showSleepTimerDialog,
                     subtitleEnabled: _subtitleEnabled,
                     subtitlePath: _subtitlePath,
                     hasAudioTracks: _availableAudioTracks.length > 2,
@@ -3007,45 +3286,61 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               ),
             ),
           ),
+        ),
+      ),
 
-          // Lock Indicator - Always visible when locked
-          if (_isLocked)
-            Positioned(
-              top: 32,
-              left: 24,
-              child: SafeArea(
-                top: !_isFullScreen,
-                bottom: !_isFullScreen,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() => _isLocked = false);
-                    _showControls();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.75),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(color: Theme.of(context).colorScheme.primary.withOpacity(0.4), blurRadius: 16),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Broken.lock, color: Theme.of(context).colorScheme.primary, size: 22),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.of(context).msg_slide_to_unlock,
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          // 锁定按钮 - 左侧中间位置
+          // 完全跟随控制条显隐：锁定后控制条隐藏时按钮同步隐藏，进入沉浸式播放
+          // 锁定时点击屏幕唤出解锁按钮（控制条本体仍隐藏），点击解锁后恢复控制条
+          Positioned(
+            left: 12,
+            top: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: !_isFullScreen,
+              bottom: !_isFullScreen,
+              child: Center(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  opacity: _controlsVisible ? 1.0 : 0.0,
+                  child: IgnorePointer(
+                    ignoring: !_controlsVisible,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => _isLocked = !_isLocked);
+                        if (_isLocked) {
+                          _hideControls();
+                        } else {
+                          _showControls();
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _isLocked
+                                ? Theme.of(context).colorScheme.primary.withOpacity(0.7)
+                                : Colors.white.withOpacity(0.25),
+                            width: 1.2,
+                          ),
                         ),
-                      ],
+                        child: Icon(
+                          _isLocked ? Broken.unlock : Broken.lock,
+                          color: _isLocked
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.white,
+                          size: 22,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

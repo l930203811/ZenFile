@@ -4073,10 +4073,12 @@ class FileManagerProvider extends ChangeNotifier {
 
   /// 取消当前激活 pane 的首页设置
   Future<void> clearHomeDirectory() async {
+    // 必须传 null（删除 key），存 '' 会被 getHomeDirectory* 读回空串而非 null，
+    // 导致「未设置」判定失效（goToHome 等以 != null 判断）。
     if (_activeTabIndex == 0) {
-      await PreferencesService.saveHomeDirectoryLeft('');
+      await PreferencesService.saveHomeDirectoryLeft(null);
     } else {
-      await PreferencesService.saveHomeDirectoryRight('');
+      await PreferencesService.saveHomeDirectoryRight(null);
     }
     notifyListeners();
   }
@@ -5617,16 +5619,15 @@ class FileManagerProvider extends ChangeNotifier {
         // 纯 Shizuku（无 root）时 shell 两种路径都读不到其它应用 Android/{data,obb}
         // 文件内容（FUSE 只给元数据、底层 0660 无权限），必须经 SAF（ContentResolver）
         // 读取。复制前先确保已授权，避免逐个文件复制时反复弹系统选择器打断流程。
+        // 旧实现用 hasAndroidDataAccess()/getAndroidObbTreeUri() 判断「是否已授权」，
+        // 隐含假设「存在一个覆盖所有包名的 Android/data 授权」——Android 11+ 上
+        // 根层级不可授权、一个 tree 只覆盖自己那个包名目录，该假设不成立。
+        // 改为按每个受限源所属的包名目录精确预授权（仅纯 Shizuku 场景，
+        // root 模式 shell 可直接读写，不需要 SAF 也不该弹选择器）。
         if (bypassUseRoot == false) {
-          if (!await SafAndroidDataService.hasAndroidDataAccess()) {
-            if (await SafAndroidDataService.requestAndroidDataAccess() == null) {
-              throw Exception('需授权 Android/data 才能复制受限文件');
-            }
-          }
-          if (_clipboardPaths.any((sp) => sp.contains('/Android/obb/')) &&
-              (await SafAndroidDataService.getAndroidObbTreeUri()) == null) {
-            if (await SafAndroidDataService.requestAndroidObbAccess() == null) {
-              throw Exception('需授权 Android/obb 才能复制受限文件');
+          for (final sp in _clipboardPaths) {
+            if (_isRestrictedAndroidPath(sp)) {
+              await SafAndroidDataService.ensureTreeForPath(sp);
             }
           }
         }
@@ -8016,7 +8017,15 @@ class FileManagerProvider extends ChangeNotifier {
     return '$base$name';
   }
 
+  /// 最近一次「新建文件/文件夹」失败的原因。受限目录（其它应用 Android/{data,obb}）
+  /// 下 shell/SAF 都可能被系统拒绝，过去 provider 只返回 null、UI 无任何反馈，
+  /// 表现为「点了新建完全没反应」。现在把原因透给 UI 展示，便于用户自查与反馈。
+  /// 成功时置 null。
+  String? _lastCreateError;
+  String? get lastCreateError => _lastCreateError;
+
   Future<String?> createFolder(String name) async {
+    _lastCreateError = null;
     try {
       // 远程加密新建文件夹（cryptremote://）：目录名需用密码加密为密文
       if (activeTab.isCryptRemote && activeTab.remoteClient != null) {
@@ -8052,13 +8061,18 @@ class FileManagerProvider extends ChangeNotifier {
       }
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
       return finalName;
-    } catch (e) {
-      debugPrint('创建文件夹出错：{e}');
+    } catch (e, st) {
+      // ⚠️ 旧代码写的是 '创建文件夹出错：{e}'（漏了 $），真实异常永远不会被打印，
+      // 这也是前几轮受限目录新建失败「查不到原因」的直接原因。
+      debugPrint('创建文件夹出错：$e');
+      debugPrint('堆栈：$st');
+      _lastCreateError = e.toString();
       return null;
     }
   }
 
   Future<String?> createFile(String name) async {
+    _lastCreateError = null;
     try {
       String finalName = name;
       final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
@@ -8078,8 +8092,10 @@ class FileManagerProvider extends ChangeNotifier {
       }
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
       return finalName;
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('Error creating file: $e');
+      debugPrint('Stack: $st');
+      _lastCreateError = e.toString();
       return null;
     }
   }
@@ -8134,14 +8150,11 @@ class FileManagerProvider extends ChangeNotifier {
     if (!useRootMode) {
       final restrictedSources = paths.where(_isRestrictedAndroidPath).toList();
       if (restrictedSources.isNotEmpty) {
-        // 预请求授权（首次会弹系统选择器），data 与 obb 分别处理。
-        if (restrictedSources.any((s) => s.contains('/Android/obb/')) &&
-            (await SafAndroidDataService.getAndroidObbTreeUri() ?? '').isEmpty) {
-          await SafAndroidDataService.requestAndroidObbAccess();
-        }
-        if (restrictedSources.any((s) => !s.contains('/Android/obb/')) &&
-            (await SafAndroidDataService.getAndroidDataTreeUri() ?? '').isEmpty) {
-          await SafAndroidDataService.requestAndroidDataAccess();
+        // 预请求授权（首次会弹系统选择器）：按每个受限源所属「包名目录」精确授权。
+        // 旧的「先看有没有 data/obb 全局授权」逻辑不成立——Android 11+ 把授权
+        // 粒度限制在具体包名目录（根层级不可授权），一棵树只覆盖自己的包名目录。
+        for (final src in restrictedSources) {
+          await SafAndroidDataService.ensureTreeForPath(src);
         }
         final tmpBase = await Directory.systemTemp.createTemp('zenfile_saf_src_');
         final downloaded = <String>[];
@@ -8195,6 +8208,28 @@ class FileManagerProvider extends ChangeNotifier {
     // 改为先压缩到本地临时文件，由 BackgroundArchiveService 完成后经 SAF 上传到目标目录
     // （逐文件模式另走服务端写入，此处仅处理单包场景，逐文件模式回落原逻辑）。
     if (isRestrictedPath(currentPath) && !useRootMode && !separateArchives) {
+      // 受限目录的压缩包要经 SAF 写回目标目录，而 SAF 只能按「包名目录」粒度授权
+      // （Android 11+ 禁止授予 Android/data 根）。启动前先确认目标树可用：
+      // 否则会出现「进度条跑完、目标目录里却找不到压缩包」——过去几轮反复反馈
+      // 「压缩包不行」正是这个原因（写回失败只在后台 debugPrint，界面无感知）。
+      final treeReady = await SafAndroidDataService.ensureTreeForPath(currentPath);
+      if (!treeReady) {
+        final reason = RootShizukuService.isAndroidDataObbRoot(currentPath)
+            ? 'Android/data 与 Android/obb 根目录不支持写入，请进入具体应用目录'
+            : '未获得该目录的写入授权';
+        if (context != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${L10n.of(context).msg5fa802be}: $reason'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+        selectedPaths.clear();
+        notifyListeners();
+        return;
+      }
       final tempDir = Directory.systemTemp;
       final tempFileName = '$archiveName.$format';
       final tempPath = p.join(tempDir.path, tempFileName);

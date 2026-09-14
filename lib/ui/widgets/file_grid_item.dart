@@ -235,7 +235,7 @@ class FileGridItem extends StatelessWidget {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 16),
+                  icon: const Icon(Icons.more_vert, size: 16),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 28,

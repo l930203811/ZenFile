@@ -6657,6 +6657,79 @@ class L10nRu extends L10n {
   String get vault_config_password => 'Настройка пароля';
 
   @override
+  String get cl210_feat_6 =>
+      'Шумомер: открывается из набора инструментов или бокового меню и измеряет уровень шума вокруг в реальном времени, показывая кривую шума, оценку обстановки и сведения о влиянии на слух.';
+
+  @override
+  String get cl210_features => 'Новые возможности';
+
+  @override
+  String get cl210_feat_1 =>
+      'Фоновое воспроизведение видео: новый пункт меню продолжает воспроизведение после выхода из плеера, а уведомление позволяет ставить паузу и перематывать.';
+
+  @override
+  String get cl210_feat_2 =>
+      'Таймер сна для видео: остановка через 15, 30, 45 или 60 минут; установленный таймер можно отменить в любой момент.';
+
+  @override
+  String get cl210_feat_3 =>
+      '«Открыть с помощью» для папок: раньше пункт был только у файлов; теперь он работает в сетке, списке и двухпанельном режиме.';
+
+  @override
+  String get cl210_feat_4 =>
+      'Свойства везде: меню из трёх точек в браузере, в «Недавних» и в категориях показывает свойства файлов и папок.';
+
+  @override
+  String get cl210_feat_5 =>
+      'Домашнюю папку можно отменить: у уже назначенной папки в меню появляется пункт «Отменить как домашнюю».';
+
+  @override
+  String get cl210_ui => 'Интерфейс и управление';
+
+  @override
+  String get cl210_ui_1 =>
+      'Меню из трёх точек стало сеткой значков: значок сверху, подпись снизу, длинные названия занимают две строки, а элементы выстраиваются в три или четыре столбца.';
+
+  @override
+  String get cl210_ui_2 =>
+      'Меню браузера и категорий теперь имеют одинаковый порядок: «Сделать домашней» стоит там же, где «Показать в папке».';
+
+  @override
+  String get cl210_ui_3 =>
+      'Улучшено выравнивание сетки значков: даже если длинный перевод занимает две строки, значки в одном ряду остаются на одной линии.';
+
+  @override
+  String get cl210_ui_4 =>
+      'Кнопка из трёх точек у файлов и папок теперь вертикальная, во всех видах: сетка, список, компактный.';
+
+  @override
+  String get cl210_ui_5 =>
+      'Улучшено воспроизведение видео: перемотка свайпом больше не прерывает воспроизведение, а кнопка блокировки переместилась в середину левого края и всегда видна.';
+
+  @override
+  String get cl210_fixes => 'Исправления';
+
+  @override
+  String get cl210_fix_1 =>
+      'Исправлено: в ограниченных папках Android/data и Android/obb не создавались файлы, папки и архивы. Скорректирован путь записи, а разрешение теперь выдаётся отдельно для папки каждого приложения.';
+
+  @override
+  String get cl210_fix_2 =>
+      'Ошибки создания больше не остаются незаметными: теперь показывается причина, а при попытке создать объект прямо в Android/data предлагается сначала открыть папку приложения.';
+
+  @override
+  String get cl210_fix_3 =>
+      'Исправлено: «Закрепить сверху» в меню множественного выбора на странице категорий не работало (закрепление сохранялось, но список не пересортировывался); пункт меню называется «Снять закрепление».';
+
+  @override
+  String get cl210_fix_4 =>
+      'Исправлено: «Отменить как домашнюю» не работало, потому что настройка фактически не удалялась.';
+
+  @override
+  String get cl210_fix_5 =>
+      'Исправлено: пункт «Свойства» не реагировал на некоторых страницах.';
+
+  @override
   String get cl200_notice =>
       'Изменение версии и имени пакета (обязательно к прочтению)';
 
@@ -7452,4 +7525,87 @@ class L10nRu extends L10n {
 
   @override
   String get ui_unpin => 'Открепить';
+
+  @override
+  String get decibel_meter_title => 'Шумомер';
+
+  @override
+  String get decibel_meter_current => 'Текущий уровень';
+
+  @override
+  String get decibel_meter_verdict => 'Оценка';
+
+  @override
+  String get decibel_meter_curve => 'Кривая шума';
+
+  @override
+  String get decibel_meter_start => 'Начать';
+
+  @override
+  String get decibel_meter_stop => 'Остановить';
+
+  @override
+  String get decibel_meter_level_quiet => 'Тихо';
+
+  @override
+  String get decibel_meter_level_normal => 'Нормально';
+
+  @override
+  String get decibel_meter_level_noisy => 'Шумно';
+
+  @override
+  String get decibel_meter_level_very_noisy => 'Очень шумно';
+
+  @override
+  String get decibel_meter_level_dangerous => 'Опасно';
+
+  @override
+  String get decibel_meter_health_impact => 'Влияние на здоровье';
+
+  @override
+  String get decibel_meter_health_safe =>
+      'Нормальная среда, безвредно для здоровья.';
+
+  @override
+  String get decibel_meter_health_moderate =>
+      'Шумно, длительное воздействие может повлиять на слух.';
+
+  @override
+  String get decibel_meter_health_harmful =>
+      'Очень шумно, длительное воздействие может повредить слух.';
+
+  @override
+  String get decibel_meter_health_dangerous =>
+      'Опасный уровень, отойдите и защитите слух!';
+
+  @override
+  String get decibel_meter_examples => 'Примеры';
+
+  @override
+  String get decibel_meter_examples_text =>
+      'Обычный разговор (около 50-60 дБ), тихий офис, гул холодильника.';
+
+  @override
+  String get decibel_meter_perm_denied =>
+      'Для измерения окружающего звука требуется разрешение на доступ к микрофону. Включите его в настройках.';
+
+  @override
+  String get decibel_meter_perm_title => 'Требуется разрешение на микрофон';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'Разрешение на микрофон отклонено навсегда. Включите его для ZenFile в системных настройках и повторите попытку.';
+
+  @override
+  String get decibel_meter_perm_open_settings => 'Открыть настройки';
+
+  @override
+  String get msg_background_play => 'Фоновое воспроизведение';
+
+  @override
+  String get msg_sleep_timer => 'Таймер сна';
+
+  @override
+  String get msg_background_play_active =>
+      'Фоновое воспроизведение. Управление из уведомления';
 }

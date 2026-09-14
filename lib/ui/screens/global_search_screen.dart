@@ -495,6 +495,20 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           provider.showFileInLocation(path);
         });
         break;
+      case 'properties':
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => PropertiesModalDialog(
+              selectedPaths: [path],
+              provider: provider,
+            ),
+          );
+        }
+        break;
+      case 'open_with':
+        provider.showOpenWithSheet(context, path);
+        break;
       case 'share':
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
         final paths = isMulti ? _selectedPaths.toList() : [path];

@@ -30,6 +30,8 @@
     <!-- 扫一扫：相机权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- 分贝仪：麦克风权限 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 后台播放保持 CPU 唤醒，防止系统休眠导致音频中断 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- 请求忽略电池优化，防止系统杀死后台播放服务 -->

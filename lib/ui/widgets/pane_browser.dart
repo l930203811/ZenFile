@@ -31,6 +31,7 @@ import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
 import 'bulk_crypt_actions.dart';
+import '../widgets/selection_action_bar.dart';
 import '../../services/crypt/crypt.dart';
 import '../screens/crypt_mount_edit_screen.dart';
 import '../screens/vault_session_unlock_dialog.dart';
@@ -509,6 +510,17 @@ class _PaneBrowserState extends State<PaneBrowser> {
               content: Text(L10n.of(context).ui_cancel_set_as_home),
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        break;
+      case 'properties':
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => PropertiesModalDialog(
+              selectedPaths: [path],
+              provider: provider,
             ),
           );
         }
@@ -1598,7 +1610,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 13),
+                  icon: const Icon(Icons.more_vert, size: 13),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 18,
@@ -1611,6 +1623,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       (action) => _handleAction(context, action, folder.path),
                       isArchive: false,
                       showSetAsHome: true,
+                      // 文件夹也提供「打开方式」（用第三方应用打开目录）
+                      openWith: true,
                       isCurrentHome: provider.homeDirectory == folder.path,
                       showShare: !folder.isRemote,
                       // 需传 filePath 才会显示加/解密项；远程加密目录据此显示「解密下载」
@@ -1775,7 +1789,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 13),
+                  icon: const Icon(Icons.more_vert, size: 13),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 18,

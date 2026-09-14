@@ -21,6 +21,8 @@ import '../../providers/media_provider.dart';
 import 'quick_categories_grid.dart';
 import '../screens/recycle_bin_screen.dart';
 import '../screens/quick_transfer_screen.dart';
+import '../screens/qr_scanner_screen.dart';
+import '../screens/decibel_meter_screen.dart';
 import '../../services/preferences_service.dart';
 
 class ZenFileDrawer extends StatefulWidget {
@@ -284,6 +286,24 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickTransferScreen()));
                           },
                         ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.scan,
+                          title: L10n.of(context).toolbox_scan,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const QrScannerScreen()));
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Icons.graphic_eq_rounded,
+                          title: L10n.of(context).decibel_meter_title,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const DecibelMeterScreen()));
+                          },
+                        ),
                       ],
                     ),
 
@@ -326,7 +346,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v2.0.0',
+                'ZenFile v2.1.0',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

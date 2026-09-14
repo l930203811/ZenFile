@@ -22,7 +22,9 @@ class WebdavDebugLog {
   /// 总开关。排查完毕可在发布前置 false（保留代码便于下次排查）。
   ///
   /// 排查远程加密（cryptremote）播放问题期间曾临时打开，问题已解决并改回 false。
-  /// 下次排查时置 true 即可，日志会写到 [filePath]。
+  /// 2026-09-15 起复用为**通用诊断日志**：Android/{data,obb} 受限目录的
+  /// 新建/写入失败（root_shizuku_service）也会经此落盘，便于无 adb 环境下
+  /// 直接取出 shell 命令与 stderr。排查结束后务必改回 false 再发版。
   static bool enabled = false;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。

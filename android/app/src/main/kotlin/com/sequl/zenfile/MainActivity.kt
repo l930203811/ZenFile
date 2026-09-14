@@ -51,6 +51,11 @@ import android.media.MediaMetadataRetriever
 import androidx.core.content.FileProvider
 import java.util.zip.ZipFile
 import android.media.audiofx.Equalizer
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
+import kotlin.math.ln
+import kotlin.math.sqrt
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.sequl.zenfile/root_shizuku"
     private val STORAGE_CHANNEL = "com.sequl.zenfile/storage"
@@ -1676,6 +1681,20 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         notificationsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/notifications")
+        // 分贝仪：AudioRecord 实时采集麦克风音量
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/decibel_meter").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "start" -> {
+                    startDecibelMeter()
+                    result.success(null)
+                }
+                "stop" -> {
+                    stopDecibelMeter()
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
         notificationsChannel?.setMethodCallHandler { call, result ->
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val channelId = "zenfile_archive_channel"
@@ -2435,5 +2454,86 @@ class MainActivity : AudioServiceFragmentActivity() {
             return output.toString() + "[stderr] " + errOutput.toString().trim()
         }
         return output.toString()
+    }
+
+    // ─────────────────────── 分贝仪（AudioRecord 实时音量） ───────────────────────
+    private var decibelRecord: AudioRecord? = null
+    private var decibelChannel: MethodChannel? = null
+    private var decibelThread: Thread? = null
+    private var decibelRunning = false
+
+    private fun startDecibelMeter() {
+        if (decibelRunning) return
+        val sampleRate = 44100
+        val minBuf = AudioRecord.getMinBufferSize(
+            sampleRate,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+        val bufSize = maxOf(minBuf, sampleRate / 5) // 200ms buffer
+        val record = try {
+            AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                sampleRate,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                bufSize
+            )
+        } catch (e: Exception) {
+            return
+        }
+        if (record.state != AudioRecord.STATE_INITIALIZED) {
+            record.release()
+            return
+        }
+        decibelRecord = record
+        decibelRunning = true
+        val engine = flutterEngine
+        decibelChannel = MethodChannel(engine!!.dartExecutor.binaryMessenger, "com.sequl.zenfile/decibel_meter")
+        val shortBuf = ShortArray(bufSize / 2)
+        val byteBuf = ByteArray(bufSize)
+
+        decibelThread = Thread {
+            record.startRecording()
+            while (decibelRunning) {
+                try {
+                    val read = record.read(byteBuf, 0, byteBuf.size)
+                    if (read <= 0) continue
+                    // Byte 转 Short（小端）
+                    var sumSq = 0.0
+                    var samples = 0
+                    for (i in 0 until read - 1 step 2) {
+                        val s = (byteBuf[i].toInt() and 0xFF) or ((byteBuf[i + 1].toInt() and 0xFF) shl 8)
+                        val v = s.toShort().toDouble()
+                        sumSq += v * v
+                        samples++
+                    }
+                    if (samples == 0) continue
+                    val rms = sqrt(sumSq / samples)
+                    // 分贝近似：满量程 32768 → 约 90 dB SPL 校准
+                    val db = if (rms < 1) 0.0 else 20.0 * ln(rms / 32768.0) / ln(10.0) + 90.0
+                    val clamped = db.coerceIn(0.0, 120.0)
+                    runOnUiThread {
+                        decibelChannel?.invokeMethod("onData", clamped)
+                    }
+                } catch (e: Exception) {
+                    if (decibelRunning) {
+                        // 短暂等待后继续
+                        try { Thread.sleep(50) } catch (_: InterruptedException) {}
+                    }
+                }
+            }
+            try { record.stop() } catch (_: Exception) {}
+            record.release()
+        }
+        decibelThread?.start()
+    }
+
+    private fun stopDecibelMeter() {
+        decibelRunning = false
+        try { decibelThread?.interrupt() } catch (_: Exception) {}
+        decibelThread = null
+        decibelRecord = null
+        decibelChannel = null
     }
 }

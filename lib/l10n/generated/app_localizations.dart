@@ -11812,6 +11812,120 @@ abstract class L10n {
   /// **'密码配置'**
   String get vault_config_password;
 
+  /// changelog 2.1.0: cl210_feat_6
+  ///
+  /// In zh, this message translates to:
+  /// **'新增分贝仪：可在工具箱或侧边栏打开，实时测量环境噪音分贝值，并显示噪声曲线、环境判定与对听力的影响提示。'**
+  String get cl210_feat_6;
+
+  /// changelog 2.1.0: cl210_features
+  ///
+  /// In zh, this message translates to:
+  /// **'新增功能'**
+  String get cl210_features;
+
+  /// changelog 2.1.0: cl210_feat_1
+  ///
+  /// In zh, this message translates to:
+  /// **'视频支持后台播放：菜单新增「后台播放」，关闭播放页后仍可在通知栏控制播放、暂停与进度。'**
+  String get cl210_feat_1;
+
+  /// changelog 2.1.0: cl210_feat_2
+  ///
+  /// In zh, this message translates to:
+  /// **'视频定时关闭：可设置 15 / 30 / 45 / 60 分钟后停止播放，已设置时可随时取消。'**
+  String get cl210_feat_2;
+
+  /// changelog 2.1.0: cl210_feat_3
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹新增「打开方式」：此前只有文件有该入口，网格、列表与双窗格视图均已支持。'**
+  String get cl210_feat_3;
+
+  /// changelog 2.1.0: cl210_feat_4
+  ///
+  /// In zh, this message translates to:
+  /// **'属性入口补全：浏览页、最近页与分类页的三点菜单均可查看文件或文件夹属性。'**
+  String get cl210_feat_4;
+
+  /// changelog 2.1.0: cl210_feat_5
+  ///
+  /// In zh, this message translates to:
+  /// **'设为首页支持取消：已设为首页的文件夹，菜单中会显示「取消设为首页」。'**
+  String get cl210_feat_5;
+
+  /// changelog 2.1.0: cl210_ui
+  ///
+  /// In zh, this message translates to:
+  /// **'界面与交互'**
+  String get cl210_ui;
+
+  /// changelog 2.1.0: cl210_ui_1
+  ///
+  /// In zh, this message translates to:
+  /// **'三点菜单改为图标宫格：图标在上、文字在下，长标题两行显示，并按项数自动排列为三列或四列。'**
+  String get cl210_ui_1;
+
+  /// changelog 2.1.0: cl210_ui_2
+  ///
+  /// In zh, this message translates to:
+  /// **'统一浏览页与分类页的菜单顺序，「设为首页」与「在位置中显示」位于同一位置。'**
+  String get cl210_ui_2;
+
+  /// changelog 2.1.0: cl210_ui_3
+  ///
+  /// In zh, this message translates to:
+  /// **'优化图标宫格对齐：多语言长标题换行时，同一排图标仍保持在同一水平线。'**
+  String get cl210_ui_3;
+
+  /// changelog 2.1.0: cl210_ui_4
+  ///
+  /// In zh, this message translates to:
+  /// **'文件与文件夹的三点按钮改为竖排样式，覆盖网格、列表与紧凑三种视图。'**
+  String get cl210_ui_4;
+
+  /// changelog 2.1.0: cl210_ui_5
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放优化：左右拖动快进快退不再中断播放；锁定按钮移至左侧中部并常驻显示。'**
+  String get cl210_ui_5;
+
+  /// changelog 2.1.0: cl210_fixes
+  ///
+  /// In zh, this message translates to:
+  /// **'问题修复'**
+  String get cl210_fixes;
+
+  /// changelog 2.1.0: cl210_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复在受限的 Android/data、Android/obb 目录中无法新建文件、文件夹与压缩包的问题：修正写入路径策略，并将授权方式改为按应用目录逐个授权。'**
+  String get cl210_fix_1;
+
+  /// changelog 2.1.0: cl210_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'新建不再无提示地失败：失败时会显示具体原因；在 Android/data 根目录新建时会提示先进入具体应用目录。'**
+  String get cl210_fix_2;
+
+  /// changelog 2.1.0: cl210_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页多选「置顶」无效的问题（置顶已保存但列表未重新排序），并修正菜单文案为「取消置顶」。'**
+  String get cl210_fix_3;
+
+  /// changelog 2.1.0: cl210_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'修复「取消设为首页」无效的问题：此前首页设置未被真正清除。'**
+  String get cl210_fix_4;
+
+  /// changelog 2.1.0: cl210_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复部分页面「属性」点击无响应的问题。'**
+  String get cl210_fix_5;
+
   /// changelog 2.0.0: cl200_notice
   ///
   /// In zh, this message translates to:
@@ -13203,6 +13317,156 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'取消置顶'**
   String get ui_unpin;
+
+  /// No description provided for @decibel_meter_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'分贝仪'**
+  String get decibel_meter_title;
+
+  /// No description provided for @decibel_meter_current.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前分贝值'**
+  String get decibel_meter_current;
+
+  /// No description provided for @decibel_meter_verdict.
+  ///
+  /// In zh, this message translates to:
+  /// **'环境判定'**
+  String get decibel_meter_verdict;
+
+  /// No description provided for @decibel_meter_curve.
+  ///
+  /// In zh, this message translates to:
+  /// **'噪声曲线'**
+  String get decibel_meter_curve;
+
+  /// No description provided for @decibel_meter_start.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始测量'**
+  String get decibel_meter_start;
+
+  /// No description provided for @decibel_meter_stop.
+  ///
+  /// In zh, this message translates to:
+  /// **'停止测量'**
+  String get decibel_meter_stop;
+
+  /// No description provided for @decibel_meter_level_quiet.
+  ///
+  /// In zh, this message translates to:
+  /// **'安静'**
+  String get decibel_meter_level_quiet;
+
+  /// No description provided for @decibel_meter_level_normal.
+  ///
+  /// In zh, this message translates to:
+  /// **'一般'**
+  String get decibel_meter_level_normal;
+
+  /// No description provided for @decibel_meter_level_noisy.
+  ///
+  /// In zh, this message translates to:
+  /// **'较吵'**
+  String get decibel_meter_level_noisy;
+
+  /// No description provided for @decibel_meter_level_very_noisy.
+  ///
+  /// In zh, this message translates to:
+  /// **'很吵'**
+  String get decibel_meter_level_very_noisy;
+
+  /// No description provided for @decibel_meter_level_dangerous.
+  ///
+  /// In zh, this message translates to:
+  /// **'危险'**
+  String get decibel_meter_level_dangerous;
+
+  /// No description provided for @decibel_meter_health_impact.
+  ///
+  /// In zh, this message translates to:
+  /// **'对人体的影响'**
+  String get decibel_meter_health_impact;
+
+  /// No description provided for @decibel_meter_health_safe.
+  ///
+  /// In zh, this message translates to:
+  /// **'正常环境，对人体无危害。'**
+  String get decibel_meter_health_safe;
+
+  /// No description provided for @decibel_meter_health_moderate.
+  ///
+  /// In zh, this message translates to:
+  /// **'较嘈杂，长时间暴露可能影响听力。'**
+  String get decibel_meter_health_moderate;
+
+  /// No description provided for @decibel_meter_health_harmful.
+  ///
+  /// In zh, this message translates to:
+  /// **'非常吵，长时间暴露会损伤听力。'**
+  String get decibel_meter_health_harmful;
+
+  /// No description provided for @decibel_meter_health_dangerous.
+  ///
+  /// In zh, this message translates to:
+  /// **'危险级别，立即远离并保护听力！'**
+  String get decibel_meter_health_dangerous;
+
+  /// No description provided for @decibel_meter_examples.
+  ///
+  /// In zh, this message translates to:
+  /// **'常见场景举例'**
+  String get decibel_meter_examples;
+
+  /// No description provided for @decibel_meter_examples_text.
+  ///
+  /// In zh, this message translates to:
+  /// **'普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。'**
+  String get decibel_meter_examples_text;
+
+  /// No description provided for @decibel_meter_perm_denied.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要麦克风权限才能测量环境音量，请在设置中开启。'**
+  String get decibel_meter_perm_denied;
+
+  /// No description provided for @decibel_meter_perm_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要麦克风权限'**
+  String get decibel_meter_perm_title;
+
+  /// No description provided for @decibel_meter_perm_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'麦克风权限已被永久拒绝，请前往系统设置中为 ZenFile 开启麦克风权限后重试。'**
+  String get decibel_meter_perm_settings;
+
+  /// No description provided for @decibel_meter_perm_open_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get decibel_meter_perm_open_settings;
+
+  /// No description provided for @msg_background_play.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放'**
+  String get msg_background_play;
+
+  /// No description provided for @msg_sleep_timer.
+  ///
+  /// In zh, this message translates to:
+  /// **'定时关闭'**
+  String get msg_sleep_timer;
+
+  /// No description provided for @msg_background_play_active.
+  ///
+  /// In zh, this message translates to:
+  /// **'已进入后台播放，可通过通知栏控制'**
+  String get msg_background_play_active;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

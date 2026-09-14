@@ -448,20 +448,27 @@ class FavoriteEditResult {
   FavoriteEditResult(this.path, this.name, this.group);
 }
 
-class FileActionSheet {
+class ActionItem {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool destructive;
+  const ActionItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.destructive = false,
+  });
+}
+
+class ActionGridSheet {
   static Future<void> show(
-    BuildContext context,
-    Function(String) onAction, {
-    bool isArchive = false,
-    bool showShare = false,
-    bool showInLocation = false,
-    bool openWith = false,
-    bool showSetAsHome = false,
-    bool isCurrentHome = false,
-    String? filePath,
-    bool isEncrypted = false,
+    BuildContext context, {
+    String? title,
+    required List<ActionItem> items,
   }) {
     final theme = Theme.of(context);
+    final int cols = items.length > 8 ? 4 : 3;
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -472,7 +479,7 @@ class FileActionSheet {
       builder: (ctx) {
         return Container(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+            maxHeight: MediaQuery.of(ctx).size.height * 0.85,
           ),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
@@ -494,117 +501,31 @@ class FileActionSheet {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // 顺序：解压、复制、剪切、删除、重命名、在位置中显示、打开方式、压缩、收藏、设为首页、分享（分享在最底部）
-                  if (isArchive)
-                    _buildTile(
-                      ctx,
-                      theme,
-                      icon: Broken.archive,
-                      title: L10n.of(ctx).ui_extract,
-                      value: 'extract',
-                      onAction: onAction,
-                    ),
-                  _buildTile(
-                    ctx,
-                    theme,
-                    icon: Broken.document_copy,
-                    title: L10n.of(context).ui_copy,
-                    value: 'copy',
-                    onAction: onAction,
-                  ),
-                  _buildTile(
-                    ctx,
-                    theme,
-                    icon: Broken.scissor,
-                    title: L10n.of(context).ui_cut,
-                    value: 'cut',
-                    onAction: onAction,
-                  ),
-                  _buildDeleteTile(ctx, theme, onAction: onAction),
-                  _buildTile(
-                    ctx,
-                    theme,
-                    icon: Broken.edit,
-                    title: L10n.of(context).msgc8ce4b36,
-                    value: 'rename',
-                    onAction: onAction,
-                  ),
-                  if (showInLocation)
-                    _buildTile(
-                      ctx,
-                      theme,
-                      icon: Broken.folder_open,
-                      title: L10n.of(context).msgcd8264f1,
-                      value: 'show_in_location',
-                      onAction: onAction,
-                    ),
-                  if (openWith)
-                    _buildTile(
-                      ctx,
-                      theme,
-                      icon: Broken.eye,
-                      title: L10n.of(context).msg2a4cfb07,
-                      value: 'open_with',
-                      onAction: onAction,
-                    ),
-                  _buildTile(
-                    ctx,
-                    theme,
-                    icon: Broken.box_add,
-                    title: L10n.of(context).ui_compress,
-                    value: 'archive',
-                    onAction: onAction,
-                  ),
-                  // 加密/解密选项（已加密文件显示「解密」，否则显示「加密」）
-                  if (filePath != null)
-                    if (isEncrypted)
-                      _buildTile(
-                        ctx,
-                        theme,
-                        icon: Icons.lock_open,
-                        title: L10n.of(ctx).crypt_action_decrypt,
-                        value: 'decrypt',
-                        onAction: onAction,
-                      )
-                    else
-                      _buildTile(
-                        ctx,
-                        theme,
-                        icon: Icons.lock,
-                        title: L10n.of(ctx).vault_action_encrypt,
-                        value: 'encrypt',
-                        onAction: onAction,
+                  if (title != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                      child: Text(
+                        title,
+                        style: theme.textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                  _buildTile(
-                    ctx,
-                    theme,
-                    icon: Broken.folder_favorite,
-                    title: L10n.of(ctx).ui_favorite,
-                    value: 'favorite',
-                    onAction: onAction,
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
+                    child: GridView.count(
+                      crossAxisCount: cols,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 0.92,
+                      mainAxisSpacing: 4,
+                      crossAxisSpacing: 4,
+                      children: items
+                          .map((a) => _ActionGridTile(item: a, theme: theme))
+                          .toList(),
+                    ),
                   ),
-                  if (showSetAsHome)
-                    _buildTile(
-                      ctx,
-                      theme,
-                      icon: isCurrentHome ? Icons.home_outlined : Broken.home_2,
-                      title: isCurrentHome
-                          ? L10n.of(ctx).ui_cancel_set_as_home
-                          : L10n.of(ctx).ui_set_as_home,
-                      value: isCurrentHome ? 'clear_home' : 'set_as_home',
-                      onAction: onAction,
-                    ),
-                  if (showShare)
-                    _buildTile(
-                      ctx,
-                      theme,
-                      icon: Icons.share_outlined,
-                      title: L10n.of(context).ui_share,
-                      value: 'share',
-                      onAction: onAction,
-                    ),
-                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -613,43 +534,146 @@ class FileActionSheet {
       },
     );
   }
+}
 
-  static Widget _buildTile(
-    BuildContext ctx,
-    ThemeData theme, {
-    required IconData icon,
-    required String title,
-    required String value,
-    required Function(String) onAction,
-  }) {
-    return ListTile(
-      leading: Icon(icon, size: 22),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+class _ActionGridTile extends StatelessWidget {
+  final ActionItem item;
+  final ThemeData theme;
+  const _ActionGridTile({required this.item, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = item.destructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
+    final labelColor = item.destructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurface;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
-        Navigator.pop(ctx);
-        onAction(value);
+        Navigator.pop(context);
+        item.onTap();
       },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(item.icon, size: 26, color: color),
+          const SizedBox(height: 6),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: labelColor,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  static Widget _buildDeleteTile(
-    BuildContext ctx,
-    ThemeData theme, {
-    required Function(String) onAction,
+class FileActionSheet {
+  static Future<void> show(
+    BuildContext context,
+    Function(String) onAction, {
+    bool isArchive = false,
+    bool showShare = false,
+    bool showInLocation = false,
+    bool openWith = false,
+    bool showSetAsHome = false,
+    bool isCurrentHome = false,
+    String? filePath,
+    bool isEncrypted = false,
   }) {
-    return ListTile(
-      leading: const Icon(Broken.trash, size: 22, color: Colors.redAccent),
-      title: Text(
-        L10n.of(ctx).ui_delete,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Colors.redAccent,
+    final items = <ActionItem>[
+      if (isArchive)
+        ActionItem(
+          icon: Broken.archive,
+          label: L10n.of(context).ui_extract,
+          onTap: () => onAction('extract'),
         ),
+      ActionItem(
+        icon: Broken.document_copy,
+        label: L10n.of(context).ui_copy,
+        onTap: () => onAction('copy'),
       ),
-      onTap: () {
-        Navigator.pop(ctx);
-        onAction('delete');
-      },
-    );
+      ActionItem(
+        icon: Broken.scissor,
+        label: L10n.of(context).ui_cut,
+        onTap: () => onAction('cut'),
+      ),
+      ActionItem(
+        icon: Broken.trash,
+        label: L10n.of(context).ui_delete,
+        destructive: true,
+        onTap: () => onAction('delete'),
+      ),
+      ActionItem(
+        icon: Broken.edit,
+        label: L10n.of(context).msgc8ce4b36,
+        onTap: () => onAction('rename'),
+      ),
+      // 顺序与分类页一致：分类页此位置为「在位置中显示」，浏览页对应为「设为首页」
+      if (showSetAsHome)
+        ActionItem(
+          icon: isCurrentHome ? Icons.home_outlined : Broken.home_2,
+          label: isCurrentHome
+              ? L10n.of(context).ui_cancel_set_as_home
+              : L10n.of(context).ui_set_as_home,
+          onTap: () => onAction(isCurrentHome ? 'clear_home' : 'set_as_home'),
+        ),
+      if (showInLocation)
+        ActionItem(
+          icon: Broken.folder_open,
+          label: L10n.of(context).msgcd8264f1,
+          onTap: () => onAction('show_in_location'),
+        ),
+      if (openWith)
+        ActionItem(
+          icon: Broken.eye,
+          label: L10n.of(context).msg2a4cfb07,
+          onTap: () => onAction('open_with'),
+        ),
+      ActionItem(
+        icon: Broken.box_add,
+        label: L10n.of(context).ui_compress,
+        onTap: () => onAction('archive'),
+      ),
+      if (filePath != null)
+        ActionItem(
+          icon: isEncrypted ? Icons.lock_open : Icons.lock,
+          label: isEncrypted
+              ? L10n.of(context).crypt_action_decrypt
+              : L10n.of(context).vault_action_encrypt,
+          onTap: () => onAction(isEncrypted ? 'decrypt' : 'encrypt'),
+        ),
+      ActionItem(
+        icon: Broken.folder_favorite,
+        label: L10n.of(context).ui_favorite,
+        onTap: () => onAction('favorite'),
+      ),
+      ActionItem(
+        icon: Broken.info_circle,
+        label: L10n.of(context).ui_properties,
+        onTap: () => onAction('properties'),
+      ),
+      if (showShare)
+        ActionItem(
+          icon: Icons.share_outlined,
+          label: L10n.of(context).ui_share,
+          onTap: () => onAction('share'),
+        ),
+    ];
+    return ActionGridSheet.show(context, items: items);
   }
 }

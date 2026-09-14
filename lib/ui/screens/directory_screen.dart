@@ -831,6 +831,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           );
         }
         break;
+      case 'clear_home':
+        await provider.clearHomeDirectory();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.of(context).ui_cancel_set_as_home),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        break;
       case 'encrypt':
         await _handleEncrypt(context, provider, path);
         break;
@@ -840,6 +852,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           await _decryptDownloadRemoteCrypt(context, provider, [path]);
         } else {
           await _handleDecrypt(context, provider, path);
+        }
+        break;
+      case 'properties':
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => PropertiesModalDialog(
+              selectedPaths: [path],
+              provider: provider,
+            ),
+          );
         }
         break;
     }
@@ -988,6 +1011,23 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     await BulkCryptActions.decryptDownloadRemoteCrypt(context, provider, virtualPaths);
   }
 
+  /// 新建文件/文件夹失败的统一反馈。
+  ///
+  /// 受限目录（其它应用 Android/{data,obb}）下 shell 写权限与 SAF 授权都可能被系统
+  /// 拒绝；过去 provider 仅返回 null，界面不弹任何提示，表现为「点了新建没反应」。
+  /// 这里把 provider 记录的真实原因展示出来，便于用户判断是否缺少授权。
+  void _showCreateFailure(BuildContext context, FileManagerProvider provider) {
+    if (!context.mounted) return;
+    final reason = provider.lastCreateError ?? '';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${L10n.of(context).msg5fa802be}${reason.isNotEmpty ? ': $reason' : ''}'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   /// 远程加密目录：选择本地文件，加密后上传到当前远程加密目录
   Future<void> _encryptUploadRemoteCrypt(
     BuildContext context,
@@ -1011,7 +1051,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         );
         if (fileName != null && fileName.isNotEmpty) {
           final createdName = await provider.createFile(fileName);
-          if (createdName != null && createdName != fileName && context.mounted) {
+          if (createdName == null) {
+            // 受限目录创建失败必须有反馈——过去返回 null 时界面毫无提示，
+            // 用户只看到「点新建没反应」。
+            _showCreateFailure(context, provider);
+          } else if (createdName != fileName && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(L10n.of(context).filenamecreatedname(fileName, createdName)),
@@ -1030,7 +1074,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         );
         if (folderName != null && folderName.isNotEmpty) {
           final createdName = await provider.createFolder(folderName);
-          if (createdName != null && createdName != folderName && context.mounted) {
+          if (createdName == null) {
+            _showCreateFailure(context, provider);
+          } else if (createdName != folderName && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(L10n.of(context).foldernamecreatedname(folderName, createdName)),

@@ -6615,6 +6615,82 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl210_feat_6": "데시벨 측정기 추가: 도구 상자나 측면 메뉴에서 열어 주변 소음을 실시간으로 측정하고, 소음 곡선과 환경 판정, 청력에 미치는 영향 안내를 함께 보여 줍니다.",
+  "@cl210_feat_6": {
+    "description": "changelog 2.1.0: cl210_feat_6"
+  },
+  "cl210_features": "새로운 기능",
+  "@cl210_features": {
+    "description": "changelog 2.1.0: cl210_features"
+  },
+  "cl210_feat_1": "동영상 백그라운드 재생: 메뉴에 「백그라운드 재생」이 추가되어 재생 화면을 닫아도 알림에서 재생, 일시정지, 진행 위치를 조작할 수 있습니다.",
+  "@cl210_feat_1": {
+    "description": "changelog 2.1.0: cl210_feat_1"
+  },
+  "cl210_feat_2": "동영상 타이머 종료: 15 / 30 / 45 / 60분 후 재생을 멈출 수 있으며, 설정한 타이머는 언제든 취소할 수 있습니다.",
+  "@cl210_feat_2": {
+    "description": "changelog 2.1.0: cl210_feat_2"
+  },
+  "cl210_feat_3": "폴더의 「다른 앱으로 열기」: 이전에는 파일에만 있던 항목으로, 그리드·목록·이중 창 모두에서 사용할 수 있습니다.",
+  "@cl210_feat_3": {
+    "description": "changelog 2.1.0: cl210_feat_3"
+  },
+  "cl210_feat_4": "속성 항목 보강: 브라우저, 최근 항목, 카테고리 화면의 점 세 개 메뉴에서 파일과 폴더의 속성을 볼 수 있습니다.",
+  "@cl210_feat_4": {
+    "description": "changelog 2.1.0: cl210_feat_4"
+  },
+  "cl210_feat_5": "홈 폴더 해제: 이미 홈으로 지정한 폴더의 메뉴에 「홈 설정 해제」가 표시됩니다.",
+  "@cl210_feat_5": {
+    "description": "changelog 2.1.0: cl210_feat_5"
+  },
+  "cl210_ui": "화면과 조작",
+  "@cl210_ui": {
+    "description": "changelog 2.1.0: cl210_ui"
+  },
+  "cl210_ui_1": "점 세 개 메뉴가 아이콘 격자로 바뀌었습니다. 아이콘은 위쪽, 이름은 아래쪽에 놓이고 긴 이름은 두 줄로 표시되며 항목 수에 따라 3열 또는 4열로 정렬됩니다.",
+  "@cl210_ui_1": {
+    "description": "changelog 2.1.0: cl210_ui_1"
+  },
+  "cl210_ui_2": "브라우저와 카테고리 화면의 메뉴 순서를 통일했습니다. 「홈으로 설정」은 「위치에서 보기」와 같은 자리에 놓입니다.",
+  "@cl210_ui_2": {
+    "description": "changelog 2.1.0: cl210_ui_2"
+  },
+  "cl210_ui_3": "아이콘 격자의 정렬을 개선했습니다. 번역된 긴 이름이 줄바꿈되어도 같은 줄의 아이콘은 같은 높이에 놓입니다.",
+  "@cl210_ui_3": {
+    "description": "changelog 2.1.0: cl210_ui_3"
+  },
+  "cl210_ui_4": "파일과 폴더의 점 세 개 버튼이 세로 방향으로 바뀌었습니다. 그리드·목록·간단히 보기 모두에 적용됩니다.",
+  "@cl210_ui_4": {
+    "description": "changelog 2.1.0: cl210_ui_4"
+  },
+  "cl210_ui_5": "동영상 재생 개선: 좌우로 밀어 탐색해도 재생이 멈추지 않으며, 잠금 버튼이 왼쪽 중앙으로 이동해 항상 표시됩니다.",
+  "@cl210_ui_5": {
+    "description": "changelog 2.1.0: cl210_ui_5"
+  },
+  "cl210_fixes": "수정 사항",
+  "@cl210_fixes": {
+    "description": "changelog 2.1.0: cl210_fixes"
+  },
+  "cl210_fix_1": "제한된 Android/data, Android/obb 폴더에서 파일·폴더·압축 파일을 만들 수 없던 문제를 수정했습니다. 쓰기 경로 방식을 바로잡고 권한을 앱 폴더별로 부여하도록 변경했습니다.",
+  "@cl210_fix_1": {
+    "description": "changelog 2.1.0: cl210_fix_1"
+  },
+  "cl210_fix_2": "만들기 실패가 더 이상 조용히 지나가지 않습니다. 실패하면 이유를 보여 주고, Android/data 최상위에서 만들려 하면 앱 폴더로 들어가도록 안내합니다.",
+  "@cl210_fix_2": {
+    "description": "changelog 2.1.0: cl210_fix_2"
+  },
+  "cl210_fix_3": "카테고리 화면의 다중 선택 메뉴에서 「맨 위에 고정」이 동작하지 않던 문제를 수정했습니다(고정은 저장되었지만 목록이 다시 정렬되지 않았습니다). 메뉴 이름도 「고정 해제」로 바로잡았습니다.",
+  "@cl210_fix_3": {
+    "description": "changelog 2.1.0: cl210_fix_3"
+  },
+  "cl210_fix_4": "「홈 설정 해제」가 동작하지 않던 문제를 수정했습니다. 홈 설정이 실제로 지워지지 않았습니다.",
+  "@cl210_fix_4": {
+    "description": "changelog 2.1.0: cl210_fix_4"
+  },
+  "cl210_fix_5": "일부 화면에서 「속성」이 반응하지 않던 문제를 수정했습니다.",
+  "@cl210_fix_5": {
+    "description": "changelog 2.1.0: cl210_fix_5"
+  },
   "cl200_notice": "버전 및 패키지 이름 변경 (반드시 읽어주세요)",
   "@cl200_notice": {
     "description": "changelog 2.0.0: cl200_notice"
@@ -7537,5 +7613,30 @@
     }
   },
   "ui_cancel_set_as_home": "홈 설정 해제",
-  "ui_unpin": "상단 고정 해제"
+  "ui_unpin": "상단 고정 해제",
+  "decibel_meter_title": "소음 측정기",
+  "decibel_meter_current": "현재 음량",
+  "decibel_meter_verdict": "환경 판정",
+  "decibel_meter_curve": "소음 곡선",
+  "decibel_meter_start": "측정 시작",
+  "decibel_meter_stop": "측정 중지",
+  "decibel_meter_level_quiet": "조용함",
+  "decibel_meter_level_normal": "보통",
+  "decibel_meter_level_noisy": "시끄러움",
+  "decibel_meter_level_very_noisy": "매우 시끄러움",
+  "decibel_meter_level_dangerous": "위험",
+  "decibel_meter_health_impact": "인체 영향",
+  "decibel_meter_health_safe": "정상적인 환경으로 건강에 해롭지 않습니다.",
+  "decibel_meter_health_moderate": "시끄러운 환경으로 장시간 노출 시 청력에 영향이 있을 수 있습니다.",
+  "decibel_meter_health_harmful": "매우 시끄러운 환경으로 장시간 노출 시 청력 손상이 있을 수 있습니다.",
+  "decibel_meter_health_dangerous": "위험 수준입니다. 즉시 떨어져 청력을 보호하세요!",
+  "decibel_meter_examples": "일반적인 예시",
+  "decibel_meter_examples_text": "일반 대화(약 50-60dB), 조용한 사무실, 냉장고 소리.",
+  "decibel_meter_perm_denied": "환경 소리를 측정하려면 마이크 권한이 필요합니다. 설정에서 활성화해 주세요.",
+  "decibel_meter_perm_title": "마이크 권한이 필요합니다",
+  "decibel_meter_perm_settings": "마이크 권한이 영구적으로 거부되었습니다. 시스템 설정에서 ZenFile의 마이크 권한을 활성화한 후 다시 시도하세요.",
+  "decibel_meter_perm_open_settings": "설정 열기",
+  "msg_background_play": "백그라운드 재생",
+  "msg_sleep_timer": "슬립 타이머",
+  "msg_background_play_active": "백그라운드 재생 중입니다. 알림에서 제어할 수 있습니다"
 }

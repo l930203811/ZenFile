@@ -6405,6 +6405,77 @@ class L10nJa extends L10n {
   String get vault_config_password => 'パスワード設定';
 
   @override
+  String get cl210_feat_6 =>
+      '騒音計を追加：ツールボックスまたはサイドメニューから開けます。周囲の騒音をリアルタイムで測定し、騒音曲線、環境判定、聴覚への影響の目安を表示します。';
+
+  @override
+  String get cl210_features => '新機能';
+
+  @override
+  String get cl210_feat_1 =>
+      '動画のバックグラウンド再生：メニューに「バックグラウンド再生」を追加しました。再生画面を閉じても通知から再生・一時停止・進行状況を操作できます。';
+
+  @override
+  String get cl210_feat_2 =>
+      '動画のタイマー停止：15 / 30 / 45 / 60 分後に再生を停止できます。設定済みの場合はいつでもキャンセルできます。';
+
+  @override
+  String get cl210_feat_3 =>
+      'フォルダーの「別のアプリで開く」：これまでファイルのみの項目でしたが、グリッド・リスト・デュアルペインのすべてに対応しました。';
+
+  @override
+  String get cl210_feat_4 =>
+      'プロパティの入口を補完：ブラウズ画面・最近使用・カテゴリー画面の三点メニューからファイルやフォルダーのプロパティを表示できます。';
+
+  @override
+  String get cl210_feat_5 =>
+      'ホーム設定の解除：ホームに設定済みのフォルダーでは、メニューに「ホーム設定を解除」が表示されます。';
+
+  @override
+  String get cl210_ui => '画面と操作';
+
+  @override
+  String get cl210_ui_1 =>
+      '三点メニューをアイコンのグリッド表示に変更しました。アイコンが上、ラベルが下になり、長いラベルは 2 行表示、項目数に応じて 3 列または 4 列に並びます。';
+
+  @override
+  String get cl210_ui_2 =>
+      'ブラウズ画面とカテゴリー画面のメニュー順序を統一しました。「ホームに設定」は「場所を表示」と同じ位置になります。';
+
+  @override
+  String get cl210_ui_3 =>
+      'アイコングリッドの整列を改善しました。翻訳で長いラベルが折り返しても、同じ行のアイコンは同じ高さに揃います。';
+
+  @override
+  String get cl210_ui_4 =>
+      'ファイルとフォルダーの三点ボタンを縦向きに変更しました。グリッド・リスト・コンパクトのすべての表示に対応します。';
+
+  @override
+  String get cl210_ui_5 =>
+      '動画再生の改善：スワイプでのシークが再生を中断しなくなりました。ロックボタンは左側中央に移動し、常に表示されます。';
+
+  @override
+  String get cl210_fixes => '修正';
+
+  @override
+  String get cl210_fix_1 =>
+      '制限された Android/data、Android/obb フォルダー内でファイル・フォルダー・圧縮ファイルを作成できない問題を修正しました。書き込みパスの方針を見直し、権限はアプリフォルダーごとに付与する方式に変更しました。';
+
+  @override
+  String get cl210_fix_2 =>
+      '作成の失敗が無言で終わらなくなりました。失敗時は理由を表示し、Android/data 直下で作成しようとした場合はアプリフォルダーを開くよう案内します。';
+
+  @override
+  String get cl210_fix_3 =>
+      'カテゴリー画面の複数選択メニューで「最前面に固定」が効かない問題を修正しました（固定は保存されていましたが並べ替えが行われていませんでした）。併せてメニュー表記を「固定を解除」に修正しました。';
+
+  @override
+  String get cl210_fix_4 => '「ホーム設定を解除」が効かない問題を修正しました。ホーム設定が実際には消去されていませんでした。';
+
+  @override
+  String get cl210_fix_5 => '一部の画面で「プロパティ」が反応しない問題を修正しました。';
+
+  @override
   String get cl200_notice => 'バージョンとパッケージ名の変更（必ずお読みください）';
 
   @override
@@ -7174,4 +7245,80 @@ class L10nJa extends L10n {
 
   @override
   String get ui_unpin => 'ピン留め解除';
+
+  @override
+  String get decibel_meter_title => '騒音計';
+
+  @override
+  String get decibel_meter_current => '現在の音量';
+
+  @override
+  String get decibel_meter_verdict => '環境判定';
+
+  @override
+  String get decibel_meter_curve => '騒音曲線';
+
+  @override
+  String get decibel_meter_start => '測定開始';
+
+  @override
+  String get decibel_meter_stop => '測定停止';
+
+  @override
+  String get decibel_meter_level_quiet => '静か';
+
+  @override
+  String get decibel_meter_level_normal => '普通';
+
+  @override
+  String get decibel_meter_level_noisy => '騒がしい';
+
+  @override
+  String get decibel_meter_level_very_noisy => '非常に騒がしい';
+
+  @override
+  String get decibel_meter_level_dangerous => '危険';
+
+  @override
+  String get decibel_meter_health_impact => '人体への影響';
+
+  @override
+  String get decibel_meter_health_safe => '通常の環境で、健康に害はありません。';
+
+  @override
+  String get decibel_meter_health_moderate => '騒がしく、長時間の曝露は聴力に影響する可能性があります。';
+
+  @override
+  String get decibel_meter_health_harmful => '非常に騒がしく、長時間の曝露は聴力を損なう可能性があります。';
+
+  @override
+  String get decibel_meter_health_dangerous => '危険レベルです。すぐに離れて聴力を保護してください！';
+
+  @override
+  String get decibel_meter_examples => '一般的な例';
+
+  @override
+  String get decibel_meter_examples_text => '普通の会話（約50-60 dB）、静かなオフィス、冷蔵庫の音。';
+
+  @override
+  String get decibel_meter_perm_denied => '環境音を測定するにはマイク権限が必要です。設定で有効にしてください。';
+
+  @override
+  String get decibel_meter_perm_title => 'マイク権限が必要です';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'マイク権限が永続的に拒否されています。システム設定で ZenFile のマイク権限を有効にしてから再試行してください。';
+
+  @override
+  String get decibel_meter_perm_open_settings => '設定を開く';
+
+  @override
+  String get msg_background_play => 'バックグラウンド再生';
+
+  @override
+  String get msg_sleep_timer => 'スリープタイマー';
+
+  @override
+  String get msg_background_play_active => 'バックグラウンド再生中です。通知から操作できます';
 }

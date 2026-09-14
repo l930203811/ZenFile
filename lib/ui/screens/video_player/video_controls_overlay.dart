@@ -42,6 +42,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onSelectAudioTrack;
   final VoidCallback onSelectSubtitleTrack;
   final VoidCallback onOpenPlaylist;
+  final VoidCallback onBackground;
+  final VoidCallback onSleepTimer;
   final VoidCallback onInteract;
   final bool useHardwareDecode; // true=硬解, false=软解
   final VoidCallback onToggleHwdec;
@@ -87,6 +89,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onSelectAudioTrack,
     required this.onSelectSubtitleTrack,
     required this.onOpenPlaylist,
+    required this.onBackground,
+    required this.onSleepTimer,
     required this.onInteract,
     required this.useHardwareDecode,
     required this.onToggleHwdec,
@@ -111,42 +115,6 @@ class VideoControlsOverlay extends StatelessWidget {
     final safeMax = maxMs > 0 ? maxMs : 1.0;
     final safeVal = sliderValue.clamp(0.0, safeMax);
     final itemsColor = Colors.white.withOpacity(0.9);
-
-    if (isLocked) {
-      return Positioned(
-        top: 32,
-        left: 24,
-        child: SafeArea(
-          top: !isFullScreen,
-          bottom: !isFullScreen,
-          child: GestureDetector(
-            onTap: onToggleLock,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.75),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
-                boxShadow: [
-                  BoxShadow(color: accentColor.withOpacity(0.4), blurRadius: 16),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Broken.lock, color: accentColor, size: 22),
-                  const SizedBox(width: 8),
-                  Text(
-                    L10n.of(context).msg_slide_to_unlock,
-                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
 
     return Stack(
       children: [
@@ -263,13 +231,6 @@ class VideoControlsOverlay extends StatelessWidget {
                         .toList(),
                   ),
                   const SizedBox(width: 8),
-                  // Lock Toggle Button
-                  IconButton(
-                    icon: Icon(Broken.unlock, color: itemsColor, size: 24),
-                    tooltip: L10n.of(context).msg8f106217,
-                    onPressed: onToggleLock,
-                  ),
-                  const SizedBox(width: 8),
                   // Playlist Button
                   IconButton(
                     icon: Icon(Icons.playlist_play_rounded, color: itemsColor, size: 24),
@@ -293,6 +254,10 @@ class VideoControlsOverlay extends StatelessWidget {
                         onCustomAspectRatio();
                       } else if (value == 'equalizer') {
                         onEqualizer();
+                      } else if (value == 'background') {
+                        onBackground();
+                      } else if (value == 'sleep_timer') {
+                        onSleepTimer();
                       }
                     },
                     itemBuilder: (_) => [
@@ -320,6 +285,38 @@ class VideoControlsOverlay extends StatelessWidget {
                             const SizedBox(width: 12),
                             Text(
                               L10n.of(context).msgb7c87215,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'background',
+                        child: Row(
+                          children: [
+                            Icon(Icons.headphones_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).msg_background_play,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'sleep_timer',
+                        child: Row(
+                          children: [
+                            Icon(Broken.timer, size: 20, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).msg_sleep_timer,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,

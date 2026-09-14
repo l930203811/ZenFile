@@ -6677,6 +6677,79 @@ class L10nEs extends L10n {
   String get vault_config_password => 'Configuración de contraseña';
 
   @override
+  String get cl210_feat_6 =>
+      'Sonómetro: ábrelo desde la caja de herramientas o el menú lateral para medir el ruido ambiente en tiempo real, con la curva de ruido, la valoración del entorno y avisos sobre cómo afecta al oído.';
+
+  @override
+  String get cl210_features => 'Novedades';
+
+  @override
+  String get cl210_feat_1 =>
+      'Reproducción de vídeo en segundo plano: una nueva opción mantiene la reproducción al salir del reproductor y la notificación permite reproducir, pausar y mover la posición.';
+
+  @override
+  String get cl210_feat_2 =>
+      'Temporizador de apagado para vídeo: detén la reproducción a los 15, 30, 45 o 60 minutos y cancela el temporizador cuando quieras.';
+
+  @override
+  String get cl210_feat_3 =>
+      '«Abrir con» en carpetas: antes solo existía para archivos; ahora funciona en las vistas de cuadrícula, lista y doble panel.';
+
+  @override
+  String get cl210_feat_4 =>
+      'Propiedades en todas partes: el menú de tres puntos del navegador, de Recientes y de las categorías muestra las propiedades de archivos y carpetas.';
+
+  @override
+  String get cl210_feat_5 =>
+      'La carpeta de inicio se puede quitar: una carpeta ya fijada como inicio ofrece «Quitar como inicio» en su menú.';
+
+  @override
+  String get cl210_ui => 'Interfaz y uso';
+
+  @override
+  String get cl210_ui_1 =>
+      'El menú de tres puntos es ahora una cuadrícula de iconos: el icono arriba y el texto debajo, los textos largos ocupan dos líneas y se colocan en tres o cuatro columnas según el número de elementos.';
+
+  @override
+  String get cl210_ui_2 =>
+      'Los menús del navegador y de las categorías comparten el mismo orden; «Establecer como inicio» ocupa el lugar de «Mostrar en la carpeta».';
+
+  @override
+  String get cl210_ui_3 =>
+      'Mejor alineación en la cuadrícula: aunque los textos traducidos ocupen dos líneas, los iconos de una fila siguen en la misma altura.';
+
+  @override
+  String get cl210_ui_4 =>
+      'El botón de tres puntos de archivos y carpetas ahora es vertical, en las vistas de cuadrícula, lista y compacta.';
+
+  @override
+  String get cl210_ui_5 =>
+      'Reproducción de vídeo mejorada: desplazar para avanzar ya no interrumpe la reproducción y el botón de bloqueo se ha movido al centro del borde izquierdo, donde permanece visible.';
+
+  @override
+  String get cl210_fixes => 'Correcciones';
+
+  @override
+  String get cl210_fix_1 =>
+      'Corregido: no se podían crear archivos, carpetas ni comprimidos dentro de las carpetas restringidas Android/data y Android/obb. Se ha corregido la estrategia de ruta de escritura y el permiso se concede ahora por carpeta de aplicación.';
+
+  @override
+  String get cl210_fix_2 =>
+      'Los fallos al crear ya no son silenciosos: se muestra el motivo y, si intentas crear directamente en Android/data, se te indica que entres antes en una carpeta de aplicación.';
+
+  @override
+  String get cl210_fix_3 =>
+      'Corregido: «Anclar arriba» en el menú de selección múltiple de las categorías no hacía nada (el anclaje se guardaba pero la lista no se reordenaba); además la etiqueta correcta es «Quitar anclaje».';
+
+  @override
+  String get cl210_fix_4 =>
+      'Corregido: «Quitar como inicio» no funcionaba porque el ajuste no se borraba de verdad.';
+
+  @override
+  String get cl210_fix_5 =>
+      'Corregido: «Propiedades» no respondía en algunas páginas.';
+
+  @override
   String get cl200_notice =>
       'Cambio de versión y de nombre de paquete (lee esto)';
 
@@ -7479,4 +7552,87 @@ class L10nEs extends L10n {
 
   @override
   String get ui_unpin => 'Desanclar';
+
+  @override
+  String get decibel_meter_title => 'Sonómetro';
+
+  @override
+  String get decibel_meter_current => 'Nivel actual';
+
+  @override
+  String get decibel_meter_verdict => 'Evaluación';
+
+  @override
+  String get decibel_meter_curve => 'Curva de ruido';
+
+  @override
+  String get decibel_meter_start => 'Iniciar';
+
+  @override
+  String get decibel_meter_stop => 'Detener';
+
+  @override
+  String get decibel_meter_level_quiet => 'Tranquilo';
+
+  @override
+  String get decibel_meter_level_normal => 'Normal';
+
+  @override
+  String get decibel_meter_level_noisy => 'Ruidoso';
+
+  @override
+  String get decibel_meter_level_very_noisy => 'Muy ruidoso';
+
+  @override
+  String get decibel_meter_level_dangerous => 'Peligroso';
+
+  @override
+  String get decibel_meter_health_impact => 'Impacto en la salud';
+
+  @override
+  String get decibel_meter_health_safe =>
+      'Entorno normal, sin riesgo para la salud.';
+
+  @override
+  String get decibel_meter_health_moderate =>
+      'Ruidoso, la exposición prolongada puede afectar la audición.';
+
+  @override
+  String get decibel_meter_health_harmful =>
+      'Muy ruidoso, la exposición prolongada puede dañar la audición.';
+
+  @override
+  String get decibel_meter_health_dangerous =>
+      'Nivel peligroso, ¡aléjate y protege tu audición!';
+
+  @override
+  String get decibel_meter_examples => 'Ejemplos comunes';
+
+  @override
+  String get decibel_meter_examples_text =>
+      'Conversación normal (aprox. 50-60 dB), oficina tranquila, zumbido de nevera.';
+
+  @override
+  String get decibel_meter_perm_denied =>
+      'Se requiere el permiso de micrófono para medir el sonido ambiente. Actívalo en los ajustes.';
+
+  @override
+  String get decibel_meter_perm_title => 'Permiso de micrófono necesario';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'El permiso de micrófono fue denegado permanentemente. Actívalo para ZenFile en los ajustes del sistema e inténtalo de nuevo.';
+
+  @override
+  String get decibel_meter_perm_open_settings => 'Abrir ajustes';
+
+  @override
+  String get msg_background_play => 'Reproducción en segundo plano';
+
+  @override
+  String get msg_sleep_timer => 'Temporizador de reposo';
+
+  @override
+  String get msg_background_play_active =>
+      'Reproduciendo en segundo plano, controla desde la notificación';
 }

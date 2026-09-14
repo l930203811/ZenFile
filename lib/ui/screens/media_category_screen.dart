@@ -39,6 +39,13 @@ import '../widgets/circular_progress_dialog.dart';
 import 'internal_file_picker_screen.dart';
 import 'media_category_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/progress_overlay.dart';
+import '../../services/crypt/crypt_operations.dart';
+import '../../services/crypt/vault_crypt_service.dart';
+import '../widgets/bulk_crypt_actions.dart';
+import '../screens/vault_session_unlock_dialog.dart';
+import '../screens/crypt_mount_edit_screen.dart';
+
 
 /// 媒体分类页右上角「查看与排序」菜单动作
 enum _ViewMenuAction {
@@ -185,24 +192,42 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     return false;
   }
 
+  /// 把已置顶的项稳定前移到列表开头，其余保持原顺序。
+  /// 与浏览页 file_manager_provider 的置顶行为保持一致。
+  List<T> _applyPinnedOrder<T>(List<T> source, String Function(T) pathOf) {
+    if (source.isEmpty) return source;
+    final pinned = <T>[];
+    final rest = <T>[];
+    for (final item in source) {
+      if (PinService.isPinned(pathOf(item))) {
+        pinned.add(item);
+      } else {
+        rest.add(item);
+      }
+    }
+    if (pinned.isEmpty) return source;
+    return <T>[...pinned, ...rest];
+  }
+
   /// 根据当前 [_scopeFilter] 过滤媒体列表。
   /// 当 [_showRemoteFiles] 关闭时，强制仅返回本地文件。
+  /// 过滤结果统一经 [_applyPinnedOrder] 使置顶项排在前面。
   List<T> _filterByScope<T>(List<T> source, String Function(T) pathOf) {
+    final List<T> result;
     if (!_showRemoteFiles) {
-      return source
+      result = source
+          .where((item) => !MediaProvider.isRemotePath(pathOf(item)))
+          .toList();
+    } else if (_scopeFilter == _ScopeFilter.remote) {
+      result = source
+          .where((item) => MediaProvider.isRemotePath(pathOf(item)))
+          .toList();
+    } else {
+      result = source
           .where((item) => !MediaProvider.isRemotePath(pathOf(item)))
           .toList();
     }
-    switch (_scopeFilter) {
-      case _ScopeFilter.local:
-        return source
-            .where((item) => !MediaProvider.isRemotePath(pathOf(item)))
-            .toList();
-      case _ScopeFilter.remote:
-        return source
-            .where((item) => MediaProvider.isRemotePath(pathOf(item)))
-            .toList();
-    }
+    return _applyPinnedOrder(result, pathOf);
   }
 
   Future<void> _loadAutoSync() async {
@@ -1437,423 +1462,524 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  void _showSingleItemOptions({
+  Future<void> _showSingleItemOptions({
     required String name,
     String? filePath,
     String? assetId,
-  }) {
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      backgroundColor: theme.scaffoldBackgroundColor,
-      builder: (ctx) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onLongPress: (filePath != null)
-                      ? () {
-                          try {
-                            HapticFeedback.mediumImpact();
-                          } catch (_) {}
-                          Navigator.pop(ctx);
-                          context.read<FileManagerProvider>().showOpenWithSheet(
-                            context,
-                            filePath,
-                          );
-                        }
-                      : null,
-                  child: Container(
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16.0,
-                      horizontal: 24.0,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (filePath != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            L10n.of(context).msg5556baa3,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const Divider(height: 1),
-                if (filePath != null && FileUtils.isArchive(filePath))
-                  ListTile(
-                    leading: Icon(
-                      Broken.archive,
-                      color: theme.colorScheme.primary,
-                    ),
-                    title: Text(L10n.of(context).ui_extract),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context
-                          .read<FileManagerProvider>()
-                          .extractArchiveDirectly(context, filePath);
-                    },
-                  ),
-                ListTile(
-                  leading: Icon(
-                    Broken.document_copy,
-                    color: theme.colorScheme.primary,
-                  ),
-                  title: Text(L10n.of(context).ui_copy),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    if (filePath != null && filePath.startsWith('remote://')) {
-                      context
-                          .read<FileManagerProvider>()
-                          .copyRemotePathToClipboard(filePath, isCut: false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Copied $name to clipboard')),
-                        );
-                      }
-                      return;
-                    }
-                    String? target = filePath;
-                    if (assetId != null) {
-                      final provider = context.read<MediaProvider>();
-                      final allAssets = [
-                        ...provider.images,
-                        ...provider.videos,
-                        ...provider.screenshots,
-                      ];
-                      final match = allAssets
-                          .where((a) => a.id == assetId)
-                          .firstOrNull;
-                      if (match != null) {
-                        final f = await match.file;
-                        target = f?.path;
-                      }
-                    }
-                    if (target != null && mounted) {
-                      context.read<FileManagerProvider>().setClipboard([
-                        target,
-                      ], isCut: false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Copied $name to clipboard')),
-                      );
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Broken.scissor,
-                    color: theme.colorScheme.primary,
-                  ),
-                  title: Text(L10n.of(context).ui_cut),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    if (filePath != null && filePath.startsWith('remote://')) {
-                      context
-                          .read<FileManagerProvider>()
-                          .copyRemotePathToClipboard(filePath, isCut: true);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Cut $name to clipboard')),
-                        );
-                      }
-                      return;
-                    }
-                    String? target = filePath;
-                    if (assetId != null) {
-                      final provider = context.read<MediaProvider>();
-                      final allAssets = [
-                        ...provider.images,
-                        ...provider.videos,
-                        ...provider.screenshots,
-                      ];
-                      final match = allAssets
-                          .where((a) => a.id == assetId)
-                          .firstOrNull;
-                      if (match != null) {
-                        final f = await match.file;
-                        target = f?.path;
-                      }
-                    }
-                    if (target != null && mounted) {
-                      context.read<FileManagerProvider>().setClipboard([
-                        target,
-                      ], isCut: true);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Cut $name to clipboard')),
-                      );
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Broken.trash, color: Colors.red),
-                  title: Text(
-                    L10n.of(context).ui_delete,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    if (filePath != null && filePath.startsWith('remote://')) {
-                      final ok = await FileManagerProvider.deleteRemotePath(
-                        filePath,
-                      );
-                      if (ok && mounted) {
-                        await context.read<MediaProvider>().loadMedia(
-                          forceRefresh: true,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(L10n.of(context).name(name))),
-                        );
-                      } else if (mounted) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text('删除失败')));
-                      }
-                      return;
-                    }
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (c) => AlertDialog(
-                        title: Text(L10n.of(context).msg631cd220),
-                        content: Text(
-                          L10n.of(context).ui_permanently_delete_name(name),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(c, false),
-                            child: Text(L10n.of(context).ui_cancel),
-                          ),
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            onPressed: () => Navigator.pop(c, true),
-                            child: Text(L10n.of(context).ui_delete),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true && mounted) {
-                      final mediaProvider = context.read<MediaProvider>();
-                      List<String> files = [];
-                      if (filePath != null) files.add(filePath);
-                      if (assetId != null) {
-                        final allAssets = [
-                          ...mediaProvider.images,
-                          ...mediaProvider.videos,
-                          ...mediaProvider.screenshots,
-                        ];
-                        final match = allAssets
-                            .where((a) => a.id == assetId)
-                            .firstOrNull;
-                        if (match != null) {
-                          final f = await match.file;
-                          if (f != null) files.add(f.path);
-                        }
-                      }
-                      await mediaProvider.deleteMediaItems(
-                        filePaths: files,
-                        assetIds: assetId != null ? [assetId] : [],
-                      );
-                      // 即时裁剪 provider 列表，使已删文件预览图立即从网格消失
-                      if (files.isNotEmpty) {
-                        mediaProvider.pruneDeletedMediaPaths(files);
-                      }
-                      if (mounted) {
-                        setState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(L10n.of(context).name(name))),
-                        );
-                      }
-                    }
-                  },
-                ),
-                if (filePath != null)
-                  ListTile(
-                    leading: Icon(
-                      Broken.edit,
-                      color: theme.colorScheme.primary,
-                    ),
-                    title: Text(L10n.of(context).msgc8ce4b36),
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      if (filePath.startsWith('remote://')) {
-                        final currentName = path_helper.basename(filePath);
-                        final newName =
-                            await FileActionDialogs.showRenameDialog(
-                              context,
-                              currentName: currentName,
-                              title: L10n.of(context).msgc8ce4b36,
-                              hint: L10n.of(context).msgf139c5cf,
-                              actionText: L10n.of(context).msgc8ce4b36,
-                            );
-                        if (newName != null && newName.isNotEmpty && mounted) {
-                          final ok = await FileManagerProvider.renameRemotePath(
-                            filePath,
-                            newName,
-                          );
-                          if (ok && mounted) {
-                            await context.read<MediaProvider>().loadMedia(
-                              forceRefresh: true,
-                            );
-                          } else if (mounted) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text('重命名失败')));
-                          }
-                        }
-                        return;
-                      }
-                      final currentName = path_helper.basename(filePath);
-                      final newName = await FileActionDialogs.showRenameDialog(
-                        context,
-                        currentName: currentName,
-                        title: L10n.of(context).msgc8ce4b36,
-                        hint: L10n.of(context).msgf139c5cf,
-                        actionText: L10n.of(context).msgc8ce4b36,
-                      );
-                      if (newName != null && newName.isNotEmpty && mounted) {
-                        try {
-                          await context.read<FileManagerProvider>().renameFile(
-                            filePath,
-                            newName,
-                          );
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('重命名失败: $e')),
-                            );
-                          }
-                          return;
-                        }
-                        context.read<MediaProvider>().loadMedia(
-                          forceRefresh: true,
-                        );
-                      }
-                    },
-                  ),
-                if (filePath != null)
-                  ListTile(
-                    leading: Icon(
-                      Broken.folder_open,
-                      color: theme.colorScheme.primary,
-                    ),
-                    title: Text(L10n.of(context).msgcd8264f1),
-                    onTap: () {
-                      if (filePath != null &&
-                          filePath.startsWith('remote://')) {
-                        context
-                            .read<FileManagerProvider>()
-                            .showRemoteFileInLocation(filePath);
-                      } else if (filePath != null) {
-                        context.read<FileManagerProvider>().showFileInLocation(
-                          filePath,
-                        );
-                      }
-                      Navigator.pop(ctx);
-                      Navigator.popUntil(context, (route) => route.isFirst);
-                      widget.onNavigateTab?.call(1);
-                    },
-                  ),
-                if (filePath != null)
-                  ListTile(
-                    leading: Icon(Broken.eye, color: theme.colorScheme.primary),
-                    title: Text(L10n.of(context).msg2a4cfb07),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.read<FileManagerProvider>().showOpenWithSheet(
-                        context,
-                        filePath,
-                      );
-                    },
-                  ),
-                ListTile(
-                  leading: Icon(
-                    Broken.info_circle,
-                    color: theme.colorScheme.primary,
-                  ),
-                  title: Text(L10n.of(context).ui_properties),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _showPropertiesDialog(
-                      singleFilePath: filePath,
-                      singleAssetId: assetId,
-                      explicitName: name,
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.share_outlined,
-                    color: theme.colorScheme.primary,
-                  ),
-                  title: Text(L10n.of(context).ui_share),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    String? target = filePath;
-                    if (assetId != null) {
-                      final provider = context.read<MediaProvider>();
-                      final allAssets = [
-                        ...provider.images,
-                        ...provider.videos,
-                        ...provider.screenshots,
-                      ];
-                      final match = allAssets
-                          .where((a) => a.id == assetId)
-                          .firstOrNull;
-                      if (match != null) {
-                        final f = await match.file;
-                        target = f?.path;
-                      }
-                    }
-                    if (target != null && FileSystemEntity.isFileSync(target)) {
-                      try {
-                        await Share.shareXFiles([XFile(target)]);
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(L10n.of(context).e10(e))),
-                          );
-                        }
-                      }
-                    } else {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(L10n.of(context).msg8bf52387)),
-                        );
-                      }
-                    }
-                  },
-                ),
-              ],
-            ),
+  }) async {
+    final bool isEncrypted =
+        filePath != null && await CryptOperations.isEncryptedFile(filePath);
+    if (!mounted) return;
+    return ActionGridSheet.show(
+      context,
+      items: <ActionItem>[
+        if (filePath != null && FileUtils.isArchive(filePath))
+          ActionItem(
+            icon: Broken.archive,
+            label: L10n.of(context).ui_extract,
+            onTap: () {
+              context
+                  .read<FileManagerProvider>()
+                  .extractArchiveDirectly(context, filePath);
+            },
           ),
-        );
-      },
+        ActionItem(
+          icon: Broken.document_copy,
+          label: L10n.of(context).ui_copy,
+          onTap: () async {
+            if (filePath != null && filePath.startsWith('remote://')) {
+              context
+                  .read<FileManagerProvider>()
+                  .copyRemotePathToClipboard(filePath, isCut: false);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Copied $name to clipboard')),
+                );
+              }
+              return;
+            }
+            String? target = filePath;
+            if (assetId != null) {
+              final provider = context.read<MediaProvider>();
+              final allAssets = [
+                ...provider.images,
+                ...provider.videos,
+                ...provider.screenshots,
+              ];
+              final match =
+                  allAssets.where((a) => a.id == assetId).firstOrNull;
+              if (match != null) {
+                final f = await match.file;
+                target = f?.path;
+              }
+            }
+            if (target != null && mounted) {
+              context
+                  .read<FileManagerProvider>()
+                  .setClipboard([target], isCut: false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Copied $name to clipboard')),
+              );
+            }
+          },
+        ),
+        ActionItem(
+          icon: Broken.scissor,
+          label: L10n.of(context).ui_cut,
+          onTap: () async {
+            if (filePath != null && filePath.startsWith('remote://')) {
+              context
+                  .read<FileManagerProvider>()
+                  .copyRemotePathToClipboard(filePath, isCut: true);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Cut $name to clipboard')),
+                );
+              }
+              return;
+            }
+            String? target = filePath;
+            if (assetId != null) {
+              final provider = context.read<MediaProvider>();
+              final allAssets = [
+                ...provider.images,
+                ...provider.videos,
+                ...provider.screenshots,
+              ];
+              final match =
+                  allAssets.where((a) => a.id == assetId).firstOrNull;
+              if (match != null) {
+                final f = await match.file;
+                target = f?.path;
+              }
+            }
+            if (target != null && mounted) {
+              context
+                  .read<FileManagerProvider>()
+                  .setClipboard([target], isCut: true);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Cut $name to clipboard')),
+              );
+            }
+          },
+        ),
+        ActionItem(
+          icon: Broken.trash,
+          label: L10n.of(context).ui_delete,
+          destructive: true,
+          onTap: () async {
+            if (filePath != null && filePath.startsWith('remote://')) {
+              final ok = await FileManagerProvider.deleteRemotePath(filePath);
+              if (ok && mounted) {
+                await context
+                    .read<MediaProvider>()
+                    .loadMedia(forceRefresh: true);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L10n.of(context).name(name))),
+                );
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('删除失败')),
+                );
+              }
+              return;
+            }
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: Text(L10n.of(context).msg631cd220),
+                content:
+                    Text(L10n.of(context).ui_permanently_delete_name(name)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(c, false),
+                    child: Text(L10n.of(context).ui_cancel),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () => Navigator.pop(c, true),
+                    child: Text(L10n.of(context).ui_delete),
+                  ),
+                ],
+              ),
+            );
+            if (confirm == true && mounted) {
+              final mediaProvider = context.read<MediaProvider>();
+              List<String> files = [];
+              if (filePath != null) files.add(filePath);
+              if (assetId != null) {
+                final allAssets = [
+                  ...mediaProvider.images,
+                  ...mediaProvider.videos,
+                  ...mediaProvider.screenshots,
+                ];
+                final match =
+                    allAssets.where((a) => a.id == assetId).firstOrNull;
+                if (match != null) {
+                  final f = await match.file;
+                  if (f != null) files.add(f.path);
+                }
+              }
+              await mediaProvider.deleteMediaItems(
+                filePaths: files,
+                assetIds: assetId != null ? [assetId] : [],
+              );
+              if (files.isNotEmpty) {
+                mediaProvider.pruneDeletedMediaPaths(files);
+              }
+              if (mounted) {
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L10n.of(context).name(name))),
+                );
+              }
+            }
+          },
+        ),
+        if (filePath != null)
+          ActionItem(
+            icon: Broken.edit,
+            label: L10n.of(context).msgc8ce4b36,
+            onTap: () async {
+              if (filePath!.startsWith('remote://')) {
+                final currentName = path_helper.basename(filePath!);
+                final newName = await FileActionDialogs.showRenameDialog(
+                  context,
+                  currentName: currentName,
+                  title: L10n.of(context).msgc8ce4b36,
+                  hint: L10n.of(context).msgf139c5cf,
+                  actionText: L10n.of(context).msgc8ce4b36,
+                );
+                if (newName != null && newName.isNotEmpty && mounted) {
+                  final ok = await FileManagerProvider.renameRemotePath(
+                    filePath!,
+                    newName,
+                  );
+                  if (ok && mounted) {
+                    await context
+                        .read<MediaProvider>()
+                        .loadMedia(forceRefresh: true);
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('重命名失败')),
+                    );
+                  }
+                }
+                return;
+              }
+              final currentName = path_helper.basename(filePath!);
+              final newName = await FileActionDialogs.showRenameDialog(
+                context,
+                currentName: currentName,
+                title: L10n.of(context).msgc8ce4b36,
+                hint: L10n.of(context).msgf139c5cf,
+                actionText: L10n.of(context).msgc8ce4b36,
+              );
+              if (newName != null && newName.isNotEmpty && mounted) {
+                try {
+                  await context
+                      .read<FileManagerProvider>()
+                      .renameFile(filePath!, newName);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('重命名失败: $e')),
+                    );
+                  }
+                  return;
+                }
+                context.read<MediaProvider>().loadMedia(forceRefresh: true);
+              }
+            },
+          ),
+        if (filePath != null)
+          ActionItem(
+            icon: Broken.folder_open,
+            label: L10n.of(context).msgcd8264f1,
+            onTap: () {
+              if (filePath!.startsWith('remote://')) {
+                context
+                    .read<FileManagerProvider>()
+                    .showRemoteFileInLocation(filePath!);
+              } else {
+                context
+                    .read<FileManagerProvider>()
+                    .showFileInLocation(filePath!);
+              }
+              Navigator.popUntil(context, (route) => route.isFirst);
+              widget.onNavigateTab?.call(1);
+            },
+          ),
+        if (filePath != null)
+          ActionItem(
+            icon: Broken.eye,
+            label: L10n.of(context).msg2a4cfb07,
+            onTap: () {
+              context
+                  .read<FileManagerProvider>()
+                  .showOpenWithSheet(context, filePath!);
+            },
+          ),
+        if (filePath != null)
+          ActionItem(
+            icon: Broken.box_add,
+            label: L10n.of(context).ui_compress,
+            onTap: () async {
+              final fm = context.read<FileManagerProvider>();
+              final currentName = path_helper.basename(filePath!);
+              final res = await CreateArchiveDialog.show(
+                context,
+                initialName: currentName,
+                isMultiSelection: false,
+              );
+              if (res != null) {
+                final rootContext = navigatorKey.currentContext ?? context;
+                await fm.createArchive(
+                  archiveName: res.archiveName,
+                  format: res.format,
+                  compressionLevel: res.compressionLevel,
+                  password: res.password,
+                  splitSizeMB: res.splitSizeMB,
+                  deleteSource: res.deleteSource,
+                  separateArchives: res.separateArchives,
+                  targetPaths: [filePath!],
+                  context: rootContext,
+                );
+              }
+            },
+          ),
+        if (filePath != null)
+          ActionItem(
+            icon: isEncrypted ? Icons.lock_open : Icons.lock,
+            label: isEncrypted
+                ? L10n.of(context).crypt_action_decrypt
+                : L10n.of(context).vault_action_encrypt,
+            onTap: () {
+              if (isEncrypted) {
+                _handleDecrypt(context, filePath!);
+              } else {
+                _handleEncrypt(context, filePath!);
+              }
+            },
+          ),
+        if (filePath != null)
+          ActionItem(
+            icon: Broken.folder_favorite,
+            label: L10n.of(context).ui_favorite,
+            onTap: () {
+              _addFavoriteSingle(
+                filePath: filePath,
+                assetId: assetId,
+                name: name,
+              );
+            },
+          ),
+        ActionItem(
+          icon: Broken.info_circle,
+          label: L10n.of(context).ui_properties,
+          onTap: () {
+            _showPropertiesDialog(
+              singleFilePath: filePath,
+              singleAssetId: assetId,
+              explicitName: name,
+            );
+          },
+        ),
+        ActionItem(
+          icon: Icons.share_outlined,
+          label: L10n.of(context).ui_share,
+          onTap: () async {
+            String? target = filePath;
+            if (assetId != null) {
+              final provider = context.read<MediaProvider>();
+              final allAssets = [
+                ...provider.images,
+                ...provider.videos,
+                ...provider.screenshots,
+              ];
+              final match =
+                  allAssets.where((a) => a.id == assetId).firstOrNull;
+              if (match != null) {
+                final f = await match.file;
+                target = f?.path;
+              }
+            }
+            if (target != null && FileSystemEntity.isFileSync(target)) {
+              try {
+                await Share.shareXFiles([XFile(target)]);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(L10n.of(context).e10(e))),
+                  );
+                }
+              }
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L10n.of(context).msg8bf52387)),
+                );
+              }
+            }
+          },
+        ),
+      ],
     );
   }
+
+
+  Future<bool> _ensureMasterPassword(BuildContext context) async {
+    if (await VaultCryptService.instance.hasMasterPassword()) return true;
+    if (!context.mounted) return false;
+    final l10n = L10n.of(context);
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.crypt_need_master_title),
+        content: Text(l10n.crypt_need_master_body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.vault_go_set_password),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !context.mounted) return false;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CryptMountEditScreen()),
+    );
+    return VaultCryptService.instance.hasMasterPassword();
+  }
+
+  Future<void> _handleEncrypt(BuildContext context, String path) async {
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
+    final mode = await BulkCryptActions.promptEncryptionMode(context);
+    if (mode == null) return;
+    final progress = ValueNotifier<double?>(null);
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(
+          message: L10n.of(context).vault_encrypting,
+          value: v,
+        ),
+      ),
+    );
+    try {
+      if (mode == 'inplace') {
+        await VaultCryptService.instance.encryptInPlace(
+          sourcePath: path,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
+      } else {
+        await VaultCryptService.instance.encryptToSandbox(
+          sourcePath: path,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
+      }
+      if (context.mounted) {
+        Navigator.pop(context);
+        context.read<MediaProvider>().loadMedia(forceRefresh: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('加密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加密失败: $e')),
+        );
+      }
+    } finally {
+      progress.dispose();
+    }
+  }
+
+  Future<void> _handleDecrypt(BuildContext context, String path) async {
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
+    final progress = ValueNotifier<double?>(null);
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(
+          message: L10n.of(context).vault_decrypting,
+          value: v,
+        ),
+      ),
+    );
+    try {
+      await VaultCryptService.instance.decryptInPlace(
+        encryptedPath: path,
+        onProgress: (done, total) =>
+            progress.value = total > 0 ? done / total : null,
+      );
+      if (context.mounted) {
+        Navigator.pop(context);
+        context.read<MediaProvider>().loadMedia(forceRefresh: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('解密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解密失败: $e')),
+        );
+      }
+    } finally {
+      progress.dispose();
+    }
+  }
+
+  Future<void> _addFavoriteSingle({
+    String? filePath,
+    String? assetId,
+    required String name,
+  }) async {
+    final fm = context.read<FileManagerProvider>();
+    String? target = filePath;
+    bool isDir = false;
+    if (target != null) {
+      isDir = Directory(target).existsSync();
+    } else if (assetId != null) {
+      final provider = context.read<MediaProvider>();
+      final allAssets = [
+        ...provider.images,
+        ...provider.videos,
+        ...provider.screenshots,
+      ];
+      final match = allAssets.where((a) => a.id == assetId).firstOrNull;
+      if (match != null) {
+        final f = await match.file;
+        target = f?.path;
+      }
+    }
+    if (target != null && mounted) {
+      fm.addFavorite(target, name, isDir);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L10n.of(context).msg_favorited(name))),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -2841,7 +2967,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
             const SizedBox(width: 12),
             Text(
-              allPinned ? l10n.msga9b87614 : l10n.ui_pin_to_top,
+              allPinned ? l10n.ui_unpin : l10n.ui_pin_to_top,
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ],
@@ -2963,6 +3089,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         }
       }
       fm.refreshDirectoryView();
+      // 分类页列表由 provider 的媒体集合 + 本地 _filterByScope 计算，
+      // 不会因浏览目录刷新而重排，需显式重建才能把置顶项移到前面。
+      if (mounted) setState(() {});
       _clearSelection();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3564,7 +3693,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   color: Colors.black.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Broken.more, color: Colors.white, size: 18),
+                child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
               ),
             ),
           ),
@@ -3836,7 +3965,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       trailing: _isSelectionMode
           ? null
           : IconButton(
-              icon: const Icon(Broken.more),
+              icon: const Icon(Icons.more_vert),
               onPressed: () async {
                 if (isAsset) {
                   final f = await item.file;
@@ -4045,7 +4174,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   color: Colors.black.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Broken.more, color: Colors.white, size: 18),
+                child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
               ),
             ),
           ),
@@ -4297,7 +4426,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       trailing: _isSelectionMode
           ? null
           : IconButton(
-              icon: const Icon(Broken.more),
+              icon: const Icon(Icons.more_vert),
               onPressed: () async {
                 if (isAsset) {
                   final f = await item.file;
@@ -4501,7 +4630,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       trailing: _isSelectionMode
           ? null
           : IconButton(
-              icon: const Icon(Broken.more),
+              icon: const Icon(Icons.more_vert),
               onPressed: () =>
                   _showSingleItemOptions(name: audio.title, filePath: path),
             ),
@@ -4780,7 +4909,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                  child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
                 ),
               ),
             ),
@@ -4884,7 +5013,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       trailing: _isSelectionMode
           ? null
           : IconButton(
-              icon: const Icon(Broken.more),
+              icon: const Icon(Icons.more_vert),
               onPressed: () =>
                   _showSingleItemOptions(name: name, filePath: path),
             ),
@@ -5104,7 +5233,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                  child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
                 ),
               ),
             ),
@@ -5249,7 +5378,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       trailing: _isSelectionMode
           ? null
           : IconButton(
-              icon: const Icon(Broken.more),
+              icon: const Icon(Icons.more_vert),
               onPressed: () =>
                   _showSingleItemOptions(name: name, filePath: path),
             ),
@@ -5477,7 +5606,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                  child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
                 ),
               ),
             ),

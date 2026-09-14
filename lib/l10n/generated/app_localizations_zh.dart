@@ -6297,6 +6297,66 @@ class L10nZh extends L10n {
   String get vault_config_password => '密码配置';
 
   @override
+  String get cl210_feat_6 =>
+      '新增分贝仪：可在工具箱或侧边栏打开，实时测量环境噪音分贝值，并显示噪声曲线、环境判定与对听力的影响提示。';
+
+  @override
+  String get cl210_features => '新增功能';
+
+  @override
+  String get cl210_feat_1 => '视频支持后台播放：菜单新增「后台播放」，关闭播放页后仍可在通知栏控制播放、暂停与进度。';
+
+  @override
+  String get cl210_feat_2 => '视频定时关闭：可设置 15 / 30 / 45 / 60 分钟后停止播放，已设置时可随时取消。';
+
+  @override
+  String get cl210_feat_3 => '文件夹新增「打开方式」：此前只有文件有该入口，网格、列表与双窗格视图均已支持。';
+
+  @override
+  String get cl210_feat_4 => '属性入口补全：浏览页、最近页与分类页的三点菜单均可查看文件或文件夹属性。';
+
+  @override
+  String get cl210_feat_5 => '设为首页支持取消：已设为首页的文件夹，菜单中会显示「取消设为首页」。';
+
+  @override
+  String get cl210_ui => '界面与交互';
+
+  @override
+  String get cl210_ui_1 => '三点菜单改为图标宫格：图标在上、文字在下，长标题两行显示，并按项数自动排列为三列或四列。';
+
+  @override
+  String get cl210_ui_2 => '统一浏览页与分类页的菜单顺序，「设为首页」与「在位置中显示」位于同一位置。';
+
+  @override
+  String get cl210_ui_3 => '优化图标宫格对齐：多语言长标题换行时，同一排图标仍保持在同一水平线。';
+
+  @override
+  String get cl210_ui_4 => '文件与文件夹的三点按钮改为竖排样式，覆盖网格、列表与紧凑三种视图。';
+
+  @override
+  String get cl210_ui_5 => '视频播放优化：左右拖动快进快退不再中断播放；锁定按钮移至左侧中部并常驻显示。';
+
+  @override
+  String get cl210_fixes => '问题修复';
+
+  @override
+  String get cl210_fix_1 =>
+      '修复在受限的 Android/data、Android/obb 目录中无法新建文件、文件夹与压缩包的问题：修正写入路径策略，并将授权方式改为按应用目录逐个授权。';
+
+  @override
+  String get cl210_fix_2 =>
+      '新建不再无提示地失败：失败时会显示具体原因；在 Android/data 根目录新建时会提示先进入具体应用目录。';
+
+  @override
+  String get cl210_fix_3 => '修复分类页多选「置顶」无效的问题（置顶已保存但列表未重新排序），并修正菜单文案为「取消置顶」。';
+
+  @override
+  String get cl210_fix_4 => '修复「取消设为首页」无效的问题：此前首页设置未被真正清除。';
+
+  @override
+  String get cl210_fix_5 => '修复部分页面「属性」点击无响应的问题。';
+
+  @override
   String get cl200_notice => '版本与包名变更（务必阅读）';
 
   @override
@@ -7036,6 +7096,82 @@ class L10nZh extends L10n {
 
   @override
   String get ui_unpin => '取消置顶';
+
+  @override
+  String get decibel_meter_title => '分贝仪';
+
+  @override
+  String get decibel_meter_current => '当前分贝值';
+
+  @override
+  String get decibel_meter_verdict => '环境判定';
+
+  @override
+  String get decibel_meter_curve => '噪声曲线';
+
+  @override
+  String get decibel_meter_start => '开始测量';
+
+  @override
+  String get decibel_meter_stop => '停止测量';
+
+  @override
+  String get decibel_meter_level_quiet => '安静';
+
+  @override
+  String get decibel_meter_level_normal => '一般';
+
+  @override
+  String get decibel_meter_level_noisy => '较吵';
+
+  @override
+  String get decibel_meter_level_very_noisy => '很吵';
+
+  @override
+  String get decibel_meter_level_dangerous => '危险';
+
+  @override
+  String get decibel_meter_health_impact => '对人体的影响';
+
+  @override
+  String get decibel_meter_health_safe => '正常环境，对人体无危害。';
+
+  @override
+  String get decibel_meter_health_moderate => '较嘈杂，长时间暴露可能影响听力。';
+
+  @override
+  String get decibel_meter_health_harmful => '非常吵，长时间暴露会损伤听力。';
+
+  @override
+  String get decibel_meter_health_dangerous => '危险级别，立即远离并保护听力！';
+
+  @override
+  String get decibel_meter_examples => '常见场景举例';
+
+  @override
+  String get decibel_meter_examples_text => '普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。';
+
+  @override
+  String get decibel_meter_perm_denied => '需要麦克风权限才能测量环境音量，请在设置中开启。';
+
+  @override
+  String get decibel_meter_perm_title => '需要麦克风权限';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      '麦克风权限已被永久拒绝，请前往系统设置中为 ZenFile 开启麦克风权限后重试。';
+
+  @override
+  String get decibel_meter_perm_open_settings => '去设置';
+
+  @override
+  String get msg_background_play => '后台播放';
+
+  @override
+  String get msg_sleep_timer => '定时关闭';
+
+  @override
+  String get msg_background_play_active => '已进入后台播放，可通过通知栏控制';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -13299,6 +13435,66 @@ class L10nZhTw extends L10nZh {
   String get vault_config_password => '密碼配置';
 
   @override
+  String get cl210_feat_6 =>
+      '新增分貝儀：可從工具箱或側邊欄開啟，即時測量環境噪音分貝值，並顯示噪音曲線、環境判定與對聽力的影響提示。';
+
+  @override
+  String get cl210_features => '新增功能';
+
+  @override
+  String get cl210_feat_1 => '影片支援背景播放：選單新增「背景播放」，關閉播放頁後仍可從通知列控制播放、暫停與進度。';
+
+  @override
+  String get cl210_feat_2 => '影片定時關閉：可設定 15 / 30 / 45 / 60 分鐘後停止播放，已設定時可隨時取消。';
+
+  @override
+  String get cl210_feat_3 => '資料夾新增「開啟方式」：此前僅檔案有此項目，網格、清單與雙窗格檢視皆已支援。';
+
+  @override
+  String get cl210_feat_4 => '屬性入口補齊：瀏覽頁、最近頁與分類頁的三點選單皆可檢視檔案或資料夾的屬性。';
+
+  @override
+  String get cl210_feat_5 => '設為首頁支援取消：已設為首頁的資料夾，選單會顯示「取消設為首頁」。';
+
+  @override
+  String get cl210_ui => '介面與操作';
+
+  @override
+  String get cl210_ui_1 => '三點選單改為圖示方格：圖示在上、文字在下，長標題以兩行顯示，並依項目數量自動排為三欄或四欄。';
+
+  @override
+  String get cl210_ui_2 => '統一瀏覽頁與分類頁的選單順序，「設為首頁」與「在位置中顯示」位於相同位置。';
+
+  @override
+  String get cl210_ui_3 => '最佳化圖示方格對齊：翻譯後長標題換行時，同一排圖示仍維持在同一水平線。';
+
+  @override
+  String get cl210_ui_4 => '檔案與資料夾的三點按鈕改為直向，涵蓋網格、清單與精簡三種檢視。';
+
+  @override
+  String get cl210_ui_5 => '影片播放最佳化：左右拖曳快轉與倒轉不再中斷播放；鎖定按鈕移至左側中央並常駐顯示。';
+
+  @override
+  String get cl210_fixes => '問題修復';
+
+  @override
+  String get cl210_fix_1 =>
+      '修復在受限的 Android/data、Android/obb 目錄中無法建立檔案、資料夾與壓縮檔的問題：修正寫入路徑策略，並將授權方式改為依應用程式目錄逐個授權。';
+
+  @override
+  String get cl210_fix_2 =>
+      '建立失敗不再沒有回應：失敗時會顯示原因；在 Android/data 根目錄建立時會提示先進入應用程式目錄。';
+
+  @override
+  String get cl210_fix_3 => '修復分類頁多選選單「置頂」無效的問題（置頂已儲存但清單未重新排序），並修正選單文字為「取消置頂」。';
+
+  @override
+  String get cl210_fix_4 => '修復「取消設為首頁」無效的問題：首頁設定此前未被真正清除。';
+
+  @override
+  String get cl210_fix_5 => '修復部分頁面「屬性」點擊沒有回應的問題。';
+
+  @override
   String get cl200_notice => '版本與套件名稱變更（請務必閱讀）';
 
   @override
@@ -14037,4 +14233,80 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_unpin => '取消置頂';
+
+  @override
+  String get decibel_meter_title => '分貝儀';
+
+  @override
+  String get decibel_meter_current => '目前分貝值';
+
+  @override
+  String get decibel_meter_verdict => '環境判定';
+
+  @override
+  String get decibel_meter_curve => '噪音曲線';
+
+  @override
+  String get decibel_meter_start => '開始測量';
+
+  @override
+  String get decibel_meter_stop => '停止測量';
+
+  @override
+  String get decibel_meter_level_quiet => '安靜';
+
+  @override
+  String get decibel_meter_level_normal => '一般';
+
+  @override
+  String get decibel_meter_level_noisy => '較吵';
+
+  @override
+  String get decibel_meter_level_very_noisy => '很吵';
+
+  @override
+  String get decibel_meter_level_dangerous => '危險';
+
+  @override
+  String get decibel_meter_health_impact => '對人體的影響';
+
+  @override
+  String get decibel_meter_health_safe => '正常環境，對人體無危害。';
+
+  @override
+  String get decibel_meter_health_moderate => '較嘈雜，長時間暴露可能影響聽力。';
+
+  @override
+  String get decibel_meter_health_harmful => '非常吵，長時間暴露會損傷聽力。';
+
+  @override
+  String get decibel_meter_health_dangerous => '危險等級，請立即遠離並保護聽力！';
+
+  @override
+  String get decibel_meter_examples => '常見場景舉例';
+
+  @override
+  String get decibel_meter_examples_text => '普通室內談話（約50-60 dB）、安靜的辦公室、冰箱嗡嗡聲。';
+
+  @override
+  String get decibel_meter_perm_denied => '需要麥克風權限才能測量環境音量，請在設定中開啟。';
+
+  @override
+  String get decibel_meter_perm_title => '需要麥克風權限';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      '麥克風權限已被永久拒絕，請前往系統設定中為 ZenFile 開啟麥克風權限後重試。';
+
+  @override
+  String get decibel_meter_perm_open_settings => '前往設定';
+
+  @override
+  String get msg_background_play => '背景播放';
+
+  @override
+  String get msg_sleep_timer => '定時關閉';
+
+  @override
+  String get msg_background_play_active => '已進入背景播放，可透過通知欄控制';
 }

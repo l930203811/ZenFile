@@ -6660,6 +6660,79 @@ class L10nDe extends L10n {
   String get vault_config_password => 'Passwortkonfiguration';
 
   @override
+  String get cl210_feat_6 =>
+      'Schallpegelmesser: Über die Werkzeugsammlung oder das Seitenmenü zu öffnen; misst die Umgebungsgeräusche in Dezibel und zeigt den Verlauf, eine Bewertung der Umgebung und Hinweise auf die Wirkung auf das Gehör.';
+
+  @override
+  String get cl210_features => 'Neue Funktionen';
+
+  @override
+  String get cl210_feat_1 =>
+      'Video im Hintergrund abspielen: Ein neuer Eintrag lässt die Wiedergabe weiterlaufen, wenn du den Player verlässt; die Benachrichtigung steuert Start, Pause und Position.';
+
+  @override
+  String get cl210_feat_2 =>
+      'Abschalttimer für Videos: Wiedergabe nach 15, 30, 45 oder 60 Minuten beenden; ein gesetzter Timer lässt sich jederzeit abbrechen.';
+
+  @override
+  String get cl210_feat_3 =>
+      '„Öffnen mit\" für Ordner: Bisher gab es diesen Eintrag nur für Dateien; Raster-, Listen- und Doppelfensteransicht unterstützen ihn jetzt.';
+
+  @override
+  String get cl210_feat_4 =>
+      'Eigenschaften überall: Im Browser, unter „Zuletzt\" und in den Kategorien lassen sich die Eigenschaften von Dateien und Ordnern über das Drei-Punkte-Menü anzeigen.';
+
+  @override
+  String get cl210_feat_5 =>
+      'Startordner lässt sich aufheben: Ein bereits festgelegter Startordner bietet im Menü „Startordner aufheben\".';
+
+  @override
+  String get cl210_ui => 'Oberfläche und Bedienung';
+
+  @override
+  String get cl210_ui_1 =>
+      'Das Drei-Punkte-Menü ist jetzt ein Symbolraster: Das Symbol steht oben, die Beschriftung darunter, lange Texte laufen über zwei Zeilen, und je nach Anzahl erscheinen drei oder vier Spalten.';
+
+  @override
+  String get cl210_ui_2 =>
+      'Browser- und Kategoriemenü haben dieselbe Reihenfolge; „Als Startordner\" sitzt dort, wo „Im Ordner anzeigen\" steht.';
+
+  @override
+  String get cl210_ui_3 =>
+      'Bessere Ausrichtung im Symbolraster: Auch wenn lange übersetzte Beschriftungen umbrechen, bleiben die Symbole einer Zeile auf einer Höhe.';
+
+  @override
+  String get cl210_ui_4 =>
+      'Der Drei-Punkte-Knopf an Dateien und Ordnern ist jetzt senkrecht, in der Raster-, Listen- und Kompaktansicht.';
+
+  @override
+  String get cl210_ui_5 =>
+      'Videowiedergabe verbessert: Das Spulen durch Wischen unterbricht die Wiedergabe nicht mehr, und der Schlossknopf sitzt dauerhaft sichtbar in der Mitte des linken Rands.';
+
+  @override
+  String get cl210_fixes => 'Fehlerbehebungen';
+
+  @override
+  String get cl210_fix_1 =>
+      'Behoben: In eingeschränkten Ordnern wie Android/data und Android/obb ließen sich keine Dateien, Ordner oder Archive erstellen. Die Strategie für den Schreibpfad wurde korrigiert und die Berechtigung wird jetzt pro App-Ordner erteilt.';
+
+  @override
+  String get cl210_fix_2 =>
+      'Fehlschläge beim Erstellen sind nicht mehr still: Es wird der Grund angezeigt, und ein Versuch direkt in Android/data weist darauf hin, zuerst einen App-Ordner zu öffnen.';
+
+  @override
+  String get cl210_fix_3 =>
+      'Behoben: „Oben anheften\" im Mehrfachauswahlmenü der Kategorien wirkte nicht (die Markierung wurde gespeichert, die Liste aber nicht neu sortiert); außerdem heißt der Eintrag jetzt korrekt „Anheften aufheben\".';
+
+  @override
+  String get cl210_fix_4 =>
+      'Behoben: „Startordner aufheben\" wirkte nicht, weil die Einstellung nicht wirklich gelöscht wurde.';
+
+  @override
+  String get cl210_fix_5 =>
+      'Behoben: „Eigenschaften\" reagierte auf einigen Seiten nicht.';
+
+  @override
   String get cl200_notice =>
       'Änderung von Version und Paketnamen (bitte lesen)';
 
@@ -7463,4 +7536,87 @@ class L10nDe extends L10n {
 
   @override
   String get ui_unpin => 'Loslösen';
+
+  @override
+  String get decibel_meter_title => 'Schallpegelmesser';
+
+  @override
+  String get decibel_meter_current => 'Aktueller Pegel';
+
+  @override
+  String get decibel_meter_verdict => 'Bewertung';
+
+  @override
+  String get decibel_meter_curve => 'Pegelverlauf';
+
+  @override
+  String get decibel_meter_start => 'Starten';
+
+  @override
+  String get decibel_meter_stop => 'Stoppen';
+
+  @override
+  String get decibel_meter_level_quiet => 'Ruhig';
+
+  @override
+  String get decibel_meter_level_normal => 'Normal';
+
+  @override
+  String get decibel_meter_level_noisy => 'Laut';
+
+  @override
+  String get decibel_meter_level_very_noisy => 'Sehr laut';
+
+  @override
+  String get decibel_meter_level_dangerous => 'Gefährlich';
+
+  @override
+  String get decibel_meter_health_impact => 'Auswirkung auf die Gesundheit';
+
+  @override
+  String get decibel_meter_health_safe =>
+      'Normale Umgebung, unbedenklich für die Gesundheit.';
+
+  @override
+  String get decibel_meter_health_moderate =>
+      'Laut, längere Belastung kann das Gehör beeinträchtigen.';
+
+  @override
+  String get decibel_meter_health_harmful =>
+      'Sehr laut, längere Belastung kann das Gehör schädigen.';
+
+  @override
+  String get decibel_meter_health_dangerous =>
+      'Gefährlicher Pegel, entfernen Sie sich und schützen Sie Ihr Gehör!';
+
+  @override
+  String get decibel_meter_examples => 'Häufige Beispiele';
+
+  @override
+  String get decibel_meter_examples_text =>
+      'Normales Gespräch (ca. 50-60 dB), ruhiges Büro, Kühlschrankbrummen.';
+
+  @override
+  String get decibel_meter_perm_denied =>
+      'Zur Messung der Umgebungsgeräusche ist die Mikrofonberechtigung erforderlich. Bitte in den Einstellungen aktivieren.';
+
+  @override
+  String get decibel_meter_perm_title => 'Mikrofonberechtigung erforderlich';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'Die Mikrofonberechtigung wurde dauerhaft verweigert. Bitte aktivieren Sie sie für ZenFile in den Systemeinstellungen und versuchen Sie es erneut.';
+
+  @override
+  String get decibel_meter_perm_open_settings => 'Einstellungen öffnen';
+
+  @override
+  String get msg_background_play => 'Hintergrundwiedergabe';
+
+  @override
+  String get msg_sleep_timer => 'Sleep-Timer';
+
+  @override
+  String get msg_background_play_active =>
+      'Wiedergabe im Hintergrund. Steuerung über die Benachrichtigung';
 }

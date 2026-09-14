@@ -6692,6 +6692,79 @@ class L10nFr extends L10n {
   String get vault_config_password => 'Configuration du mot de passe';
 
   @override
+  String get cl210_feat_6 =>
+      'Sonomètre : ouvrez-le depuis la boîte à outils ou le menu latéral pour mesurer le bruit ambiant en temps réel, avec la courbe de bruit, l évaluation de l environnement et des indications sur les effets sur l audition.';
+
+  @override
+  String get cl210_features => 'Nouveautés';
+
+  @override
+  String get cl210_feat_1 =>
+      'Lecture vidéo en arrière-plan : une nouvelle entrée poursuit la lecture après la fermeture du lecteur, et la notification permet de lire, mettre en pause et déplacer la position.';
+
+  @override
+  String get cl210_feat_2 =>
+      'Minuterie d arrêt pour la vidéo : arrête la lecture après 15, 30, 45 ou 60 minutes ; une minuterie réglée peut être annulée à tout moment.';
+
+  @override
+  String get cl210_feat_3 =>
+      '« Ouvrir avec » pour les dossiers : cette entrée n existait que pour les fichiers ; elle fonctionne désormais en grille, en liste et en double panneau.';
+
+  @override
+  String get cl210_feat_4 =>
+      'Propriétés partout : le menu à trois points du navigateur, de Récents et des catégories affiche les propriétés des fichiers et des dossiers.';
+
+  @override
+  String get cl210_feat_5 =>
+      'Le dossier d accueil peut être annulé : un dossier déjà défini comme accueil propose « Annuler comme accueil » dans son menu.';
+
+  @override
+  String get cl210_ui => 'Interface et utilisation';
+
+  @override
+  String get cl210_ui_1 =>
+      'Le menu à trois points devient une grille d icônes : l icône en haut, le libellé en dessous, les libellés longs sur deux lignes, et trois ou quatre colonnes selon le nombre d éléments.';
+
+  @override
+  String get cl210_ui_2 =>
+      'Les menus du navigateur et des catégories partagent le même ordre ; « Définir comme accueil » occupe la place de « Afficher dans le dossier ».';
+
+  @override
+  String get cl210_ui_3 =>
+      'Meilleur alignement dans la grille : même si un libellé traduit passe sur deux lignes, les icônes d une rangée restent sur la même ligne horizontale.';
+
+  @override
+  String get cl210_ui_4 =>
+      'Le bouton à trois points des fichiers et dossiers est désormais vertical, en vues grille, liste et compacte.';
+
+  @override
+  String get cl210_ui_5 =>
+      'Lecture vidéo améliorée : balayer pour avancer n interrompt plus la lecture, et le bouton de verrouillage se place au centre du bord gauche, toujours visible.';
+
+  @override
+  String get cl210_fixes => 'Corrections';
+
+  @override
+  String get cl210_fix_1 =>
+      'Corrigé : impossible de créer fichiers, dossiers ou archives dans les dossiers restreints Android/data et Android/obb. La stratégie de chemin d écriture a été corrigée et l autorisation est désormais accordée par dossier d application.';
+
+  @override
+  String get cl210_fix_2 =>
+      'Les échecs de création ne sont plus silencieux : le motif s affiche, et créer directement dans Android/data invite à ouvrir d abord un dossier d application.';
+
+  @override
+  String get cl210_fix_3 =>
+      'Corrigé : « Épingler en haut » dans le menu de sélection multiple des catégories ne faisait rien (l épinglage était enregistré mais la liste n était pas retriée) ; le libellé correct est « Retirer l épingle ».';
+
+  @override
+  String get cl210_fix_4 =>
+      'Corrigé : « Annuler comme accueil » ne fonctionnait pas, le réglage n étant pas réellement effacé.';
+
+  @override
+  String get cl210_fix_5 =>
+      'Corrigé : « Propriétés » ne répondait pas sur certaines pages.';
+
+  @override
   String get cl200_notice =>
       'Changement de version et de nom de paquet (à lire)';
 
@@ -7500,4 +7573,87 @@ class L10nFr extends L10n {
 
   @override
   String get ui_unpin => 'Détacher';
+
+  @override
+  String get decibel_meter_title => 'Sonomètre';
+
+  @override
+  String get decibel_meter_current => 'Niveau actuel';
+
+  @override
+  String get decibel_meter_verdict => 'Condition';
+
+  @override
+  String get decibel_meter_curve => 'Courbe de bruit';
+
+  @override
+  String get decibel_meter_start => 'Démarrer';
+
+  @override
+  String get decibel_meter_stop => 'Arrêter';
+
+  @override
+  String get decibel_meter_level_quiet => 'Calme';
+
+  @override
+  String get decibel_meter_level_normal => 'Normal';
+
+  @override
+  String get decibel_meter_level_noisy => 'Bruyant';
+
+  @override
+  String get decibel_meter_level_very_noisy => 'Très bruyant';
+
+  @override
+  String get decibel_meter_level_dangerous => 'Dangereux';
+
+  @override
+  String get decibel_meter_health_impact => 'Impact sur la santé';
+
+  @override
+  String get decibel_meter_health_safe =>
+      'Environnement normal, sans danger pour la santé.';
+
+  @override
+  String get decibel_meter_health_moderate =>
+      'Bruyant, une exposition prolongée peut affecter l\'audition.';
+
+  @override
+  String get decibel_meter_health_harmful =>
+      'Très bruyant, une exposition prolongée peut endommager l\'audition.';
+
+  @override
+  String get decibel_meter_health_dangerous =>
+      'Niveau dangereux, éloignez-vous et protégez votre audition !';
+
+  @override
+  String get decibel_meter_examples => 'Exemples courants';
+
+  @override
+  String get decibel_meter_examples_text =>
+      'Conversation normale (environ 50-60 dB), bureau calme, ronronnement du réfrigérateur.';
+
+  @override
+  String get decibel_meter_perm_denied =>
+      'L\'autorisation du microphone est requise pour mesurer le son ambiant. Veuillez l\'activer dans les paramètres.';
+
+  @override
+  String get decibel_meter_perm_title => 'Autorisation du microphone requise';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'L\'autorisation du microphone a été refusée définitivement. Veuillez l\'activer pour ZenFile dans les paramètres système et réessayer.';
+
+  @override
+  String get decibel_meter_perm_open_settings => 'Ouvrir les paramètres';
+
+  @override
+  String get msg_background_play => 'Lecture en arrière-plan';
+
+  @override
+  String get msg_sleep_timer => 'Minuteur de mise en veille';
+
+  @override
+  String get msg_background_play_active =>
+      'Lecture en arrière-plan, contrôlez depuis la notification';
 }

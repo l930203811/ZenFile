@@ -11,7 +11,12 @@ import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/selection_action_bar.dart';
+import '../widgets/progress_overlay.dart';
 import '../widgets/create_archive_dialog.dart';
+import '../widgets/bulk_crypt_actions.dart';
+import '../../services/crypt/vault_crypt_service.dart';
+import '../screens/vault_session_unlock_dialog.dart';
+import '../screens/crypt_mount_edit_screen.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -361,6 +366,140 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
           );
         }
         break;
+      case 'properties':
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => PropertiesModalDialog(
+              selectedPaths: [path],
+              provider: provider,
+            ),
+          );
+        }
+        break;
+      case 'encrypt':
+        await _handleEncrypt(context, path);
+        break;
+      case 'decrypt':
+        await _handleDecrypt(context, path);
+        break;
+    }
+  }
+
+  Future<bool> _ensureMasterPassword(BuildContext context) async {
+    if (await VaultCryptService.instance.hasMasterPassword()) return true;
+    if (!context.mounted) return false;
+    final l10n = L10n.of(context);
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.crypt_need_master_title),
+        content: Text(l10n.crypt_need_master_body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.vault_go_set_password),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !context.mounted) return false;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CryptMountEditScreen()),
+    );
+    return VaultCryptService.instance.hasMasterPassword();
+  }
+
+  Future<void> _handleEncrypt(BuildContext context, String path) async {
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
+    final mode = await BulkCryptActions.promptEncryptionMode(context);
+    if (mode == null) return;
+    final progress = ValueNotifier<double?>(null);
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) =>
+            ProgressOverlay(message: L10n.of(context).vault_encrypting, value: v),
+      ),
+    );
+    try {
+      if (mode == 'inplace') {
+        await VaultCryptService.instance.encryptInPlace(
+          sourcePath: path,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
+      } else {
+        await VaultCryptService.instance.encryptToSandbox(
+          sourcePath: path,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
+      }
+      if (context.mounted) {
+        Navigator.pop(context);
+        _loadRecentFiles();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('加密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加密失败: $e')),
+        );
+      }
+    } finally {
+      progress.dispose();
+    }
+  }
+
+  Future<void> _handleDecrypt(BuildContext context, String path) async {
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await _ensureMasterPassword(context)) return;
+    final progress = ValueNotifier<double?>(null);
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) =>
+            ProgressOverlay(message: L10n.of(context).vault_decrypting, value: v),
+      ),
+    );
+    try {
+      await VaultCryptService.instance.decryptInPlace(
+        encryptedPath: path,
+        onProgress: (done, total) =>
+            progress.value = total > 0 ? done / total : null,
+      );
+      if (context.mounted) {
+        Navigator.pop(context);
+        _loadRecentFiles();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('解密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解密失败: $e')),
+        );
+      }
+    } finally {
+      progress.dispose();
     }
   }
 

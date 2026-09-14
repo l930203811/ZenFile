@@ -6605,6 +6605,79 @@ class L10nEn extends L10n {
   String get vault_config_password => 'Password Configuration';
 
   @override
+  String get cl210_feat_6 =>
+      'Decibel meter: open it from the toolbox or the side drawer to measure ambient noise in real time, with a live noise curve, a verdict for your surroundings and notes on how the level affects hearing.';
+
+  @override
+  String get cl210_features => 'New features';
+
+  @override
+  String get cl210_feat_1 =>
+      'Background video playback: a new \"Play in background\" entry keeps playback running after you leave the player, with play, pause and progress controls in the notification.';
+
+  @override
+  String get cl210_feat_2 =>
+      'Video sleep timer: stop playback after 15, 30, 45 or 60 minutes; a set timer can be cancelled at any time.';
+
+  @override
+  String get cl210_feat_3 =>
+      'Open with for folders: this entry used to appear for files only, and now works in grid, list and dual-pane views.';
+
+  @override
+  String get cl210_feat_4 =>
+      'Properties everywhere: the three-dot menu in the browser, in Recents and in the category pages can all show the properties of a file or folder.';
+
+  @override
+  String get cl210_feat_5 =>
+      'The home folder can be cleared: a folder already set as home shows \"Cancel set as home\" in its menu.';
+
+  @override
+  String get cl210_ui => 'Interface and interaction';
+
+  @override
+  String get cl210_ui_1 =>
+      'The three-dot menu is now an icon grid: the icon sits above the label, long labels wrap to two lines, and items are laid out in three or four columns depending on their number.';
+
+  @override
+  String get cl210_ui_2 =>
+      'The browser and category menus now share one order, with \"Set as home\" sitting where \"Show in location\" is.';
+
+  @override
+  String get cl210_ui_3 =>
+      'Better alignment in the icon grid: when long translated labels wrap, the icons in a row still stay on the same horizontal line.';
+
+  @override
+  String get cl210_ui_4 =>
+      'The three-dot button on files and folders is now vertical, in grid, list and compact views.';
+
+  @override
+  String get cl210_ui_5 =>
+      'Video playback: swiping to seek no longer interrupts playback, and the lock button moved to the middle of the left edge where it stays visible.';
+
+  @override
+  String get cl210_fixes => 'Fixes';
+
+  @override
+  String get cl210_fix_1 =>
+      'Fixed files, folders and archives not being created inside restricted Android/data and Android/obb folders: the write path strategy was corrected and permission is now granted per app folder.';
+
+  @override
+  String get cl210_fix_2 =>
+      'Creation no longer fails silently: the reason is now shown, and creating directly in Android/data prompts you to open a specific app folder first.';
+
+  @override
+  String get cl210_fix_3 =>
+      'Fixed \"Pin to top\" in the category page multi-select menu doing nothing (the pin was saved but the list was never re-ordered), and corrected the menu label to \"Unpin\".';
+
+  @override
+  String get cl210_fix_4 =>
+      'Fixed \"Cancel set as home\" not working: the home setting was not actually cleared.';
+
+  @override
+  String get cl210_fix_5 =>
+      'Fixed \"Properties\" not responding on some pages.';
+
+  @override
   String get cl200_notice => 'Version and package name change (please read)';
 
   @override
@@ -7394,4 +7467,87 @@ class L10nEn extends L10n {
 
   @override
   String get ui_unpin => 'Unpin';
+
+  @override
+  String get decibel_meter_title => 'Sound Meter';
+
+  @override
+  String get decibel_meter_current => 'Current Level';
+
+  @override
+  String get decibel_meter_verdict => 'Condition';
+
+  @override
+  String get decibel_meter_curve => 'Noise Level';
+
+  @override
+  String get decibel_meter_start => 'Start';
+
+  @override
+  String get decibel_meter_stop => 'Stop';
+
+  @override
+  String get decibel_meter_level_quiet => 'Quiet';
+
+  @override
+  String get decibel_meter_level_normal => 'Normal';
+
+  @override
+  String get decibel_meter_level_noisy => 'Noisy';
+
+  @override
+  String get decibel_meter_level_very_noisy => 'Very Noisy';
+
+  @override
+  String get decibel_meter_level_dangerous => 'Dangerous';
+
+  @override
+  String get decibel_meter_health_impact => 'Health Impact';
+
+  @override
+  String get decibel_meter_health_safe =>
+      'Normal environment, no harm to health.';
+
+  @override
+  String get decibel_meter_health_moderate =>
+      'Noisy, prolonged exposure may affect hearing.';
+
+  @override
+  String get decibel_meter_health_harmful =>
+      'Very noisy, prolonged exposure can damage hearing.';
+
+  @override
+  String get decibel_meter_health_dangerous =>
+      'Dangerous level, move away and protect your hearing!';
+
+  @override
+  String get decibel_meter_examples => 'Common Examples';
+
+  @override
+  String get decibel_meter_examples_text =>
+      'Normal conversation (about 50-60 dB), quiet office, refrigerator hum.';
+
+  @override
+  String get decibel_meter_perm_denied =>
+      'Microphone permission is required to measure ambient sound. Please enable it in settings.';
+
+  @override
+  String get decibel_meter_perm_title => 'Microphone Permission Required';
+
+  @override
+  String get decibel_meter_perm_settings =>
+      'Microphone permission has been permanently denied. Please enable it for ZenFile in system settings and try again.';
+
+  @override
+  String get decibel_meter_perm_open_settings => 'Open Settings';
+
+  @override
+  String get msg_background_play => 'Background Play';
+
+  @override
+  String get msg_sleep_timer => 'Sleep Timer';
+
+  @override
+  String get msg_background_play_active =>
+      'Playing in background, control from the notification';
 }
