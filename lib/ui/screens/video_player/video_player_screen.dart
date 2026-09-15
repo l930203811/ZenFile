@@ -489,8 +489,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
       final vp = player.state.videoParams;
+      // texture id：由原生 SurfaceProducer 注册到 Flutter 引擎；null = Surface 未创建/未注册
+      //（渲染管线在原生层即断裂）。rect：视频输出矩形，null = 尚未收到 Resize 回调。
       WebdavDebugLog.log('【黑屏诊断】3秒快照 playing=${player.state.playing} '
           'videoParams=${vp != null ? "${vp.w}x${vp.h} pixel=${vp.pixelformat} hwPixel=${vp.hwPixelformat}" : "null"} '
+          'textureId=${controller.id.value} rect=${controller.rect.value != null ? "${controller.rect.value!.width.toInt()}x${controller.rect.value!.height.toInt()}" : "null"} '
           'buffering=${player.state.buffering} hwdec=$_useHardwareDecode voCompat=$_voCompatMode');
     });
   }
