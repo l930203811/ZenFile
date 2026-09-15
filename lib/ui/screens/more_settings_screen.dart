@@ -920,6 +920,21 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                         onTap: () => fileManager.toggleSkipOpenWithDialog(),
                       ),
+                    if (_shouldShow(L10n.of(context).ui_delete_confirm_enabled, L10n.of(context).ui_delete_confirm_subtitle))
+                      SettingsTile(
+                        icon: Broken.trash,
+                        title: L10n.of(context).ui_delete_confirm_enabled,
+                        subtitle: L10n.of(context).ui_delete_confirm_subtitle,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: fileManager.deleteConfirmEnabled,
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (_) => fileManager.toggleDeleteConfirmEnabled(),
+                          ),
+                        ),
+                        onTap: () => fileManager.toggleDeleteConfirmEnabled(),
+                      ),
                     if (resetViewersVis)
                       SettingsTile(
                         icon: Broken.refresh_2,

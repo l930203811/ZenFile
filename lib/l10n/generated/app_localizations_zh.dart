@@ -7199,6 +7199,15 @@ class L10nZh extends L10n {
 
   @override
   String get msg_background_play_active => '已进入后台播放，可通过通知栏控制';
+
+  @override
+  String get ui_delete_confirm_enabled => '删除文件确认';
+
+  @override
+  String get ui_delete_confirm_subtitle => '删除文件时显示二次确认弹窗，关闭后直接删除';
+
+  @override
+  String get ui_delete_confirm_dont_ask => '删除不再提示';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14363,4 +14372,13 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_background_play_active => '已進入背景播放，可透過通知欄控制';
+
+  @override
+  String get ui_delete_confirm_enabled => '刪除檔案確認';
+
+  @override
+  String get ui_delete_confirm_subtitle => '刪除檔案時顯示二次確認彈窗，關閉後直接刪除';
+
+  @override
+  String get ui_delete_confirm_dont_ask => '刪除不再提示';
 }

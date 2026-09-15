@@ -7577,4 +7577,14 @@ class L10nEn extends L10n {
   @override
   String get msg_background_play_active =>
       'Playing in background, control from the notification';
+
+  @override
+  String get ui_delete_confirm_enabled => 'Delete Confirmation';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'Show a confirmation dialog before deleting files. Turn off to delete directly.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'Don\'t ask again';
 }

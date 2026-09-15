@@ -7683,4 +7683,14 @@ class L10nFr extends L10n {
   @override
   String get msg_background_play_active =>
       'Lecture en arrière-plan, contrôlez depuis la notification';
+
+  @override
+  String get ui_delete_confirm_enabled => 'Confirmation de suppression';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'Afficher une confirmation avant de supprimer des fichiers. Désactivé = suppression directe.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'Ne plus demander';
 }

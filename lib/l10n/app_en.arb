@@ -7732,5 +7732,8 @@
   "decibel_meter_perm_open_settings": "Open Settings",
   "msg_background_play": "Background Play",
   "msg_sleep_timer": "Sleep Timer",
-  "msg_background_play_active": "Playing in background, control from the notification"
+  "msg_background_play_active": "Playing in background, control from the notification",
+  "ui_delete_confirm_enabled": "Delete Confirmation",
+  "ui_delete_confirm_subtitle": "Show a confirmation dialog before deleting files. Turn off to delete directly.",
+  "ui_delete_confirm_dont_ask": "Don't ask again"
 }

@@ -7537,4 +7537,14 @@ class L10nAr extends L10n {
   @override
   String get msg_background_play_active =>
       'يعمل الآن في الخلفية، تحكم من الإشعار';
+
+  @override
+  String get ui_delete_confirm_enabled => 'تأكيد الحذف';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'عرض مربع تأكيد قبل حذف الملفات. عند إيقاف التشغيل يتم الحذف مباشرة.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'لا تسأل مرة أخرى';
 }

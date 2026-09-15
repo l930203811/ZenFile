@@ -945,23 +945,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final count = _selectedFilePaths.length + _selectedAssetIds.length;
     if (count == 0) return;
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(L10n.of(context).msg631cd220),
-        content: Text(L10n.of(context).count1(count)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(L10n.of(context).ui_cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(L10n.of(context).ui_delete),
-          ),
-        ],
-      ),
+    final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+      context,
+      title: L10n.of(context).msg631cd220,
+      content: L10n.of(context).count1(count),
     );
 
     if (confirm == true && mounted) {

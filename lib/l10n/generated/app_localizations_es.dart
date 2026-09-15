@@ -7663,4 +7663,14 @@ class L10nEs extends L10n {
   @override
   String get msg_background_play_active =>
       'Reproduciendo en segundo plano, controla desde la notificación';
+
+  @override
+  String get ui_delete_confirm_enabled => 'Confirmación de eliminación';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'Mostrar confirmación antes de eliminar archivos. Desactivado = eliminar directamente.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'No preguntar de nuevo';
 }

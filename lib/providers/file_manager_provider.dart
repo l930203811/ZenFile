@@ -206,6 +206,7 @@ class FileManagerProvider extends ChangeNotifier {
     _pinnedFolderShortcuts = PreferencesService.getPinnedFolderShortcuts();
     _hideNavigationBar = PreferencesService.getHideNavigationBar();
     _skipOpenWithDialog = PreferencesService.getSkipOpenWithDialog();
+    _deleteConfirmEnabled = PreferencesService.getDeleteConfirmEnabled();
     _showAddressBar = PreferencesService.getShowAddressBar();
     _amoledMode = PreferencesService.getAmoledMode();
     _showRecentFiles = PreferencesService.getShowRecentFiles();
@@ -1159,6 +1160,22 @@ class FileManagerProvider extends ChangeNotifier {
   void toggleSkipOpenWithDialog() {
     _skipOpenWithDialog = !_skipOpenWithDialog;
     PreferencesService.saveSkipOpenWithDialog(_skipOpenWithDialog);
+    notifyListeners();
+  }
+
+  bool _deleteConfirmEnabled = true;
+  bool get deleteConfirmEnabled => _deleteConfirmEnabled;
+
+  void toggleDeleteConfirmEnabled() {
+    _deleteConfirmEnabled = !_deleteConfirmEnabled;
+    PreferencesService.saveDeleteConfirmEnabled(_deleteConfirmEnabled);
+    notifyListeners();
+  }
+
+  /// 供删除确认弹窗内勾选"删除不再提示"后调用，同步持久化与内存状态。
+  void setDeleteConfirmEnabled(bool val) {
+    _deleteConfirmEnabled = val;
+    PreferencesService.saveDeleteConfirmEnabled(val);
     notifyListeners();
   }
 

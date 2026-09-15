@@ -137,7 +137,7 @@ class SelectionActionBar extends StatelessWidget {
                     color: Colors.redAccent,
                     hideLabel: provider.hideActionText,
                     onTap: () async {
-                      final confirm = await FileActionDialogs.showConfirmDialog(
+                      final confirm = await FileActionDialogs.showDeleteConfirmDialog(
                         context,
                         title: L10n.of(context).msgcd0b9aca,
                         content: L10n.of(

@@ -327,7 +327,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         }
         break;
       case 'delete':
-        final confirm = await FileActionDialogs.showConfirmDialog(
+        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           title: L10n.of(context).msg53518c22,
           content: L10n.of(context).msgee14ee27,

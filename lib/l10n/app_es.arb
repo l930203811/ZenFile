@@ -7666,5 +7666,8 @@
   "decibel_meter_perm_open_settings": "Abrir ajustes",
   "msg_background_play": "Reproducción en segundo plano",
   "msg_sleep_timer": "Temporizador de reposo",
-  "msg_background_play_active": "Reproduciendo en segundo plano, controla desde la notificación"
+  "msg_background_play_active": "Reproduciendo en segundo plano, controla desde la notificación",
+  "ui_delete_confirm_enabled": "Confirmación de eliminación",
+  "ui_delete_confirm_subtitle": "Mostrar confirmación antes de eliminar archivos. Desactivado = eliminar directamente.",
+  "ui_delete_confirm_dont_ask": "No preguntar de nuevo"
 }

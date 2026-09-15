@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../../providers/file_manager_provider.dart';
+import '../../services/preferences_service.dart';
 
 class FileActionDialogs {
   static Future<String?> showTextInputDialog(
@@ -75,39 +78,91 @@ class FileActionDialogs {
     );
   }
 
-  static Future<bool> showConfirmDialog(
+  /// 删除确认的统一入口：
+  /// 设置中「删除文件确认」开关关闭时直接返回 true（跳过弹窗），
+  /// 开启时弹出带「删除不再提示」复选框的确认对话框。
+  static Future<bool> showDeleteConfirmDialog(
     BuildContext context, {
     required String title,
     required String content,
   }) async {
+    // 开关关闭 → 直接删除，不再弹窗
+    if (!PreferencesService.getDeleteConfirmEnabled()) return true;
+    return showConfirmDialog(
+      context,
+      title: title,
+      content: content,
+      showSkipCheckbox: true,
+    );
+  }
+
+  static Future<bool> showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String content,
+    bool showSkipCheckbox = false,
+  }) async {
+    var dontAskAgain = false;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(L10n.of(context).ui_cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(content),
+                  if (showSkipCheckbox) ...[
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: dontAskAgain,
+                      onChanged: (v) =>
+                          setState(() => dontAskAgain = v ?? false),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        L10n.of(context).ui_delete_confirm_dont_ask,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              child: Text(L10n.of(context).ui_delete),
-            ),
-          ],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(L10n.of(context).ui_cancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(L10n.of(context).ui_delete),
+                ),
+              ],
+            );
+          },
         );
       },
     );
+    // 勾选了"删除不再提示"且确认删除 → 持久化关闭删除确认
+    if (result == true && dontAskAgain) {
+      PreferencesService.saveDeleteConfirmEnabled(false);
+      try {
+        context.read<FileManagerProvider>().setDeleteConfirmEnabled(false);
+      } catch (_) {}
+    }
     return result ?? false;
   }
 

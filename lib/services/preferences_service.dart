@@ -550,6 +550,19 @@ class PreferencesService {
     await _prefs?.setBool(_keySkipOpenWithDialog, val);
   }
 
+  // --- 删除文件二次确认开关 ---
+  // 默认开启（删除前显示确认弹窗）；关闭后直接删除不再提示。
+  // 弹窗内勾选"删除不再提示"或设置页关闭开关都会持久化此值。
+  static const String _keyDeleteConfirmEnabled = 'delete_confirm_enabled';
+
+  static bool getDeleteConfirmEnabled() {
+    return _prefs?.getBool(_keyDeleteConfirmEnabled) ?? true;
+  }
+
+  static Future<void> saveDeleteConfirmEnabled(bool val) async {
+    await _prefs?.setBool(_keyDeleteConfirmEnabled, val);
+  }
+
   static String? getDefaultOpenAction(String ext) {
     final sanitizedExt = ext.toLowerCase().replaceAll('.', '');
     return _prefs?.getString('$_keyDefaultOpenActionPrefix$sanitizedExt');

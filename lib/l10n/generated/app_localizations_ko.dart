@@ -7347,4 +7347,14 @@ class L10nKo extends L10n {
 
   @override
   String get msg_background_play_active => '백그라운드 재생 중입니다. 알림에서 제어할 수 있습니다';
+
+  @override
+  String get ui_delete_confirm_enabled => '삭제 확인';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      '파일 삭제 전에 확인 대화상자를 표시합니다. 끄면 바로 삭제합니다.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => '다시 묻지 않음';
 }

@@ -7666,5 +7666,8 @@
   "decibel_meter_perm_open_settings": "فتح الإعدادات",
   "msg_background_play": "تشغيل في الخلفية",
   "msg_sleep_timer": "مؤقت النوم",
-  "msg_background_play_active": "يعمل الآن في الخلفية، تحكم من الإشعار"
+  "msg_background_play_active": "يعمل الآن في الخلفية، تحكم من الإشعار",
+  "ui_delete_confirm_enabled": "تأكيد الحذف",
+  "ui_delete_confirm_subtitle": "عرض مربع تأكيد قبل حذف الملفات. عند إيقاف التشغيل يتم الحذف مباشرة.",
+  "ui_delete_confirm_dont_ask": "لا تسأل مرة أخرى"
 }

@@ -457,7 +457,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   Future<void> _handleDeleteSelected() async {
     if (_selectedPaths.isEmpty) return;
-    final confirm = await FileActionDialogs.showConfirmDialog(
+    final confirm = await FileActionDialogs.showDeleteConfirmDialog(
       context,
       title: L10n.of(context).msgcd0b9aca,
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
@@ -565,7 +565,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         break;
       case 'delete':
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
-        final confirm = await FileActionDialogs.showConfirmDialog(
+        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg53518c22,
           content: isMulti

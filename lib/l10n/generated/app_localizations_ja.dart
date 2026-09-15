@@ -7348,4 +7348,14 @@ class L10nJa extends L10n {
 
   @override
   String get msg_background_play_active => 'バックグラウンド再生中です。通知から操作できます';
+
+  @override
+  String get ui_delete_confirm_enabled => '削除確認';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'ファイル削除前に確認ダイアログを表示します。オフにすると直接削除します。';
+
+  @override
+  String get ui_delete_confirm_dont_ask => '今後確認しない';
 }

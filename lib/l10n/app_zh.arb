@@ -7953,5 +7953,8 @@
   "decibel_meter_perm_open_settings": "去设置",
   "msg_background_play": "后台播放",
   "msg_sleep_timer": "定时关闭",
-  "msg_background_play_active": "已进入后台播放，可通过通知栏控制"
+  "msg_background_play_active": "已进入后台播放，可通过通知栏控制",
+  "ui_delete_confirm_enabled": "删除文件确认",
+  "ui_delete_confirm_subtitle": "删除文件时显示二次确认弹窗，关闭后直接删除",
+  "ui_delete_confirm_dont_ask": "删除不再提示"
 }

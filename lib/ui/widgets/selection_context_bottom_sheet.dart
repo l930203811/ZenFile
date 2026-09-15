@@ -242,7 +242,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
               onTap: () async {
                 final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
-                final confirm = await FileActionDialogs.showConfirmDialog(
+                final confirm = await FileActionDialogs.showDeleteConfirmDialog(
                   effectiveContext,
                   title: L10n.of(context).msgcd0b9aca,
                   content: L10n.of(context).selectedcount2(selectedCount),

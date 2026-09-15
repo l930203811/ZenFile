@@ -462,7 +462,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isMulti =
             provider.selectedPaths.isNotEmpty &&
             provider.selectedPaths.contains(path);
-        final confirm = await FileActionDialogs.showConfirmDialog(
+        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           title: isMulti
               ? L10n.of(context).msgcd0b9aca

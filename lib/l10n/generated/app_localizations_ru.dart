@@ -7636,4 +7636,14 @@ class L10nRu extends L10n {
   @override
   String get msg_background_play_active =>
       'Фоновое воспроизведение. Управление из уведомления';
+
+  @override
+  String get ui_delete_confirm_enabled => 'Подтверждение удаления';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'Показывать подтверждение перед удалением файлов. Выкл. = удалять сразу.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'Больше не спрашивать';
 }

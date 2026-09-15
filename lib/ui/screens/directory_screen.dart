@@ -765,7 +765,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         break;
       case 'delete':
         final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
-        final confirm = await FileActionDialogs.showConfirmDialog(
+        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg4b342999,
           content: isMulti

@@ -13509,6 +13509,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已进入后台播放，可通过通知栏控制'**
   String get msg_background_play_active;
+
+  /// No description provided for @ui_delete_confirm_enabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件确认'**
+  String get ui_delete_confirm_enabled;
+
+  /// No description provided for @ui_delete_confirm_subtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件时显示二次确认弹窗，关闭后直接删除'**
+  String get ui_delete_confirm_subtitle;
+
+  /// No description provided for @ui_delete_confirm_dont_ask.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除不再提示'**
+  String get ui_delete_confirm_dont_ask;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

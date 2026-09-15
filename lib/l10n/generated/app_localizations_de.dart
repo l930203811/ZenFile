@@ -7647,4 +7647,14 @@ class L10nDe extends L10n {
   @override
   String get msg_background_play_active =>
       'Wiedergabe im Hintergrund. Steuerung über die Benachrichtigung';
+
+  @override
+  String get ui_delete_confirm_enabled => 'Löschbestätigung';
+
+  @override
+  String get ui_delete_confirm_subtitle =>
+      'Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.';
+
+  @override
+  String get ui_delete_confirm_dont_ask => 'Nicht erneut fragen';
 }

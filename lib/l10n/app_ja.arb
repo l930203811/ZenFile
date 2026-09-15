@@ -7670,5 +7670,8 @@
   "decibel_meter_perm_open_settings": "設定を開く",
   "msg_background_play": "バックグラウンド再生",
   "msg_sleep_timer": "スリープタイマー",
-  "msg_background_play_active": "バックグラウンド再生中です。通知から操作できます"
+  "msg_background_play_active": "バックグラウンド再生中です。通知から操作できます",
+  "ui_delete_confirm_enabled": "削除確認",
+  "ui_delete_confirm_subtitle": "ファイル削除前に確認ダイアログを表示します。オフにすると直接削除します。",
+  "ui_delete_confirm_dont_ask": "今後確認しない"
 }

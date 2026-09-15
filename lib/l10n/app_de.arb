@@ -7663,5 +7663,8 @@
   "decibel_meter_perm_open_settings": "Einstellungen öffnen",
   "msg_background_play": "Hintergrundwiedergabe",
   "msg_sleep_timer": "Sleep-Timer",
-  "msg_background_play_active": "Wiedergabe im Hintergrund. Steuerung über die Benachrichtigung"
+  "msg_background_play_active": "Wiedergabe im Hintergrund. Steuerung über die Benachrichtigung",
+  "ui_delete_confirm_enabled": "Löschbestätigung",
+  "ui_delete_confirm_subtitle": "Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.",
+  "ui_delete_confirm_dont_ask": "Nicht erneut fragen"
 }
