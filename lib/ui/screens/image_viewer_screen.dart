@@ -739,23 +739,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
     if (file == null && asset == null) return;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.ui_delete),
-        content: Text(l10n.ui_delete_file_confirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.ui_cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-            child: Text(l10n.ui_delete),
-          ),
-        ],
-      ),
+    final confirmed = await FileActionDialogs.showDeleteConfirmDialog(
+      context,
+      title: l10n.ui_delete,
+      content: l10n.ui_delete_file_confirm,
     );
 
     if (confirmed != true) return;
