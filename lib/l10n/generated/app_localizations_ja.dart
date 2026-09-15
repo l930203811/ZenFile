@@ -6405,6 +6405,33 @@ class L10nJa extends L10n {
   String get vault_config_password => 'パスワード設定';
 
   @override
+  String get vault_encrypt_done => '暗号化が成功しました';
+
+  @override
+  String get vault_decrypt_done => '復号に成功しました';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return '暗号化が完了しました：成功 $success 件、失敗 $failed 件';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return '復号が完了しました：成功 $success 件、失敗 $failed 件';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => '選択された暗号化項目はありません';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return '選択した $count 個のファイルを復号しますか？復号後は通常のファイルに戻ります。';
+  }
+
+  @override
+  String get vault_removed_from_list => 'リストから削除しました';
+
+  @override
   String get cl210_feat_6 =>
       '騒音計を追加：ツールボックスまたはサイドメニューから開けます。周囲の騒音をリアルタイムで測定し、騒音曲線、環境判定、聴覚への影響の目安を表示します。';
 

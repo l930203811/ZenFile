@@ -11812,6 +11812,48 @@ abstract class L10n {
   /// **'密码配置'**
   String get vault_config_password;
 
+  /// vault/crypt: vault_encrypt_done
+  ///
+  /// In zh, this message translates to:
+  /// **'加密成功'**
+  String get vault_encrypt_done;
+
+  /// vault/crypt: vault_decrypt_done
+  ///
+  /// In zh, this message translates to:
+  /// **'解密成功'**
+  String get vault_decrypt_done;
+
+  /// vault/crypt: vault_encrypt_partial
+  ///
+  /// In zh, this message translates to:
+  /// **'加密完成，{success} 成功，{failed} 失败'**
+  String vault_encrypt_partial(Object failed, Object success);
+
+  /// vault/crypt: vault_decrypt_partial
+  ///
+  /// In zh, this message translates to:
+  /// **'解密成功，{success} 成功，{failed} 失败'**
+  String vault_decrypt_partial(Object failed, Object success);
+
+  /// vault/crypt: vault_no_encrypted_selected
+  ///
+  /// In zh, this message translates to:
+  /// **'没有选中的加密项'**
+  String get vault_no_encrypted_selected;
+
+  /// vault/crypt: vault_decrypt_confirm_multi_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要解密选中的 {count} 个文件吗？解密后文件将恢复为普通文件。'**
+  String vault_decrypt_confirm_multi_desc(Object count);
+
+  /// vault/crypt: vault_removed_from_list
+  ///
+  /// In zh, this message translates to:
+  /// **'已从列表移除'**
+  String get vault_removed_from_list;
+
   /// changelog 2.1.0: cl210_feat_6
   ///
   /// In zh, this message translates to:

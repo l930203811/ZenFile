@@ -6570,6 +6570,33 @@ class L10nAr extends L10n {
   String get vault_config_password => 'إعداد كلمة المرور';
 
   @override
+  String get vault_encrypt_done => 'تم التشفير بنجاح';
+
+  @override
+  String get vault_decrypt_done => 'تم فك التشفير بنجاح';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'اكتمل التشفير: نجح $success، فشل $failed';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'اكتمل فك التشفير: نجح $success، فشل $failed';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => 'لا توجد عناصر مشفرة محددة';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return 'هل تريد فك تشفير $count ملفاً محدداً؟ ستصبح الملفات ملفات عادية بعد فك التشفير.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'تمت الإزالة من القائمة';
+
+  @override
   String get cl210_feat_6 =>
       'مقياس مستوى الصوت: افتحه من صندوق الأدوات أو القائمة الجانبية لقياس الضجيج المحيط في الوقت الفعلي، مع منحنى الضجيج وتقييم البيئة وإرشادات عن تأثيره على السمع.';
 

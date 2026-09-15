@@ -6692,6 +6692,33 @@ class L10nFr extends L10n {
   String get vault_config_password => 'Configuration du mot de passe';
 
   @override
+  String get vault_encrypt_done => 'Chiffrement réussi';
+
+  @override
+  String get vault_decrypt_done => 'Déchiffrement réussi';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'Chiffrement terminé : $success réussi(s), $failed échoué(s)';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'Déchiffrement terminé : $success réussi(s), $failed échoué(s)';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => 'Aucun élément chiffré sélectionné';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return 'Déchiffrer les $count fichiers sélectionnés ? Ils redeviendront des fichiers normaux après déchiffrement.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'Retiré de la liste';
+
+  @override
   String get cl210_feat_6 =>
       'Sonomètre : ouvrez-le depuis la boîte à outils ou le menu latéral pour mesurer le bruit ambiant en temps réel, avec la courbe de bruit, l évaluation de l environnement et des indications sur les effets sur l audition.';
 

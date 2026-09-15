@@ -350,69 +350,84 @@ class VideoControlsOverlay extends StatelessWidget {
         ),
 
         // CENTER PLAYBACK CONTROLS
-        Center(
-          child: SafeArea(
-            top: !isFullScreen,
-            bottom: !isFullScreen,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const SizedBox(),
-                // Previous Button
-                Opacity(
-                  opacity: onPrevious != null ? 1.0 : 0.4,
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), shape: BoxShape.circle),
-                    child: IconButton(
-                      iconSize: 32,
-                      padding: const EdgeInsets.all(14),
-                      icon: Icon(Broken.previous, color: itemsColor),
-                      onPressed: onPrevious != null ? () {
-                        onInteract();
-                        onPrevious?.call();
-                      } : null,
-                    ),
-                  ),
+        // 偏下布局：按钮组贴近底部进度条上方，避免覆盖进度条（横屏/竖屏均适用）
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: 185 + MediaQuery.of(context).padding.bottom,
                 ),
-                // Play / Pause Premium Circle
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.55),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: accentColor.withOpacity(isPlaying ? 0.5 : 0.2), blurRadius: 28, spreadRadius: 4),
+                child: SafeArea(
+                  top: !isFullScreen,
+                  bottom: false,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const SizedBox(),
+                      // Previous Button
+                      Opacity(
+                        opacity: onPrevious != null ? 1.0 : 0.4,
+                        child: Container(
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), shape: BoxShape.circle),
+                          child: IconButton(
+                            iconSize: 27,
+                            padding: const EdgeInsets.all(12),
+                            icon: Icon(Broken.previous, color: itemsColor),
+                            onPressed: onPrevious != null ? () {
+                              onInteract();
+                              onPrevious?.call();
+                            } : null,
+                          ),
+                        ),
+                      ),
+                      // Play / Pause Premium Circle
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.55),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: accentColor.withOpacity(isPlaying ? 0.5 : 0.2), blurRadius: 28, spreadRadius: 4),
+                          ],
+                          border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
+                        ),
+                        child: IconButton(
+                          iconSize: 39,
+                          padding: const EdgeInsets.all(15),
+                          icon: Icon(isPlaying ? Broken.pause : Broken.play, color: itemsColor),
+                          onPressed: () {
+                            onInteract();
+                            onPlayPause();
+                          },
+                        ),
+                      ),
+                      // Next Button
+                      Opacity(
+                        opacity: onNext != null ? 1.0 : 0.4,
+                        child: Container(
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), shape: BoxShape.circle),
+                          child: IconButton(
+                            iconSize: 27,
+                            padding: const EdgeInsets.all(12),
+                            icon: Icon(Broken.next, color: itemsColor),
+                            onPressed: onNext != null ? () {
+                              onInteract();
+                              onNext?.call();
+                            } : null,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(),
                     ],
-                    border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
-                  ),
-                  child: IconButton(
-                    iconSize: 52,
-                    padding: const EdgeInsets.all(20),
-                    icon: Icon(isPlaying ? Broken.pause : Broken.play, color: itemsColor),
-                    onPressed: () {
-                      onInteract();
-                      onPlayPause();
-                    },
                   ),
                 ),
-                // Next Button
-                Opacity(
-                  opacity: onNext != null ? 1.0 : 0.4,
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), shape: BoxShape.circle),
-                    child: IconButton(
-                      iconSize: 32,
-                      padding: const EdgeInsets.all(14),
-                      icon: Icon(Broken.next, color: itemsColor),
-                      onPressed: onNext != null ? () {
-                        onInteract();
-                        onNext?.call();
-                      } : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
 

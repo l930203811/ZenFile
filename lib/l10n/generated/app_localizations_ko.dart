@@ -6400,6 +6400,33 @@ class L10nKo extends L10n {
   String get vault_config_password => '비밀번호 설정';
 
   @override
+  String get vault_encrypt_done => '암호화 성공';
+
+  @override
+  String get vault_decrypt_done => '복호화 성공';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return '암호화 완료: 성공 $success개, 실패 $failed개';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return '복호화 완료: 성공 $success개, 실패 $failed개';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => '선택된 암호화 항목이 없습니다';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return '선택한 암호화 파일 $count개를 복호화할까요? 복호화 후 파일은 일반 파일로 복원됩니다.';
+  }
+
+  @override
+  String get vault_removed_from_list => '목록에서 제거되었습니다';
+
+  @override
   String get cl210_feat_6 =>
       '데시벨 측정기 추가: 도구 상자나 측면 메뉴에서 열어 주변 소음을 실시간으로 측정하고, 소음 곡선과 환경 판정, 청력에 미치는 영향 안내를 함께 보여 줍니다.';
 

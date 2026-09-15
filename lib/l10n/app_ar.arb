@@ -6615,6 +6615,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "تم التشفير بنجاح",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "تم فك التشفير بنجاح",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "اكتمل التشفير: نجح {success}، فشل {failed}",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "اكتمل فك التشفير: نجح {success}، فشل {failed}",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "لا توجد عناصر مشفرة محددة",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "هل تريد فك تشفير {count} ملفاً محدداً؟ ستصبح الملفات ملفات عادية بعد فك التشفير.",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "تمت الإزالة من القائمة",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "مقياس مستوى الصوت: افتحه من صندوق الأدوات أو القائمة الجانبية لقياس الضجيج المحيط في الوقت الفعلي، مع منحنى الضجيج وتقييم البيئة وإرشادات عن تأثيره على السمع.",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

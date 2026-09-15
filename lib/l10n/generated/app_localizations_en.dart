@@ -6605,6 +6605,33 @@ class L10nEn extends L10n {
   String get vault_config_password => 'Password Configuration';
 
   @override
+  String get vault_encrypt_done => 'Encryption successful';
+
+  @override
+  String get vault_decrypt_done => 'Decryption successful';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'Encryption finished: $success succeeded, $failed failed';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'Decryption finished: $success succeeded, $failed failed';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => 'No encrypted items selected';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return 'Decrypt $count selected files? They will be restored to normal files after decryption.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'Removed from list';
+
+  @override
   String get cl210_feat_6 =>
       'Decibel meter: open it from the toolbox or the side drawer to measure ambient noise in real time, with a live noise curve, a verdict for your surroundings and notes on how the level affects hearing.';
 

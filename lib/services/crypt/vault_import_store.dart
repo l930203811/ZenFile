@@ -127,6 +127,33 @@ class VaultImportStore {
     await save(entries);
   }
 
+  /// 「已隐藏」集合的持久化 key：
+  /// 用户在保险箱「原地加密文件」列表里点了「移除」的项。
+  /// 仅从列表隐藏，不删除磁盘上的原地加密文件本身；挂载点重新扫描
+  /// 仍会扫到该文件，因此必须用持久化集合过滤。
+  static const String _kRemovedKey = 'vault_import_removed';
+
+  /// 加载「已从原地加密列表移除」的路径集合
+  static Future<Set<String>> loadRemoved() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString(_kRemovedKey);
+    if (jsonStr == null || jsonStr.isEmpty) return {};
+    try {
+      final List<dynamic> list = jsonDecode(jsonStr);
+      return list.whereType<String>().where((s) => s.isNotEmpty).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// 将路径加入「已从原地加密列表移除」集合（仅隐藏，不删文件）
+  static Future<void> markRemoved(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    final removed = await loadRemoved();
+    removed.add(path);
+    await prefs.setString(_kRemovedKey, jsonEncode(removed.toList()));
+  }
+
   /// 读取前 8 字节判断是否为 rclone/OpenList crypt 文件头 magic
   static Future<bool> _fileHasCryptMagic(String path) async {
     RandomAccessFile? raf;

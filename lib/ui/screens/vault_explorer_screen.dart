@@ -50,6 +50,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   List<CryptFileEntry> _inPlaceFiles = [];
   bool _isLoadingInPlace = true;
 
+  // 「已从列表移除」的原地加密路径集合（仅隐藏，不删磁盘文件；持久化过滤）
+  final Set<String> _removedInPlace = {};
+
   // 远程加密文件列表（密文在后端，客户端解密枚举，只读）
   List<CryptFileEntry> _remoteCryptFiles = [];
   bool _isLoadingRemote = true;
@@ -304,6 +307,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   Future<void> _loadInPlaceEncryptedFiles() async {
     setState(() => _isLoadingInPlace = true);
     try {
+      // 加载「已从列表移除」的集合，确保重新扫描后仍保持隐藏
+      final removed = await VaultImportStore.loadRemoved();
+      _removedInPlace.clear();
+      _removedInPlace.addAll(removed);
+
       final mounts = await _loadMountsWithMasterPassword();
 
       // 待扫描目录（与浏览页探测来源保持完全一致）：
@@ -1039,6 +1047,31 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(l10n.vault_need_set_password),
         content: Text(l10n.vault_need_set_password_desc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const CryptMountEditScreen()));
+            },
+            child: Text(l10n.vault_go_set_password),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 已配置主密码，但密码/盐对不上导致解密失败 → 提示「密码错误」
+  void _showWrongPasswordDialog(L10n l10n) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.vault_incorrect_password),
+        content: Text(l10n.vault_decrypt_password_mismatch),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -2185,6 +2218,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     final items = <_InPlaceItem>[];
     final seen = <String>{};
     for (final f in _inPlaceFiles) {
+      if (_removedInPlace.contains(f.physicalPath)) continue;
       if (seen.add(f.physicalPath)) {
         items.add(_InPlaceItem(
           name: f.name,
@@ -2198,6 +2232,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       }
     }
     for (final e in _encryptedImports) {
+      if (_removedInPlace.contains(e.path)) continue;
       if (seen.add(e.path)) {
         items.add(_InPlaceItem(
           name: _importDecryptedNames[e.path] ?? e.name,
@@ -2345,6 +2380,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                   _decryptPath(path: item.path, isDirectory: item.isDirectory);
                 } else if (value == 'config') {
                   _chooseProfileFor(item.path);
+                } else if (value == 'remove') {
+                  _removeFromInPlaceList(item.path);
                 } else if (value == 'unlink') {
                   _unlinkRemoteCrypt(item.path);
                 }
@@ -2404,6 +2441,16 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                         const Icon(Icons.key_outlined, size: 18),
                         const SizedBox(width: 10),
                         Text(l10n.crypt_profile_action_config, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'remove',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.remove_circle_outline, size: 18),
+                        const SizedBox(width: 10),
+                        Text(l10n.vault_remove_from_list, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -2542,6 +2589,27 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     return '$prefix/${parts.join('/')}';
   }
 
+  /// 仅从「原地加密文件」列表隐藏该条目，不删除磁盘上的原地加密文件本身。
+  ///
+  /// 持久化到 removed 集合，以免挂载点重新扫描后该密文再次出现在列表中。
+  Future<void> _removeFromInPlaceList(String path) async {
+    if (!mounted) return;
+    try {
+      await VaultImportStore.markRemoved(path);
+    } catch (e) {
+      debugPrint('[vault] 标记移除失败: $e');
+    }
+    if (!mounted) return;
+    final l10n = L10n.of(context);
+    setState(() {
+      _removedInPlace.add(path);
+      _selectedInPlace.remove(path);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.vault_removed_from_list), behavior: SnackBarBehavior.floating),
+    );
+  }
+
   /// 解密 rclone/OpenList 加密的文件/文件夹
   ///
   /// 先尝试用「加密设置」里已配置的主密码和盐；若解密失败（密码/盐对不上），
@@ -2617,9 +2685,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         firstError = e;
       }
 
-      // 已配置的主密码/盐对不上 → 引导去加密设置重新配置（不再弹内联输入框）
+      // 已配置主密码但密码/盐对不上 → 提示「密码错误」，引导去加密设置重新配置
       hideLoading();
-      _showNeedPasswordDialog(l10n);
+      _showWrongPasswordDialog(l10n);
     } catch (e) {
       if (mounted) {
         hideLoading();

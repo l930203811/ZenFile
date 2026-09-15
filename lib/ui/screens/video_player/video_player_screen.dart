@@ -3316,7 +3316,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.5),
                           shape: BoxShape.circle,
@@ -3332,7 +3332,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                           color: _isLocked
                               ? Theme.of(context).colorScheme.primary
                               : Colors.white,
-                          size: 22,
+                          size: 19,
                         ),
                       ),
                     ),

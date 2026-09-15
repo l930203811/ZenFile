@@ -6902,6 +6902,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "加密成功",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "解密成功",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "加密完成，{success} 成功，{failed} 失败",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "解密成功，{success} 成功，{failed} 失败",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "没有选中的加密项",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "确定要解密选中的 {count} 个文件吗？解密后文件将恢复为普通文件。",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "已从列表移除",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "新增分贝仪：可在工具箱或侧边栏打开，实时测量环境噪音分贝值，并显示噪声曲线、环境判定与对听力的影响提示。",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

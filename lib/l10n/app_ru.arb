@@ -6615,6 +6615,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "Шифрование выполнено",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "Расшифровка выполнена",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "Шифрование завершено: успешно {success}, с ошибкой {failed}",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "Расшифровка завершена: успешно {success}, с ошибкой {failed}",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "Не выбрано зашифрованных элементов",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "Расшифровать выбранные {count} файлов? После расшифровки они станут обычными файлами.",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "Удалено из списка",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "Шумомер: открывается из набора инструментов или бокового меню и измеряет уровень шума вокруг в реальном времени, показывая кривую шума, оценку обстановки и сведения о влиянии на слух.",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

@@ -119,10 +119,10 @@ class BulkCryptActions {
         await provider.refreshCryptMountPoints();
         await provider.loadDirectory(provider.activeTab.currentPath);
         final msg = failed == 0
-            ? '加密成功'
+            ? l10n.vault_encrypt_done
             : (lastError != null
                 ? l10n.vault_encrypt_failed(lastError.toString())
-                : '加密完成，$success 成功，$failed 失败');
+                : l10n.vault_encrypt_partial(success, failed));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
         );
@@ -171,8 +171,8 @@ class BulkCryptActions {
     if (encryptedPaths.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('没有选中的加密项'),
+          SnackBar(
+            content: Text(l10n.vault_no_encrypted_selected),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -185,7 +185,7 @@ class BulkCryptActions {
       builder: (ctx) => AlertDialog(
         title: Text(l10n.vault_decrypt_confirm_title),
         content: Text(
-          '确定要解密选中的 ${encryptedPaths.length} 个文件吗？解密后文件将恢复为普通文件。',
+          l10n.vault_decrypt_confirm_multi_desc(encryptedPaths.length),
         ),
         actions: [
           TextButton(
@@ -243,7 +243,7 @@ class BulkCryptActions {
             ? l10n.vault_decrypt_success
             : (lastError != null
                 ? l10n.vault_decrypt_failed(lastError.toString())
-                : '${l10n.vault_decrypt_success}，$success 成功，$failed 失败');
+                : l10n.vault_decrypt_partial(success, failed));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
         );

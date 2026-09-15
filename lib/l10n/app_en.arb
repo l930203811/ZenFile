@@ -6681,6 +6681,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "Encryption successful",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "Decryption successful",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "Encryption finished: {success} succeeded, {failed} failed",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "Decryption finished: {success} succeeded, {failed} failed",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "No encrypted items selected",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "Decrypt {count} selected files? They will be restored to normal files after decryption.",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "Removed from list",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "Decibel meter: open it from the toolbox or the side drawer to measure ambient noise in real time, with a live noise curve, a verdict for your surroundings and notes on how the level affects hearing.",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

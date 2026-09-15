@@ -6615,6 +6615,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "암호화 성공",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "복호화 성공",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "암호화 완료: 성공 {success}개, 실패 {failed}개",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "복호화 완료: 성공 {success}개, 실패 {failed}개",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "선택된 암호화 항목이 없습니다",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "선택한 암호화 파일 {count}개를 복호화할까요? 복호화 후 파일은 일반 파일로 복원됩니다.",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "목록에서 제거되었습니다",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "데시벨 측정기 추가: 도구 상자나 측면 메뉴에서 열어 주변 소음을 실시간으로 측정하고, 소음 곡선과 환경 판정, 청력에 미치는 영향 안내를 함께 보여 줍니다.",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

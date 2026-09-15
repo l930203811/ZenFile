@@ -6619,6 +6619,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "暗号化が成功しました",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "復号に成功しました",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "暗号化が完了しました：成功 {success} 件、失敗 {failed} 件",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "復号が完了しました：成功 {success} 件、失敗 {failed} 件",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "選択された暗号化項目はありません",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "選択した {count} 個のファイルを復号しますか？復号後は通常のファイルに戻ります。",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "リストから削除しました",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "騒音計を追加：ツールボックスまたはサイドメニューから開けます。周囲の騒音をリアルタイムで測定し、騒音曲線、環境判定、聴覚への影響の目安を表示します。",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

@@ -6660,6 +6660,34 @@ class L10nDe extends L10n {
   String get vault_config_password => 'Passwortkonfiguration';
 
   @override
+  String get vault_encrypt_done => 'Verschlüsselung erfolgreich';
+
+  @override
+  String get vault_decrypt_done => 'Entschlüsselung erfolgreich';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'Verschlüsselung abgeschlossen: $success erfolgreich, $failed fehlgeschlagen';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'Entschlüsselung abgeschlossen: $success erfolgreich, $failed fehlgeschlagen';
+  }
+
+  @override
+  String get vault_no_encrypted_selected =>
+      'Keine verschlüsselten Elemente ausgewählt';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return 'Die $count ausgewählten Dateien entschlüsseln? Nach dem Entschlüsseln werden sie wieder normale Dateien.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'Aus der Liste entfernt';
+
+  @override
   String get cl210_feat_6 =>
       'Schallpegelmesser: Über die Werkzeugsammlung oder das Seitenmenü zu öffnen; misst die Umgebungsgeräusche in Dezibel und zeigt den Verlauf, eine Bewertung der Umgebung und Hinweise auf die Wirkung auf das Gehör.';
 

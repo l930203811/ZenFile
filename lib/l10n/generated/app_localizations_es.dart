@@ -6677,6 +6677,34 @@ class L10nEs extends L10n {
   String get vault_config_password => 'Configuración de contraseña';
 
   @override
+  String get vault_encrypt_done => 'Cifrado correcto';
+
+  @override
+  String get vault_decrypt_done => 'Descifrado correcto';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'Cifrado completado: $success correctos, $failed fallidos';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'Descifrado completado: $success correctos, $failed fallidos';
+  }
+
+  @override
+  String get vault_no_encrypted_selected =>
+      'No hay elementos cifrados seleccionados';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return '¿Descifrar los $count archivos seleccionados? Tras el descifrado volverán a ser archivos normales.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'Eliminado de la lista';
+
+  @override
   String get cl210_feat_6 =>
       'Sonómetro: ábrelo desde la caja de herramientas o el menú lateral para medir el ruido ambiente en tiempo real, con la curva de ruido, la valoración del entorno y avisos sobre cómo afecta al oído.';
 

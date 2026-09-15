@@ -6657,6 +6657,34 @@ class L10nRu extends L10n {
   String get vault_config_password => 'Настройка пароля';
 
   @override
+  String get vault_encrypt_done => 'Шифрование выполнено';
+
+  @override
+  String get vault_decrypt_done => 'Расшифровка выполнена';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return 'Шифрование завершено: успешно $success, с ошибкой $failed';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return 'Расшифровка завершена: успешно $success, с ошибкой $failed';
+  }
+
+  @override
+  String get vault_no_encrypted_selected =>
+      'Не выбрано зашифрованных элементов';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return 'Расшифровать выбранные $count файлов? После расшифровки они станут обычными файлами.';
+  }
+
+  @override
+  String get vault_removed_from_list => 'Удалено из списка';
+
+  @override
   String get cl210_feat_6 =>
       'Шумомер: открывается из набора инструментов или бокового меню и измеряет уровень шума вокруг в реальном времени, показывая кривую шума, оценку обстановки и сведения о влиянии на слух.';
 

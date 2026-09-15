@@ -6612,6 +6612,34 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "vault_encrypt_done": "Verschlüsselung erfolgreich",
+  "@vault_encrypt_done": {
+    "description": "vault/crypt: vault_encrypt_done"
+  },
+  "vault_decrypt_done": "Entschlüsselung erfolgreich",
+  "@vault_decrypt_done": {
+    "description": "vault/crypt: vault_decrypt_done"
+  },
+  "vault_encrypt_partial": "Verschlüsselung abgeschlossen: {success} erfolgreich, {failed} fehlgeschlagen",
+  "@vault_encrypt_partial": {
+    "description": "vault/crypt: vault_encrypt_partial"
+  },
+  "vault_decrypt_partial": "Entschlüsselung abgeschlossen: {success} erfolgreich, {failed} fehlgeschlagen",
+  "@vault_decrypt_partial": {
+    "description": "vault/crypt: vault_decrypt_partial"
+  },
+  "vault_no_encrypted_selected": "Keine verschlüsselten Elemente ausgewählt",
+  "@vault_no_encrypted_selected": {
+    "description": "vault/crypt: vault_no_encrypted_selected"
+  },
+  "vault_decrypt_confirm_multi_desc": "Die {count} ausgewählten Dateien entschlüsseln? Nach dem Entschlüsseln werden sie wieder normale Dateien.",
+  "@vault_decrypt_confirm_multi_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_multi_desc"
+  },
+  "vault_removed_from_list": "Aus der Liste entfernt",
+  "@vault_removed_from_list": {
+    "description": "vault/crypt: vault_removed_from_list"
+  },
   "cl210_feat_6": "Schallpegelmesser: Über die Werkzeugsammlung oder das Seitenmenü zu öffnen; misst die Umgebungsgeräusche in Dezibel und zeigt den Verlauf, eine Bewertung der Umgebung und Hinweise auf die Wirkung auf das Gehör.",
   "@cl210_feat_6": {
     "description": "changelog 2.1.0: cl210_feat_6"

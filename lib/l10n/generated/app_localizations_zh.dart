@@ -6297,6 +6297,33 @@ class L10nZh extends L10n {
   String get vault_config_password => '密码配置';
 
   @override
+  String get vault_encrypt_done => '加密成功';
+
+  @override
+  String get vault_decrypt_done => '解密成功';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return '加密完成，$success 成功，$failed 失败';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return '解密成功，$success 成功，$failed 失败';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => '没有选中的加密项';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return '确定要解密选中的 $count 个文件吗？解密后文件将恢复为普通文件。';
+  }
+
+  @override
+  String get vault_removed_from_list => '已从列表移除';
+
+  @override
   String get cl210_feat_6 =>
       '新增分贝仪：可在工具箱或侧边栏打开，实时测量环境噪音分贝值，并显示噪声曲线、环境判定与对听力的影响提示。';
 
@@ -13433,6 +13460,33 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_config_password => '密碼配置';
+
+  @override
+  String get vault_encrypt_done => '加密成功';
+
+  @override
+  String get vault_decrypt_done => '解密成功';
+
+  @override
+  String vault_encrypt_partial(Object failed, Object success) {
+    return '加密完成，$success 成功，$failed 失敗';
+  }
+
+  @override
+  String vault_decrypt_partial(Object failed, Object success) {
+    return '解密成功，$success 成功，$failed 失敗';
+  }
+
+  @override
+  String get vault_no_encrypted_selected => '沒有選中的加密項';
+
+  @override
+  String vault_decrypt_confirm_multi_desc(Object count) {
+    return '確定要解密選中的 $count 個檔案嗎？解密後檔案將恢復為普通檔案。';
+  }
+
+  @override
+  String get vault_removed_from_list => '已從清單移除';
 
   @override
   String get cl210_feat_6 =>

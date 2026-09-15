@@ -1893,14 +1893,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         Navigator.pop(context);
         context.read<MediaProvider>().loadMedia(forceRefresh: true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('加密成功')),
+          SnackBar(content: Text(L10n.of(context).vault_encrypt_done)),
         );
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加密失败: $e')),
+          SnackBar(content: Text(L10n.of(context).vault_encrypt_failed(e.toString()))),
         );
       }
     } finally {
@@ -1934,14 +1934,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         Navigator.pop(context);
         context.read<MediaProvider>().loadMedia(forceRefresh: true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('解密成功')),
+          SnackBar(content: Text(L10n.of(context).vault_decrypt_done)),
         );
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('解密失败: $e')),
+          SnackBar(content: Text(L10n.of(context).vault_decrypt_failed(e.toString()))),
         );
       }
     } finally {
