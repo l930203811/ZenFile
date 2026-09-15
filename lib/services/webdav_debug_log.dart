@@ -25,7 +25,9 @@ class WebdavDebugLog {
   /// 2026-09-15 起复用为**通用诊断日志**：Android/{data,obb} 受限目录的
   /// 新建/写入失败（root_shizuku_service）也会经此落盘，便于无 adb 环境下
   /// 直接取出 shell 命令与 stderr。排查结束后务必改回 false 再发版。
-  static bool enabled = false;
+  /// 2026-09-15 视频黑屏诊断期间临时开启：用于采集黑屏机型播放器错误与
+  /// 自动回退判定记录；黑屏问题定位并解决后务必改回 false。
+  static bool enabled = true;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
   static void log(String msg) {

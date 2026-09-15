@@ -86,6 +86,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   // 视频输出（vo）失败——表现为「黑屏有声音」，且与解码方式无关（软解硬解同样黑屏，
   // 其他播放器正常）。置位后所有视频缩放属性一律使用通用 bilinear，并保持到会话结束。
   bool _voCompatMode = false;
+  // 黑屏诊断：记录 videoParams 空/非空变化瞬间，用于区分「解码失败」与「解码成功但输出失败」
+  bool _lastVideoParamsWasNull = false;
   double _playbackSpeed = 1.0;
   // 音频均衡器（复用音频播放器的 mpv lavfi equalizer 服务）
   final AudioEqualizerService _eqService = AudioEqualizerService();
@@ -423,6 +425,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // 每个播放会话重置黑屏自动回退状态
     _autoHwdecFallbackDone = false;
     _noVideoSeconds = 0;
+    _lastVideoParamsWasNull = false;
+    WebdavDebugLog.log('【黑屏诊断】打开视频 路径=${WebdavDebugLog.mask(widget.videoPath)} '
+        '硬解=$_useHardwareDecode voCompat=$_voCompatMode');
     _startBlackScreenCheck();
     player.open(Media(widget.videoPath), play: false);
     _autoMatchSubtitle();
@@ -446,22 +451,47 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _stopBlackScreenCheck();
         return;
       }
+      // 记录 videoParams 空/非空变化瞬间（黑屏诊断关键证据）
+      final vp = player.state.videoParams;
+      if (vp == null) {
+        if (!_lastVideoParamsWasNull) {
+          WebdavDebugLog.log('【黑屏诊断】视频帧消失 playing=${player.state.playing} '
+              'buffering=${player.state.buffering} hwdec=$_useHardwareDecode voCompat=$_voCompatMode');
+          _lastVideoParamsWasNull = true;
+        }
+      } else {
+        if (_lastVideoParamsWasNull) {
+          WebdavDebugLog.log('【黑屏诊断】视频帧恢复 ${vp.w}x${vp.h} '
+              'pixel=${vp.pixelformat} hwPixel=${vp.hwPixelformat} '
+              'hwdec=$_useHardwareDecode voCompat=$_voCompatMode');
+        }
+        _lastVideoParamsWasNull = false;
+      }
       // 仅正在播放时判定（暂停/未开始播放不算黑屏）
       if (!player.state.playing) {
         _noVideoSeconds = 0;
         return;
       }
-      if (player.state.videoParams == null) {
+      if (vp == null) {
         _noVideoSeconds++;
         if (_noVideoSeconds >= 5) {
           _noVideoSeconds = 0;
           _autoHwdecFallbackDone = true;
           _stopBlackScreenCheck();
+          WebdavDebugLog.log('【黑屏诊断】触发自动软解回退: 播放中连续5秒无视频帧');
           unawaited(_autoFallbackToSoftDecode());
         }
       } else {
         _noVideoSeconds = 0;
       }
+    });
+    // 播放 3 秒后记录一次画面状态快照（即使检测未触发也能看到画面是否正常）
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      final vp = player.state.videoParams;
+      WebdavDebugLog.log('【黑屏诊断】3秒快照 playing=${player.state.playing} '
+          'videoParams=${vp != null ? "${vp.w}x${vp.h} pixel=${vp.pixelformat} hwPixel=${vp.hwPixelformat}" : "null"} '
+          'buffering=${player.state.buffering} hwdec=$_useHardwareDecode voCompat=$_voCompatMode');
     });
   }
 
@@ -502,6 +532,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (_voCompatMode || !mounted) return;
     _voCompatMode = true;
     _stopBlackScreenCheck();
+    WebdavDebugLog.log('【黑屏诊断】触发 vo 兼容模式（视频输出/着色器错误，降级 bilinear）');
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
@@ -540,6 +571,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _autoHwdecFallbackDone = true;
     _voCompatMode = true;
     _stopBlackScreenCheck();
+    WebdavDebugLog.log('【黑屏诊断】触发自动软解回退（重建播放器）');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
