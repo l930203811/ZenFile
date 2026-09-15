@@ -6565,6 +6565,35 @@ class L10nAr extends L10n {
 
   @override
   String get crypt_settings_title => 'إعداد كلمة المرور';
+  @override
+  String get app_icon_add_title => 'إضافة إلى الشاشة الرئيسية';
+
+  @override
+  String get app_icon_add_body => '‏لا يسمح Android باستبدال أيقونة التطبيق بصورة خارجية. استخدم أحد الخيارات التالية لوضع صورتك المخصصة على الشاشة الرئيسية:';
+
+  @override
+  String get app_icon_add_shortcut => 'اختصار';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'يضيف أيقونة تشغيل بصورتك المخصصة';
+
+  @override
+  String get app_icon_add_widget => 'أداة الشاشة الرئيسية';
+
+  @override
+  String get app_icon_add_widget_desc => '‏أداة بحجم 1×1، متوافقة مع جميع المشغّلات';
+
+  @override
+  String get app_icon_add_change_image => 'تغيير الصورة';
+
+  @override
+  String get app_icon_add_change_image_desc => 'اختيار صورة أخرى لتكون الأيقونة';
+
+  @override
+  String get app_icon_add_cancelled => 'لم تتم الإضافة: تم الإلغاء';
+
+  @override
+  String get app_icon_add_unsupported => '‏لا يدعم مشغّل الشاشة الإضافة التلقائية — اضغط مطولاً على الشاشة الرئيسية للإضافة يدويًا';
 
   @override
   String get vault_config_password => 'إعداد كلمة المرور';

@@ -170,6 +170,20 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- 1×1 启动小组件：用导入的图片作为桌面图标。
+             桌面主图标只能是编译期资源，小组件由启动器绘制、可承载运行时图片，
+             是「用外部图片替换应用图标」在 Android 上唯一通用可行的方案。 -->
+        <receiver
+            android:name=".ZenFileIconWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/zenfile_icon_widget_info" />
+        </receiver>
+
         <provider
             android:name=".ZenFileDocumentsProvider"
             android:authorities="${applicationId}.documents"

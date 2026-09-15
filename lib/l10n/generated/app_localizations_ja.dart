@@ -6400,6 +6400,35 @@ class L10nJa extends L10n {
 
   @override
   String get crypt_settings_title => 'パスワード設定';
+  @override
+  String get app_icon_add_title => 'ホーム画面に追加';
+
+  @override
+  String get app_icon_add_body => 'Android では外部画像でアプリのメインアイコンを直接置き換えることはできません。以下の方法でカスタム画像をホーム画面に配置できます：';
+
+  @override
+  String get app_icon_add_shortcut => 'ショートカット';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'カスタム画像を使った起動アイコンをホーム画面に追加します';
+
+  @override
+  String get app_icon_add_widget => 'ホーム画面ウィジェット';
+
+  @override
+  String get app_icon_add_widget_desc => '1×1 ウィジェット、すべてのランチャーに対応';
+
+  @override
+  String get app_icon_add_change_image => '画像を変更';
+
+  @override
+  String get app_icon_add_change_image_desc => 'アイコンに使う画像を選び直す';
+
+  @override
+  String get app_icon_add_cancelled => '追加されませんでした：キャンセルされました';
+
+  @override
+  String get app_icon_add_unsupported => '現在のランチャーは自動追加に対応していません。ホーム画面を長押しして手動で追加してください';
 
   @override
   String get vault_config_password => 'パスワード設定';

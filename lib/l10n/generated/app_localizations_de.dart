@@ -6655,6 +6655,35 @@ class L10nDe extends L10n {
 
   @override
   String get crypt_settings_title => 'Passwortkonfiguration';
+  @override
+  String get app_icon_add_title => 'Zum Startbildschirm hinzufügen';
+
+  @override
+  String get app_icon_add_body => 'Android erlaubt es nicht, das App-Symbol durch ein externes Bild zu ersetzen. Nutze eine der folgenden Optionen, um dein eigenes Bild auf den Startbildschirm zu legen:';
+
+  @override
+  String get app_icon_add_shortcut => 'Verknüpfung';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'Fügt ein Start-Symbol mit deinem eigenen Bild hinzu';
+
+  @override
+  String get app_icon_add_widget => 'Startbildschirm-Widget';
+
+  @override
+  String get app_icon_add_widget_desc => 'Ein 1×1-Widget, funktioniert mit jedem Launcher';
+
+  @override
+  String get app_icon_add_change_image => 'Bild ändern';
+
+  @override
+  String get app_icon_add_change_image_desc => 'Wähle ein anderes Bild als Symbol';
+
+  @override
+  String get app_icon_add_cancelled => 'Nicht hinzugefügt: abgebrochen';
+
+  @override
+  String get app_icon_add_unsupported => 'Dein Launcher unterstützt das automatische Hinzufügen nicht – halte den Startbildschirm gedrückt, um es manuell hinzuzufügen';
 
   @override
   String get vault_config_password => 'Passwortkonfiguration';

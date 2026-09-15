@@ -6672,6 +6672,35 @@ class L10nEs extends L10n {
 
   @override
   String get crypt_settings_title => 'Configuración de contraseña';
+  @override
+  String get app_icon_add_title => 'Añadir a la pantalla de inicio';
+
+  @override
+  String get app_icon_add_body => 'Android no permite sustituir el icono de la app por una imagen externa. Usa una de las opciones siguientes para poner tu imagen en la pantalla de inicio:';
+
+  @override
+  String get app_icon_add_shortcut => 'Acceso directo';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'Añade un icono de inicio con tu imagen personalizada';
+
+  @override
+  String get app_icon_add_widget => 'Widget de pantalla de inicio';
+
+  @override
+  String get app_icon_add_widget_desc => 'Un widget 1×1, compatible con todos los lanzadores';
+
+  @override
+  String get app_icon_add_change_image => 'Cambiar imagen';
+
+  @override
+  String get app_icon_add_change_image_desc => 'Elige otra imagen como icono';
+
+  @override
+  String get app_icon_add_cancelled => 'No añadido: cancelado';
+
+  @override
+  String get app_icon_add_unsupported => 'Tu lanzador no admite añadirlo automáticamente; mantén pulsada la pantalla de inicio para añadirlo manualmente';
 
   @override
   String get vault_config_password => 'Configuración de contraseña';

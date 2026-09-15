@@ -6763,6 +6763,46 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "app_icon_add_title": "新增到桌面",
+  "@app_icon_add_title": {
+    "description": "app icon: app_icon_add_title"
+  },
+  "app_icon_add_body": "Android 不允許用外部圖片直接替換應用程式主圖示。可用以下方式把自訂圖片放到桌面：",
+  "@app_icon_add_body": {
+    "description": "app icon: app_icon_add_body"
+  },
+  "app_icon_add_shortcut": "捷徑",
+  "@app_icon_add_shortcut": {
+    "description": "app icon: app_icon_add_shortcut"
+  },
+  "app_icon_add_shortcut_desc": "在桌面新增一個帶自訂圖片的啟動圖示",
+  "@app_icon_add_shortcut_desc": {
+    "description": "app icon: app_icon_add_shortcut_desc"
+  },
+  "app_icon_add_widget": "桌面小工具",
+  "@app_icon_add_widget": {
+    "description": "app icon: app_icon_add_widget"
+  },
+  "app_icon_add_widget_desc": "1×1 小工具，相容所有啟動器",
+  "@app_icon_add_widget_desc": {
+    "description": "app icon: app_icon_add_widget_desc"
+  },
+  "app_icon_add_change_image": "更換圖片",
+  "@app_icon_add_change_image": {
+    "description": "app icon: app_icon_add_change_image"
+  },
+  "app_icon_add_change_image_desc": "重新選擇一張圖片作為圖示",
+  "@app_icon_add_change_image_desc": {
+    "description": "app icon: app_icon_add_change_image_desc"
+  },
+  "app_icon_add_cancelled": "未新增：操作已取消",
+  "@app_icon_add_cancelled": {
+    "description": "app icon: app_icon_add_cancelled"
+  },
+  "app_icon_add_unsupported": "目前啟動器不支援自動新增，請長按桌面手動新增",
+  "@app_icon_add_unsupported": {
+    "description": "app icon: app_icon_add_unsupported"
+  },
   "vault_encrypt_done": "加密成功",
   "@vault_encrypt_done": {
     "description": "vault/crypt: vault_encrypt_done"

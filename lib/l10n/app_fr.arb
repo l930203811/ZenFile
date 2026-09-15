@@ -6615,6 +6615,46 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "app_icon_add_title": "Ajouter à l'écran d'accueil",
+  "@app_icon_add_title": {
+    "description": "app icon: app_icon_add_title"
+  },
+  "app_icon_add_body": "Android n'autorise pas le remplacement de l'icône de l'application par une image externe. Utilisez l'une des options ci-dessous pour placer votre image sur l'écran d'accueil :",
+  "@app_icon_add_body": {
+    "description": "app icon: app_icon_add_body"
+  },
+  "app_icon_add_shortcut": "Raccourci",
+  "@app_icon_add_shortcut": {
+    "description": "app icon: app_icon_add_shortcut"
+  },
+  "app_icon_add_shortcut_desc": "Ajoute une icône de lancement avec votre image",
+  "@app_icon_add_shortcut_desc": {
+    "description": "app icon: app_icon_add_shortcut_desc"
+  },
+  "app_icon_add_widget": "Widget d'écran d'accueil",
+  "@app_icon_add_widget": {
+    "description": "app icon: app_icon_add_widget"
+  },
+  "app_icon_add_widget_desc": "Un widget 1×1, compatible avec tous les lanceurs",
+  "@app_icon_add_widget_desc": {
+    "description": "app icon: app_icon_add_widget_desc"
+  },
+  "app_icon_add_change_image": "Changer d'image",
+  "@app_icon_add_change_image": {
+    "description": "app icon: app_icon_add_change_image"
+  },
+  "app_icon_add_change_image_desc": "Choisir une autre image comme icône",
+  "@app_icon_add_change_image_desc": {
+    "description": "app icon: app_icon_add_change_image_desc"
+  },
+  "app_icon_add_cancelled": "Non ajouté : annulé",
+  "@app_icon_add_cancelled": {
+    "description": "app icon: app_icon_add_cancelled"
+  },
+  "app_icon_add_unsupported": "Votre lanceur ne prend pas en charge l'ajout automatique — appuyez longuement sur l'écran d'accueil pour l'ajouter manuellement",
+  "@app_icon_add_unsupported": {
+    "description": "app icon: app_icon_add_unsupported"
+  },
   "vault_encrypt_done": "Chiffrement réussi",
   "@vault_encrypt_done": {
     "description": "vault/crypt: vault_encrypt_done"

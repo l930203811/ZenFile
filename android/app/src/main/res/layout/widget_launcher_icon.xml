@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1×1 启动小组件布局：图片铺满，点击任意位置启动 App -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_icon_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_icon_background">
+
+    <ImageView
+        android:id="@+id/widget_icon_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/zenfile_icon_widget_label"
+        android:scaleType="fitXY" />
+</FrameLayout>

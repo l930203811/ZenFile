@@ -6652,6 +6652,35 @@ class L10nRu extends L10n {
 
   @override
   String get crypt_settings_title => 'Настройка пароля';
+  @override
+  String get app_icon_add_title => 'Добавить на главный экран';
+
+  @override
+  String get app_icon_add_body => 'Android не позволяет заменить значок приложения внешним изображением. Используйте один из способов ниже, чтобы разместить своё изображение на главном экране:';
+
+  @override
+  String get app_icon_add_shortcut => 'Ярлык';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'Добавляет значок запуска с вашим изображением';
+
+  @override
+  String get app_icon_add_widget => 'Виджет главного экрана';
+
+  @override
+  String get app_icon_add_widget_desc => 'Виджет 1×1, работает с любым лаунчером';
+
+  @override
+  String get app_icon_add_change_image => 'Изменить изображение';
+
+  @override
+  String get app_icon_add_change_image_desc => 'Выбрать другое изображение для значка';
+
+  @override
+  String get app_icon_add_cancelled => 'Не добавлено: отменено';
+
+  @override
+  String get app_icon_add_unsupported => 'Ваш лаунчер не поддерживает автоматическое добавление — удерживайте главный экран, чтобы добавить вручную';
 
   @override
   String get vault_config_password => 'Настройка пароля';

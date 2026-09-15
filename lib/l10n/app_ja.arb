@@ -6619,6 +6619,46 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "app_icon_add_title": "ホーム画面に追加",
+  "@app_icon_add_title": {
+    "description": "app icon: app_icon_add_title"
+  },
+  "app_icon_add_body": "Android では外部画像でアプリのメインアイコンを直接置き換えることはできません。以下の方法でカスタム画像をホーム画面に配置できます：",
+  "@app_icon_add_body": {
+    "description": "app icon: app_icon_add_body"
+  },
+  "app_icon_add_shortcut": "ショートカット",
+  "@app_icon_add_shortcut": {
+    "description": "app icon: app_icon_add_shortcut"
+  },
+  "app_icon_add_shortcut_desc": "カスタム画像を使った起動アイコンをホーム画面に追加します",
+  "@app_icon_add_shortcut_desc": {
+    "description": "app icon: app_icon_add_shortcut_desc"
+  },
+  "app_icon_add_widget": "ホーム画面ウィジェット",
+  "@app_icon_add_widget": {
+    "description": "app icon: app_icon_add_widget"
+  },
+  "app_icon_add_widget_desc": "1×1 ウィジェット、すべてのランチャーに対応",
+  "@app_icon_add_widget_desc": {
+    "description": "app icon: app_icon_add_widget_desc"
+  },
+  "app_icon_add_change_image": "画像を変更",
+  "@app_icon_add_change_image": {
+    "description": "app icon: app_icon_add_change_image"
+  },
+  "app_icon_add_change_image_desc": "アイコンに使う画像を選び直す",
+  "@app_icon_add_change_image_desc": {
+    "description": "app icon: app_icon_add_change_image_desc"
+  },
+  "app_icon_add_cancelled": "追加されませんでした：キャンセルされました",
+  "@app_icon_add_cancelled": {
+    "description": "app icon: app_icon_add_cancelled"
+  },
+  "app_icon_add_unsupported": "現在のランチャーは自動追加に対応していません。ホーム画面を長押しして手動で追加してください",
+  "@app_icon_add_unsupported": {
+    "description": "app icon: app_icon_add_unsupported"
+  },
   "vault_encrypt_done": "暗号化が成功しました",
   "@vault_encrypt_done": {
     "description": "vault/crypt: vault_encrypt_done"

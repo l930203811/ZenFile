@@ -6687,6 +6687,35 @@ class L10nFr extends L10n {
 
   @override
   String get crypt_settings_title => 'Configuration du mot de passe';
+  @override
+  String get app_icon_add_title => 'Ajouter à l\'écran d\'accueil';
+
+  @override
+  String get app_icon_add_body => 'Android n\'autorise pas le remplacement de l\'icône de l\'application par une image externe. Utilisez l\'une des options ci-dessous pour placer votre image sur l\'écran d\'accueil :';
+
+  @override
+  String get app_icon_add_shortcut => 'Raccourci';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'Ajoute une icône de lancement avec votre image';
+
+  @override
+  String get app_icon_add_widget => 'Widget d\'écran d\'accueil';
+
+  @override
+  String get app_icon_add_widget_desc => 'Un widget 1×1, compatible avec tous les lanceurs';
+
+  @override
+  String get app_icon_add_change_image => 'Changer d\'image';
+
+  @override
+  String get app_icon_add_change_image_desc => 'Choisir une autre image comme icône';
+
+  @override
+  String get app_icon_add_cancelled => 'Non ajouté : annulé';
+
+  @override
+  String get app_icon_add_unsupported => 'Votre lanceur ne prend pas en charge l\'ajout automatique — appuyez longuement sur l\'écran d\'accueil pour l\'ajouter manuellement';
 
   @override
   String get vault_config_password => 'Configuration du mot de passe';

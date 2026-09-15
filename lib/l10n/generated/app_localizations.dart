@@ -11805,6 +11805,35 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'密码配置'**
   String get crypt_settings_title;
+  /// No description provided for @app_icon_add_title.
+  String get app_icon_add_title;
+
+  /// No description provided for @app_icon_add_body.
+  String get app_icon_add_body;
+
+  /// No description provided for @app_icon_add_shortcut.
+  String get app_icon_add_shortcut;
+
+  /// No description provided for @app_icon_add_shortcut_desc.
+  String get app_icon_add_shortcut_desc;
+
+  /// No description provided for @app_icon_add_widget.
+  String get app_icon_add_widget;
+
+  /// No description provided for @app_icon_add_widget_desc.
+  String get app_icon_add_widget_desc;
+
+  /// No description provided for @app_icon_add_change_image.
+  String get app_icon_add_change_image;
+
+  /// No description provided for @app_icon_add_change_image_desc.
+  String get app_icon_add_change_image_desc;
+
+  /// No description provided for @app_icon_add_cancelled.
+  String get app_icon_add_cancelled;
+
+  /// No description provided for @app_icon_add_unsupported.
+  String get app_icon_add_unsupported;
 
   /// No description provided for @vault_config_password.
   ///

@@ -3217,12 +3217,26 @@ Widget _buildCustomIconOptionCard(
           ),
         ),
         child: InkWell(
-          onTap: () {
-            if (hasCustomIcon && !isSelected) {
-              _activateCustomIcon(context, fileManager, theme, rootContext, setState);
-            } else {
-              _pickCustomIcon(context, fileManager, theme, rootContext, setState);
+          onTap: () async {
+            // 已有图片 → 直接弹「添加到桌面」面板（可在面板里更换图片）；
+            // 还没有图片 → 先选图，成功后同样弹面板。
+            if (!hasCustomIcon) {
+              final saved = await _pickAndSaveCustomIcon(context, rootContext);
+              if (saved == null) return;
+              setState(() {});
             }
+            await fileManager.setActiveAppIcon('custom');
+            setState(() {});
+            // 先关掉图标选择弹窗，再在设置页上弹出面板
+            if (context.mounted) Navigator.of(context).pop();
+            await Future.delayed(const Duration(milliseconds: 150));
+            if (!rootContext.mounted) return;
+            await _showAddToHomeSheet(
+              rootContext: rootContext,
+              fileManager: fileManager,
+              theme: theme,
+              refreshCard: setState,
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -3282,21 +3296,23 @@ Widget _buildCustomIconPlaceholder(ThemeData theme) {
   );
 }
 
-Future<void> _pickCustomIcon(
-  BuildContext context,
-  FileManagerProvider fileManager,
-  ThemeData theme,
-  BuildContext rootContext, [
-  StateSetter? setCardState,
-]) async {
+/// 选图片 → 落地到应用私有目录 → 记住路径。
+///
+/// 返回保存后的图片路径；用户取消或校验失败时返回 null。
+/// 之所以要复制副本：外部图片随时可能被删除/移走，桌面上已添加的图标
+/// 与小组件都依赖这份私有副本。
+Future<String?> _pickAndSaveCustomIcon(
+  BuildContext pickerContext,
+  BuildContext rootContext,
+) async {
   final result = await InternalFilePickerScreen.show(
-    context,
+    pickerContext,
     rootPath: '/storage/emulated/0',
   );
 
   if (result == null || result.isEmpty) {
     debugPrint('Custom icon picker: cancelled or empty result');
-    return;
+    return null;
   }
 
   final selectedPath = result.first;
@@ -3304,140 +3320,199 @@ Future<void> _pickCustomIcon(
   final ext = p.extension(selectedPath).toLowerCase();
   const validExts = ['.png', '.jpg', '.jpeg', '.webp'];
 
+  // 传取值函数而非字符串：await 之后再取 L10n 会有 context 跨异步间隙的问题，
+  // 把 L10n.of 放到 mounted 守卫之内取值更安全。
+  void toast(String Function(L10n l10n) build) {
+    if (!rootContext.mounted) return;
+    ScaffoldMessenger.of(rootContext).showSnackBar(
+      SnackBar(
+        content: Text(build(L10n.of(rootContext))),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   if (!validExts.contains(ext)) {
     debugPrint('Custom icon picker: invalid extension $ext');
-    if (context.mounted) {
-      Navigator.of(context).pop();
-    }
-    if (rootContext.mounted) {
-      ScaffoldMessenger.of(rootContext).showSnackBar(
-        SnackBar(
-          content: Text(L10n.of(rootContext).pngjpgwebp),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-    return;
+    toast((l10n) => l10n.pngjpgwebp);
+    return null;
   }
 
   final file = File(selectedPath);
   if (!await file.exists()) {
     debugPrint('Custom icon picker: selected file does not exist');
-    if (context.mounted) {
-      Navigator.of(context).pop();
-    }
-    if (rootContext.mounted) {
-      ScaffoldMessenger.of(rootContext).showSnackBar(
-        SnackBar(
-          content: Text(L10n.of(rootContext).msg_shortcut_failed),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-    return;
+    toast((l10n) => l10n.msg_shortcut_failed);
+    return null;
   }
 
   try {
-    // Copy to app private directory using path_provider for reliability.
-    // Use getApplicationDocumentsDirectory() so the path matches the native
-    // filesDir, which is always accessible to the app.
+    // 用 getApplicationDocumentsDirectory() 复制到应用私有目录，保证原生
+    // （快捷方式 / 小组件）读到的路径始终可用。
     final appDir = await getApplicationDocumentsDirectory();
     final customDir = await Directory(p.join(appDir.path, 'custom_icons')).create(recursive: true);
     final destPath = p.join(customDir.path, 'custom_app_icon.png');
     debugPrint('Custom icon picker: copying to $destPath');
     await file.copy(destPath);
-    await Future.delayed(const Duration(milliseconds: 100)); // ensure file is written
-
+    await Future.delayed(const Duration(milliseconds: 100)); // 等待落盘
     await PreferencesService.saveCustomAppIconPath(destPath);
     debugPrint('Custom icon picker: saved path to preferences');
-
-    // Refresh the custom icon card preview so it shows the newly selected image.
-    setCardState?.call(() {});
-
-    // Set active icon to custom so the UI reflects the selection and
-    // preset icon cards are no longer highlighted.
-    await fileManager.setActiveAppIcon('custom');
-
-    // Option B: Add custom icon as a home screen shortcut (Android launcher
-    // icon replacement via activity-alias is not feasible for runtime images).
-    debugPrint('Custom icon picker: requesting home screen shortcut');
-    final shortcutSuccess = await AppManagerService.addHomeScreenShortcut(path: destPath)
-        .timeout(const Duration(seconds: 5), onTimeout: () {
-      debugPrint('Custom icon picker: native shortcut timed out');
-      return false;
-    });
-    debugPrint('Custom icon picker: shortcut success=$shortcutSuccess');
-
-    // Close the icon picker dialog so the SnackBar is visible on the parent screen.
-    if (context.mounted) {
-      Navigator.of(context).pop();
-    }
-    if (rootContext.mounted) {
-      ScaffoldMessenger.of(rootContext).showSnackBar(
-        SnackBar(
-          content: Text(shortcutSuccess
-              ? L10n.of(rootContext).msg_shortcut_added
-              : L10n.of(rootContext).msg_shortcut_failed),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+    return destPath;
   } catch (e, stack) {
     debugPrint('Custom icon picker error: $e');
     debugPrint('$stack');
-    if (context.mounted) {
-      Navigator.of(context).pop();
-    }
-    if (rootContext.mounted) {
-      ScaffoldMessenger.of(rootContext).showSnackBar(
-        SnackBar(
-          content: Text(L10n.of(rootContext).e12(e)),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    toast((l10n) => l10n.e12(e));
+    return null;
   }
 }
 
-Future<void> _activateCustomIcon(
-  BuildContext context,
-  FileManagerProvider fileManager,
-  ThemeData theme,
-  BuildContext rootContext,
-  StateSetter setCardState,
-) async {
-  final customIconPath = PreferencesService.getCustomAppIconPath();
-  if (customIconPath == null || !File(customIconPath).existsSync()) {
-    // Fallback to picker if the saved file no longer exists.
-    await _pickCustomIcon(context, fileManager, theme, rootContext, setCardState);
-    return;
-  }
+/// 「添加到桌面」面板：快捷方式 / 桌面小组件 / 更换图片。
+///
+/// 为什么需要两条通道：Android 的桌面**主图标**只能是打包进 APK 的编译期资源，
+/// 系统没有 API 允许用运行时图片替换它，所以「用导出的图片替换应用图标」只能
+/// 通过在桌面上新增一个用该图片绘制的入口来实现：
+/// - 快捷方式：Image 直接作为图标，视觉最接近「换图标」，但部分 ROM 会禁用；
+/// - 1×1 小组件：由启动器绘制，全启动器通用，作为兜底。
+Future<void> _showAddToHomeSheet({
+  required BuildContext rootContext,
+  required FileManagerProvider fileManager,
+  required ThemeData theme,
+  required StateSetter refreshCard,
+}) async {
+  await showModalBottomSheet<void>(
+    context: rootContext,
+    backgroundColor: theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetContext) {
+      final l10n = L10n.of(sheetContext);
 
-  await fileManager.setActiveAppIcon('custom');
-  setCardState(() {});
+      Widget option({
+        required IconData icon,
+        required String title,
+        required String desc,
+        required VoidCallback onTap,
+      }) {
+        return Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceVariant.withOpacity(0.18),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ListTile(
+            onTap: onTap,
+            leading: Icon(icon, color: theme.colorScheme.primary),
+            title: Text(title,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: Text(desc, style: const TextStyle(fontSize: 12)),
+          ),
+        );
+      }
 
-  debugPrint('Activate custom icon: requesting home screen shortcut');
-  final shortcutSuccess = await AppManagerService.addHomeScreenShortcut(path: customIconPath)
-      .timeout(const Duration(seconds: 5), onTimeout: () {
-    debugPrint('Activate custom icon: native shortcut timed out');
-    return false;
-  });
-  debugPrint('Activate custom icon: shortcut success=$shortcutSuccess');
+      return SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.app_icon_add_title,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.app_icon_add_body,
+                  style: TextStyle(fontSize: 12.5, height: 1.45, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                option(
+                  icon: Icons.shortcut,
+                  title: l10n.app_icon_add_shortcut,
+                  desc: l10n.app_icon_add_shortcut_desc,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _addIconToHome(rootContext: rootContext, pinWidget: false);
+                  },
+                ),
+                const SizedBox(height: 8),
+                option(
+                  icon: Icons.widgets_outlined,
+                  title: l10n.app_icon_add_widget,
+                  desc: l10n.app_icon_add_widget_desc,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _addIconToHome(rootContext: rootContext, pinWidget: true);
+                  },
+                ),
+                const SizedBox(height: 8),
+                option(
+                  icon: Icons.image_outlined,
+                  title: l10n.app_icon_add_change_image,
+                  desc: l10n.app_icon_add_change_image_desc,
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    final saved = await _pickAndSaveCustomIcon(rootContext, rootContext);
+                    if (saved == null) return;
+                    await fileManager.setActiveAppIcon('custom');
+                    refreshCard(() {});
+                    await Future.delayed(const Duration(milliseconds: 150));
+                    if (!rootContext.mounted) return;
+                    await _showAddToHomeSheet(
+                      rootContext: rootContext,
+                      fileManager: fileManager,
+                      theme: theme,
+                      refreshCard: refreshCard,
+                    );
+                  },
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  child: Text(L10n.of(sheetContext).ui_cancel),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
 
-  if (context.mounted) {
-    Navigator.of(context).pop();
-  }
-  if (rootContext.mounted) {
-    ScaffoldMessenger.of(rootContext).showSnackBar(
-      SnackBar(
-        content: Text(shortcutSuccess
-            ? L10n.of(rootContext).msg_shortcut_added
-            : L10n.of(rootContext).msg_shortcut_failed),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+/// 调用原生把自定义图标钉到桌面，并把**真实**结果如实反馈给用户
+/// （不再像旧实现那样把「取消 / 启动器不支持」也说成「已添加」）。
+Future<void> _addIconToHome({
+  required BuildContext rootContext,
+  required bool pinWidget,
+}) async {
+  final l10n = L10n.of(rootContext);
+  final status = pinWidget
+      ? await AppManagerService.requestPinIconWidget()
+      : await AppManagerService.addHomeScreenShortcut(
+          path: PreferencesService.getCustomAppIconPath(),
+        );
+  debugPrint('Custom icon: add to home (widget=$pinWidget) status=$status');
+  if (!rootContext.mounted) return;
+  ScaffoldMessenger.of(rootContext).showSnackBar(
+    SnackBar(
+      content: Text(_iconAddResultMessage(l10n, status)),
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 3),
+    ),
+  );
+}
+
+/// 原生状态码 → 用户可读提示。
+String _iconAddResultMessage(L10n l10n, String status) {
+  switch (status) {
+    case 'added':
+      return l10n.msg_shortcut_added;
+    case 'unsupported':
+      return l10n.app_icon_add_unsupported;
+    case 'cancelled':
+      return l10n.app_icon_add_cancelled;
+    default:
+      return l10n.msg_shortcut_failed;
   }
 }
 

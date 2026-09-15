@@ -112,15 +112,37 @@ class AppManagerService {
     }
   }
 
-  static Future<bool> addHomeScreenShortcut({String? path}) async {
+  /// 把导入的图片作为桌面快捷方式图标钉到桌面。
+  ///
+  /// 返回原生上报的**真实**结果（旧实现无论成败都返回 true）：
+  /// - `added`：用户确认，已添加成功
+  /// - `cancelled`：用户取消，或启动器长时间无响应（超时兜底）
+  /// - `unsupported`：系统/启动器不支持自动添加（需引导用户手动添加）
+  /// - `error`：图片不存在、解码失败或原生异常
+  static Future<String> addHomeScreenShortcut({String? path}) async {
     try {
-      final bool? success = await _channel.invokeMethod<bool>(
+      final String? status = await _channel.invokeMethod<String>(
         'addHomeScreenShortcut',
         {'path': path},
       );
-      return success ?? false;
+      return status ?? 'error';
     } catch (e) {
-      return false;
+      return 'error';
+    }
+  }
+
+  /// 把导入的图片作为 1×1 启动小组件钉到桌面。
+  ///
+  /// 小组件由启动器绘制，可承载运行时图片，且在所有启动器上都可用，
+  /// 用于兜底「部分 ROM 禁用了快捷方式钉图」的场景。返回值含义同
+  /// [addHomeScreenShortcut]。
+  static Future<String> requestPinIconWidget() async {
+    try {
+      final String? status =
+          await _channel.invokeMethod<String>('requestPinIconWidget');
+      return status ?? 'error';
+    } catch (e) {
+      return 'error';
     }
   }
 

@@ -6612,6 +6612,46 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "app_icon_add_title": "Zum Startbildschirm hinzufügen",
+  "@app_icon_add_title": {
+    "description": "app icon: app_icon_add_title"
+  },
+  "app_icon_add_body": "Android erlaubt es nicht, das App-Symbol durch ein externes Bild zu ersetzen. Nutze eine der folgenden Optionen, um dein eigenes Bild auf den Startbildschirm zu legen:",
+  "@app_icon_add_body": {
+    "description": "app icon: app_icon_add_body"
+  },
+  "app_icon_add_shortcut": "Verknüpfung",
+  "@app_icon_add_shortcut": {
+    "description": "app icon: app_icon_add_shortcut"
+  },
+  "app_icon_add_shortcut_desc": "Fügt ein Start-Symbol mit deinem eigenen Bild hinzu",
+  "@app_icon_add_shortcut_desc": {
+    "description": "app icon: app_icon_add_shortcut_desc"
+  },
+  "app_icon_add_widget": "Startbildschirm-Widget",
+  "@app_icon_add_widget": {
+    "description": "app icon: app_icon_add_widget"
+  },
+  "app_icon_add_widget_desc": "Ein 1×1-Widget, funktioniert mit jedem Launcher",
+  "@app_icon_add_widget_desc": {
+    "description": "app icon: app_icon_add_widget_desc"
+  },
+  "app_icon_add_change_image": "Bild ändern",
+  "@app_icon_add_change_image": {
+    "description": "app icon: app_icon_add_change_image"
+  },
+  "app_icon_add_change_image_desc": "Wähle ein anderes Bild als Symbol",
+  "@app_icon_add_change_image_desc": {
+    "description": "app icon: app_icon_add_change_image_desc"
+  },
+  "app_icon_add_cancelled": "Nicht hinzugefügt: abgebrochen",
+  "@app_icon_add_cancelled": {
+    "description": "app icon: app_icon_add_cancelled"
+  },
+  "app_icon_add_unsupported": "Dein Launcher unterstützt das automatische Hinzufügen nicht – halte den Startbildschirm gedrückt, um es manuell hinzuzufügen",
+  "@app_icon_add_unsupported": {
+    "description": "app icon: app_icon_add_unsupported"
+  },
   "vault_encrypt_done": "Verschlüsselung erfolgreich",
   "@vault_encrypt_done": {
     "description": "vault/crypt: vault_encrypt_done"

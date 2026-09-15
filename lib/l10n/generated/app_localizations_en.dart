@@ -6600,6 +6600,35 @@ class L10nEn extends L10n {
 
   @override
   String get crypt_settings_title => 'Password Configuration';
+  @override
+  String get app_icon_add_title => 'Add to home screen';
+
+  @override
+  String get app_icon_add_body => 'Android does not allow replacing the app icon with an external image. Use one of the options below to place your custom image on the home screen:';
+
+  @override
+  String get app_icon_add_shortcut => 'Shortcut';
+
+  @override
+  String get app_icon_add_shortcut_desc => 'Adds a launch icon using your custom image';
+
+  @override
+  String get app_icon_add_widget => 'Home screen widget';
+
+  @override
+  String get app_icon_add_widget_desc => 'A 1×1 widget, works with every launcher';
+
+  @override
+  String get app_icon_add_change_image => 'Change image';
+
+  @override
+  String get app_icon_add_change_image_desc => 'Pick another image to use as the icon';
+
+  @override
+  String get app_icon_add_cancelled => 'Not added: cancelled';
+
+  @override
+  String get app_icon_add_unsupported => 'Your launcher does not support adding automatically — long-press the home screen to add it manually';
 
   @override
   String get vault_config_password => 'Password Configuration';

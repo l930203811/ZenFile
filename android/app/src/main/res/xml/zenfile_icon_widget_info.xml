@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  1×1 启动小组件元数据。
+  minWidth/minHeight 用 1 格的经典尺寸 40dp，targetCellWidth/Height（API 31+）
+  再显式声明占 1 格，两种算法下都表现为 1×1；updatePeriodMillis=0 表示不需要
+  系统定时刷新（换图时由 App 主动刷新）。
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/zenfile_icon_widget_description"
+    android:initialLayout="@layout/widget_launcher_icon"
+    android:minHeight="40dp"
+    android:minWidth="40dp"
+    android:resizeMode="none"
+    android:targetCellHeight="1"
+    android:targetCellWidth="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

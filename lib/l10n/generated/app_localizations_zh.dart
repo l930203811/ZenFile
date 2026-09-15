@@ -6292,6 +6292,35 @@ class L10nZh extends L10n {
 
   @override
   String get crypt_settings_title => '密码配置';
+  @override
+  String get app_icon_add_title => '添加到桌面';
+
+  @override
+  String get app_icon_add_body => 'Android 不允许用外部图片直接替换应用主图标。可用下面的方式把自定义图片放到桌面：';
+
+  @override
+  String get app_icon_add_shortcut => '快捷方式';
+
+  @override
+  String get app_icon_add_shortcut_desc => '在桌面新增一个带自定义图片的启动图标';
+
+  @override
+  String get app_icon_add_widget => '桌面小组件';
+
+  @override
+  String get app_icon_add_widget_desc => '1×1 小组件，兼容所有启动器';
+
+  @override
+  String get app_icon_add_change_image => '更换图片';
+
+  @override
+  String get app_icon_add_change_image_desc => '重新选择一张图片作为图标';
+
+  @override
+  String get app_icon_add_cancelled => '未添加：操作已取消';
+
+  @override
+  String get app_icon_add_unsupported => '当前启动器不支持自动添加，请长按桌面手动添加';
 
   @override
   String get vault_config_password => '密码配置';
@@ -13472,6 +13501,35 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get crypt_settings_title => '密碼配置';
+  @override
+  String get app_icon_add_title => '新增到桌面';
+
+  @override
+  String get app_icon_add_body => 'Android 不允許用外部圖片直接替換應用程式主圖示。可用以下方式把自訂圖片放到桌面：';
+
+  @override
+  String get app_icon_add_shortcut => '捷徑';
+
+  @override
+  String get app_icon_add_shortcut_desc => '在桌面新增一個帶自訂圖片的啟動圖示';
+
+  @override
+  String get app_icon_add_widget => '桌面小工具';
+
+  @override
+  String get app_icon_add_widget_desc => '1×1 小工具，相容所有啟動器';
+
+  @override
+  String get app_icon_add_change_image => '更換圖片';
+
+  @override
+  String get app_icon_add_change_image_desc => '重新選擇一張圖片作為圖示';
+
+  @override
+  String get app_icon_add_cancelled => '未新增：操作已取消';
+
+  @override
+  String get app_icon_add_unsupported => '目前啟動器不支援自動新增，請長按桌面手動新增';
 
   @override
   String get vault_config_password => '密碼配置';

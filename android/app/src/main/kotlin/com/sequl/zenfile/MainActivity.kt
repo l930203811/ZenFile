@@ -17,6 +17,10 @@ import android.webkit.MimeTypeMap
 import android.graphics.BitmapFactory
 import android.provider.DocumentsContract
 import android.graphics.drawable.Icon
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.os.Handler
+import android.os.Looper
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -92,6 +96,59 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
+    // ===== 图标钉住（快捷方式 / 1×1 小组件）结果回传 =====
+    // requestPinShortcut / requestPinAppWidget 都是**异步**的：系统只有在用户点了
+    // 「添加」之后才会发出 successCallback。旧实现传 null 回调后立刻 result.success(true)，
+    // 于是用户取消、或启动器根本不支持钉图时也会提示「已添加到主屏幕」。
+    // 这里改为「等回调 + 超时兜底」，把真实结果回传 Dart：
+    //   added / cancelled / unsupported / error
+    private val ACTION_ICON_PIN_SHORTCUT = "com.sequl.zenfile.ACTION_ICON_PIN_SHORTCUT"
+    private val ACTION_ICON_PIN_WIDGET = "com.sequl.zenfile.ACTION_ICON_PIN_WIDGET"
+    private val ICON_PIN_TIMEOUT_MS = 9000L
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var pendingShortcutResult: MethodChannel.Result? = null
+    private var pendingWidgetResult: MethodChannel.Result? = null
+    private var shortcutTimeout: Runnable? = null
+    private var widgetTimeout: Runnable? = null
+
+    private val iconPinReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                ACTION_ICON_PIN_SHORTCUT -> finishIconPin(shortcut = true, value = "added")
+                ACTION_ICON_PIN_WIDGET -> finishIconPin(shortcut = false, value = "added")
+            }
+        }
+    }
+
+    /// 结束一次钉图请求并回传结果；重复调用只会生效一次。
+    private fun finishIconPin(shortcut: Boolean, value: String) {
+        if (shortcut) {
+            shortcutTimeout?.let { mainHandler.removeCallbacks(it) }
+            shortcutTimeout = null
+            val pending = pendingShortcutResult
+            pendingShortcutResult = null
+            pending?.success(value)
+        } else {
+            widgetTimeout?.let { mainHandler.removeCallbacks(it) }
+            widgetTimeout = null
+            val pending = pendingWidgetResult
+            pendingWidgetResult = null
+            pending?.success(value)
+        }
+    }
+
+    /// 钉图回调用的 PendingIntent（API 31+ 必须显式声明可变性）。
+    private fun iconPinCallback(action: String, requestCode: Int): PendingIntent {
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_IMMUTABLE else 0)
+        return PendingIntent.getBroadcast(
+            this,
+            requestCode,
+            Intent(action).setPackage(packageName),
+            flags
+        )
+    }
+
     private val onRequestPermissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == SHIZUKU_REQUEST_CODE) {
             val granted = grantResult == PackageManager.PERMISSION_GRANTED
@@ -140,6 +197,21 @@ class MainActivity : AudioServiceFragmentActivity() {
             e.printStackTrace()
         }
 
+        // 注册图标钉住结果接收器（快捷方式 / 小组件的 successCallback 会广播到这里）
+        try {
+            val pinFilter = IntentFilter().apply {
+                addAction(ACTION_ICON_PIN_SHORTCUT)
+                addAction(ACTION_ICON_PIN_WIDGET)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(iconPinReceiver, pinFilter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(iconPinReceiver, pinFilter)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         // 启动修复：确保默认启动图标别名始终处于启用状态。
         // 旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
         // 而组件启用状态跨应用更新持久化；本版本已移除 design_* 别名，
@@ -166,6 +238,14 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
         try {
             unregisterReceiver(storageReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        try {
+            unregisterReceiver(iconPinReceiver)
+            // 活动销毁时未等到回调 → 视为取消，避免 Dart 侧永久挂起
+            finishIconPin(shortcut = true, value = "cancelled")
+            finishIconPin(shortcut = false, value = "cancelled")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -734,79 +814,125 @@ class MainActivity : AudioServiceFragmentActivity() {
                     }
                 }
                 "addHomeScreenShortcut" -> {
+                    // 把用户「导入的图片」作为桌面快捷方式图标钉到桌面。
+                    // 返回字符串（added / cancelled / unsupported / error），方便 Dart 区分
+                    // 「用户取消」与「启动器不支持」，不再像旧实现那样无条件谎报成功。
+                    val pathArg = call.argument<String>("path")
                     executor.execute {
-                        try {
-                            val pathArg = call.argument<String>("path")
-                            val customIconFile = if (!pathArg.isNullOrEmpty()) {
-                                File(pathArg)
-                            } else {
-                                File(applicationContext.filesDir, "custom_icons/custom_app_icon.png")
-                            }
-                            if (!customIconFile.exists()) {
-                                runOnUiThread { result.error("ICON_ERROR", "Custom icon not found", null) }
-                                return@execute
-                            }
+                        val iconFile = if (!pathArg.isNullOrEmpty()) {
+                            File(pathArg)
+                        } else {
+                            File(applicationContext.filesDir, "custom_icons/custom_app_icon.png")
+                        }
+                        // 注意：不用 result.error，异常也回传字符串，Dart 侧只需处理一种类型
+                        if (!iconFile.exists()) {
+                            runOnUiThread { result.success("error") }
+                            return@execute
+                        }
+                        val bitmap = IconImageLoader.loadSquare(iconFile, 432)
+                        if (bitmap == null) {
+                            runOnUiThread { result.success("error") }
+                            return@execute
+                        }
 
-                            val bitmap = android.graphics.BitmapFactory.decodeFile(customIconFile.absolutePath)
-                            if (bitmap == null) {
-                                runOnUiThread { result.error("ICON_ERROR", "Failed to decode custom icon", null) }
-                                return@execute
-                            }
+                        runOnUiThread {
+                            try {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                                    // Android 8.0 以下没有 ShortcutManager；旧的
+                                    // INSTALL_SHORTCUT 广播在 8.0+ 已被 Launcher 移除接收器，
+                                    // 这里如实上报不支持，不再伪造成功。
+                                    result.success("unsupported")
+                                    return@runOnUiThread
+                                }
+                                val shortcutManager = getSystemService(Context.SHORTCUT_SERVICE) as? ShortcutManager
+                                if (shortcutManager == null || !shortcutManager.isRequestPinShortcutSupported) {
+                                    result.success("unsupported")
+                                    return@runOnUiThread
+                                }
+                                if (pendingShortcutResult != null) {
+                                    // 上一次请求还没收尾，先结束它，避免 Dart 侧永久挂起
+                                    finishIconPin(shortcut = true, value = "cancelled")
+                                }
 
-                            runOnUiThread {
-                                try {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        val shortcutManager = getSystemService(Context.SHORTCUT_SERVICE) as? ShortcutManager
-                                    if (shortcutManager != null && shortcutManager.isRequestPinShortcutSupported) {
-                                        val intent = Intent(this@MainActivity, MainActivity::class.java).apply {
-                                            action = Intent.ACTION_MAIN
-                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                        }
-                                        val icon = Icon.createWithBitmap(bitmap)
-                                        val shortcutInfo = ShortcutInfo.Builder(this@MainActivity, "zenfile_custom_shortcut")
-                                            .setShortLabel("ZenFile")
-                                            .setLongLabel("ZenFile")
-                                            .setIcon(icon)
-                                            .setIntent(intent)
-                                            .build()
-                                        shortcutManager.requestPinShortcut(shortcutInfo, null)
-                                        result.success(true)
-                                    } else {
-                                        // Fallback for launchers that do not support pin shortcuts
-                                        try {
-                                            val shortcutIntent = Intent(this@MainActivity, MainActivity::class.java).apply {
-                                                action = Intent.ACTION_MAIN
-                                            }
-                                            val intent = Intent("com.android.launcher.action.INSTALL_SHORTCUT").apply {
-                                                putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent)
-                                                putExtra(Intent.EXTRA_SHORTCUT_NAME, "ZenFile")
-                                                putExtra(Intent.EXTRA_SHORTCUT_ICON, bitmap)
-                                            }
-                                            sendBroadcast(intent)
-                                            result.success(true)
-                                        } catch (e: Exception) {
-                                            result.error("NOT_SUPPORTED", "Launcher does not support shortcut pinning", null)
-                                        }
-                                    }
-                                    } else {
-                                        // Fallback for older Android using broadcast
-                                        val shortcutIntent = Intent(this@MainActivity, MainActivity::class.java).apply {
-                                            action = Intent.ACTION_MAIN
-                                        }
-                                        val intent = Intent("com.android.launcher.action.INSTALL_SHORTCUT").apply {
-                                            putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent)
-                                            putExtra(Intent.EXTRA_SHORTCUT_NAME, "ZenFile")
-                                            putExtra(Intent.EXTRA_SHORTCUT_ICON, bitmap)
-                                        }
-                                        sendBroadcast(intent)
-                                        result.success(true)
-                                    }
+                                // 换图后同步刷新已添加的 1×1 小组件
+                                ZenFileIconWidgetProvider.refreshAll(this@MainActivity)
+
+                                val launchIntent = Intent(this@MainActivity, MainActivity::class.java).apply {
+                                    action = Intent.ACTION_MAIN
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                }
+                                // API 26+ 用自适应位图，避免启动器把普通位图当成「老旧图标」
+                                // 再加一层白色底板并缩小；失败则回退普通位图。
+                                val icon = try {
+                                    Icon.createWithAdaptiveBitmap(bitmap)
                                 } catch (e: Exception) {
-                                    result.error("SHORTCUT_ERROR", e.message, null)
+                                    Icon.createWithBitmap(bitmap)
+                                }
+                                val shortcutInfo = ShortcutInfo.Builder(this@MainActivity, "zenfile_custom_shortcut")
+                                    .setShortLabel("ZenFile")
+                                    .setLongLabel("ZenFile")
+                                    .setIcon(icon)
+                                    .setIntent(launchIntent)
+                                    .build()
+
+                                pendingShortcutResult = result
+                                // successCallback：只有用户真的点了「添加」才会收到广播
+                                shortcutManager.requestPinShortcut(
+                                    shortcutInfo,
+                                    iconPinCallback(ACTION_ICON_PIN_SHORTCUT, 1001).intentSender
+                                )
+
+                                // 超时兜底：用户取消 / 启动器无响应时如实上报 cancelled
+                                val timeout = Runnable { finishIconPin(shortcut = true, value = "cancelled") }
+                                shortcutTimeout = timeout
+                                mainHandler.postDelayed(timeout, ICON_PIN_TIMEOUT_MS)
+                            } catch (e: Exception) {
+                                if (pendingShortcutResult != null) {
+                                    finishIconPin(shortcut = true, value = "error")
+                                } else {
+                                    result.success("error")
                                 }
                             }
+                        }
+                    }
+                }
+                "requestPinIconWidget" -> {
+                    // 把「导入的图片」作为 1×1 启动小组件钉到桌面。
+                    // 小组件由启动器自己绘制，因此不受「主图标必须是编译期资源」的限制，
+                    // 且 AppWidget 在所有启动器上都可用（Shortcut 在部分 ROM 上会被禁）。
+                    runOnUiThread {
+                        try {
+                            val widgetManager = AppWidgetManager.getInstance(this@MainActivity)
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+                                !widgetManager.isRequestPinAppWidgetSupported
+                            ) {
+                                result.success("unsupported")
+                                return@runOnUiThread
+                            }
+                            if (pendingWidgetResult != null) {
+                                finishIconPin(shortcut = false, value = "cancelled")
+                            }
+
+                            // 先用最新图片刷新已存在的小组件，再请求钉新的
+                            ZenFileIconWidgetProvider.refreshAll(this@MainActivity)
+
+                            val provider = ComponentName(this@MainActivity, ZenFileIconWidgetProvider::class.java)
+                            pendingWidgetResult = result
+                            widgetManager.requestPinAppWidget(
+                                provider,
+                                null,
+                                iconPinCallback(ACTION_ICON_PIN_WIDGET, 1002)
+                            )
+
+                            val timeout = Runnable { finishIconPin(shortcut = false, value = "cancelled") }
+                            widgetTimeout = timeout
+                            mainHandler.postDelayed(timeout, ICON_PIN_TIMEOUT_MS)
                         } catch (e: Exception) {
-                            runOnUiThread { result.error("ICON_ERROR", e.message, null) }
+                            if (pendingWidgetResult != null) {
+                                finishIconPin(shortcut = false, value = "error")
+                            } else {
+                                result.success("error")
+                            }
                         }
                     }
                 }

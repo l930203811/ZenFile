@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 小组件兜底底色：图片有透明区域时透出的圆角底板（与 ZenFile 深色基调一致） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#1B1B1B" />
+    <corners android:radius="24dp" />
+</shape>

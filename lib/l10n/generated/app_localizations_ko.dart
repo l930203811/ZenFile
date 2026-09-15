@@ -6395,6 +6395,35 @@ class L10nKo extends L10n {
 
   @override
   String get crypt_settings_title => '비밀번호 설정';
+  @override
+  String get app_icon_add_title => '홈 화면에 추가';
+
+  @override
+  String get app_icon_add_body => 'Android는 외부 이미지로 앱 기본 아이콘을 직접 교체할 수 없습니다. 아래 방법으로 사용자 이미지를 홈 화면에 배치할 수 있습니다:';
+
+  @override
+  String get app_icon_add_shortcut => '바로가기';
+
+  @override
+  String get app_icon_add_shortcut_desc => '사용자 이미지를 사용한 실행 아이콘을 홈 화면에 추가합니다';
+
+  @override
+  String get app_icon_add_widget => '홈 화면 위젯';
+
+  @override
+  String get app_icon_add_widget_desc => '1×1 위젯, 모든 런처 지원';
+
+  @override
+  String get app_icon_add_change_image => '이미지 변경';
+
+  @override
+  String get app_icon_add_change_image_desc => '아이콘으로 사용할 이미지를 다시 선택';
+
+  @override
+  String get app_icon_add_cancelled => '추가되지 않음: 취소되었습니다';
+
+  @override
+  String get app_icon_add_unsupported => '현재 런처는 자동 추가를 지원하지 않습니다. 홈 화면을 길게 눌러 직접 추가하세요';
 
   @override
   String get vault_config_password => '비밀번호 설정';
