@@ -13527,6 +13527,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'删除不再提示'**
   String get ui_delete_confirm_dont_ask;
+
+  /// No description provided for @video_auto_fallback_soft.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到硬解异常，已自动切换为软解'**
+  String get video_auto_fallback_soft;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

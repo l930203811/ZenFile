@@ -7673,4 +7673,8 @@ class L10nEs extends L10n {
 
   @override
   String get ui_delete_confirm_dont_ask => 'No preguntar de nuevo';
+
+  @override
+  String get video_auto_fallback_soft =>
+      'Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.';
 }

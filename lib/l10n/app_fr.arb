@@ -7669,5 +7669,6 @@
   "msg_background_play_active": "Lecture en arrière-plan, contrôlez depuis la notification",
   "ui_delete_confirm_enabled": "Confirmation de suppression",
   "ui_delete_confirm_subtitle": "Afficher une confirmation avant de supprimer des fichiers. Désactivé = suppression directe.",
-  "ui_delete_confirm_dont_ask": "Ne plus demander"
+  "ui_delete_confirm_dont_ask": "Ne plus demander",
+  "video_auto_fallback_soft": "Problème de décodage matériel détecté. Bascule automatique en décodage logiciel."
 }

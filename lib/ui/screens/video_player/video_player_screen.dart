@@ -77,6 +77,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   int? _sleepTimerMinutes;
   // 横向拖动快进快退前是否正在播放（拖动结束后恢复播放状态）
   bool _wasPlayingBeforeDrag = false;
+  // 黑屏自动软解回退：部分机型硬解（hwdec=auto-safe）出现"有声音无画面"。
+  // 播放开始后持续检测无视频帧则自动切软解重开一次；error 事件视频相关时同样触发。
+  bool _autoHwdecFallbackDone = false;
+  Timer? _blackScreenCheckTimer;
+  int _noVideoSeconds = 0;
   double _playbackSpeed = 1.0;
   // 音频均衡器（复用音频播放器的 mpv lavfi equalizer 服务）
   final AudioEqualizerService _eqService = AudioEqualizerService();
@@ -240,6 +245,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // 总开关一起关闭。
     player.stream.error.listen((err) {
       WebdavDebugLog.log('【播放器错误】$err');
+      _maybeAutoFallbackOnError(err.toString());
     });
     player.stream.playing.listen((playing) {
       if (playing) {
@@ -410,8 +416,88 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   void _openMediaWithRetry() {
+    // 每个播放会话重置黑屏自动回退状态
+    _autoHwdecFallbackDone = false;
+    _noVideoSeconds = 0;
+    _startBlackScreenCheck();
     player.open(Media(widget.videoPath), play: false);
     _autoMatchSubtitle();
+  }
+
+  // ─── 黑屏自动软解回退 ────────────────────────────────────────────────────
+  // 部分 Android 机型在 mpv 硬解（hwdec=auto-safe）下播放所有视频均"有声音无画面"，
+  // 播放器本身无错误事件。播放开始后若持续无视频帧输出（videoParams 为空）即判定
+  // 黑屏，自动以软解重建并续播，无需用户手动切换。
+
+  /// 启动黑屏检测：仅硬解模式启用；检测到连续无视频帧达到阈值后自动软解回退。
+  void _startBlackScreenCheck() {
+    _stopBlackScreenCheck();
+    if (!_useHardwareDecode) return;
+    _blackScreenCheckTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        _stopBlackScreenCheck();
+        return;
+      }
+      if (_autoHwdecFallbackDone) {
+        _stopBlackScreenCheck();
+        return;
+      }
+      // 仅正在播放时判定（暂停/未开始播放不算黑屏）
+      if (!player.state.playing) {
+        _noVideoSeconds = 0;
+        return;
+      }
+      if (player.state.videoParams == null) {
+        _noVideoSeconds++;
+        if (_noVideoSeconds >= 5) {
+          _noVideoSeconds = 0;
+          _autoHwdecFallbackDone = true;
+          _stopBlackScreenCheck();
+          unawaited(_autoFallbackToSoftDecode());
+        }
+      } else {
+        _noVideoSeconds = 0;
+      }
+    });
+  }
+
+  void _stopBlackScreenCheck() {
+    _blackScreenCheckTimer?.cancel();
+    _blackScreenCheckTimer = null;
+  }
+
+  /// 播放错误为视频解码/输出相关（硬解模式）时自动软解回退一次。
+  void _maybeAutoFallbackOnError(String msg) {
+    if (!_useHardwareDecode || _autoHwdecFallbackDone || !mounted) return;
+    final m = msg.toLowerCase();
+    const keywords = [
+      'hwdec', 'mediacodec', 'vdpau', 'vaapi', 'vulkan', 'd3d',
+      'vo/', 'video output', 'gpu', 'display',
+    ];
+    if (keywords.any((k) => m.contains(k))) {
+      _autoHwdecFallbackDone = true;
+      _stopBlackScreenCheck();
+      unawaited(_autoFallbackToSoftDecode());
+    }
+  }
+
+  /// 自动软解回退：提示用户并复用 _switchHwdec 重建播放器续播。
+  Future<void> _autoFallbackToSoftDecode() async {
+    if (!mounted || _autoHwdecFallbackDone) return;
+    _autoHwdecFallbackDone = true;
+    _stopBlackScreenCheck();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          L10n.of(context).video_auto_fallback_soft,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    await _switchHwdec(false);
   }
 
   Future<void> _autoMatchSubtitle() async {
@@ -2370,6 +2456,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _aspectToastTimer?.cancel();
     _progressSaveTimer?.cancel();
     _sleepTimer?.cancel();
+    _stopBlackScreenCheck();
     _saveCurrentPlaybackPosition();
     _controlsAnimController.dispose();
     if (_isBackgroundMode) {

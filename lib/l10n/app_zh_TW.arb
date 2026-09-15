@@ -7817,5 +7817,6 @@
   "msg_background_play_active": "已進入背景播放，可透過通知欄控制",
   "ui_delete_confirm_enabled": "刪除檔案確認",
   "ui_delete_confirm_subtitle": "刪除檔案時顯示二次確認彈窗，關閉後直接刪除",
-  "ui_delete_confirm_dont_ask": "刪除不再提示"
+  "ui_delete_confirm_dont_ask": "刪除不再提示",
+  "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解"
 }
