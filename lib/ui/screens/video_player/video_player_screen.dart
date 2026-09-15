@@ -1742,17 +1742,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   /// mpv 默认 scale=bilinear，480p/720p 全屏放大时明显发软，这是「糊」的第二来源。
   Future<void> _applyVideoOutputQuality(NativePlayer platform,
       {required bool highQuality}) async {
+    // 2026-09-15 黑屏根因修复：spline36/mitchell 高质量着色器在部分机型 GPU
+    // 驱动上编译失败 → vo=gpu 渲染器初始化失败 → 「黑屏有声音」（解码/音频正常、
+    // 无错误事件、软解硬解同样黑屏）。1.1.41 及之前硬解不设置该着色器（正常），
+    // 1.1.42 起硬解也应用 spline36 → 黑屏自此出现，与用户反馈时间点完全吻合。
+    // 现一律使用 mpv 默认 bilinear（所有设备兼容）；spline36 在手机屏幕上的
+    // 观感增益很小，不值得冒黑屏风险。highQuality 参数保留以兼容现有调用点。
     try {
-      // vo 兼容模式（_voCompatMode）：部分机型 GPU 无法编译 spline36/mitchell，
-      // 一律用通用 bilinear，避免视频输出失败导致黑屏。
-      final q = (!highQuality || _voCompatMode) ? 'bilinear' : 'spline36';
-      // 亮度上采样：spline36 锐利且无明显振铃，GPU 开销中等
-      await platform.setProperty('scale', q);
-      // 色度上采样，与亮度保持一致
-      await platform.setProperty('cscale', q);
-      // 降采样（4K 片源 → 1080p 屏幕）用 mitchell，抗锯齿优于 spline36、不易振铃
-      await platform.setProperty(
-          'dscale', (!highQuality || _voCompatMode) ? 'bilinear' : 'mitchell');
+      await platform.setProperty('scale', 'bilinear');
+      await platform.setProperty('cscale', 'bilinear');
+      await platform.setProperty('dscale', 'bilinear');
     } catch (e) {
       debugPrint('视频缩放质量设置失败: $e');
     }

@@ -138,20 +138,19 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Impeller 渲染引擎：2026-09-15 起重新启用。
-             8 月曾因部分安卓 15/16 设备（特定 GPU 驱动）UI 卡顿而回退 Skia，
-             但 media_kit_video 2.0.x 的视频渲染基于 Flutter SurfaceProducer，
-             在 Skia 引擎下部分设备出现「有声音无画面（黑屏）」（解码/音频正常、
-             无任何错误事件，仅画面不渲染，见 webdav_debug.log 黑屏诊断记录）。
-             启用 Impeller 后 SurfaceProducer 走官方主渲染路径，解决该黑屏。
-             若个别设备重新出现 UI 卡顿，请单独反馈机型/驱动后按需处理。
+        <!-- 禁用 Impeller、回退 Skia 渲染器。
+             部分安卓 15/16 设备（特定 GPU 驱动）在 Impeller 下出现 UI 卡顿/掉帧，
+             尤其是打开软键盘时逐帧重绘压力放大；旧设备（如安卓 11）不受影响。
+             回退 Skia 可消除该设备相关卡顿。如后续 Impeller 稳定可改回 true。
+             注意：视频黑屏根因与 Impeller 无关（1.1.42 起的 spline36 着色器所致，
+             已于 2026-09-15 修复为 bilinear），勿因黑屏误改本开关。
              windowSoftInputMode 必须使用 adjustResize（不可用 adjustPan），
              adjustPan 整页平移会与 HyperOS 安卓16 窗口动画冲突，导致键盘弹出
              像幻灯片逐帧掉帧；adjustResize 让 Flutter 用 MediaQuery.viewInsets
              只重布局当前 Scaffold/Dialog，避免整页合成。 -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="true" />
+            android:value="false" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
