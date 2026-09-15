@@ -7551,4 +7551,8 @@ class L10nAr extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'تم اكتشاف مشكلة في فك التشفير بالأجهزة. تم التبديل تلقائيًا إلى فك التشفير البرمجي.';
+
+  @override
+  String get video_vo_compat =>
+      'تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.';
 }

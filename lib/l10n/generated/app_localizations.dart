@@ -13533,6 +13533,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'检测到硬解异常，已自动切换为软解'**
   String get video_auto_fallback_soft;
+
+  /// No description provided for @video_vo_compat.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频渲染异常，已切换为兼容渲染模式'**
+  String get video_vo_compat;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

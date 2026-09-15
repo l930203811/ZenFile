@@ -7661,4 +7661,8 @@ class L10nDe extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.';
+
+  @override
+  String get video_vo_compat =>
+      'Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.';
 }

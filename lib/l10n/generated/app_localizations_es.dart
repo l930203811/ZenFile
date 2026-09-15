@@ -7677,4 +7677,8 @@ class L10nEs extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.';
+
+  @override
+  String get video_vo_compat =>
+      'Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad.';
 }

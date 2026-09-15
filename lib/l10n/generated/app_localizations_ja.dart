@@ -7362,4 +7362,7 @@ class L10nJa extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。';
+
+  @override
+  String get video_vo_compat => '動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。';
 }

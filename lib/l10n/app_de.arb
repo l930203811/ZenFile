@@ -7667,5 +7667,6 @@
   "ui_delete_confirm_enabled": "Löschbestätigung",
   "ui_delete_confirm_subtitle": "Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.",
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
-  "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt."
+  "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
+  "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet."
 }

@@ -7650,4 +7650,8 @@ class L10nRu extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'Обнаружена проблема аппаратного декодирования. Автоматически переключено на программное.';
+
+  @override
+  String get video_vo_compat =>
+      'Обнаружена проблема рендеринга видео. Переключено в режим совместимости.';
 }

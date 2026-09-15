@@ -7211,6 +7211,9 @@ class L10nZh extends L10n {
 
   @override
   String get video_auto_fallback_soft => '检测到硬解异常，已自动切换为软解';
+
+  @override
+  String get video_vo_compat => '视频渲染异常，已切换为兼容渲染模式';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14387,4 +14390,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get video_auto_fallback_soft => '偵測到硬解異常，已自動切換為軟解';
+
+  @override
+  String get video_vo_compat => '影片渲染異常，已切換為相容渲染模式';
 }

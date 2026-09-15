@@ -7697,4 +7697,8 @@ class L10nFr extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'Problème de décodage matériel détecté. Bascule automatique en décodage logiciel.';
+
+  @override
+  String get video_vo_compat =>
+      'Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité.';
 }

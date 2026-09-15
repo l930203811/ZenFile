@@ -7591,4 +7591,8 @@ class L10nEn extends L10n {
   @override
   String get video_auto_fallback_soft =>
       'Hardware decoding issue detected. Switched to software decoding automatically.';
+
+  @override
+  String get video_vo_compat =>
+      'Video rendering issue detected. Switched to compatibility rendering mode.';
 }

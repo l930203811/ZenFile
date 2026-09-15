@@ -82,6 +82,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _autoHwdecFallbackDone = false;
   Timer? _blackScreenCheckTimer;
   int _noVideoSeconds = 0;
+  // vo 兼容模式：部分机型 GPU 无法编译 spline36/mitchell 高质量着色器，导致 mpv
+  // 视频输出（vo）失败——表现为「黑屏有声音」，且与解码方式无关（软解硬解同样黑屏，
+  // 其他播放器正常）。置位后所有视频缩放属性一律使用通用 bilinear，并保持到会话结束。
+  bool _voCompatMode = false;
   double _playbackSpeed = 1.0;
   // 音频均衡器（复用音频播放器的 mpv lavfi equalizer 服务）
   final AudioEqualizerService _eqService = AudioEqualizerService();
@@ -466,25 +470,75 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _blackScreenCheckTimer = null;
   }
 
-  /// 播放错误为视频解码/输出相关（硬解模式）时自动软解回退一次。
+  /// 播放错误分两类处理：
+  /// 1. vo 视频输出层错误（vo/gpu/shader/display 等）——与解码方式无关，软解硬解
+  ///    同样黑屏：先启用 vo 兼容模式（着色器降级 bilinear，无需重建），
+  ///    若随后仍无视频帧再自动软解重建兜底。
+  /// 2. 解码层错误（hwdec/mediacodec/vdpau/vaapi/vulkan/d3d 等）——硬解模式自动软解回退一次。
   void _maybeAutoFallbackOnError(String msg) {
-    if (!_useHardwareDecode || _autoHwdecFallbackDone || !mounted) return;
+    if (!mounted) return;
     final m = msg.toLowerCase();
-    const keywords = [
-      'hwdec', 'mediacodec', 'vdpau', 'vaapi', 'vulkan', 'd3d',
-      'vo/', 'video output', 'gpu', 'display',
+    const voKeywords = [
+      'vo/', 'video output', 'gpu', 'shader', 'display', 'opengl', 'gl_',
     ];
-    if (keywords.any((k) => m.contains(k))) {
+    const decKeywords = [
+      'hwdec', 'mediacodec', 'vdpau', 'vaapi', 'vulkan', 'd3d',
+    ];
+    if (voKeywords.any((k) => m.contains(k))) {
+      unawaited(_enableVoCompatAndRecover());
+    } else if (decKeywords.any((k) => m.contains(k)) &&
+        _useHardwareDecode &&
+        !_autoHwdecFallbackDone) {
       _autoHwdecFallbackDone = true;
       _stopBlackScreenCheck();
       unawaited(_autoFallbackToSoftDecode());
     }
   }
 
+  /// 启用 vo 兼容模式：将 scale/cscale/dscale 重设为通用 bilinear。
+  /// mpv 会在属性变化时重建 gpu 渲染器，通常可立即恢复画面（无需重建播放器）。
+  /// 5 秒后若仍无视频帧，则自动软解重建兜底（重建同样保持兼容模式）。
+  Future<void> _enableVoCompatAndRecover() async {
+    if (_voCompatMode || !mounted) return;
+    _voCompatMode = true;
+    _stopBlackScreenCheck();
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        await platform.setProperty('scale', 'bilinear');
+        await platform.setProperty('cscale', 'bilinear');
+        await platform.setProperty('dscale', 'bilinear');
+      }
+    } catch (e) {
+      debugPrint('vo 兼容模式设置失败: $e');
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          L10n.of(context).video_vo_compat,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    // 等待 5 秒观察画面是否恢复；仍无视频帧则重建软解
+    _blackScreenCheckTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
+      if (player.state.videoParams == null && !_autoHwdecFallbackDone) {
+        _autoHwdecFallbackDone = true;
+        unawaited(_autoFallbackToSoftDecode());
+      }
+    });
+  }
+
   /// 自动软解回退：提示用户并复用 _switchHwdec 重建播放器续播。
+  /// 重建前强制保持 vo 兼容模式，避免重建后的软解路径再次应用 spline36 导致依旧黑屏。
   Future<void> _autoFallbackToSoftDecode() async {
     if (!mounted || _autoHwdecFallbackDone) return;
     _autoHwdecFallbackDone = true;
+    _voCompatMode = true;
     _stopBlackScreenCheck();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1654,12 +1708,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Future<void> _applyVideoOutputQuality(NativePlayer platform,
       {required bool highQuality}) async {
     try {
+      // vo 兼容模式（_voCompatMode）：部分机型 GPU 无法编译 spline36/mitchell，
+      // 一律用通用 bilinear，避免视频输出失败导致黑屏。
+      final q = (!highQuality || _voCompatMode) ? 'bilinear' : 'spline36';
       // 亮度上采样：spline36 锐利且无明显振铃，GPU 开销中等
-      await platform.setProperty('scale', highQuality ? 'spline36' : 'bilinear');
+      await platform.setProperty('scale', q);
       // 色度上采样，与亮度保持一致
-      await platform.setProperty('cscale', highQuality ? 'spline36' : 'bilinear');
+      await platform.setProperty('cscale', q);
       // 降采样（4K 片源 → 1080p 屏幕）用 mitchell，抗锯齿优于 spline36、不易振铃
-      await platform.setProperty('dscale', highQuality ? 'mitchell' : 'bilinear');
+      await platform.setProperty(
+          'dscale', (!highQuality || _voCompatMode) ? 'bilinear' : 'mitchell');
     } catch (e) {
       debugPrint('视频缩放质量设置失败: $e');
     }

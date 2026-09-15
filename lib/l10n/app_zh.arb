@@ -7957,5 +7957,6 @@
   "ui_delete_confirm_enabled": "删除文件确认",
   "ui_delete_confirm_subtitle": "删除文件时显示二次确认弹窗，关闭后直接删除",
   "ui_delete_confirm_dont_ask": "删除不再提示",
-  "video_auto_fallback_soft": "检测到硬解异常，已自动切换为软解"
+  "video_auto_fallback_soft": "检测到硬解异常，已自动切换为软解",
+  "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式"
 }

@@ -7818,5 +7818,6 @@
   "ui_delete_confirm_enabled": "刪除檔案確認",
   "ui_delete_confirm_subtitle": "刪除檔案時顯示二次確認彈窗，關閉後直接刪除",
   "ui_delete_confirm_dont_ask": "刪除不再提示",
-  "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解"
+  "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
+  "video_vo_compat": "影片渲染異常，已切換為相容渲染模式"
 }
