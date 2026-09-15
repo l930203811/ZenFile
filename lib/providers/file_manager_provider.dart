@@ -8911,12 +8911,17 @@ class FileManagerProvider extends ChangeNotifier {
   /// 本地路径是否触达加密内容，需要会话解锁闸门（远程路径忽略）。
   Future<bool> _needsLocalCryptAccess(String path) async {
     if (path.startsWith('remote://') || path.startsWith('http')) return false;
-    await _ensureCryptMountsLoaded();
-    if (_findCryptMountForBrowse(path) != null) return true;
-    // 普通明文文件（真实存在且非加密）直接放行，避免对无关文件做目录扫描。
+    // ⚠️ 顺序至关重要：必须先判「真实存在且非加密的本地明文文件」。
+    // 原地加密会把父目录（甚至存储根目录）登记进「加密目录登记表」，
+    // _appendRecordedDirMounts 据此构造的挂载点 containsPath 会命中该目录下
+    // **所有**路径；若先查挂载点，任何普通明文文件都会被误判成加密内容 →
+    // 打开任意文件都弹「保险箱解锁」（回归 bug）。
+    // 密文文件的虚拟路径在磁盘上并不存在，不会命中此短路，仍会走下方闸门。
     if (await File(path).exists() && !await _isEncryptedPhysicalFile(path)) {
       return false;
     }
+    await _ensureCryptMountsLoaded();
+    if (_findCryptMountForBrowse(path) != null) return true;
     if (await _ephemeralMountForDir(p.dirname(path)) != null) return true;
     if (await _ancestorCryptMountFor(path) != null) return true;
     if (await _isEncryptedPhysicalFile(path)) return true;
