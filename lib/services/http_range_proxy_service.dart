@@ -121,6 +121,9 @@ class HttpRangeProxyService {
     final range = request.headers.value(HttpHeaders.rangeHeader);
     WebdavDebugLog.log(
         'Range代理收到 ${request.method} ${request.uri.path} range=$range');
+    // 2026-09-16 诊断增强：单请求耗时，量化「播几秒卡几秒」周期断流的瓶颈
+    //（FTP 每次重连 / downloadRange 同步整段下载 / 并发 Range 排队）。
+    final sw = Stopwatch()..start();
     RemoteRangeResponse? upstream;
     session.active++;
     try {
@@ -154,9 +157,9 @@ class HttpRangeProxyService {
         await response.addStream(upstream.stream);
         await response.close();
       }
-      WebdavDebugLog.log('Range代理响应 $status range=$range');
+      WebdavDebugLog.log('Range代理完成 ${sw.elapsedMilliseconds}ms status=$status range=$range');
     } catch (e) {
-      WebdavDebugLog.log('Range代理【异常】: $e');
+      WebdavDebugLog.log('Range代理【异常】${sw.elapsedMilliseconds}ms: $e');
       try {
         await upstream?.stream.drain();
       } catch (_) {}

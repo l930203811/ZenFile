@@ -138,7 +138,12 @@ abstract class RemoteClient {
     if (length > maxChunk) length = maxChunk;
 
     final tmp = '$tempDir/r_${DateTime.now().microsecondsSinceEpoch}_$start.bin';
+    // 2026-09-16 诊断增强：量化每次 Range 区间读取耗时（含 FTP 重建连接 /
+    // SFTP open+read / SMB skip），配合 Range代理完成耗时判断瓶颈在哪一层。
+    final sw = Stopwatch()..start();
     await downloadRange(remotePath, tmp, start, length);
+    sw.stop();
+    WebdavDebugLog.log('Range读取 ${sw.elapsedMilliseconds}ms start=$start len=$length total=$total');
 
     // total>0 时返回 206 + Content-Range（真流式、可 seek）；
     // total<=0（getFileSize 失败）时不撒谎成 206，改返回 200 且不加
