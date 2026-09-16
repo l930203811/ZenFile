@@ -21,7 +21,7 @@ import '../screens/internal_file_picker_screen.dart';
 /// - 连接成功后**不再区分发送方 / 接收方**：双方都可在同一连接上随时主动发送
 ///   文件，也随时接收对方发来的文件（由 [TransferSession] 统一调度，单一
 ///   SocketReader 被持久接收循环独占，发送响应经内部 [_pending] 转交）；
-/// - 因此页面不再有「发送/接收」切换，统一展示：设备名 → 发送区 → 接收区 → 附近设备。
+/// - 因此页面不再有「发送/接收」切换，统一展示：设备名 → 附近设备 → 发送区 → 接收区。
 class QuickTransferScreen extends StatefulWidget {
   const QuickTransferScreen({super.key});
 
@@ -838,7 +838,21 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
           ),
         ),
         const SizedBox(height: 8),
-        // 2. 发送区卡片
+        // 2. 附近设备发现区卡片（位于发送区上方，方便先发现对端再发送）
+        _sectionCard(
+          colorScheme,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(context, Broken.discover,
+                  L10n.of(context).quick_transfer_available_peers),
+              const SizedBox(height: 8),
+              _buildDiscoveryArea(context),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // 3. 发送区卡片
         _sectionCard(
           colorScheme,
           Column(
@@ -852,7 +866,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
           ),
         ),
         const SizedBox(height: 8),
-        // 3. 接收区卡片
+        // 4. 接收区卡片
         _sectionCard(
           colorScheme,
           Column(
@@ -862,20 +876,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                   L10n.of(context).quick_transfer_receive_mode),
               const SizedBox(height: 8),
               _buildReceiveBox(context),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        // 4. 附近设备发现区卡片
-        _sectionCard(
-          colorScheme,
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle(context, Broken.discover,
-                  L10n.of(context).quick_transfer_available_peers),
-              const SizedBox(height: 8),
-              _buildDiscoveryArea(context),
             ],
           ),
         ),
