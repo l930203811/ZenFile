@@ -75,10 +75,11 @@ class FTPFile {
     _socket.sendCommandWithoutWaitingResponse('RETR $sRemoteName');
 
     // Data Transfer Socket
+    // ZenFile 补丁（2026-09-16）：改用数据连接专用超时，避免复用 15s 控制超时。
     int lPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $lPort');
     final Socket dataSocket = await Socket.connect(_socket.host, lPort,
-        timeout: Duration(seconds: _socket.timeout));
+        timeout: _socket.dataConnectTimeout);
     // Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
@@ -140,9 +141,13 @@ class FTPFile {
     _socket.sendCommandWithoutWaitingResponse('STOR $sFilename');
 
     // Data Transfer Socket
+    // ZenFile 补丁（2026-09-16）：上游此处 Socket.connect 完全没有超时参数，
+    // 数据端口不可达时会一直挂到操作系统 TCP 超时（可达 2 分钟），
+    // 表现为「上传卡住不动」。补上专用超时。
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $iPort');
-    final Socket dataSocket = await Socket.connect(_socket.host, iPort);
+    final Socket dataSocket = await Socket.connect(_socket.host, iPort,
+        timeout: _socket.dataConnectTimeout);
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished

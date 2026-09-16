@@ -29,15 +29,177 @@ class FtpRemoteClient extends RemoteClient {
   /// 应用闪退（问题3）。通过此队列保证任意时刻只有一个 CWD 相关操作在执行。
   Future<void>? _serialQueue;
 
+  /// 队列中是否有操作正在执行（用于保活探测避让，避免空转插队）。
+  bool _busy = false;
+
+  /// 控制连接上最近一次**成功通信**的时间。
+  ///
+  /// 用途：判断连接是否可能已被服务端/中间设备按空闲超时静默回收（TCP 半开）。
+  /// 半开连接上的命令写进去不会报错，但响应永不到达，客户端只能白等满一个命令
+  /// 超时——这是「FTP 偶尔进目录要等十几秒」的根因。用本时间戳可在真正发命令前
+  /// 先做一次 4s 级的 NOOP 探测，把失败代价从 15s 压到 4s。
+  DateTime _lastIoAt = DateTime.now();
+
+  /// 最近一次重连时间。用于重连冷却：服务端真的不可达时，避免每次调用
+  /// 都重新握手（每个 12s），而是快速失败（上游 finalizeUpload 每 500ms 轮询）。
+  DateTime _lastReconnectAt = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// 当前控制连接是否已被判定失效（下次使用前必须重连）。
+  bool _stale = false;
+
+  /// 保活定时器：周期性 NOOP，主动维持控制连接不被回收。
+  Timer? _keepAliveTimer;
+
+  // ── 时序参数 ────────────────────────────────────────────────────────────
+  // 均为 static 可写，便于本机集成测试注入极短值（见
+  // test/remote/ftp_client_resilience_test.dart）。生产环境不要改动。
+  // 触发链：keepAliveInterval 定时发 NOOP 维持连接 → 探测失败置 _stale →
+  // 用户操作时 _ensureHealthy() 立即重连（而不是撞上 commandTimeout 白等）。
+
+  /// 常规命令（CWD/LIST/SIZE/DELE…）的响应等待超时。
+  /// 上游固定 15s，配合轮询缺陷会放大等待；10s 对局域网/NAS 足够。
+  static Duration commandTimeout = Duration(seconds: 10);
+
+  /// 连接活性探测（NOOP）的超时——探测本就该「快速失败」。
+  static Duration probeTimeout = Duration(seconds: 4);
+
+  /// 空闲超过该时长才值得先探测一次（保活定时器正常工作时几乎不会触发）。
+  static Duration idleProbeAfter = Duration(seconds: 20);
+
+  /// 保活探测间隔。
+  static Duration keepAliveInterval = Duration(seconds: 20);
+
+  /// 重连冷却窗口。
+  static Duration reconnectCooldown = Duration(seconds: 3);
+
+  /// 新建控制连接：[timeout] 只用于 TCP 连接与兜底命令超时，
+  /// 另给数据连接（PASV 端口）配更短的专用超时。
+  FTPConnect _buildConnection() {
+    final conn = FTPConnect(
+      host,
+      port: port,
+      user: username.isEmpty ? 'anonymous' : username,
+      pass: password.isEmpty ? 'anonymous@' : password,
+      timeout: commandTimeout.inSeconds,
+    );
+    conn.dataConnectTimeout = const Duration(seconds: 6);
+    return conn;
+  }
+
+  /// 丢弃当前控制连接：硬关闭（不发 QUIT，避免死连接上再赔一个超时）并标记待重连。
+  ///
+  /// **必须在 [_serialize] 内调用**——destroy 会打断进行中的命令。
+  /// 不在此处重连：调用方（如上传收尾）应立即返回，重连推迟到下一次真正
+  /// 需要连接的操作用户触发时进行（惰性重连），避免拖住 UI。
+  void _dropConnection() {
+    final conn = _ftpConnect;
+    _ftpConnect = null;
+    _stale = true;
+    try {
+      conn?.destroy();
+    } catch (_) {}
+  }
+
+  /// 重建控制连接。**必须在 [_serialize] 内调用。**
+  ///
+  /// 与旧实现的区别：①用 [destroy]（发 QUIT 但不等响应）替代 `disconnect()`
+  /// ——死连接上等 QUIT 响应会白赔一个完整命令超时；②有冷却窗口，服务端真的
+  /// 不可达时快速失败而非每次握手；③失败后置 null 让上层按需再试。
+  Future<void> _reconnectInner() async {
+    final now = DateTime.now();
+    if (now.difference(_lastReconnectAt) < reconnectCooldown) {
+      throw Exception('FTP reconnect throttled (cooldown)');
+    }
+    _lastReconnectAt = now;
+
+    try {
+      _ftpConnect?.destroy();
+    } catch (_) {}
+    _ftpConnect = null;
+
+    final conn = _buildConnection();
+    _ftpConnect = conn;
+    final ok = await conn.connect().timeout(const Duration(seconds: 12));
+    if (!ok) {
+      _dropConnection();
+      throw Exception('FTP reconnection failed');
+    }
+    _stale = false;
+    _lastIoAt = DateTime.now();
+  }
+
+  /// 确保控制连接可用。**必须在 [_serialize] 内调用。**
+  ///
+  /// 三种情形：①连接被丢弃/标记失效 → 立即重连；②超过 [idleProbeAfter] 没有任何
+  /// 成功通信（保活可能没跑成）→ 用 [probeTimeout] 做一次 NOOP 探测，失败即重连；
+  /// ③其余情况零额外开销直接返回。
+  ///
+  /// 这样「服务端把空闲连接悄悄回收」的场景下，进入目录最坏只等 4s 探测超时，
+  /// 而不是旧实现的「15s 命令超时 + 15s QUIT 白等 + 重连握手」≈30s。
+  Future<void> _ensureHealthy() async {
+    if (_ftpConnect == null || _stale) {
+      await _reconnectInner();
+      return;
+    }
+    if (DateTime.now().difference(_lastIoAt) > idleProbeAfter) {
+      try {
+        await _ftpConnect!.sendCustomCommand('NOOP', responseTimeout: probeTimeout);
+        _lastIoAt = DateTime.now();
+      } catch (_) {
+        _stale = true;
+        await _reconnectInner();
+      }
+    }
+  }
+
+  /// 启动保活：空闲时每 [keepAliveInterval] 发一条 NOOP。
+  ///
+  /// 走 [_serialize] 队列，与用户命令严格串行（FTP 请求-响应序列不可交错，
+  /// 否则响应会错位到下一条命令）。队列忙时直接跳过——有真实流量本身就是保活。
+  void _startKeepAlive() {
+    _keepAliveTimer?.cancel();
+    _keepAliveTimer = Timer.periodic(keepAliveInterval, (_) {
+      if (_busy) return;
+      if (_ftpConnect == null || _stale) return;
+      if (DateTime.now().difference(_lastIoAt) < idleProbeAfter) return;
+      unawaited(_serialize(() async {
+        // 入队后可能已被前面的任务刷新（说明连接刚被用过），无需再探测。
+        // 注意：这里**不能**检查 _busy —— fn 执行期间 _busy 恒为 true（由
+        // _serialize 设置），否则保活永远不会发出，空闲连接仍会被服务端回收。
+        if (_ftpConnect == null || _stale) return;
+        if (DateTime.now().difference(_lastIoAt) < idleProbeAfter) return;
+        try {
+          await _ftpConnect!.sendCustomCommand('NOOP', responseTimeout: probeTimeout);
+          _lastIoAt = DateTime.now();
+        } catch (_) {
+          // 探测失败 → 只标记失效，重连交给下一次真实操作（避免与用户操作抢队列）。
+          _stale = true;
+        }
+      }));
+    });
+  }
+
+  void _stopKeepAlive() {
+    _keepAliveTimer?.cancel();
+    _keepAliveTimer = null;
+  }
+
   /// 把 [fn] 串行进队执行，返回其结果。前一个任务异常不会阻塞队列推进。
+  ///
+  /// 执行期间置 [_busy]（保活探测避让），成功后刷新 [_lastIoAt]（连接健康证据）。
   Future<T> _serialize<T>(Future<T> Function() fn) {
     final completer = Completer<T>();
     final prev = _serialQueue ?? Future<void>.value();
     _serialQueue = prev.then((_) async {
+      _busy = true;
       try {
-        completer.complete(await fn());
+        final result = await fn();
+        _lastIoAt = DateTime.now();
+        completer.complete(result);
       } catch (e) {
         completer.completeError(e);
+      } finally {
+        _busy = false;
       }
     }).catchError((_) {/* 吞咽前一任务的异常，继续推进队列 */});
     return completer.future;
@@ -80,35 +242,51 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> connect() async {
-    _ftpConnect = FTPConnect(
-      host,
-      port: port,
-      user: username.isEmpty ? 'anonymous' : username,
-      pass: password.isEmpty ? 'anonymous@' : password,
-      timeout: 15,
-    );
-    var success = await _ftpConnect!.connect();
-    if (!success) {
-      // Retry once before giving up
-      await _ftpConnect?.disconnect();
-      _ftpConnect = FTPConnect(
-        host,
-        port: port,
-        user: username.isEmpty ? 'anonymous' : username,
-        pass: password.isEmpty ? 'anonymous@' : password,
-        timeout: 15,
-      );
-      success = await _ftpConnect!.connect();
+    _stopKeepAlive();
+    // 复用同一 client 重复 connect 时，旧连接必须硬关闭（destroy 不发 QUIT），否则泄漏。
+    try {
+      _ftpConnect?.destroy();
+    } catch (_) {}
+    _ftpConnect = null;
+    _stale = false;
+
+    // 走队列建连：保证不与进行中的命令/保活探测交错。
+    await _serialize(() async {
+      final conn = _buildConnection();
+      _ftpConnect = conn;
+      var success = await conn.connect();
       if (!success) {
-        throw Exception('FTP connection failed: could not connect to $host:$port');
+        // Retry once before giving up
+        try {
+          conn.destroy();
+        } catch (_) {}
+        final retry = _buildConnection();
+        _ftpConnect = retry;
+        success = await retry.connect();
+        if (!success) {
+          _dropConnection();
+          throw Exception('FTP connection failed: could not connect to $host:$port');
+        }
       }
-    }
+      _lastReconnectAt = DateTime.now();
+      _lastIoAt = DateTime.now();
+      _stale = false;
+    }).timeout(const Duration(seconds: 30));
+
+    _startKeepAlive();
   }
 
   @override
   Future<void> disconnect() async {
-    await _ftpConnect?.disconnect();
+    _stopKeepAlive();
+    final conn = _ftpConnect;
     _ftpConnect = null;
+    _stale = false;
+    // fork 补丁后 disconnect() 内部「发 QUIT 但不等响应」，即使连接已死也立即返回，
+    // 不会像上游那样在死连接上白赔一个命令超时。
+    try {
+      await conn?.disconnect();
+    } catch (_) {}
   }
 
   @override
@@ -120,7 +298,11 @@ class FtpRemoteClient extends RemoteClient {
   /// [listDirectory] 的实际实现（必须在 [_serialize] 内调用，禁止再加锁，
   /// 否则 finalizeUpload 持锁调用时会死锁）。
   Future<List<RemoteFileItem>> _listDirectoryInner(String path, {bool forceRefresh = false}) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 连接可能已被服务端静默回收（空闲超时）或被上传收尾主动丢弃：先按需探测/
+    // 重连。旧实现在这里只做 null 检查，于是死连接上的 CWD 要白等满一个命令超时
+    // （15s）才抛错，紧接着重连前的 disconnect() 又在 QUIT 上白等 15s —— 合计
+    // ≈30s，正是「偶尔进入目录要等很久」的直接原因。
+    await _ensureHealthy();
 
     final targetPath = (path.isEmpty || path == '/') ? '/' : path;
 
@@ -130,20 +312,8 @@ class FtpRemoteClient extends RemoteClient {
     } catch (e) {
       // 列表失败（网络抖动 / 服务器临时锁目录 / CWD 漂移）：重连后重试一次。
       // 重连会重置会话的当前工作目录，避免残留的 CWD 状态影响后续导航。
-      try {
-        await _ftpConnect?.disconnect();
-      } catch (_) {}
-      _ftpConnect = FTPConnect(
-        host,
-        port: port,
-        user: username.isEmpty ? 'anonymous' : username,
-        pass: password.isEmpty ? 'anonymous@' : password,
-        timeout: 15,
-      );
-      final reconnected = await _ftpConnect!.connect();
-      if (!reconnected) {
-        throw Exception('FTP reconnection failed after error: $e');
-      }
+      _stale = true;
+      await _reconnectInner();
       allEntries = await _listCurrentDirectory(targetPath);
     }
 
@@ -199,7 +369,14 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> createDirectory(String path) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 与 listDirectory 共享同一条控制连接，必须走同一队列：CWD/MKD 若与并发的
+    // CWD+LIST 交错，会导致响应错位、CWD 漂移，进而触发「列表失败 → 重连」的
+    // 长等待路径（这一路径在旧实现里单次要赔 ≈30s）。
+    await _serialize(() => _createDirectoryInner(path));
+  }
+
+  Future<void> _createDirectoryInner(String path) async {
+    await _ensureHealthy();
     final dirName = p.basename(path);
     final parentPath = p.dirname(path);
 
@@ -213,7 +390,11 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> createFile(String path) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    await _serialize(() => _createFileInner(path));
+  }
+
+  Future<void> _createFileInner(String path) async {
+    await _ensureHealthy();
     final fileName = p.basename(path);
     final parentPath = p.dirname(path);
     if (parentPath.isNotEmpty && parentPath != '/') {
@@ -234,7 +415,11 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> delete(String path, bool isDir) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    await _serialize(() => _deleteInner(path, isDir));
+  }
+
+  Future<void> _deleteInner(String path, bool isDir) async {
+    await _ensureHealthy();
     // FTP 删除偶尔会因网络抖动或服务器锁文件失败，增加重试逻辑
     const maxRetries = 3;
     Exception? lastError;
@@ -292,7 +477,11 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> rename(String oldPath, String newPath) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    await _serialize(() => _renameInner(oldPath, newPath));
+  }
+
+  Future<void> _renameInner(String oldPath, String newPath) async {
+    await _ensureHealthy();
     final ok = await _ftpConnect!.rename(oldPath, newPath);
     if (!ok) throw Exception('Failed to rename: $oldPath -> $newPath');
   }
@@ -303,7 +492,10 @@ class FtpRemoteClient extends RemoteClient {
     String localPath,
     Function(double progress) onProgress,
   ) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 注意：此处**不**要求浏览连接存在。主路径 [_downloadWithRawSocket] 使用
+    // 独立的控制/数据连接，与 `_ftpConnect` 无关；上传收尾后浏览连接会被惰性
+    // 丢弃（_stale），若在此直接抛错，用户会看到「刚上传完就无法下载/播放」。
+    // 真正依赖 `_ftpConnect` 的只有下面的 ftpconnect 兜底路径，检查放在那里。
 
     // Try raw socket download first — it writes data to disk with periodic
     // flushing, which is critical for the streaming proxy to read data
@@ -323,6 +515,8 @@ class FtpRemoteClient extends RemoteClient {
     }
 
     // Fallback: use ftpconnect's downloadFile (buffers entire download in IOSink)
+    // 此路径依赖共享控制连接（会 CWD），因此在这里才做连接检查。
+    if (_ftpConnect == null) throw Exception('FTP not connected');
     final fileName = p.basename(remotePath);
     final parentPath = p.dirname(remotePath);
 
@@ -375,7 +569,8 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 同样不依赖浏览连接：走独立 socket + REST 偏移读，浏览连接处于惰性重连
+    // 待命状态（_stale）时，媒体流式播放/Range 代理仍应正常工作。
     // 复用 raw socket 实现，通过 FTP REST 命令指定起始偏移，限制读取长度
     await _downloadWithRawSocket(
       remotePath,
@@ -608,7 +803,8 @@ class FtpRemoteClient extends RemoteClient {
     String remotePath,
     Function(double progress) onProgress,
   ) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 上传使用独立的控制/数据 socket，不依赖浏览连接 `_ftpConnect`
+    // （uploadFile 收尾本身反而会主动丢弃它），因此这里不做连接检查。
 
     final localFile = File(localPath);
     if (!localFile.existsSync()) throw Exception('Local file not found: $localPath');
@@ -787,24 +983,13 @@ class FtpRemoteClient extends RemoteClient {
 
       // 上传使用的独立控制/数据连接断开后，部分 FTP 服务器会重置或影响主
       // listing 会话，导致后续 listDirectory 在旧 _ftpConnect 上挂起。
-      // 因此无论上传成功还是取消，都立即重建 _ftpConnect，保证后续刷新
-      // 和轮询能正常进行。
-      try {
-        await _ftpConnect?.disconnect();
-      } catch (_) {}
-      _ftpConnect = FTPConnect(
-        host,
-        port: port,
-        user: username.isEmpty ? 'anonymous' : username,
-        pass: password.isEmpty ? 'anonymous@' : password,
-        timeout: 15,
-      );
-      try {
-        await _ftpConnect!.connect().timeout(const Duration(seconds: 15));
-      } catch (e) {
-        debugPrint('FTP reconnect after upload failed: $e');
-        _ftpConnect = null;
-      }
+      //
+      // 旧实现是「disconnect + 立刻重连」：死连接上 disconnect 要白赔一个命令
+      // 超时，重连握手期间用户点目录也只能干等。现在改为**走队列丢弃**旧连接并
+      // 标记待重连——uploadFile 立即返回，重连推迟到下一次浏览/刷新（惰性、按需）。
+      unawaited(_serialize(() async {
+        _dropConnection();
+      }));
     }
   }
 
@@ -946,12 +1131,20 @@ class FtpRemoteClient extends RemoteClient {
   ///
   /// 返回值：目标文件是否已最终化（存在、无临时文件、大小达标）。
   Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
-    if (_ftpConnect == null) return false;
+    // ⚠️ 这里**不能**在 `_ftpConnect == null` 时直接返回 false：上传收尾会主动丢弃
+    // 浏览连接（_stale + null），若此处短路，上传后的轮询将永远拿不到 true，
+    // 表现为「进度条消失但文件迟迟不出现」。改为进入队列，由 _ensureHealthy()
+    // 惰性重连后继续。
     try {
       // 在 [_serialize] 内执行：本方法会 LIST 并在 rename 分支里 changeDirectory，
       // 与并发的手动刷新 LIST 共享同一单连接，必须串行以避免 CWD 错乱（问题3）。
+      //
+      // ⚠️ 外层 timeout **必须大于**内部命令超时：外层超时不会取消内部仍在进行的
+      // FTP 命令，它的响应稍后到达时会与下一条命令错位，把「一次慢响应」升级成
+      // 「整条连接错乱 + 重连（旧路径 ≈30s）」。这里只做最终保险（40s > CWD 10s +
+      // LIST 10s 的最坏组合）。
       return await _serialize(() => _finalizeUploadInner(remoteDir, targetName, expectedSize))
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 40));
     } catch (e) {
       debugPrint('FTP finalizeUpload error: $e');
       return false;
@@ -991,7 +1184,9 @@ class FtpRemoteClient extends RemoteClient {
                   .changeDirectory('/')
                   .timeout(const Duration(seconds: 15));
             }
-            await rename(tempItem.name, targetName);
+            // 已在 [_serialize] 内（finalizeUpload 持锁），必须调用内部实现，
+            // 否则会二次加锁自死锁。
+            await _renameInner(tempItem.name, targetName);
             return true;
           } catch (e) {
             debugPrint('FTP finalizeUpload rename failed: $e');
@@ -1032,26 +1227,21 @@ class FtpRemoteClient extends RemoteClient {
     try {
       return await _listDirectoryInner(targetPath, forceRefresh: true);
     } catch (e) {
-      // 列表失败：重连一次后重试。
-      try {
-        await _ftpConnect?.disconnect();
-      } catch (_) {}
-      _ftpConnect = FTPConnect(
-        host,
-        port: port,
-        user: username.isEmpty ? 'anonymous' : username,
-        pass: password.isEmpty ? 'anonymous@' : password,
-        timeout: 15,
-      );
-      final reconnected = await _ftpConnect!.connect();
-      if (!reconnected) throw Exception('FTP reconnection failed: $e');
+      // 列表失败：重连一次后重试（硬关闭旧连接，不再走 QUIT 白等路径）。
+      _stale = true;
+      await _reconnectInner();
       return await _listDirectoryInner(targetPath, forceRefresh: true);
     }
   }
 
   @override
   Future<int> getFileSize(String remotePath) async {
-    if (_ftpConnect == null) throw Exception('FTP not connected');
+    return _serialize(() => _getFileSizeInner(remotePath));
+  }
+
+  Future<int> _getFileSizeInner(String remotePath) async {
+    // 走队列：CWD 会打断并发的列表命令，进而触发响应错位。
+    await _ensureHealthy();
     final fileName = p.basename(remotePath);
     final parentPath = p.dirname(remotePath);
 

@@ -69,7 +69,22 @@ class FTPConnect {
   /// return true if we are disconnected successfully
   Future<bool> disconnect() => _socket.disconnect();
 
-  Future<FTPReply> sendCustomCommand(String pCmd) => _socket.sendCommand(pCmd);
+  /// 发送自定义命令。
+  ///
+  /// [responseTimeout]：覆盖本次命令的响应等待超时（ZenFile 补丁，2026-09-16）。
+  /// 上游只有构造期固定的 `timeout`，导致「连接活性探测（NOOP）」这类本应立即
+  /// 失败的命令也要赔满 15s。传入短超时即可把探测代价压到数秒。
+  Future<FTPReply> sendCustomCommand(String pCmd, {Duration? responseTimeout}) =>
+      _socket.sendCommand(pCmd, responseTimeout: responseTimeout);
+
+  /// 数据连接（PASV/EPSV 通告端口）建立超时（ZenFile 补丁，2026-09-16）。
+  /// 上游直接复用控制连接超时（15~30s），数据端口被丢弃时要白等很久。
+  set dataConnectTimeout(Duration value) =>
+      _socket.dataConnectTimeout = value;
+
+  /// 硬关闭底层 socket：不发 QUIT、不等响应（ZenFile 补丁，2026-09-16）。
+  /// 用于已知连接已死的场景，避免收尾动作再赔一个 15s 超时。
+  void destroy() => _socket.destroy();
 
   /// Upload the File [fFile] to the current directory
   Future<bool> uploadFile(
