@@ -6688,37 +6688,87 @@ class L10nFr extends L10n {
   @override
   String get crypt_settings_title => 'Configuration du mot de passe';
   @override
+  String get cl211_features => 'Nouveautés';
+
+  @override
+  String get cl211_feat_1 => 'Icône d\'application avec votre propre image : Paramètres → Apparence et thème → Icône d\'application. Après avoir choisi une image, vous pouvez l\'ajouter à l\'écran d\'accueil en tant que raccourci ou widget 1×1. Correction également du cas où il indiquait « ajouté » sans rien ajouter ; si votre lanceur bloque les raccourcis, utilisez le widget.';
+
+  @override
+  String get cl211_feat_2 => 'La confirmation de suppression peut désormais être désactivée : la boîte de dialogue de suppression comporte une case « Ne plus demander », et dans Paramètres → Opérations et visionneuses de fichiers se trouve un interrupteur « Confirmer avant de supprimer ».';
+
+  @override
+  String get cl211_ui => 'Interface et interaction';
+
+  @override
+  String get cl211_ui_1 => 'Toutes les boîtes de progression utilisent désormais un double anneau : l\'extérieur pour la progression globale, l\'intérieur vert pour le fichier en cours. Couvre copier/couper, compresser/extraire, chiffrer/déchiffrer, import et restauration du coffre, et la sauvegarde par catégorie.';
+
+  @override
+  String get cl211_ui_2 => 'Les commandes de lecture vidéo sont plus petites et déplacées vers le bas, juste au-dessus de la barre de progression, elles ne cachent donc plus le centre de l\'image.';
+
+  @override
+  String get cl211_ui_3 => 'La liste de chiffrement sur place du coffre dispose désormais d\'une action « Retirer » : elle masque uniquement l\'entrée, le fichier chiffré sur le disque reste intact.';
+
+  @override
+  String get cl211_fixes => 'Corrections';
+
+  @override
+  String get cl211_fix_1 => 'Correction de l\'écran noir (son uniquement, pas d\'image) lors de la lecture vidéo sur certains appareils, dû à un problème de compatibilité du moteur de rendu introduit en 1.1.42. Le rendu utilise désormais le chemin universellement compatible et bascule automatiquement en décodage logiciel si le décodage matériel échoue.';
+
+  @override
+  String get cl211_fix_2 => 'Correction de la lecture vidéo distante via SMB / FTP / SFTP qui s\'interrompait toutes les quelques secondes, et de la barre de progression qui revenait au début après un repérage.';
+
+  @override
+  String get cl211_fix_3 => 'Correction du cas où FTP mettait parfois très longtemps à ouvrir un dossier ou à revenir en arrière.';
+
+  @override
+  String get cl211_fix_4 => 'Correction de la compression de fichiers volumineux ou nombreux bloquée à 100 % : la compression ZIP est désormais diffusée fichier par fichier, réduisant fortement l\'usage mémoire tout en faisant avancer la progression.';
+
+  @override
+  String get cl211_fix_5 => 'Correction de l\'affichage par le lecteur de musique de chaque piste comme « FLAC • 24-bit » ; le format réel s\'affiche désormais, ainsi que la profondeur de bits réelle pour les formats sans perte.';
+
+  @override
+  String get cl211_fix_6 => 'Correction : après la configuration du coffre ou le chiffrement sur place, les fichiers non chiffrés demandaient à tort le mot de passe du coffre.';
+
+  @override
+  String get cl211_fix_7 => 'Correction de deux messages du coffre : un mot de passe erroné indiquait à tort « définissez d\'abord le mot de passe principal » ; les notifications de résultat de chiffrement/déchiffrement restaient en chinois dans les langues non chinoises.';
+
+  @override
+  String get vault_config_password => 'Configuration du mot de passe';
+
+  @override
   String get app_icon_add_title => 'Ajouter à l\'écran d\'accueil';
 
   @override
-  String get app_icon_add_body => 'Android n\'autorise pas le remplacement de l\'icône de l\'application par une image externe. Utilisez l\'une des options ci-dessous pour placer votre image sur l\'écran d\'accueil :';
+  String get app_icon_add_body =>
+      'Android n\'autorise pas le remplacement de l\'icône de l\'application par une image externe. Utilisez l\'une des options ci-dessous pour placer votre image sur l\'écran d\'accueil :';
 
   @override
   String get app_icon_add_shortcut => 'Raccourci';
 
   @override
-  String get app_icon_add_shortcut_desc => 'Ajoute une icône de lancement avec votre image';
+  String get app_icon_add_shortcut_desc =>
+      'Ajoute une icône de lancement avec votre image';
 
   @override
   String get app_icon_add_widget => 'Widget d\'écran d\'accueil';
 
   @override
-  String get app_icon_add_widget_desc => 'Un widget 1×1, compatible avec tous les lanceurs';
+  String get app_icon_add_widget_desc =>
+      'Un widget 1×1, compatible avec tous les lanceurs';
 
   @override
   String get app_icon_add_change_image => 'Changer d\'image';
 
   @override
-  String get app_icon_add_change_image_desc => 'Choisir une autre image comme icône';
+  String get app_icon_add_change_image_desc =>
+      'Choisir une autre image comme icône';
 
   @override
   String get app_icon_add_cancelled => 'Non ajouté : annulé';
 
   @override
-  String get app_icon_add_unsupported => 'Votre lanceur ne prend pas en charge l\'ajout automatique — appuyez longuement sur l\'écran d\'accueil pour l\'ajouter manuellement';
-
-  @override
-  String get vault_config_password => 'Configuration du mot de passe';
+  String get app_icon_add_unsupported =>
+      'Votre lanceur ne prend pas en charge l\'ajout automatique — appuyez longuement sur l\'écran d\'accueil pour l\'ajouter manuellement';
 
   @override
   String get vault_encrypt_done => 'Chiffrement réussi';

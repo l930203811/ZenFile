@@ -6902,6 +6902,66 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl211_features": "新增功能",
+  "@cl211_features": {
+    "description": "changelog 2.1.1: cl211_features"
+  },
+  "cl211_feat_1": "应用图标支持导入自定义图片：设置 → 外观与主题 → 应用图标，选择图片后可在桌面添加为快捷方式或 1×1 小组件。同时修复了此前点击提示「已添加」但桌面没有图标的问题；部分系统限制快捷方式时，可改用桌面小组件。",
+  "@cl211_feat_1": {
+    "description": "changelog 2.1.1: cl211_feat_1"
+  },
+  "cl211_feat_2": "删除文件的二次确认可按需关闭：删除弹窗新增「删除不再提示」复选框，设置 → 文件操作与查看器新增「删除文件确认」开关，关闭后删除不再弹出确认。",
+  "@cl211_feat_2": {
+    "description": "changelog 2.1.1: cl211_feat_2"
+  },
+  "cl211_ui": "界面与交互",
+  "@cl211_ui": {
+    "description": "changelog 2.1.1: cl211_ui"
+  },
+  "cl211_ui_1": "所有进度弹窗统一为双层圆环：外圈显示整体进度、内圈（绿色）显示当前文件进度，已覆盖复制/剪切、压缩/解压、加密/解密、保险箱导入加密与恢复解密、类别备份等场景。",
+  "@cl211_ui_1": {
+    "description": "changelog 2.1.1: cl211_ui_1"
+  },
+  "cl211_ui_2": "视频播放控制按钮整体缩小并下移，贴近进度条上方，不再遮挡画面中心。",
+  "@cl211_ui_2": {
+    "description": "changelog 2.1.1: cl211_ui_2"
+  },
+  "cl211_ui_3": "保险箱原地加密列表新增「移除」：仅从列表移除，磁盘上的加密文件不受影响。",
+  "@cl211_ui_3": {
+    "description": "changelog 2.1.1: cl211_ui_3"
+  },
+  "cl211_fixes": "问题修复",
+  "@cl211_fixes": {
+    "description": "changelog 2.1.1: cl211_fixes"
+  },
+  "cl211_fix_1": "修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。",
+  "@cl211_fix_1": {
+    "description": "changelog 2.1.1: cl211_fix_1"
+  },
+  "cl211_fix_2": "修复 SMB / FTP / SFTP 播放远程视频「播几秒卡几秒」、拖动进度条又跳回开头的问题。",
+  "@cl211_fix_2": {
+    "description": "changelog 2.1.1: cl211_fix_2"
+  },
+  "cl211_fix_3": "修复 FTP 打开目录、返回上一级偶尔需要等待很久的问题。",
+  "@cl211_fix_3": {
+    "description": "changelog 2.1.1: cl211_fix_3"
+  },
+  "cl211_fix_4": "修复压缩大文件或多文件时进度停在 100% 长时间不动的问题：改为流式逐文件压缩，内存占用大幅降低，进度持续推进。",
+  "@cl211_fix_4": {
+    "description": "changelog 2.1.1: cl211_fix_4"
+  },
+  "cl211_fix_5": "修复音乐播放器把所有音频都显示为「FLAC • 24-bit」的问题，现在按真实格式显示，无损格式还会显示实际位深。",
+  "@cl211_fix_5": {
+    "description": "changelog 2.1.1: cl211_fix_5"
+  },
+  "cl211_fix_6": "修复配置保险箱密码或原地加密后，打开任意未加密文件都会要求验证保险箱密码的问题。",
+  "@cl211_fix_6": {
+    "description": "changelog 2.1.1: cl211_fix_6"
+  },
+  "cl211_fix_7": "修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。",
+  "@cl211_fix_7": {
+    "description": "changelog 2.1.1: cl211_fix_7"
+  },
   "app_icon_add_title": "添加到桌面",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"

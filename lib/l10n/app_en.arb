@@ -6681,6 +6681,66 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl211_features": "New",
+  "@cl211_features": {
+    "description": "changelog 2.1.1: cl211_features"
+  },
+  "cl211_feat_1": "Custom app icon from your own image: Settings → Appearance & Theme → App Icon. After picking an image you can add it to the home screen as a shortcut or as a 1x1 widget. Also fixed the case where it reported \"added\" without actually adding anything; if your launcher blocks shortcuts, use the widget instead.",
+  "@cl211_feat_1": {
+    "description": "changelog 2.1.1: cl211_feat_1"
+  },
+  "cl211_feat_2": "Delete confirmation can now be disabled: the delete dialog has a \"Don't ask again\" checkbox, and Settings → File Operations & Viewers has a \"Confirm before deleting\" switch.",
+  "@cl211_feat_2": {
+    "description": "changelog 2.1.1: cl211_feat_2"
+  },
+  "cl211_ui": "UI & Interaction",
+  "@cl211_ui": {
+    "description": "changelog 2.1.1: cl211_ui"
+  },
+  "cl211_ui_1": "All progress dialogs now use a dual ring: outer ring for overall progress, inner green ring for the current file. Covers copy/cut, compress/extract, encrypt/decrypt, vault import & restore, and category backup.",
+  "@cl211_ui_1": {
+    "description": "changelog 2.1.1: cl211_ui_1"
+  },
+  "cl211_ui_2": "Video playback controls are smaller and moved down just above the progress bar, so they no longer cover the center of the picture.",
+  "@cl211_ui_2": {
+    "description": "changelog 2.1.1: cl211_ui_2"
+  },
+  "cl211_ui_3": "Vault in-place encryption list gains a \"Remove\" action — it only hides the entry, the encrypted file on disk is untouched.",
+  "@cl211_ui_3": {
+    "description": "changelog 2.1.1: cl211_ui_3"
+  },
+  "cl211_fixes": "Fixes",
+  "@cl211_fixes": {
+    "description": "changelog 2.1.1: cl211_fixes"
+  },
+  "cl211_fix_1": "Fixed black screen (audio only, no picture) on some devices, caused by a renderer compatibility issue introduced in 1.1.42. Rendering now uses the universally compatible path, and playback automatically falls back to software decoding when hardware decoding misbehaves.",
+  "@cl211_fix_1": {
+    "description": "changelog 2.1.1: cl211_fix_1"
+  },
+  "cl211_fix_2": "Fixed remote video playback over SMB / FTP / SFTP that stalled every few seconds, and the progress bar jumping back to the start after seeking.",
+  "@cl211_fix_2": {
+    "description": "changelog 2.1.1: cl211_fix_2"
+  },
+  "cl211_fix_3": "Fixed FTP occasionally taking a very long time to open or go up a directory.",
+  "@cl211_fix_3": {
+    "description": "changelog 2.1.1: cl211_fix_3"
+  },
+  "cl211_fix_4": "Fixed compression of large or many files hanging at 100%: ZIP compression is now streamed file by file, greatly reducing memory use while progress keeps advancing.",
+  "@cl211_fix_4": {
+    "description": "changelog 2.1.1: cl211_fix_4"
+  },
+  "cl211_fix_5": "Fixed the music player showing every track as \"FLAC x 24-bit\"; the real format is shown now, plus actual bit depth for lossless formats.",
+  "@cl211_fix_5": {
+    "description": "changelog 2.1.1: cl211_fix_5"
+  },
+  "cl211_fix_6": "Fixed plain (unencrypted) files wrongly asking for the vault password after configuring the vault or encrypting in place.",
+  "@cl211_fix_6": {
+    "description": "changelog 2.1.1: cl211_fix_6"
+  },
+  "cl211_fix_7": "Fixed two vault messages: a wrong password used to say \"please set the master password first\"; encrypt/decrypt result toasts were still Chinese in non-Chinese locales.",
+  "@cl211_fix_7": {
+    "description": "changelog 2.1.1: cl211_fix_7"
+  },
   "app_icon_add_title": "Add to home screen",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"

@@ -6601,37 +6601,87 @@ class L10nEn extends L10n {
   @override
   String get crypt_settings_title => 'Password Configuration';
   @override
+  String get cl211_features => 'New';
+
+  @override
+  String get cl211_feat_1 => 'Custom app icon from your own image: Settings → Appearance & Theme → App Icon. After picking an image you can add it to the home screen as a shortcut or as a 1x1 widget. Also fixed the case where it reported "added" without actually adding anything; if your launcher blocks shortcuts, use the widget instead.';
+
+  @override
+  String get cl211_feat_2 => 'Delete confirmation can now be disabled: the delete dialog has a "Don\'t ask again" checkbox, and Settings → File Operations & Viewers has a "Confirm before deleting" switch.';
+
+  @override
+  String get cl211_ui => 'UI & Interaction';
+
+  @override
+  String get cl211_ui_1 => 'All progress dialogs now use a dual ring: outer ring for overall progress, inner green ring for the current file. Covers copy/cut, compress/extract, encrypt/decrypt, vault import & restore, and category backup.';
+
+  @override
+  String get cl211_ui_2 => 'Video playback controls are smaller and moved down just above the progress bar, so they no longer cover the center of the picture.';
+
+  @override
+  String get cl211_ui_3 => 'Vault in-place encryption list gains a "Remove" action — it only hides the entry, the encrypted file on disk is untouched.';
+
+  @override
+  String get cl211_fixes => 'Fixes';
+
+  @override
+  String get cl211_fix_1 => 'Fixed black screen (audio only, no picture) on some devices, caused by a renderer compatibility issue introduced in 1.1.42. Rendering now uses the universally compatible path, and playback automatically falls back to software decoding when hardware decoding misbehaves.';
+
+  @override
+  String get cl211_fix_2 => 'Fixed remote video playback over SMB / FTP / SFTP that stalled every few seconds, and the progress bar jumping back to the start after seeking.';
+
+  @override
+  String get cl211_fix_3 => 'Fixed FTP occasionally taking a very long time to open or go up a directory.';
+
+  @override
+  String get cl211_fix_4 => 'Fixed compression of large or many files hanging at 100%: ZIP compression is now streamed file by file, greatly reducing memory use while progress keeps advancing.';
+
+  @override
+  String get cl211_fix_5 => 'Fixed the music player showing every track as "FLAC x 24-bit"; the real format is shown now, plus actual bit depth for lossless formats.';
+
+  @override
+  String get cl211_fix_6 => 'Fixed plain (unencrypted) files wrongly asking for the vault password after configuring the vault or encrypting in place.';
+
+  @override
+  String get cl211_fix_7 => 'Fixed two vault messages: a wrong password used to say "please set the master password first"; encrypt/decrypt result toasts were still Chinese in non-Chinese locales.';
+
+  @override
+  String get vault_config_password => 'Password Configuration';
+
+  @override
   String get app_icon_add_title => 'Add to home screen';
 
   @override
-  String get app_icon_add_body => 'Android does not allow replacing the app icon with an external image. Use one of the options below to place your custom image on the home screen:';
+  String get app_icon_add_body =>
+      'Android does not allow replacing the app icon with an external image. Use one of the options below to place your custom image on the home screen:';
 
   @override
   String get app_icon_add_shortcut => 'Shortcut';
 
   @override
-  String get app_icon_add_shortcut_desc => 'Adds a launch icon using your custom image';
+  String get app_icon_add_shortcut_desc =>
+      'Adds a launch icon using your custom image';
 
   @override
   String get app_icon_add_widget => 'Home screen widget';
 
   @override
-  String get app_icon_add_widget_desc => 'A 1×1 widget, works with every launcher';
+  String get app_icon_add_widget_desc =>
+      'A 1×1 widget, works with every launcher';
 
   @override
   String get app_icon_add_change_image => 'Change image';
 
   @override
-  String get app_icon_add_change_image_desc => 'Pick another image to use as the icon';
+  String get app_icon_add_change_image_desc =>
+      'Pick another image to use as the icon';
 
   @override
   String get app_icon_add_cancelled => 'Not added: cancelled';
 
   @override
-  String get app_icon_add_unsupported => 'Your launcher does not support adding automatically — long-press the home screen to add it manually';
-
-  @override
-  String get vault_config_password => 'Password Configuration';
+  String get app_icon_add_unsupported =>
+      'Your launcher does not support adding automatically — long-press the home screen to add it manually';
 
   @override
   String get vault_encrypt_done => 'Encryption successful';

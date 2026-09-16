@@ -6615,6 +6615,66 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl211_features": "Nouveautés",
+  "@cl211_features": {
+    "description": "changelog 2.1.1: cl211_features"
+  },
+  "cl211_feat_1": "Icône d'application avec votre propre image : Paramètres → Apparence et thème → Icône d'application. Après avoir choisi une image, vous pouvez l'ajouter à l'écran d'accueil en tant que raccourci ou widget 1×1. Correction également du cas où il indiquait « ajouté » sans rien ajouter ; si votre lanceur bloque les raccourcis, utilisez le widget.",
+  "@cl211_feat_1": {
+    "description": "changelog 2.1.1: cl211_feat_1"
+  },
+  "cl211_feat_2": "La confirmation de suppression peut désormais être désactivée : la boîte de dialogue de suppression comporte une case « Ne plus demander », et dans Paramètres → Opérations et visionneuses de fichiers se trouve un interrupteur « Confirmer avant de supprimer ».",
+  "@cl211_feat_2": {
+    "description": "changelog 2.1.1: cl211_feat_2"
+  },
+  "cl211_ui": "Interface et interaction",
+  "@cl211_ui": {
+    "description": "changelog 2.1.1: cl211_ui"
+  },
+  "cl211_ui_1": "Toutes les boîtes de progression utilisent désormais un double anneau : l'extérieur pour la progression globale, l'intérieur vert pour le fichier en cours. Couvre copier/couper, compresser/extraire, chiffrer/déchiffrer, import et restauration du coffre, et la sauvegarde par catégorie.",
+  "@cl211_ui_1": {
+    "description": "changelog 2.1.1: cl211_ui_1"
+  },
+  "cl211_ui_2": "Les commandes de lecture vidéo sont plus petites et déplacées vers le bas, juste au-dessus de la barre de progression, elles ne cachent donc plus le centre de l'image.",
+  "@cl211_ui_2": {
+    "description": "changelog 2.1.1: cl211_ui_2"
+  },
+  "cl211_ui_3": "La liste de chiffrement sur place du coffre dispose désormais d'une action « Retirer » : elle masque uniquement l'entrée, le fichier chiffré sur le disque reste intact.",
+  "@cl211_ui_3": {
+    "description": "changelog 2.1.1: cl211_ui_3"
+  },
+  "cl211_fixes": "Corrections",
+  "@cl211_fixes": {
+    "description": "changelog 2.1.1: cl211_fixes"
+  },
+  "cl211_fix_1": "Correction de l'écran noir (son uniquement, pas d'image) lors de la lecture vidéo sur certains appareils, dû à un problème de compatibilité du moteur de rendu introduit en 1.1.42. Le rendu utilise désormais le chemin universellement compatible et bascule automatiquement en décodage logiciel si le décodage matériel échoue.",
+  "@cl211_fix_1": {
+    "description": "changelog 2.1.1: cl211_fix_1"
+  },
+  "cl211_fix_2": "Correction de la lecture vidéo distante via SMB / FTP / SFTP qui s'interrompait toutes les quelques secondes, et de la barre de progression qui revenait au début après un repérage.",
+  "@cl211_fix_2": {
+    "description": "changelog 2.1.1: cl211_fix_2"
+  },
+  "cl211_fix_3": "Correction du cas où FTP mettait parfois très longtemps à ouvrir un dossier ou à revenir en arrière.",
+  "@cl211_fix_3": {
+    "description": "changelog 2.1.1: cl211_fix_3"
+  },
+  "cl211_fix_4": "Correction de la compression de fichiers volumineux ou nombreux bloquée à 100 % : la compression ZIP est désormais diffusée fichier par fichier, réduisant fortement l'usage mémoire tout en faisant avancer la progression.",
+  "@cl211_fix_4": {
+    "description": "changelog 2.1.1: cl211_fix_4"
+  },
+  "cl211_fix_5": "Correction de l'affichage par le lecteur de musique de chaque piste comme « FLAC • 24-bit » ; le format réel s'affiche désormais, ainsi que la profondeur de bits réelle pour les formats sans perte.",
+  "@cl211_fix_5": {
+    "description": "changelog 2.1.1: cl211_fix_5"
+  },
+  "cl211_fix_6": "Correction : après la configuration du coffre ou le chiffrement sur place, les fichiers non chiffrés demandaient à tort le mot de passe du coffre.",
+  "@cl211_fix_6": {
+    "description": "changelog 2.1.1: cl211_fix_6"
+  },
+  "cl211_fix_7": "Correction de deux messages du coffre : un mot de passe erroné indiquait à tort « définissez d'abord le mot de passe principal » ; les notifications de résultat de chiffrement/déchiffrement restaient en chinois dans les langues non chinoises.",
+  "@cl211_fix_7": {
+    "description": "changelog 2.1.1: cl211_fix_7"
+  },
   "app_icon_add_title": "Ajouter à l'écran d'accueil",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"

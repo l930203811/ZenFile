@@ -6293,10 +6293,59 @@ class L10nZh extends L10n {
   @override
   String get crypt_settings_title => '密码配置';
   @override
+  String get cl211_features => '新增功能';
+
+  @override
+  String get cl211_feat_1 => '应用图标支持导入自定义图片：设置 → 外观与主题 → 应用图标，选择图片后可在桌面添加为快捷方式或 1×1 小组件。同时修复了此前点击提示「已添加」但桌面没有图标的问题；部分系统限制快捷方式时，可改用桌面小组件。';
+
+  @override
+  String get cl211_feat_2 => '删除文件的二次确认可按需关闭：删除弹窗新增「删除不再提示」复选框，设置 → 文件操作与查看器新增「删除文件确认」开关，关闭后删除不再弹出确认。';
+
+  @override
+  String get cl211_ui => '界面与交互';
+
+  @override
+  String get cl211_ui_1 => '所有进度弹窗统一为双层圆环：外圈显示整体进度、内圈（绿色）显示当前文件进度，已覆盖复制/剪切、压缩/解压、加密/解密、保险箱导入加密与恢复解密、类别备份等场景。';
+
+  @override
+  String get cl211_ui_2 => '视频播放控制按钮整体缩小并下移，贴近进度条上方，不再遮挡画面中心。';
+
+  @override
+  String get cl211_ui_3 => '保险箱原地加密列表新增「移除」：仅从列表移除，磁盘上的加密文件不受影响。';
+
+  @override
+  String get cl211_fixes => '问题修复';
+
+  @override
+  String get cl211_fix_1 => '修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。';
+
+  @override
+  String get cl211_fix_2 => '修复 SMB / FTP / SFTP 播放远程视频「播几秒卡几秒」、拖动进度条又跳回开头的问题。';
+
+  @override
+  String get cl211_fix_3 => '修复 FTP 打开目录、返回上一级偶尔需要等待很久的问题。';
+
+  @override
+  String get cl211_fix_4 => '修复压缩大文件或多文件时进度停在 100% 长时间不动的问题：改为流式逐文件压缩，内存占用大幅降低，进度持续推进。';
+
+  @override
+  String get cl211_fix_5 => '修复音乐播放器把所有音频都显示为「FLAC • 24-bit」的问题，现在按真实格式显示，无损格式还会显示实际位深。';
+
+  @override
+  String get cl211_fix_6 => '修复配置保险箱密码或原地加密后，打开任意未加密文件都会要求验证保险箱密码的问题。';
+
+  @override
+  String get cl211_fix_7 => '修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。';
+
+  @override
+  String get vault_config_password => '密码配置';
+
+  @override
   String get app_icon_add_title => '添加到桌面';
 
   @override
-  String get app_icon_add_body => 'Android 不允许用外部图片直接替换应用主图标。可用下面的方式把自定义图片放到桌面：';
+  String get app_icon_add_body =>
+      'Android 不允许用外部图片直接替换应用主图标。可用下面的方式把自定义图片放到桌面：';
 
   @override
   String get app_icon_add_shortcut => '快捷方式';
@@ -6321,9 +6370,6 @@ class L10nZh extends L10n {
 
   @override
   String get app_icon_add_unsupported => '当前启动器不支持自动添加，请长按桌面手动添加';
-
-  @override
-  String get vault_config_password => '密码配置';
 
   @override
   String get vault_encrypt_done => '加密成功';
@@ -13502,10 +13548,59 @@ class L10nZhTw extends L10nZh {
   @override
   String get crypt_settings_title => '密碼配置';
   @override
+  String get cl211_features => '新增功能';
+
+  @override
+  String get cl211_feat_1 => '應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點擊提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。';
+
+  @override
+  String get cl211_feat_2 => '刪除檔案的二次確認可視需要關閉：刪除彈窗新增「刪除不再提示」核取方塊，設定 → 檔案操作與檢視器新增「刪除檔案確認」開關，關閉後刪除不再彈出確認。';
+
+  @override
+  String get cl211_ui => '介面與互動';
+
+  @override
+  String get cl211_ui_1 => '所有進度彈窗統一為雙層圓環：外圈顯示整體進度、內圈（綠色）顯示目前檔案進度，已涵蓋複製/剪下、壓縮/解壓縮、加密/解密、保險箱匯入加密與復原解密、類別備份等場景。';
+
+  @override
+  String get cl211_ui_2 => '影片播放控制按鈕整體縮小並下移，貼近進度條上方，不再遮擋畫面中心。';
+
+  @override
+  String get cl211_ui_3 => '保險箱原地加密清單新增「移除」：僅從清單移除，磁碟上的加密檔案不受影響。';
+
+  @override
+  String get cl211_fixes => '問題修復';
+
+  @override
+  String get cl211_fix_1 => '修復部分機型播放影片黑屏（只有聲音沒有畫面）的問題：由 1.1.42 引入的渲染相容問題導致，現已改為通用渲染；並新增自動偵測，硬體解碼異常時自動切換軟體解碼續播，無需手動設定。';
+
+  @override
+  String get cl211_fix_2 => '修復 SMB / FTP / SFTP 播放遠端影片「播幾秒卡幾秒」、拖動進度條又跳回開頭的問題。';
+
+  @override
+  String get cl211_fix_3 => '修復 FTP 開啟目錄、返回上一層偶爾需要等待很久的問題。';
+
+  @override
+  String get cl211_fix_4 => '修復壓縮大檔案或多檔案時進度停在 100% 長時間不動的問題：改為串流式逐檔壓縮，記憶體佔用大幅降低，進度持續推進。';
+
+  @override
+  String get cl211_fix_5 => '修復音樂播放器把所有音訊都顯示為「FLAC • 24-bit」的問題，現在按真實格式顯示，無損格式還會顯示實際位深。';
+
+  @override
+  String get cl211_fix_6 => '修復設定保險箱密碼或原地加密後，開啟任意未加密檔案都會要求驗證保險箱密碼的問題。';
+
+  @override
+  String get cl211_fix_7 => '修復保險箱提示的兩處錯誤：解密密碼輸入錯誤時誤提示「請先設定主密碼」；加密/解密的結果提示在非中文介面下仍顯示中文。';
+
+  @override
+  String get vault_config_password => '密碼配置';
+
+  @override
   String get app_icon_add_title => '新增到桌面';
 
   @override
-  String get app_icon_add_body => 'Android 不允許用外部圖片直接替換應用程式主圖示。可用以下方式把自訂圖片放到桌面：';
+  String get app_icon_add_body =>
+      'Android 不允許用外部圖片直接替換應用程式主圖示。可用以下方式把自訂圖片放到桌面：';
 
   @override
   String get app_icon_add_shortcut => '捷徑';
@@ -13530,9 +13625,6 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get app_icon_add_unsupported => '目前啟動器不支援自動新增，請長按桌面手動新增';
-
-  @override
-  String get vault_config_password => '密碼配置';
 
   @override
   String get vault_encrypt_done => '加密成功';

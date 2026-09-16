@@ -6673,22 +6673,73 @@ class L10nEs extends L10n {
   @override
   String get crypt_settings_title => 'Configuración de contraseña';
   @override
+  String get cl211_features => 'Novedades';
+
+  @override
+  String get cl211_feat_1 => 'Icono de app con tu propia imagen: Ajustes → Apariencia y tema → Icono de app. Tras elegir una imagen puedes añadirla a la pantalla de inicio como acceso directo o como widget 1×1. También se corrigió el caso en que decía "añadido" sin añadir nada; si tu lanzador bloquea los accesos directos, usa el widget.';
+
+  @override
+  String get cl211_feat_2 => 'La confirmación de eliminación ahora se puede desactivar: el diálogo de eliminación tiene una casilla "No volver a preguntar", y en Ajustes → Operaciones de archivos y visores hay un interruptor "Confirmar antes de eliminar".';
+
+  @override
+  String get cl211_ui => 'Interfaz e interacción';
+
+  @override
+  String get cl211_ui_1 => 'Todos los diálogos de progreso usan ahora un doble anillo: el exterior para el progreso total y el interior verde para el archivo actual. Cubre copiar/mover, comprimir/extraer, cifrar/descifrar, importar y restaurar la caja fuerte, y la copia de seguridad por categoría.';
+
+  @override
+  String get cl211_ui_2 => 'Los controles de reproducción de vídeo son más pequeños y se han movido abajo, justo encima de la barra de progreso, por lo que ya no tapa el centro de la imagen.';
+
+  @override
+  String get cl211_ui_3 => 'La lista de cifrado in situ de la caja fuerte tiene ahora una acción "Quitar": solo oculta la entrada, el archivo cifrado en disco no se ve afectado.';
+
+  @override
+  String get cl211_fixes => 'Correcciones';
+
+  @override
+  String get cl211_fix_1 => 'Corregido el pantalla negra (solo audio, sin imagen) al reproducir vídeo en algunos dispositivos, causada por un problema de compatibilidad del renderizador introducido en 1.1.42. El renderizado usa ahora la ruta universalmente compatible y, si la decodificación de hardware falla, cambia automáticamente a decodificación por software.';
+
+  @override
+  String get cl211_fix_2 => 'Corregida la reproducción de vídeo remoto por SMB / FTP / SFTP que se detenía cada pocos segundos y la barra de progreso que volvía al inicio tras buscar.';
+
+  @override
+  String get cl211_fix_3 => 'Corregido que FTP tardara a veces mucho en abrir o retroceder un directorio.';
+
+  @override
+  String get cl211_fix_4 => 'Corregida la compresión de archivos grandes o numerosos que se quedaba en 100%: la compresión ZIP ahora se transmite archivo por archivo, reduciendo mucho el uso de memoria mientras el progreso avanza.';
+
+  @override
+  String get cl211_fix_5 => 'Corregido que el reproductor de música mostraba todas las canciones como "FLAC • 24-bit"; ahora se muestra el formato real, y la profundidad de bits real en formatos sin pérdida.';
+
+  @override
+  String get cl211_fix_6 => 'Corregido que los archivos sin cifrar pedían la contraseña de la caja fuerte tras configurarla o cifrar en sitio.';
+
+  @override
+  String get cl211_fix_7 => 'Corregidos dos mensajes de la caja fuerte: al introducir una contraseña errónea se decía "configure primero la contraseña maestra"; los avisos de resultado de cifrar/descifrar seguían en chino en idiomas no chinos.';
+
+  @override
+  String get vault_config_password => 'Configuración de contraseña';
+
+  @override
   String get app_icon_add_title => 'Añadir a la pantalla de inicio';
 
   @override
-  String get app_icon_add_body => 'Android no permite sustituir el icono de la app por una imagen externa. Usa una de las opciones siguientes para poner tu imagen en la pantalla de inicio:';
+  String get app_icon_add_body =>
+      'Android no permite sustituir el icono de la app por una imagen externa. Usa una de las opciones siguientes para poner tu imagen en la pantalla de inicio:';
 
   @override
   String get app_icon_add_shortcut => 'Acceso directo';
 
   @override
-  String get app_icon_add_shortcut_desc => 'Añade un icono de inicio con tu imagen personalizada';
+  String get app_icon_add_shortcut_desc =>
+      'Añade un icono de inicio con tu imagen personalizada';
 
   @override
   String get app_icon_add_widget => 'Widget de pantalla de inicio';
 
   @override
-  String get app_icon_add_widget_desc => 'Un widget 1×1, compatible con todos los lanzadores';
+  String get app_icon_add_widget_desc =>
+      'Un widget 1×1, compatible con todos los lanzadores';
 
   @override
   String get app_icon_add_change_image => 'Cambiar imagen';
@@ -6700,10 +6751,8 @@ class L10nEs extends L10n {
   String get app_icon_add_cancelled => 'No añadido: cancelado';
 
   @override
-  String get app_icon_add_unsupported => 'Tu lanzador no admite añadirlo automáticamente; mantén pulsada la pantalla de inicio para añadirlo manualmente';
-
-  @override
-  String get vault_config_password => 'Configuración de contraseña';
+  String get app_icon_add_unsupported =>
+      'Tu lanzador no admite añadirlo automáticamente; mantén pulsada la pantalla de inicio para añadirlo manualmente';
 
   @override
   String get vault_encrypt_done => 'Cifrado correcto';

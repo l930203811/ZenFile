@@ -6401,10 +6401,59 @@ class L10nJa extends L10n {
   @override
   String get crypt_settings_title => 'パスワード設定';
   @override
+  String get cl211_features => '新機能';
+
+  @override
+  String get cl211_feat_1 => '独自の画像によるカスタムアプリアイコン：設定 → 外観とテーマ → アプリアイコン。画像を選ぶと、ホーム画面にショートカットまたは 1×1 ウィジェットとして追加できます。また、以前「追加しました」と表示されたのに実際には追加されていなかった問題を修正しました。ランチャーがショートカットをブロックする場合は、ウィジェットをお使いください。';
+
+  @override
+  String get cl211_feat_2 => '削除の確認を無効にできるようになりました：削除ダイアログに「次回から確認しない」チェックボックスが追加され、設定 → ファイル操作とビューアに「削除前に確認」スイッチが追加されました。';
+
+  @override
+  String get cl211_ui => 'UIと操作性';
+
+  @override
+  String get cl211_ui_1 => 'すべての進捗ダイアログが二重リングになりました：外側のリングが全体の進捗、内側の緑のリングが現在のファイルの進捗を示します。コピー/切り取り、圧縮/展開、暗号化/復号、保護区のインポートと復元、カテゴリバックアップに対応しています。';
+
+  @override
+  String get cl211_ui_2 => '動画再生のコントロールが小さくなり、プログレスバーのすぐ上に下へ移動したため、画面の中心を隠さなくなりました。';
+
+  @override
+  String get cl211_ui_3 => '保護区のその場暗号化リストに「削除」アクションが追加されました — リストからのみ削除され、ディスク上の暗号化ファイルには影響しません。';
+
+  @override
+  String get cl211_fixes => '修正';
+
+  @override
+  String get cl211_fix_1 => '一部の端末で動画再生時に黒屏（音声のみで映像なし）になっていた問題を修正しました。これは 1.1.42 で導入されたレンダラーの互換性問題が原因です。描画は現在すべての端末で互換性のある方式を使用し、ハードウェアデコードで異常が発生した場合は自動的にソフトウェアデコードに切り替えて再生を続けます。';
+
+  @override
+  String get cl211_fix_2 => 'SMB / FTP / SFTP 経由のリモート動画再生が数秒ごとに止まり、シーク後にプログレスバーが最初に戻る問題を修正しました。';
+
+  @override
+  String get cl211_fix_3 => 'FTPでディレクトリを開く、または上位へ戻る際に時々非常に時間がかかっていた問題を修正しました。';
+
+  @override
+  String get cl211_fix_4 => '大きなファイルや多数のファイルを圧縮する際に進捗が 100% で長時間止まっていた問題を修正しました。ZIP 圧縮は現在ファイルごとにストリーミングされ、メモリ使用量が大幅に削減されながら進捗が進み続けます。';
+
+  @override
+  String get cl211_fix_5 => '音楽プレーヤーがすべての曲を「FLAC • 24-bit」と表示していた問題を修正しました。現在は実際の形式が表示され、ロスレス形式では実際のビット深度も表示されます。';
+
+  @override
+  String get cl211_fix_6 => '保護区のパスワード設定やその場暗号化後に、暗号化されていないファイルを開くと誤って保護区のパスワードを求められていた問題を修正しました。';
+
+  @override
+  String get cl211_fix_7 => '保護区のメッセージの2つの誤りを修正しました：パスワードを間違えた際に「先にマスターパスワードを設定してください」と誤表示されていたこと、および暗号化/復号の結果トーストが非中国語環境でも中国語のままだったことです。';
+
+  @override
+  String get vault_config_password => 'パスワード設定';
+
+  @override
   String get app_icon_add_title => 'ホーム画面に追加';
 
   @override
-  String get app_icon_add_body => 'Android では外部画像でアプリのメインアイコンを直接置き換えることはできません。以下の方法でカスタム画像をホーム画面に配置できます：';
+  String get app_icon_add_body =>
+      'Android では外部画像でアプリのメインアイコンを直接置き換えることはできません。以下の方法でカスタム画像をホーム画面に配置できます：';
 
   @override
   String get app_icon_add_shortcut => 'ショートカット';
@@ -6428,10 +6477,8 @@ class L10nJa extends L10n {
   String get app_icon_add_cancelled => '追加されませんでした：キャンセルされました';
 
   @override
-  String get app_icon_add_unsupported => '現在のランチャーは自動追加に対応していません。ホーム画面を長押しして手動で追加してください';
-
-  @override
-  String get vault_config_password => 'パスワード設定';
+  String get app_icon_add_unsupported =>
+      '現在のランチャーは自動追加に対応していません。ホーム画面を長押しして手動で追加してください';
 
   @override
   String get vault_encrypt_done => '暗号化が成功しました';

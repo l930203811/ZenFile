@@ -6763,6 +6763,66 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl211_features": "新增功能",
+  "@cl211_features": {
+    "description": "changelog 2.1.1: cl211_features"
+  },
+  "cl211_feat_1": "應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點擊提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。",
+  "@cl211_feat_1": {
+    "description": "changelog 2.1.1: cl211_feat_1"
+  },
+  "cl211_feat_2": "刪除檔案的二次確認可視需要關閉：刪除彈窗新增「刪除不再提示」核取方塊，設定 → 檔案操作與檢視器新增「刪除檔案確認」開關，關閉後刪除不再彈出確認。",
+  "@cl211_feat_2": {
+    "description": "changelog 2.1.1: cl211_feat_2"
+  },
+  "cl211_ui": "介面與互動",
+  "@cl211_ui": {
+    "description": "changelog 2.1.1: cl211_ui"
+  },
+  "cl211_ui_1": "所有進度彈窗統一為雙層圓環：外圈顯示整體進度、內圈（綠色）顯示目前檔案進度，已涵蓋複製/剪下、壓縮/解壓縮、加密/解密、保險箱匯入加密與復原解密、類別備份等場景。",
+  "@cl211_ui_1": {
+    "description": "changelog 2.1.1: cl211_ui_1"
+  },
+  "cl211_ui_2": "影片播放控制按鈕整體縮小並下移，貼近進度條上方，不再遮擋畫面中心。",
+  "@cl211_ui_2": {
+    "description": "changelog 2.1.1: cl211_ui_2"
+  },
+  "cl211_ui_3": "保險箱原地加密清單新增「移除」：僅從清單移除，磁碟上的加密檔案不受影響。",
+  "@cl211_ui_3": {
+    "description": "changelog 2.1.1: cl211_ui_3"
+  },
+  "cl211_fixes": "問題修復",
+  "@cl211_fixes": {
+    "description": "changelog 2.1.1: cl211_fixes"
+  },
+  "cl211_fix_1": "修復部分機型播放影片黑屏（只有聲音沒有畫面）的問題：由 1.1.42 引入的渲染相容問題導致，現已改為通用渲染；並新增自動偵測，硬體解碼異常時自動切換軟體解碼續播，無需手動設定。",
+  "@cl211_fix_1": {
+    "description": "changelog 2.1.1: cl211_fix_1"
+  },
+  "cl211_fix_2": "修復 SMB / FTP / SFTP 播放遠端影片「播幾秒卡幾秒」、拖動進度條又跳回開頭的問題。",
+  "@cl211_fix_2": {
+    "description": "changelog 2.1.1: cl211_fix_2"
+  },
+  "cl211_fix_3": "修復 FTP 開啟目錄、返回上一層偶爾需要等待很久的問題。",
+  "@cl211_fix_3": {
+    "description": "changelog 2.1.1: cl211_fix_3"
+  },
+  "cl211_fix_4": "修復壓縮大檔案或多檔案時進度停在 100% 長時間不動的問題：改為串流式逐檔壓縮，記憶體佔用大幅降低，進度持續推進。",
+  "@cl211_fix_4": {
+    "description": "changelog 2.1.1: cl211_fix_4"
+  },
+  "cl211_fix_5": "修復音樂播放器把所有音訊都顯示為「FLAC • 24-bit」的問題，現在按真實格式顯示，無損格式還會顯示實際位深。",
+  "@cl211_fix_5": {
+    "description": "changelog 2.1.1: cl211_fix_5"
+  },
+  "cl211_fix_6": "修復設定保險箱密碼或原地加密後，開啟任意未加密檔案都會要求驗證保險箱密碼的問題。",
+  "@cl211_fix_6": {
+    "description": "changelog 2.1.1: cl211_fix_6"
+  },
+  "cl211_fix_7": "修復保險箱提示的兩處錯誤：解密密碼輸入錯誤時誤提示「請先設定主密碼」；加密/解密的結果提示在非中文介面下仍顯示中文。",
+  "@cl211_fix_7": {
+    "description": "changelog 2.1.1: cl211_fix_7"
+  },
   "app_icon_add_title": "新增到桌面",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"

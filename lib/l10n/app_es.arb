@@ -6615,6 +6615,66 @@
   "@crypt_settings_title": {
     "description": "crypt: crypt_settings_title"
   },
+  "cl211_features": "Novedades",
+  "@cl211_features": {
+    "description": "changelog 2.1.1: cl211_features"
+  },
+  "cl211_feat_1": "Icono de app con tu propia imagen: Ajustes → Apariencia y tema → Icono de app. Tras elegir una imagen puedes añadirla a la pantalla de inicio como acceso directo o como widget 1×1. También se corrigió el caso en que decía \"añadido\" sin añadir nada; si tu lanzador bloquea los accesos directos, usa el widget.",
+  "@cl211_feat_1": {
+    "description": "changelog 2.1.1: cl211_feat_1"
+  },
+  "cl211_feat_2": "La confirmación de eliminación ahora se puede desactivar: el diálogo de eliminación tiene una casilla \"No volver a preguntar\", y en Ajustes → Operaciones de archivos y visores hay un interruptor \"Confirmar antes de eliminar\".",
+  "@cl211_feat_2": {
+    "description": "changelog 2.1.1: cl211_feat_2"
+  },
+  "cl211_ui": "Interfaz e interacción",
+  "@cl211_ui": {
+    "description": "changelog 2.1.1: cl211_ui"
+  },
+  "cl211_ui_1": "Todos los diálogos de progreso usan ahora un doble anillo: el exterior para el progreso total y el interior verde para el archivo actual. Cubre copiar/mover, comprimir/extraer, cifrar/descifrar, importar y restaurar la caja fuerte, y la copia de seguridad por categoría.",
+  "@cl211_ui_1": {
+    "description": "changelog 2.1.1: cl211_ui_1"
+  },
+  "cl211_ui_2": "Los controles de reproducción de vídeo son más pequeños y se han movido abajo, justo encima de la barra de progreso, por lo que ya no tapa el centro de la imagen.",
+  "@cl211_ui_2": {
+    "description": "changelog 2.1.1: cl211_ui_2"
+  },
+  "cl211_ui_3": "La lista de cifrado in situ de la caja fuerte tiene ahora una acción \"Quitar\": solo oculta la entrada, el archivo cifrado en disco no se ve afectado.",
+  "@cl211_ui_3": {
+    "description": "changelog 2.1.1: cl211_ui_3"
+  },
+  "cl211_fixes": "Correcciones",
+  "@cl211_fixes": {
+    "description": "changelog 2.1.1: cl211_fixes"
+  },
+  "cl211_fix_1": "Corregido el pantalla negra (solo audio, sin imagen) al reproducir vídeo en algunos dispositivos, causada por un problema de compatibilidad del renderizador introducido en 1.1.42. El renderizado usa ahora la ruta universalmente compatible y, si la decodificación de hardware falla, cambia automáticamente a decodificación por software.",
+  "@cl211_fix_1": {
+    "description": "changelog 2.1.1: cl211_fix_1"
+  },
+  "cl211_fix_2": "Corregida la reproducción de vídeo remoto por SMB / FTP / SFTP que se detenía cada pocos segundos y la barra de progreso que volvía al inicio tras buscar.",
+  "@cl211_fix_2": {
+    "description": "changelog 2.1.1: cl211_fix_2"
+  },
+  "cl211_fix_3": "Corregido que FTP tardara a veces mucho en abrir o retroceder un directorio.",
+  "@cl211_fix_3": {
+    "description": "changelog 2.1.1: cl211_fix_3"
+  },
+  "cl211_fix_4": "Corregida la compresión de archivos grandes o numerosos que se quedaba en 100%: la compresión ZIP ahora se transmite archivo por archivo, reduciendo mucho el uso de memoria mientras el progreso avanza.",
+  "@cl211_fix_4": {
+    "description": "changelog 2.1.1: cl211_fix_4"
+  },
+  "cl211_fix_5": "Corregido que el reproductor de música mostraba todas las canciones como \"FLAC • 24-bit\"; ahora se muestra el formato real, y la profundidad de bits real en formatos sin pérdida.",
+  "@cl211_fix_5": {
+    "description": "changelog 2.1.1: cl211_fix_5"
+  },
+  "cl211_fix_6": "Corregido que los archivos sin cifrar pedían la contraseña de la caja fuerte tras configurarla o cifrar en sitio.",
+  "@cl211_fix_6": {
+    "description": "changelog 2.1.1: cl211_fix_6"
+  },
+  "cl211_fix_7": "Corregidos dos mensajes de la caja fuerte: al introducir una contraseña errónea se decía \"configure primero la contraseña maestra\"; los avisos de resultado de cifrar/descifrar seguían en chino en idiomas no chinos.",
+  "@cl211_fix_7": {
+    "description": "changelog 2.1.1: cl211_fix_7"
+  },
   "app_icon_add_title": "Añadir a la pantalla de inicio",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"

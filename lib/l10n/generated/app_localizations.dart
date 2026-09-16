@@ -11805,41 +11805,116 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'密码配置'**
   String get crypt_settings_title;
-  /// No description provided for @app_icon_add_title.
-  String get app_icon_add_title;
+  /// No description provided for @cl211_features.
+  String get cl211_features;
 
-  /// No description provided for @app_icon_add_body.
-  String get app_icon_add_body;
+  /// No description provided for @cl211_feat_1.
+  String get cl211_feat_1;
 
-  /// No description provided for @app_icon_add_shortcut.
-  String get app_icon_add_shortcut;
+  /// No description provided for @cl211_feat_2.
+  String get cl211_feat_2;
 
-  /// No description provided for @app_icon_add_shortcut_desc.
-  String get app_icon_add_shortcut_desc;
+  /// No description provided for @cl211_ui.
+  String get cl211_ui;
 
-  /// No description provided for @app_icon_add_widget.
-  String get app_icon_add_widget;
+  /// No description provided for @cl211_ui_1.
+  String get cl211_ui_1;
 
-  /// No description provided for @app_icon_add_widget_desc.
-  String get app_icon_add_widget_desc;
+  /// No description provided for @cl211_ui_2.
+  String get cl211_ui_2;
 
-  /// No description provided for @app_icon_add_change_image.
-  String get app_icon_add_change_image;
+  /// No description provided for @cl211_ui_3.
+  String get cl211_ui_3;
 
-  /// No description provided for @app_icon_add_change_image_desc.
-  String get app_icon_add_change_image_desc;
+  /// No description provided for @cl211_fixes.
+  String get cl211_fixes;
 
-  /// No description provided for @app_icon_add_cancelled.
-  String get app_icon_add_cancelled;
+  /// No description provided for @cl211_fix_1.
+  String get cl211_fix_1;
 
-  /// No description provided for @app_icon_add_unsupported.
-  String get app_icon_add_unsupported;
+  /// No description provided for @cl211_fix_2.
+  String get cl211_fix_2;
+
+  /// No description provided for @cl211_fix_3.
+  String get cl211_fix_3;
+
+  /// No description provided for @cl211_fix_4.
+  String get cl211_fix_4;
+
+  /// No description provided for @cl211_fix_5.
+  String get cl211_fix_5;
+
+  /// No description provided for @cl211_fix_6.
+  String get cl211_fix_6;
+
+  /// No description provided for @cl211_fix_7.
+  String get cl211_fix_7;
 
   /// No description provided for @vault_config_password.
   ///
   /// In zh, this message translates to:
   /// **'密码配置'**
   String get vault_config_password;
+
+  /// app icon: app_icon_add_title
+  ///
+  /// In zh, this message translates to:
+  /// **'添加到桌面'**
+  String get app_icon_add_title;
+
+  /// app icon: app_icon_add_body
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 不允许用外部图片直接替换应用主图标。可用下面的方式把自定义图片放到桌面：'**
+  String get app_icon_add_body;
+
+  /// app icon: app_icon_add_shortcut
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷方式'**
+  String get app_icon_add_shortcut;
+
+  /// app icon: app_icon_add_shortcut_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'在桌面新增一个带自定义图片的启动图标'**
+  String get app_icon_add_shortcut_desc;
+
+  /// app icon: app_icon_add_widget
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面小组件'**
+  String get app_icon_add_widget;
+
+  /// app icon: app_icon_add_widget_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'1×1 小组件，兼容所有启动器'**
+  String get app_icon_add_widget_desc;
+
+  /// app icon: app_icon_add_change_image
+  ///
+  /// In zh, this message translates to:
+  /// **'更换图片'**
+  String get app_icon_add_change_image;
+
+  /// app icon: app_icon_add_change_image_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'重新选择一张图片作为图标'**
+  String get app_icon_add_change_image_desc;
+
+  /// app icon: app_icon_add_cancelled
+  ///
+  /// In zh, this message translates to:
+  /// **'未添加：操作已取消'**
+  String get app_icon_add_cancelled;
+
+  /// app icon: app_icon_add_unsupported
+  ///
+  /// In zh, this message translates to:
+  /// **'当前启动器不支持自动添加，请长按桌面手动添加'**
+  String get app_icon_add_unsupported;
 
   /// vault/crypt: vault_encrypt_done
   ///

@@ -6656,37 +6656,87 @@ class L10nDe extends L10n {
   @override
   String get crypt_settings_title => 'Passwortkonfiguration';
   @override
+  String get cl211_features => 'Neu';
+
+  @override
+  String get cl211_feat_1 => 'Eigenes Bild als App-Symbol: Einstellungen → Erscheinungsbild & Design → App-Symbol. Nach dem Auswählen eines Bildes kannst du es als Verknüpfung oder als 1×1-Widget auf den Startbildschirm legen. Behoben wurde zudem der Fall, dass "hinzugefügt" gemeldet wurde, ohne dass etwas passierte; falls dein Launcher Verknüpfungen blockiert, nutze das Widget.';
+
+  @override
+  String get cl211_feat_2 => 'Die Löschbestätigung kann nun deaktiviert werden: Der Löschdialog hat ein Kontrollkästchen "Nicht mehr fragen", und unter Einstellungen → Dateioperationen & Betrachter gibt es den Schalter "Vor dem Löschen bestätigen".';
+
+  @override
+  String get cl211_ui => 'Oberfläche & Bedienung';
+
+  @override
+  String get cl211_ui_1 => 'Alle Fortschrittsdialoge nutzen nun einen Doppelring: der äußere Ring zeigt den Gesamtfortschritt, der innere grüne Ring den Fortschritt der aktuellen Datei. Abgedeckt sind Kopieren/Ausschneiden, Komprimieren/Entpacken, Verschlüsseln/Entschlüsseln, Tresor-Import & -Wiederherstellung und Kategorie-Backup.';
+
+  @override
+  String get cl211_ui_2 => 'Die Videosteuerungen sind kleiner und nach unten direkt über die Fortschrittsleiste verschoben, sodass sie die Bildmitte nicht mehr verdecken.';
+
+  @override
+  String get cl211_ui_3 => 'Die Liste der direkten Verschlüsselung im Tresor erhält eine Aktion "Entfernen" — sie blendet nur den Eintrag aus, die verschlüsselte Datei auf der Festplatte bleibt unberührt.';
+
+  @override
+  String get cl211_fixes => 'Fehlerbehebungen';
+
+  @override
+  String get cl211_fix_1 => 'Schwarzer Bildschirm (nur Ton, kein Bild) bei der Videowiedergabe auf einigen Geräten behoben, verursacht durch ein mit 1.1.42 eingeführtes Renderer-Kompatibilitätsproblem. Die Darstellung nutzt nun den universell kompatiblen Pfad, und bei Problemen mit der Hardware-Dekodierung wird automatisch auf Software-Dekodierung umgeschaltet.';
+
+  @override
+  String get cl211_fix_2 => 'Behoben: Remote-Videowiedergabe über SMB / FTP / SFTP blieb alle paar Sekunden hängen, und die Fortschrittsleiste sprang nach dem Suchen wieder an den Anfang.';
+
+  @override
+  String get cl211_fix_3 => 'Behoben: FTP brauchte beim Öffnen eines Verzeichnisses oder beim Zurückgehen manchmal sehr lange.';
+
+  @override
+  String get cl211_fix_4 => 'Behoben: Komprimierung großer oder vieler Dateien blieb bei 100 % hängen. Die ZIP-Komprimierung erfolgt nun dateiweise im Stream, was den Speicherverbrauch stark senkt, während der Fortschritt weiterläuft.';
+
+  @override
+  String get cl211_fix_5 => 'Behoben, dass der Musikplayer jeden Titel als "FLAC • 24-bit" anzeigte; nun wird das echte Format angezeigt, plus die tatsächliche Bit-Tiefe bei verlustfreien Formaten.';
+
+  @override
+  String get cl211_fix_6 => 'Behoben: Nach dem Konfigurieren des Tresors oder dem Verschlüsseln am Ort verlangten unverschlüsselte Dateien fälschlicherweise das Tresor-Passwort.';
+
+  @override
+  String get cl211_fix_7 => 'Zwei Tresor-Meldungen behoben: bei falschem Passwort erschien fälschlicherweise "bitte zuerst das Master-Passwort festlegen"; Ergebnis-Toasts für Verschlüsseln/Entschlüsseln waren in nicht-chinesischen Sprachen weiterhin auf Chinesisch.';
+
+  @override
+  String get vault_config_password => 'Passwortkonfiguration';
+
+  @override
   String get app_icon_add_title => 'Zum Startbildschirm hinzufügen';
 
   @override
-  String get app_icon_add_body => 'Android erlaubt es nicht, das App-Symbol durch ein externes Bild zu ersetzen. Nutze eine der folgenden Optionen, um dein eigenes Bild auf den Startbildschirm zu legen:';
+  String get app_icon_add_body =>
+      'Android erlaubt es nicht, das App-Symbol durch ein externes Bild zu ersetzen. Nutze eine der folgenden Optionen, um dein eigenes Bild auf den Startbildschirm zu legen:';
 
   @override
   String get app_icon_add_shortcut => 'Verknüpfung';
 
   @override
-  String get app_icon_add_shortcut_desc => 'Fügt ein Start-Symbol mit deinem eigenen Bild hinzu';
+  String get app_icon_add_shortcut_desc =>
+      'Fügt ein Start-Symbol mit deinem eigenen Bild hinzu';
 
   @override
   String get app_icon_add_widget => 'Startbildschirm-Widget';
 
   @override
-  String get app_icon_add_widget_desc => 'Ein 1×1-Widget, funktioniert mit jedem Launcher';
+  String get app_icon_add_widget_desc =>
+      'Ein 1×1-Widget, funktioniert mit jedem Launcher';
 
   @override
   String get app_icon_add_change_image => 'Bild ändern';
 
   @override
-  String get app_icon_add_change_image_desc => 'Wähle ein anderes Bild als Symbol';
+  String get app_icon_add_change_image_desc =>
+      'Wähle ein anderes Bild als Symbol';
 
   @override
   String get app_icon_add_cancelled => 'Nicht hinzugefügt: abgebrochen';
 
   @override
-  String get app_icon_add_unsupported => 'Dein Launcher unterstützt das automatische Hinzufügen nicht – halte den Startbildschirm gedrückt, um es manuell hinzuzufügen';
-
-  @override
-  String get vault_config_password => 'Passwortkonfiguration';
+  String get app_icon_add_unsupported =>
+      'Dein Launcher unterstützt das automatische Hinzufügen nicht – halte den Startbildschirm gedrückt, um es manuell hinzuzufügen';
 
   @override
   String get vault_encrypt_done => 'Verschlüsselung erfolgreich';

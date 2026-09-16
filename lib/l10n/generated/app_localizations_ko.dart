@@ -6396,10 +6396,59 @@ class L10nKo extends L10n {
   @override
   String get crypt_settings_title => '비밀번호 설정';
   @override
+  String get cl211_features => '새 기능';
+
+  @override
+  String get cl211_feat_1 => '자신의 이미지로 사용자 지정 앱 아이콘: 설정 → 화면 및 테마 → 앱 아이콘. 이미지를 선택하면 홈 화면에 바로가기나 1×1 위젯으로 추가할 수 있습니다. 또한 이전에 "추가됨"이라고 표시됐지만 실제로 추가되지 않던 문제를 수정했습니다. 실행기가 바로가기를 차단하면 위젯을 사용하세요.';
+
+  @override
+  String get cl211_feat_2 => '삭제 확인을 끌 수 있게 되었습니다: 삭제 대화상자에 "다시 묻지 않음" 체크박스가 추가되고, 설정 → 파일 작업 및 뷰어에 "삭제 전 확인" 스위치가 추가되었습니다.';
+
+  @override
+  String get cl211_ui => 'UI 및 조작';
+
+  @override
+  String get cl211_ui_1 => '모든 진행 대화상자가 이중 링으로 통일되었습니다: 바깥쪽 링은 전체 진행률, 안쪽 녹색 링은 현재 파일 진행률을 표시하며 복사/이동, 압축/해제, 암호화/복호화, 보관함 가져오기 및 복원, 카테고리 백업을 포함합니다.';
+
+  @override
+  String get cl211_ui_2 => '동영상 재생 컨트롤이 작아지고 진행 표시줄 바로 위로 아래로 이동하여 화면 중앙을 가리지 않습니다.';
+
+  @override
+  String get cl211_ui_3 => '보관함 내부 암호화 목록에 "제거" 동작이 추가되었습니다 — 목록에서만 제거되며 디스크의 암호화 파일에는 영향을 주지 않습니다.';
+
+  @override
+  String get cl211_fixes => '수정';
+
+  @override
+  String get cl211_fix_1 => '일부 기기에서 동영상 재생 시 검은 화면(소리만 있고 영상 없음)이 발생하던 문제를 수정했습니다. 1.1.42에서 도입된 렌더러 호환성 문제가 원인이며, 이제 범용 렌더링을 사용하고 하드웨어 디코딩 이상 시 자동으로 소프트웨어 디코딩으로 전환하여 재생을 이어갑니다.';
+
+  @override
+  String get cl211_fix_2 => 'SMB / FTP / SFTP를 통한 원격 동영상 재생이 몇 초마다 멈추고, 탐색 후 진행 표시줄이 처음으로 돌아가던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_3 => 'FTP에서 디렉터리를 열거나 상위로 이동할 때 가끔 매우 오래 걸리던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_4 => '큰 파일이나 여러 파일 압축 시 진행률이 100%에서 오래 멈추던 문제를 수정했습니다. ZIP 압축은 이제 파일 단위로 스트리밍되어 메모리 사용량이 크게 줄어들면서도 진행률이 계속 나아갑니다.';
+
+  @override
+  String get cl211_fix_5 => '음악 플레이어가 모든 곡을 "FLAC • 24-bit"로 표시하던 문제를 수정했습니다. 이제 실제 형식이 표시되며, 무손실 형식은 실제 비트 심도도 표시됩니다.';
+
+  @override
+  String get cl211_fix_6 => '보관함 암호 설정이나 내부 암호화 후, 암호화되지 않은 파일을 열 때 보관함 암호를 잘못 요구하던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_7 => '보관함 메시지의 두 가지 오류를 수정했습니다: 암호를 틀렸을 때 "먼저 마스터 암호를 설정하세요"라고 잘못 표시되던 것, 그리고 암호화/복호화 결과 토스트가 비중국어 환경에서도 중국어로 표시되던 것입니다.';
+
+  @override
+  String get vault_config_password => '비밀번호 설정';
+
+  @override
   String get app_icon_add_title => '홈 화면에 추가';
 
   @override
-  String get app_icon_add_body => 'Android는 외부 이미지로 앱 기본 아이콘을 직접 교체할 수 없습니다. 아래 방법으로 사용자 이미지를 홈 화면에 배치할 수 있습니다:';
+  String get app_icon_add_body =>
+      'Android는 외부 이미지로 앱 기본 아이콘을 직접 교체할 수 없습니다. 아래 방법으로 사용자 이미지를 홈 화면에 배치할 수 있습니다:';
 
   @override
   String get app_icon_add_shortcut => '바로가기';
@@ -6423,10 +6472,8 @@ class L10nKo extends L10n {
   String get app_icon_add_cancelled => '추가되지 않음: 취소되었습니다';
 
   @override
-  String get app_icon_add_unsupported => '현재 런처는 자동 추가를 지원하지 않습니다. 홈 화면을 길게 눌러 직접 추가하세요';
-
-  @override
-  String get vault_config_password => '비밀번호 설정';
+  String get app_icon_add_unsupported =>
+      '현재 런처는 자동 추가를 지원하지 않습니다. 홈 화면을 길게 눌러 직접 추가하세요';
 
   @override
   String get vault_encrypt_done => '암호화 성공';
