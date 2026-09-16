@@ -197,14 +197,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-
-                        // 分隔线
-                        Container(
-                          height: 1,
-                          color: theme.colorScheme.outline.withOpacity(0.15),
-                        ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 20),
 
                         // 标题
                         Text(
@@ -282,14 +275,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
-
-                        // 分隔线
-                        Container(
-                          height: 1,
-                          color: theme.colorScheme.outline.withOpacity(0.15),
-                        ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 20),
 
                         // 停止按钮
                         SizedBox(

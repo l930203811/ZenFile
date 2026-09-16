@@ -796,49 +796,47 @@ class BackgroundArchiveService {
       await Future<void>.delayed(Duration.zero);
 
       // ---- Phase 2：根据格式选压缩路径 ----
-      // ZIP：把所有文件读进内存 → 构建 Archive → ZipEncoder().encode() 一次性编码 → 写盘
-      // 和 NFile 参考实现同方案，archive 包内部处理 ZIP 格式细节（Local Header / Central Dir / EOCD），
-      // 绝对不会出现手写流式时 deflate stream 损坏的问题。
-      // 大文件 OOM 风险：运行在独立 isolate 中，即便 OOM 也只杀 isolate 不杀主进程。
+      // ZIP：用 ZipFileEncoder 流式逐文件压缩（内部 InputFileStream + ArchiveFile.stream，
+      // 不整包读入内存；每个文件完成即上报进度），避免旧方案
+      // （readAsBytesSync 整读全部文件 + ZipEncoder.encode 一次性编码）在
+      // 大文件/多文件场景内存峰值过高、编码阶段进度冻结造成"卡住"观感。
       if (format == 'zip') {
-        final archive = Archive();
+        final enc = ZipFileEncoder();
+        enc.create(destinationPath, level: level);
         int compressedBytes = 0;
-        final totalBytes = plan.totalByteCount;
-        for (int i = 0; i < plan.files.length; i++) {
-          final entry = plan.files[i];
-          final src = File(entry.fullPath);
-          if (!src.existsSync()) continue;
-          final fileSize = src.lengthSync();
-          final double prog = 0.10 + (i / plan.files.length) * 0.40;
-          t.send(prog, entry.relPath,
-              bytesProcessed: compressedBytes,
-              totalBytes: totalBytes,
-              currentFileBytes: 0,
-              currentFileTotal: fileSize);
-          final bytes = src.readAsBytesSync();
-          archive.addFile(ArchiveFile(entry.relPath, bytes.length, bytes));
-          compressedBytes += bytes.length;
-          t.send(prog, entry.relPath,
-              bytesProcessed: compressedBytes,
-              totalBytes: totalBytes,
-              currentFileBytes: fileSize,
-              currentFileTotal: fileSize);
+        try {
+          for (int i = 0; i < plan.files.length; i++) {
+            final entry = plan.files[i];
+            final src = File(entry.fullPath);
+            if (!src.existsSync()) continue;
+            final fileSize = src.lengthSync();
+            final double prog = 0.10 + (compressedBytes / totalBytes) * 0.80;
+            t.send(prog, entry.relPath,
+                bytesProcessed: compressedBytes,
+                totalBytes: totalBytes,
+                currentFileBytes: 0,
+                currentFileTotal: fileSize);
+            await enc.addFile(src, entry.relPath);
+            compressedBytes += fileSize;
+            t.send(prog, entry.relPath,
+                bytesProcessed: compressedBytes,
+                totalBytes: totalBytes,
+                currentFileBytes: fileSize,
+                currentFileTotal: fileSize);
+          }
+          for (final d in plan.emptyDirs) {
+            final normalized = d.endsWith('/') ? d : '$d/';
+            final af = ArchiveFile(normalized, 0, null);
+            af.isFile = false;
+            enc.addArchiveFile(af);
+          }
+          t.send(0.95, 'Finalizing…', force: true,
+              bytesProcessed: compressedBytes, totalBytes: totalBytes);
+          await enc.close();
+        } catch (e) {
+          try { enc.closeSync(); } catch (_) {}
+          rethrow;
         }
-        for (final d in plan.emptyDirs) {
-          final normalized = d.endsWith('/') ? d : '$d/';
-          final af = ArchiveFile(normalized, 0, null);
-          af.isFile = false;
-          archive.addFile(af);
-        }
-        t.send(0.55, 'Compressing ZIP...', force: true, bytesProcessed: compressedBytes, totalBytes: totalBytes);
-        final encodedBytes = ZipEncoder().encode(archive, level: level);
-        if (encodedBytes == null) {
-          sendPort.send({'status': 'error', 'error': 'ZIP encoding failed: null result'});
-          return;
-        }
-        t.send(0.90, 'Writing to disk...', force: true, bytesProcessed: compressedBytes, totalBytes: totalBytes);
-        final outFile = File(destinationPath)..createSync(recursive: true);
-        outFile.writeAsBytesSync(encodedBytes);
       } else if (format == 'tar') {
         // TarEncoder.add → TarFile.write → output.writeInputStream(InputStreamBase) 是真流式，
         // 不会整包 toUint8List，可以继续用。
