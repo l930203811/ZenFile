@@ -271,7 +271,8 @@ class CryptOperations {
   /// - **原子写入**：先写 `*.zencrypt_tmp`，成功后才删除原文件并改名，
   ///   中途失败/取消时原文件保持完好，不会丢数据。
   /// - 保留原文件修改时间。
-  Future<String> encryptFile(String sourcePath) async {
+  Future<String> encryptFile(String sourcePath,
+      {void Function(int bytes, int total)? onFileProgress}) async {
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) {
       throw FileSystemException('File not found', sourcePath);
@@ -288,6 +289,9 @@ class CryptOperations {
     final tmpPath = '$encryptedPath$_tmpSuffix';
     final tmpFile = File(tmpPath);
 
+    final int totalBytes = await sourceFile.length();
+    var written = 0;
+
     RandomAccessFile? raf;
     try {
       raf = await tmpFile.open(mode: FileMode.write);
@@ -299,6 +303,8 @@ class CryptOperations {
         if (out.isNotEmpty) {
           await raf.writeFrom(out);
         }
+        written += chunk.length;
+        onFileProgress?.call(written, totalBytes);
       }
       final tail = encrypter.finish();
       if (tail.isNotEmpty) {
@@ -333,7 +339,8 @@ class CryptOperations {
   /// 解密单个文件（原地解密）
   ///
   /// 同样采用流式处理 + 原子写入，避免大文件 OOM 与中断丢数据。
-  Future<String> decryptFile(String encryptedPath) async {
+  Future<String> decryptFile(String encryptedPath,
+      {void Function(int bytes, int total)? onFileProgress}) async {
     final encryptedFile = File(encryptedPath);
     if (!await encryptedFile.exists()) {
       throw FileSystemException('Encrypted file not found', encryptedPath);
@@ -349,6 +356,9 @@ class CryptOperations {
     final tmpPath = '$decryptedPath$_tmpSuffix';
     final tmpFile = File(tmpPath);
 
+    final int totalBytes = await encryptedFile.length();
+    var written = 0;
+
     RandomAccessFile? raf;
     try {
       raf = await tmpFile.open(mode: FileMode.write);
@@ -359,6 +369,8 @@ class CryptOperations {
         if (out.isNotEmpty) {
           await raf.writeFrom(out);
         }
+        written += chunk.length;
+        onFileProgress?.call(written, totalBytes);
       }
       final tail = decrypter.finish();
       if (tail.isNotEmpty) {
@@ -521,6 +533,7 @@ class CryptOperations {
   Future<void> encryptDirectory(
     String sourceDirPath, {
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
     bool skipEncrypted = false,
   }) async {
     // 先统计文件总数
@@ -538,7 +551,7 @@ class CryptOperations {
           onProgress?.call(processed, total);
           return;
         }
-        await encryptFile(file);
+        await encryptFile(file, onFileProgress: onFileProgress);
         processed++;
         onProgress?.call(processed, total);
       },
@@ -627,6 +640,7 @@ class CryptOperations {
   Future<void> decryptDirectory(
     String encryptedDirPath, {
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     // 先统计文件总数
     final allFiles = await _listAllFiles(encryptedDirPath);
@@ -635,7 +649,7 @@ class CryptOperations {
 
     // 递归解密
     await _decryptDirectoryRecursive(encryptedDirPath, (file) async {
-      await decryptFile(file);
+      await decryptFile(file, onFileProgress: onFileProgress);
       processed++;
       onProgress?.call(processed, total);
     });

@@ -26,6 +26,7 @@ import '../widgets/progress_overlay.dart';
 import '../widgets/remote_path_picker.dart';
 import '../widgets/outlined_add_button.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/crypt_progress_dialog.dart';
 
 class VaultExplorerScreen extends StatefulWidget {
   /// 不再需要解锁密码作为参数：加解密一律使用「加密设置」中的主密码，
@@ -2637,12 +2638,27 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
     if (confirm != true) return;
 
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     var loadingShown = false;
     void showLoading() {
       if (loadingShown) return;
       loadingShown = true;
-      pushProgressRoute(navigator, message: l10n.vault_decrypting, progress: progress);
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      navigator.push(
+        PageRouteBuilder(
+          opaque: false,
+          barrierDismissible: false,
+          pageBuilder: (_, _, _) => ValueListenableBuilder<CryptProgressData?>(
+            valueListenable: ctl.notifier,
+            builder: (_, v, _) => ColoredBox(
+              color: isDark ? Colors.black54 : Colors.black26,
+              child: Center(
+                child: CryptProgressDialog(message: l10n.vault_decrypting, progress: v),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     void hideLoading() {
@@ -2667,11 +2683,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         if (isDirectory) {
           await ops.decryptDirectory(
             path,
-            onProgress: (done, total) =>
-                progress.value = total > 0 ? done / total : null,
+            onProgress: ctl.onOverall,
+            onFileProgress: ctl.onFile,
           );
         } else {
-          await ops.decryptFile(path);
+          await ops.decryptFile(path, onFileProgress: ctl.onFile);
         }
         await _afterDecrypt(path);
         if (mounted) {
@@ -2696,7 +2712,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 

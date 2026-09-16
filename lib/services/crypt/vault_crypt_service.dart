@@ -216,6 +216,7 @@ class VaultCryptService {
   Future<void> encryptInPlace({
     required String sourcePath,
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
     bool skipEncrypted = false,
   }) async {
     // 密钥取自「加密设置」的配置档案（可按路径绑定）；未配置则抛 StateError
@@ -274,10 +275,11 @@ class VaultCryptService {
       await ops.encryptDirectory(
         sourcePath,
         onProgress: onProgress,
+        onFileProgress: onFileProgress,
         skipEncrypted: skipEncrypted,
       );
     } else {
-      await ops.encryptFile(sourcePath);
+      await ops.encryptFile(sourcePath, onFileProgress: onFileProgress);
     }
 
     // ⚠️ 登记「这片目录执行过原地加密」，且**必须包含存储根目录**。
@@ -302,6 +304,7 @@ class VaultCryptService {
   Future<void> encryptToSandbox({
     required String sourcePath,
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     final sandboxMount = await ensureSandboxMount();
     final sourceEntity = FileSystemEntity.typeSync(sourcePath);
@@ -322,7 +325,8 @@ class VaultCryptService {
         await tempDest.delete(recursive: true);
       }
       await _copyDirectory(Directory(sourcePath), tempDest);
-      await ops.encryptDirectory(destPath, onProgress: onProgress);
+      await ops.encryptDirectory(destPath, onProgress: onProgress,
+          onFileProgress: onFileProgress);
       // encryptDirectory 会把目录名一并加密，算出最终密文路径
       encryptedPath = p.join(
         sandboxMount.physicalPath,
@@ -333,7 +337,8 @@ class VaultCryptService {
     } else {
       // 文件加密：先复制到沙盒目录，再加密（encryptFile 返回加密后的最终路径）
       await File(sourcePath).copy(destPath);
-      encryptedPath = await ops.encryptFile(destPath);
+      encryptedPath = await ops.encryptFile(destPath,
+          onFileProgress: onFileProgress);
       // 删除原文件
       final sourceFile = File(sourcePath);
       if (await sourceFile.exists()) {
@@ -395,6 +400,7 @@ class VaultCryptService {
   Future<void> decryptInPlace({
     required String encryptedPath,
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     var mount = await _findMountForPath(encryptedPath);
     if (mount == null) {
@@ -420,9 +426,10 @@ class VaultCryptService {
 
     final ops = CryptOperations(mount);
     if (isDir) {
-      await ops.decryptDirectory(encryptedPath, onProgress: onProgress);
+      await ops.decryptDirectory(encryptedPath, onProgress: onProgress,
+          onFileProgress: onFileProgress);
     } else {
-      await ops.decryptFile(encryptedPath);
+      await ops.decryptFile(encryptedPath, onFileProgress: onFileProgress);
     }
 
     // 该目录已还原为明文：从「原地加密目录登记表」里注销，
@@ -457,6 +464,7 @@ class VaultCryptService {
     required String sandboxPath,
     required String originalPath,
     void Function(int processed, int total)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     // ensureSandboxMount 内部会用主密码补齐（持久化挂载点不落盘密码）
     final sandboxMount = await ensureSandboxMount();
@@ -468,7 +476,8 @@ class VaultCryptService {
 
     if (isDir) {
       // 目录解密：先解密（decryptDirectory 会把目录名解密并 rename）
-      await ops.decryptDirectory(sandboxPath, onProgress: onProgress);
+      await ops.decryptDirectory(sandboxPath, onProgress: onProgress,
+          onFileProgress: onFileProgress);
       // 算出解密后的实际路径（目录已被 rename，原 sandboxPath 不再存在）
       final decryptedDirPath = p.join(
         p.dirname(sandboxPath),
@@ -485,7 +494,8 @@ class VaultCryptService {
       // ① 后缀可配置（base64 / 空后缀）时判定失效；
       // ② 沙盒里只要有多个文件就必然取错。
       // decryptFile 直接返回解密后的真实路径，改用它。
-      final decryptedPath = await ops.decryptFile(sandboxPath);
+      final decryptedPath = await ops.decryptFile(sandboxPath,
+          onFileProgress: onFileProgress);
       final originalFile = File(originalPath);
       if (await originalFile.exists()) {
         await originalFile.delete();

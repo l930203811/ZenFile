@@ -45,6 +45,7 @@ import '../../services/crypt/vault_crypt_service.dart';
 import '../widgets/bulk_crypt_actions.dart';
 import '../screens/vault_session_unlock_dialog.dart';
 import '../screens/crypt_mount_edit_screen.dart';
+import '../widgets/crypt_progress_dialog.dart';
 
 
 /// 媒体分类页右上角「查看与排序」菜单动作
@@ -1849,16 +1850,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (!await _ensureMasterPassword(context)) return;
     final mode = await BulkCryptActions.promptEncryptionMode(context);
     if (mode == null) return;
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     if (!context.mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(
           message: L10n.of(context).vault_encrypting,
-          value: v,
+          progress: v,
         ),
       ),
     );
@@ -1866,14 +1867,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       if (mode == 'inplace') {
         await VaultCryptService.instance.encryptInPlace(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       } else {
         await VaultCryptService.instance.encryptToSandbox(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       }
       if (context.mounted) {
@@ -1891,31 +1892,31 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 
   Future<void> _handleDecrypt(BuildContext context, String path) async {
     if (!await requireVaultSessionUnlock(context)) return;
     if (!await _ensureMasterPassword(context)) return;
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     if (!context.mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(
           message: L10n.of(context).vault_decrypting,
-          value: v,
+          progress: v,
         ),
       ),
     );
     try {
       await VaultCryptService.instance.decryptInPlace(
         encryptedPath: path,
-        onProgress: (done, total) =>
-            progress.value = total > 0 ? done / total : null,
+        onProgress: ctl.onOverall,
+        onFileProgress: ctl.onFile,
       );
       if (context.mounted) {
         Navigator.pop(context);
@@ -1932,7 +1933,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 

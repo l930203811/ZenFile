@@ -11,6 +11,7 @@ import '../../ui/screens/internal_file_picker_screen.dart';
 import '../../ui/screens/vault_session_unlock_dialog.dart';
 import 'encryption_mode_bottom_sheet.dart';
 import 'progress_overlay.dart';
+import 'crypt_progress_dialog.dart';
 
 /// 批量加解密操作的公共逻辑，供多选菜单（长按底部弹窗 / 底部动作栏）共用。
 class BulkCryptActions {
@@ -67,16 +68,16 @@ class BulkCryptActions {
     final mode = await promptEncryptionMode(context);
     if (mode == null || !context.mounted) return;
 
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     if (context.mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => ValueListenableBuilder<double?>(
-          valueListenable: progress,
-          builder: (_, v, __) => ProgressOverlay(
+        builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+          valueListenable: ctl.notifier,
+          builder: (_, v, __) => CryptProgressDialog(
             message: l10n.vault_encrypting,
-            value: v,
+            progress: v,
           ),
         ),
       );
@@ -96,16 +97,16 @@ class BulkCryptActions {
           if (mode == 'inplace') {
             await VaultCryptService.instance.encryptInPlace(
               sourcePath: path,
-              onProgress: (done, total) => progress.value = total > 0
-                  ? (i + done / total) / selectedPaths.length
-                  : null,
+              onProgress: (done, total) =>
+                  ctl.setOverall((i + done / total) / selectedPaths.length),
+              onFileProgress: ctl.onFile,
             );
           } else {
             await VaultCryptService.instance.encryptToSandbox(
               sourcePath: path,
-              onProgress: (done, total) => progress.value = total > 0
-                  ? (i + done / total) / selectedPaths.length
-                  : null,
+              onProgress: (done, total) =>
+                  ctl.setOverall((i + done / total) / selectedPaths.length),
+              onFileProgress: ctl.onFile,
             );
           }
           success++;
@@ -138,7 +139,7 @@ class BulkCryptActions {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 
@@ -201,16 +202,16 @@ class BulkCryptActions {
     );
     if (confirm != true || !context.mounted) return;
 
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     if (context.mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => ValueListenableBuilder<double?>(
-          valueListenable: progress,
-          builder: (_, v, __) => ProgressOverlay(
+        builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+          valueListenable: ctl.notifier,
+          builder: (_, v, __) => CryptProgressDialog(
             message: l10n.vault_decrypting,
-            value: v,
+            progress: v,
           ),
         ),
       );
@@ -225,9 +226,9 @@ class BulkCryptActions {
         try {
           await VaultCryptService.instance.decryptInPlace(
             encryptedPath: path,
-            onProgress: (done, total) => progress.value = total > 0
-                ? (i + done / total) / encryptedPaths.length
-                : null,
+            onProgress: (done, total) =>
+                ctl.setOverall((i + done / total) / encryptedPaths.length),
+            onFileProgress: ctl.onFile,
           );
           success++;
         } catch (e) {
@@ -259,7 +260,7 @@ class BulkCryptActions {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 

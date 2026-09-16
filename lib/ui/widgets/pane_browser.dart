@@ -42,6 +42,7 @@ import '../../services/media_thumbnail_service.dart';
 import '../../services/preferences_service.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'crypt_progress_dialog.dart';
 
 class PaneBrowser extends StatefulWidget {
   final int tabIndex;
@@ -608,14 +609,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final mode = await BulkCryptActions.promptEncryptionMode(context);
     if (mode == null) return;
 
-    // 显示进度对话框（带百分比，避免用户面对一个没有反馈的转圈）
-    final progress = ValueNotifier<double?>(null);
+    // 显示进度对话框（双层圆环：外圈整体进度 + 内圈当前文件进度）
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_encrypting, value: v),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_encrypting, progress: v),
       ),
     );
 
@@ -623,14 +624,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
       if (mode == 'inplace') {
         await VaultCryptService.instance.encryptInPlace(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       } else {
         await VaultCryptService.instance.encryptToSandbox(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       }
       if (context.mounted) {
@@ -650,7 +651,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 
@@ -660,22 +661,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
     if (!await requireVaultSessionUnlock(context)) return;
     if (!await _ensureMasterPassword(context)) return;
 
-    // 显示进度对话框（带百分比）
-    final progress = ValueNotifier<double?>(null);
+    // 显示进度对话框（双层圆环：外圈整体进度 + 内圈当前文件进度）
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_decrypting, value: v),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_decrypting, progress: v),
       ),
     );
 
     try {
       await VaultCryptService.instance.decryptInPlace(
         encryptedPath: path,
-        onProgress: (done, total) =>
-            progress.value = total > 0 ? done / total : null,
+        onProgress: ctl.onOverall,
+        onFileProgress: ctl.onFile,
       );
       if (context.mounted) {
         Navigator.pop(context); // 关闭进度对话框
@@ -694,7 +695,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 

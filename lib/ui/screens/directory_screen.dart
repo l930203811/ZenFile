@@ -35,6 +35,7 @@ import 'network_connection_wizard_screen.dart';
 import '../../services/preferences_service.dart';
 import '../../core/theme.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/crypt_progress_dialog.dart';
 
 
 class DirectoryScreen extends StatefulWidget {
@@ -914,13 +915,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     final mode = await BulkCryptActions.promptEncryptionMode(context);
     if (mode == null) return;
 
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_encrypting, value: v),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_encrypting, progress: v),
       ),
     );
 
@@ -928,14 +929,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       if (mode == 'inplace') {
         await VaultCryptService.instance.encryptInPlace(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       } else {
         await VaultCryptService.instance.encryptToSandbox(
           sourcePath: path,
-          onProgress: (done, total) =>
-              progress.value = total > 0 ? done / total : null,
+          onProgress: ctl.onOverall,
+          onFileProgress: ctl.onFile,
         );
       }
       if (context.mounted) {
@@ -955,7 +956,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 
@@ -965,21 +966,21 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     if (!await requireVaultSessionUnlock(context)) return;
     if (!await _ensureMasterPassword(context)) return;
 
-    final progress = ValueNotifier<double?>(null);
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(message: L10n.of(context).vault_decrypting, value: v),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_decrypting, progress: v),
       ),
     );
 
     try {
       await VaultCryptService.instance.decryptInPlace(
         encryptedPath: path,
-        onProgress: (done, total) =>
-            progress.value = total > 0 ? done / total : null,
+        onProgress: ctl.onOverall,
+        onFileProgress: ctl.onFile,
       );
       if (context.mounted) {
         Navigator.pop(context);
@@ -998,7 +999,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 
