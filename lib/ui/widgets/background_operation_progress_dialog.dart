@@ -99,9 +99,12 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 环形进度条（外圈背景）
+                  // 环形进度条（外圈=整体进度：淡底环 + 主题色进度环）
+                  // padding=strokeWidth/2（4px）：CircularProgressIndicator 的
+                  // stroke 以约束框圆为路径向两侧各扩半线宽，4px 时环外缘恰好
+                  // 与圆形背景边缘对齐（无白边、不超出）。
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(4),
                     child: CircularProgressIndicator(
                       value: 1.0,
                       strokeWidth: 8,
@@ -111,9 +114,9 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // 环形进度条（实际进度）
+                  // 环形进度条（外圈实际进度）
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(4),
                     child: TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: percent),
                       duration: const Duration(milliseconds: 300),
@@ -132,9 +135,39 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
 
+                  // 环形进度条（内圈=当前文件进度，其他颜色，绿色系区分整体）
+                  // 与外圈紧靠：外圈内缘 142px、内圈外缘 140.5px（1.5px 间隙）
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 5,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        (isDark ? const Color(0xFF81C784) : const Color(0xFF43A047))
+                            .withOpacity(0.10),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: CircularProgressIndicator(
+                      value: operation.currentFileTotal > 0
+                          ? (operation.currentFileBytes / operation.currentFileTotal)
+                              .clamp(0.0, 1.0)
+                          : 0.0,
+                      strokeWidth: 5,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? const Color(0xFF81C784) : const Color(0xFF43A047),
+                      ),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+
                   // 内部内容区域
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 34),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
