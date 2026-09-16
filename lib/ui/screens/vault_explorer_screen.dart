@@ -848,8 +848,24 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     // await 之前先捕获导航器/提示条，避免跨异步使用 BuildContext
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final ctl = CryptProgressController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    pushProgressRoute(navigator, message: l10n.vault_importing);
+    navigator.push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        pageBuilder: (_, _, _) => ValueListenableBuilder<CryptProgressData?>(
+          valueListenable: ctl.notifier,
+          builder: (_, v, _) => ColoredBox(
+            color: isDark ? Colors.black54 : Colors.black26,
+            child: Center(
+              child: CryptProgressDialog(message: l10n.vault_importing, progress: v),
+            ),
+          ),
+        ),
+      ),
+    );
 
     var encryptCount = 0; // 新执行加密的项
     var skipCount = 0; // 已是加密、跳过的项
@@ -864,7 +880,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         debugPrint('[vault] 加载加密挂载点失败，降级为未加密识别: $e');
       }
 
-      for (final path in selectedPaths) {
+      final importTotal = selectedPaths.length;
+      for (var i = 0; i < importTotal; i++) {
+        final path = selectedPaths[i];
+        ctl.setOverall(i / importTotal);
         try {
           final isDir = Directory(path).existsSync();
           final isFile = !isDir && File(path).existsSync();
@@ -878,6 +897,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             // 沙盒加密：移入保险箱私有目录并加密
             await VaultCryptService.instance.encryptToSandbox(
               sourcePath: path,
+              onProgress: (done, cnt) =>
+                  ctl.setOverall((i + done / cnt) / importTotal),
+              onFileProgress: ctl.onFile,
             );
             await VaultImportStore.remove(path);
             encryptCount++;
@@ -912,6 +934,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           if (mount == null) {
             if (mounted) {
               navigator.pop();
+              ctl.dispose();
               _showNeedPasswordDialog(l10n);
             }
             return;
@@ -924,7 +947,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             await ops.encryptDirectory(
               path,
               skipEncrypted: true,
-              onProgress: (_, __) {},
+              onProgress: (done, cnt) =>
+                  ctl.setOverall((i + done / cnt) / importTotal),
+              onFileProgress: ctl.onFile,
             );
             final isMountRoot = p.equals(path, mount.physicalPath);
             newPath = isMountRoot
@@ -934,7 +959,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                     mount.crypt.encryptDirName(p.basename(path)),
                   );
           } else {
-            newPath = await ops.encryptFile(path);
+            newPath = await ops.encryptFile(path,
+                onFileProgress: ctl.onFile);
           }
 
           // 登记为已加密导入项（与挂载点扫描去重，便于浏览页即时挂载）
@@ -959,6 +985,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         }
       }
 
+      ctl.setOverall(1.0);
       await _loadImportEntries();
       await _loadInPlaceEncryptedFiles();
       await _loadVaultData();
@@ -966,6 +993,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
       if (mounted) {
         navigator.pop(); // 关闭进度
+        ctl.dispose();
         final msg = failCount > 0
             ? l10n.vault_import_partial('$encryptCount', '$skipCount', '$failCount')
             : l10n.vault_import_done('$encryptCount', '$skipCount');
@@ -975,6 +1003,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       debugPrint('[vault] 导入流程异常: $e');
       if (mounted) {
         navigator.pop(); // 关闭进度
+        ctl.dispose();
         scaffoldMessenger.showSnackBar(
           SnackBar(content: Text(l10n.vault_import_failed_detail('${lastError ?? e}'))),
         );
@@ -1297,10 +1326,15 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     // 需求5：解密（恢复到原位置）前先过保险箱会话闸门
     if (!await requireVaultSessionUnlock(context)) return;
     final l10n = L10n.of(context);
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ProgressOverlay(message: l10n.vault_restoring),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) =>
+            CryptProgressDialog(message: l10n.vault_restoring, progress: v),
+      ),
     );
 
     try {
@@ -1309,8 +1343,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       await VaultCryptService.instance.decryptFromSandbox(
         sandboxPath: record.scrambledPath,
         originalPath: originalPath,
+        onProgress: ctl.onOverall,
+        onFileProgress: ctl.onFile,
       );
       Navigator.pop(context); // Dismiss loader
+      ctl.dispose();
       await _loadVaultData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1323,6 +1360,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       }
     } catch (e) {
       Navigator.pop(context);
+      ctl.dispose();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(L10n.of(context).msg_restore_failed(e.toString()))),
@@ -2815,20 +2853,30 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
     if (confirm != true || !mounted) return;
 
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ProgressOverlay(message: l10n.vault_decrypting),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) =>
+            CryptProgressDialog(message: l10n.vault_decrypting, progress: v),
+      ),
     );
 
     var ok = 0;
     var fail = 0;
-    for (final rec in sandboxRecs) {
+    for (var i = 0; i < sandboxRecs.length; i++) {
+      final rec = sandboxRecs[i];
+      ctl.setOverall(i / total);
       try {
         final originalPath = await _resolveCryptRestorePath(rec);
         await VaultCryptService.instance.decryptFromSandbox(
           sandboxPath: rec.scrambledPath,
           originalPath: originalPath,
+          onProgress: (done, cnt) =>
+              ctl.setOverall((i + done / cnt) / total),
+          onFileProgress: ctl.onFile,
         );
         ok++;
       } catch (e) {
@@ -2836,7 +2884,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         fail++;
       }
     }
-    for (final item in inplaceItems) {
+    for (var j = 0; j < inplaceItems.length; j++) {
+      final item = inplaceItems[j];
+      ctl.setOverall((sandboxRecs.length + j) / total);
       try {
         final mount = await _resolveCryptMountForPath(item.path);
         if (mount == null) {
@@ -2845,9 +2895,14 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         }
         final ops = CryptOperations(mount);
         if (item.isDirectory) {
-          await ops.decryptDirectory(item.path);
+          await ops.decryptDirectory(
+            item.path,
+            onProgress: (done, cnt) => ctl.setOverall(
+                (sandboxRecs.length + j + done / cnt) / total),
+            onFileProgress: ctl.onFile,
+          );
         } else {
-          await ops.decryptFile(item.path);
+          await ops.decryptFile(item.path, onFileProgress: ctl.onFile);
         }
         await VaultImportStore.remove(item.path);
         ok++;
@@ -2857,7 +2912,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       }
     }
 
+    ctl.setOverall(1.0);
     if (mounted) Navigator.of(context).pop(); // 关闭进度覆盖层
+    ctl.dispose();
     _exitSelection();
     await _loadVaultData();
     await _loadImportEntries();
