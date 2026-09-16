@@ -515,7 +515,28 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       return;
     }
     final statusNotifier = ValueNotifier<String>(L10n.of(context).ui_syncing);
+    // 双层圆环进度：外圈=整体（已处理文件数/总文件数），内圈=当前文件上传进度。
+    final progressNotifier = ValueNotifier<({double overall, double? inner})>(
+      (overall: 0, inner: null),
+    );
     var wentBackground = false;
+    var processed = 0;
+    var currentName = '';
+    final totalFiles =
+        pairs.fold<int>(0, (sum, p) => sum + p.localFiles.length);
+    void updateProgress(String name, double prog) {
+      if (name != currentName) {
+        currentName = name;
+        processed++;
+      }
+      final overall = totalFiles > 0
+          ? (processed - 1 + prog.clamp(0.0, 1.0)) / totalFiles
+          : 0.0;
+      progressNotifier.value = (
+        overall: overall.clamp(0.0, 1.0),
+        inner: prog.clamp(0.0, 1.0),
+      );
+    }
     // 点击「后台」后的最小化逻辑：关闭弹窗并注册重新打开回调，
     // 由分类页工具栏浮窗按钮（排序按钮左侧）调用 fm.resumeProgress() 重新打开。
     void onBg() {
@@ -526,7 +547,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           context: context,
           title: L10n.of(context).ui_backup,
           statusNotifier: statusNotifier,
-          percentage: null,
+          progressNotifier: progressNotifier,
           onCancel: () {
             if (Navigator.canPop(context)) Navigator.of(context).pop();
           },
@@ -541,7 +562,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           context: context,
           title: L10n.of(context).ui_backup,
           statusNotifier: statusNotifier,
-          percentage: null,
+          progressNotifier: progressNotifier,
           onCancel: () {
             // 取消：通过 pop 关闭对话框，syncCategoryPairs 内部会捕获中断
             if (Navigator.canPop(context)) Navigator.of(context).pop();
@@ -555,8 +576,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         pairs: pairs,
         categoryLabel: _categoryLabel,
         onStatus: (s) => statusNotifier.value = s,
+        onProgress: (name, size, prog) {
+          statusNotifier.value = name;
+          updateProgress(name, prog);
+        },
       );
       if (mounted) {
+        progressNotifier.value = (overall: 1.0, inner: null);
         fm.clearMinimizedProgress();
         if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(
