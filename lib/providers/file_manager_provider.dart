@@ -5788,6 +5788,8 @@ class FileManagerProvider extends ChangeNotifier {
         final bool isDir = item['isDir'];
 
         final fileName = p.basename(source.path);
+        // 当前文件已处理字节（内圈进度）：每个文件重置。
+        int currentFileBytes = 0;
 
         // Check if this item is within a skipped directory tree
         bool isSkipped = false;
@@ -5886,6 +5888,8 @@ class FileManagerProvider extends ChangeNotifier {
           eta: Duration.zero,
           totalBytes: totalBytes > 0 ? totalBytes : 1,
           bytesProcessed: bytesProcessed,
+          currentFileBytes: 0,
+          currentFileTotal: size,
         );
 
         // 受限源（其它应用的 Android/data|obb）：Dart IO 读写均被 FUSE 拦截，
@@ -5944,6 +5948,8 @@ class FileManagerProvider extends ChangeNotifier {
             eta: Duration.zero,
             totalBytes: totalBytes > 0 ? totalBytes : 1,
             bytesProcessed: bytesProcessed,
+            currentFileBytes: size,
+            currentFileTotal: size,
           );
           continue;
         }
@@ -5975,6 +5981,7 @@ class FileManagerProvider extends ChangeNotifier {
                 destFile,
                 onChunkCopied: (chunkSize) {
                   bytesProcessed += chunkSize;
+                  currentFileBytes += chunkSize;
                   final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
                   final speed = elapsedSeconds > 0 ? (bytesProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
                   final remainingBytes = totalBytes - bytesProcessed;
@@ -5989,6 +5996,8 @@ class FileManagerProvider extends ChangeNotifier {
                     eta: Duration(seconds: etaSeconds.round()),
                     totalBytes: totalBytes > 0 ? totalBytes : 1,
                     bytesProcessed: bytesProcessed,
+                    currentFileBytes: currentFileBytes,
+                    currentFileTotal: size,
                   );
                 },
               );
@@ -6009,6 +6018,7 @@ class FileManagerProvider extends ChangeNotifier {
               destFile,
               onChunkCopied: (chunkSize) {
                 bytesProcessed += chunkSize;
+                currentFileBytes += chunkSize;
                 final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
                 final speed = elapsedSeconds > 0 ? (bytesProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
                 final remainingBytes = totalBytes - bytesProcessed;
@@ -6023,6 +6033,8 @@ class FileManagerProvider extends ChangeNotifier {
                   eta: Duration(seconds: etaSeconds.round()),
                   totalBytes: totalBytes > 0 ? totalBytes : 1,
                   bytesProcessed: bytesProcessed,
+                  currentFileBytes: currentFileBytes,
+                  currentFileTotal: size,
                 );
               },
             );
@@ -6286,6 +6298,8 @@ class FileManagerProvider extends ChangeNotifier {
                 eta: Duration(seconds: etaSeconds.round()),
                 totalBytes: totalBytesAll,
                 bytesProcessed: bytesDone,
+                currentFileBytes: 0,
+                currentFileTotal: averageFileSize,
               );
             },
           );
@@ -6310,6 +6324,8 @@ class FileManagerProvider extends ChangeNotifier {
             eta: Duration.zero,
             totalBytes: totalBytesAll,
             bytesProcessed: bytesDone,
+            currentFileBytes: 0,
+            currentFileTotal: fileSize,
           );
 
           await client.downloadFile(remoteItem.path, destPath, (prog) {
@@ -6331,6 +6347,8 @@ class FileManagerProvider extends ChangeNotifier {
               eta: Duration(seconds: etaSeconds.round()),
               totalBytes: totalBytesAll,
               bytesProcessed: bytesDone,
+              currentFileBytes: (fileSize * prog).round(),
+              currentFileTotal: fileSize,
             );
           });
           previousFilesBytes += fileSize;
@@ -6493,6 +6511,8 @@ class FileManagerProvider extends ChangeNotifier {
           eta: Duration(seconds: etaSeconds.round()),
           totalBytes: totalBytesAll,
           bytesProcessed: bytesDone,
+          currentFileBytes: (currentFileSize * currentFileProg).round(),
+          currentFileTotal: currentFileSize,
         );
       }
 
@@ -6788,6 +6808,8 @@ class FileManagerProvider extends ChangeNotifier {
           eta: Duration(seconds: etaSeconds.round()),
           totalBytes: totalBytesAll,
           bytesProcessed: bytesDone,
+          currentFileBytes: (currentFileSize * currentFileProg).round(),
+          currentFileTotal: currentFileSize,
         );
       }
 
@@ -9896,6 +9918,8 @@ class FileOperationProgress {
   final Duration eta;
   final int totalBytes;
   final int bytesProcessed;
+  final int currentFileBytes; // 当前文件已处理字节（弹窗内圈进度）
+  final int currentFileTotal; // 当前文件总字节（内圈分母，0=未知/非字节操作）
 
   FileOperationProgress({
     required this.totalFiles,
@@ -9906,6 +9930,8 @@ class FileOperationProgress {
     required this.eta,
     required this.totalBytes,
     required this.bytesProcessed,
+    this.currentFileBytes = 0,
+    this.currentFileTotal = 0,
   });
 }
 

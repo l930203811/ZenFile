@@ -65,7 +65,7 @@ class FileOperationProgressDialog extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 环形进度条（外圈）
+                  // 环形进度条（外圈=整体进度：淡底环 + 主题色进度环）
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: CircularProgressIndicator(
@@ -88,9 +88,38 @@ class FileOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
 
+                  // 环形进度条（内圈=当前文件进度，其他颜色，绿色系区分整体）
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 5,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        (isDark ? const Color(0xFF81C784) : const Color(0xFF43A047))
+                            .withOpacity(0.10),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: CircularProgressIndicator(
+                      value: progress.currentFileTotal > 0
+                          ? (progress.currentFileBytes / progress.currentFileTotal)
+                              .clamp(0.0, 1.0)
+                          : 0.0,
+                      strokeWidth: 5,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? const Color(0xFF81C784) : const Color(0xFF43A047),
+                      ),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+
                   // 内部内容区域
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 34),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

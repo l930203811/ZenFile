@@ -27,7 +27,9 @@ class WebdavDebugLog {
   /// 直接取出 shell 命令与 stderr。排查结束后务必改回 false 再发版。
   /// 2026-09-15 视频黑屏诊断期间临时开启：用于采集黑屏机型播放器错误与
   /// 自动回退判定记录；黑屏问题定位并解决后务必改回 false。
-  static bool enabled = true;
+  /// 2026-09-16 远程 SMB/FTP/SFTP 播放卡顿三次修复（顺序流式→Range 反代块缓存
+  /// →0 字节响应修复）期间开启，用户实测已解决，现改回 false。
+  static bool enabled = false;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
   static void log(String msg) {
