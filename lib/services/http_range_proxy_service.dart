@@ -229,9 +229,12 @@ class HttpRangeProxyService {
       }
     }
 
-    final reqSub = request.listen((_) {},
-        onDone: onCancel, onError: (_) => onCancel(), cancelOnError: true);
-    unawaited(response.done.then((_) => onCancel()).catchError((_) => onCancel()));
+    // 注意：不能监听 request 的 onDone 来判断断开 —— GET 无请求体，
+    // onDone 在请求处理开始时就会立即触发（只代表 body 结束），曾因此导致
+    // 0 字节响应、播放器直接 Failed to open。客户端中途断开由两处感知：
+    //   1) response.done 以错误完成（连接被对端关闭）；
+    //   2) response.add/flush 抛 HttpException（供给循环 catch 后退出）。
+    unawaited(response.done.then((_) {}, onError: (_) => onCancel()));
 
     // 响应区间终点：固定区间按请求；开放式且总大小已知 → 到文件尾（长流）；
     // 总大小未知 → 持续供给到远端 EOF（chunked 200，不可 seek）。
@@ -258,18 +261,12 @@ class HttpRangeProxyService {
     }
     if (request.method == 'HEAD') {
       // HEAD：只回头部，不供给实体。
-      try {
-        await reqSub.cancel();
-      } catch (_) {}
       await response.close();
       return;
     }
     try {
       await response.flush();
     } catch (_) {
-      try {
-        await reqSub.cancel();
-      } catch (_) {}
       return;
     }
 
@@ -368,9 +365,6 @@ class HttpRangeProxyService {
         } catch (_) {}
       }
       await closeRaf();
-      try {
-        await reqSub.cancel();
-      } catch (_) {}
       try {
         await response.close();
       } catch (_) {}
