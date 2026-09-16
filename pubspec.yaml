@@ -43,6 +43,19 @@ dependency_overrides:
   # 补丁见 vendor/file_picker/android/build.gradle。
   file_picker:
     path: vendor/file_picker
+  # 本地 fork：修复 ftpconnect 2.0.10「每条 FTP 命令固定白等 300ms」的缺陷。
+  # 上游 FTPSocket.readResponse 用固定 300ms 间隔轮询 RawSocket.available()，
+  # 而 sendCommand 是「写完命令立刻读响应」，首次检查时响应必然还没到 → 每条
+  # 命令恒定多等 300ms。一次目录列举需 CWD + PASV + MLSD + 226 共 4 条命令，
+  # 于是每次「进入目录 / 返回上一级」固定多花 ≈1.2s（连接、上传后的
+  # finalizeUpload 轮询、删除、重命名同理）——这是 FTP 浏览比
+  # SFTP/SMB/WebDAV 明显慢的根因，后三者响应读取均为事件驱动。
+  # 补丁：2ms 首字节轮询（超 200ms 退避到 25ms）+ 10ms 静默窗口保证响应完整。
+  # 详见 plugins/ftpconnect/lib/src/ftp_socket.dart 内 readResponse 注释。
+  # 注：与 file_picker 的 fork 不同，本 fork 归入 plugins/ 目录**会入库**，
+  # 保证协作方 / 新克隆无需本地准备即可构建。
+  ftpconnect:
+    path: plugins/ftpconnect
 
 dependencies:
   flutter:
