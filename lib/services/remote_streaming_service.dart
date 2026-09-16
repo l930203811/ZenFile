@@ -140,28 +140,31 @@ class RemoteStreamingService {
   }) async {
     _cleanupStale();
 
-    // 【2026-09-16】FTP/SFTP/SMB 统一走下方的顺序流式模式，不再优先走
-    // HttpRangeProxyService 按需 Range 反代。
-    //
-    // 实测日志（webdav_debug.log，383 个 Range 请求，零异常但周期性卡顿）表明：
-    // libmpv/ffmpeg 的 MP4 demuxer 会产生大量小步长开放式 Range 请求
-    // （bytes=N-，中位步长仅 ~2.7KB；SMB 甚至 52 字节），而 Range 反代对每个
-    // 开放式请求都截断为固定 4MB 响应，且 openRangeResponse 需同步 await
-    // downloadRange 整段落盘后才开始供流：
-    //   · FTP 每次 downloadRange 都新建控制+数据连接并重新登录；
-    //   · 74 秒播放产生 259 次 FTP 重连，偏移仅推进 104MB 却传输约 1GB
-    //     （约 9.9 倍重复数据），SMB 重复倍率高达 142 倍；
-    //   · 播放器的小步 seek 全部穿透到远端，每次 0.15~1.5s，周期性断流，
-    //     表现为「播放几秒卡几秒」。
-    // 顺序流式模式以【单连接后台顺序下载】作为预读缓冲（partial），moov 探测与
-    // 拖动经独立 seekClient 随机读并入 seekcache（首块 512KB 即响应），播放器的
-    // 小步请求全部命中本地文件（毫秒级、零远程往返、零重连），与 WebDAV 直连
-    // 体验一致；非 faststart MP4 的尾部 moov 由 seekcache 按需分支秒级响应，
-    // 不再有早期「等 89s 才开播」的问题（该问题在 seekcache 机制建成前存在）。
-    //
-    // WebDAV 不受影响：普通 WebDAV 在 _resolveRemotePath 阶段即直连 HTTP；
-    // OpenList 302 模式在 WebdavClient.getStreamUrl 内自行启动 Range 反代
-    // （HTTP 原样透传、不截断不落盘，实测流畅），均不会到达这里。
+    // 【优先走按需 Range 反代（会话块缓存）】
+    // supportsRangeRead 的 FTP/SFTP/SMB 走 HttpRangeProxyService：
+    //   · 播放器的开放式 Range 被响应为「到文件尾的长流」，代理按 2MB 块顺序
+    //     拉取（顺序拉块即预读），会话级 LRU 块缓存（128MB）让 ffmpeg 的 KB 级
+    //     小步 seek 全部本地毫秒命中——旧实现每请求截断 4MB 且不缓存，实测
+    //     74 秒 259 次 FTP 重连、9.9 倍重复传输，表现为「播几秒卡几秒」；
+    //   · 尾部 moov / 进度条拖动按需拉对应块（亚秒级），非 faststart MP4
+    //     无需等待整文件下载；
+    //   · 远端读经会话锁串行，避免 FTP 并发重连与 SFTP/SMB 会话线程安全问题。
+    // WebDAV（rangeViaPassthrough）在反代内走 HTTP 原样透传，零落盘。
+    final rangeUrl = await HttpRangeProxyService.startIfSupported(
+      client,
+      remotePath,
+      fileName: fileName,
+      fileSize: fileSize,
+    );
+    if (rangeUrl != null) {
+      // 反代自身用 client 串行取块即可随机读，不需要第二条 seek 连接，断开避免泄漏。
+      if (seekClient != null) {
+        try {
+          await seekClient.disconnect();
+        } catch (_) {}
+      }
+      return rangeUrl;
+    }
     // HttpRangeProxyService 代码保留备用，stopStreaming 仍兼容回收其 URL。
 
     // 重复保护：如果同一文件已有活跃会话，复用它而非创建新下载

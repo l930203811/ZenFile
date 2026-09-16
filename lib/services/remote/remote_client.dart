@@ -93,6 +93,11 @@ abstract class RemoteClient {
   /// SMB（smbj skip，仅更新 readOffset）均支持；SAF 不支持。
   bool get supportsRangeRead => false;
 
+  /// Range 反代是否为 **HTTP 原样透传**（Range 头发远端、206 实体流原样回传，
+  /// 零落盘、不经块缓存）。仅 WebDAV/OpenList 这类 HTTP 协议为 true；
+  /// FTP/SFTP/SMB 为 false，由 HttpRangeProxyService 的会话块缓存供给。
+  bool get rangeViaPassthrough => false;
+
   /// 按播放器给出的**原始 Range 头**取流。
   ///
   /// 默认实现走 [downloadRange]（写入临时文件后以流的形式返回），

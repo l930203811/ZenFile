@@ -429,6 +429,9 @@ class WebDavRemoteClient extends RemoteClient {
   @override
   bool get supportsRangeRead => true;
 
+  @override
+  bool get rangeViaPassthrough => true;
+
   /// WebDAV 走**原生透传**：把播放器的 Range 头原样发给远端（自动跟随 302 并
   /// 保留 Range），再原样回传状态码/实体头与响应流，不产生任何本地临时文件。
   @override
