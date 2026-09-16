@@ -66,9 +66,11 @@ class FileOperationProgressDialog extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   // 环形进度条（外圈=整体进度：淡底环 + 主题色进度环）
-                  // 贴近容器边缘（无白边）
+                  // padding=strokeWidth/2（4px）：CircularProgressIndicator 的
+                  // stroke 以约束框圆为路径向两侧各扩半线宽，4px 时环外缘恰好
+                  // 与圆形背景边缘对齐（无白边、不超出）。
                   Padding(
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(4),
                     child: CircularProgressIndicator(
                       value: 1.0,
                       strokeWidth: 8,
@@ -79,7 +81,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(4),
                     child: CircularProgressIndicator(
                       value: progress.percentage.clamp(0.0, 1.0),
                       strokeWidth: 8,
@@ -90,9 +92,9 @@ class FileOperationProgressDialog extends StatelessWidget {
                   ),
 
                   // 环形进度条（内圈=当前文件进度，其他颜色，绿色系区分整体）
-                  // 与外圈紧靠（仅 3px 间隙）
+                  // 与外圈紧靠：外圈内缘 142px、内圈外缘 140.5px（1.5px 间隙）
                   Padding(
-                    padding: const EdgeInsets.all(13),
+                    padding: const EdgeInsets.all(12),
                     child: CircularProgressIndicator(
                       value: 1.0,
                       strokeWidth: 5,
@@ -104,7 +106,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(13),
+                    padding: const EdgeInsets.all(12),
                     child: CircularProgressIndicator(
                       value: progress.currentFileTotal > 0
                           ? (progress.currentFileBytes / progress.currentFileTotal)
