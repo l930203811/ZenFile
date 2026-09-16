@@ -67,7 +67,7 @@ class FileItem extends StatelessWidget {
 
     final cardMargin = EdgeInsets.symmetric(
       horizontal: (16 * itemPaddingMultiplier).clamp(4.0, 32.0),
-      vertical: (4 * itemPaddingMultiplier).clamp(1.0, 16.0),
+      vertical: (4 * itemPaddingMultiplier).clamp(-4.0, 16.0),
     );
 
     final child = Card(

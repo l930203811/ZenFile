@@ -739,7 +739,7 @@ class FileManagerProvider extends ChangeNotifier {
   double get itemPaddingMultiplier => _itemPaddingMultiplier;
 
   void setItemPaddingMultiplier(double mult) {
-    final clamped = mult.clamp(0.4, 2.0);
+    final clamped = mult.clamp(-0.5, 2.0);
     if (_itemPaddingMultiplier == clamped) return;
     _itemPaddingMultiplier = clamped;
     PreferencesService.saveItemPaddingMultiplier(_itemPaddingMultiplier);

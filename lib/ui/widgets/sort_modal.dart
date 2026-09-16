@@ -138,9 +138,9 @@ class SortModal {
                               ),
                               Slider(
                                 value: provider.itemPaddingMultiplier,
-                                min: 0.4,
+                                min: -0.5,
                                 max: 2.0,
-                                divisions: 16,
+                                divisions: 25,
                                 activeColor: theme.colorScheme.primary,
                                 onChanged: (val) {
                                   provider.setItemPaddingMultiplier(val);
