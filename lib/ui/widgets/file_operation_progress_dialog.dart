@@ -66,8 +66,9 @@ class FileOperationProgressDialog extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   // 环形进度条（外圈=整体进度：淡底环 + 主题色进度环）
+                  // 贴近容器边缘（无白边）
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(2),
                     child: CircularProgressIndicator(
                       value: 1.0,
                       strokeWidth: 8,
@@ -78,7 +79,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(2),
                     child: CircularProgressIndicator(
                       value: progress.percentage.clamp(0.0, 1.0),
                       strokeWidth: 8,
@@ -89,8 +90,9 @@ class FileOperationProgressDialog extends StatelessWidget {
                   ),
 
                   // 环形进度条（内圈=当前文件进度，其他颜色，绿色系区分整体）
+                  // 与外圈紧靠（仅 3px 间隙）
                   Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(13),
                     child: CircularProgressIndicator(
                       value: 1.0,
                       strokeWidth: 5,
@@ -102,7 +104,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(13),
                     child: CircularProgressIndicator(
                       value: progress.currentFileTotal > 0
                           ? (progress.currentFileBytes / progress.currentFileTotal)
