@@ -1414,75 +1414,116 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             vertical: 8.0,
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    L10n.of(context).msg2c3c5a35,
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      L10n.of(context).msg2c3c5a35,
+                                      style: theme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      _buildShapeOption(
-                                        context,
-                                        theme,
-                                        iconShape,
-                                        'circle',
-                                        L10n.of(context).ui_circle,
-                                        setModalState,
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
+                                        ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      _buildShapeOption(
-                                        context,
-                                        theme,
-                                        iconShape,
-                                        'square',
-                                        L10n.of(context).ui_square,
-                                        setModalState,
+                                      child: DropdownButton<String>(
+                                        value: iconShape,
+                                        isExpanded: true,
+                                        isDense: true,
+                                        underline: const SizedBox(),
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        borderRadius: BorderRadius.circular(8),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                        ),
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 'circle',
+                                            child: Text(L10n.of(context).ui_circle),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'square',
+                                            child: Text(L10n.of(context).ui_square),
+                                          ),
+                                        ],
+                                        onChanged: (val) {
+                                          if (val != null) {
+                                            context.read<FileManagerProvider>().setCategoryIconShape(val);
+                                            setModalState(() {});
+                                          }
+                                        },
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    L10n.of(context).ui_columns_per_row,
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      L10n.of(context).ui_columns_per_row,
+                                      style: theme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      _buildColumnsOption(
-                                        context,
-                                        theme,
-                                        gridColumns,
-                                        3,
-                                        L10n.of(context).ui_3columns,
-                                        setModalState,
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
+                                        ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      _buildColumnsOption(
-                                        context,
-                                        theme,
-                                        gridColumns,
-                                        4,
-                                        L10n.of(context).ui_4columns,
-                                        setModalState,
+                                      child: DropdownButton<int>(
+                                        value: gridColumns,
+                                        isExpanded: true,
+                                        isDense: true,
+                                        underline: const SizedBox(),
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        borderRadius: BorderRadius.circular(8),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                        ),
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 3,
+                                            child: Text(L10n.of(context).ui_3columns),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 4,
+                                            child: Text(L10n.of(context).ui_4columns),
+                                          ),
+                                        ],
+                                        onChanged: (val) {
+                                          if (val != null) {
+                                            context.read<FileManagerProvider>().setCategoriesGridColumns(val);
+                                            setModalState(() {});
+                                          }
+                                        },
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -1585,90 +1626,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
           },
         );
       },
-    );
-  }
-
-  Widget _buildShapeOption(
-    BuildContext context,
-    ThemeData theme,
-    String currentShape,
-    String shapeKey,
-    String label,
-    void Function(void Function()) setModalState,
-  ) {
-    final isSelected = currentShape == shapeKey;
-    return InkWell(
-      onTap: () {
-        context.read<FileManagerProvider>().setCategoryIconShape(shapeKey);
-        setModalState(() {});
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceVariant.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withOpacity(0.1),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildColumnsOption(
-    BuildContext context,
-    ThemeData theme,
-    int currentColumns,
-    int columns,
-    String label,
-    void Function(void Function()) setModalState,
-  ) {
-    final isSelected = currentColumns == columns;
-    return InkWell(
-      onTap: () {
-        context.read<FileManagerProvider>().setCategoriesGridColumns(columns);
-        setModalState(() {});
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceVariant.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withOpacity(0.1),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-        ),
-      ),
     );
   }
 }
