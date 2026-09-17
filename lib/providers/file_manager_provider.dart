@@ -735,7 +735,7 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  double _itemPaddingMultiplier = 1.0;
+  double _itemPaddingMultiplier = 0.0;
   double get itemPaddingMultiplier => _itemPaddingMultiplier;
 
   void setItemPaddingMultiplier(double mult) {
@@ -8629,7 +8629,12 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (ApkInstallerService.isApk(path)) {
       if (!context.mounted) return true;
-      await ApkInstallerService.installApk(context, path);
+      if (PreferencesService.getApkOpenMode() == 'chooser') {
+        // 系统选择器模式：允许 InstallerX / InstallWithOptions 等第三方安装器接管
+        await openWithSystemChooser(path, mimeType: 'application/vnd.android.package-archive');
+      } else {
+        await ApkInstallerService.installApk(context, path);
+      }
       return true;
     }
 
@@ -9630,7 +9635,12 @@ class FileManagerProvider extends ChangeNotifier {
     // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，
     // 即使用户设过"外部打开"默认也不走系统选择器，避免弹出"打开方式"
     if (ApkInstallerService.isApk(targetPath)) {
-      await ApkInstallerService.installApk(context, targetPath);
+      if (PreferencesService.getApkOpenMode() == 'chooser') {
+        // 系统选择器模式：交给第三方安装器（批量安装等场景更顺手）
+        await openWithSystemChooser(targetPath, mimeType: 'application/vnd.android.package-archive');
+      } else {
+        await ApkInstallerService.installApk(context, targetPath);
+      }
       return;
     }
 

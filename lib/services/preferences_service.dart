@@ -302,7 +302,7 @@ class PreferencesService {
   }
 
   static double getItemPaddingMultiplier() {
-    return _prefs?.getDouble(_keyItemPaddingMultiplier) ?? 1.0;
+    return _prefs?.getDouble(_keyItemPaddingMultiplier) ?? 0.0;
   }
 
   static Future<void> saveItemPaddingMultiplier(double val) async {
@@ -823,6 +823,29 @@ class PreferencesService {
 
   static Future<void> saveKeepApkAfterInstall(bool val) async {
     await _prefs?.setBool(_keyKeepApkAfterInstall, val);
+  }
+
+  // --- APK 打开方式：'builtin'（内置安装器）/ 'chooser'（系统选择器，允许第三方安装器接管） ---
+  static const String _keyApkOpenMode = 'apk_open_mode';
+
+  static String getApkOpenMode() {
+    // 默认内置安装器（保持历史行为），用户可在「APK 安装设置」中切换为系统选择器
+    return _prefs?.getString(_keyApkOpenMode) ?? 'builtin';
+  }
+
+  static Future<void> saveApkOpenMode(String mode) async {
+    await _prefs?.setString(_keyApkOpenMode, mode);
+  }
+
+  // --- 指纹解锁总开关（默认关闭；与凭据是否登记解耦，确保新用户默认关闭） ---
+  static const String _keyBiometricUnlockEnabled = 'biometric_unlock_enabled';
+
+  static bool getBiometricUnlockEnabled() {
+    return _prefs?.getBool(_keyBiometricUnlockEnabled) ?? false;
+  }
+
+  static Future<void> saveBiometricUnlockEnabled(bool val) async {
+    await _prefs?.setBool(_keyBiometricUnlockEnabled, val);
   }
 
   // --- Google Drive 集成 (#7) ---
