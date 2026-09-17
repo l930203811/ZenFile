@@ -6469,6 +6469,11 @@ class L10nEn extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Copy a temp copy before install to prevent the system installer from deleting the source APK';
+  @override
+  String get apk_open_mode_title => 'APK open method';
+
+  @override
+  String get apk_open_mode_desc => 'Use the system chooser to open APKs so third-party installers like InstallerX can handle them; off uses the built-in installer.';
 
   @override
   String get vt_install => 'Install';
@@ -6623,6 +6628,32 @@ class L10nEn extends L10n {
 
   @override
   String get cl211_fixes => 'Fixes';
+  @override
+  String get cl212_features => 'New';
+
+  @override
+  String get cl212_feat_1 => 'Switchable APK open method: Settings -> APK Install Settings gains an "APK open method" option to choose between the built-in installer and the system chooser. With the system chooser, ZenFile no longer intercepts APK opens, so Shizuku-based third-party installers such as InstallerX and InstallWithOptions can take over - no more long-pressing each file to pick "Open with" when installing in bulk.';
+
+  @override
+  String get cl212_ui => 'UI & Interaction';
+
+  @override
+  String get cl212_ui_1 => 'Wider "Size & Spacing" range: the card spacing slider now goes down to -50% (previously 40% minimum). At 0% card borders touch; negative values overlap adjacent card borders into a single line. The default is now 0% (new installs start flush; existing settings are kept).';
+
+  @override
+  String get cl212_ui_2 => 'Custom shortcut dialog: "Icon shape" and "Columns per row" are now dropdowns instead of side-by-side buttons, for a more compact layout.';
+
+  @override
+  String get cl212_fixes => 'Fixes';
+
+  @override
+  String get cl212_fix_1 => 'Fingerprint unlock now defaults to off: after install, fingerprint unlock under Settings -> Security is off until you turn it on, so biometric unlock is no longer enabled automatically.';
+
+  @override
+  String get cl212_fix_2 => 'Fixed being unable to reconfigure the APK security-scan API key: previously, once a key was saved, turning the switch off then on would not reopen the config page. The config page now opens both from the switch and by tapping the card.';
+
+  @override
+  String get cl212_fix_3 => 'Fixed "permission denied" from silent install even with Shizuku authorized: the Shizuku path now installs through a system PackageInstaller session instead of the shell install command that some systems block; the root path no longer passes an unnecessary downgrade flag.';
 
   @override
   String get cl211_fix_1 => 'Fixed black screen (audio only, no picture) on some devices, caused by a renderer compatibility issue introduced in 1.1.42. Rendering now uses the universally compatible path, and playback automatically falls back to software decoding when hardware decoding misbehaves.';

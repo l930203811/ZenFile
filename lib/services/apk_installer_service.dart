@@ -204,7 +204,8 @@ class ApkInstallerService {
             ok = await RootShizukuService.installSplitApksSilently(apkPaths, useRoot: true);
             tried = true;
           } else if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
-            ok = await RootShizukuService.installSplitApksSilently(apkPaths, useRoot: false);
+            // shizuku：同上，用 PackageInstaller 会话安装，规避 shell pm install 权限不足
+            ok = await AppManagerService.installSplitApks(apkPaths);
             tried = true;
           }
           if (ok) {

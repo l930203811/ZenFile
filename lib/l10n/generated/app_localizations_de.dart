@@ -6518,6 +6518,11 @@ class L10nDe extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Vor der Installation eine temporäre Kopie erstellen, damit der Systeminstaller die Quell-APK nicht automatisch löscht';
+  @override
+  String get apk_open_mode_title => 'APK-Öffnen';
+
+  @override
+  String get apk_open_mode_desc => 'Den Systemauswähler zum Öffnen von APKs verwenden, damit Drittanbieter-Installer wie InstallerX sie übernehmen können; aus nutzt den eingebauten Installer.';
 
   @override
   String get vt_install => 'Installieren';
@@ -6678,6 +6683,32 @@ class L10nDe extends L10n {
 
   @override
   String get cl211_fixes => 'Fehlerbehebungen';
+  @override
+  String get cl212_features => 'Neu';
+
+  @override
+  String get cl212_feat_1 => 'Umschaltbare APK-Öffnungsart: Unter Einstellungen → APK-Installationsoptionen gibt es neu „APK-Öffnen“ zum Wechseln zwischen dem eingebauten Installer und dem Systemauswähler. Mit dem Systemauswähler fängt ZenFile das Öffnen von APK nicht mehr ab, sodass Drittanbieter-Installer wie InstallerX und InstallWithOptions sie übernehmen können — beim Masseninstallieren muss nicht mehr lange auf jede Datei gedrückt werden, um „Öffnen mit“ zu wählen.';
+
+  @override
+  String get cl212_ui => 'Oberfläche & Interaktion';
+
+  @override
+  String get cl212_ui_1 => 'Weiterer Bereich „Größe & Abstand“: die untere Grenze des Abstandsreglers zwischen Karten wurde von 40 % auf -50 % gesenkt; bei 0 % berühren sich die Kartenränder, und negative Werte lassen angrenzende Kartenränder zu einer Linie verschmelzen. Der Standardwert ist ebenfalls 0 % (neue Installationen sind direkt bündig; bestehende Einstellungen bleiben erhalten).';
+
+  @override
+  String get cl212_ui_2 => 'Dialog für benutzerdefinierte Verknüpfungen: „Symbolform“ und „Spalten pro Zeile“ sind nun Dropdowns statt nebeneinanderliegender Buttons, was das Layout kompakter macht.';
+
+  @override
+  String get cl212_fixes => 'Fehlerbehebungen';
+
+  @override
+  String get cl212_fix_1 => 'Entsperren per Fingerabdruck ist jetzt standardmäßig aus: nach der Installation bleibt die Fingerabdruck-Entsperrung unter Einstellungen → Sicherheit aus, bis du sie aktivierst — die biometrische Entsperrung wird nicht mehr automatisch aktiviert.';
+
+  @override
+  String get cl212_fix_2 => 'Behoben, dass sich der API-Schlüssel der APK-Sicherheitsprüfung nicht neu konfigurieren ließ: früher öffnete das Aus- und Wiedereinschalten des Schalters nach dem Speichern des Schlüssels die Konfigurationsseite nicht erneut. Sie öffnet sich nun sowohl über den Schalter als auch durch Tippen auf die Karte.';
+
+  @override
+  String get cl212_fix_3 => 'Behoben „Zugriff verweigert“ bei stiller Installation trotz autorisiertem Shizuku: der Shizuku-Pfad installiert nun über eine System-PackageInstaller-Sitzung statt dem auf manchen Systemen gesperrten Shell-Befehl; der Root-Pfad übergibt kein unnötiges Downgrade-Flag mehr.';
 
   @override
   String get cl211_fix_1 => 'Schwarzer Bildschirm (nur Ton, kein Bild) bei der Videowiedergabe auf einigen Geräten behoben, verursacht durch ein mit 1.1.42 eingeführtes Renderer-Kompatibilitätsproblem. Die Darstellung nutzt nun den universell kompatiblen Pfad, und bei Problemen mit der Hardware-Dekodierung wird automatisch auf Software-Dekodierung umgeschaltet.';

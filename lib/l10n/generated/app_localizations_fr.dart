@@ -6552,6 +6552,11 @@ class L10nFr extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Créer une copie temporaire avant l\'installation pour empêcher le programme d\'installation système de supprimer l\'APK source';
+  @override
+  String get apk_open_mode_title => 'Méthode d\'ouverture des APK';
+
+  @override
+  String get apk_open_mode_desc => 'Utilise le sélecteur système pour ouvrir les APK afin que des installateurs tiers comme InstallerX les prennent en charge ; si désactivé, l\'installateur intégré est utilisé.';
 
   @override
   String get vt_install => 'Installer';
@@ -6710,6 +6715,32 @@ class L10nFr extends L10n {
 
   @override
   String get cl211_fixes => 'Corrections';
+  @override
+  String get cl212_features => 'Nouveautés';
+
+  @override
+  String get cl212_feat_1 => 'Méthode d\'ouverture des APK commutables : les Paramètres → Paramètres d\'installation APK ajoutent une « Méthode d\'ouverture des APK » pour choisir entre l\'installateur intégré et le sélecteur système. Avec le sélecteur système, ZenFile n\'intercepte plus l\'ouverture des APK, donc des installateurs tiers comme InstallerX et InstallWithOptions peuvent les prendre en charge — plus besoin d\'appuyer longuement sur chaque fichier pour choisir « Ouvrir avec » lors des installations par lot.';
+
+  @override
+  String get cl212_ui => 'Interface et interaction';
+
+  @override
+  String get cl212_ui_1 => 'Plage « Taille et espacement » élargie : la limite basse du curseur d\'espacement entre cartes passe de 40 % à -50 % ; à 0 % les bordures des cartes se touchent, et les valeurs négatives font chevaucher les bordures des cartes adjacentes en une seule ligne. La valeur par défaut passe aussi à 0 % (les nouvelles installations sont d\'emblée collées ; les réglages existants sont conservés).';
+
+  @override
+  String get cl212_ui_2 => 'Boîte de dialogue des raccourcis personnalisés : « Forme de l\'icône » et « Colonnes par ligne » sont désormais des listes déroulantes au lieu de boutons côte à côte, pour une disposition plus compacte.';
+
+  @override
+  String get cl212_fixes => 'Corrections';
+
+  @override
+  String get cl212_fix_1 => 'Le déverrouillage par empreinte est maintenant désactivé par défaut : après l\'installation, le déverrouillage par empreinte dans Paramètres → Sécurité reste désactivé jusqu\'à ce que vous l\'activiez, le déverrouillage biométrique n\'étant plus activé automatiquement.';
+
+  @override
+  String get cl212_fix_2 => 'Correction de l\'impossibilité de reconfigurer la clé API de l\'analyse de sécurité APK : auparavant, une fois la clé enregistrée, désactiver puis réactiver le commutateur ne rouvrait pas la page de configuration. La page s\'ouvre désormais au niveau du commutateur et en appuyant sur la carte.';
+
+  @override
+  String get cl212_fix_3 => 'Correction de l\'erreur « permission refusée » lors de l\'installation silencieuse même avec Shizuku autorisé : le chemin Shizuku installe désormais via une session PackageInstaller système au lieu de la commande shell interdite sur certains systèmes ; le chemin root ne passe plus de drapeau de rétrogradation inutile.';
 
   @override
   String get cl211_fix_1 => 'Correction de l\'écran noir (son uniquement, pas d\'image) lors de la lecture vidéo sur certains appareils, dû à un problème de compatibilité du moteur de rendu introduit en 1.1.42. Le rendu utilise désormais le chemin universellement compatible et bascule automatiquement en décodage logiciel si le décodage matériel échoue.';

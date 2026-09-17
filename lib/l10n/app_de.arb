@@ -6455,6 +6455,14 @@
   "@vt_keep_apk_desc": {
     "description": "virustotal settings / keep apk"
   },
+  "apk_open_mode_title": "APK-Öffnen",
+  "@apk_open_mode_title": {
+    "description": "apk open mode: apk_open_mode_title"
+  },
+  "apk_open_mode_desc": "Den Systemauswähler zum Öffnen von APKs verwenden, damit Drittanbieter-Installer wie InstallerX sie übernehmen können; aus nutzt den eingebauten Installer.",
+  "@apk_open_mode_desc": {
+    "description": "apk open mode: apk_open_mode_desc"
+  },
   "vt_install": "Installieren",
   "@vt_install": {
     "description": "virustotal scan dialog buttons"
@@ -6671,6 +6679,42 @@
   "cl211_fix_7": "Zwei Tresor-Meldungen behoben: bei falschem Passwort erschien fälschlicherweise \"bitte zuerst das Master-Passwort festlegen\"; Ergebnis-Toasts für Verschlüsseln/Entschlüsseln waren in nicht-chinesischen Sprachen weiterhin auf Chinesisch.",
   "@cl211_fix_7": {
     "description": "changelog 2.1.1: cl211_fix_7"
+  },
+  "cl212_features": "Neu",
+  "@cl212_features": {
+    "description": "v2.1.2 changelog: cl212_features"
+  },
+  "cl212_feat_1": "Umschaltbare APK-Öffnungsart: Unter Einstellungen → APK-Installationsoptionen gibt es neu „APK-Öffnen“ zum Wechseln zwischen dem eingebauten Installer und dem Systemauswähler. Mit dem Systemauswähler fängt ZenFile das Öffnen von APK nicht mehr ab, sodass Drittanbieter-Installer wie InstallerX und InstallWithOptions sie übernehmen können — beim Masseninstallieren muss nicht mehr lange auf jede Datei gedrückt werden, um „Öffnen mit“ zu wählen.",
+  "@cl212_feat_1": {
+    "description": "v2.1.2 changelog: cl212_feat_1"
+  },
+  "cl212_ui": "Oberfläche & Interaktion",
+  "@cl212_ui": {
+    "description": "v2.1.2 changelog: cl212_ui"
+  },
+  "cl212_ui_1": "Weiterer Bereich „Größe & Abstand“: die untere Grenze des Abstandsreglers zwischen Karten wurde von 40 % auf -50 % gesenkt; bei 0 % berühren sich die Kartenränder, und negative Werte lassen angrenzende Kartenränder zu einer Linie verschmelzen. Der Standardwert ist ebenfalls 0 % (neue Installationen sind direkt bündig; bestehende Einstellungen bleiben erhalten).",
+  "@cl212_ui_1": {
+    "description": "v2.1.2 changelog: cl212_ui_1"
+  },
+  "cl212_ui_2": "Dialog für benutzerdefinierte Verknüpfungen: „Symbolform“ und „Spalten pro Zeile“ sind nun Dropdowns statt nebeneinanderliegender Buttons, was das Layout kompakter macht.",
+  "@cl212_ui_2": {
+    "description": "v2.1.2 changelog: cl212_ui_2"
+  },
+  "cl212_fixes": "Fehlerbehebungen",
+  "@cl212_fixes": {
+    "description": "v2.1.2 changelog: cl212_fixes"
+  },
+  "cl212_fix_1": "Entsperren per Fingerabdruck ist jetzt standardmäßig aus: nach der Installation bleibt die Fingerabdruck-Entsperrung unter Einstellungen → Sicherheit aus, bis du sie aktivierst — die biometrische Entsperrung wird nicht mehr automatisch aktiviert.",
+  "@cl212_fix_1": {
+    "description": "v2.1.2 changelog: cl212_fix_1"
+  },
+  "cl212_fix_2": "Behoben, dass sich der API-Schlüssel der APK-Sicherheitsprüfung nicht neu konfigurieren ließ: früher öffnete das Aus- und Wiedereinschalten des Schalters nach dem Speichern des Schlüssels die Konfigurationsseite nicht erneut. Sie öffnet sich nun sowohl über den Schalter als auch durch Tippen auf die Karte.",
+  "@cl212_fix_2": {
+    "description": "v2.1.2 changelog: cl212_fix_2"
+  },
+  "cl212_fix_3": "Behoben „Zugriff verweigert“ bei stiller Installation trotz autorisiertem Shizuku: der Shizuku-Pfad installiert nun über eine System-PackageInstaller-Sitzung statt dem auf manchen Systemen gesperrten Shell-Befehl; der Root-Pfad übergibt kein unnötiges Downgrade-Flag mehr.",
+  "@cl212_fix_3": {
+    "description": "v2.1.2 changelog: cl212_fix_3"
   },
   "app_icon_add_title": "Zum Startbildschirm hinzufügen",
   "@app_icon_add_title": {

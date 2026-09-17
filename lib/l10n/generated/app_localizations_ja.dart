@@ -6279,6 +6279,11 @@ class L10nJa extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'インストール前に一時コピーを作成し、システムインストーラーが元のAPKを自動削除するのを防ぎます';
+  @override
+  String get apk_open_mode_title => 'APK の開き方';
+
+  @override
+  String get apk_open_mode_desc => 'APK を開く際にシステムの選択画面を使用し、InstallerX などのサードパーティ製インストーラーに処理を任せます。オフの場合は内蔵インストーラーを使用します。';
 
   @override
   String get vt_install => 'インストール';
@@ -6423,6 +6428,32 @@ class L10nJa extends L10n {
 
   @override
   String get cl211_fixes => '修正';
+  @override
+  String get cl212_features => '新機能';
+
+  @override
+  String get cl212_feat_1 => 'APK の開き方を切り替え可能に：設定 → APK インストール設定に「APK の開き方」が追加され、内蔵インストーラーとシステムの選択画面を切り替えられます。システムの選択画面を選ぶと、ZenFile は APK の開き方を強制しなくなるため、InstallerX や InstallWithOptions などのサードパーティ製インストーラーが正常に処理でき、一括インストール時に毎回「開き方」を長押しして選ぶ必要がなくなります。';
+
+  @override
+  String get cl212_ui => 'UI と操作';
+
+  @override
+  String get cl212_ui_1 => '「サイズと間隔」の調整範囲を拡大：カード間隔スライダーの下限を 40% から -50% に緩和しました。0% でカードの境界線が詰まり、負の値で隣接するカードの境界線が 1 本の線に重なります。また既定値を 0% に変更しました（新規インストールは最初から詰まり、既に設定した方は従来の値を保持）。';
+
+  @override
+  String get cl212_ui_2 => 'カスタムショートカットのダイアログ：「アイコンの形」と「1 行あたりの列数」が並べられたボタンからドロップダウンに変わり、レイアウトがよりコンパクトになりました。';
+
+  @override
+  String get cl212_fixes => '不具合修正';
+
+  @override
+  String get cl212_fix_1 => '指紋ロックを既定でオフに：インストール後、設定 → セキュリティの指紋ロックは既定でオフになり、自分でオンにするまで生物認証ロックが自動で有効にならなくなりました。';
+
+  @override
+  String get cl212_fix_2 => 'APK セキュリティスキャンの API キーを再設定できない問題を修正：以前はキーを保存すると、スイッチをオフにしてからオンにしても設定画面が再表示されませんでした。現在はスイッチとカードのタップの両方から設定画面が開きます。';
+
+  @override
+  String get cl212_fix_3 => 'Shizuku を許可しても「権限がありません」と表示されてサイレントインストールできない問題を修正：Shizuku 経路はシステムの PackageInstaller セッションを使ってインストールするようになり、一部のシステムで禁止されている shell のインストールコマンドに依存しなくなりました。';
 
   @override
   String get cl211_fix_1 => '一部の端末で動画再生時に黒屏（音声のみで映像なし）になっていた問題を修正しました。これは 1.1.42 で導入されたレンダラーの互換性問題が原因です。描画は現在すべての端末で互換性のある方式を使用し、ハードウェアデコードで異常が発生した場合は自動的にソフトウェアデコードに切り替えて再生を続けます。';

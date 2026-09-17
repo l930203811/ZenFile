@@ -11571,6 +11571,11 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'开启后安装时复制临时副本，防止系统安装器自动删除源 APK'**
   String get vt_keep_apk_desc;
+  /// No description provided for @apk_open_mode_title.
+  String get apk_open_mode_title;
+
+  /// No description provided for @apk_open_mode_desc.
+  String get apk_open_mode_desc;
 
   /// virustotal scan dialog buttons
   ///
@@ -11849,6 +11854,32 @@ abstract class L10n {
 
   /// No description provided for @cl211_fix_7.
   String get cl211_fix_7;
+  /// No description provided for @cl212_features.
+  String get cl212_features;
+
+  /// No description provided for @cl212_feat_1.
+  String get cl212_feat_1;
+
+  /// No description provided for @cl212_ui.
+  String get cl212_ui;
+
+  /// No description provided for @cl212_ui_1.
+  String get cl212_ui_1;
+
+  /// No description provided for @cl212_ui_2.
+  String get cl212_ui_2;
+
+  /// No description provided for @cl212_fixes.
+  String get cl212_fixes;
+
+  /// No description provided for @cl212_fix_1.
+  String get cl212_fix_1;
+
+  /// No description provided for @cl212_fix_2.
+  String get cl212_fix_2;
+
+  /// No description provided for @cl212_fix_3.
+  String get cl212_fix_3;
 
   /// No description provided for @vault_config_password.
   ///

@@ -7,6 +7,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
+import '../../services/preferences_service.dart';
 import 'vault_explorer_screen.dart';
 import 'security_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -78,7 +79,8 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     bool enabled = false;
     try {
       available.addAll(await BiometricAuthHelper.auth.getAvailableBiometrics());
-      enabled = await VaultBiometricStore.hasCredential();
+      enabled = (await VaultBiometricStore.hasCredential()) &&
+          PreferencesService.getBiometricUnlockEnabled();
     } catch (_) {
       // 设备不支持生物识别：静默降级为手动输入
     }

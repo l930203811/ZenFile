@@ -6745,6 +6745,14 @@
   "@vt_keep_apk_desc": {
     "description": "virustotal settings / keep apk"
   },
+  "apk_open_mode_title": "APK 打开方式",
+  "@apk_open_mode_title": {
+    "description": "apk open mode: apk_open_mode_title"
+  },
+  "apk_open_mode_desc": "使用系统选择器打开 APK，允许 InstallerX 等第三方安装器接管；关闭则使用内置安装器。",
+  "@apk_open_mode_desc": {
+    "description": "apk open mode: apk_open_mode_desc"
+  },
   "vt_install": "安装",
   "@vt_install": {
     "description": "virustotal scan dialog buttons"
@@ -6961,6 +6969,42 @@
   "cl211_fix_7": "修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。",
   "@cl211_fix_7": {
     "description": "changelog 2.1.1: cl211_fix_7"
+  },
+  "cl212_features": "新增功能",
+  "@cl212_features": {
+    "description": "v2.1.2 changelog: cl212_features"
+  },
+  "cl212_feat_1": "APK 打开方式可切换：设置 → APK 安装设置新增「APK 打开方式」，可在「内置安装器」与「系统选择器」之间切换。选择系统选择器后，ZenFile 不再强制拦截 APK 打开，InstallerX、InstallWithOptions 等第三方安装器可正常接管，批量安装无需再长按逐个选择「打开方式」。",
+  "@cl212_feat_1": {
+    "description": "v2.1.2 changelog: cl212_feat_1"
+  },
+  "cl212_ui": "界面与交互",
+  "@cl212_ui": {
+    "description": "v2.1.2 changelog: cl212_ui"
+  },
+  "cl212_ui_1": "「大小和间距」可调范围扩大：卡片间距滑块下限由 40% 放宽到 -50%，0% 时卡片边框紧贴、负值可让相邻卡片边框重叠成一条线；同时默认值改为 0%（新用户首次启动即贴边，已调整过的用户保持原值）。",
+  "@cl212_ui_1": {
+    "description": "v2.1.2 changelog: cl212_ui_1"
+  },
+  "cl212_ui_2": "自定义快捷方式弹窗：「图标形状」与「每行显示」由并排按钮改为下拉选择，布局更紧凑统一。",
+  "@cl212_ui_2": {
+    "description": "v2.1.2 changelog: cl212_ui_2"
+  },
+  "cl212_fixes": "问题修复",
+  "@cl212_fixes": {
+    "description": "v2.1.2 changelog: cl212_fixes"
+  },
+  "cl212_fix_1": "指纹解锁改为默认关闭：安装后「设置 → 安全设置」中的指纹解锁默认处于关闭状态，需主动开启，避免新装或升级后自动启用生物识别解锁。",
+  "@cl212_fix_1": {
+    "description": "v2.1.2 changelog: cl212_fix_1"
+  },
+  "cl212_fix_2": "修复 APK 安全扫描配置好 API Key 后、关闭再打开开关无法再次进入配置页重新配置 Key 的问题；现在开关打开与点击卡片均可进入配置页修改 Key。",
+  "@cl212_fix_2": {
+    "description": "v2.1.2 changelog: cl212_fix_2"
+  },
+  "cl212_fix_3": "修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。",
+  "@cl212_fix_3": {
+    "description": "v2.1.2 changelog: cl212_fix_3"
   },
   "app_icon_add_title": "添加到桌面",
   "@app_icon_add_title": {

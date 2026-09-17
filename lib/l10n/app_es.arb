@@ -6458,6 +6458,14 @@
   "@vt_keep_apk_desc": {
     "description": "virustotal settings / keep apk"
   },
+  "apk_open_mode_title": "Método de apertura de APK",
+  "@apk_open_mode_title": {
+    "description": "apk open mode: apk_open_mode_title"
+  },
+  "apk_open_mode_desc": "Usa el selector del sistema para abrir los APK y permitir que instaladores de terceros como InstallerX los gestionen; si está desactivado se usa el instalador integrado.",
+  "@apk_open_mode_desc": {
+    "description": "apk open mode: apk_open_mode_desc"
+  },
   "vt_install": "Instalar",
   "@vt_install": {
     "description": "virustotal scan dialog buttons"
@@ -6674,6 +6682,42 @@
   "cl211_fix_7": "Corregidos dos mensajes de la caja fuerte: al introducir una contraseña errónea se decía \"configure primero la contraseña maestra\"; los avisos de resultado de cifrar/descifrar seguían en chino en idiomas no chinos.",
   "@cl211_fix_7": {
     "description": "changelog 2.1.1: cl211_fix_7"
+  },
+  "cl212_features": "Novedades",
+  "@cl212_features": {
+    "description": "v2.1.2 changelog: cl212_features"
+  },
+  "cl212_feat_1": "Método de apertura de APK conmutable: en Ajustes → Ajustes de instalación de APK se añade «Método de apertura de APK» para elegir entre el instalador integrado y el selector del sistema. Con el selector del sistema, ZenFile ya no intercepta la apertura de APK, por lo que instaladores de terceros como InstallerX e InstallWithOptions pueden gestionarlos: ya no hay que pulsar prolongadamente cada archivo para elegir «Abrir con» al instalar por lotes.",
+  "@cl212_feat_1": {
+    "description": "v2.1.2 changelog: cl212_feat_1"
+  },
+  "cl212_ui": "Interfaz e interacción",
+  "@cl212_ui": {
+    "description": "v2.1.2 changelog: cl212_ui"
+  },
+  "cl212_ui_1": "Rango de «Tamaño y espaciado» ampliado: el límite inferior del control de espaciado entre tarjetas pasa de 40 % a -50 %; al 0 % los bordes de las tarjetas se tocan, y los valores negativos hacen que los bordes de tarjetas adyacentes se solapen en una sola línea. El valor predeterminado también cambia a 0 % (las nuevas instalaciones quedan pegadas; los ajustes existentes se conservan).",
+  "@cl212_ui_1": {
+    "description": "v2.1.2 changelog: cl212_ui_1"
+  },
+  "cl212_ui_2": "Diálogo de atajos personalizados: «Forma del icono» y «Columnas por fila» son ahora listas desplegables en lugar de botones uno al lado del otro, con un diseño más compacto.",
+  "@cl212_ui_2": {
+    "description": "v2.1.2 changelog: cl212_ui_2"
+  },
+  "cl212_fixes": "Correcciones",
+  "@cl212_fixes": {
+    "description": "v2.1.2 changelog: cl212_fixes"
+  },
+  "cl212_fix_1": "El desbloqueo por huella ahora está desactivado por defecto: tras la instalación, el desbloqueo por huella en Ajustes → Seguridad permanece desactivado hasta que lo actives, por lo que el desbloqueo biométrico ya no se activa automáticamente.",
+  "@cl212_fix_1": {
+    "description": "v2.1.2 changelog: cl212_fix_1"
+  },
+  "cl212_fix_2": "Corregido que no se podía reconfigurar la clave de API del análisis de seguridad APK: antes, una vez guardada la clave, desactivar y volver a activar el interruptor no reabría la página de configuración. Ahora la página se abre tanto desde el interruptor como tocando la tarjeta.",
+  "@cl212_fix_2": {
+    "description": "v2.1.2 changelog: cl212_fix_2"
+  },
+  "cl212_fix_3": "Corregido el error «permiso denegado» en la instalación silenciosa incluso con Shizuku autorizado: la ruta Shizuku ahora instala mediante una sesión de PackageInstaller del sistema en lugar del comando shell que algunos sistemas bloquean; la ruta root ya no usa una bandera de downgrade innecesaria.",
+  "@cl212_fix_3": {
+    "description": "v2.1.2 changelog: cl212_fix_3"
   },
   "app_icon_add_title": "Añadir a la pantalla de inicio",
   "@app_icon_add_title": {

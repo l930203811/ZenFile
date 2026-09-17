@@ -6537,6 +6537,11 @@ class L10nEs extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Crear una copia temporal antes de instalar para evitar que el instalador del sistema elimine el APK original';
+  @override
+  String get apk_open_mode_title => 'Método de apertura de APK';
+
+  @override
+  String get apk_open_mode_desc => 'Usa el selector del sistema para abrir los APK y permitir que instaladores de terceros como InstallerX los gestionen; si está desactivado se usa el instalador integrado.';
 
   @override
   String get vt_install => 'Instalar';
@@ -6695,6 +6700,32 @@ class L10nEs extends L10n {
 
   @override
   String get cl211_fixes => 'Correcciones';
+  @override
+  String get cl212_features => 'Novedades';
+
+  @override
+  String get cl212_feat_1 => 'Método de apertura de APK conmutable: en Ajustes → Ajustes de instalación de APK se añade «Método de apertura de APK» para elegir entre el instalador integrado y el selector del sistema. Con el selector del sistema, ZenFile ya no intercepta la apertura de APK, por lo que instaladores de terceros como InstallerX e InstallWithOptions pueden gestionarlos: ya no hay que pulsar prolongadamente cada archivo para elegir «Abrir con» al instalar por lotes.';
+
+  @override
+  String get cl212_ui => 'Interfaz e interacción';
+
+  @override
+  String get cl212_ui_1 => 'Rango de «Tamaño y espaciado» ampliado: el límite inferior del control de espaciado entre tarjetas pasa de 40 % a -50 %; al 0 % los bordes de las tarjetas se tocan, y los valores negativos hacen que los bordes de tarjetas adyacentes se solapen en una sola línea. El valor predeterminado también cambia a 0 % (las nuevas instalaciones quedan pegadas; los ajustes existentes se conservan).';
+
+  @override
+  String get cl212_ui_2 => 'Diálogo de atajos personalizados: «Forma del icono» y «Columnas por fila» son ahora listas desplegables en lugar de botones uno al lado del otro, con un diseño más compacto.';
+
+  @override
+  String get cl212_fixes => 'Correcciones';
+
+  @override
+  String get cl212_fix_1 => 'El desbloqueo por huella ahora está desactivado por defecto: tras la instalación, el desbloqueo por huella en Ajustes → Seguridad permanece desactivado hasta que lo actives, por lo que el desbloqueo biométrico ya no se activa automáticamente.';
+
+  @override
+  String get cl212_fix_2 => 'Corregido que no se podía reconfigurar la clave de API del análisis de seguridad APK: antes, una vez guardada la clave, desactivar y volver a activar el interruptor no reabría la página de configuración. Ahora la página se abre tanto desde el interruptor como tocando la tarjeta.';
+
+  @override
+  String get cl212_fix_3 => 'Corregido el error «permiso denegado» en la instalación silenciosa incluso con Shizuku autorizado: la ruta Shizuku ahora instala mediante una sesión de PackageInstaller del sistema en lugar del comando shell que algunos sistemas bloquean; la ruta root ya no usa una bandera de downgrade innecesaria.';
 
   @override
   String get cl211_fix_1 => 'Corregido el pantalla negra (solo audio, sin imagen) al reproducir vídeo en algunos dispositivos, causada por un problema de compatibilidad del renderizador introducido en 1.1.42. El renderizado usa ahora la ruta universalmente compatible y, si la decodificación de hardware falla, cambia automáticamente a decodificación por software.';

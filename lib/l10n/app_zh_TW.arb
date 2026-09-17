@@ -6606,6 +6606,14 @@
   "@vt_keep_apk_desc": {
     "description": "virustotal settings / keep apk"
   },
+  "apk_open_mode_title": "APK 開啟方式",
+  "@apk_open_mode_title": {
+    "description": "apk open mode: apk_open_mode_title"
+  },
+  "apk_open_mode_desc": "使用系統選擇器開啟 APK，允許 InstallerX 等第三方安裝器接管；關閉則使用內建安裝器。",
+  "@apk_open_mode_desc": {
+    "description": "apk open mode: apk_open_mode_desc"
+  },
   "vt_install": "安裝",
   "@vt_install": {
     "description": "virustotal scan dialog buttons"
@@ -6822,6 +6830,42 @@
   "cl211_fix_7": "修復保險箱提示的兩處錯誤：解密密碼輸入錯誤時誤提示「請先設定主密碼」；加密/解密的結果提示在非中文介面下仍顯示中文。",
   "@cl211_fix_7": {
     "description": "changelog 2.1.1: cl211_fix_7"
+  },
+  "cl212_features": "新增功能",
+  "@cl212_features": {
+    "description": "v2.1.2 changelog: cl212_features"
+  },
+  "cl212_feat_1": "APK 開啟方式可切換：設定 → APK 安裝設定新增「APK 開啟方式」，可在「內建安裝器」與「系統選擇器」之間切換。選擇系統選擇器後，ZenFile 不再強制攔截 APK 開啟，InstallerX、InstallWithOptions 等第三方安裝器可正常接管，批次安裝無需再長按逐個選擇「開啟方式」。",
+  "@cl212_feat_1": {
+    "description": "v2.1.2 changelog: cl212_feat_1"
+  },
+  "cl212_ui": "介面與互動",
+  "@cl212_ui": {
+    "description": "v2.1.2 changelog: cl212_ui"
+  },
+  "cl212_ui_1": "「大小與間距」可調範圍擴大：卡片間距滑桿下限由 40% 放寬到 -50%，0% 時卡片邊框緊貼、負值可讓相鄰卡片邊框重疊成一條線；同時預設值改為 0%（新安裝首次啟動即貼邊，已調整過的使用者保持原值）。",
+  "@cl212_ui_1": {
+    "description": "v2.1.2 changelog: cl212_ui_1"
+  },
+  "cl212_ui_2": "自訂捷徑彈窗：「圖示形狀」與「每行顯示」由並排按鈕改為下拉選擇，版面更緊湊統一。",
+  "@cl212_ui_2": {
+    "description": "v2.1.2 changelog: cl212_ui_2"
+  },
+  "cl212_fixes": "問題修復",
+  "@cl212_fixes": {
+    "description": "v2.1.2 changelog: cl212_fixes"
+  },
+  "cl212_fix_1": "指紋解鎖改為預設關閉：安裝後「設定 → 安全設定」中的指紋解鎖預設處於關閉狀態，需主動開啟，避免新安裝或升級後自動啟用生物辨識解鎖。",
+  "@cl212_fix_1": {
+    "description": "v2.1.2 changelog: cl212_fix_1"
+  },
+  "cl212_fix_2": "修復 APK 安全掃描設定好 API Key 後、關閉再打開開關無法再次進入設定頁重新設定的問題；現在開關打開與點擊卡片均可進入設定頁修改 Key。",
+  "@cl212_fix_2": {
+    "description": "v2.1.2 changelog: cl212_fix_2"
+  },
+  "cl212_fix_3": "修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「權限不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。",
+  "@cl212_fix_3": {
+    "description": "v2.1.2 changelog: cl212_fix_3"
   },
   "app_icon_add_title": "新增到桌面",
   "@app_icon_add_title": {

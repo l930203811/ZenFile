@@ -16,6 +16,7 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
   bool _silentInstall = false;
   bool _keepApk = false;
   bool _securityScan = false;
+  bool _useExternalInstaller = false;
   RootShizukuStatus? _status;
 
   @override
@@ -25,6 +26,8 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
     _keepApk = PreferencesService.getKeepApkAfterInstall();
     // 扫描开关独立于 API Key：关闭开关只禁用扫描，不清空 Key
     _securityScan = PreferencesService.getVirusTotalScanEnabled();
+    // APK 打开方式：'builtin'（内置安装器）/ 'chooser'（系统选择器，交给第三方安装器）
+    _useExternalInstaller = PreferencesService.getApkOpenMode() == 'chooser';
     _loadStatus();
   }
 
@@ -87,29 +90,49 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
             value: _securityScan,
             onChanged: (val) async {
               if (val) {
-                // 打开开关：如果已有 Key 直接启用，没有则跳转配置页
-                final existingKey = VirusTotalService.getApiKey();
-                if (existingKey != null && existingKey.isNotEmpty) {
-                  await PreferencesService.saveVirusTotalScanEnabled(true);
-                  if (mounted) setState(() => _securityScan = true);
-                } else {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
-                  );
-                  // 返回后：如果配置了 Key 则启用，否则保持关闭
-                  if (mounted) {
-                    final key = VirusTotalService.getApiKey();
-                    final enabled = key != null && key.isNotEmpty;
-                    await PreferencesService.saveVirusTotalScanEnabled(enabled);
-                    setState(() => _securityScan = enabled);
-                  }
+                // 打开开关：始终进入配置页（即便已配置过 Key 也能重新配置/修改），
+                // 返回后根据是否配置了 Key 决定是否启用扫描。
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
+                );
+                if (mounted) {
+                  final key = VirusTotalService.getApiKey();
+                  final enabled = key != null && key.isNotEmpty;
+                  await PreferencesService.saveVirusTotalScanEnabled(enabled);
+                  setState(() => _securityScan = enabled);
                 }
               } else {
                 // 关闭开关：只禁用扫描，不清空 API Key（Key 持久化保留）
                 await PreferencesService.saveVirusTotalScanEnabled(false);
                 if (mounted) setState(() => _securityScan = false);
               }
+            },
+            onTap: () async {
+              // 点击卡片本体：进入配置页重新配置 Key（不改开关状态）
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
+              );
+              if (mounted) {
+                final key = VirusTotalService.getApiKey();
+                final enabled = key != null && key.isNotEmpty;
+                await PreferencesService.saveVirusTotalScanEnabled(enabled);
+                setState(() => _securityScan = enabled);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildSwitchCard(
+            context,
+            theme,
+            icon: Icons.open_in_new_rounded,
+            title: l10n.apk_open_mode_title,
+            subtitle: l10n.apk_open_mode_desc,
+            value: _useExternalInstaller,
+            onChanged: (val) async {
+              setState(() => _useExternalInstaller = val);
+              await PreferencesService.saveApkOpenMode(val ? 'chooser' : 'builtin');
             },
           ),
         ],
@@ -126,8 +149,9 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
     required bool value,
     bool enabled = true,
     required ValueChanged<bool> onChanged,
+    VoidCallback? onTap,
   }) {
-    return Container(
+    final Widget card = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -161,5 +185,7 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
         ],
       ),
     );
+    if (onTap == null) return card;
+    return GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: card);
   }
 }

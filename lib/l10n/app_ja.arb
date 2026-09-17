@@ -6462,6 +6462,14 @@
   "@vt_keep_apk_desc": {
     "description": "virustotal settings / keep apk"
   },
+  "apk_open_mode_title": "APK の開き方",
+  "@apk_open_mode_title": {
+    "description": "apk open mode: apk_open_mode_title"
+  },
+  "apk_open_mode_desc": "APK を開く際にシステムの選択画面を使用し、InstallerX などのサードパーティ製インストーラーに処理を任せます。オフの場合は内蔵インストーラーを使用します。",
+  "@apk_open_mode_desc": {
+    "description": "apk open mode: apk_open_mode_desc"
+  },
   "vt_install": "インストール",
   "@vt_install": {
     "description": "virustotal scan dialog buttons"
@@ -6678,6 +6686,42 @@
   "cl211_fix_7": "保護区のメッセージの2つの誤りを修正しました：パスワードを間違えた際に「先にマスターパスワードを設定してください」と誤表示されていたこと、および暗号化/復号の結果トーストが非中国語環境でも中国語のままだったことです。",
   "@cl211_fix_7": {
     "description": "changelog 2.1.1: cl211_fix_7"
+  },
+  "cl212_features": "新機能",
+  "@cl212_features": {
+    "description": "v2.1.2 changelog: cl212_features"
+  },
+  "cl212_feat_1": "APK の開き方を切り替え可能に：設定 → APK インストール設定に「APK の開き方」が追加され、内蔵インストーラーとシステムの選択画面を切り替えられます。システムの選択画面を選ぶと、ZenFile は APK の開き方を強制しなくなるため、InstallerX や InstallWithOptions などのサードパーティ製インストーラーが正常に処理でき、一括インストール時に毎回「開き方」を長押しして選ぶ必要がなくなります。",
+  "@cl212_feat_1": {
+    "description": "v2.1.2 changelog: cl212_feat_1"
+  },
+  "cl212_ui": "UI と操作",
+  "@cl212_ui": {
+    "description": "v2.1.2 changelog: cl212_ui"
+  },
+  "cl212_ui_1": "「サイズと間隔」の調整範囲を拡大：カード間隔スライダーの下限を 40% から -50% に緩和しました。0% でカードの境界線が詰まり、負の値で隣接するカードの境界線が 1 本の線に重なります。また既定値を 0% に変更しました（新規インストールは最初から詰まり、既に設定した方は従来の値を保持）。",
+  "@cl212_ui_1": {
+    "description": "v2.1.2 changelog: cl212_ui_1"
+  },
+  "cl212_ui_2": "カスタムショートカットのダイアログ：「アイコンの形」と「1 行あたりの列数」が並べられたボタンからドロップダウンに変わり、レイアウトがよりコンパクトになりました。",
+  "@cl212_ui_2": {
+    "description": "v2.1.2 changelog: cl212_ui_2"
+  },
+  "cl212_fixes": "不具合修正",
+  "@cl212_fixes": {
+    "description": "v2.1.2 changelog: cl212_fixes"
+  },
+  "cl212_fix_1": "指紋ロックを既定でオフに：インストール後、設定 → セキュリティの指紋ロックは既定でオフになり、自分でオンにするまで生物認証ロックが自動で有効にならなくなりました。",
+  "@cl212_fix_1": {
+    "description": "v2.1.2 changelog: cl212_fix_1"
+  },
+  "cl212_fix_2": "APK セキュリティスキャンの API キーを再設定できない問題を修正：以前はキーを保存すると、スイッチをオフにしてからオンにしても設定画面が再表示されませんでした。現在はスイッチとカードのタップの両方から設定画面が開きます。",
+  "@cl212_fix_2": {
+    "description": "v2.1.2 changelog: cl212_fix_2"
+  },
+  "cl212_fix_3": "Shizuku を許可しても「権限がありません」と表示されてサイレントインストールできない問題を修正：Shizuku 経路はシステムの PackageInstaller セッションを使ってインストールするようになり、一部のシステムで禁止されている shell のインストールコマンドに依存しなくなりました。",
+  "@cl212_fix_3": {
+    "description": "v2.1.2 changelog: cl212_fix_3"
   },
   "app_icon_add_title": "ホーム画面に追加",
   "@app_icon_add_title": {

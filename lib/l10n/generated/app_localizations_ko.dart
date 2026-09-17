@@ -6276,6 +6276,11 @@ class L10nKo extends L10n {
   @override
   String get vt_keep_apk_desc =>
       '설치 전 임시 복사본을 만들어 시스템 설치자가 원본 APK를 자동으로 삭제하는 것을 방지합니다';
+  @override
+  String get apk_open_mode_title => 'APK 열기 방식';
+
+  @override
+  String get apk_open_mode_desc => 'APK를 열 때 시스템 선택기를 사용하여 InstallerX 같은 서드파티 설치기가 처리하도록 합니다. 끄면 내장 설치기를 사용합니다.';
 
   @override
   String get vt_install => '설치';
@@ -6418,6 +6423,32 @@ class L10nKo extends L10n {
 
   @override
   String get cl211_fixes => '수정';
+  @override
+  String get cl212_features => '새로운 기능';
+
+  @override
+  String get cl212_feat_1 => 'APK 열기 방식 전환 가능: 설정 → APK 설치 설정에 "APK 열기 방식"이 추가되어 내장 설치기와 시스템 선택기를 전환할 수 있습니다. 시스템 선택기를 사용하면 ZenFile이 APK 열기를 강제로 가로채지 않으므로 InstallerX, InstallWithOptions 같은 서드파티 설치기가 정상적으로 처리할 수 있고, 일괄 설치 시 매번 길게 눌러 "열기 방식"을 고를 필요가 없습니다.';
+
+  @override
+  String get cl212_ui => 'UI 및 상호작용';
+
+  @override
+  String get cl212_ui_1 => '"크기 및 간격" 조정 범위 확대: 카드 간격 슬라이더 하한을 40%에서 -50%로 완화했습니다. 0%에서는 카드 테두리가 붙고, 음수값은 인접 카드 테두리가 한 줄로 겹칩니다. 또한 기본값을 0%로 변경했습니다(새 설치는 처음부터 붙고, 이미 설정한 경우 기존 값 유지).';
+
+  @override
+  String get cl212_ui_2 => '사용자 지정 바로가기 대화상자: "아이콘 모양"과 "한 줄당 열 수"가 나란히 배치된 버튼에서 드롭다운으로 바뀌어 레이아웃이 더 컴팩트해졌습니다.';
+
+  @override
+  String get cl212_fixes => '버그 수정';
+
+  @override
+  String get cl212_fix_1 => '지문 잠금 기본값을 끄기로 변경: 설치 후 설정 → 보안의 지문 잠금은 기본적으로 꺼져 있으며 직접 켜야 하므로, 새 설치나 업데이트 후 생체 인식 잠금이 자동으로 켜지지 않습니다.';
+
+  @override
+  String get cl212_fix_2 => 'APK 보안 검사 API 키를 다시 설정할 수 없던 문제 수정: 이전에는 키를 저장한 후 스위치를 끄고 다시 켜도 설정 화면이 다시 열리지 않았습니다. 이제 스위치와 카드 탭 모두에서 설정 화면이 열립니다.';
+
+  @override
+  String get cl212_fix_3 => 'Shizuku 권한을 부여했음에도 "권한 부족"이 표시되어 무음 설치가 안 되던 문제 수정: Shizuku 경로는 시스템 PackageInstaller 세션으로 설치하도록 변경되어, 일부 시스템에서 금지된 shell 설치 명령에 의존하지 않습니다.';
 
   @override
   String get cl211_fix_1 => '일부 기기에서 동영상 재생 시 검은 화면(소리만 있고 영상 없음)이 발생하던 문제를 수정했습니다. 1.1.42에서 도입된 렌더러 호환성 문제가 원인이며, 이제 범용 렌더링을 사용하고 하드웨어 디코딩 이상 시 자동으로 소프트웨어 디코딩으로 전환하여 재생을 이어갑니다.';

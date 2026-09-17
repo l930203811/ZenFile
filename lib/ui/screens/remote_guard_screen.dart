@@ -6,6 +6,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/remote_guard_service.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
+import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 远程保护页面模式
@@ -109,7 +110,8 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     try {
       final bios = await BiometricAuthHelper.auth.getAvailableBiometrics();
       available = bios.isNotEmpty;
-      enabled = await VaultBiometricStore.hasCredential();
+      enabled = (await VaultBiometricStore.hasCredential()) &&
+          PreferencesService.getBiometricUnlockEnabled();
     } catch (_) {
       // 设备不支持生物识别：静默降级为手动输入
     }

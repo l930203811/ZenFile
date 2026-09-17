@@ -5,6 +5,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/remote_guard_service.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
+import '../../services/preferences_service.dart';
 import 'remote_guard_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -81,7 +82,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     try {
       final bios = await BiometricAuthHelper.auth.getAvailableBiometrics();
       available = bios.isNotEmpty;
-      enabled = await VaultBiometricStore.hasCredential();
+      enabled = (await VaultBiometricStore.hasCredential()) &&
+          PreferencesService.getBiometricUnlockEnabled();
     } catch (_) {}
     if (!mounted) return;
     setState(() {
@@ -152,12 +154,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         );
         if (did) {
           await VaultBiometricStore.save(pw);
+          await PreferencesService.saveBiometricUnlockEnabled(true);
         }
       } catch (_) {
         // 用户取消或验证失败：保持关闭
       }
     } else {
       await VaultBiometricStore.clear();
+      await PreferencesService.saveBiometricUnlockEnabled(false);
     }
     await _loadAll();
   }

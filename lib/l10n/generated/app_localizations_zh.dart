@@ -6175,6 +6175,11 @@ class L10nZh extends L10n {
 
   @override
   String get vt_keep_apk_desc => '开启后安装时复制临时副本，防止系统安装器自动删除源 APK';
+  @override
+  String get apk_open_mode_title => 'APK 打开方式';
+
+  @override
+  String get apk_open_mode_desc => '使用系统选择器打开 APK，允许 InstallerX 等第三方安装器接管；关闭则使用内置安装器。';
 
   @override
   String get vt_install => '安装';
@@ -6315,6 +6320,32 @@ class L10nZh extends L10n {
 
   @override
   String get cl211_fixes => '问题修复';
+  @override
+  String get cl212_features => '新增功能';
+
+  @override
+  String get cl212_feat_1 => 'APK 打开方式可切换：设置 → APK 安装设置新增「APK 打开方式」，可在「内置安装器」与「系统选择器」之间切换。选择系统选择器后，ZenFile 不再强制拦截 APK 打开，InstallerX、InstallWithOptions 等第三方安装器可正常接管，批量安装无需再长按逐个选择「打开方式」。';
+
+  @override
+  String get cl212_ui => '界面与交互';
+
+  @override
+  String get cl212_ui_1 => '「大小和间距」可调范围扩大：卡片间距滑块下限由 40% 放宽到 -50%，0% 时卡片边框紧贴、负值可让相邻卡片边框重叠成一条线；同时默认值改为 0%（新用户首次启动即贴边，已调整过的用户保持原值）。';
+
+  @override
+  String get cl212_ui_2 => '自定义快捷方式弹窗：「图标形状」与「每行显示」由并排按钮改为下拉选择，布局更紧凑统一。';
+
+  @override
+  String get cl212_fixes => '问题修复';
+
+  @override
+  String get cl212_fix_1 => '指纹解锁改为默认关闭：安装后「设置 → 安全设置」中的指纹解锁默认处于关闭状态，需主动开启，避免新装或升级后自动启用生物识别解锁。';
+
+  @override
+  String get cl212_fix_2 => '修复 APK 安全扫描配置好 API Key 后、关闭再打开开关无法再次进入配置页重新配置 Key 的问题；现在开关打开与点击卡片均可进入配置页修改 Key。';
+
+  @override
+  String get cl212_fix_3 => '修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。';
 
   @override
   String get cl211_fix_1 => '修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。';
@@ -13430,6 +13461,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vt_keep_apk_desc => '開啟後安裝時複製臨時副本，防止系統安裝器自動刪除來源 APK';
+  @override
+  String get apk_open_mode_title => 'APK 開啟方式';
+
+  @override
+  String get apk_open_mode_desc => '使用系統選擇器開啟 APK，允許 InstallerX 等第三方安裝器接管；關閉則使用內建安裝器。';
 
   @override
   String get vt_install => '安裝';
@@ -13570,6 +13606,32 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get cl211_fixes => '問題修復';
+  @override
+  String get cl212_features => '新增功能';
+
+  @override
+  String get cl212_feat_1 => 'APK 開啟方式可切換：設定 → APK 安裝設定新增「APK 開啟方式」，可在「內建安裝器」與「系統選擇器」之間切換。選擇系統選擇器後，ZenFile 不再強制攔截 APK 開啟，InstallerX、InstallWithOptions 等第三方安裝器可正常接管，批次安裝無需再長按逐個選擇「開啟方式」。';
+
+  @override
+  String get cl212_ui => '介面與互動';
+
+  @override
+  String get cl212_ui_1 => '「大小與間距」可調範圍擴大：卡片間距滑桿下限由 40% 放寬到 -50%，0% 時卡片邊框緊貼、負值可讓相鄰卡片邊框重疊成一條線；同時預設值改為 0%（新安裝首次啟動即貼邊，已調整過的使用者保持原值）。';
+
+  @override
+  String get cl212_ui_2 => '自訂捷徑彈窗：「圖示形狀」與「每行顯示」由並排按鈕改為下拉選擇，版面更緊湊統一。';
+
+  @override
+  String get cl212_fixes => '問題修復';
+
+  @override
+  String get cl212_fix_1 => '指紋解鎖改為預設關閉：安裝後「設定 → 安全設定」中的指紋解鎖預設處於關閉狀態，需主動開啟，避免新安裝或升級後自動啟用生物辨識解鎖。';
+
+  @override
+  String get cl212_fix_2 => '修復 APK 安全掃描設定好 API Key 後、關閉再打開開關無法再次進入設定頁重新設定的問題；現在開關打開與點擊卡片均可進入設定頁修改 Key。';
+
+  @override
+  String get cl212_fix_3 => '修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「權限不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。';
 
   @override
   String get cl211_fix_1 => '修復部分機型播放影片黑屏（只有聲音沒有畫面）的問題：由 1.1.42 引入的渲染相容問題導致，現已改為通用渲染；並新增自動偵測，硬體解碼異常時自動切換軟體解碼續播，無需手動設定。';

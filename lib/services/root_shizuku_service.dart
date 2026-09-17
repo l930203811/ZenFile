@@ -675,8 +675,16 @@ class RootShizukuService {
   static Future<bool> installApkSilently(String path, {required bool useRoot}) async {
     if (!Platform.isAndroid) return false;
     try {
-      final output = await runCommand('pm install -r -d "$path" 2>&1', useRoot: useRoot);
-      return output != null && output.toLowerCase().contains('success');
+      // 优先 pm install -r（不带 -d 降级标志）。-d 需要 INSTALL_ALLOW_DOWNGRADE
+      // 权限，部分 ROM 的 shell 不具备，会直接报"权限不足"导致静默安装失败。
+      // 仅在明确是降级安装（报错含 downgrade）时，再补 -d 重试一次。
+      var output = await runCommand('pm install -r "$path" 2>&1', useRoot: useRoot);
+      if (output != null && output.toLowerCase().contains('success')) return true;
+      if (output != null && output.toLowerCase().contains('downgrade')) {
+        output = await runCommand('pm install -r -d "$path" 2>&1', useRoot: useRoot);
+        return output != null && output.toLowerCase().contains('success');
+      }
+      return false;
     } catch (e) {
       debugPrint('[ZenFile] installApkSilently failed: $e');
       return false;

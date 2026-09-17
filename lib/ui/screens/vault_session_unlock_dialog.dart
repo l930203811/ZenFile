@@ -5,6 +5,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
+import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 保险箱「会话解锁」验证底部弹窗。
@@ -50,7 +51,8 @@ class _VaultSessionUnlockBottomSheetState
   Future<void> _initBiometric() async {
     try {
       final available = await BiometricAuthHelper.auth.getAvailableBiometrics();
-      final enabled = await VaultBiometricStore.hasCredential();
+      final enabled = (await VaultBiometricStore.hasCredential()) &&
+          PreferencesService.getBiometricUnlockEnabled();
       if (!mounted) return;
       setState(() {
         _biometricAvailable = available.isNotEmpty;
