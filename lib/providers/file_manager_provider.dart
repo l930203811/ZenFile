@@ -9517,38 +9517,60 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件（MIME 未知）：先弹「打开方式」让用户选择本应用/外部，
-        // 选择完成后再决定流式播放、下载后打开或调用系统选择器。
-        // 这样选择「本应用的视频/音频」时可以直接走流式播放，避免先把整个
-        // 文件下载到 /storage/emulated/0/ZenFile。
+        // 非媒体文件：先查已保存的默认打开动作，避免每次都弹「打开方式」。
+        // 用户首次选择后（如「始终用本应用打开图片」），后续同扩展名文件直接打开，
+        // 不再重复弹窗。
         if (!isVideoFile && !isAudioFile) {
           try {
             final fileName = p.basename(path);
             final fileExt = p.extension(path).toLowerCase();
 
-            // 1) 先弹出「打开方式」（ZenFile 内置 / 外部系统选择器）
-            final result = await showModalBottomSheet<String>(
-              context: context,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              builder: (ctx) => OpenWithSheet(
-                fileName: fileName,
-                fileExtension: fileExt,
-              ),
-            );
+            // 读取用户已保存的默认打开动作（按扩展名）
+            final savedAction = PreferencesService.getDefaultOpenAction(fileExt);
 
-            if (result == null || !context.mounted) return;
+            String selectedType; // 'external' or 'native'
+            String? builtInType;
+            bool saveChosenType = false; // OpenWithSheet 选了"始终"时为 true
 
-            final isAlways = result.startsWith('always_');
-            final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
+            if (savedAction == 'external') {
+              // 已设为外部打开：直接走系统选择器，不弹窗
+              selectedType = 'external';
+            } else if (savedAction != null &&
+                ['text', 'image', 'audio', 'video'].contains(savedAction)) {
+              // 已保存具体内置类型：直接按类型打开，两个弹窗都跳过
+              selectedType = 'native';
+              builtInType = savedAction;
+            } else if (savedAction == 'native') {
+              // 已选"始终用本应用打开"但未保存具体类型：跳过 OpenWithSheet，直接选类型
+              selectedType = 'native';
+            } else {
+              // 首次打开：弹出「打开方式」（ZenFile 内置 / 外部系统选择器）
+              final result = await showModalBottomSheet<String>(
+                context: context,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (ctx) => OpenWithSheet(
+                  fileName: fileName,
+                  fileExtension: fileExt,
+                ),
+              );
+
+              if (result == null || !context.mounted) return;
+
+              final isAlways = result.startsWith('always_');
+              selectedType = result.substring(
+                  isAlways ? 'always_'.length : 'just_once_'.length);
+              if (isAlways) {
+                saveChosenType = true;
+                await PreferencesService.saveDefaultOpenAction(
+                    fileExt, selectedType);
+              }
+            }
 
             if (selectedType == 'external') {
               // 外部应用必须先把文件拿到本地，再交给系统选择器
-              if (isAlways) {
-                await PreferencesService.saveDefaultOpenAction(fileExt, 'external');
-              }
               final localPath = await _downloadRemoteFileVerified(
                 remoteClient,
                 path,
@@ -9563,35 +9585,67 @@ class FileManagerProvider extends ChangeNotifier {
               return;
             }
 
-            // selectedType == 'native'：本应用打开，再让用户选具体类型
-            if (isAlways) {
-              await PreferencesService.saveDefaultOpenAction(fileExt, 'native');
+            // selectedType == 'native'：本应用打开
+            if (builtInType == null) {
+              builtInType = await showModalBottomSheet<String>(
+                context: context,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (ctx) => PickFileTypeSheet(
+                  fileName: fileName,
+                  fileExtension: fileExt,
+                ),
+              );
+
+              if (builtInType == null || !context.mounted) return;
+
+              // 用户在 OpenWithSheet 选了"始终"，把具体类型也持久化
+              if (saveChosenType) {
+                await PreferencesService.saveDefaultOpenAction(
+                    fileExt, builtInType);
+              }
             }
 
-            final builtInType = await showModalBottomSheet<String>(
-              context: context,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              builder: (ctx) => PickFileTypeSheet(
-                fileName: fileName,
-                fileExtension: fileExt,
-              ),
-            );
-
-            if (builtInType == null || !context.mounted) return;
-
-            if (isAlways) {
-              await PreferencesService.saveDefaultOpenAction(fileExt, builtInType);
-            }
-
-            // 视频/音频直接流式播放，不下载到本地缓存；其它类型下载后用内置查看器打开
+            // 视频/音频直接流式播放，不下载到本地缓存
             if (builtInType == 'video' || builtInType == 'audio') {
               await _openBuiltInByType(context, path, builtInType);
               return;
             }
 
+            // 图片：构造远程目录图片列表传给 ImageViewerScreen，
+            // 让左右滑动浏览整个远程目录的图片（而非仅当前已缓存的单张）。
+            if (builtInType == 'image') {
+              final conn = activeTab.remoteConnection;
+              if (conn != null) {
+                const imageExts = [
+                  '.jpg', '.jpeg', '.png', '.gif', '.bmp',
+                  '.webp', '.heic', '.heif', '.avif',
+                ];
+                final remoteImages = currentFiles
+                    .where((f) =>
+                        !f.isDirectory &&
+                        imageExts.contains(p.extension(f.path).toLowerCase()))
+                    .map((f) => 'remote://${conn.id}|${f.path}')
+                    .toList();
+                final currentRemote = 'remote://${conn.id}|$path';
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ImageViewerScreen(
+                        imagePath: currentRemote,
+                        siblingPaths: remoteImages,
+                      ),
+                    ),
+                  );
+                }
+                return;
+              }
+            }
+
+            // 其它类型（文本/PDF 等）：下载后用内置查看器打开
             final localPath = await _downloadRemoteFileVerified(
               remoteClient,
               path,
