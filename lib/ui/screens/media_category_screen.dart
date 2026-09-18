@@ -1598,24 +1598,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               }
               return;
             }
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (c) => AlertDialog(
-                title: Text(L10n.of(context).msg631cd220),
-                content:
-                    Text(L10n.of(context).ui_permanently_delete_name(name)),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(c, false),
-                    child: Text(L10n.of(context).ui_cancel),
-                  ),
-                  FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () => Navigator.pop(c, true),
-                    child: Text(L10n.of(context).ui_delete),
-                  ),
-                ],
-              ),
+            final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+              context,
+              title: L10n.of(context).msg631cd220,
+              content: L10n.of(context).ui_permanently_delete_name(name),
             );
             if (confirm == true && mounted) {
               final mediaProvider = context.read<MediaProvider>();
