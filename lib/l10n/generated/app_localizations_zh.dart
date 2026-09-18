@@ -6175,11 +6175,13 @@ class L10nZh extends L10n {
 
   @override
   String get vt_keep_apk_desc => '开启后安装时复制临时副本，防止系统安装器自动删除源 APK';
+
   @override
   String get apk_open_mode_title => 'APK 打开方式';
 
   @override
-  String get apk_open_mode_desc => '使用系统选择器打开 APK，允许 InstallerX 等第三方安装器接管；关闭则使用内置安装器。';
+  String get apk_open_mode_desc =>
+      '使用系统选择器打开 APK，允许 InstallerX 等第三方安装器接管；关闭则使用内置安装器。';
 
   @override
   String get vt_install => '安装';
@@ -6297,20 +6299,27 @@ class L10nZh extends L10n {
 
   @override
   String get crypt_settings_title => '密码配置';
+
+  @override
+  String get vault_config_password => '密码配置';
+
   @override
   String get cl211_features => '新增功能';
 
   @override
-  String get cl211_feat_1 => '应用图标支持导入自定义图片：设置 → 外观与主题 → 应用图标，选择图片后可在桌面添加为快捷方式或 1×1 小组件。同时修复了此前点击提示「已添加」但桌面没有图标的问题；部分系统限制快捷方式时，可改用桌面小组件。';
+  String get cl211_feat_1 =>
+      '应用图标支持导入自定义图片：设置 → 外观与主题 → 应用图标，选择图片后可在桌面添加为快捷方式或 1×1 小组件。同时修复了此前点击提示「已添加」但桌面没有图标的问题；部分系统限制快捷方式时，可改用桌面小组件。';
 
   @override
-  String get cl211_feat_2 => '删除文件的二次确认可按需关闭：删除弹窗新增「删除不再提示」复选框，设置 → 文件操作与查看器新增「删除文件确认」开关，关闭后删除不再弹出确认。';
+  String get cl211_feat_2 =>
+      '删除文件的二次确认可按需关闭：删除弹窗新增「删除不再提示」复选框，设置 → 文件操作与查看器新增「删除文件确认」开关，关闭后删除不再弹出确认。';
 
   @override
   String get cl211_ui => '界面与交互';
 
   @override
-  String get cl211_ui_1 => '所有进度弹窗统一为双层圆环：外圈显示整体进度、内圈（绿色）显示当前文件进度，已覆盖复制/剪切、压缩/解压、加密/解密、保险箱导入加密与恢复解密、类别备份等场景。';
+  String get cl211_ui_1 =>
+      '所有进度弹窗统一为双层圆环：外圈显示整体进度、内圈（绿色）显示当前文件进度，已覆盖复制/剪切、压缩/解压、加密/解密、保险箱导入加密与恢复解密、类别备份等场景。';
 
   @override
   String get cl211_ui_2 => '视频播放控制按钮整体缩小并下移，贴近进度条上方，不再遮挡画面中心。';
@@ -6320,35 +6329,10 @@ class L10nZh extends L10n {
 
   @override
   String get cl211_fixes => '问题修复';
-  @override
-  String get cl212_features => '新增功能';
 
   @override
-  String get cl212_feat_1 => 'APK 打开方式可切换：设置 → APK 安装设置新增「APK 打开方式」，可在「内置安装器」与「系统选择器」之间切换。选择系统选择器后，ZenFile 不再强制拦截 APK 打开，InstallerX、InstallWithOptions 等第三方安装器可正常接管，批量安装无需再长按逐个选择「打开方式」。';
-
-  @override
-  String get cl212_ui => '界面与交互';
-
-  @override
-  String get cl212_ui_1 => '「大小和间距」可调范围扩大：卡片间距滑块下限由 40% 放宽到 -50%，0% 时卡片边框紧贴、负值可让相邻卡片边框重叠成一条线；同时默认值改为 0%（新用户首次启动即贴边，已调整过的用户保持原值）。';
-
-  @override
-  String get cl212_ui_2 => '自定义快捷方式弹窗：「图标形状」与「每行显示」由并排按钮改为下拉选择，布局更紧凑统一。';
-
-  @override
-  String get cl212_fixes => '问题修复';
-
-  @override
-  String get cl212_fix_1 => '指纹解锁改为默认关闭：安装后「设置 → 安全设置」中的指纹解锁默认处于关闭状态，需主动开启，避免新装或升级后自动启用生物识别解锁。';
-
-  @override
-  String get cl212_fix_2 => '修复 APK 安全扫描配置好 API Key 后、关闭再打开开关无法再次进入配置页重新配置 Key 的问题；现在开关打开与点击卡片均可进入配置页修改 Key。';
-
-  @override
-  String get cl212_fix_3 => '修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。';
-
-  @override
-  String get cl211_fix_1 => '修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。';
+  String get cl211_fix_1 =>
+      '修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。';
 
   @override
   String get cl211_fix_2 => '修复 SMB / FTP / SFTP 播放远程视频「播几秒卡几秒」、拖动进度条又跳回开头的问题。';
@@ -6357,19 +6341,98 @@ class L10nZh extends L10n {
   String get cl211_fix_3 => '修复 FTP 打开目录、返回上一级偶尔需要等待很久的问题。';
 
   @override
-  String get cl211_fix_4 => '修复压缩大文件或多文件时进度停在 100% 长时间不动的问题：改为流式逐文件压缩，内存占用大幅降低，进度持续推进。';
+  String get cl211_fix_4 =>
+      '修复压缩大文件或多文件时进度停在 100% 长时间不动的问题：改为流式逐文件压缩，内存占用大幅降低，进度持续推进。';
 
   @override
-  String get cl211_fix_5 => '修复音乐播放器把所有音频都显示为「FLAC • 24-bit」的问题，现在按真实格式显示，无损格式还会显示实际位深。';
+  String get cl211_fix_5 =>
+      '修复音乐播放器把所有音频都显示为「FLAC • 24-bit」的问题，现在按真实格式显示，无损格式还会显示实际位深。';
 
   @override
   String get cl211_fix_6 => '修复配置保险箱密码或原地加密后，打开任意未加密文件都会要求验证保险箱密码的问题。';
 
   @override
-  String get cl211_fix_7 => '修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。';
+  String get cl211_fix_7 =>
+      '修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。';
 
   @override
-  String get vault_config_password => '密码配置';
+  String get cl212_features => '新增功能';
+
+  @override
+  String get cl212_feat_1 =>
+      'APK 打开方式可切换：设置 → APK 安装设置新增「APK 打开方式」，可在「内置安装器」与「系统选择器」之间切换。选择系统选择器后，ZenFile 不再强制拦截 APK 打开，InstallerX、InstallWithOptions 等第三方安装器可正常接管，批量安装无需再长按逐个选择「打开方式」。';
+
+  @override
+  String get cl212_ui => '界面与交互';
+
+  @override
+  String get cl212_ui_1 =>
+      '「大小和间距」可调范围扩大：卡片间距滑块下限由 40% 放宽到 -50%，0% 时卡片边框紧贴、负值可让相邻卡片边框重叠成一条线；同时默认值改为 0%（新用户首次启动即贴边，已调整过的用户保持原值）。';
+
+  @override
+  String get cl212_ui_2 => '自定义快捷方式弹窗：「图标形状」与「每行显示」由并排按钮改为下拉选择，布局更紧凑统一。';
+
+  @override
+  String get cl212_fixes => '问题修复';
+
+  @override
+  String get cl212_fix_1 =>
+      '指纹解锁改为默认关闭：安装后「设置 → 安全设置」中的指纹解锁默认处于关闭状态，需主动开启，避免新装或升级后自动启用生物识别解锁。';
+
+  @override
+  String get cl212_fix_2 =>
+      '修复 APK 安全扫描配置好 API Key 后、关闭再打开开关无法再次进入配置页重新配置 Key 的问题；现在开关打开与点击卡片均可进入配置页修改 Key。';
+
+  @override
+  String get cl212_fix_3 =>
+      '修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。';
+
+  @override
+  String get remote_err_cancelled => '操作已取消';
+
+  @override
+  String get remote_err_auth => '登录失败：用户名或密码错误。若使用密钥登录，请确认私钥文件与密码正确。';
+
+  @override
+  String get remote_err_not_connected => '尚未连接到服务器，请先连接后重试。';
+
+  @override
+  String get remote_err_not_found => '文件或文件夹不存在（可能已被移动或删除）。';
+
+  @override
+  String get remote_err_timeout => '连接超时：服务器响应过慢或网络不稳定，请稍后重试。';
+
+  @override
+  String get remote_err_connection => '无法连接到服务器：请检查地址、端口、网络，以及服务器是否已开启。';
+
+  @override
+  String get remote_err_reconnect => '与服务器的连接已断开，正在尝试重新连接。';
+
+  @override
+  String get remote_err_download => '下载失败，请检查网络后重试。';
+
+  @override
+  String get remote_err_upload => '上传失败，请检查网络后重试。';
+
+  @override
+  String get remote_err_delete => '删除失败，请重试。';
+
+  @override
+  String get remote_err_rename => '重命名失败，请重试。';
+
+  @override
+  String get remote_err_create_dir => '创建文件夹失败，请重试。';
+
+  @override
+  String get remote_err_dir_open => '无法打开该文件夹，请确认你有访问权限。';
+
+  @override
+  String remote_err_server(Object code) {
+    return '服务器返回错误（状态码 $code），请联系服务器管理员。';
+  }
+
+  @override
+  String get remote_err_generic => '操作失败，请重试。';
 
   @override
   String get app_icon_add_title => '添加到桌面';
@@ -7282,7 +7345,17 @@ class L10nZh extends L10n {
   String get decibel_meter_examples => '常见场景举例';
 
   @override
-  String get decibel_meter_examples_text => '普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。';
+  String get decibel_meter_examples_safe => '普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。';
+
+  @override
+  String get decibel_meter_examples_moderate => '吸尘器（约70 dB）、繁忙街道、嘈杂的餐厅或商店。';
+
+  @override
+  String get decibel_meter_examples_harmful => '摩托车（约90 dB）、工厂车间、割草机、繁忙交通路口。';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      '电锯（约110 dB）、摇滚音乐会前排、爆竹、喷气式飞机起飞。';
 
   @override
   String get decibel_meter_perm_denied => '需要麦克风权限才能测量环境音量，请在设置中开启。';
@@ -13461,11 +13534,13 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vt_keep_apk_desc => '開啟後安裝時複製臨時副本，防止系統安裝器自動刪除來源 APK';
+
   @override
   String get apk_open_mode_title => 'APK 開啟方式';
 
   @override
-  String get apk_open_mode_desc => '使用系統選擇器開啟 APK，允許 InstallerX 等第三方安裝器接管；關閉則使用內建安裝器。';
+  String get apk_open_mode_desc =>
+      '使用系統選擇器開啟 APK，允許 InstallerX 等第三方安裝器接管；關閉則使用內建安裝器。';
 
   @override
   String get vt_install => '安裝';
@@ -13583,20 +13658,27 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get crypt_settings_title => '密碼配置';
+
+  @override
+  String get vault_config_password => '密碼配置';
+
   @override
   String get cl211_features => '新增功能';
 
   @override
-  String get cl211_feat_1 => '應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點擊提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。';
+  String get cl211_feat_1 =>
+      '應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點擊提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。';
 
   @override
-  String get cl211_feat_2 => '刪除檔案的二次確認可視需要關閉：刪除彈窗新增「刪除不再提示」核取方塊，設定 → 檔案操作與檢視器新增「刪除檔案確認」開關，關閉後刪除不再彈出確認。';
+  String get cl211_feat_2 =>
+      '刪除檔案的二次確認可視需要關閉：刪除彈窗新增「刪除不再提示」核取方塊，設定 → 檔案操作與檢視器新增「刪除檔案確認」開關，關閉後刪除不再彈出確認。';
 
   @override
   String get cl211_ui => '介面與互動';
 
   @override
-  String get cl211_ui_1 => '所有進度彈窗統一為雙層圓環：外圈顯示整體進度、內圈（綠色）顯示目前檔案進度，已涵蓋複製/剪下、壓縮/解壓縮、加密/解密、保險箱匯入加密與復原解密、類別備份等場景。';
+  String get cl211_ui_1 =>
+      '所有進度彈窗統一為雙層圓環：外圈顯示整體進度、內圈（綠色）顯示目前檔案進度，已涵蓋複製/剪下、壓縮/解壓縮、加密/解密、保險箱匯入加密與復原解密、類別備份等場景。';
 
   @override
   String get cl211_ui_2 => '影片播放控制按鈕整體縮小並下移，貼近進度條上方，不再遮擋畫面中心。';
@@ -13606,35 +13688,10 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get cl211_fixes => '問題修復';
-  @override
-  String get cl212_features => '新增功能';
 
   @override
-  String get cl212_feat_1 => 'APK 開啟方式可切換：設定 → APK 安裝設定新增「APK 開啟方式」，可在「內建安裝器」與「系統選擇器」之間切換。選擇系統選擇器後，ZenFile 不再強制攔截 APK 開啟，InstallerX、InstallWithOptions 等第三方安裝器可正常接管，批次安裝無需再長按逐個選擇「開啟方式」。';
-
-  @override
-  String get cl212_ui => '介面與互動';
-
-  @override
-  String get cl212_ui_1 => '「大小與間距」可調範圍擴大：卡片間距滑桿下限由 40% 放寬到 -50%，0% 時卡片邊框緊貼、負值可讓相鄰卡片邊框重疊成一條線；同時預設值改為 0%（新安裝首次啟動即貼邊，已調整過的使用者保持原值）。';
-
-  @override
-  String get cl212_ui_2 => '自訂捷徑彈窗：「圖示形狀」與「每行顯示」由並排按鈕改為下拉選擇，版面更緊湊統一。';
-
-  @override
-  String get cl212_fixes => '問題修復';
-
-  @override
-  String get cl212_fix_1 => '指紋解鎖改為預設關閉：安裝後「設定 → 安全設定」中的指紋解鎖預設處於關閉狀態，需主動開啟，避免新安裝或升級後自動啟用生物辨識解鎖。';
-
-  @override
-  String get cl212_fix_2 => '修復 APK 安全掃描設定好 API Key 後、關閉再打開開關無法再次進入設定頁重新設定的問題；現在開關打開與點擊卡片均可進入設定頁修改 Key。';
-
-  @override
-  String get cl212_fix_3 => '修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「權限不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。';
-
-  @override
-  String get cl211_fix_1 => '修復部分機型播放影片黑屏（只有聲音沒有畫面）的問題：由 1.1.42 引入的渲染相容問題導致，現已改為通用渲染；並新增自動偵測，硬體解碼異常時自動切換軟體解碼續播，無需手動設定。';
+  String get cl211_fix_1 =>
+      '修復部分機型播放影片黑屏（只有聲音沒有畫面）的問題：由 1.1.42 引入的渲染相容問題導致，現已改為通用渲染；並新增自動偵測，硬體解碼異常時自動切換軟體解碼續播，無需手動設定。';
 
   @override
   String get cl211_fix_2 => '修復 SMB / FTP / SFTP 播放遠端影片「播幾秒卡幾秒」、拖動進度條又跳回開頭的問題。';
@@ -13643,19 +13700,98 @@ class L10nZhTw extends L10nZh {
   String get cl211_fix_3 => '修復 FTP 開啟目錄、返回上一層偶爾需要等待很久的問題。';
 
   @override
-  String get cl211_fix_4 => '修復壓縮大檔案或多檔案時進度停在 100% 長時間不動的問題：改為串流式逐檔壓縮，記憶體佔用大幅降低，進度持續推進。';
+  String get cl211_fix_4 =>
+      '修復壓縮大檔案或多檔案時進度停在 100% 長時間不動的問題：改為串流式逐檔壓縮，記憶體佔用大幅降低，進度持續推進。';
 
   @override
-  String get cl211_fix_5 => '修復音樂播放器把所有音訊都顯示為「FLAC • 24-bit」的問題，現在按真實格式顯示，無損格式還會顯示實際位深。';
+  String get cl211_fix_5 =>
+      '修復音樂播放器把所有音訊都顯示為「FLAC • 24-bit」的問題，現在按真實格式顯示，無損格式還會顯示實際位深。';
 
   @override
   String get cl211_fix_6 => '修復設定保險箱密碼或原地加密後，開啟任意未加密檔案都會要求驗證保險箱密碼的問題。';
 
   @override
-  String get cl211_fix_7 => '修復保險箱提示的兩處錯誤：解密密碼輸入錯誤時誤提示「請先設定主密碼」；加密/解密的結果提示在非中文介面下仍顯示中文。';
+  String get cl211_fix_7 =>
+      '修復保險箱提示的兩處錯誤：解密密碼輸入錯誤時誤提示「請先設定主密碼」；加密/解密的結果提示在非中文介面下仍顯示中文。';
 
   @override
-  String get vault_config_password => '密碼配置';
+  String get cl212_features => '新增功能';
+
+  @override
+  String get cl212_feat_1 =>
+      'APK 開啟方式可切換：設定 → APK 安裝設定新增「APK 開啟方式」，可在「內建安裝器」與「系統選擇器」之間切換。選擇系統選擇器後，ZenFile 不再強制攔截 APK 開啟，InstallerX、InstallWithOptions 等第三方安裝器可正常接管，批次安裝無需再長按逐個選擇「開啟方式」。';
+
+  @override
+  String get cl212_ui => '介面與互動';
+
+  @override
+  String get cl212_ui_1 =>
+      '「大小與間距」可調範圍擴大：卡片間距滑桿下限由 40% 放寬到 -50%，0% 時卡片邊框緊貼、負值可讓相鄰卡片邊框重疊成一條線；同時預設值改為 0%（新安裝首次啟動即貼邊，已調整過的使用者保持原值）。';
+
+  @override
+  String get cl212_ui_2 => '自訂捷徑彈窗：「圖示形狀」與「每行顯示」由並排按鈕改為下拉選擇，版面更緊湊統一。';
+
+  @override
+  String get cl212_fixes => '問題修復';
+
+  @override
+  String get cl212_fix_1 =>
+      '指紋解鎖改為預設關閉：安裝後「設定 → 安全設定」中的指紋解鎖預設處於關閉狀態，需主動開啟，避免新安裝或升級後自動啟用生物辨識解鎖。';
+
+  @override
+  String get cl212_fix_2 =>
+      '修復 APK 安全掃描設定好 API Key 後、關閉再打開開關無法再次進入設定頁重新設定的問題；現在開關打開與點擊卡片均可進入設定頁修改 Key。';
+
+  @override
+  String get cl212_fix_3 =>
+      '修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「權限不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。';
+
+  @override
+  String get remote_err_cancelled => '操作已取消';
+
+  @override
+  String get remote_err_auth => '登入失敗：使用者名稱或密碼錯誤。若使用金鑰登入，請確認私鑰檔案與密碼正確。';
+
+  @override
+  String get remote_err_not_connected => '尚未連線到伺服器，請先連線後重試。';
+
+  @override
+  String get remote_err_not_found => '檔案或資料夾不存在（可能已被移動或刪除）。';
+
+  @override
+  String get remote_err_timeout => '連線逾時：伺服器回應過慢或網路不穩定，請稍後重試。';
+
+  @override
+  String get remote_err_connection => '無法連線到伺服器：請檢查位址、連接埠、網路，以及伺服器是否已開啟。';
+
+  @override
+  String get remote_err_reconnect => '與伺服器的連線已中斷，正在嘗試重新連線。';
+
+  @override
+  String get remote_err_download => '下載失敗，請檢查網路後重試。';
+
+  @override
+  String get remote_err_upload => '上傳失敗，請檢查網路後重試。';
+
+  @override
+  String get remote_err_delete => '刪除失敗，請重試。';
+
+  @override
+  String get remote_err_rename => '重新命名失敗，請重試。';
+
+  @override
+  String get remote_err_create_dir => '建立資料夾失敗，請重試。';
+
+  @override
+  String get remote_err_dir_open => '無法開啟此資料夾，請確認你有存取權限。';
+
+  @override
+  String remote_err_server(Object code) {
+    return '伺服器回傳錯誤（狀態碼 $code），請聯絡伺服器管理員。';
+  }
+
+  @override
+  String get remote_err_generic => '操作失敗，請重試。';
 
   @override
   String get app_icon_add_title => '新增到桌面';
@@ -14567,7 +14703,17 @@ class L10nZhTw extends L10nZh {
   String get decibel_meter_examples => '常見場景舉例';
 
   @override
-  String get decibel_meter_examples_text => '普通室內談話（約50-60 dB）、安靜的辦公室、冰箱嗡嗡聲。';
+  String get decibel_meter_examples_safe => '普通室內談話（約50-60 dB）、安靜的辦公室、冰箱嗡嗡聲。';
+
+  @override
+  String get decibel_meter_examples_moderate => '吸塵器（約70 dB）、繁忙街道、嘈雜的餐廳或商店。';
+
+  @override
+  String get decibel_meter_examples_harmful => '摩托車（約90 dB）、工廠車間、割草機、繁忙交通路口。';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      '電鋸（約110 dB）、搖滾音樂會前排、爆竹、噴射機起飛。';
 
   @override
   String get decibel_meter_perm_denied => '需要麥克風權限才能測量環境音量，請在設定中開啟。';

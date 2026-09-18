@@ -6469,11 +6469,13 @@ class L10nEn extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Copy a temp copy before install to prevent the system installer from deleting the source APK';
+
   @override
   String get apk_open_mode_title => 'APK open method';
 
   @override
-  String get apk_open_mode_desc => 'Use the system chooser to open APKs so third-party installers like InstallerX can handle them; off uses the built-in installer.';
+  String get apk_open_mode_desc =>
+      'Use the system chooser to open APKs so third-party installers like InstallerX can handle them; off uses the built-in installer.';
 
   @override
   String get vt_install => 'Install';
@@ -6605,79 +6607,156 @@ class L10nEn extends L10n {
 
   @override
   String get crypt_settings_title => 'Password Configuration';
+
+  @override
+  String get vault_config_password => 'Password Configuration';
+
   @override
   String get cl211_features => 'New';
 
   @override
-  String get cl211_feat_1 => 'Custom app icon from your own image: Settings → Appearance & Theme → App Icon. After picking an image you can add it to the home screen as a shortcut or as a 1x1 widget. Also fixed the case where it reported "added" without actually adding anything; if your launcher blocks shortcuts, use the widget instead.';
+  String get cl211_feat_1 =>
+      'Custom app icon from your own image: Settings → Appearance & Theme → App Icon. After picking an image you can add it to the home screen as a shortcut or as a 1x1 widget. Also fixed the case where it reported \"added\" without actually adding anything; if your launcher blocks shortcuts, use the widget instead.';
 
   @override
-  String get cl211_feat_2 => 'Delete confirmation can now be disabled: the delete dialog has a "Don\'t ask again" checkbox, and Settings → File Operations & Viewers has a "Confirm before deleting" switch.';
+  String get cl211_feat_2 =>
+      'Delete confirmation can now be disabled: the delete dialog has a \"Don\'t ask again\" checkbox, and Settings → File Operations & Viewers has a \"Confirm before deleting\" switch.';
 
   @override
   String get cl211_ui => 'UI & Interaction';
 
   @override
-  String get cl211_ui_1 => 'All progress dialogs now use a dual ring: outer ring for overall progress, inner green ring for the current file. Covers copy/cut, compress/extract, encrypt/decrypt, vault import & restore, and category backup.';
+  String get cl211_ui_1 =>
+      'All progress dialogs now use a dual ring: outer ring for overall progress, inner green ring for the current file. Covers copy/cut, compress/extract, encrypt/decrypt, vault import & restore, and category backup.';
 
   @override
-  String get cl211_ui_2 => 'Video playback controls are smaller and moved down just above the progress bar, so they no longer cover the center of the picture.';
+  String get cl211_ui_2 =>
+      'Video playback controls are smaller and moved down just above the progress bar, so they no longer cover the center of the picture.';
 
   @override
-  String get cl211_ui_3 => 'Vault in-place encryption list gains a "Remove" action — it only hides the entry, the encrypted file on disk is untouched.';
+  String get cl211_ui_3 =>
+      'Vault in-place encryption list gains a \"Remove\" action — it only hides the entry, the encrypted file on disk is untouched.';
 
   @override
   String get cl211_fixes => 'Fixes';
+
+  @override
+  String get cl211_fix_1 =>
+      'Fixed black screen (audio only, no picture) on some devices, caused by a renderer compatibility issue introduced in 1.1.42. Rendering now uses the universally compatible path, and playback automatically falls back to software decoding when hardware decoding misbehaves.';
+
+  @override
+  String get cl211_fix_2 =>
+      'Fixed remote video playback over SMB / FTP / SFTP that stalled every few seconds, and the progress bar jumping back to the start after seeking.';
+
+  @override
+  String get cl211_fix_3 =>
+      'Fixed FTP occasionally taking a very long time to open or go up a directory.';
+
+  @override
+  String get cl211_fix_4 =>
+      'Fixed compression of large or many files hanging at 100%: ZIP compression is now streamed file by file, greatly reducing memory use while progress keeps advancing.';
+
+  @override
+  String get cl211_fix_5 =>
+      'Fixed the music player showing every track as \"FLAC x 24-bit\"; the real format is shown now, plus actual bit depth for lossless formats.';
+
+  @override
+  String get cl211_fix_6 =>
+      'Fixed plain (unencrypted) files wrongly asking for the vault password after configuring the vault or encrypting in place.';
+
+  @override
+  String get cl211_fix_7 =>
+      'Fixed two vault messages: a wrong password used to say \"please set the master password first\"; encrypt/decrypt result toasts were still Chinese in non-Chinese locales.';
+
   @override
   String get cl212_features => 'New';
 
   @override
-  String get cl212_feat_1 => 'Switchable APK open method: Settings -> APK Install Settings gains an "APK open method" option to choose between the built-in installer and the system chooser. With the system chooser, ZenFile no longer intercepts APK opens, so Shizuku-based third-party installers such as InstallerX and InstallWithOptions can take over - no more long-pressing each file to pick "Open with" when installing in bulk.';
+  String get cl212_feat_1 =>
+      'Switchable APK open method: Settings -> APK Install Settings gains an \"APK open method\" option to choose between the built-in installer and the system chooser. With the system chooser, ZenFile no longer intercepts APK opens, so Shizuku-based third-party installers such as InstallerX and InstallWithOptions can take over - no more long-pressing each file to pick \"Open with\" when installing in bulk.';
 
   @override
   String get cl212_ui => 'UI & Interaction';
 
   @override
-  String get cl212_ui_1 => 'Wider "Size & Spacing" range: the card spacing slider now goes down to -50% (previously 40% minimum). At 0% card borders touch; negative values overlap adjacent card borders into a single line. The default is now 0% (new installs start flush; existing settings are kept).';
+  String get cl212_ui_1 =>
+      'Wider \"Size & Spacing\" range: the card spacing slider now goes down to -50% (previously 40% minimum). At 0% card borders touch; negative values overlap adjacent card borders into a single line. The default is now 0% (new installs start flush; existing settings are kept).';
 
   @override
-  String get cl212_ui_2 => 'Custom shortcut dialog: "Icon shape" and "Columns per row" are now dropdowns instead of side-by-side buttons, for a more compact layout.';
+  String get cl212_ui_2 =>
+      'Custom shortcut dialog: \"Icon shape\" and \"Columns per row\" are now dropdowns instead of side-by-side buttons, for a more compact layout.';
 
   @override
   String get cl212_fixes => 'Fixes';
 
   @override
-  String get cl212_fix_1 => 'Fingerprint unlock now defaults to off: after install, fingerprint unlock under Settings -> Security is off until you turn it on, so biometric unlock is no longer enabled automatically.';
+  String get cl212_fix_1 =>
+      'Fingerprint unlock now defaults to off: after install, fingerprint unlock under Settings -> Security is off until you turn it on, so biometric unlock is no longer enabled automatically.';
 
   @override
-  String get cl212_fix_2 => 'Fixed being unable to reconfigure the APK security-scan API key: previously, once a key was saved, turning the switch off then on would not reopen the config page. The config page now opens both from the switch and by tapping the card.';
+  String get cl212_fix_2 =>
+      'Fixed being unable to reconfigure the APK security-scan API key: previously, once a key was saved, turning the switch off then on would not reopen the config page. The config page now opens both from the switch and by tapping the card.';
 
   @override
-  String get cl212_fix_3 => 'Fixed "permission denied" from silent install even with Shizuku authorized: the Shizuku path now installs through a system PackageInstaller session instead of the shell install command that some systems block; the root path no longer passes an unnecessary downgrade flag.';
+  String get cl212_fix_3 =>
+      'Fixed \"permission denied\" from silent install even with Shizuku authorized: the Shizuku path now installs through a system PackageInstaller session instead of the shell install command that some systems block; the root path no longer passes an unnecessary downgrade flag.';
 
   @override
-  String get cl211_fix_1 => 'Fixed black screen (audio only, no picture) on some devices, caused by a renderer compatibility issue introduced in 1.1.42. Rendering now uses the universally compatible path, and playback automatically falls back to software decoding when hardware decoding misbehaves.';
+  String get remote_err_cancelled => 'Operation cancelled';
 
   @override
-  String get cl211_fix_2 => 'Fixed remote video playback over SMB / FTP / SFTP that stalled every few seconds, and the progress bar jumping back to the start after seeking.';
+  String get remote_err_auth =>
+      'Login failed: wrong username or password. If using a key, check the private key and its passphrase.';
 
   @override
-  String get cl211_fix_3 => 'Fixed FTP occasionally taking a very long time to open or go up a directory.';
+  String get remote_err_not_connected =>
+      'Not connected to the server. Connect first and try again.';
 
   @override
-  String get cl211_fix_4 => 'Fixed compression of large or many files hanging at 100%: ZIP compression is now streamed file by file, greatly reducing memory use while progress keeps advancing.';
+  String get remote_err_not_found =>
+      'The file or folder does not exist (it may have been moved or deleted).';
 
   @override
-  String get cl211_fix_5 => 'Fixed the music player showing every track as "FLAC x 24-bit"; the real format is shown now, plus actual bit depth for lossless formats.';
+  String get remote_err_timeout =>
+      'Connection timed out: the server responded too slowly or the network is unstable. Please try again.';
 
   @override
-  String get cl211_fix_6 => 'Fixed plain (unencrypted) files wrongly asking for the vault password after configuring the vault or encrypting in place.';
+  String get remote_err_connection =>
+      'Could not connect to the server: check the address, port, network, and that the server is running.';
 
   @override
-  String get cl211_fix_7 => 'Fixed two vault messages: a wrong password used to say "please set the master password first"; encrypt/decrypt result toasts were still Chinese in non-Chinese locales.';
+  String get remote_err_reconnect =>
+      'The connection to the server was lost and is trying to reconnect.';
 
   @override
-  String get vault_config_password => 'Password Configuration';
+  String get remote_err_download =>
+      'Download failed. Check the network and try again.';
+
+  @override
+  String get remote_err_upload =>
+      'Upload failed. Check the network and try again.';
+
+  @override
+  String get remote_err_delete => 'Delete failed. Please try again.';
+
+  @override
+  String get remote_err_rename => 'Rename failed. Please try again.';
+
+  @override
+  String get remote_err_create_dir =>
+      'Failed to create folder. Please try again.';
+
+  @override
+  String get remote_err_dir_open =>
+      'Cannot open this folder. Make sure you have access.';
+
+  @override
+  String remote_err_server(Object code) {
+    return 'The server returned an error (status code $code). Contact the server admin.';
+  }
+
+  @override
+  String get remote_err_generic => 'Operation failed. Please try again.';
 
   @override
   String get app_icon_add_title => 'Add to home screen';
@@ -7661,8 +7740,20 @@ class L10nEn extends L10n {
   String get decibel_meter_examples => 'Common Examples';
 
   @override
-  String get decibel_meter_examples_text =>
+  String get decibel_meter_examples_safe =>
       'Normal conversation (about 50-60 dB), quiet office, refrigerator hum.';
+
+  @override
+  String get decibel_meter_examples_moderate =>
+      'Vacuum cleaner (about 70 dB), busy street, noisy restaurant or shop.';
+
+  @override
+  String get decibel_meter_examples_harmful =>
+      'Motorcycle (about 90 dB), factory floor, lawn mower, heavy traffic.';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      'Chainsaw (about 110 dB), front-row rock concert, firecrackers, jet takeoff.';
 
   @override
   String get decibel_meter_perm_denied =>

@@ -6719,6 +6719,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "Operación cancelada",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "Error de inicio de sesión: usuario o contraseña incorrectos. Si usas clave, comprueba la clave privada y su contraseña.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "No conectado al servidor. Conéctate primero e inténtalo de nuevo.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "El archivo o carpeta no existe (puede que se haya movido o eliminado).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "Tiempo de conexión agotado: el servidor responde demasiado lento o la red es inestable. Inténtalo más tarde.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "No se pudo conectar al servidor: comprueba la dirección, el puerto, la red y que el servidor está en marcha.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "Se perdió la conexión con el servidor y se está intentando reconectar.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "Error de descarga. Comprueba la red e inténtalo de nuevo.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "Error de subida. Comprueba la red e inténtalo de nuevo.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "Error al eliminar. Inténtalo de nuevo.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "Error al renombrar. Inténtalo de nuevo.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "Error al crear la carpeta. Inténtalo de nuevo.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "No se puede abrir esta carpeta. Asegúrate de tener acceso.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "El servidor devolvió un error (código de estado {code}). Contacta al administrador del servidor.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "Error en la operación. Inténtalo de nuevo.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "Añadir a la pantalla de inicio",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7803,7 +7866,10 @@
   "decibel_meter_health_harmful": "Muy ruidoso, la exposición prolongada puede dañar la audición.",
   "decibel_meter_health_dangerous": "Nivel peligroso, ¡aléjate y protege tu audición!",
   "decibel_meter_examples": "Ejemplos comunes",
-  "decibel_meter_examples_text": "Conversación normal (aprox. 50-60 dB), oficina tranquila, zumbido de nevera.",
+  "decibel_meter_examples_safe": "Conversación normal (aprox. 50-60 dB), oficina tranquila, zumbido de nevera.",
+  "decibel_meter_examples_moderate": "Aspiradora (aprox. 70 dB), calle concurrida, restaurante ruidoso.",
+  "decibel_meter_examples_harmful": "Motocicleta (aprox. 90 dB), nave industrial, cortacésped, tráfico intenso.",
+  "decibel_meter_examples_dangerous": "Motosierra (aprox. 110 dB), concierto de rock en primera fila, petardos, despegue de avión.",
   "decibel_meter_perm_denied": "Se requiere el permiso de micrófono para medir el sonido ambiente. Actívalo en los ajustes.",
   "decibel_meter_perm_title": "Permiso de micrófono necesario",
   "decibel_meter_perm_settings": "El permiso de micrófono fue denegado permanentemente. Actívalo para ZenFile en los ajustes del sistema e inténtalo de nuevo.",

@@ -6537,11 +6537,13 @@ class L10nEs extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Crear una copia temporal antes de instalar para evitar que el instalador del sistema elimine el APK original';
+
   @override
   String get apk_open_mode_title => 'Método de apertura de APK';
 
   @override
-  String get apk_open_mode_desc => 'Usa el selector del sistema para abrir los APK y permitir que instaladores de terceros como InstallerX los gestionen; si está desactivado se usa el instalador integrado.';
+  String get apk_open_mode_desc =>
+      'Usa el selector del sistema para abrir los APK y permitir que instaladores de terceros como InstallerX los gestionen; si está desactivado se usa el instalador integrado.';
 
   @override
   String get vt_install => 'Instalar';
@@ -6677,79 +6679,156 @@ class L10nEs extends L10n {
 
   @override
   String get crypt_settings_title => 'Configuración de contraseña';
+
+  @override
+  String get vault_config_password => 'Configuración de contraseña';
+
   @override
   String get cl211_features => 'Novedades';
 
   @override
-  String get cl211_feat_1 => 'Icono de app con tu propia imagen: Ajustes → Apariencia y tema → Icono de app. Tras elegir una imagen puedes añadirla a la pantalla de inicio como acceso directo o como widget 1×1. También se corrigió el caso en que decía "añadido" sin añadir nada; si tu lanzador bloquea los accesos directos, usa el widget.';
+  String get cl211_feat_1 =>
+      'Icono de app con tu propia imagen: Ajustes → Apariencia y tema → Icono de app. Tras elegir una imagen puedes añadirla a la pantalla de inicio como acceso directo o como widget 1×1. También se corrigió el caso en que decía \"añadido\" sin añadir nada; si tu lanzador bloquea los accesos directos, usa el widget.';
 
   @override
-  String get cl211_feat_2 => 'La confirmación de eliminación ahora se puede desactivar: el diálogo de eliminación tiene una casilla "No volver a preguntar", y en Ajustes → Operaciones de archivos y visores hay un interruptor "Confirmar antes de eliminar".';
+  String get cl211_feat_2 =>
+      'La confirmación de eliminación ahora se puede desactivar: el diálogo de eliminación tiene una casilla \"No volver a preguntar\", y en Ajustes → Operaciones de archivos y visores hay un interruptor \"Confirmar antes de eliminar\".';
 
   @override
   String get cl211_ui => 'Interfaz e interacción';
 
   @override
-  String get cl211_ui_1 => 'Todos los diálogos de progreso usan ahora un doble anillo: el exterior para el progreso total y el interior verde para el archivo actual. Cubre copiar/mover, comprimir/extraer, cifrar/descifrar, importar y restaurar la caja fuerte, y la copia de seguridad por categoría.';
+  String get cl211_ui_1 =>
+      'Todos los diálogos de progreso usan ahora un doble anillo: el exterior para el progreso total y el interior verde para el archivo actual. Cubre copiar/mover, comprimir/extraer, cifrar/descifrar, importar y restaurar la caja fuerte, y la copia de seguridad por categoría.';
 
   @override
-  String get cl211_ui_2 => 'Los controles de reproducción de vídeo son más pequeños y se han movido abajo, justo encima de la barra de progreso, por lo que ya no tapa el centro de la imagen.';
+  String get cl211_ui_2 =>
+      'Los controles de reproducción de vídeo son más pequeños y se han movido abajo, justo encima de la barra de progreso, por lo que ya no tapa el centro de la imagen.';
 
   @override
-  String get cl211_ui_3 => 'La lista de cifrado in situ de la caja fuerte tiene ahora una acción "Quitar": solo oculta la entrada, el archivo cifrado en disco no se ve afectado.';
+  String get cl211_ui_3 =>
+      'La lista de cifrado in situ de la caja fuerte tiene ahora una acción \"Quitar\": solo oculta la entrada, el archivo cifrado en disco no se ve afectado.';
 
   @override
   String get cl211_fixes => 'Correcciones';
+
+  @override
+  String get cl211_fix_1 =>
+      'Corregido el pantalla negra (solo audio, sin imagen) al reproducir vídeo en algunos dispositivos, causada por un problema de compatibilidad del renderizador introducido en 1.1.42. El renderizado usa ahora la ruta universalmente compatible y, si la decodificación de hardware falla, cambia automáticamente a decodificación por software.';
+
+  @override
+  String get cl211_fix_2 =>
+      'Corregida la reproducción de vídeo remoto por SMB / FTP / SFTP que se detenía cada pocos segundos y la barra de progreso que volvía al inicio tras buscar.';
+
+  @override
+  String get cl211_fix_3 =>
+      'Corregido que FTP tardara a veces mucho en abrir o retroceder un directorio.';
+
+  @override
+  String get cl211_fix_4 =>
+      'Corregida la compresión de archivos grandes o numerosos que se quedaba en 100%: la compresión ZIP ahora se transmite archivo por archivo, reduciendo mucho el uso de memoria mientras el progreso avanza.';
+
+  @override
+  String get cl211_fix_5 =>
+      'Corregido que el reproductor de música mostraba todas las canciones como \"FLAC • 24-bit\"; ahora se muestra el formato real, y la profundidad de bits real en formatos sin pérdida.';
+
+  @override
+  String get cl211_fix_6 =>
+      'Corregido que los archivos sin cifrar pedían la contraseña de la caja fuerte tras configurarla o cifrar en sitio.';
+
+  @override
+  String get cl211_fix_7 =>
+      'Corregidos dos mensajes de la caja fuerte: al introducir una contraseña errónea se decía \"configure primero la contraseña maestra\"; los avisos de resultado de cifrar/descifrar seguían en chino en idiomas no chinos.';
+
   @override
   String get cl212_features => 'Novedades';
 
   @override
-  String get cl212_feat_1 => 'Método de apertura de APK conmutable: en Ajustes → Ajustes de instalación de APK se añade «Método de apertura de APK» para elegir entre el instalador integrado y el selector del sistema. Con el selector del sistema, ZenFile ya no intercepta la apertura de APK, por lo que instaladores de terceros como InstallerX e InstallWithOptions pueden gestionarlos: ya no hay que pulsar prolongadamente cada archivo para elegir «Abrir con» al instalar por lotes.';
+  String get cl212_feat_1 =>
+      'Método de apertura de APK conmutable: en Ajustes → Ajustes de instalación de APK se añade «Método de apertura de APK» para elegir entre el instalador integrado y el selector del sistema. Con el selector del sistema, ZenFile ya no intercepta la apertura de APK, por lo que instaladores de terceros como InstallerX e InstallWithOptions pueden gestionarlos: ya no hay que pulsar prolongadamente cada archivo para elegir «Abrir con» al instalar por lotes.';
 
   @override
   String get cl212_ui => 'Interfaz e interacción';
 
   @override
-  String get cl212_ui_1 => 'Rango de «Tamaño y espaciado» ampliado: el límite inferior del control de espaciado entre tarjetas pasa de 40 % a -50 %; al 0 % los bordes de las tarjetas se tocan, y los valores negativos hacen que los bordes de tarjetas adyacentes se solapen en una sola línea. El valor predeterminado también cambia a 0 % (las nuevas instalaciones quedan pegadas; los ajustes existentes se conservan).';
+  String get cl212_ui_1 =>
+      'Rango de «Tamaño y espaciado» ampliado: el límite inferior del control de espaciado entre tarjetas pasa de 40 % a -50 %; al 0 % los bordes de las tarjetas se tocan, y los valores negativos hacen que los bordes de tarjetas adyacentes se solapen en una sola línea. El valor predeterminado también cambia a 0 % (las nuevas instalaciones quedan pegadas; los ajustes existentes se conservan).';
 
   @override
-  String get cl212_ui_2 => 'Diálogo de atajos personalizados: «Forma del icono» y «Columnas por fila» son ahora listas desplegables en lugar de botones uno al lado del otro, con un diseño más compacto.';
+  String get cl212_ui_2 =>
+      'Diálogo de atajos personalizados: «Forma del icono» y «Columnas por fila» son ahora listas desplegables en lugar de botones uno al lado del otro, con un diseño más compacto.';
 
   @override
   String get cl212_fixes => 'Correcciones';
 
   @override
-  String get cl212_fix_1 => 'El desbloqueo por huella ahora está desactivado por defecto: tras la instalación, el desbloqueo por huella en Ajustes → Seguridad permanece desactivado hasta que lo actives, por lo que el desbloqueo biométrico ya no se activa automáticamente.';
+  String get cl212_fix_1 =>
+      'El desbloqueo por huella ahora está desactivado por defecto: tras la instalación, el desbloqueo por huella en Ajustes → Seguridad permanece desactivado hasta que lo actives, por lo que el desbloqueo biométrico ya no se activa automáticamente.';
 
   @override
-  String get cl212_fix_2 => 'Corregido que no se podía reconfigurar la clave de API del análisis de seguridad APK: antes, una vez guardada la clave, desactivar y volver a activar el interruptor no reabría la página de configuración. Ahora la página se abre tanto desde el interruptor como tocando la tarjeta.';
+  String get cl212_fix_2 =>
+      'Corregido que no se podía reconfigurar la clave de API del análisis de seguridad APK: antes, una vez guardada la clave, desactivar y volver a activar el interruptor no reabría la página de configuración. Ahora la página se abre tanto desde el interruptor como tocando la tarjeta.';
 
   @override
-  String get cl212_fix_3 => 'Corregido el error «permiso denegado» en la instalación silenciosa incluso con Shizuku autorizado: la ruta Shizuku ahora instala mediante una sesión de PackageInstaller del sistema en lugar del comando shell que algunos sistemas bloquean; la ruta root ya no usa una bandera de downgrade innecesaria.';
+  String get cl212_fix_3 =>
+      'Corregido el error «permiso denegado» en la instalación silenciosa incluso con Shizuku autorizado: la ruta Shizuku ahora instala mediante una sesión de PackageInstaller del sistema en lugar del comando shell que algunos sistemas bloquean; la ruta root ya no usa una bandera de downgrade innecesaria.';
 
   @override
-  String get cl211_fix_1 => 'Corregido el pantalla negra (solo audio, sin imagen) al reproducir vídeo en algunos dispositivos, causada por un problema de compatibilidad del renderizador introducido en 1.1.42. El renderizado usa ahora la ruta universalmente compatible y, si la decodificación de hardware falla, cambia automáticamente a decodificación por software.';
+  String get remote_err_cancelled => 'Operación cancelada';
 
   @override
-  String get cl211_fix_2 => 'Corregida la reproducción de vídeo remoto por SMB / FTP / SFTP que se detenía cada pocos segundos y la barra de progreso que volvía al inicio tras buscar.';
+  String get remote_err_auth =>
+      'Error de inicio de sesión: usuario o contraseña incorrectos. Si usas clave, comprueba la clave privada y su contraseña.';
 
   @override
-  String get cl211_fix_3 => 'Corregido que FTP tardara a veces mucho en abrir o retroceder un directorio.';
+  String get remote_err_not_connected =>
+      'No conectado al servidor. Conéctate primero e inténtalo de nuevo.';
 
   @override
-  String get cl211_fix_4 => 'Corregida la compresión de archivos grandes o numerosos que se quedaba en 100%: la compresión ZIP ahora se transmite archivo por archivo, reduciendo mucho el uso de memoria mientras el progreso avanza.';
+  String get remote_err_not_found =>
+      'El archivo o carpeta no existe (puede que se haya movido o eliminado).';
 
   @override
-  String get cl211_fix_5 => 'Corregido que el reproductor de música mostraba todas las canciones como "FLAC • 24-bit"; ahora se muestra el formato real, y la profundidad de bits real en formatos sin pérdida.';
+  String get remote_err_timeout =>
+      'Tiempo de conexión agotado: el servidor responde demasiado lento o la red es inestable. Inténtalo más tarde.';
 
   @override
-  String get cl211_fix_6 => 'Corregido que los archivos sin cifrar pedían la contraseña de la caja fuerte tras configurarla o cifrar en sitio.';
+  String get remote_err_connection =>
+      'No se pudo conectar al servidor: comprueba la dirección, el puerto, la red y que el servidor está en marcha.';
 
   @override
-  String get cl211_fix_7 => 'Corregidos dos mensajes de la caja fuerte: al introducir una contraseña errónea se decía "configure primero la contraseña maestra"; los avisos de resultado de cifrar/descifrar seguían en chino en idiomas no chinos.';
+  String get remote_err_reconnect =>
+      'Se perdió la conexión con el servidor y se está intentando reconectar.';
 
   @override
-  String get vault_config_password => 'Configuración de contraseña';
+  String get remote_err_download =>
+      'Error de descarga. Comprueba la red e inténtalo de nuevo.';
+
+  @override
+  String get remote_err_upload =>
+      'Error de subida. Comprueba la red e inténtalo de nuevo.';
+
+  @override
+  String get remote_err_delete => 'Error al eliminar. Inténtalo de nuevo.';
+
+  @override
+  String get remote_err_rename => 'Error al renombrar. Inténtalo de nuevo.';
+
+  @override
+  String get remote_err_create_dir =>
+      'Error al crear la carpeta. Inténtalo de nuevo.';
+
+  @override
+  String get remote_err_dir_open =>
+      'No se puede abrir esta carpeta. Asegúrate de tener acceso.';
+
+  @override
+  String remote_err_server(Object code) {
+    return 'El servidor devolvió un error (código de estado $code). Contacta al administrador del servidor.';
+  }
+
+  @override
+  String get remote_err_generic => 'Error en la operación. Inténtalo de nuevo.';
 
   @override
   String get app_icon_add_title => 'Añadir a la pantalla de inicio';
@@ -7746,8 +7825,20 @@ class L10nEs extends L10n {
   String get decibel_meter_examples => 'Ejemplos comunes';
 
   @override
-  String get decibel_meter_examples_text =>
+  String get decibel_meter_examples_safe =>
       'Conversación normal (aprox. 50-60 dB), oficina tranquila, zumbido de nevera.';
+
+  @override
+  String get decibel_meter_examples_moderate =>
+      'Aspiradora (aprox. 70 dB), calle concurrida, restaurante ruidoso.';
+
+  @override
+  String get decibel_meter_examples_harmful =>
+      'Motocicleta (aprox. 90 dB), nave industrial, cortacésped, tráfico intenso.';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      'Motosierra (aprox. 110 dB), concierto de rock en primera fila, petardos, despegue de avión.';
 
   @override
   String get decibel_meter_perm_denied =>

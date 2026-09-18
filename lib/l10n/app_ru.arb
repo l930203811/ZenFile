@@ -6719,6 +6719,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "Операция отменена",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "Ошибка входа: неверное имя пользователя или пароль. При входе по ключу проверьте закрытый ключ и его пароль.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "Нет подключения к серверу. Сначала подключитесь и повторите попытку.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "Файл или папка не существует (возможно, перемещены или удалены).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "Истекло время ожидания подключения: сервер отвечает слишком медленно или сеть нестабильна. Повторите позже.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "Не удалось подключиться к серверу: проверьте адрес, порт, сеть и то, что сервер запущен.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "Соединение с сервером потеряно, выполняется повторное подключение.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "Не удалось загрузить. Проверьте сеть и повторите попытку.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "Не удалось отправить. Проверьте сеть и повторите попытку.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "Не удалось удалить. Повторите попытку.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "Не удалось переименовать. Повторите попытку.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "Не удалось создать папку. Повторите попытку.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "Не удаётся открыть эту папку. Убедитесь, что у вас есть доступ.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "Сервер вернул ошибку (код состояния {code}). Обратитесь к администратору сервера.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "Операция не выполнена. Повторите попытку.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "Добавить на главный экран",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7803,7 +7866,10 @@
   "decibel_meter_health_harmful": "Очень шумно, длительное воздействие может повредить слух.",
   "decibel_meter_health_dangerous": "Опасный уровень, отойдите и защитите слух!",
   "decibel_meter_examples": "Примеры",
-  "decibel_meter_examples_text": "Обычный разговор (около 50-60 дБ), тихий офис, гул холодильника.",
+  "decibel_meter_examples_safe": "Обычный разговор (около 50-60 дБ), тихий офис, гул холодильника.",
+  "decibel_meter_examples_moderate": "Пылесос (около 70 дБ), оживлённая улица, шумный ресторан.",
+  "decibel_meter_examples_harmful": "Мотоцикл (около 90 дБ), заводской цех, газонокосилка, оживлённое движение.",
+  "decibel_meter_examples_dangerous": "Бензопила (около 110 дБ), рок-концерт у сцены, петарды, взлёт самолёта.",
   "decibel_meter_perm_denied": "Для измерения окружающего звука требуется разрешение на доступ к микрофону. Включите его в настройках.",
   "decibel_meter_perm_title": "Требуется разрешение на микрофон",
   "decibel_meter_perm_settings": "Разрешение на микрофон отклонено навсегда. Включите его для ZenFile в системных настройках и повторите попытку.",

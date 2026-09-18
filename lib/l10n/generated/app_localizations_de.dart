@@ -6518,11 +6518,13 @@ class L10nDe extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Vor der Installation eine temporäre Kopie erstellen, damit der Systeminstaller die Quell-APK nicht automatisch löscht';
+
   @override
   String get apk_open_mode_title => 'APK-Öffnen';
 
   @override
-  String get apk_open_mode_desc => 'Den Systemauswähler zum Öffnen von APKs verwenden, damit Drittanbieter-Installer wie InstallerX sie übernehmen können; aus nutzt den eingebauten Installer.';
+  String get apk_open_mode_desc =>
+      'Den Systemauswähler zum Öffnen von APKs verwenden, damit Drittanbieter-Installer wie InstallerX sie übernehmen können; aus nutzt den eingebauten Installer.';
 
   @override
   String get vt_install => 'Installieren';
@@ -6660,79 +6662,157 @@ class L10nDe extends L10n {
 
   @override
   String get crypt_settings_title => 'Passwortkonfiguration';
+
+  @override
+  String get vault_config_password => 'Passwortkonfiguration';
+
   @override
   String get cl211_features => 'Neu';
 
   @override
-  String get cl211_feat_1 => 'Eigenes Bild als App-Symbol: Einstellungen → Erscheinungsbild & Design → App-Symbol. Nach dem Auswählen eines Bildes kannst du es als Verknüpfung oder als 1×1-Widget auf den Startbildschirm legen. Behoben wurde zudem der Fall, dass "hinzugefügt" gemeldet wurde, ohne dass etwas passierte; falls dein Launcher Verknüpfungen blockiert, nutze das Widget.';
+  String get cl211_feat_1 =>
+      'Eigenes Bild als App-Symbol: Einstellungen → Erscheinungsbild & Design → App-Symbol. Nach dem Auswählen eines Bildes kannst du es als Verknüpfung oder als 1×1-Widget auf den Startbildschirm legen. Behoben wurde zudem der Fall, dass \"hinzugefügt\" gemeldet wurde, ohne dass etwas passierte; falls dein Launcher Verknüpfungen blockiert, nutze das Widget.';
 
   @override
-  String get cl211_feat_2 => 'Die Löschbestätigung kann nun deaktiviert werden: Der Löschdialog hat ein Kontrollkästchen "Nicht mehr fragen", und unter Einstellungen → Dateioperationen & Betrachter gibt es den Schalter "Vor dem Löschen bestätigen".';
+  String get cl211_feat_2 =>
+      'Die Löschbestätigung kann nun deaktiviert werden: Der Löschdialog hat ein Kontrollkästchen \"Nicht mehr fragen\", und unter Einstellungen → Dateioperationen & Betrachter gibt es den Schalter \"Vor dem Löschen bestätigen\".';
 
   @override
   String get cl211_ui => 'Oberfläche & Bedienung';
 
   @override
-  String get cl211_ui_1 => 'Alle Fortschrittsdialoge nutzen nun einen Doppelring: der äußere Ring zeigt den Gesamtfortschritt, der innere grüne Ring den Fortschritt der aktuellen Datei. Abgedeckt sind Kopieren/Ausschneiden, Komprimieren/Entpacken, Verschlüsseln/Entschlüsseln, Tresor-Import & -Wiederherstellung und Kategorie-Backup.';
+  String get cl211_ui_1 =>
+      'Alle Fortschrittsdialoge nutzen nun einen Doppelring: der äußere Ring zeigt den Gesamtfortschritt, der innere grüne Ring den Fortschritt der aktuellen Datei. Abgedeckt sind Kopieren/Ausschneiden, Komprimieren/Entpacken, Verschlüsseln/Entschlüsseln, Tresor-Import & -Wiederherstellung und Kategorie-Backup.';
 
   @override
-  String get cl211_ui_2 => 'Die Videosteuerungen sind kleiner und nach unten direkt über die Fortschrittsleiste verschoben, sodass sie die Bildmitte nicht mehr verdecken.';
+  String get cl211_ui_2 =>
+      'Die Videosteuerungen sind kleiner und nach unten direkt über die Fortschrittsleiste verschoben, sodass sie die Bildmitte nicht mehr verdecken.';
 
   @override
-  String get cl211_ui_3 => 'Die Liste der direkten Verschlüsselung im Tresor erhält eine Aktion "Entfernen" — sie blendet nur den Eintrag aus, die verschlüsselte Datei auf der Festplatte bleibt unberührt.';
+  String get cl211_ui_3 =>
+      'Die Liste der direkten Verschlüsselung im Tresor erhält eine Aktion \"Entfernen\" — sie blendet nur den Eintrag aus, die verschlüsselte Datei auf der Festplatte bleibt unberührt.';
 
   @override
   String get cl211_fixes => 'Fehlerbehebungen';
+
+  @override
+  String get cl211_fix_1 =>
+      'Schwarzer Bildschirm (nur Ton, kein Bild) bei der Videowiedergabe auf einigen Geräten behoben, verursacht durch ein mit 1.1.42 eingeführtes Renderer-Kompatibilitätsproblem. Die Darstellung nutzt nun den universell kompatiblen Pfad, und bei Problemen mit der Hardware-Dekodierung wird automatisch auf Software-Dekodierung umgeschaltet.';
+
+  @override
+  String get cl211_fix_2 =>
+      'Behoben: Remote-Videowiedergabe über SMB / FTP / SFTP blieb alle paar Sekunden hängen, und die Fortschrittsleiste sprang nach dem Suchen wieder an den Anfang.';
+
+  @override
+  String get cl211_fix_3 =>
+      'Behoben: FTP brauchte beim Öffnen eines Verzeichnisses oder beim Zurückgehen manchmal sehr lange.';
+
+  @override
+  String get cl211_fix_4 =>
+      'Behoben: Komprimierung großer oder vieler Dateien blieb bei 100 % hängen. Die ZIP-Komprimierung erfolgt nun dateiweise im Stream, was den Speicherverbrauch stark senkt, während der Fortschritt weiterläuft.';
+
+  @override
+  String get cl211_fix_5 =>
+      'Behoben, dass der Musikplayer jeden Titel als \"FLAC • 24-bit\" anzeigte; nun wird das echte Format angezeigt, plus die tatsächliche Bit-Tiefe bei verlustfreien Formaten.';
+
+  @override
+  String get cl211_fix_6 =>
+      'Behoben: Nach dem Konfigurieren des Tresors oder dem Verschlüsseln am Ort verlangten unverschlüsselte Dateien fälschlicherweise das Tresor-Passwort.';
+
+  @override
+  String get cl211_fix_7 =>
+      'Zwei Tresor-Meldungen behoben: bei falschem Passwort erschien fälschlicherweise \"bitte zuerst das Master-Passwort festlegen\"; Ergebnis-Toasts für Verschlüsseln/Entschlüsseln waren in nicht-chinesischen Sprachen weiterhin auf Chinesisch.';
+
   @override
   String get cl212_features => 'Neu';
 
   @override
-  String get cl212_feat_1 => 'Umschaltbare APK-Öffnungsart: Unter Einstellungen → APK-Installationsoptionen gibt es neu „APK-Öffnen“ zum Wechseln zwischen dem eingebauten Installer und dem Systemauswähler. Mit dem Systemauswähler fängt ZenFile das Öffnen von APK nicht mehr ab, sodass Drittanbieter-Installer wie InstallerX und InstallWithOptions sie übernehmen können — beim Masseninstallieren muss nicht mehr lange auf jede Datei gedrückt werden, um „Öffnen mit“ zu wählen.';
+  String get cl212_feat_1 =>
+      'Umschaltbare APK-Öffnungsart: Unter Einstellungen → APK-Installationsoptionen gibt es neu „APK-Öffnen“ zum Wechseln zwischen dem eingebauten Installer und dem Systemauswähler. Mit dem Systemauswähler fängt ZenFile das Öffnen von APK nicht mehr ab, sodass Drittanbieter-Installer wie InstallerX und InstallWithOptions sie übernehmen können — beim Masseninstallieren muss nicht mehr lange auf jede Datei gedrückt werden, um „Öffnen mit“ zu wählen.';
 
   @override
   String get cl212_ui => 'Oberfläche & Interaktion';
 
   @override
-  String get cl212_ui_1 => 'Weiterer Bereich „Größe & Abstand“: die untere Grenze des Abstandsreglers zwischen Karten wurde von 40 % auf -50 % gesenkt; bei 0 % berühren sich die Kartenränder, und negative Werte lassen angrenzende Kartenränder zu einer Linie verschmelzen. Der Standardwert ist ebenfalls 0 % (neue Installationen sind direkt bündig; bestehende Einstellungen bleiben erhalten).';
+  String get cl212_ui_1 =>
+      'Weiterer Bereich „Größe & Abstand“: die untere Grenze des Abstandsreglers zwischen Karten wurde von 40 % auf -50 % gesenkt; bei 0 % berühren sich die Kartenränder, und negative Werte lassen angrenzende Kartenränder zu einer Linie verschmelzen. Der Standardwert ist ebenfalls 0 % (neue Installationen sind direkt bündig; bestehende Einstellungen bleiben erhalten).';
 
   @override
-  String get cl212_ui_2 => 'Dialog für benutzerdefinierte Verknüpfungen: „Symbolform“ und „Spalten pro Zeile“ sind nun Dropdowns statt nebeneinanderliegender Buttons, was das Layout kompakter macht.';
+  String get cl212_ui_2 =>
+      'Dialog für benutzerdefinierte Verknüpfungen: „Symbolform“ und „Spalten pro Zeile“ sind nun Dropdowns statt nebeneinanderliegender Buttons, was das Layout kompakter macht.';
 
   @override
   String get cl212_fixes => 'Fehlerbehebungen';
 
   @override
-  String get cl212_fix_1 => 'Entsperren per Fingerabdruck ist jetzt standardmäßig aus: nach der Installation bleibt die Fingerabdruck-Entsperrung unter Einstellungen → Sicherheit aus, bis du sie aktivierst — die biometrische Entsperrung wird nicht mehr automatisch aktiviert.';
+  String get cl212_fix_1 =>
+      'Entsperren per Fingerabdruck ist jetzt standardmäßig aus: nach der Installation bleibt die Fingerabdruck-Entsperrung unter Einstellungen → Sicherheit aus, bis du sie aktivierst — die biometrische Entsperrung wird nicht mehr automatisch aktiviert.';
 
   @override
-  String get cl212_fix_2 => 'Behoben, dass sich der API-Schlüssel der APK-Sicherheitsprüfung nicht neu konfigurieren ließ: früher öffnete das Aus- und Wiedereinschalten des Schalters nach dem Speichern des Schlüssels die Konfigurationsseite nicht erneut. Sie öffnet sich nun sowohl über den Schalter als auch durch Tippen auf die Karte.';
+  String get cl212_fix_2 =>
+      'Behoben, dass sich der API-Schlüssel der APK-Sicherheitsprüfung nicht neu konfigurieren ließ: früher öffnete das Aus- und Wiedereinschalten des Schalters nach dem Speichern des Schlüssels die Konfigurationsseite nicht erneut. Sie öffnet sich nun sowohl über den Schalter als auch durch Tippen auf die Karte.';
 
   @override
-  String get cl212_fix_3 => 'Behoben „Zugriff verweigert“ bei stiller Installation trotz autorisiertem Shizuku: der Shizuku-Pfad installiert nun über eine System-PackageInstaller-Sitzung statt dem auf manchen Systemen gesperrten Shell-Befehl; der Root-Pfad übergibt kein unnötiges Downgrade-Flag mehr.';
+  String get cl212_fix_3 =>
+      'Behoben „Zugriff verweigert“ bei stiller Installation trotz autorisiertem Shizuku: der Shizuku-Pfad installiert nun über eine System-PackageInstaller-Sitzung statt dem auf manchen Systemen gesperrten Shell-Befehl; der Root-Pfad übergibt kein unnötiges Downgrade-Flag mehr.';
 
   @override
-  String get cl211_fix_1 => 'Schwarzer Bildschirm (nur Ton, kein Bild) bei der Videowiedergabe auf einigen Geräten behoben, verursacht durch ein mit 1.1.42 eingeführtes Renderer-Kompatibilitätsproblem. Die Darstellung nutzt nun den universell kompatiblen Pfad, und bei Problemen mit der Hardware-Dekodierung wird automatisch auf Software-Dekodierung umgeschaltet.';
+  String get remote_err_cancelled => 'Vorgang abgebrochen';
 
   @override
-  String get cl211_fix_2 => 'Behoben: Remote-Videowiedergabe über SMB / FTP / SFTP blieb alle paar Sekunden hängen, und die Fortschrittsleiste sprang nach dem Suchen wieder an den Anfang.';
+  String get remote_err_auth =>
+      'Anmeldung fehlgeschlagen: Benutzername oder Passwort falsch. Bei Schlüsselanmeldung private Schlüsseldatei und Passphrase prüfen.';
 
   @override
-  String get cl211_fix_3 => 'Behoben: FTP brauchte beim Öffnen eines Verzeichnisses oder beim Zurückgehen manchmal sehr lange.';
+  String get remote_err_not_connected =>
+      'Nicht mit dem Server verbunden. Stelle zuerst die Verbindung her und versuche es erneut.';
 
   @override
-  String get cl211_fix_4 => 'Behoben: Komprimierung großer oder vieler Dateien blieb bei 100 % hängen. Die ZIP-Komprimierung erfolgt nun dateiweise im Stream, was den Speicherverbrauch stark senkt, während der Fortschritt weiterläuft.';
+  String get remote_err_not_found =>
+      'Datei oder Ordner existiert nicht (möglicherweise verschoben oder gelöscht).';
 
   @override
-  String get cl211_fix_5 => 'Behoben, dass der Musikplayer jeden Titel als "FLAC • 24-bit" anzeigte; nun wird das echte Format angezeigt, plus die tatsächliche Bit-Tiefe bei verlustfreien Formaten.';
+  String get remote_err_timeout =>
+      'Verbindungstimeout: Server antwortet zu langsam oder Netzwerk instabil. Bitte später erneut versuchen.';
 
   @override
-  String get cl211_fix_6 => 'Behoben: Nach dem Konfigurieren des Tresors oder dem Verschlüsseln am Ort verlangten unverschlüsselte Dateien fälschlicherweise das Tresor-Passwort.';
+  String get remote_err_connection =>
+      'Verbindung zum Server fehlgeschlagen: Adresse, Port, Netzwerk und dass der Server läuft prüfen.';
 
   @override
-  String get cl211_fix_7 => 'Zwei Tresor-Meldungen behoben: bei falschem Passwort erschien fälschlicherweise "bitte zuerst das Master-Passwort festlegen"; Ergebnis-Toasts für Verschlüsseln/Entschlüsseln waren in nicht-chinesischen Sprachen weiterhin auf Chinesisch.';
+  String get remote_err_reconnect =>
+      'Die Verbindung zum Server wurde getrennt und es wird versucht, sie wiederherzustellen.';
 
   @override
-  String get vault_config_password => 'Passwortkonfiguration';
+  String get remote_err_download =>
+      'Download fehlgeschlagen. Netzwerk prüfen und erneut versuchen.';
+
+  @override
+  String get remote_err_upload =>
+      'Upload fehlgeschlagen. Netzwerk prüfen und erneut versuchen.';
+
+  @override
+  String get remote_err_delete => 'Löschen fehlgeschlagen. Erneut versuchen.';
+
+  @override
+  String get remote_err_rename =>
+      'Umbenennen fehlgeschlagen. Erneut versuchen.';
+
+  @override
+  String get remote_err_create_dir =>
+      'Ordner erstellen fehlgeschlagen. Erneut versuchen.';
+
+  @override
+  String get remote_err_dir_open =>
+      'Dieser Ordner kann nicht geöffnet werden. Stelle sicher, dass du Zugriff hast.';
+
+  @override
+  String remote_err_server(Object code) {
+    return 'Der Server lieferte einen Fehler (Statuscode $code). Kontaktiere den Server-Admin.';
+  }
+
+  @override
+  String get remote_err_generic => 'Vorgang fehlgeschlagen. Erneut versuchen.';
 
   @override
   String get app_icon_add_title => 'Zum Startbildschirm hinzufügen';
@@ -7731,8 +7811,20 @@ class L10nDe extends L10n {
   String get decibel_meter_examples => 'Häufige Beispiele';
 
   @override
-  String get decibel_meter_examples_text =>
+  String get decibel_meter_examples_safe =>
       'Normales Gespräch (ca. 50-60 dB), ruhiges Büro, Kühlschrankbrummen.';
+
+  @override
+  String get decibel_meter_examples_moderate =>
+      'Staubsauger (ca. 70 dB), belebte Straße, lautes Restaurant.';
+
+  @override
+  String get decibel_meter_examples_harmful =>
+      'Motorrad (ca. 90 dB), Fabrikhalle, Rasenmäher, starker Verkehr.';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      'Kettensäge (ca. 110 dB), Rockkonzert in erster Reihe, Feuerwerk, Jet-Start.';
 
   @override
   String get decibel_meter_perm_denied =>

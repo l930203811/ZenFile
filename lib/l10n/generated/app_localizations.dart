@@ -11571,10 +11571,17 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'开启后安装时复制临时副本，防止系统安装器自动删除源 APK'**
   String get vt_keep_apk_desc;
-  /// No description provided for @apk_open_mode_title.
+
+  /// apk open mode: apk_open_mode_title
+  ///
+  /// In zh, this message translates to:
+  /// **'APK 打开方式'**
   String get apk_open_mode_title;
 
-  /// No description provided for @apk_open_mode_desc.
+  /// apk open mode: apk_open_mode_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'使用系统选择器打开 APK，允许 InstallerX 等第三方安装器接管；关闭则使用内置安装器。'**
   String get apk_open_mode_desc;
 
   /// virustotal scan dialog buttons
@@ -11810,82 +11817,246 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'密码配置'**
   String get crypt_settings_title;
-  /// No description provided for @cl211_features.
-  String get cl211_features;
-
-  /// No description provided for @cl211_feat_1.
-  String get cl211_feat_1;
-
-  /// No description provided for @cl211_feat_2.
-  String get cl211_feat_2;
-
-  /// No description provided for @cl211_ui.
-  String get cl211_ui;
-
-  /// No description provided for @cl211_ui_1.
-  String get cl211_ui_1;
-
-  /// No description provided for @cl211_ui_2.
-  String get cl211_ui_2;
-
-  /// No description provided for @cl211_ui_3.
-  String get cl211_ui_3;
-
-  /// No description provided for @cl211_fixes.
-  String get cl211_fixes;
-
-  /// No description provided for @cl211_fix_1.
-  String get cl211_fix_1;
-
-  /// No description provided for @cl211_fix_2.
-  String get cl211_fix_2;
-
-  /// No description provided for @cl211_fix_3.
-  String get cl211_fix_3;
-
-  /// No description provided for @cl211_fix_4.
-  String get cl211_fix_4;
-
-  /// No description provided for @cl211_fix_5.
-  String get cl211_fix_5;
-
-  /// No description provided for @cl211_fix_6.
-  String get cl211_fix_6;
-
-  /// No description provided for @cl211_fix_7.
-  String get cl211_fix_7;
-  /// No description provided for @cl212_features.
-  String get cl212_features;
-
-  /// No description provided for @cl212_feat_1.
-  String get cl212_feat_1;
-
-  /// No description provided for @cl212_ui.
-  String get cl212_ui;
-
-  /// No description provided for @cl212_ui_1.
-  String get cl212_ui_1;
-
-  /// No description provided for @cl212_ui_2.
-  String get cl212_ui_2;
-
-  /// No description provided for @cl212_fixes.
-  String get cl212_fixes;
-
-  /// No description provided for @cl212_fix_1.
-  String get cl212_fix_1;
-
-  /// No description provided for @cl212_fix_2.
-  String get cl212_fix_2;
-
-  /// No description provided for @cl212_fix_3.
-  String get cl212_fix_3;
 
   /// No description provided for @vault_config_password.
   ///
   /// In zh, this message translates to:
   /// **'密码配置'**
   String get vault_config_password;
+
+  /// changelog 2.1.1: cl211_features
+  ///
+  /// In zh, this message translates to:
+  /// **'新增功能'**
+  String get cl211_features;
+
+  /// changelog 2.1.1: cl211_feat_1
+  ///
+  /// In zh, this message translates to:
+  /// **'应用图标支持导入自定义图片：设置 → 外观与主题 → 应用图标，选择图片后可在桌面添加为快捷方式或 1×1 小组件。同时修复了此前点击提示「已添加」但桌面没有图标的问题；部分系统限制快捷方式时，可改用桌面小组件。'**
+  String get cl211_feat_1;
+
+  /// changelog 2.1.1: cl211_feat_2
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件的二次确认可按需关闭：删除弹窗新增「删除不再提示」复选框，设置 → 文件操作与查看器新增「删除文件确认」开关，关闭后删除不再弹出确认。'**
+  String get cl211_feat_2;
+
+  /// changelog 2.1.1: cl211_ui
+  ///
+  /// In zh, this message translates to:
+  /// **'界面与交互'**
+  String get cl211_ui;
+
+  /// changelog 2.1.1: cl211_ui_1
+  ///
+  /// In zh, this message translates to:
+  /// **'所有进度弹窗统一为双层圆环：外圈显示整体进度、内圈（绿色）显示当前文件进度，已覆盖复制/剪切、压缩/解压、加密/解密、保险箱导入加密与恢复解密、类别备份等场景。'**
+  String get cl211_ui_1;
+
+  /// changelog 2.1.1: cl211_ui_2
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放控制按钮整体缩小并下移，贴近进度条上方，不再遮挡画面中心。'**
+  String get cl211_ui_2;
+
+  /// changelog 2.1.1: cl211_ui_3
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱原地加密列表新增「移除」：仅从列表移除，磁盘上的加密文件不受影响。'**
+  String get cl211_ui_3;
+
+  /// changelog 2.1.1: cl211_fixes
+  ///
+  /// In zh, this message translates to:
+  /// **'问题修复'**
+  String get cl211_fixes;
+
+  /// changelog 2.1.1: cl211_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复部分机型播放视频黑屏（只有声音没有画面）的问题：由 1.1.42 引入的渲染兼容问题导致，现已改为通用渲染；并新增自动检测，硬解异常时自动切换软解续播，无需手动设置。'**
+  String get cl211_fix_1;
+
+  /// changelog 2.1.1: cl211_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 SMB / FTP / SFTP 播放远程视频「播几秒卡几秒」、拖动进度条又跳回开头的问题。'**
+  String get cl211_fix_2;
+
+  /// changelog 2.1.1: cl211_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 打开目录、返回上一级偶尔需要等待很久的问题。'**
+  String get cl211_fix_3;
+
+  /// changelog 2.1.1: cl211_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'修复压缩大文件或多文件时进度停在 100% 长时间不动的问题：改为流式逐文件压缩，内存占用大幅降低，进度持续推进。'**
+  String get cl211_fix_4;
+
+  /// changelog 2.1.1: cl211_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复音乐播放器把所有音频都显示为「FLAC • 24-bit」的问题，现在按真实格式显示，无损格式还会显示实际位深。'**
+  String get cl211_fix_5;
+
+  /// changelog 2.1.1: cl211_fix_6
+  ///
+  /// In zh, this message translates to:
+  /// **'修复配置保险箱密码或原地加密后，打开任意未加密文件都会要求验证保险箱密码的问题。'**
+  String get cl211_fix_6;
+
+  /// changelog 2.1.1: cl211_fix_7
+  ///
+  /// In zh, this message translates to:
+  /// **'修复保险箱提示的两处错误：解密密码输入错误时误提示「请先设置主密码」；加密/解密的结果提示在非中文界面下仍显示中文。'**
+  String get cl211_fix_7;
+
+  /// v2.1.2 changelog: cl212_features
+  ///
+  /// In zh, this message translates to:
+  /// **'新增功能'**
+  String get cl212_features;
+
+  /// v2.1.2 changelog: cl212_feat_1
+  ///
+  /// In zh, this message translates to:
+  /// **'APK 打开方式可切换：设置 → APK 安装设置新增「APK 打开方式」，可在「内置安装器」与「系统选择器」之间切换。选择系统选择器后，ZenFile 不再强制拦截 APK 打开，InstallerX、InstallWithOptions 等第三方安装器可正常接管，批量安装无需再长按逐个选择「打开方式」。'**
+  String get cl212_feat_1;
+
+  /// v2.1.2 changelog: cl212_ui
+  ///
+  /// In zh, this message translates to:
+  /// **'界面与交互'**
+  String get cl212_ui;
+
+  /// v2.1.2 changelog: cl212_ui_1
+  ///
+  /// In zh, this message translates to:
+  /// **'「大小和间距」可调范围扩大：卡片间距滑块下限由 40% 放宽到 -50%，0% 时卡片边框紧贴、负值可让相邻卡片边框重叠成一条线；同时默认值改为 0%（新用户首次启动即贴边，已调整过的用户保持原值）。'**
+  String get cl212_ui_1;
+
+  /// v2.1.2 changelog: cl212_ui_2
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义快捷方式弹窗：「图标形状」与「每行显示」由并排按钮改为下拉选择，布局更紧凑统一。'**
+  String get cl212_ui_2;
+
+  /// v2.1.2 changelog: cl212_fixes
+  ///
+  /// In zh, this message translates to:
+  /// **'问题修复'**
+  String get cl212_fixes;
+
+  /// v2.1.2 changelog: cl212_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'指纹解锁改为默认关闭：安装后「设置 → 安全设置」中的指纹解锁默认处于关闭状态，需主动开启，避免新装或升级后自动启用生物识别解锁。'**
+  String get cl212_fix_1;
+
+  /// v2.1.2 changelog: cl212_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 APK 安全扫描配置好 API Key 后、关闭再打开开关无法再次进入配置页重新配置 Key 的问题；现在开关打开与点击卡片均可进入配置页修改 Key。'**
+  String get cl212_fix_2;
+
+  /// v2.1.2 changelog: cl212_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。'**
+  String get cl212_fix_3;
+
+  /// v2.1.3 remote error localization: remote_err_cancelled
+  ///
+  /// In zh, this message translates to:
+  /// **'操作已取消'**
+  String get remote_err_cancelled;
+
+  /// v2.1.3 remote error localization: remote_err_auth
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败：用户名或密码错误。若使用密钥登录，请确认私钥文件与密码正确。'**
+  String get remote_err_auth;
+
+  /// v2.1.3 remote error localization: remote_err_not_connected
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未连接到服务器，请先连接后重试。'**
+  String get remote_err_not_connected;
+
+  /// v2.1.3 remote error localization: remote_err_not_found
+  ///
+  /// In zh, this message translates to:
+  /// **'文件或文件夹不存在（可能已被移动或删除）。'**
+  String get remote_err_not_found;
+
+  /// v2.1.3 remote error localization: remote_err_timeout
+  ///
+  /// In zh, this message translates to:
+  /// **'连接超时：服务器响应过慢或网络不稳定，请稍后重试。'**
+  String get remote_err_timeout;
+
+  /// v2.1.3 remote error localization: remote_err_connection
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接到服务器：请检查地址、端口、网络，以及服务器是否已开启。'**
+  String get remote_err_connection;
+
+  /// v2.1.3 remote error localization: remote_err_reconnect
+  ///
+  /// In zh, this message translates to:
+  /// **'与服务器的连接已断开，正在尝试重新连接。'**
+  String get remote_err_reconnect;
+
+  /// v2.1.3 remote error localization: remote_err_download
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败，请检查网络后重试。'**
+  String get remote_err_download;
+
+  /// v2.1.3 remote error localization: remote_err_upload
+  ///
+  /// In zh, this message translates to:
+  /// **'上传失败，请检查网络后重试。'**
+  String get remote_err_upload;
+
+  /// v2.1.3 remote error localization: remote_err_delete
+  ///
+  /// In zh, this message translates to:
+  /// **'删除失败，请重试。'**
+  String get remote_err_delete;
+
+  /// v2.1.3 remote error localization: remote_err_rename
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名失败，请重试。'**
+  String get remote_err_rename;
+
+  /// v2.1.3 remote error localization: remote_err_create_dir
+  ///
+  /// In zh, this message translates to:
+  /// **'创建文件夹失败，请重试。'**
+  String get remote_err_create_dir;
+
+  /// v2.1.3 remote error localization: remote_err_dir_open
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开该文件夹，请确认你有访问权限。'**
+  String get remote_err_dir_open;
+
+  /// v2.1.3 remote error localization: remote_err_server
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器返回错误（状态码 {code}），请联系服务器管理员。'**
+  String remote_err_server(Object code);
+
+  /// v2.1.3 remote error localization: remote_err_generic
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败，请重试。'**
+  String get remote_err_generic;
 
   /// app icon: app_icon_add_title
   ///
@@ -13597,11 +13768,29 @@ abstract class L10n {
   /// **'常见场景举例'**
   String get decibel_meter_examples;
 
-  /// No description provided for @decibel_meter_examples_text.
+  /// No description provided for @decibel_meter_examples_safe.
   ///
   /// In zh, this message translates to:
   /// **'普通室内谈话（约50-60 dB）、安静的办公室、冰箱嗡嗡声。'**
-  String get decibel_meter_examples_text;
+  String get decibel_meter_examples_safe;
+
+  /// No description provided for @decibel_meter_examples_moderate.
+  ///
+  /// In zh, this message translates to:
+  /// **'吸尘器（约70 dB）、繁忙街道、嘈杂的餐厅或商店。'**
+  String get decibel_meter_examples_moderate;
+
+  /// No description provided for @decibel_meter_examples_harmful.
+  ///
+  /// In zh, this message translates to:
+  /// **'摩托车（约90 dB）、工厂车间、割草机、繁忙交通路口。'**
+  String get decibel_meter_examples_harmful;
+
+  /// No description provided for @decibel_meter_examples_dangerous.
+  ///
+  /// In zh, this message translates to:
+  /// **'电锯（约110 dB）、摇滚音乐会前排、爆竹、喷气式飞机起飞。'**
+  String get decibel_meter_examples_dangerous;
 
   /// No description provided for @decibel_meter_perm_denied.
   ///

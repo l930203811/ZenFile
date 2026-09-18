@@ -6785,6 +6785,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "Operation cancelled",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "Login failed: wrong username or password. If using a key, check the private key and its passphrase.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "Not connected to the server. Connect first and try again.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "The file or folder does not exist (it may have been moved or deleted).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "Connection timed out: the server responded too slowly or the network is unstable. Please try again.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "Could not connect to the server: check the address, port, network, and that the server is running.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "The connection to the server was lost and is trying to reconnect.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "Download failed. Check the network and try again.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "Upload failed. Check the network and try again.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "Delete failed. Please try again.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "Rename failed. Please try again.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "Failed to create folder. Please try again.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "Cannot open this folder. Make sure you have access.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "The server returned an error (status code {code}). Contact the server admin.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "Operation failed. Please try again.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "Add to home screen",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7869,7 +7932,10 @@
   "decibel_meter_health_harmful": "Very noisy, prolonged exposure can damage hearing.",
   "decibel_meter_health_dangerous": "Dangerous level, move away and protect your hearing!",
   "decibel_meter_examples": "Common Examples",
-  "decibel_meter_examples_text": "Normal conversation (about 50-60 dB), quiet office, refrigerator hum.",
+  "decibel_meter_examples_safe": "Normal conversation (about 50-60 dB), quiet office, refrigerator hum.",
+  "decibel_meter_examples_moderate": "Vacuum cleaner (about 70 dB), busy street, noisy restaurant or shop.",
+  "decibel_meter_examples_harmful": "Motorcycle (about 90 dB), factory floor, lawn mower, heavy traffic.",
+  "decibel_meter_examples_dangerous": "Chainsaw (about 110 dB), front-row rock concert, firecrackers, jet takeoff.",
   "decibel_meter_perm_denied": "Microphone permission is required to measure ambient sound. Please enable it in settings.",
   "decibel_meter_perm_title": "Microphone Permission Required",
   "decibel_meter_perm_settings": "Microphone permission has been permanently denied. Please enable it for ZenFile in system settings and try again.",

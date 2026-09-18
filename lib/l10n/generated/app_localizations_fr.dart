@@ -6552,11 +6552,13 @@ class L10nFr extends L10n {
   @override
   String get vt_keep_apk_desc =>
       'Créer une copie temporaire avant l\'installation pour empêcher le programme d\'installation système de supprimer l\'APK source';
+
   @override
   String get apk_open_mode_title => 'Méthode d\'ouverture des APK';
 
   @override
-  String get apk_open_mode_desc => 'Utilise le sélecteur système pour ouvrir les APK afin que des installateurs tiers comme InstallerX les prennent en charge ; si désactivé, l\'installateur intégré est utilisé.';
+  String get apk_open_mode_desc =>
+      'Utilise le sélecteur système pour ouvrir les APK afin que des installateurs tiers comme InstallerX les prennent en charge ; si désactivé, l\'installateur intégré est utilisé.';
 
   @override
   String get vt_install => 'Installer';
@@ -6692,79 +6694,156 @@ class L10nFr extends L10n {
 
   @override
   String get crypt_settings_title => 'Configuration du mot de passe';
+
+  @override
+  String get vault_config_password => 'Configuration du mot de passe';
+
   @override
   String get cl211_features => 'Nouveautés';
 
   @override
-  String get cl211_feat_1 => 'Icône d\'application avec votre propre image : Paramètres → Apparence et thème → Icône d\'application. Après avoir choisi une image, vous pouvez l\'ajouter à l\'écran d\'accueil en tant que raccourci ou widget 1×1. Correction également du cas où il indiquait « ajouté » sans rien ajouter ; si votre lanceur bloque les raccourcis, utilisez le widget.';
+  String get cl211_feat_1 =>
+      'Icône d\'application avec votre propre image : Paramètres → Apparence et thème → Icône d\'application. Après avoir choisi une image, vous pouvez l\'ajouter à l\'écran d\'accueil en tant que raccourci ou widget 1×1. Correction également du cas où il indiquait « ajouté » sans rien ajouter ; si votre lanceur bloque les raccourcis, utilisez le widget.';
 
   @override
-  String get cl211_feat_2 => 'La confirmation de suppression peut désormais être désactivée : la boîte de dialogue de suppression comporte une case « Ne plus demander », et dans Paramètres → Opérations et visionneuses de fichiers se trouve un interrupteur « Confirmer avant de supprimer ».';
+  String get cl211_feat_2 =>
+      'La confirmation de suppression peut désormais être désactivée : la boîte de dialogue de suppression comporte une case « Ne plus demander », et dans Paramètres → Opérations et visionneuses de fichiers se trouve un interrupteur « Confirmer avant de supprimer ».';
 
   @override
   String get cl211_ui => 'Interface et interaction';
 
   @override
-  String get cl211_ui_1 => 'Toutes les boîtes de progression utilisent désormais un double anneau : l\'extérieur pour la progression globale, l\'intérieur vert pour le fichier en cours. Couvre copier/couper, compresser/extraire, chiffrer/déchiffrer, import et restauration du coffre, et la sauvegarde par catégorie.';
+  String get cl211_ui_1 =>
+      'Toutes les boîtes de progression utilisent désormais un double anneau : l\'extérieur pour la progression globale, l\'intérieur vert pour le fichier en cours. Couvre copier/couper, compresser/extraire, chiffrer/déchiffrer, import et restauration du coffre, et la sauvegarde par catégorie.';
 
   @override
-  String get cl211_ui_2 => 'Les commandes de lecture vidéo sont plus petites et déplacées vers le bas, juste au-dessus de la barre de progression, elles ne cachent donc plus le centre de l\'image.';
+  String get cl211_ui_2 =>
+      'Les commandes de lecture vidéo sont plus petites et déplacées vers le bas, juste au-dessus de la barre de progression, elles ne cachent donc plus le centre de l\'image.';
 
   @override
-  String get cl211_ui_3 => 'La liste de chiffrement sur place du coffre dispose désormais d\'une action « Retirer » : elle masque uniquement l\'entrée, le fichier chiffré sur le disque reste intact.';
+  String get cl211_ui_3 =>
+      'La liste de chiffrement sur place du coffre dispose désormais d\'une action « Retirer » : elle masque uniquement l\'entrée, le fichier chiffré sur le disque reste intact.';
 
   @override
   String get cl211_fixes => 'Corrections';
+
+  @override
+  String get cl211_fix_1 =>
+      'Correction de l\'écran noir (son uniquement, pas d\'image) lors de la lecture vidéo sur certains appareils, dû à un problème de compatibilité du moteur de rendu introduit en 1.1.42. Le rendu utilise désormais le chemin universellement compatible et bascule automatiquement en décodage logiciel si le décodage matériel échoue.';
+
+  @override
+  String get cl211_fix_2 =>
+      'Correction de la lecture vidéo distante via SMB / FTP / SFTP qui s\'interrompait toutes les quelques secondes, et de la barre de progression qui revenait au début après un repérage.';
+
+  @override
+  String get cl211_fix_3 =>
+      'Correction du cas où FTP mettait parfois très longtemps à ouvrir un dossier ou à revenir en arrière.';
+
+  @override
+  String get cl211_fix_4 =>
+      'Correction de la compression de fichiers volumineux ou nombreux bloquée à 100 % : la compression ZIP est désormais diffusée fichier par fichier, réduisant fortement l\'usage mémoire tout en faisant avancer la progression.';
+
+  @override
+  String get cl211_fix_5 =>
+      'Correction de l\'affichage par le lecteur de musique de chaque piste comme « FLAC • 24-bit » ; le format réel s\'affiche désormais, ainsi que la profondeur de bits réelle pour les formats sans perte.';
+
+  @override
+  String get cl211_fix_6 =>
+      'Correction : après la configuration du coffre ou le chiffrement sur place, les fichiers non chiffrés demandaient à tort le mot de passe du coffre.';
+
+  @override
+  String get cl211_fix_7 =>
+      'Correction de deux messages du coffre : un mot de passe erroné indiquait à tort « définissez d\'abord le mot de passe principal » ; les notifications de résultat de chiffrement/déchiffrement restaient en chinois dans les langues non chinoises.';
+
   @override
   String get cl212_features => 'Nouveautés';
 
   @override
-  String get cl212_feat_1 => 'Méthode d\'ouverture des APK commutables : les Paramètres → Paramètres d\'installation APK ajoutent une « Méthode d\'ouverture des APK » pour choisir entre l\'installateur intégré et le sélecteur système. Avec le sélecteur système, ZenFile n\'intercepte plus l\'ouverture des APK, donc des installateurs tiers comme InstallerX et InstallWithOptions peuvent les prendre en charge — plus besoin d\'appuyer longuement sur chaque fichier pour choisir « Ouvrir avec » lors des installations par lot.';
+  String get cl212_feat_1 =>
+      'Méthode d\'ouverture des APK commutables : les Paramètres → Paramètres d\'installation APK ajoutent une « Méthode d\'ouverture des APK » pour choisir entre l\'installateur intégré et le sélecteur système. Avec le sélecteur système, ZenFile n\'intercepte plus l\'ouverture des APK, donc des installateurs tiers comme InstallerX et InstallWithOptions peuvent les prendre en charge — plus besoin d\'appuyer longuement sur chaque fichier pour choisir « Ouvrir avec » lors des installations par lot.';
 
   @override
   String get cl212_ui => 'Interface et interaction';
 
   @override
-  String get cl212_ui_1 => 'Plage « Taille et espacement » élargie : la limite basse du curseur d\'espacement entre cartes passe de 40 % à -50 % ; à 0 % les bordures des cartes se touchent, et les valeurs négatives font chevaucher les bordures des cartes adjacentes en une seule ligne. La valeur par défaut passe aussi à 0 % (les nouvelles installations sont d\'emblée collées ; les réglages existants sont conservés).';
+  String get cl212_ui_1 =>
+      'Plage « Taille et espacement » élargie : la limite basse du curseur d\'espacement entre cartes passe de 40 % à -50 % ; à 0 % les bordures des cartes se touchent, et les valeurs négatives font chevaucher les bordures des cartes adjacentes en une seule ligne. La valeur par défaut passe aussi à 0 % (les nouvelles installations sont d\'emblée collées ; les réglages existants sont conservés).';
 
   @override
-  String get cl212_ui_2 => 'Boîte de dialogue des raccourcis personnalisés : « Forme de l\'icône » et « Colonnes par ligne » sont désormais des listes déroulantes au lieu de boutons côte à côte, pour une disposition plus compacte.';
+  String get cl212_ui_2 =>
+      'Boîte de dialogue des raccourcis personnalisés : « Forme de l\'icône » et « Colonnes par ligne » sont désormais des listes déroulantes au lieu de boutons côte à côte, pour une disposition plus compacte.';
 
   @override
   String get cl212_fixes => 'Corrections';
 
   @override
-  String get cl212_fix_1 => 'Le déverrouillage par empreinte est maintenant désactivé par défaut : après l\'installation, le déverrouillage par empreinte dans Paramètres → Sécurité reste désactivé jusqu\'à ce que vous l\'activiez, le déverrouillage biométrique n\'étant plus activé automatiquement.';
+  String get cl212_fix_1 =>
+      'Le déverrouillage par empreinte est maintenant désactivé par défaut : après l\'installation, le déverrouillage par empreinte dans Paramètres → Sécurité reste désactivé jusqu\'à ce que vous l\'activiez, le déverrouillage biométrique n\'étant plus activé automatiquement.';
 
   @override
-  String get cl212_fix_2 => 'Correction de l\'impossibilité de reconfigurer la clé API de l\'analyse de sécurité APK : auparavant, une fois la clé enregistrée, désactiver puis réactiver le commutateur ne rouvrait pas la page de configuration. La page s\'ouvre désormais au niveau du commutateur et en appuyant sur la carte.';
+  String get cl212_fix_2 =>
+      'Correction de l\'impossibilité de reconfigurer la clé API de l\'analyse de sécurité APK : auparavant, une fois la clé enregistrée, désactiver puis réactiver le commutateur ne rouvrait pas la page de configuration. La page s\'ouvre désormais au niveau du commutateur et en appuyant sur la carte.';
 
   @override
-  String get cl212_fix_3 => 'Correction de l\'erreur « permission refusée » lors de l\'installation silencieuse même avec Shizuku autorisé : le chemin Shizuku installe désormais via une session PackageInstaller système au lieu de la commande shell interdite sur certains systèmes ; le chemin root ne passe plus de drapeau de rétrogradation inutile.';
+  String get cl212_fix_3 =>
+      'Correction de l\'erreur « permission refusée » lors de l\'installation silencieuse même avec Shizuku autorisé : le chemin Shizuku installe désormais via une session PackageInstaller système au lieu de la commande shell interdite sur certains systèmes ; le chemin root ne passe plus de drapeau de rétrogradation inutile.';
 
   @override
-  String get cl211_fix_1 => 'Correction de l\'écran noir (son uniquement, pas d\'image) lors de la lecture vidéo sur certains appareils, dû à un problème de compatibilité du moteur de rendu introduit en 1.1.42. Le rendu utilise désormais le chemin universellement compatible et bascule automatiquement en décodage logiciel si le décodage matériel échoue.';
+  String get remote_err_cancelled => 'Opération annulée';
 
   @override
-  String get cl211_fix_2 => 'Correction de la lecture vidéo distante via SMB / FTP / SFTP qui s\'interrompait toutes les quelques secondes, et de la barre de progression qui revenait au début après un repérage.';
+  String get remote_err_auth =>
+      'Échec de la connexion : nom d\'utilisateur ou mot de passe incorrect. En cas d\'authentification par clé, vérifiez la clé privée et sa phrase de passe.';
 
   @override
-  String get cl211_fix_3 => 'Correction du cas où FTP mettait parfois très longtemps à ouvrir un dossier ou à revenir en arrière.';
+  String get remote_err_not_connected =>
+      'Non connecté au serveur. Connectez-vous d\'abord et réessayez.';
 
   @override
-  String get cl211_fix_4 => 'Correction de la compression de fichiers volumineux ou nombreux bloquée à 100 % : la compression ZIP est désormais diffusée fichier par fichier, réduisant fortement l\'usage mémoire tout en faisant avancer la progression.';
+  String get remote_err_not_found =>
+      'Le fichier ou le dossier n\'existe pas (il a peut-être été déplacé ou supprimé).';
 
   @override
-  String get cl211_fix_5 => 'Correction de l\'affichage par le lecteur de musique de chaque piste comme « FLAC • 24-bit » ; le format réel s\'affiche désormais, ainsi que la profondeur de bits réelle pour les formats sans perte.';
+  String get remote_err_timeout =>
+      'Délai de connexion dépassé : le serveur répond trop lentement ou le réseau est instable. Réessayez plus tard.';
 
   @override
-  String get cl211_fix_6 => 'Correction : après la configuration du coffre ou le chiffrement sur place, les fichiers non chiffrés demandaient à tort le mot de passe du coffre.';
+  String get remote_err_connection =>
+      'Impossible de se connecter au serveur : vérifiez l\'adresse, le port, le réseau et que le serveur est démarré.';
 
   @override
-  String get cl211_fix_7 => 'Correction de deux messages du coffre : un mot de passe erroné indiquait à tort « définissez d\'abord le mot de passe principal » ; les notifications de résultat de chiffrement/déchiffrement restaient en chinois dans les langues non chinoises.';
+  String get remote_err_reconnect =>
+      'La connexion au serveur a été perdue et tente de se reconnecter.';
 
   @override
-  String get vault_config_password => 'Configuration du mot de passe';
+  String get remote_err_download =>
+      'Échec du téléchargement. Vérifiez le réseau et réessayez.';
+
+  @override
+  String get remote_err_upload =>
+      'Échec de l\'envoi. Vérifiez le réseau et réessayez.';
+
+  @override
+  String get remote_err_delete => 'Échec de la suppression. Réessayez.';
+
+  @override
+  String get remote_err_rename => 'Échec du renommage. Réessayez.';
+
+  @override
+  String get remote_err_create_dir =>
+      'Échec de la création du dossier. Réessayez.';
+
+  @override
+  String get remote_err_dir_open =>
+      'Impossible d\'ouvrir ce dossier. Assurez-vous que vous y avez accès.';
+
+  @override
+  String remote_err_server(Object code) {
+    return 'Le serveur a renvoyé une erreur (code d\'état $code). Contactez l\'administrateur du serveur.';
+  }
+
+  @override
+  String get remote_err_generic => 'Échec de l\'opération. Réessayez.';
 
   @override
   String get app_icon_add_title => 'Ajouter à l\'écran d\'accueil';
@@ -7767,8 +7846,20 @@ class L10nFr extends L10n {
   String get decibel_meter_examples => 'Exemples courants';
 
   @override
-  String get decibel_meter_examples_text =>
+  String get decibel_meter_examples_safe =>
       'Conversation normale (environ 50-60 dB), bureau calme, ronronnement du réfrigérateur.';
+
+  @override
+  String get decibel_meter_examples_moderate =>
+      'Aspirateur (environ 70 dB), rue animée, restaurant bruyant.';
+
+  @override
+  String get decibel_meter_examples_harmful =>
+      'Moto (environ 90 dB), atelier d\'usine, tondeuse à gazon, circulation dense.';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      'Tronçonneuse (environ 110 dB), concert de rock au premier rang, pétards, décollage d\'un jet.';
 
   @override
   String get decibel_meter_perm_denied =>

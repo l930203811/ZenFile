@@ -6723,6 +6723,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "操作がキャンセルされました",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "ログイン失敗：ユーザー名またはパスワードが違います。鍵認証の場合は秘密鍵とそのパスフレーズを確認してください。",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "サーバーに接続されていません。先に接続してから再試行してください。",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "ファイルまたはフォルダが存在しません（移動または削除された可能性があります）。",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "接続がタイムアウトしました：サーバーの応答が遅いかネットワークが不安定です。後ほど再試行してください。",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "サーバーに接続できません：アドレス、ポート、ネットワーク、およびサーバーが起動しているかを確認してください。",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "サーバーへの接続が切れました。再接続を試みています。",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "ダウンロードに失敗しました。ネットワークを確認して再試行してください。",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "アップロードに失敗しました。ネットワークを確認して再試行してください。",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "削除に失敗しました。再試行してください。",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "名前の変更に失敗しました。再試行してください。",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "フォルダの作成に失敗しました。再試行してください。",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "このフォルダを開けません。アクセス権があるか確認してください。",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "サーバーがエラーを返しました（ステータスコード {code}）。サーバー管理者に連絡してください。",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "操作に失敗しました。再試行してください。",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "ホーム画面に追加",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7807,7 +7870,10 @@
   "decibel_meter_health_harmful": "非常に騒がしく、長時間の曝露は聴力を損なう可能性があります。",
   "decibel_meter_health_dangerous": "危険レベルです。すぐに離れて聴力を保護してください！",
   "decibel_meter_examples": "一般的な例",
-  "decibel_meter_examples_text": "普通の会話（約50-60 dB）、静かなオフィス、冷蔵庫の音。",
+  "decibel_meter_examples_safe": "普通の会話（約50-60 dB）、静かなオフィス、冷蔵庫の音。",
+  "decibel_meter_examples_moderate": "掃除機（約70 dB）、にぎやかな街路、騒がしい飲食店。",
+  "decibel_meter_examples_harmful": "バイク（約90 dB）、工場、芝刈り機、交通量の多い交差点。",
+  "decibel_meter_examples_dangerous": "チェーンソー（約110 dB）、ロックコンサート最前列、爆竹、ジェット機の離陸。",
   "decibel_meter_perm_denied": "環境音を測定するにはマイク権限が必要です。設定で有効にしてください。",
   "decibel_meter_perm_title": "マイク権限が必要です",
   "decibel_meter_perm_settings": "マイク権限が永続的に拒否されています。システム設定で ZenFile のマイク権限を有効にしてから再試行してください。",

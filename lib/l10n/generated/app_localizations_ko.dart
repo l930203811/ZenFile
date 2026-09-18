@@ -6276,11 +6276,13 @@ class L10nKo extends L10n {
   @override
   String get vt_keep_apk_desc =>
       '설치 전 임시 복사본을 만들어 시스템 설치자가 원본 APK를 자동으로 삭제하는 것을 방지합니다';
+
   @override
   String get apk_open_mode_title => 'APK 열기 방식';
 
   @override
-  String get apk_open_mode_desc => 'APK를 열 때 시스템 선택기를 사용하여 InstallerX 같은 서드파티 설치기가 처리하도록 합니다. 끄면 내장 설치기를 사용합니다.';
+  String get apk_open_mode_desc =>
+      'APK를 열 때 시스템 선택기를 사용하여 InstallerX 같은 서드파티 설치기가 처리하도록 합니다. 끄면 내장 설치기를 사용합니다.';
 
   @override
   String get vt_install => '설치';
@@ -6400,79 +6402,149 @@ class L10nKo extends L10n {
 
   @override
   String get crypt_settings_title => '비밀번호 설정';
+
+  @override
+  String get vault_config_password => '비밀번호 설정';
+
   @override
   String get cl211_features => '새 기능';
 
   @override
-  String get cl211_feat_1 => '자신의 이미지로 사용자 지정 앱 아이콘: 설정 → 화면 및 테마 → 앱 아이콘. 이미지를 선택하면 홈 화면에 바로가기나 1×1 위젯으로 추가할 수 있습니다. 또한 이전에 "추가됨"이라고 표시됐지만 실제로 추가되지 않던 문제를 수정했습니다. 실행기가 바로가기를 차단하면 위젯을 사용하세요.';
+  String get cl211_feat_1 =>
+      '자신의 이미지로 사용자 지정 앱 아이콘: 설정 → 화면 및 테마 → 앱 아이콘. 이미지를 선택하면 홈 화면에 바로가기나 1×1 위젯으로 추가할 수 있습니다. 또한 이전에 \"추가됨\"이라고 표시됐지만 실제로 추가되지 않던 문제를 수정했습니다. 실행기가 바로가기를 차단하면 위젯을 사용하세요.';
 
   @override
-  String get cl211_feat_2 => '삭제 확인을 끌 수 있게 되었습니다: 삭제 대화상자에 "다시 묻지 않음" 체크박스가 추가되고, 설정 → 파일 작업 및 뷰어에 "삭제 전 확인" 스위치가 추가되었습니다.';
+  String get cl211_feat_2 =>
+      '삭제 확인을 끌 수 있게 되었습니다: 삭제 대화상자에 \"다시 묻지 않음\" 체크박스가 추가되고, 설정 → 파일 작업 및 뷰어에 \"삭제 전 확인\" 스위치가 추가되었습니다.';
 
   @override
   String get cl211_ui => 'UI 및 조작';
 
   @override
-  String get cl211_ui_1 => '모든 진행 대화상자가 이중 링으로 통일되었습니다: 바깥쪽 링은 전체 진행률, 안쪽 녹색 링은 현재 파일 진행률을 표시하며 복사/이동, 압축/해제, 암호화/복호화, 보관함 가져오기 및 복원, 카테고리 백업을 포함합니다.';
+  String get cl211_ui_1 =>
+      '모든 진행 대화상자가 이중 링으로 통일되었습니다: 바깥쪽 링은 전체 진행률, 안쪽 녹색 링은 현재 파일 진행률을 표시하며 복사/이동, 압축/해제, 암호화/복호화, 보관함 가져오기 및 복원, 카테고리 백업을 포함합니다.';
 
   @override
-  String get cl211_ui_2 => '동영상 재생 컨트롤이 작아지고 진행 표시줄 바로 위로 아래로 이동하여 화면 중앙을 가리지 않습니다.';
+  String get cl211_ui_2 =>
+      '동영상 재생 컨트롤이 작아지고 진행 표시줄 바로 위로 아래로 이동하여 화면 중앙을 가리지 않습니다.';
 
   @override
-  String get cl211_ui_3 => '보관함 내부 암호화 목록에 "제거" 동작이 추가되었습니다 — 목록에서만 제거되며 디스크의 암호화 파일에는 영향을 주지 않습니다.';
+  String get cl211_ui_3 =>
+      '보관함 내부 암호화 목록에 \"제거\" 동작이 추가되었습니다 — 목록에서만 제거되며 디스크의 암호화 파일에는 영향을 주지 않습니다.';
 
   @override
   String get cl211_fixes => '수정';
+
+  @override
+  String get cl211_fix_1 =>
+      '일부 기기에서 동영상 재생 시 검은 화면(소리만 있고 영상 없음)이 발생하던 문제를 수정했습니다. 1.1.42에서 도입된 렌더러 호환성 문제가 원인이며, 이제 범용 렌더링을 사용하고 하드웨어 디코딩 이상 시 자동으로 소프트웨어 디코딩으로 전환하여 재생을 이어갑니다.';
+
+  @override
+  String get cl211_fix_2 =>
+      'SMB / FTP / SFTP를 통한 원격 동영상 재생이 몇 초마다 멈추고, 탐색 후 진행 표시줄이 처음으로 돌아가던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_3 =>
+      'FTP에서 디렉터리를 열거나 상위로 이동할 때 가끔 매우 오래 걸리던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_4 =>
+      '큰 파일이나 여러 파일 압축 시 진행률이 100%에서 오래 멈추던 문제를 수정했습니다. ZIP 압축은 이제 파일 단위로 스트리밍되어 메모리 사용량이 크게 줄어들면서도 진행률이 계속 나아갑니다.';
+
+  @override
+  String get cl211_fix_5 =>
+      '음악 플레이어가 모든 곡을 \"FLAC • 24-bit\"로 표시하던 문제를 수정했습니다. 이제 실제 형식이 표시되며, 무손실 형식은 실제 비트 심도도 표시됩니다.';
+
+  @override
+  String get cl211_fix_6 =>
+      '보관함 암호 설정이나 내부 암호화 후, 암호화되지 않은 파일을 열 때 보관함 암호를 잘못 요구하던 문제를 수정했습니다.';
+
+  @override
+  String get cl211_fix_7 =>
+      '보관함 메시지의 두 가지 오류를 수정했습니다: 암호를 틀렸을 때 \"먼저 마스터 암호를 설정하세요\"라고 잘못 표시되던 것, 그리고 암호화/복호화 결과 토스트가 비중국어 환경에서도 중국어로 표시되던 것입니다.';
+
   @override
   String get cl212_features => '새로운 기능';
 
   @override
-  String get cl212_feat_1 => 'APK 열기 방식 전환 가능: 설정 → APK 설치 설정에 "APK 열기 방식"이 추가되어 내장 설치기와 시스템 선택기를 전환할 수 있습니다. 시스템 선택기를 사용하면 ZenFile이 APK 열기를 강제로 가로채지 않으므로 InstallerX, InstallWithOptions 같은 서드파티 설치기가 정상적으로 처리할 수 있고, 일괄 설치 시 매번 길게 눌러 "열기 방식"을 고를 필요가 없습니다.';
+  String get cl212_feat_1 =>
+      'APK 열기 방식 전환 가능: 설정 → APK 설치 설정에 \"APK 열기 방식\"이 추가되어 내장 설치기와 시스템 선택기를 전환할 수 있습니다. 시스템 선택기를 사용하면 ZenFile이 APK 열기를 강제로 가로채지 않으므로 InstallerX, InstallWithOptions 같은 서드파티 설치기가 정상적으로 처리할 수 있고, 일괄 설치 시 매번 길게 눌러 \"열기 방식\"을 고를 필요가 없습니다.';
 
   @override
   String get cl212_ui => 'UI 및 상호작용';
 
   @override
-  String get cl212_ui_1 => '"크기 및 간격" 조정 범위 확대: 카드 간격 슬라이더 하한을 40%에서 -50%로 완화했습니다. 0%에서는 카드 테두리가 붙고, 음수값은 인접 카드 테두리가 한 줄로 겹칩니다. 또한 기본값을 0%로 변경했습니다(새 설치는 처음부터 붙고, 이미 설정한 경우 기존 값 유지).';
+  String get cl212_ui_1 =>
+      '\"크기 및 간격\" 조정 범위 확대: 카드 간격 슬라이더 하한을 40%에서 -50%로 완화했습니다. 0%에서는 카드 테두리가 붙고, 음수값은 인접 카드 테두리가 한 줄로 겹칩니다. 또한 기본값을 0%로 변경했습니다(새 설치는 처음부터 붙고, 이미 설정한 경우 기존 값 유지).';
 
   @override
-  String get cl212_ui_2 => '사용자 지정 바로가기 대화상자: "아이콘 모양"과 "한 줄당 열 수"가 나란히 배치된 버튼에서 드롭다운으로 바뀌어 레이아웃이 더 컴팩트해졌습니다.';
+  String get cl212_ui_2 =>
+      '사용자 지정 바로가기 대화상자: \"아이콘 모양\"과 \"한 줄당 열 수\"가 나란히 배치된 버튼에서 드롭다운으로 바뀌어 레이아웃이 더 컴팩트해졌습니다.';
 
   @override
   String get cl212_fixes => '버그 수정';
 
   @override
-  String get cl212_fix_1 => '지문 잠금 기본값을 끄기로 변경: 설치 후 설정 → 보안의 지문 잠금은 기본적으로 꺼져 있으며 직접 켜야 하므로, 새 설치나 업데이트 후 생체 인식 잠금이 자동으로 켜지지 않습니다.';
+  String get cl212_fix_1 =>
+      '지문 잠금 기본값을 끄기로 변경: 설치 후 설정 → 보안의 지문 잠금은 기본적으로 꺼져 있으며 직접 켜야 하므로, 새 설치나 업데이트 후 생체 인식 잠금이 자동으로 켜지지 않습니다.';
 
   @override
-  String get cl212_fix_2 => 'APK 보안 검사 API 키를 다시 설정할 수 없던 문제 수정: 이전에는 키를 저장한 후 스위치를 끄고 다시 켜도 설정 화면이 다시 열리지 않았습니다. 이제 스위치와 카드 탭 모두에서 설정 화면이 열립니다.';
+  String get cl212_fix_2 =>
+      'APK 보안 검사 API 키를 다시 설정할 수 없던 문제 수정: 이전에는 키를 저장한 후 스위치를 끄고 다시 켜도 설정 화면이 다시 열리지 않았습니다. 이제 스위치와 카드 탭 모두에서 설정 화면이 열립니다.';
 
   @override
-  String get cl212_fix_3 => 'Shizuku 권한을 부여했음에도 "권한 부족"이 표시되어 무음 설치가 안 되던 문제 수정: Shizuku 경로는 시스템 PackageInstaller 세션으로 설치하도록 변경되어, 일부 시스템에서 금지된 shell 설치 명령에 의존하지 않습니다.';
+  String get cl212_fix_3 =>
+      'Shizuku 권한을 부여했음에도 \"권한 부족\"이 표시되어 무음 설치가 안 되던 문제 수정: Shizuku 경로는 시스템 PackageInstaller 세션으로 설치하도록 변경되어, 일부 시스템에서 금지된 shell 설치 명령에 의존하지 않습니다.';
 
   @override
-  String get cl211_fix_1 => '일부 기기에서 동영상 재생 시 검은 화면(소리만 있고 영상 없음)이 발생하던 문제를 수정했습니다. 1.1.42에서 도입된 렌더러 호환성 문제가 원인이며, 이제 범용 렌더링을 사용하고 하드웨어 디코딩 이상 시 자동으로 소프트웨어 디코딩으로 전환하여 재생을 이어갑니다.';
+  String get remote_err_cancelled => '작업이 취소되었습니다';
 
   @override
-  String get cl211_fix_2 => 'SMB / FTP / SFTP를 통한 원격 동영상 재생이 몇 초마다 멈추고, 탐색 후 진행 표시줄이 처음으로 돌아가던 문제를 수정했습니다.';
+  String get remote_err_auth =>
+      '로그인 실패: 사용자 이름이나 비밀번호가 잘못되었습니다. 키 로그인 시 개인키와 비밀번호를 확인하세요.';
 
   @override
-  String get cl211_fix_3 => 'FTP에서 디렉터리를 열거나 상위로 이동할 때 가끔 매우 오래 걸리던 문제를 수정했습니다.';
+  String get remote_err_not_connected => '서버에 연결되어 있지 않습니다. 먼저 연결한 후 다시 시도하세요.';
 
   @override
-  String get cl211_fix_4 => '큰 파일이나 여러 파일 압축 시 진행률이 100%에서 오래 멈추던 문제를 수정했습니다. ZIP 압축은 이제 파일 단위로 스트리밍되어 메모리 사용량이 크게 줄어들면서도 진행률이 계속 나아갑니다.';
+  String get remote_err_not_found => '파일 또는 폴더가 존재하지 않습니다(이동되거나 삭제되었을 수 있음).';
 
   @override
-  String get cl211_fix_5 => '음악 플레이어가 모든 곡을 "FLAC • 24-bit"로 표시하던 문제를 수정했습니다. 이제 실제 형식이 표시되며, 무손실 형식은 실제 비트 심도도 표시됩니다.';
+  String get remote_err_timeout =>
+      '연결 시간 초과: 서버 응답이 너무 느리거나 네트워크가 불안정합니다. 나중에 다시 시도하세요.';
 
   @override
-  String get cl211_fix_6 => '보관함 암호 설정이나 내부 암호화 후, 암호화되지 않은 파일을 열 때 보관함 암호를 잘못 요구하던 문제를 수정했습니다.';
+  String get remote_err_connection =>
+      '서버에 연결할 수 없습니다: 주소, 포트, 네트워크 및 서버가 실행 중인지 확인하세요.';
 
   @override
-  String get cl211_fix_7 => '보관함 메시지의 두 가지 오류를 수정했습니다: 암호를 틀렸을 때 "먼저 마스터 암호를 설정하세요"라고 잘못 표시되던 것, 그리고 암호화/복호화 결과 토스트가 비중국어 환경에서도 중국어로 표시되던 것입니다.';
+  String get remote_err_reconnect => '서버와의 연결이 끊겼습니다. 다시 연결을 시도하는 중입니다.';
 
   @override
-  String get vault_config_password => '비밀번호 설정';
+  String get remote_err_download => '다운로드 실패. 네트워크를 확인하고 다시 시도하세요.';
+
+  @override
+  String get remote_err_upload => '업로드 실패. 네트워크를 확인하고 다시 시도하세요.';
+
+  @override
+  String get remote_err_delete => '삭제 실패. 다시 시도하세요.';
+
+  @override
+  String get remote_err_rename => '이름 변경 실패. 다시 시도하세요.';
+
+  @override
+  String get remote_err_create_dir => '폴더 생성 실패. 다시 시도하세요.';
+
+  @override
+  String get remote_err_dir_open => '이 폴더를 열 수 없습니다. 접근 권한이 있는지 확인하세요.';
+
+  @override
+  String remote_err_server(Object code) {
+    return '서버가 오류를 반환했습니다(상태 코드 $code). 서버 관리자에게 문의하세요.';
+  }
+
+  @override
+  String get remote_err_generic => '작업 실패. 다시 시도하세요.';
 
   @override
   String get app_icon_add_title => '홈 화면에 추가';
@@ -7429,8 +7501,19 @@ class L10nKo extends L10n {
   String get decibel_meter_examples => '일반적인 예시';
 
   @override
-  String get decibel_meter_examples_text =>
+  String get decibel_meter_examples_safe =>
       '일반 대화(약 50-60dB), 조용한 사무실, 냉장고 소리.';
+
+  @override
+  String get decibel_meter_examples_moderate => '청소기(약 70dB), 번화한 거리, 시끄러운 식당.';
+
+  @override
+  String get decibel_meter_examples_harmful =>
+      '오토바이(약 90dB), 공장 작업장, 잔디깎이, 교통 혼잡.';
+
+  @override
+  String get decibel_meter_examples_dangerous =>
+      '전기톱(약 110dB), 록콘서트 앞자리, 폭죽, 제트기 이륙.';
 
   @override
   String get decibel_meter_perm_denied =>

@@ -6716,6 +6716,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "Vorgang abgebrochen",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "Anmeldung fehlgeschlagen: Benutzername oder Passwort falsch. Bei Schlüsselanmeldung private Schlüsseldatei und Passphrase prüfen.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "Nicht mit dem Server verbunden. Stelle zuerst die Verbindung her und versuche es erneut.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "Datei oder Ordner existiert nicht (möglicherweise verschoben oder gelöscht).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "Verbindungstimeout: Server antwortet zu langsam oder Netzwerk instabil. Bitte später erneut versuchen.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "Verbindung zum Server fehlgeschlagen: Adresse, Port, Netzwerk und dass der Server läuft prüfen.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "Die Verbindung zum Server wurde getrennt und es wird versucht, sie wiederherzustellen.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "Download fehlgeschlagen. Netzwerk prüfen und erneut versuchen.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "Upload fehlgeschlagen. Netzwerk prüfen und erneut versuchen.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "Löschen fehlgeschlagen. Erneut versuchen.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "Umbenennen fehlgeschlagen. Erneut versuchen.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "Ordner erstellen fehlgeschlagen. Erneut versuchen.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "Dieser Ordner kann nicht geöffnet werden. Stelle sicher, dass du Zugriff hast.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "Der Server lieferte einen Fehler (Statuscode {code}). Kontaktiere den Server-Admin.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "Vorgang fehlgeschlagen. Erneut versuchen.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "Zum Startbildschirm hinzufügen",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7800,7 +7863,10 @@
   "decibel_meter_health_harmful": "Sehr laut, längere Belastung kann das Gehör schädigen.",
   "decibel_meter_health_dangerous": "Gefährlicher Pegel, entfernen Sie sich und schützen Sie Ihr Gehör!",
   "decibel_meter_examples": "Häufige Beispiele",
-  "decibel_meter_examples_text": "Normales Gespräch (ca. 50-60 dB), ruhiges Büro, Kühlschrankbrummen.",
+  "decibel_meter_examples_safe": "Normales Gespräch (ca. 50-60 dB), ruhiges Büro, Kühlschrankbrummen.",
+  "decibel_meter_examples_moderate": "Staubsauger (ca. 70 dB), belebte Straße, lautes Restaurant.",
+  "decibel_meter_examples_harmful": "Motorrad (ca. 90 dB), Fabrikhalle, Rasenmäher, starker Verkehr.",
+  "decibel_meter_examples_dangerous": "Kettensäge (ca. 110 dB), Rockkonzert in erster Reihe, Feuerwerk, Jet-Start.",
   "decibel_meter_perm_denied": "Zur Messung der Umgebungsgeräusche ist die Mikrofonberechtigung erforderlich. Bitte in den Einstellungen aktivieren.",
   "decibel_meter_perm_title": "Mikrofonberechtigung erforderlich",
   "decibel_meter_perm_settings": "Die Mikrofonberechtigung wurde dauerhaft verweigert. Bitte aktivieren Sie sie für ZenFile in den Systemeinstellungen und versuchen Sie es erneut.",

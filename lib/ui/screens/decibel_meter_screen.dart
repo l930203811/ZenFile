@@ -420,7 +420,7 @@ class _DecibelMeterScreenState extends State<DecibelMeterScreen>
               Expanded(
                 child: Text(
                   '${l10n.decibel_meter_examples}: '
-                  '${l10n.decibel_meter_examples_text}',
+                  '${_examplesLabel(l10n, db)}',
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.4,
@@ -440,6 +440,14 @@ class _DecibelMeterScreenState extends State<DecibelMeterScreen>
     if (db < 80) return l10n.decibel_meter_health_moderate;
     if (db < 100) return l10n.decibel_meter_health_harmful;
     return l10n.decibel_meter_health_dangerous;
+  }
+
+  /// 按当前分贝值返回对应档位的常见场景举例文案（与健康影响档位一致）。
+  String _examplesLabel(L10n l10n, double db) {
+    if (db < 60) return l10n.decibel_meter_examples_safe;
+    if (db < 80) return l10n.decibel_meter_examples_moderate;
+    if (db < 100) return l10n.decibel_meter_examples_harmful;
+    return l10n.decibel_meter_examples_dangerous;
   }
 }
 

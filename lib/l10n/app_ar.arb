@@ -6719,6 +6719,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "تم إلغاء العملية",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "فشل تسجيل الدخول: اسم المستخدم أو كلمة المرور غير صحيحين. عند استخدام مفتاح، تحقق من المفتاح الخاص وكلمة المرور الخاصة به.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "غير متصل بالخادم. اتصل أولاً ثم حاول مجدداً.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "الملف أو المجلد غير موجود (ربما تم نقله أو حذفه).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "انتهت مهلة الاتصال: استجابة الخادم بطيئة جداً أو الشبكة غير مستقرة. حاول لاحقاً.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "تعذر الاتصال بالخادم: تحقق من العنوان والمنفذ والشبكة وأن الخادم يعمل.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "انقطع الاتصال بالخادم ويجري محاولة إعادة الاتصال.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "فشل التنزيل. تحقق من الشبكة وحاول مجدداً.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "فشل الرفع. تحقق من الشبكة وحاول مجدداً.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "فشل الحذف. حاول مجدداً.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "فشل إعادة التسمية. حاول مجدداً.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "فشل إنشاء المجلد. حاول مجدداً.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "تعذر فتح هذا المجلد. تأكد أن لديك حق الوصول.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "أرجع الخادم خطأً (رمز الحالة {code}). تواصل مع مسؤول الخادم.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "فشلت العملية. حاول مجدداً.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "إضافة إلى الشاشة الرئيسية",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7803,7 +7866,10 @@
   "decibel_meter_health_harmful": "صاخب جداً، التعرض الطويل قد يضر السمع.",
   "decibel_meter_health_dangerous": "مستوى خطير، ابتعد واحمِ سمعك!",
   "decibel_meter_examples": "أمثلة شائعة",
-  "decibel_meter_examples_text": "محادثة عادية (حوالي 50-60 ديسيبل)، مكتب هادئ، طنين الثلاجة.",
+  "decibel_meter_examples_safe": "محادثة عادية (حوالي 50-60 ديسيبل)، مكتب هادئ، طنين الثلاجة.",
+  "decibel_meter_examples_moderate": "مكنسة كهربائية (حوالي 70 ديسيبل)، شارع مزدحم، مطعم صاخب.",
+  "decibel_meter_examples_harmful": "دراجة نارية (حوالي 90 ديسيبل)، مصنع، جزازة عشب، ازدحام مروري.",
+  "decibel_meter_examples_dangerous": "منشار كهربائي (حوالي 110 ديسيبل)، حفل روك في الصف الأمامي، ألعاب نارية، إقلاع طائرة.",
   "decibel_meter_perm_denied": "يلزم إذن الميكروفون لقياس الصوت المحيط. يرجى تفعيله في الإعدادات.",
   "decibel_meter_perm_title": "يلزم إذن الميكروفون",
   "decibel_meter_perm_settings": "تم رفض إذن الميكروفون بشكل دائم. يرجى تفعيله لـ ZenFile في إعدادات النظام ثم إعادة المحاولة.",

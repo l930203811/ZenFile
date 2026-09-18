@@ -6719,6 +6719,69 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "remote_err_cancelled": "작업이 취소되었습니다",
+  "@remote_err_cancelled": {
+    "description": "v2.1.3 remote error localization: remote_err_cancelled"
+  },
+  "remote_err_auth": "로그인 실패: 사용자 이름이나 비밀번호가 잘못되었습니다. 키 로그인 시 개인키와 비밀번호를 확인하세요.",
+  "@remote_err_auth": {
+    "description": "v2.1.3 remote error localization: remote_err_auth"
+  },
+  "remote_err_not_connected": "서버에 연결되어 있지 않습니다. 먼저 연결한 후 다시 시도하세요.",
+  "@remote_err_not_connected": {
+    "description": "v2.1.3 remote error localization: remote_err_not_connected"
+  },
+  "remote_err_not_found": "파일 또는 폴더가 존재하지 않습니다(이동되거나 삭제되었을 수 있음).",
+  "@remote_err_not_found": {
+    "description": "v2.1.3 remote error localization: remote_err_not_found"
+  },
+  "remote_err_timeout": "연결 시간 초과: 서버 응답이 너무 느리거나 네트워크가 불안정합니다. 나중에 다시 시도하세요.",
+  "@remote_err_timeout": {
+    "description": "v2.1.3 remote error localization: remote_err_timeout"
+  },
+  "remote_err_connection": "서버에 연결할 수 없습니다: 주소, 포트, 네트워크 및 서버가 실행 중인지 확인하세요.",
+  "@remote_err_connection": {
+    "description": "v2.1.3 remote error localization: remote_err_connection"
+  },
+  "remote_err_reconnect": "서버와의 연결이 끊겼습니다. 다시 연결을 시도하는 중입니다.",
+  "@remote_err_reconnect": {
+    "description": "v2.1.3 remote error localization: remote_err_reconnect"
+  },
+  "remote_err_download": "다운로드 실패. 네트워크를 확인하고 다시 시도하세요.",
+  "@remote_err_download": {
+    "description": "v2.1.3 remote error localization: remote_err_download"
+  },
+  "remote_err_upload": "업로드 실패. 네트워크를 확인하고 다시 시도하세요.",
+  "@remote_err_upload": {
+    "description": "v2.1.3 remote error localization: remote_err_upload"
+  },
+  "remote_err_delete": "삭제 실패. 다시 시도하세요.",
+  "@remote_err_delete": {
+    "description": "v2.1.3 remote error localization: remote_err_delete"
+  },
+  "remote_err_rename": "이름 변경 실패. 다시 시도하세요.",
+  "@remote_err_rename": {
+    "description": "v2.1.3 remote error localization: remote_err_rename"
+  },
+  "remote_err_create_dir": "폴더 생성 실패. 다시 시도하세요.",
+  "@remote_err_create_dir": {
+    "description": "v2.1.3 remote error localization: remote_err_create_dir"
+  },
+  "remote_err_dir_open": "이 폴더를 열 수 없습니다. 접근 권한이 있는지 확인하세요.",
+  "@remote_err_dir_open": {
+    "description": "v2.1.3 remote error localization: remote_err_dir_open"
+  },
+  "remote_err_server": "서버가 오류를 반환했습니다(상태 코드 {code}). 서버 관리자에게 문의하세요.",
+  "@remote_err_server": {
+    "description": "v2.1.3 remote error localization: remote_err_server",
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "remote_err_generic": "작업 실패. 다시 시도하세요.",
+  "@remote_err_generic": {
+    "description": "v2.1.3 remote error localization: remote_err_generic"
+  },
   "app_icon_add_title": "홈 화면에 추가",
   "@app_icon_add_title": {
     "description": "app icon: app_icon_add_title"
@@ -7803,7 +7866,10 @@
   "decibel_meter_health_harmful": "매우 시끄러운 환경으로 장시간 노출 시 청력 손상이 있을 수 있습니다.",
   "decibel_meter_health_dangerous": "위험 수준입니다. 즉시 떨어져 청력을 보호하세요!",
   "decibel_meter_examples": "일반적인 예시",
-  "decibel_meter_examples_text": "일반 대화(약 50-60dB), 조용한 사무실, 냉장고 소리.",
+  "decibel_meter_examples_safe": "일반 대화(약 50-60dB), 조용한 사무실, 냉장고 소리.",
+  "decibel_meter_examples_moderate": "청소기(약 70dB), 번화한 거리, 시끄러운 식당.",
+  "decibel_meter_examples_harmful": "오토바이(약 90dB), 공장 작업장, 잔디깎이, 교통 혼잡.",
+  "decibel_meter_examples_dangerous": "전기톱(약 110dB), 록콘서트 앞자리, 폭죽, 제트기 이륙.",
   "decibel_meter_perm_denied": "환경 소리를 측정하려면 마이크 권한이 필요합니다. 설정에서 활성화해 주세요.",
   "decibel_meter_perm_title": "마이크 권한이 필요합니다",
   "decibel_meter_perm_settings": "마이크 권한이 영구적으로 거부되었습니다. 시스템 설정에서 ZenFile의 마이크 권한을 활성화한 후 다시 시도하세요.",
