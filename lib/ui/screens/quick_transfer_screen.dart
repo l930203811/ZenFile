@@ -841,15 +841,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
         // 2. 附近设备发现区卡片（位于发送区上方，方便先发现对端再发送）
         _sectionCard(
           colorScheme,
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle(context, Broken.discover,
-                  L10n.of(context).quick_transfer_available_peers),
-              const SizedBox(height: 8),
-              _buildDiscoveryArea(context),
-            ],
-          ),
+          _buildDiscoveryArea(context),
         ),
         const SizedBox(height: 8),
         // 3. 发送区卡片
@@ -959,15 +951,15 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 胶囊框：标题/已选项占满左侧，文件夹图标靠右（填充式底色）
+        // 圆角矩形框：标题/已选项占满左侧，文件夹图标靠右（填充式底色）。
+        // 不设固定高度，路径文字自动换行，避免低 DPI 设备上路径被省略号截断。
         InkWell(
           onTap: _busy ? null : _pickFiles,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(12),
               color: colorScheme.surfaceContainerHighest.withAlpha(110),
               border: Border.all(
                 color: colorScheme.outlineVariant.withAlpha(80),
@@ -975,6 +967,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
               ),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: hasSelection
@@ -993,7 +986,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                             const SizedBox(height: 2),
                             Text(
                               _selectedPaths.join(' · '),
-                              maxLines: 1,
+                              maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
@@ -1003,13 +996,14 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                         )
                       : Text(
                           L10n.of(context).quick_transfer_select_files,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),
                         ),
                 ),
+                const SizedBox(width: 8),
                 Icon(Broken.folder, size: 20, color: colorScheme.primary),
               ],
             ),
@@ -1059,17 +1053,17 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   }
 
   /// 接收区：默认接收路径浏览框（点按可改路径，持久化）。
+  /// 圆角矩形、不设固定高度，长路径自动换行显示，避免低 DPI 设备上被截断。
   Widget _buildReceiveBox(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return InkWell(
       onTap: _busy ? null : _pickReceiveDir,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(12),
           color: colorScheme.surfaceContainerHighest.withAlpha(110),
           border: Border.all(
             color: colorScheme.outlineVariant.withAlpha(80),
@@ -1077,6 +1071,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
           ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
@@ -1092,7 +1087,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                   const SizedBox(height: 2),
                   Text(
                     _receiveDir,
-                    maxLines: 1,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -1101,6 +1096,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Icon(Broken.folder, size: 20, color: colorScheme.primary),
           ],
         ),
