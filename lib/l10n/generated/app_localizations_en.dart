@@ -6555,10 +6555,11 @@ class L10nEn extends L10n {
   String get ui_media_filter_restore_default => 'Restore Default';
 
   @override
-  String get ui_category_settings_title => '类别设置';
+  String get ui_category_settings_title => 'Category settings';
 
   @override
-  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+  String get ui_category_settings_description =>
+      'Manage filter rules and scan locations for this category';
 
   @override
   String get ui_excluded_folders_title => 'Blocked folders';
@@ -6700,6 +6701,32 @@ class L10nEn extends L10n {
   @override
   String get cl212_fix_3 =>
       'Fixed \"permission denied\" from silent install even with Shizuku authorized: the Shizuku path now installs through a system PackageInstaller session instead of the shell install command that some systems block; the root path no longer passes an unnecessary downgrade flag.';
+
+  @override
+  String get cl213_fixes => 'Bug fixes';
+
+  @override
+  String get cl213_feat_2 =>
+      'Remote “always open with” choice is now remembered: once you choose to always open remote files with this app or an external app, files of the same type open directly without asking again.';
+
+  @override
+  String get cl213_fix_1 =>
+      'Fixed: swiping left/right in the remote image viewer only cycled through already downloaded images. It now browses the other images of the current remote folder and downloads them on demand.';
+
+  @override
+  String get cl213_fix_2 =>
+      'Fixed: some screens (e.g. the connection test dialog) showed Chinese text in Korean, Japanese, German and other languages because those values were never translated. All are now translated.';
+
+  @override
+  String get cl213_fix_3 =>
+      'Fixed: Traditional Chinese (Taiwan) displayed Simplified Chinese for many texts.';
+
+  @override
+  String get cl213_features => 'Remote browsing & error messages';
+
+  @override
+  String get cl213_feat_1 =>
+      'Remote client errors (FTP / WebDAV / SFTP / SMB) now show clear, localized messages instead of raw English exceptions - e.g. connection failed, login failed, timeout, permission denied, file not found - so failures are easier to understand.';
 
   @override
   String get remote_err_cancelled => 'Operation cancelled';

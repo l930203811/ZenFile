@@ -11968,6 +11968,48 @@ abstract class L10n {
   /// **'修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。'**
   String get cl212_fix_3;
 
+  /// v2.1.3 changelog: cl213_fixes
+  ///
+  /// In zh, this message translates to:
+  /// **'问题修复'**
+  String get cl213_fixes;
+
+  /// v2.1.3 changelog: cl213_feat_2
+  ///
+  /// In zh, this message translates to:
+  /// **'远程文件「打开方式」可持久化：选择「始终用本应用 / 外部应用打开」后，同类型文件直接打开，不再重复弹窗询问。'**
+  String get cl213_feat_2;
+
+  /// v2.1.3 changelog: cl213_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：远程图片查看器左右滑动只在已下载的图片之间循环，现可翻页浏览远程目录中的其它图片并按需下载。'**
+  String get cl213_fix_1;
+
+  /// v2.1.3 changelog: cl213_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：连接测试弹窗等界面在韩语、日语、德语等语言下误显示中文（历史占位值未翻译），现已补全各语言译文。'**
+  String get cl213_fix_2;
+
+  /// v2.1.3 changelog: cl213_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：繁体中文（台湾）界面此前有部分文案显示为简体。'**
+  String get cl213_fix_3;
+
+  /// v2.1.3 changelog: cl213_features
+  ///
+  /// In zh, this message translates to:
+  /// **'远程浏览与错误提示'**
+  String get cl213_features;
+
+  /// v2.1.3 changelog: cl213_feat_1
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP / WebDAV / SFTP / SMB 等远程客户端的报错，由原始英文异常改为清晰的多语言文字提示（如：连接失败、登录失败、超时、权限不足、文件不存在），便于理解问题原因。'**
+  String get cl213_feat_1;
+
   /// v2.1.3 remote error localization: remote_err_cancelled
   ///
   /// In zh, this message translates to:

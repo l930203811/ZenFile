@@ -19,6 +19,7 @@ import '../../services/remote/webdav_client.dart';
 import '../../services/remote/lan_client.dart';
 import '../../services/remote_streaming_service.dart';
 import '../../services/remote/saf_client.dart';
+import '../../services/remote/remote_error_localizer.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -118,7 +119,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMsg = e.toString();
+          _errorMsg = localizeRemoteError(e, L10n.of(context));
           _isLoading = false;
         });
       }
@@ -148,7 +149,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMsg = e.toString();
+          _errorMsg = localizeRemoteError(e, L10n.of(context));
           _isLoading = false;
         });
       }
@@ -375,7 +376,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       } catch (e) {
         if (mounted) {
           setState(() => _isTransferring = false);
-          _showSnack('Transfer failed: $e', isError: true);
+          _showSnack(localizeRemoteError(e, L10n.of(context)), isError: true);
           return;
         }
       }
@@ -579,7 +580,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       await _loadDirectoryContents(_currentPath);
       _showSnack('已删除"${item.name}"');
     } catch (e) {
-      _showSnack(L10n.of(context).e17(e), isError: true);
+      _showSnack(localizeRemoteError(e, L10n.of(context)), isError: true);
       setState(() => _isLoading = false);
     }
   }

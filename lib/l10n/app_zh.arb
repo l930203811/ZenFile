@@ -7006,6 +7006,34 @@
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
   },
+  "cl213_fixes": "问题修复",
+  "@cl213_fixes": {
+    "description": "v2.1.3 changelog: cl213_fixes"
+  },
+  "cl213_feat_2": "远程文件「打开方式」可持久化：选择「始终用本应用 / 外部应用打开」后，同类型文件直接打开，不再重复弹窗询问。",
+  "@cl213_feat_2": {
+    "description": "v2.1.3 changelog: cl213_feat_2"
+  },
+  "cl213_fix_1": "修复：远程图片查看器左右滑动只在已下载的图片之间循环，现可翻页浏览远程目录中的其它图片并按需下载。",
+  "@cl213_fix_1": {
+    "description": "v2.1.3 changelog: cl213_fix_1"
+  },
+  "cl213_fix_2": "修复：连接测试弹窗等界面在韩语、日语、德语等语言下误显示中文（历史占位值未翻译），现已补全各语言译文。",
+  "@cl213_fix_2": {
+    "description": "v2.1.3 changelog: cl213_fix_2"
+  },
+  "cl213_fix_3": "修复：繁体中文（台湾）界面此前有部分文案显示为简体。",
+  "@cl213_fix_3": {
+    "description": "v2.1.3 changelog: cl213_fix_3"
+  },
+  "cl213_features": "远程浏览与错误提示",
+  "@cl213_features": {
+    "description": "v2.1.3 changelog: cl213_features"
+  },
+  "cl213_feat_1": "FTP / WebDAV / SFTP / SMB 等远程客户端的报错，由原始英文异常改为清晰的多语言文字提示（如：连接失败、登录失败、超时、权限不足、文件不存在），便于理解问题原因。",
+  "@cl213_feat_1": {
+    "description": "v2.1.3 changelog: cl213_feat_1"
+  },
   "remote_err_cancelled": "操作已取消",
   "@remote_err_cancelled": {
     "description": "v2.1.3 remote error localization: remote_err_cancelled"

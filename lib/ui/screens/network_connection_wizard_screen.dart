@@ -13,6 +13,7 @@ import '../../services/remote/ftp_client.dart';
 import '../../services/remote/sftp_client.dart';
 import '../../services/remote/webdav_client.dart';
 import '../../services/remote/lan_client.dart';
+import '../../services/remote/remote_error_localizer.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class NetworkConnectionWizardScreen extends StatefulWidget {
@@ -396,6 +397,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 本地化友好提示（按错误类型映射，10 语言）
+                Text(localizeRemoteError(errReason, l10n),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 10),
+                // 原始英文异常，仅供排查
                 Text('${l10n.ui_test_failed_reason}：',
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
@@ -1009,7 +1015,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _lanScanError = e.toString());
+      setState(() => _lanScanError = localizeRemoteError(e, l10n));
     } finally {
       if (mounted) setState(() => _isScanningLan = false);
     }

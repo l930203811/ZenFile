@@ -2682,7 +2682,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_action_menu_subtitle =>
-      '三点メニューボタンの表示モードを選択。オフ時はファイルとフォルダの右側に三点ボタンを表示しません。';
+      '3点メニューボタンの表示モードを選択。オフ時はファイルとフォルダの右側に3点ボタンを表示しません。';
 
   @override
   String get ui_action_menu_mode_all => 'すべて表示';
@@ -4510,7 +4510,7 @@ class L10nJa extends L10n {
 
   @override
   String get changelog_v1127_new_3 =>
-      'お気に入り：すべてのお気に入り追加エントリ（三点メニュー/長押し/上部「+」ボタン）でグループを選択可能に；グループを長押しで名前変更/削除、項目を長押しで編集/削除。';
+      'お気に入り：すべてのお気に入り追加エントリ（3点メニュー/長押し/上部「+」ボタン）でグループを選択可能に；グループを長押しで名前変更/削除、項目を長押しで編集/削除。';
 
   @override
   String get changelog_v1127_opt_1 =>
@@ -4844,63 +4844,70 @@ class L10nJa extends L10n {
 
   @override
   String get changelog_v1130_new_1 =>
-      '远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私';
+      'リモート保護PIN：4桁のPINを設定すると、保存済みリモートサーバーへのアクセス・編集ページへの移動・カテゴリページのリモート範囲切替時にロック解除が必要になり、リモートデータのプライバシーを保護します';
 
   @override
-  String get changelog_v1130_new_2 => '分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容';
+  String get changelog_v1130_new_2 =>
+      'カテゴリページの「ローカル/リモート」切替：リモートディレクトリ対応カテゴリはローカル/リモート内容を個別に切替可能';
 
   @override
   String get changelog_v1130_new_3 =>
-      '备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件';
+      'バックアップ機能（ローカル→リモート）：「自動バックアップ」と「今すぐバックアップ」に対応、新規ファイル検出で自動トリガー、対象カテゴリ形式のファイルのみバックアップ';
 
   @override
-  String get changelog_v1130_new_4 => '远程连接向导新增「测试」按钮，可先验证连接再保存配置';
+  String get changelog_v1130_new_4 => 'リモート接続ウィザードに「テスト」ボタンを追加：設定保存前に接続を検証できます';
 
   @override
-  String get changelog_v1130_new_5 => '视频/音频类别菜单新增「播放器控制器显隐」开关';
+  String get changelog_v1130_new_5 => '動画/オーディオカテゴリメニューに「プレーヤーコントロール表示」スイッチを追加';
 
   @override
-  String get changelog_v1130_new_6 => '统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗';
+  String get changelog_v1130_new_6 =>
+      '「開き方」ダイアログを統一：ブラウザ/最近/カテゴリページの3点メニューと長押しメニューからアプリ内選択ダイアログを表示';
 
   @override
   String get changelog_v1130_new_7 =>
-      '未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开';
+      '不明な形式のファイルで「このアプリで開く」を選ぶとタイプセレクター（テキスト/オーディオ/動画/画像）を表示し内蔵ビューアで開く';
 
   @override
-  String get changelog_v1130_opt_1 => '分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换';
+  String get changelog_v1130_opt_1 =>
+      'カテゴリ/ブラウザページの「カテゴリ」「ブラウズ」ボタンを一つに統合、中央タップで切替';
 
   @override
-  String get changelog_v1130_opt_2 => '重命名自动选中文件名主体（不含扩展名），光标落扩展名前';
+  String get changelog_v1130_opt_2 => '名前変更時にファイル名本体（拡張子除く）を自動選択、カーソルは拡張子の前に';
 
   @override
-  String get changelog_v1130_opt_3 => '网格/列表视图切换整合进排序菜单';
+  String get changelog_v1130_opt_3 => 'グリッド/リスト表示切替を並べ替えメニューに統合';
 
   @override
-  String get changelog_v1130_opt_4 => '每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看';
+  String get changelog_v1130_opt_4 =>
+      'カテゴリごとに「フォルダ/すべての項目」表示モードを記憶、動画/オーディオはフォルダ表示が既定';
 
   @override
-  String get changelog_v1130_opt_5 => '下载类别支持远程备份';
+  String get changelog_v1130_opt_5 => 'ダウンロードカテゴリのリモートバックアップ対応';
 
   @override
-  String get changelog_v1130_opt_6 => '远程图片/视频缩略图按需下载显示';
+  String get changelog_v1130_opt_6 => 'リモート画像/動画サムネイルをオンデマンドでダウンロード表示';
 
   @override
-  String get changelog_v1130_opt_7 => '本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复';
+  String get changelog_v1130_opt_7 =>
+      'ローカルスキャンでアプリキャッシュディレクトリを除外、リモートサムネイル表示後のローカル画像重複を修正';
 
   @override
-  String get changelog_v1130_opt_8 => '远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效';
+  String get changelog_v1130_opt_8 =>
+      'リモートファイルの3点メニューと長押しの一括削除/名前変更/コピー/切り取り/場所特定が動作';
 
   @override
-  String get changelog_v1130_opt_9 => '远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）';
+  String get changelog_v1130_opt_9 =>
+      'リモートフォルダの階層移動でディレクトリ構造を維持（DCIM/Pictures等のトップディレクトリ）';
 
   @override
-  String get changelog_v1130_fix_1 => '修复 MIUI 存储权限误判导致启动弹窗循环卡死';
+  String get changelog_v1130_fix_1 => 'MIUIのストレージ権限誤判定で起動ダイアログがループする問題を修正';
 
   @override
-  String get changelog_v1130_fix_2 => '修复分类页长按拖动类别图标误触左右切页';
+  String get changelog_v1130_fix_2 => 'カテゴリページでの長押しドラッグ中にアイコンが左右ページを誤切替する問題を修正';
 
   @override
-  String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
+  String get changelog_v1130_fix_3 => '画像カテゴリで「フォルダ別」階層移動後にスクリーンショットが消える問題を修正';
 
   @override
   String get ui_remote_guard => 'リモートガード';
@@ -4978,49 +4985,49 @@ class L10nJa extends L10n {
       '安全設定と金庫のロック解除パスワードを変更します。暗号化ファイルには影響しません';
 
   @override
-  String get ui_auto_backup => '自动备份';
+  String get ui_auto_backup => '自動バックアップ';
 
   @override
-  String get ui_backup => '备份';
+  String get ui_backup => 'バックアップ';
 
   @override
-  String get ui_backup_now => '立即备份';
+  String get ui_backup_now => '今すぐバックアップ';
 
   @override
-  String get ui_local => '本地';
+  String get ui_local => 'ローカル';
 
   @override
-  String get ui_no_remote_path => '未添加自定义远程路径';
+  String get ui_no_remote_path => 'カスタムリモートパスが未追加です';
 
   @override
-  String get ui_remote => '远程';
+  String get ui_remote => 'リモート';
 
   @override
-  String get ui_sync_done => '备份完成';
+  String get ui_sync_done => 'バックアップ完了';
 
   @override
-  String get ui_syncing => '正在备份...';
+  String get ui_syncing => 'バックアップ中...';
 
   @override
-  String get ui_test => '测试';
+  String get ui_test => 'テスト';
 
   @override
-  String get ui_test_failed => '测试失败';
+  String get ui_test_failed => 'テスト失敗';
 
   @override
-  String get ui_test_failed_reason => '失败原因';
+  String get ui_test_failed_reason => '失敗の原因';
 
   @override
-  String get ui_test_success => '测试成功';
+  String get ui_test_success => 'テスト成功';
 
   @override
-  String get ui_test_success_desc => '连接成功，服务器配置正确';
+  String get ui_test_success_desc => '接続に成功しました。サーバー設定は正しいです';
 
   @override
-  String get ui_show_remote_files => '显示远程文件';
+  String get ui_show_remote_files => 'リモートファイルを表示';
 
   @override
-  String get ui_hide_remote_files => '隐藏远程文件';
+  String get ui_hide_remote_files => 'リモートファイルを非表示';
 
   @override
   String get changelog_v1130_new_8 =>
@@ -6356,10 +6363,10 @@ class L10nJa extends L10n {
   String get ui_media_filter_restore_default => 'デフォルトに戻す';
 
   @override
-  String get ui_category_settings_title => '类别设置';
+  String get ui_category_settings_title => 'カテゴリ設定';
 
   @override
-  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+  String get ui_category_settings_description => 'このカテゴリのフィルタルールとスキャン場所を管理します';
 
   @override
   String get ui_excluded_folders_title => 'Blocked folders';
@@ -6499,6 +6506,31 @@ class L10nJa extends L10n {
   @override
   String get cl212_fix_3 =>
       'Shizuku を許可しても「権限がありません」と表示されてサイレントインストールできない問題を修正：Shizuku 経路はシステムの PackageInstaller セッションを使ってインストールするようになり、一部のシステムで禁止されている shell のインストールコマンドに依存しなくなりました。';
+
+  @override
+  String get cl213_fixes => '不具合の修正';
+
+  @override
+  String get cl213_feat_2 =>
+      'リモートファイルの「開き方」が記憶されます：「常にこのアプリ / 外部アプリで開く」を選ぶと、同じ種類のファイルは確認なしで直接開きます。';
+
+  @override
+  String get cl213_fix_1 =>
+      '修正：リモート画像ビューアーで左右にスワイプしても、以前ダウンロードした画像しか切り替わらなかった問題を修正しました。現在はリモートフォルダー内の他の画像をスワイプで閲覧し、必要に応じてダウンロードします。';
+
+  @override
+  String get cl213_fix_2 =>
+      '修正：接続テストのダイアログなどが韓国語・日本語・ドイツ語などの画面で中国語を表示していた問題（未翻訳のプレースホルダー値）を修正し、各言語の訳文を追加しました。';
+
+  @override
+  String get cl213_fix_3 => '修正：繁体字中国語（台湾）で一部のテキストが簡体字で表示されていた問題を修正しました。';
+
+  @override
+  String get cl213_features => 'リモート閲覧とエラー表示';
+
+  @override
+  String get cl213_feat_1 =>
+      'FTP / WebDAV / SFTP / SMB などのリモートクライアントのエラーが、生の英語例外ではなく分かりやすい多言語メッセージ（接続失敗、ログイン失敗、タイムアウト、権限不足、ファイルが見つからないなど）に置き換わり、原因を理解しやすくなりました。';
 
   @override
   String get remote_err_cancelled => '操作がキャンセルされました';

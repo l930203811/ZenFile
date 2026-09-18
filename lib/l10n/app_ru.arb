@@ -4822,79 +4822,79 @@
       }
     }
   },
-  "changelog_v1130_new_1": "远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私",
+  "changelog_v1130_new_1": "PIN защиты удалённых данных: после установки 4-значного PIN доступ к сохранённым удалённым серверам, вход на страницу редактирования и переключение категории на удалённую область требуют предварительной разблокировки, защищая конфиденциальность удалённых данных",
   "@changelog_v1130_new_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_2": "分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容",
+  "changelog_v1130_new_2": "Переключатель «Локальное/Удалённое» на странице категорий: все категории с поддержкой удалённых каталогов могут независимо переключаться между локальным и удалённым содержимым",
   "@changelog_v1130_new_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_3": "备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件",
+  "changelog_v1130_new_3": "Функция резервного копирования (локальное→удалённое): поддерживаются «Автокопирование» и «Копировать сейчас»; обнаружение новых файлов срабатывает автоматически, копируются только файлы формата категории",
   "@changelog_v1130_new_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_4": "远程连接向导新增「测试」按钮，可先验证连接再保存配置",
+  "changelog_v1130_new_4": "Мастер подключения добавил кнопку «Тест» для проверки соединения перед сохранением конфигурации",
   "@changelog_v1130_new_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_5": "视频/音频类别菜单新增「播放器控制器显隐」开关",
+  "changelog_v1130_new_5": "Меню категорий видео/аудио: добавлен переключатель «Показывать контроллер плеера»",
   "@changelog_v1130_new_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_6": "统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗",
+  "changelog_v1130_new_6": "Единый диалог «Открыть с помощью»: страницы Обзор/Недавние/Категории открывают встроенный выбор из меню из трёх точек и долгого нажатия",
   "@changelog_v1130_new_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_7": "未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开",
+  "changelog_v1130_new_7": "Для файлов неизвестного формата пункт «Открыть в этом приложении» показывает выбор типа (текст/аудио/видео/изображение) и открывает во встроенном просмотрщике",
   "@changelog_v1130_new_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_1": "分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换",
+  "changelog_v1130_opt_1": "Кнопки «Категории» и «Обзор» объединены; переключение нажатием по центру",
   "@changelog_v1130_opt_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_2": "重命名自动选中文件名主体（不含扩展名），光标落扩展名前",
+  "changelog_v1130_opt_2": "При переименовании автоматически выделяется имя файла (без расширения); курсор ставится перед расширением",
   "@changelog_v1130_opt_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_3": "网格/列表视图切换整合进排序菜单",
+  "changelog_v1130_opt_3": "Переключатель сетка/список интегрирован в меню сортировки",
   "@changelog_v1130_opt_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_4": "每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看",
+  "changelog_v1130_opt_4": "Каждая категория отдельно запоминает режим «Папки/Все элементы»; для видео/аудио по умолчанию — папки",
   "@changelog_v1130_opt_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_5": "下载类别支持远程备份",
+  "changelog_v1130_opt_5": "Категория «Загрузки» поддерживает удалённое резервное копирование",
   "@changelog_v1130_opt_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_6": "远程图片/视频缩略图按需下载显示",
+  "changelog_v1130_opt_6": "Удалённые миниатюры изображений/видео загружаются по требованию",
   "@changelog_v1130_opt_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_7": "本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复",
+  "changelog_v1130_opt_7": "Локальное сканирование исключает каталоги кэша приложения; исправлено дублирование локальных изображений после просмотра удалённых миниатюр",
   "@changelog_v1130_opt_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_8": "远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效",
+  "changelog_v1130_opt_8": "Меню из трёх точек и долгое нажатие для удалённых файлов: массовое удаление/переименование/копирование/вырезание/поиск работают",
   "@changelog_v1130_opt_8": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_9": "远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）",
+  "changelog_v1130_opt_9": "Навигация по удалённым папкам сохраняет структуру каталогов (корневые каталоги вроде DCIM/Pictures)",
   "@changelog_v1130_opt_9": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_1": "修复 MIUI 存储权限误判导致启动弹窗循环卡死",
+  "changelog_v1130_fix_1": "Исправлено: ошибочная оценка прав доступа к хранилищу MIUI приводила к зацикливанию диалога при запуске",
   "@changelog_v1130_fix_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_2": "修复分类页长按拖动类别图标误触左右切页",
+  "changelog_v1130_fix_2": "Исправлено: длительное перетаскивание на странице категорий ошибочно переключало страницы",
   "@changelog_v1130_fix_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_3": "修复截图在图片类别「按文件夹」下钻后消失",
+  "changelog_v1130_fix_3": "Исправлено: скриншоты исчезали после навигации «По папкам» в категории изображений",
   "@changelog_v1130_fix_3": {
     "description": "v1.1.30 changelog item"
   },
@@ -4990,63 +4990,63 @@
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
-  "ui_auto_backup": "自动备份",
+  "ui_auto_backup": "Автоматическое резервное копирование",
   "@ui_auto_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup": "备份",
+  "ui_backup": "Резервная копия",
   "@ui_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup_now": "立即备份",
+  "ui_backup_now": "Создать копию сейчас",
   "@ui_backup_now": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_local": "本地",
+  "ui_local": "Локально",
   "@ui_local": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_no_remote_path": "未添加自定义远程路径",
+  "ui_no_remote_path": "Пользовательский удалённый путь не добавлен",
   "@ui_no_remote_path": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_remote": "远程",
+  "ui_remote": "Удалённое",
   "@ui_remote": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_sync_done": "备份完成",
+  "ui_sync_done": "Резервное копирование завершено",
   "@ui_sync_done": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_syncing": "正在备份...",
+  "ui_syncing": "Выполняется резервное копирование...",
   "@ui_syncing": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_test": "测试",
+  "ui_test": "Тест",
   "@ui_test": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed": "测试失败",
+  "ui_test_failed": "Тест не пройден",
   "@ui_test_failed": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed_reason": "失败原因",
+  "ui_test_failed_reason": "Причина сбоя",
   "@ui_test_failed_reason": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success": "测试成功",
+  "ui_test_success": "Тест пройден",
   "@ui_test_success": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success_desc": "连接成功，服务器配置正确",
+  "ui_test_success_desc": "Соединение успешно, конфигурация сервера верна",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_show_remote_files": "显示远程文件",
+  "ui_show_remote_files": "Показать удалённые файлы",
   "@ui_show_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_hide_remote_files": "隐藏远程文件",
+  "ui_hide_remote_files": "Скрыть удалённые файлы",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
@@ -6554,11 +6554,11 @@
   "@ui_media_filter_restore_default": {
     "description": "media filter screen (ui_media_filter_restore_default)"
   },
-  "ui_category_settings_title": "类别设置",
+  "ui_category_settings_title": "Настройки категории",
   "@ui_category_settings_title": {
     "description": "category settings screen (ui_category_settings_title)"
   },
-  "ui_category_settings_description": "管理该分类的过滤规则与扫描位置",
+  "ui_category_settings_description": "Управление правилами фильтрации и местами сканирования этой категории",
   "@ui_category_settings_description": {
     "description": "category settings screen description (ui_category_settings_description)"
   },
@@ -6718,6 +6718,34 @@
   "cl212_fix_3": "Исправлена ошибка «недостаточно прав» при тихой установке даже при авторизованном Shizuku: путь Shizuku теперь устанавливает через системную сессию PackageInstaller вместо команды shell, которую некоторые системы запрещают; путь root больше не передаёт лишний флаг понижения версии.",
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
+  },
+  "cl213_fixes": "Исправления",
+  "@cl213_fixes": {
+    "description": "v2.1.3 changelog: cl213_fixes"
+  },
+  "cl213_feat_2": "Способ открытия удалённых файлов теперь запоминается: после выбора «всегда открывать в этом приложении» или внешним приложением файлы того же типа открываются сразу, без повторного запроса.",
+  "@cl213_feat_2": {
+    "description": "v2.1.3 changelog: cl213_feat_2"
+  },
+  "cl213_fix_1": "Исправлено: при прокрутке в просмотрщике удалённых изображений перебирались только уже загруженные файлы. Теперь можно листать другие изображения текущей удалённой папки с загрузкой по требованию.",
+  "@cl213_fix_1": {
+    "description": "v2.1.3 changelog: cl213_fix_1"
+  },
+  "cl213_fix_2": "Исправлено: на некоторых экранах (например, в диалоге проверки подключения) в корейском, японском, немецком и других языках отображался китайский текст — эти значения не были переведены. Теперь всё переведено.",
+  "@cl213_fix_2": {
+    "description": "v2.1.3 changelog: cl213_fix_2"
+  },
+  "cl213_fix_3": "Исправлено: в традиционном китайском (Тайвань) многие тексты отображались упрощёнными иероглифами.",
+  "@cl213_fix_3": {
+    "description": "v2.1.3 changelog: cl213_fix_3"
+  },
+  "cl213_features": "Удалённый просмотр и сообщения об ошибках",
+  "@cl213_features": {
+    "description": "v2.1.3 changelog: cl213_features"
+  },
+  "cl213_feat_1": "Ошибки удалённых клиентов (FTP / WebDAV / SFTP / SMB) теперь показывают понятные локализованные сообщения вместо сырых английских исключений - например, подключение не удалось, ошибка входа, таймаут, нет доступа, файл не найден.",
+  "@cl213_feat_1": {
+    "description": "v2.1.3 changelog: cl213_feat_1"
   },
   "remote_err_cancelled": "Операция отменена",
   "@remote_err_cancelled": {

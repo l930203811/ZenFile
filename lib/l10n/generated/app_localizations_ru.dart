@@ -5045,63 +5045,79 @@ class L10nRu extends L10n {
 
   @override
   String get changelog_v1130_new_1 =>
-      '远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私';
+      'PIN защиты удалённых данных: после установки 4-значного PIN доступ к сохранённым удалённым серверам, вход на страницу редактирования и переключение категории на удалённую область требуют предварительной разблокировки, защищая конфиденциальность удалённых данных';
 
   @override
-  String get changelog_v1130_new_2 => '分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容';
+  String get changelog_v1130_new_2 =>
+      'Переключатель «Локальное/Удалённое» на странице категорий: все категории с поддержкой удалённых каталогов могут независимо переключаться между локальным и удалённым содержимым';
 
   @override
   String get changelog_v1130_new_3 =>
-      '备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件';
+      'Функция резервного копирования (локальное→удалённое): поддерживаются «Автокопирование» и «Копировать сейчас»; обнаружение новых файлов срабатывает автоматически, копируются только файлы формата категории';
 
   @override
-  String get changelog_v1130_new_4 => '远程连接向导新增「测试」按钮，可先验证连接再保存配置';
+  String get changelog_v1130_new_4 =>
+      'Мастер подключения добавил кнопку «Тест» для проверки соединения перед сохранением конфигурации';
 
   @override
-  String get changelog_v1130_new_5 => '视频/音频类别菜单新增「播放器控制器显隐」开关';
+  String get changelog_v1130_new_5 =>
+      'Меню категорий видео/аудио: добавлен переключатель «Показывать контроллер плеера»';
 
   @override
-  String get changelog_v1130_new_6 => '统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗';
+  String get changelog_v1130_new_6 =>
+      'Единый диалог «Открыть с помощью»: страницы Обзор/Недавние/Категории открывают встроенный выбор из меню из трёх точек и долгого нажатия';
 
   @override
   String get changelog_v1130_new_7 =>
-      '未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开';
+      'Для файлов неизвестного формата пункт «Открыть в этом приложении» показывает выбор типа (текст/аудио/видео/изображение) и открывает во встроенном просмотрщике';
 
   @override
-  String get changelog_v1130_opt_1 => '分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换';
+  String get changelog_v1130_opt_1 =>
+      'Кнопки «Категории» и «Обзор» объединены; переключение нажатием по центру';
 
   @override
-  String get changelog_v1130_opt_2 => '重命名自动选中文件名主体（不含扩展名），光标落扩展名前';
+  String get changelog_v1130_opt_2 =>
+      'При переименовании автоматически выделяется имя файла (без расширения); курсор ставится перед расширением';
 
   @override
-  String get changelog_v1130_opt_3 => '网格/列表视图切换整合进排序菜单';
+  String get changelog_v1130_opt_3 =>
+      'Переключатель сетка/список интегрирован в меню сортировки';
 
   @override
-  String get changelog_v1130_opt_4 => '每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看';
+  String get changelog_v1130_opt_4 =>
+      'Каждая категория отдельно запоминает режим «Папки/Все элементы»; для видео/аудио по умолчанию — папки';
 
   @override
-  String get changelog_v1130_opt_5 => '下载类别支持远程备份';
+  String get changelog_v1130_opt_5 =>
+      'Категория «Загрузки» поддерживает удалённое резервное копирование';
 
   @override
-  String get changelog_v1130_opt_6 => '远程图片/视频缩略图按需下载显示';
+  String get changelog_v1130_opt_6 =>
+      'Удалённые миниатюры изображений/видео загружаются по требованию';
 
   @override
-  String get changelog_v1130_opt_7 => '本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复';
+  String get changelog_v1130_opt_7 =>
+      'Локальное сканирование исключает каталоги кэша приложения; исправлено дублирование локальных изображений после просмотра удалённых миниатюр';
 
   @override
-  String get changelog_v1130_opt_8 => '远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效';
+  String get changelog_v1130_opt_8 =>
+      'Меню из трёх точек и долгое нажатие для удалённых файлов: массовое удаление/переименование/копирование/вырезание/поиск работают';
 
   @override
-  String get changelog_v1130_opt_9 => '远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）';
+  String get changelog_v1130_opt_9 =>
+      'Навигация по удалённым папкам сохраняет структуру каталогов (корневые каталоги вроде DCIM/Pictures)';
 
   @override
-  String get changelog_v1130_fix_1 => '修复 MIUI 存储权限误判导致启动弹窗循环卡死';
+  String get changelog_v1130_fix_1 =>
+      'Исправлено: ошибочная оценка прав доступа к хранилищу MIUI приводила к зацикливанию диалога при запуске';
 
   @override
-  String get changelog_v1130_fix_2 => '修复分类页长按拖动类别图标误触左右切页';
+  String get changelog_v1130_fix_2 =>
+      'Исправлено: длительное перетаскивание на странице категорий ошибочно переключало страницы';
 
   @override
-  String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
+  String get changelog_v1130_fix_3 =>
+      'Исправлено: скриншоты исчезали после навигации «По папкам» в категории изображений';
 
   @override
   String get ui_remote_guard => 'Удалённая защита';
@@ -5181,49 +5197,50 @@ class L10nRu extends L10n {
       'Изменить пароль безопасности и разблокировки сейфа. Зашифрованные файлы не затрагиваются';
 
   @override
-  String get ui_auto_backup => '自动备份';
+  String get ui_auto_backup => 'Автоматическое резервное копирование';
 
   @override
-  String get ui_backup => '备份';
+  String get ui_backup => 'Резервная копия';
 
   @override
-  String get ui_backup_now => '立即备份';
+  String get ui_backup_now => 'Создать копию сейчас';
 
   @override
-  String get ui_local => '本地';
+  String get ui_local => 'Локально';
 
   @override
-  String get ui_no_remote_path => '未添加自定义远程路径';
+  String get ui_no_remote_path => 'Пользовательский удалённый путь не добавлен';
 
   @override
-  String get ui_remote => '远程';
+  String get ui_remote => 'Удалённое';
 
   @override
-  String get ui_sync_done => '备份完成';
+  String get ui_sync_done => 'Резервное копирование завершено';
 
   @override
-  String get ui_syncing => '正在备份...';
+  String get ui_syncing => 'Выполняется резервное копирование...';
 
   @override
-  String get ui_test => '测试';
+  String get ui_test => 'Тест';
 
   @override
-  String get ui_test_failed => '测试失败';
+  String get ui_test_failed => 'Тест не пройден';
 
   @override
-  String get ui_test_failed_reason => '失败原因';
+  String get ui_test_failed_reason => 'Причина сбоя';
 
   @override
-  String get ui_test_success => '测试成功';
+  String get ui_test_success => 'Тест пройден';
 
   @override
-  String get ui_test_success_desc => '连接成功，服务器配置正确';
+  String get ui_test_success_desc =>
+      'Соединение успешно, конфигурация сервера верна';
 
   @override
-  String get ui_show_remote_files => '显示远程文件';
+  String get ui_show_remote_files => 'Показать удалённые файлы';
 
   @override
-  String get ui_hide_remote_files => '隐藏远程文件';
+  String get ui_hide_remote_files => 'Скрыть удалённые файлы';
 
   @override
   String get changelog_v1130_new_8 =>
@@ -6607,10 +6624,11 @@ class L10nRu extends L10n {
   String get ui_media_filter_restore_default => 'Восстановить По Умолчанию';
 
   @override
-  String get ui_category_settings_title => '类别设置';
+  String get ui_category_settings_title => 'Настройки категории';
 
   @override
-  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+  String get ui_category_settings_description =>
+      'Управление правилами фильтрации и местами сканирования этой категории';
 
   @override
   String get ui_excluded_folders_title => 'Blocked folders';
@@ -6752,6 +6770,32 @@ class L10nRu extends L10n {
   @override
   String get cl212_fix_3 =>
       'Исправлена ошибка «недостаточно прав» при тихой установке даже при авторизованном Shizuku: путь Shizuku теперь устанавливает через системную сессию PackageInstaller вместо команды shell, которую некоторые системы запрещают; путь root больше не передаёт лишний флаг понижения версии.';
+
+  @override
+  String get cl213_fixes => 'Исправления';
+
+  @override
+  String get cl213_feat_2 =>
+      'Способ открытия удалённых файлов теперь запоминается: после выбора «всегда открывать в этом приложении» или внешним приложением файлы того же типа открываются сразу, без повторного запроса.';
+
+  @override
+  String get cl213_fix_1 =>
+      'Исправлено: при прокрутке в просмотрщике удалённых изображений перебирались только уже загруженные файлы. Теперь можно листать другие изображения текущей удалённой папки с загрузкой по требованию.';
+
+  @override
+  String get cl213_fix_2 =>
+      'Исправлено: на некоторых экранах (например, в диалоге проверки подключения) в корейском, японском, немецком и других языках отображался китайский текст — эти значения не были переведены. Теперь всё переведено.';
+
+  @override
+  String get cl213_fix_3 =>
+      'Исправлено: в традиционном китайском (Тайвань) многие тексты отображались упрощёнными иероглифами.';
+
+  @override
+  String get cl213_features => 'Удалённый просмотр и сообщения об ошибках';
+
+  @override
+  String get cl213_feat_1 =>
+      'Ошибки удалённых клиентов (FTP / WebDAV / SFTP / SMB) теперь показывают понятные локализованные сообщения вместо сырых английских исключений - например, подключение не удалось, ошибка входа, таймаут, нет доступа, файл не найден.';
 
   @override
   String get remote_err_cancelled => 'Операция отменена';

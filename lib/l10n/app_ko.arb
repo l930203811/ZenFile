@@ -3109,7 +3109,7 @@
   "ui_adaptive_multiline_names": "적응형 다중 줄 파일 이름",
   "ui_hide_action_menu_buttons": "액션 메뉴 버튼 숨기기",
   "ui_show_action_menu_buttons": "액션 메뉴 버튼 표시",
-  "ui_action_menu_subtitle": "三点 메뉴 버튼의 표시 모드를 선택합니다. 끄면 파일과 폴더 오른쪽에 三点 버튼이 표시되지 않습니다.",
+  "ui_action_menu_subtitle": "점 3개 메뉴 버튼의 표시 모드를 선택합니다. 끄면 파일과 폴더 오른쪽에 점 3개 버튼이 표시되지 않습니다.",
   "ui_action_menu_mode_all": "모두 표시",
   "ui_action_menu_mode_single": "단일 창 모드만",
   "ui_action_menu_mode_dual": "듀얼 창 모드만",
@@ -4531,7 +4531,7 @@
   "@changelog_v1127_new_3": {
     "description": "Changelog entry for v1.1.27"
   },
-  "changelog_v1127_new_3": "즐겨찾기: 모든 즐겨찾기 추가 진입점(三点 메뉴/길게 누르기/상단 '+' 버튼)에서 그룹 선택이 가능해졌으며, 그룹을 길게 누르면 이름 변경/삭제, 항목을 길게 누르면 편집/삭제할 수 있습니다.",
+  "changelog_v1127_new_3": "즐겨찾기: 모든 즐겨찾기 추가 진입점(점 3개 메뉴/길게 누르기/상단 '+' 버튼)에서 그룹 선택이 가능해졌으며, 그룹을 길게 누르면 이름 변경/삭제, 항목을 길게 누르면 편집/삭제할 수 있습니다.",
   "@changelog_v1127_opt_1": {
     "description": "Changelog entry for v1.1.27"
   },
@@ -4822,79 +4822,79 @@
       }
     }
   },
-  "changelog_v1130_new_1": "远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私",
+  "changelog_v1130_new_1": "원격 보호 PIN: 4자리 PIN을 설정하면 저장된 원격 서버 접근, 편집 페이지 진입, 카테고리 페이지의 원격 범위 전환 시 먼저 잠금 해제가 필요하며 원격 데이터 프라이버시를 보호합니다",
   "@changelog_v1130_new_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_2": "分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容",
+  "changelog_v1130_new_2": "카테고리 페이지 로컬/원격 전환: 원격 디렉터리를 지원하는 모든 카테고리에서 로컬/원격 콘텐츠를 독립적으로 전환 가능",
   "@changelog_v1130_new_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_3": "备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件",
+  "changelog_v1130_new_3": "백업 기능(로컬→원격): 자동 백업과 지금 백업 지원, 새 파일 감지가 자동 트리거되며 해당 카테고리 형식 파일만 백업",
   "@changelog_v1130_new_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_4": "远程连接向导新增「测试」按钮，可先验证连接再保存配置",
+  "changelog_v1130_new_4": "원격 연결 마법사에 테스트 버튼 추가: 구성 저장 전 연결을 먼저 검증 가능",
   "@changelog_v1130_new_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_5": "视频/音频类别菜单新增「播放器控制器显隐」开关",
+  "changelog_v1130_new_5": "비디오/오디오 카테고리 메뉴에 플레이어 컨트롤러 표시 스위치 추가",
   "@changelog_v1130_new_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_6": "统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗",
+  "changelog_v1130_new_6": "열기 방식 대화상자 통합: 브라우저/최근/카테고리 페이지의 점 3개 메뉴와 길게 누르기 메뉴 모두 앱 내 선택 대화상자 표시",
   "@changelog_v1130_new_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_7": "未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开",
+  "changelog_v1130_new_7": "알 수 없는 형식 파일에서 이 앱으로 열기 선택 시 유형 선택기(텍스트/오디오/비디오/이미지) 표시 후 내장 뷰어로 열기",
   "@changelog_v1130_new_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_1": "分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换",
+  "changelog_v1130_opt_1": "카테고리/브라우저 페이지의 카테고리·탐색 버튼을 하나로 통합, 가운데 탭으로 전환",
   "@changelog_v1130_opt_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_2": "重命名自动选中文件名主体（不含扩展名），光标落扩展名前",
+  "changelog_v1130_opt_2": "이름 바꾸기 시 파일 이름 본문(확장자 제외) 자동 선택, 커서는 확장자 앞에 위치",
   "@changelog_v1130_opt_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_3": "网格/列表视图切换整合进排序菜单",
+  "changelog_v1130_opt_3": "그리드/목록 보기 전환을 정렬 메뉴에 통합",
   "@changelog_v1130_opt_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_4": "每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看",
+  "changelog_v1130_opt_4": "카테고리별로 폴더/전체 항목 보기 모드를 독립 기억, 비디오/오디오는 폴더 보기 기본",
   "@changelog_v1130_opt_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_5": "下载类别支持远程备份",
+  "changelog_v1130_opt_5": "다운로드 카테고리 원격 백업 지원",
   "@changelog_v1130_opt_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_6": "远程图片/视频缩略图按需下载显示",
+  "changelog_v1130_opt_6": "원격 이미지/비디오 썸네일 온디맨드 다운로드 표시",
   "@changelog_v1130_opt_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_7": "本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复",
+  "changelog_v1130_opt_7": "로컬 스캔에서 앱 캐시 디렉터리 제외, 원격 썸네일 열람 후 로컬 이미지 중복 수정",
   "@changelog_v1130_opt_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_8": "远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效",
+  "changelog_v1130_opt_8": "원격 파일 점 3개 메뉴와 길게 누르기 일괄 삭제/이름 바꾸기/복사/잘라내기/위치 찾기 동작",
   "@changelog_v1130_opt_8": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_9": "远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）",
+  "changelog_v1130_opt_9": "원격 폴더 하위 이동 시 디렉터리 구조 유지(DCIM/Pictures 등 최상위 디렉터리)",
   "@changelog_v1130_opt_9": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_1": "修复 MIUI 存储权限误判导致启动弹窗循环卡死",
+  "changelog_v1130_fix_1": "MIUI 저장소 권한 오분류로 시작 대화상자 무한 반복되던 문제 수정",
   "@changelog_v1130_fix_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_2": "修复分类页长按拖动类别图标误触左右切页",
+  "changelog_v1130_fix_2": "카테고리 페이지에서 길게 누른 채 드래그 시 아이콘이 좌우 페이지로 전환되던 문제 수정",
   "@changelog_v1130_fix_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_3": "修复截图在图片类别「按文件夹」下钻后消失",
+  "changelog_v1130_fix_3": "이미지 카테고리에서 폴더별 하위 이동 후 스크린샷이 사라지던 문제 수정",
   "@changelog_v1130_fix_3": {
     "description": "v1.1.30 changelog item"
   },
@@ -4990,63 +4990,63 @@
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
-  "ui_auto_backup": "自动备份",
+  "ui_auto_backup": "자동 백업",
   "@ui_auto_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup": "备份",
+  "ui_backup": "백업",
   "@ui_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup_now": "立即备份",
+  "ui_backup_now": "지금 백업",
   "@ui_backup_now": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_local": "本地",
+  "ui_local": "로컬",
   "@ui_local": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_no_remote_path": "未添加自定义远程路径",
+  "ui_no_remote_path": "사용자 지정 원격 경로가 없습니다",
   "@ui_no_remote_path": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_remote": "远程",
+  "ui_remote": "원격",
   "@ui_remote": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_sync_done": "备份完成",
+  "ui_sync_done": "백업 완료",
   "@ui_sync_done": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_syncing": "正在备份...",
+  "ui_syncing": "백업 중...",
   "@ui_syncing": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_test": "测试",
+  "ui_test": "테스트",
   "@ui_test": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed": "测试失败",
+  "ui_test_failed": "테스트 실패",
   "@ui_test_failed": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed_reason": "失败原因",
+  "ui_test_failed_reason": "실패 원인",
   "@ui_test_failed_reason": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success": "测试成功",
+  "ui_test_success": "테스트 성공",
   "@ui_test_success": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success_desc": "连接成功，服务器配置正确",
+  "ui_test_success_desc": "연결 성공, 서버 설정이 올바릅니다",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_show_remote_files": "显示远程文件",
+  "ui_show_remote_files": "원격 파일 표시",
   "@ui_show_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_hide_remote_files": "隐藏远程文件",
+  "ui_hide_remote_files": "원격 파일 숨기기",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
@@ -6554,11 +6554,11 @@
   "@ui_media_filter_restore_default": {
     "description": "media filter screen (ui_media_filter_restore_default)"
   },
-  "ui_category_settings_title": "类别设置",
+  "ui_category_settings_title": "카테고리 설정",
   "@ui_category_settings_title": {
     "description": "category settings screen (ui_category_settings_title)"
   },
-  "ui_category_settings_description": "管理该分类的过滤规则与扫描位置",
+  "ui_category_settings_description": "이 카테고리의 필터 규칙과 스캔 위치를 관리합니다",
   "@ui_category_settings_description": {
     "description": "category settings screen description (ui_category_settings_description)"
   },
@@ -6718,6 +6718,34 @@
   "cl212_fix_3": "Shizuku 권한을 부여했음에도 \"권한 부족\"이 표시되어 무음 설치가 안 되던 문제 수정: Shizuku 경로는 시스템 PackageInstaller 세션으로 설치하도록 변경되어, 일부 시스템에서 금지된 shell 설치 명령에 의존하지 않습니다.",
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
+  },
+  "cl213_fixes": "버그 수정",
+  "@cl213_fixes": {
+    "description": "v2.1.3 changelog: cl213_fixes"
+  },
+  "cl213_feat_2": "원격 파일「열기 방식」이 저장됩니다: 「항상 이 앱 / 외부 앱으로 열기」를 선택하면 같은 종류의 파일은 다시 묻지 않고 바로 열립니다.",
+  "@cl213_feat_2": {
+    "description": "v2.1.3 changelog: cl213_feat_2"
+  },
+  "cl213_fix_1": "수정: 원격 이미지 뷰어에서 좌우 스와이프가 이미 다운로드된 이미지만 반복하던 문제를 수정했습니다. 이제 원격 폴더의 다른 이미지를 넘겨 보며 필요할 때 다운로드합니다.",
+  "@cl213_fix_1": {
+    "description": "v2.1.3 changelog: cl213_fix_1"
+  },
+  "cl213_fix_2": "수정: 연결 테스트 창 등 일부 화면이 한국어·일본어·독일어 등에서 중국어로 표시되던 문제(미번역 placeholder)를 수정하고 각 언어 번역을 보완했습니다.",
+  "@cl213_fix_2": {
+    "description": "v2.1.3 changelog: cl213_fix_2"
+  },
+  "cl213_fix_3": "수정: 번체 중국어(대만)에서 일부 문구가 간체로 표시되던 문제를 수정했습니다.",
+  "@cl213_fix_3": {
+    "description": "v2.1.3 changelog: cl213_fix_3"
+  },
+  "cl213_features": "원격 탐색 및 오류 표시",
+  "@cl213_features": {
+    "description": "v2.1.3 changelog: cl213_features"
+  },
+  "cl213_feat_1": "FTP / WebDAV / SFTP / SMB 등 원격 클라이언트 오류가 영문 예외 대신 명확한 다국어 메시지(연결 실패, 로그인 실패, 시간 초과, 권한 없음, 파일 없음 등)로 표시되어 원인을 쉽게 이해할 수 있습니다.",
+  "@cl213_feat_1": {
+    "description": "v2.1.3 changelog: cl213_feat_1"
   },
   "remote_err_cancelled": "작업이 취소되었습니다",
   "@remote_err_cancelled": {

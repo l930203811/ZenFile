@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v2.1.2',
+                    'v2.1.3',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -730,6 +730,8 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
+                  _buildV213Changelog(ctx, theme),
+                  const SizedBox(height: 24),
                   _buildV212Changelog(ctx, theme),
                   const SizedBox(height: 24),
                   _buildV211Changelog(ctx, theme),
@@ -897,6 +899,72 @@ class AboutZenFileScreen extends StatelessWidget {
           item(l10n.cl212_fix_1),
           item(l10n.cl212_fix_2),
           item(l10n.cl212_fix_3),
+        ],
+      ),
+    );
+  }
+
+  /// v2.1.3 更新日志卡片。
+  ///
+  /// 与 v2.1.0 卡片结构一致；文案走 l10n 键 `cl213_*`（10 语言），版本/日期硬编码。
+  Widget _buildV213Changelog(BuildContext ctx, ThemeData theme) {
+    final l10n = L10n.of(ctx);
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    Widget item(String text) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text('\u00b7 $text', style: textStyle),
+    );
+    Widget section(String title) => Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 4),
+      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
+    );
+    Widget divider() => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Container(height: 1, color: dividerColor),
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('v2.1.3', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text('2026-09-19', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          gap(14),
+
+          // ── 新增功能 ──
+          section('\u2728 ${l10n.cl213_features}'),
+          item(l10n.cl213_feat_1),
+          item(l10n.cl213_feat_2),
+
+          divider(),
+
+          // ── 问题修复 ──
+          section('\u{1f41b} ${l10n.cl213_fixes}'),
+          item(l10n.cl213_fix_1),
+          item(l10n.cl213_fix_2),
+          item(l10n.cl213_fix_3),
         ],
       ),
     );

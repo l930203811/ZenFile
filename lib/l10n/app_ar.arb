@@ -3545,7 +3545,7 @@
   "log_compression_progress": "تحسين مربع حوار تقدم الضغط مع عرض متعدد المراحل وإغلاق تلقائي موثوق",
   "log_web_share_category": "بوابة مشاركة الويب تعرض الملفات في أقسام مصنفة (مجلدات، فيديو، صوت، صور، مستندات، أخرى)",
   "log_web_share_l10n": "بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق",
-  "log_music_lyrics_fullscreen_removed": "إزالة لوحة歌词 الكاملة من قائمة مشغل الموسيقى",
+  "log_music_lyrics_fullscreen_removed": "إزالة لوحة كلمات الأغاني الكاملة من قائمة مشغل الموسيقى",
   "log_music_lyrics_centered": "توسيط عرض الكلمات الحالية في مشغل الموسيقى",
   "log_music_player_button": "إضافة زر مشغل الموسيقى أعلى فئة الموسيقى",
   "log_music_remember_progress": "مشغل الموسيقى يتذكر موضع التشغيل ويستأنف تلقائياً",
@@ -4822,79 +4822,79 @@
       }
     }
   },
-  "changelog_v1130_new_1": "远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私",
+  "changelog_v1130_new_1": "رمز حماية الاتصالات البعيدة: بعد تعيين رمز PIN من 4 أرقام، يتطلب الوصول إلى الخوادم البعيدة المحفوظة ودخول صفحة التحرير وتبديل الفئة إلى النطاق البعيد إلغاء القفل أولاً، حمايةً لخصوصية البيانات البعيدة",
   "@changelog_v1130_new_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_2": "分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容",
+  "changelog_v1130_new_2": "مفتاح تبديل «محلي/بعيد» في صفحة الفئات: جميع الفئات التي تدعم المجلدات البعيدة يمكنها التبديل بشكل مستقل بين المحتوى المحلي والبعيد",
   "@changelog_v1130_new_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_3": "备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件",
+  "changelog_v1130_new_3": "ميزة النسخ الاحتياطي (محلي→بعيد): تدعم «النسخ التلقائي» و«النسخ الآن»؛ يُفعَّل اكتشاف الملفات الجديدة تلقائياً، وتُنسخ ملفات الفئة نفسها فقط",
   "@changelog_v1130_new_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_4": "远程连接向导新增「测试」按钮，可先验证连接再保存配置",
+  "changelog_v1130_new_4": "معالج الاتصال البعيد يضيف زر «اختبار» للتحقق من الاتصال قبل حفظ الإعدادات",
   "@changelog_v1130_new_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_5": "视频/音频类别菜单新增「播放器控制器显隐」开关",
+  "changelog_v1130_new_5": "قائمة فئات الفيديو/الصوت: مفتاح جديد «إظهار أدوات التحكم بالمشغل»",
   "@changelog_v1130_new_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_6": "统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗",
+  "changelog_v1130_new_6": "توحيد نافذة «فتح باستخدام»: تعرض صفحات التصفح/الأحدث/الفئات منتقي التطبيق المدمج من قوائم النقاط الثلاث والضغط الطويل",
   "@changelog_v1130_new_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_new_7": "未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开",
+  "changelog_v1130_new_7": "للملفات ذات التنسيق غير المعروف، يعرض «فتح بهذا التطبيق» منتقي نوع (نص/صوت/فيديو/صورة) ثم يفتح بالعارض المدمج",
   "@changelog_v1130_new_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_1": "分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换",
+  "changelog_v1130_opt_1": "تم دمج زرّي «الفئات» و«تصفح»؛ التبديل بالنقر على الوسط",
   "@changelog_v1130_opt_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_2": "重命名自动选中文件名主体（不含扩展名），光标落扩展名前",
+  "changelog_v1130_opt_2": "عند إعادة التسمية يُحدد اسم الملف تلقائياً (بدون الامتداد) ويوضع المؤشر قبل الامتداد",
   "@changelog_v1130_opt_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_3": "网格/列表视图切换整合进排序菜单",
+  "changelog_v1130_opt_3": "دمج مفتاح تبديل الشبكة/القائمة في قائمة الترتيب",
   "@changelog_v1130_opt_3": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_4": "每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看",
+  "changelog_v1130_opt_4": "تتذكر كل فئة على حدة وضع عرض «المجلدات/كل العناصر»؛ الفيديو/الصوت افتراضياً بعرض المجلدات",
   "@changelog_v1130_opt_4": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_5": "下载类别支持远程备份",
+  "changelog_v1130_opt_5": "فئة التنزيلات تدعم النسخ الاحتياطي البعيد",
   "@changelog_v1130_opt_5": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_6": "远程图片/视频缩略图按需下载显示",
+  "changelog_v1130_opt_6": "تحميل الصور المصغرة البعيدة للصور/الفيديو عند الحاجة",
   "@changelog_v1130_opt_6": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_7": "本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复",
+  "changelog_v1130_opt_7": "يستثني الفحص المحلي مجلدات ذاكرة التخزين المؤقت؛ إصلاح تكرار الصور المحلية بعد عرض الصور المصغرة البعيدة",
   "@changelog_v1130_opt_7": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_8": "远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效",
+  "changelog_v1130_opt_8": "قائمة النقاط الثلاث والضغط الطويل للملفات البعيدة: الحذف/إعادة التسمية/النسخ/القص/تحديد الموقع بالجملة تعمل",
   "@changelog_v1130_opt_8": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_opt_9": "远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）",
+  "changelog_v1130_opt_9": "التنقل في المجلدات البعيدة يحافظ على هيكل المجلدات (المجلدات الجذر مثل DCIM/Pictures)",
   "@changelog_v1130_opt_9": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_1": "修复 MIUI 存储权限误判导致启动弹窗循环卡死",
+  "changelog_v1130_fix_1": "إصلاح: سوء تقييم أذونات التخزين في MIUI كان يسبب حلقة نافذة عند بدء التشغيل",
   "@changelog_v1130_fix_1": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_2": "修复分类页长按拖动类别图标误触左右切页",
+  "changelog_v1130_fix_2": "إصلاح: السحب بالضغط الطويل في صفحة الفئات كان يبدل الصفحات دون قصد",
   "@changelog_v1130_fix_2": {
     "description": "v1.1.30 changelog item"
   },
-  "changelog_v1130_fix_3": "修复截图在图片类别「按文件夹」下钻后消失",
+  "changelog_v1130_fix_3": "إصلاح: اختفاء لقطات الشاشة بعد التنقل «حسب المجلدات» في فئة الصور",
   "@changelog_v1130_fix_3": {
     "description": "v1.1.30 changelog item"
   },
@@ -4990,63 +4990,63 @@
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
-  "ui_auto_backup": "自动备份",
+  "ui_auto_backup": "النسخ الاحتياطي التلقائي",
   "@ui_auto_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup": "备份",
+  "ui_backup": "نسخ احتياطي",
   "@ui_backup": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_backup_now": "立即备份",
+  "ui_backup_now": "نسخ احتياطي الآن",
   "@ui_backup_now": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_local": "本地",
+  "ui_local": "محلي",
   "@ui_local": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_no_remote_path": "未添加自定义远程路径",
+  "ui_no_remote_path": "لم تتم إضافة مسار مخصص للخادم البعيد",
   "@ui_no_remote_path": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_remote": "远程",
+  "ui_remote": "بعيد",
   "@ui_remote": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_sync_done": "备份完成",
+  "ui_sync_done": "اكتمل النسخ الاحتياطي",
   "@ui_sync_done": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_syncing": "正在备份...",
+  "ui_syncing": "جارٍ النسخ الاحتياطي...",
   "@ui_syncing": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_test": "测试",
+  "ui_test": "اختبار",
   "@ui_test": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed": "测试失败",
+  "ui_test_failed": "فشل الاختبار",
   "@ui_test_failed": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_failed_reason": "失败原因",
+  "ui_test_failed_reason": "سبب الفشل",
   "@ui_test_failed_reason": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success": "测试成功",
+  "ui_test_success": "نجح الاختبار",
   "@ui_test_success": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_test_success_desc": "连接成功，服务器配置正确",
+  "ui_test_success_desc": "تم الاتصال بنجاح، إعدادات الخادم صحيحة",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ui_show_remote_files": "显示远程文件",
+  "ui_show_remote_files": "إظهار الملفات البعيدة",
   "@ui_show_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "ui_hide_remote_files": "隐藏远程文件",
+  "ui_hide_remote_files": "إخفاء الملفات البعيدة",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
@@ -6554,11 +6554,11 @@
   "@ui_media_filter_restore_default": {
     "description": "media filter screen (ui_media_filter_restore_default)"
   },
-  "ui_category_settings_title": "类别设置",
+  "ui_category_settings_title": "إعدادات الفئة",
   "@ui_category_settings_title": {
     "description": "category settings screen (ui_category_settings_title)"
   },
-  "ui_category_settings_description": "管理该分类的过滤规则与扫描位置",
+  "ui_category_settings_description": "إدارة قواعد التصفية ومواقع الفحص لهذه الفئة",
   "@ui_category_settings_description": {
     "description": "category settings screen description (ui_category_settings_description)"
   },
@@ -6718,6 +6718,34 @@
   "cl212_fix_3": "إصلاح خطأ «صلاحية غير كافية» في التثبيت الصامت رغم السماح بـ Shizuku: مسار Shizuku يثبّت الآن عبر جلسة PackageInstaller للنظام بدلاً من أمر shell المحظور على بعض الأنظمة؛ ولا يمرّ مسار root بعلامة تخفيض إصدار غير ضرورية.",
   "@cl212_fix_3": {
     "description": "v2.1.2 changelog: cl212_fix_3"
+  },
+  "cl213_fixes": "إصلاحات",
+  "@cl213_fixes": {
+    "description": "v2.1.3 changelog: cl213_fixes"
+  },
+  "cl213_feat_2": "تُحفظ طريقة فتح الملفات البعيدة الآن: بعد اختيار «الفتح دائماً بهذا التطبيق» أو بتطبيق خارجي، تُفتح الملفات من النوع نفسه مباشرة دون تكرار السؤال.",
+  "@cl213_feat_2": {
+    "description": "v2.1.3 changelog: cl213_feat_2"
+  },
+  "cl213_fix_1": "تم الإصلاح: في عارض الصور البعيد، كان التمرير ينتقل فقط بين الصور التي تم تنزيلها مسبقاً. أصبح الآن يتنقل بين بقية صور المجلد البعيد وينزلها عند الحاجة.",
+  "@cl213_fix_1": {
+    "description": "v2.1.3 changelog: cl213_fix_1"
+  },
+  "cl213_fix_2": "تم الإصلاح: كانت بعض الشاشات (مثل نافذة اختبار الاتصال) تعرض نصاً صينياً بالكورية واليابانية والألمانية وغيرها لأن هذه القيم لم تُترجم قط. تمت ترجمتها الآن.",
+  "@cl213_fix_2": {
+    "description": "v2.1.3 changelog: cl213_fix_2"
+  },
+  "cl213_fix_3": "تم الإصلاح: في الصينية التقليدية (تايوان)، كانت العديد من النصوص تظهر بالصينية المبسطة.",
+  "@cl213_fix_3": {
+    "description": "v2.1.3 changelog: cl213_fix_3"
+  },
+  "cl213_features": "التصفح عن بُعد ورسائل الخطأ",
+  "@cl213_features": {
+    "description": "v2.1.3 changelog: cl213_features"
+  },
+  "cl213_feat_1": "تُظهر أخطاء العملاء عن بُعد (FTP / WebDAV / SFTP / SMB) الآن رسائل مترجمة وواضحة بدلاً من الاستثناءات الإنجليزية الخام - مثل فشل الاتصال، فشل تسجيل الدخول، انتهاء المهلة، تم رفض الإذن، الملف غير موجود.",
+  "@cl213_feat_1": {
+    "description": "v2.1.3 changelog: cl213_feat_1"
   },
   "remote_err_cancelled": "تم إلغاء العملية",
   "@remote_err_cancelled": {

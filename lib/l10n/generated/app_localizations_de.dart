@@ -5037,63 +5037,79 @@ class L10nDe extends L10n {
 
   @override
   String get changelog_v1130_new_1 =>
-      '远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私';
+      'Remote-Schutz-PIN: Nach dem Festlegen einer 4-stelligen PIN muss beim Zugriff auf gespeicherte Remote-Server, beim Betreten der Bearbeitungsseite und beim Wechsel der Kategorieseite zum Remote-Bereich zuerst entsperrt werden, um die Privatsphäre entfernter Daten zu schützen';
 
   @override
-  String get changelog_v1130_new_2 => '分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容';
+  String get changelog_v1130_new_2 =>
+      'Umschaltung Lokal/Remote auf der Kategorieseite: Alle Kategorien mit Remote-Unterstützung können zwischen lokalem und Remote-Inhalt umschalten';
 
   @override
   String get changelog_v1130_new_3 =>
-      '备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件';
+      'Backup-Funktion (lokal→remote): Unterstützt „Automatisches Backup“ und „Jetzt sichern“; Erkennung neuer Dateien löst automatisch aus, es werden nur Dateien des Kategorieformats gesichert';
 
   @override
-  String get changelog_v1130_new_4 => '远程连接向导新增「测试」按钮，可先验证连接再保存配置';
+  String get changelog_v1130_new_4 =>
+      'Remote-Verbindungsassistent: neuer „Testen“-Button, um die Verbindung vor dem Speichern zu prüfen';
 
   @override
-  String get changelog_v1130_new_5 => '视频/音频类别菜单新增「播放器控制器显隐」开关';
+  String get changelog_v1130_new_5 =>
+      'Video/Audio-Kategorienmenü: neuer Schalter „Player-Steuerung anzeigen“';
 
   @override
-  String get changelog_v1130_new_6 => '统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗';
+  String get changelog_v1130_new_6 =>
+      'Vereinheitlichter „Öffnen mit“-Dialog: Browse/Letzte/Kategorie-Seiten zeigen aus 3-Punkt- und Langdruck-Menüs den In-App-Auswahl-Dialog';
 
   @override
   String get changelog_v1130_new_7 =>
-      '未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开';
+      'Bei unbekannten Formaten erscheint nach „Mit dieser App öffnen“ ein Typ-Wähler (Text/Audio/Video/Bild) und öffnet im integrierten Betrachter';
 
   @override
-  String get changelog_v1130_opt_1 => '分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换';
+  String get changelog_v1130_opt_1 =>
+      'Die Schaltflächen „Kategorien“ und „Durchsuchen“ sind vereint; Umschalten durch Tippen in der Mitte';
 
   @override
-  String get changelog_v1130_opt_2 => '重命名自动选中文件名主体（不含扩展名），光标落扩展名前';
+  String get changelog_v1130_opt_2 =>
+      'Umbenennen wählt automatisch den Dateinamen (ohne Erweiterung); Cursor steht vor der Erweiterung';
 
   @override
-  String get changelog_v1130_opt_3 => '网格/列表视图切换整合进排序菜单';
+  String get changelog_v1130_opt_3 =>
+      'Umschaltung Raster/Liste in das Sortiermenü integriert';
 
   @override
-  String get changelog_v1130_opt_4 => '每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看';
+  String get changelog_v1130_opt_4 =>
+      'Jede Kategorie merkt sich einzeln den Modus „Ordner/Alle Elemente“; Video/Audio standardmäßig Ordneransicht';
 
   @override
-  String get changelog_v1130_opt_5 => '下载类别支持远程备份';
+  String get changelog_v1130_opt_5 =>
+      'Download-Kategorie unterstützt Remote-Backup';
 
   @override
-  String get changelog_v1130_opt_6 => '远程图片/视频缩略图按需下载显示';
+  String get changelog_v1130_opt_6 =>
+      'Remote-Vorschaubilder für Bilder/Videos werden bei Bedarf geladen';
 
   @override
-  String get changelog_v1130_opt_7 => '本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复';
+  String get changelog_v1130_opt_7 =>
+      'Lokaler Scan schließt App-Cache-Verzeichnisse aus; Duplikate lokaler Bilder nach Remote-Vorschaubildern behoben';
 
   @override
-  String get changelog_v1130_opt_8 => '远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效';
+  String get changelog_v1130_opt_8 =>
+      '3-Punkt- und Langdruck-Menü für Remote-Dateien: Massen-Löschen/Umbenennen/Kopieren/Ausschneiden/Standort funktional';
 
   @override
-  String get changelog_v1130_opt_9 => '远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）';
+  String get changelog_v1130_opt_9 =>
+      'Beim Navigieren in Remote-Ordnern bleibt die Verzeichnisstruktur erhalten (Top-Verzeichnisse wie DCIM/Pictures)';
 
   @override
-  String get changelog_v1130_fix_1 => '修复 MIUI 存储权限误判导致启动弹窗循环卡死';
+  String get changelog_v1130_fix_1 =>
+      'Behoben: MIUI-Speicherberechtigung falsch erkannt → Startdialog-Schleife';
 
   @override
-  String get changelog_v1130_fix_2 => '修复分类页长按拖动类别图标误触左右切页';
+  String get changelog_v1130_fix_2 =>
+      'Behoben: Langes Ziehen auf der Kategorieseite löste versehentlich Seitenwechsel aus';
 
   @override
-  String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
+  String get changelog_v1130_fix_3 =>
+      'Behoben: Screenshots verschwanden nach „Nach Ordner“-Navigation in der Bildkategorie';
 
   @override
   String get ui_remote_guard => 'Remote-Guard';
@@ -5175,49 +5191,51 @@ class L10nDe extends L10n {
       'Sicherheits- und Tresor-Entsperrpasswort ändern. Verschlüsselte Dateien sind nicht betroffen';
 
   @override
-  String get ui_auto_backup => '自动备份';
+  String get ui_auto_backup => 'Automatisches Backup';
 
   @override
-  String get ui_backup => '备份';
+  String get ui_backup => 'Backup';
 
   @override
-  String get ui_backup_now => '立即备份';
+  String get ui_backup_now => 'Jetzt sichern';
 
   @override
-  String get ui_local => '本地';
+  String get ui_local => 'Lokal';
 
   @override
-  String get ui_no_remote_path => '未添加自定义远程路径';
+  String get ui_no_remote_path =>
+      'Kein benutzerdefinierter Remote-Pfad hinzugefügt';
 
   @override
-  String get ui_remote => '远程';
+  String get ui_remote => 'Remote';
 
   @override
-  String get ui_sync_done => '备份完成';
+  String get ui_sync_done => 'Backup abgeschlossen';
 
   @override
-  String get ui_syncing => '正在备份...';
+  String get ui_syncing => 'Backup läuft...';
 
   @override
-  String get ui_test => '测试';
+  String get ui_test => 'Testen';
 
   @override
-  String get ui_test_failed => '测试失败';
+  String get ui_test_failed => 'Test fehlgeschlagen';
 
   @override
-  String get ui_test_failed_reason => '失败原因';
+  String get ui_test_failed_reason => 'Fehlerursache';
 
   @override
-  String get ui_test_success => '测试成功';
+  String get ui_test_success => 'Test erfolgreich';
 
   @override
-  String get ui_test_success_desc => '连接成功，服务器配置正确';
+  String get ui_test_success_desc =>
+      'Verbindung erfolgreich, Serverkonfiguration korrekt';
 
   @override
-  String get ui_show_remote_files => '显示远程文件';
+  String get ui_show_remote_files => 'Remote-Dateien anzeigen';
 
   @override
-  String get ui_hide_remote_files => '隐藏远程文件';
+  String get ui_hide_remote_files => 'Remote-Dateien ausblenden';
 
   @override
   String get changelog_v1130_new_8 =>
@@ -6608,10 +6626,11 @@ class L10nDe extends L10n {
   String get ui_media_filter_restore_default => 'Standard Wiederherstellen';
 
   @override
-  String get ui_category_settings_title => '类别设置';
+  String get ui_category_settings_title => 'Kategorie-Einstellungen';
 
   @override
-  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+  String get ui_category_settings_description =>
+      'Filterregeln und Scan-Speicherorte dieser Kategorie verwalten';
 
   @override
   String get ui_excluded_folders_title => 'Blocked folders';
@@ -6755,6 +6774,32 @@ class L10nDe extends L10n {
   @override
   String get cl212_fix_3 =>
       'Behoben „Zugriff verweigert“ bei stiller Installation trotz autorisiertem Shizuku: der Shizuku-Pfad installiert nun über eine System-PackageInstaller-Sitzung statt dem auf manchen Systemen gesperrten Shell-Befehl; der Root-Pfad übergibt kein unnötiges Downgrade-Flag mehr.';
+
+  @override
+  String get cl213_fixes => 'Fehlerbehebungen';
+
+  @override
+  String get cl213_feat_2 =>
+      'Die Auswahl „Immer öffnen mit“ wird für Remote-Dateien gespeichert: Nach der Wahl dieser App oder einer externen App öffnen Dateien gleichen Typs direkt ohne Rückfrage.';
+
+  @override
+  String get cl213_fix_1 =>
+      'Behoben: Beim Wischen im Remote-Bildbetrachter wurden nur bereits heruntergeladene Bilder durchlaufen. Jetzt werden die weiteren Bilder des Remote-Ordners durchgeblättert und bei Bedarf geladen.';
+
+  @override
+  String get cl213_fix_2 =>
+      'Behoben: Einige Bildschirme (z. B. der Verbindungstest-Dialog) zeigten auf Koreanisch, Japanisch, Deutsch usw. chinesischen Text, da diese Werte nie übersetzt wurden. Alle sind nun übersetzt.';
+
+  @override
+  String get cl213_fix_3 =>
+      'Behoben: Im traditionellen Chinesisch (Taiwan) wurden viele Texte in Kurzzeichen angezeigt.';
+
+  @override
+  String get cl213_features => 'Remote-Browsing und Fehlermeldungen';
+
+  @override
+  String get cl213_feat_1 =>
+      'Fehler der Remote-Clients (FTP / WebDAV / SFTP / SMB) zeigen nun klare, lokalisierte Meldungen statt roher englischer Ausnahmen - z. B. Verbindung fehlgeschlagen, Anmeldung fehlgeschlagen, Timeout, Zugriff verweigert, Datei nicht gefunden.';
 
   @override
   String get remote_err_cancelled => 'Vorgang abgebrochen';

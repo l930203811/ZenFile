@@ -6388,6 +6388,30 @@ class L10nZh extends L10n {
       '修复「静默安装」在已授权 Shizuku 的情况下仍提示「权限不足」无法安装的问题：Shizuku 路径改用系统 PackageInstaller 会话安装，不再依赖被部分系统禁止的 shell 安装命令。';
 
   @override
+  String get cl213_fixes => '问题修复';
+
+  @override
+  String get cl213_feat_2 =>
+      '远程文件「打开方式」可持久化：选择「始终用本应用 / 外部应用打开」后，同类型文件直接打开，不再重复弹窗询问。';
+
+  @override
+  String get cl213_fix_1 => '修复：远程图片查看器左右滑动只在已下载的图片之间循环，现可翻页浏览远程目录中的其它图片并按需下载。';
+
+  @override
+  String get cl213_fix_2 =>
+      '修复：连接测试弹窗等界面在韩语、日语、德语等语言下误显示中文（历史占位值未翻译），现已补全各语言译文。';
+
+  @override
+  String get cl213_fix_3 => '修复：繁体中文（台湾）界面此前有部分文案显示为简体。';
+
+  @override
+  String get cl213_features => '远程浏览与错误提示';
+
+  @override
+  String get cl213_feat_1 =>
+      'FTP / WebDAV / SFTP / SMB 等远程客户端的报错，由原始英文异常改为清晰的多语言文字提示（如：连接失败、登录失败、超时、权限不足、文件不存在），便于理解问题原因。';
+
+  @override
   String get remote_err_cancelled => '操作已取消';
 
   @override
@@ -7400,7 +7424,7 @@ class L10nZhTw extends L10nZh {
   L10nZhTw() : super('zh_TW');
 
   @override
-  String get msg6f3e533a => '正在開啟共享文件...';
+  String get msg6f3e533a => '正在開啟共享檔案...';
 
   @override
   String get msgbca59325 => '正在解析安全內容流';
@@ -7580,7 +7604,7 @@ class L10nZhTw extends L10nZh {
   String get v1041 => 'v1.0.43 (檢視)';
 
   @override
-  String get ui_view_update => '查看更新';
+  String get ui_view_update => '檢視更新';
 
   @override
   String get zenfileflutter =>
@@ -7985,7 +8009,7 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get msgbd165c40 => '建立新的空白文字文件';
+  String get msgbd165c40 => '建立新的空白文字檔案';
 
   @override
   String get msg68ac91eb => '新建壓縮包';
@@ -8118,7 +8142,7 @@ class L10nZhTw extends L10nZh {
   String get msg681c0f39 => '全域性搜尋';
 
   @override
-  String get msg0c36f64f => '僅文件';
+  String get msg0c36f64f => '僅檔案';
 
   @override
   String get msg26b041dd => '僅音訊';
@@ -8149,13 +8173,13 @@ class L10nZhTw extends L10nZh {
   String get pdf => 'PDF顯示設定';
 
   @override
-  String get msg09c933bf => '最佳化大型、設計複雜或掃描文件的渲染效能。';
+  String get msg09c933bf => '最佳化大型、設計複雜或掃描檔案的渲染效能。';
 
   @override
   String get msg701a85d4 => '標準模式';
 
   @override
-  String get msg2722d1a7 => '最適合文字文件';
+  String get msg2722d1a7 => '最適合文字檔案';
 
   @override
   String get msgb2b08d54 => '適合宣傳冊和照片';
@@ -8179,7 +8203,7 @@ class L10nZhTw extends L10nZh {
   String get msg864f8706 => '關閉可顯著提升頁面渲染速度並消除滾動卡頓。';
 
   @override
-  String get msgd28847a2 => '新建文件';
+  String get msgd28847a2 => '新建檔案';
 
   @override
   String get msg3007c452 => '更多選項';
@@ -8324,7 +8348,7 @@ class L10nZhTw extends L10nZh {
   String get markdown => 'Markdown 預覽';
 
   @override
-  String get items => '個項目';
+  String get items => '個專案';
 
   @override
   String count1(Object count) {
@@ -8697,7 +8721,7 @@ class L10nZhTw extends L10nZh {
   String get msge5fba3dd => '星標特別';
 
   @override
-  String get msgfe4254dc => '文件片段';
+  String get msgfe4254dc => '檔案片段';
 
   @override
   String get msg84719fd5 => '極簡描邊';
@@ -8940,13 +8964,13 @@ class L10nZhTw extends L10nZh {
   String get msgdf434415 => '系統應用已禁用';
 
   @override
-  String get documentsui => '您的裝置沒有啟用預設的系統檔案/文件應用（DocumentsUI），';
+  String get documentsui => '您的裝置沒有啟用預設的系統檔案/檔案應用（DocumentsUI），';
 
   @override
   String get androidnn => '這是 Android 選擇和掛載目錄所必需的。\\n\\n';
 
   @override
-  String get msgb2af4e30 => '請檢查\"檔案\"或\"文件\"系統應用是否在裝置設定中被禁用，';
+  String get msgb2af4e30 => '請檢查\"檔案\"或\"檔案\"系統應用是否在裝置設定中被禁用，';
 
   @override
   String safe(Object e) {
@@ -9393,20 +9417,20 @@ class L10nZhTw extends L10nZh {
   String get msga1b2c3d7 => '授予許可權';
 
   @override
-  String get msg_media_only_permission_title => '僅媒體檔案權限';
+  String get msg_media_only_permission_title => '僅媒體檔案許可權';
 
   @override
   String get msg_media_only_permission_desc =>
-      '目前僅授予媒體檔案存取權限，檔案管理員將無法正常使用重新命名、剪下、刪除等功能。請授予「所有檔案管理權限」以獲得完整功能。';
+      '目前僅授予媒體檔案存取許可權，檔案管理員將無法正常使用重新命名、剪下、刪除等功能。請授予「所有檔案管理許可權」以獲得完整功能。';
 
   @override
-  String get msg_grant_full_storage_permission => '授予完整儲存權限';
+  String get msg_grant_full_storage_permission => '授予完整儲存許可權';
 
   @override
-  String get ui_open_settings => '打開設定';
+  String get ui_open_settings => '開啟設定';
 
   @override
-  String get ui_open_settings_desc => '儲存權限已被永久拒絕，請前往系統設定手動授予檔案管理權限。';
+  String get ui_open_settings_desc => '儲存許可權已被永久拒絕，請前往系統設定手動授予檔案管理許可權。';
 
   @override
   String get msg2c146598 => '網際網路雲隧道已上線！臨時連結已啟用。';
@@ -9615,7 +9639,7 @@ class L10nZhTw extends L10nZh {
   String get msg8b2fcb31 => '顯示此目錄中的所有檔案和資料夾';
 
   @override
-  String get pdfword => 'PDF、Word 文件、電子表格、文字和電子書';
+  String get pdfword => 'PDF、Word 檔案、電子表格、文字和電子書';
 
   @override
   String get jpegpngwebp => 'JPEG、PNG、WebP 和原始照片格式';
@@ -9894,7 +9918,7 @@ class L10nZhTw extends L10nZh {
   String get cat_audios => '音訊';
 
   @override
-  String get cat_documents => '文件';
+  String get cat_documents => '檔案';
 
   @override
   String get cat_downloads => '下載';
@@ -10512,10 +10536,10 @@ class L10nZhTw extends L10nZh {
   String get log_fix_l10n_hardcode => '修復多處 l10n 硬編碼問題';
 
   @override
-  String get log_language_scroll => '優化語言選擇介面支援滾動';
+  String get log_language_scroll => '最佳化語言選擇介面支援滾動';
 
   @override
-  String get log_remote_media_cache => '遠端媒體檔案點擊後立即開啟播放器，後台快取並顯示進度';
+  String get log_remote_media_cache => '遠端媒體檔案點選後立即開啟播放器，後臺快取並顯示進度';
 
   @override
   String get log_remote_to_remote => '新增遠端伺服器到遠端伺服器的複製/剪下功能';
@@ -10524,10 +10548,10 @@ class L10nZhTw extends L10nZh {
   String get log_remote_cut_progress => '修復遠端剪下操作進度條顯示異常';
 
   @override
-  String get log_audio_scan_stable => '優化音訊分類掃描穩定性';
+  String get log_audio_scan_stable => '最佳化音訊分類掃描穩定性';
 
   @override
-  String get log_extract_dialog_redesign => '重新設計解壓對話框，支援當前目錄/自訂目錄選擇';
+  String get log_extract_dialog_redesign => '重新設計解壓對話方塊，支援當前目錄/自訂目錄選擇';
 
   @override
   String get log_vault_quick_category => '將保險箱快捷方式新增到快捷分類（預設關閉）';
@@ -10539,10 +10563,10 @@ class L10nZhTw extends L10nZh {
   String get log_compression_path_fix => '統一三點按鈕和長按選單的壓縮路徑，修復壓縮包名稱錯誤';
 
   @override
-  String get log_compression_progress => '優化壓縮進度對話框，支援多階段進度顯示和可靠自動關閉';
+  String get log_compression_progress => '最佳化壓縮排度對話方塊，支援多階段進度顯示和可靠自動關閉';
 
   @override
-  String get log_web_share_category => '網頁共享入口支援分類顯示檔案（資料夾、影片、音訊、圖片、文件、其他）';
+  String get log_web_share_category => '網頁共享入口支援分類顯示檔案（資料夾、影片、音訊、圖片、檔案、其他）';
 
   @override
   String get log_web_share_l10n => '網頁共享入口支援根據 App 語言自動切換多語言顯示';
@@ -10554,22 +10578,22 @@ class L10nZhTw extends L10nZh {
   String get log_music_lyrics_centered => '音樂播放器當前歌詞改為居中對齊顯示';
 
   @override
-  String get log_music_player_button => '音樂分類頁頂部添加音樂播放器快捷按鈕，方便繼續收聽';
+  String get log_music_player_button => '音樂分類頁頂部新增音樂播放器快捷按鈕，方便繼續收聽';
 
   @override
   String get log_music_remember_progress => '音樂播放器記住播放進度，下次自動續播';
 
   @override
-  String get log_image_icon_redesign => '重新設計圖片文件圖標，顯示格式標籤（jpg、png 等）';
+  String get log_image_icon_redesign => '重新設計圖片檔案圖示，顯示格式標籤（jpg、png 等）';
 
   @override
-  String get log_doc_icon_redesign => '重新設計文档文件圖標，顯示格式標籤';
+  String get log_doc_icon_redesign => '重新設計檔案檔案圖示，顯示格式標籤';
 
   @override
-  String get log_archive_icon_redesign => '重新設計壓縮包圖標，顯示格式標籤（zip、7z、rar 等）';
+  String get log_archive_icon_redesign => '重新設計壓縮包圖示，顯示格式標籤（zip、7z、rar 等）';
 
   @override
-  String get log_music_lrc_lyrics => '音樂播放器支援自動載入 LRC 歌詞及手動選擇歌詞文件';
+  String get log_music_lrc_lyrics => '音樂播放器支援自動載入 LRC 歌詞及手動選擇歌詞檔案';
 
   @override
   String get log_remote_copy_paste_fix => '修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題';
@@ -10586,14 +10610,14 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_smb_native_rewrite =>
-      'SMB 用戶端完全重寫，透過 Android 原生 smbj 程式庫實現真實 SMB 協定，支援自動探測共享名';
+      'SMB 使用者端完全重寫，透過 Android 原生 smbj 程式庫實現真實 SMB 協定，支援自動探測共享名';
 
   @override
   String get log_ftp_sftp_streaming =>
-      '修復 FTP/SFTP 串流播放，使用原生 Socket 獨立資料連接，支援邊快取邊播放';
+      '修復 FTP/SFTP 串流播放，使用原生 Socket 獨立資料連線，支援邊快取邊播放';
 
   @override
-  String get log_remote_l10n_fix => '修復遠端連接頁硬編碼字串，新增 SMB 協定描述與連接名稱後綴的 l10n 翻譯';
+  String get log_remote_l10n_fix => '修復遠端連線頁硬編碼字串，新增 SMB 協定描述與連線名稱字尾的 l10n 翻譯';
 
   @override
   String get log_image_viewer_menu => '圖片瀏覽器右上角選單改為底部彈窗，9 個操作項，黑色半透明背景提升可見性';
@@ -10613,10 +10637,10 @@ class L10nZhTw extends L10nZh {
   String get log_category_back_select => '分類頁多選模式下按返回鍵取消選擇，而不是離開類別';
 
   @override
-  String get log_desktop_lyric => '新增桌面歌詞懸浮窗，支援權限檢查、拖動位置、單擊切換播放/暫停';
+  String get log_desktop_lyric => '新增桌面歌詞懸浮窗，支援許可權檢查、拖動位置、單擊切換播放/暫停';
 
   @override
-  String get log_notification_panel => '修復下拉通知欄不顯示播放控制面板，暫停時保留通知，權限拒絕時提示使用者';
+  String get log_notification_panel => '修復下拉通知欄不顯示播放控制面板，暫停時保留通知，許可權拒絕時提示使用者';
 
   @override
   String get log_lyric_word_highlight =>
@@ -10627,7 +10651,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_background_play_fix =>
-      '修復開啟背景播放時暫停音樂的問題，attach 複用 player 實例不中斷播放';
+      '修復開啟背景播放時暫停音樂的問題，attach 複用 player 例項不中斷播放';
 
   @override
   String get log_category_button_sync =>
@@ -10644,7 +10668,7 @@ class L10nZhTw extends L10nZh {
   String get msg_remember_choice => '記住此選擇，後續操作預設使用';
 
   @override
-  String get ui_caching => '正在緩存中，請稍後...';
+  String get ui_caching => '正在快取中，請稍後...';
 
   @override
   String get ui_username => '使用者名稱';
@@ -10716,7 +10740,7 @@ class L10nZhTw extends L10nZh {
   String get ui_audio => '音訊';
 
   @override
-  String get ui_documents => '文件';
+  String get ui_documents => '檔案';
 
   @override
   String get ui_no_matching_files => '未找到匹配檔案';
@@ -10880,12 +10904,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String msg_protected_count(Object successCount) {
-    return '成功保護 $successCount 個項目。';
+    return '成功保護 $successCount 個專案。';
   }
 
   @override
   String msg_protect_failed_count(Object failCount) {
-    return '失敗鎖定 $failCount 個項目。';
+    return '失敗鎖定 $failCount 個專案。';
   }
 
   @override
@@ -10960,7 +10984,7 @@ class L10nZhTw extends L10nZh {
   String get web_share_drop_desc => '檔案將立即上傳到此共享資料夾';
 
   @override
-  String get web_share_empty_search => '沒有匹配的項目';
+  String get web_share_empty_search => '沒有匹配的專案';
 
   @override
   String get web_share_empty_desc => '檢查拼寫或嘗試不同的搜尋詞';
@@ -10985,10 +11009,10 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get web_share_preview_unsupported => '不支援預覽此檔案類型';
+  String get web_share_preview_unsupported => '不支援預覽此檔案型別';
 
   @override
-  String get web_share_preview_download => '點擊下方下載按鈕儲存到您的裝置';
+  String get web_share_preview_download => '點選下方下載按鈕儲存到您的裝置';
 
   @override
   String get web_share_footer => '透過 ZenFile 安全共享和串流傳輸檔案';
@@ -11001,7 +11025,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String web_share_items_count(int count) {
-    return '$count 個項目';
+    return '$count 個專案';
   }
 
   @override
@@ -11029,7 +11053,7 @@ class L10nZhTw extends L10nZh {
   String get web_share_category_images => '圖片';
 
   @override
-  String get web_share_category_documents => '文件';
+  String get web_share_category_documents => '檔案';
 
   @override
   String get web_share_category_others => '其他';
@@ -11038,7 +11062,7 @@ class L10nZhTw extends L10nZh {
   String get web_share_loading_preview => '正在載入預覽...';
 
   @override
-  String get web_share_preview_error => '無法串流傳輸文件。您仍然可以直接下載。';
+  String get web_share_preview_error => '無法串流傳輸檔案。您仍然可以直接下載。';
 
   @override
   String get msg_custom_shortcut => '自訂圖示';
@@ -11108,7 +11132,7 @@ class L10nZhTw extends L10nZh {
       '內建播放器使用 libmpv 音訊輸出。如需應用等化器效果，請使用系統等化器（影響所有音訊輸出）。';
 
   @override
-  String get eq_apply_hint => '請在下方選擇預設，然後點擊開啟系統等化器在系統等化器中套用。';
+  String get eq_apply_hint => '請在下方選擇預設，然後點選開啟系統等化器在系統等化器中套用。';
 
   @override
   String get eq_preset_flat => '原聲';
@@ -11129,13 +11153,13 @@ class L10nZhTw extends L10nZh {
   String get ui_playback_queue => '播放佇列';
 
   @override
-  String get ui_repeat_off => '循環：關閉';
+  String get ui_repeat_off => '迴圈：關閉';
 
   @override
-  String get ui_repeat_one => '循環：單曲';
+  String get ui_repeat_one => '迴圈：單曲';
 
   @override
-  String get ui_repeat_all => '循環：全部';
+  String get ui_repeat_all => '迴圈：全部';
 
   @override
   String get ui_shuffle_on => '隨機播放：開';
@@ -11144,10 +11168,10 @@ class L10nZhTw extends L10nZh {
   String get ui_play_mode_sequential => '列表播放';
 
   @override
-  String get ui_play_mode_list_loop => '列表循環';
+  String get ui_play_mode_list_loop => '列表迴圈';
 
   @override
-  String get ui_play_mode_single_loop => '單曲循環';
+  String get ui_play_mode_single_loop => '單曲迴圈';
 
   @override
   String get ui_play_mode_shuffle => '隨機播放';
@@ -11184,7 +11208,7 @@ class L10nZhTw extends L10nZh {
   String get ui_close_player => '關閉播放器';
 
   @override
-  String get ui_open_player => '打開播放器';
+  String get ui_open_player => '開啟播放器';
 
   @override
   String get ui_now_playing => '正在播放';
@@ -11208,7 +11232,7 @@ class L10nZhTw extends L10nZh {
   String get ui_retry => '重試';
 
   @override
-  String get ui_media_load_failed => '媒體載入失敗，請檢查儲存權限後重試';
+  String get ui_media_load_failed => '媒體載入失敗，請檢查儲存許可權後重試';
 
   @override
   String get ui_no_subfolders => '無子資料夾';
@@ -11228,12 +11252,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_recycle_restore_success(int count) {
-    return '已成功恢復 $count 個項目';
+    return '已成功恢復 $count 個專案';
   }
 
   @override
   String ui_recycle_restore_failed(String error) {
-    return '恢復項目時出錯：$error';
+    return '恢復專案時出錯：$error';
   }
 
   @override
@@ -11241,17 +11265,17 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_recycle_perm_delete_message(int count) {
-    return '確定要永久刪除這 $count 個項目嗎？此操作無法撤銷。';
+    return '確定要永久刪除這 $count 個專案嗎？此操作無法撤銷。';
   }
 
   @override
   String ui_recycle_perm_delete_success(int count) {
-    return '已永久刪除 $count 個項目';
+    return '已永久刪除 $count 個專案';
   }
 
   @override
   String ui_recycle_perm_delete_failed(String error) {
-    return '刪除項目時出錯：$error';
+    return '刪除專案時出錯：$error';
   }
 
   @override
@@ -11276,13 +11300,13 @@ class L10nZhTw extends L10nZh {
   String get ui_recycle_restore => '還原';
 
   @override
-  String get ui_recycle_empty_hint => '啟用資源回收桶後刪除的項目將顯示在此處。您可以還原它們或永久刪除。';
+  String get ui_recycle_empty_hint => '啟用資源回收桶後刪除的專案將顯示在此處。您可以還原它們或永久刪除。';
 
   @override
   String get ui_recycle_deleted_date => '刪除日期';
 
   @override
-  String get ui_recycle_type => '類型';
+  String get ui_recycle_type => '型別';
 
   @override
   String get ui_recycle_file => '檔案';
@@ -11294,7 +11318,7 @@ class L10nZhTw extends L10nZh {
   String get ui_db_table_schema => '資料表結構';
 
   @override
-  String get ui_db_sql_console => 'SQL 控制台';
+  String get ui_db_sql_console => 'SQL 控制檯';
 
   @override
   String ui_db_export_success(String fileName) {
@@ -11317,7 +11341,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_db_type(String type) {
-    return '類型：$type';
+    return '型別：$type';
   }
 
   @override
@@ -11354,11 +11378,11 @@ class L10nZhTw extends L10nZh {
   String get ui_app_precise_storage => '精確儲存計算';
 
   @override
-  String get ui_app_grant_usage_access => '授予使用狀況存取權限';
+  String get ui_app_grant_usage_access => '授予使用狀況存取許可權';
 
   @override
   String get ui_app_usage_access_description =>
-      '如需查看精確的應用儲存大小（APK + 資料 + 快取），而不僅是安裝包大小，請在系統設定中為 ZenFile 啟用使用狀況存取權限。';
+      '如需檢視精確的應用儲存大小（APK + 資料 + 快取），而不僅是安裝包大小，請在系統設定中為 ZenFile 啟用使用狀況存取許可權。';
 
   @override
   String get ui_backup_apk_open_folder => '開啟備份目錄';
@@ -11437,20 +11461,22 @@ class L10nZhTw extends L10nZh {
   String get ui_desktop_lyric => '桌面歌詞';
 
   @override
-  String get msg_overlay_permission_required => '需要懸浮窗權限才能顯示桌面歌詞，請前往設定授權後重試';
+  String get msg_overlay_permission_required => '需要懸浮窗許可權才能顯示桌面歌詞，請前往設定授權後重試';
 
   @override
-  String get msg_notification_permission_denied => '需要通知權限才能顯示播放控制面板，是否前往設定開啟？';
+  String get msg_notification_permission_denied =>
+      '需要通知許可權才能顯示播放控制面板，是否前往設定開啟？';
 
   @override
   String get msg_open_settings => '去設定';
 
   @override
-  String get msg_notification_not_granted => '通知權限未授予，無法顯示播放控制通知。請前往設定開啟通知權限。';
+  String get msg_notification_not_granted =>
+      '通知許可權未授予，無法顯示播放控制通知。請前往設定開啟通知許可權。';
 
   @override
   String get msg_notification_blocked_hint =>
-      '通知欄未生效，可能是系統通知渠道被停用或電池優化限制了背景執行。請在系統設定中檢查通知權限和電池優化設定。';
+      '通知欄未生效，可能是系統通知渠道被停用或電池最佳化限制了背景執行。請在系統設定中檢查通知許可權和電池最佳化設定。';
 
   @override
   String get msg_audio_service_init_failed =>
@@ -11503,7 +11529,7 @@ class L10nZhTw extends L10nZh {
   String get msg_aspect_custom => '自訂';
 
   @override
-  String get msg_aspect_fill_screen => '填充屏幕';
+  String get msg_aspect_fill_screen => '填充螢幕';
 
   @override
   String get msg_custom_aspect_ratio => '自訂縮放比例';
@@ -11524,7 +11550,7 @@ class L10nZhTw extends L10nZh {
   String get open_always => '始終';
 
   @override
-  String get pick_file_type => '選擇檔案類型';
+  String get pick_file_type => '選擇檔案型別';
 
   @override
   String get file_type_text => '文字';
@@ -11635,7 +11661,7 @@ class L10nZhTw extends L10nZh {
   String get msg_auto_clean_cache => '自動清理快取';
 
   @override
-  String get msg_auto_clean_cache_hint => '點擊設定自動清理時間間隔';
+  String get msg_auto_clean_cache_hint => '點選設定自動清理時間間隔';
 
   @override
   String get msg_auto_clean_cache_picker_hint => '滑動選擇自動清理時間間隔';
@@ -11692,7 +11718,7 @@ class L10nZhTw extends L10nZh {
   String get msg_no_playlist => '暫無播放列表';
 
   @override
-  String get msg_slide_to_unlock => '滑動/點擊解鎖';
+  String get msg_slide_to_unlock => '滑動/點選解鎖';
 
   @override
   String get msg_seconds_short => '秒';
@@ -11720,14 +11746,14 @@ class L10nZhTw extends L10nZh {
   String get log_v1_1_1_line6 => '📂 檔案瀏覽與操作';
 
   @override
-  String get log_v1_1_1_line7 => '優化側滑選單與快捷操作彈窗的寬度一致性，視覺更統一。';
+  String get log_v1_1_1_line7 => '最佳化側滑選單與快捷操作彈窗的寬度一致性，視覺更統一。';
 
   @override
   String get log_v1_1_1_line8 => '快捷操作面板中的常用功能現支援摺疊/展開，且狀態會持久記憶，下次開啟保留您的偏好。';
 
   @override
   String get log_v1_1_1_line9 =>
-      '調整檔案開啟邏輯：點擊檔案預設使用本應用直接開啟；如需切換其他應用，可在選中檔案後，透過頂部三點選單或底部操作列的「更多」選項選擇「開啟方式」。';
+      '調整檔案開啟邏輯：點選檔案預設使用本應用直接開啟；如需切換其他應用，可在選中檔案後，透過頂部三點選單或底部操作列的「更多」選項選擇「開啟方式」。';
 
   @override
   String get log_v1_1_1_line10 => '🗂️ 分類頁介面';
@@ -11758,7 +11784,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String notification_web_share_running(Object url) {
-    return '運行於 $url';
+    return '執行於 $url';
   }
 
   @override
@@ -11766,7 +11792,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String notification_ftp_running(Object ip, Object port) {
-    return '運行於 ftp://$ip:$port';
+    return '執行於 ftp://$ip:$port';
   }
 
   @override
@@ -11831,7 +11857,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String batch_rename_subtitle(Object count) {
-    return '正在配置 $count 個項目';
+    return '正在配置 $count 個專案';
   }
 
   @override
@@ -11839,22 +11865,22 @@ class L10nZhTw extends L10nZh {
 
   @override
   String batch_rename_tooltip_basename(Object n) {
-    return '不帶擴展名的檔案名 ($n)';
+    return '不帶副檔名的檔案名 ($n)';
   }
 
   @override
   String batch_rename_tooltip_ext_with_dot(Object de) {
-    return '帶點的擴展名 ($de)';
+    return '帶點的副檔名 ($de)';
   }
 
   @override
   String batch_rename_tooltip_ext_no_dot(Object e) {
-    return '不帶點的擴展名 ($e)';
+    return '不帶點的副檔名 ($e)';
   }
 
   @override
   String batch_rename_tooltip_full_name(Object N) {
-    return '帶擴展名的完整檔案名 ($N)';
+    return '帶副檔名的完整檔案名 ($N)';
   }
 
   @override
@@ -11889,14 +11915,14 @@ class L10nZhTw extends L10nZh {
 
   @override
   String batch_rename_preview_subtitle(Object count) {
-    return '正在查看 $count 個項目';
+    return '正在檢視 $count 個專案';
   }
 
   @override
   String get batch_rename_btn_apply => '應用更改';
 
   @override
-  String get msg_pdf_quick_presets => '快速性能預設';
+  String get msg_pdf_quick_presets => '快速效能預設';
 
   @override
   String get msg_pdf_smooth_mode => '流暢模式';
@@ -11923,7 +11949,7 @@ class L10nZhTw extends L10nZh {
   String get msg_pdf_horizontal => '水平';
 
   @override
-  String get changelog_v1125_new_1 => '音訊播放器歌詞按鈕支援四種狀態循環切換，播放模式按鈕整合隨機播放。';
+  String get changelog_v1125_new_1 => '音訊播放器歌詞按鈕支援四種狀態迴圈切換，播放模式按鈕整合隨機播放。';
 
   @override
   String get changelog_v1125_opt_1 =>
@@ -11944,7 +11970,7 @@ class L10nZhTw extends L10nZh {
       '修復 Android 13+ 與 Android 11 通知列媒體控制卡片不顯示的問題（提前建立通知頻道並按系統版本分流播放狀態邏輯）。';
 
   @override
-  String get changelog_v1125_fix_3 => '修復分類頁網格檢視中已選取的項目無法再次點擊取消選取的問題。';
+  String get changelog_v1125_fix_3 => '修復分類頁網格檢視中已選取的專案無法再次點選取消選取的問題。';
 
   @override
   String get changelog_v1125_fix_4 =>
@@ -11962,15 +11988,16 @@ class L10nZhTw extends L10nZh {
   String get changelog_v1126_opt_2 => '移除備用圖示集，顯著減小安裝套件（APK）體積。';
 
   @override
-  String get changelog_v1126_opt_3 => '細節優化：側選單「網路」清單的三點按鈕改為右對齊，快速操作頁標題支援自動換行。';
+  String get changelog_v1126_opt_3 =>
+      '細節最佳化：側選單「網路」清單的三點按鈕改為右對齊，快速操作頁標題支援自動換行。';
 
   @override
   String get changelog_v1126_fix_1 =>
-      '修復 FTP 下載速度被錯誤限制在 30-40MB/s 的問題（寫入刷新間隔過小導致）。';
+      '修復 FTP 下載速度被錯誤限制在 30-40MB/s 的問題（寫入重新整理間隔過小導致）。';
 
   @override
   String get changelog_v1126_fix_2 =>
-      '修復遠端用戶端（SMB/FTP/SFTP）取消傳輸、清單卡頓與重新整理三類問題。';
+      '修復遠端使用者端（SMB/FTP/SFTP）取消傳輸、清單卡頓與重新整理三類問題。';
 
   @override
   String get changelog_v1126_fix_3 => '修復 openlist 殘留導致的相關異常。';
@@ -12023,7 +12050,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1128_new_2 =>
-      '查看與排序選項支援依類別多選過濾（圖片/影片/音訊/文件/壓縮包/安裝包/其它可疊加），並可記住過濾條件';
+      '檢視與排序選項支援依類別多選過濾（圖片/影片/音訊/檔案/壓縮包/安裝包/其它可疊加），並可記住過濾條件';
 
   @override
   String get changelog_v1128_new_3 => '分類頁新增「備份/還原」快捷入口，並預設啟用';
@@ -12118,103 +12145,103 @@ class L10nZhTw extends L10nZh {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => '在您的裝置上即時查找任何檔案、資料夾、文件或媒體';
+  String get ui_global_search_hint => '在您的裝置上即時查詢任何檔案、資料夾、檔案或媒體';
 
   @override
-  String get ui_delete_item_confirm => '確定要刪除此項目嗎？此操作無法復原。';
+  String get ui_delete_item_confirm => '確定要刪除此專案嗎？此操作無法復原。';
 
   @override
   String ui_delete_items_confirm(int count) {
-    return '確定要刪除選中的 $count 個項目嗎？此操作無法復原。';
+    return '確定要刪除選中的 $count 個專案嗎？此操作無法復原。';
   }
 
   @override
   String get changelog_v1130_new_1 =>
-      '远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私';
+      '遠端保護 PIN 碼：設定 4 位 PIN 後，訪問已儲存遠端伺服器、進入編輯頁、分類頁切換到遠端範圍時需先解鎖，保護遠端資料隱私';
 
   @override
-  String get changelog_v1130_new_2 => '分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容';
+  String get changelog_v1130_new_2 => '分類頁「本地/遠端」切換：所有支援遠端目錄的類別可獨立切換本地/遠端內容';
 
   @override
   String get changelog_v1130_new_3 =>
-      '备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件';
+      '備份功能（本地→遠端）：支援「自動備份」與「立即備份」，新增檔案檢測自動觸發，只備份該類別格式檔案';
 
   @override
-  String get changelog_v1130_new_4 => '远程连接向导新增「测试」按钮，可先验证连接再保存配置';
+  String get changelog_v1130_new_4 => '遠端連線嚮導新增「測試」按鈕，可先驗證連線再儲存配置';
 
   @override
-  String get changelog_v1130_new_5 => '视频/音频类别菜单新增「播放器控制器显隐」开关';
+  String get changelog_v1130_new_5 => '影片/音訊類別選單新增「播放器控制器顯隱」開關';
 
   @override
-  String get changelog_v1130_new_6 => '统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗';
+  String get changelog_v1130_new_6 => '統一「開啟方式」彈窗：瀏覽頁/最近頁/分類頁 三點與長按選單均彈應用內選擇彈窗';
 
   @override
   String get changelog_v1130_new_7 =>
-      '未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开';
+      '未知格式檔案選「本應用開啟」後彈出型別選擇器（文字/音訊/影片/影象）並以內建檢視器開啟';
 
   @override
-  String get changelog_v1130_opt_1 => '分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换';
+  String get changelog_v1130_opt_1 => '分類頁/瀏覽頁「分類」「瀏覽」按鈕合二為一，居中翻轉切換';
 
   @override
-  String get changelog_v1130_opt_2 => '重命名自动选中文件名主体（不含扩展名），光标落扩展名前';
+  String get changelog_v1130_opt_2 => '重新命名自動選中檔名主體（不含副檔名），遊標落副檔名前';
 
   @override
-  String get changelog_v1130_opt_3 => '网格/列表视图切换整合进排序菜单';
+  String get changelog_v1130_opt_3 => '網格/列表檢視切換整合進排序選單';
 
   @override
-  String get changelog_v1130_opt_4 => '每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看';
+  String get changelog_v1130_opt_4 => '每個類別獨立記憶「資料夾/全部專案」檢視模式，影片/音訊預設資料夾檢視';
 
   @override
-  String get changelog_v1130_opt_5 => '下载类别支持远程备份';
+  String get changelog_v1130_opt_5 => '下載類別支援遠端備份';
 
   @override
-  String get changelog_v1130_opt_6 => '远程图片/视频缩略图按需下载显示';
+  String get changelog_v1130_opt_6 => '遠端圖片/影片縮圖按需下載顯示';
 
   @override
-  String get changelog_v1130_opt_7 => '本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复';
+  String get changelog_v1130_opt_7 => '本地掃描排除應用快取目錄，修復開啟遠端縮圖後本地圖片重複';
 
   @override
-  String get changelog_v1130_opt_8 => '远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效';
+  String get changelog_v1130_opt_8 => '遠端檔案三點選單與長按批次刪除/重新命名/複製/剪下/定位操作生效';
 
   @override
-  String get changelog_v1130_opt_9 => '远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）';
+  String get changelog_v1130_opt_9 => '遠端資料夾下鑽保留目錄結構（DCIM/Pictures 等頂層目錄）';
 
   @override
-  String get changelog_v1130_fix_1 => '修复 MIUI 存储权限误判导致启动弹窗循环卡死';
+  String get changelog_v1130_fix_1 => '修復 MIUI 儲存許可權誤判導致啟動彈窗迴圈卡死';
 
   @override
-  String get changelog_v1130_fix_2 => '修复分类页长按拖动类别图标误触左右切页';
+  String get changelog_v1130_fix_2 => '修復分類頁長按拖動類別圖示誤觸左右切頁';
 
   @override
-  String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
+  String get changelog_v1130_fix_3 => '修復截圖在圖片類別「按資料夾」下鑽後消失';
 
   @override
-  String get ui_remote_guard => '远程守卫';
+  String get ui_remote_guard => '遠端守衛';
 
   @override
   String get ui_remote_guard_desc =>
       '設定密碼保護遠端伺服器存取，每次啟動應用程式或手動鎖定後需輸入密碼才能進入遠端伺服器';
 
   @override
-  String get ui_remote_guard_enabled => '已启用';
+  String get ui_remote_guard_enabled => '已啟用';
 
   @override
   String get ui_remote_guard_disabled => '已禁用';
 
   @override
-  String get ui_remote_guard_set_pin => '设置PIN码';
+  String get ui_remote_guard_set_pin => '設定PIN碼';
 
   @override
-  String get ui_remote_guard_enter_pin => '输入PIN码';
+  String get ui_remote_guard_enter_pin => '輸入PIN碼';
 
   @override
-  String get ui_remote_guard_confirm_pin => '确认PIN码';
+  String get ui_remote_guard_confirm_pin => '確認PIN碼';
 
   @override
-  String get ui_remote_guard_pin_mismatch => '两次输入的PIN码不一致，请重新输入';
+  String get ui_remote_guard_pin_mismatch => '兩次輸入的PIN碼不一致，請重新輸入';
 
   @override
-  String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
+  String get ui_remote_guard_wrong_pin => 'PIN碼錯誤，請重試';
 
   @override
   String get ui_remote_guard_change_pin => '修改密碼';
@@ -12223,10 +12250,10 @@ class L10nZhTw extends L10nZh {
   String get ui_remote_guard_pin_hint => '可含字母、數字或符號的密碼';
 
   @override
-  String get ui_remote_guard_lock_now => '立即锁定';
+  String get ui_remote_guard_lock_now => '立即鎖定';
 
   @override
-  String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
+  String get ui_remote_guard_lock_now_desc => '鎖定後需要重新輸入PIN碼才能訪問遠端伺服器';
 
   @override
   String get ui_security_settings => '安全設定';
@@ -12259,49 +12286,49 @@ class L10nZhTw extends L10nZh {
   String get ui_change_vault_pin_desc => '修改安全設定與保險箱解鎖密碼，不影響已加密檔案';
 
   @override
-  String get ui_auto_backup => '自动备份';
+  String get ui_auto_backup => '自動備份';
 
   @override
-  String get ui_backup => '备份';
+  String get ui_backup => '備份';
 
   @override
-  String get ui_backup_now => '立即备份';
+  String get ui_backup_now => '立即備份';
 
   @override
   String get ui_local => '本地';
 
   @override
-  String get ui_no_remote_path => '未添加自定义远程路径';
+  String get ui_no_remote_path => '未新增自定義遠端路徑';
 
   @override
-  String get ui_remote => '远程';
+  String get ui_remote => '遠端';
 
   @override
-  String get ui_sync_done => '备份完成';
+  String get ui_sync_done => '備份完成';
 
   @override
-  String get ui_syncing => '正在备份...';
+  String get ui_syncing => '正在備份...';
 
   @override
-  String get ui_test => '测试';
+  String get ui_test => '測試';
 
   @override
-  String get ui_test_failed => '测试失败';
+  String get ui_test_failed => '測試失敗';
 
   @override
-  String get ui_test_failed_reason => '失败原因';
+  String get ui_test_failed_reason => '失敗原因';
 
   @override
-  String get ui_test_success => '测试成功';
+  String get ui_test_success => '測試成功';
 
   @override
-  String get ui_test_success_desc => '连接成功，服务器配置正确';
+  String get ui_test_success_desc => '連線成功，伺服器配置正確';
 
   @override
-  String get ui_show_remote_files => '显示远程文件';
+  String get ui_show_remote_files => '顯示遠端檔案';
 
   @override
-  String get ui_hide_remote_files => '隐藏远程文件';
+  String get ui_hide_remote_files => '隱藏遠端檔案';
 
   @override
   String get changelog_v1130_new_8 => '影片播放器新增「軟解 / 硬解」切換開關，可依裝置解碼能力在畫質與效能間擇優。';
@@ -12334,7 +12361,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1130_fix_5 =>
-      '修復發佈建置編譯錯誤（SongModel.getMap 呼叫方式、VideoController 無 dispose()）。';
+      '修復釋出建置編譯錯誤（SongModel.getMap 呼叫方式、VideoController 無 dispose()）。';
 
   @override
   String get changelog_v1131_fix_1 =>
@@ -12599,13 +12626,13 @@ class L10nZhTw extends L10nZh {
   String get editor_quality => '品質（檔案大小）';
 
   @override
-  String get editor_mode_pixel => '像素';
+  String get editor_mode_pixel => '畫素';
 
   @override
   String get editor_mode_physical => '物理尺寸';
 
   @override
-  String get editor_physical_title => '物理尺寸 → 像素（DPI 轉換）';
+  String get editor_physical_title => '物理尺寸 → 畫素（DPI 轉換）';
 
   @override
   String get editor_width_mm => '寬 (mm)';
@@ -12631,7 +12658,7 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get editor_pixel_result => '像素（自動計算）';
+  String get editor_pixel_result => '畫素（自動計算）';
 
   @override
   String get editor_width_px => '寬度 (px)';
@@ -12726,7 +12753,7 @@ class L10nZhTw extends L10nZh {
   String get img_info_file_time => '時間';
 
   @override
-  String get img_info_file_info => '文件信息';
+  String get img_info_file_info => '檔案資訊';
 
   @override
   String get img_info_save_path => '儲存路徑';
@@ -12735,10 +12762,10 @@ class L10nZhTw extends L10nZh {
   String get img_info_shoot_location => '拍攝地點';
 
   @override
-  String get img_info_camera_params => '拍攝參數';
+  String get img_info_camera_params => '拍攝引數';
 
   @override
-  String get img_info_device => '設備';
+  String get img_info_device => '裝置';
 
   @override
   String get img_info_shutter => '快門';
@@ -12785,7 +12812,7 @@ class L10nZhTw extends L10nZh {
   String get quick_transfer => '快傳';
 
   @override
-  String get quick_transfer_send => '我要發送';
+  String get quick_transfer_send => '我要傳送';
 
   @override
   String get quick_transfer_receive => '我要接收';
@@ -12874,7 +12901,7 @@ class L10nZhTw extends L10nZh {
   String get wol_broadcast => '廣播位址';
 
   @override
-  String get wol_port => '連接埠';
+  String get wol_port => '連線埠';
 
   @override
   String get wol_wake => '喚醒';
@@ -12889,7 +12916,7 @@ class L10nZhTw extends L10nZh {
   String get wol_invalid_mac => 'MAC 位址格式無效';
 
   @override
-  String get wol_empty => '尚無裝置，點擊右下角按鈕新增';
+  String get wol_empty => '尚無裝置，點選右下角按鈕新增';
 
   @override
   String wol_delete_confirm(Object name) {
@@ -12915,35 +12942,35 @@ class L10nZhTw extends L10nZh {
   String get wol_port_hint => '選填';
 
   @override
-  String get quick_transfer_nearby_devices => '附近設備';
+  String get quick_transfer_nearby_devices => '附近裝置';
 
   @override
-  String get quick_transfer_scanning => '正在掃描附近設備…';
+  String get quick_transfer_scanning => '正在掃描附近裝置…';
 
   @override
-  String get quick_transfer_scan_hint => '雙方都需打開快傳並保持本頁面在前台';
+  String get quick_transfer_scan_hint => '雙方都需開啟快傳並保持本頁面在前臺';
 
   @override
-  String get quick_transfer_tap_to_connect => '點擊設備名發起連接';
+  String get quick_transfer_tap_to_connect => '點選裝置名發起連線';
 
   @override
   String quick_transfer_connecting(Object name) {
-    return '正在連接 $name…';
+    return '正在連線 $name…';
   }
 
   @override
   String quick_transfer_connected_as(Object role) {
-    return '已連接（本機為 $role）';
+    return '已連線（本機為 $role）';
   }
 
   @override
-  String get quick_transfer_role_owner => '發送端';
+  String get quick_transfer_role_owner => '傳送端';
 
   @override
   String get quick_transfer_role_client => '接收端';
 
   @override
-  String get quick_transfer_select_files => '選擇要發送的檔案 / 資料夾';
+  String get quick_transfer_select_files => '選擇要傳送的檔案 / 資料夾';
 
   @override
   String quick_transfer_selected_summary(Object count, Object size) {
@@ -12951,11 +12978,11 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get quick_transfer_begin_send => '開始發送';
+  String get quick_transfer_begin_send => '開始傳送';
 
   @override
   String quick_transfer_incoming(Object name) {
-    return '收到來自 $name 的發送請求';
+    return '收到來自 $name 的傳送請求';
   }
 
   @override
@@ -12970,7 +12997,7 @@ class L10nZhTw extends L10nZh {
   String get quick_transfer_reject => '拒絕';
 
   @override
-  String get quick_transfer_sending => '正在發送…';
+  String get quick_transfer_sending => '正在傳送…';
 
   @override
   String get quick_transfer_receiving => '正在接收…';
@@ -12979,20 +13006,20 @@ class L10nZhTw extends L10nZh {
   String get quick_transfer_complete => '傳輸完成';
 
   @override
-  String get quick_transfer_waiting_peer => '等待對方連接…';
+  String get quick_transfer_waiting_peer => '等待對方連線…';
 
   @override
-  String get quick_transfer_connected_waiting_files => '已連接，等待對方發送檔案…';
+  String get quick_transfer_connected_waiting_files => '已連線，等待對方傳送檔案…';
 
   @override
   String get quick_transfer_permission_why =>
-      'WiFi Direct 掃描需要位置/附近設備權限，不會收集您的地理位置';
+      'WiFi Direct 掃描需要位置/附近裝置許可權，不會收集您的地理位置';
 
   @override
-  String get quick_transfer_permission_required => '快傳需要位置 / 附近設備權限以發現附近設備';
+  String get quick_transfer_permission_required => '快傳需要位置 / 附近裝置許可權以發現附近裝置';
 
   @override
-  String get quick_transfer_not_supported => '目前設備不支援 WiFi Direct 快傳';
+  String get quick_transfer_not_supported => '目前裝置不支援 WiFi Direct 快傳';
 
   @override
   String get quick_transfer_disconnect => '斷開';
@@ -13004,7 +13031,7 @@ class L10nZhTw extends L10nZh {
   String get quick_transfer_save_to => '儲存到';
 
   @override
-  String get quick_transfer_send_mode => '發送';
+  String get quick_transfer_send_mode => '傳送';
 
   @override
   String get quick_transfer_receive_mode => '接收';
@@ -13027,7 +13054,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get quick_transfer_create_group_failed =>
-      '建立快傳連線失敗，請確保已開啟 WLAN 並授予位置/附近設備權限後重試';
+      '建立快傳連線失敗，請確保已開啟 WLAN 並授予位置/附近裝置許可權後重試';
 
   @override
   String get quick_transfer_receive_path => '接收路徑';
@@ -13056,19 +13083,19 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get quick_transfer_connect_btn => '連接';
+  String get quick_transfer_connect_btn => '連線';
 
   @override
-  String get quick_transfer_connected_btn => '已連接';
+  String get quick_transfer_connected_btn => '已連線';
 
   @override
   String get quick_transfer_forget_device => '移除裝置';
 
   @override
-  String get quick_transfer_peer_unreachable => '無法連接到該裝置，請確保對方已打開快傳並在附近。';
+  String get quick_transfer_peer_unreachable => '無法連線到該裝置，請確保對方已開啟快傳並在附近。';
 
   @override
-  String get quick_transfer_available_peers => '可連接設備';
+  String get quick_transfer_available_peers => '可連線裝置';
 
   @override
   String quick_transfer_selected_count(Object count) {
@@ -13077,7 +13104,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1133_new_1 =>
-      '快傳功能（區網傳輸）：獨立快傳頁面（傳送/接收雙模式）、附近裝置雷達掃描發現、裝置連線/已連線狀態、傳輸前確認機制、接收完成後一鍵在本應用瀏覽頁開啟、權限說明，全 10 語言。';
+      '快傳功能（區網傳輸）：獨立快傳頁面（傳送/接收雙模式）、附近裝置雷達掃描發現、裝置連線/已連線狀態、傳輸前確認機制、接收完成後一鍵在本應用瀏覽頁開啟、許可權說明，全 10 語言。';
 
   @override
   String get changelog_v1133_new_2 => '分類圖示標籤顯隱開關';
@@ -13126,7 +13153,7 @@ class L10nZhTw extends L10nZh {
   String get changelog_v1133_fix_1 => '文字編輯器開啟未知檔案「文字開啟」錯誤提示硬編碼 → 多語言';
 
   @override
-  String get changelog_v1133_fix_2 => '桌面歌詞權限提示中文硬編碼 Toast → 多語言';
+  String get changelog_v1133_fix_2 => '桌面歌詞許可權提示中文硬編碼 Toast → 多語言';
 
   @override
   String get changelog_v1133_fix_3 => '目錄選擇器「固定所選」按鈕硬編碼中文 → 多語言';
@@ -13143,23 +13170,23 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1134_fix_2 =>
-      '修復 FTP 連不上/選錯網卡：重寫本地 IP 選擇邏輯，優先 wlan/eth 介面，跳過 Docker/VPN/虛擬網卡，避免回退到不可達位址。';
+      '修復 FTP 連不上/選錯網路卡：重寫本地 IP 選擇邏輯，優先 wlan/eth 介面，跳過 Docker/VPN/虛擬網路卡，避免回退到不可達位址。';
 
   @override
   String get changelog_v1134_fix_3 =>
-      'FTP 共享支援自訂連接埠：可在設定中配置並持久化，執行中修改即時生效並自動重啟監聽。';
+      'FTP 共享支援自訂連線埠：可在設定中配置並持久化，執行中修改即時生效並自動重啟監聽。';
 
   @override
   String get changelog_v1134_fix_4 =>
-      '修復 FTP 控制連接埠綁定與 PASV：改用具體區域網路 IP 綁定控制連接埠、簡化 PASV 位址解析，修復 VPN/代理場景下的連線失敗。';
+      '修復 FTP 控制連線埠繫結與 PASV：改用具體區域網路 IP 繫結控制連線埠、簡化 PASV 位址解析，修復 VPN/代理場景下的連線失敗。';
 
   @override
   String get changelog_v1134_fix_5 =>
-      '新增「FTP 伺服器已停止」提示，替換原先伺服器停止時錯誤的「更改連接埠 未啟用」提示。';
+      '新增「FTP 伺服器已停止」提示，替換原先伺服器停止時錯誤的「更改連線埠 未啟用」提示。';
 
   @override
   String get changelog_v1134_fix_6 =>
-      '文字編輯器儲存/另存為合併為單一儲存按鈕，點擊彈出選單選擇「儲存」或「另存為」。';
+      '文字編輯器儲存/另存為合併為單一儲存按鈕，點選彈出選單選擇「儲存」或「另存為」。';
 
   @override
   String get changelog_v1134_new_1 => '新增分類頁工具箱入口。';
@@ -13169,14 +13196,14 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1134_new_3 =>
-      '快傳已記住裝置：自動記住已連線裝置，下次一鍵點擊連線重連；已記住清單支援單獨刪除裝置。';
+      '快傳已記住裝置：自動記住已連線裝置，下次一鍵點選連線重連；已記住清單支援單獨刪除裝置。';
 
   @override
   String get changelog_v1134_opt_1 => '快傳對稱化傳輸：連線成功後雙方均可主動傳送，移除收發模式切換與頂部切換按鈕。';
 
   @override
   String get changelog_v1134_opt_2 =>
-      '快傳 UI 整體美化：分區卡片化、裝置列卡片化、圖示徽章、填滿式選取框、進度頁圓形徽章，視覺更統一。';
+      '快傳 UI 整體美化：分割槽卡片化、裝置列卡片化、圖示徽章、填滿式選取框、進度頁圓形徽章，視覺更統一。';
 
   @override
   String get changelog_v1134_opt_3 =>
@@ -13193,11 +13220,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String quick_transfer_waiting_for_x(Object name) {
-    return '等待 $name 點擊連線…';
+    return '等待 $name 點選連線…';
   }
 
   @override
-  String get quick_transfer_ask_peer_connect => '請讓對端裝置也在快傳中點擊本機的「連線」按鈕';
+  String get quick_transfer_ask_peer_connect => '請讓對端裝置也在快傳中點選本機的「連線」按鈕';
 
   @override
   String get ui_scan_shares => '掃描共享名';
@@ -13206,7 +13233,7 @@ class L10nZhTw extends L10nZh {
   String get ui_scanning_shares => '正在掃描共享名…';
 
   @override
-  String get ui_select_share_to_fill => '點擊共享名自動填入';
+  String get ui_select_share_to_fill => '點選共享名自動填入';
 
   @override
   String get ui_no_shares_found => '未找到共享名';
@@ -13226,101 +13253,101 @@ class L10nZhTw extends L10nZh {
   String get ui_lan_no_devices => '未發現區域網路共享裝置';
 
   @override
-  String get ui_lan_scan_hint => '點擊裝置自動填入位址與共用名稱';
+  String get ui_lan_scan_hint => '點選裝置自動填入位址與共用名稱';
 
   @override
-  String get ui_enter_host_first => '請先填寫主機地址與連接埠';
+  String get ui_enter_host_first => '請先填寫主機地址與連線埠';
 
   @override
-  String get vault_enter_password => '输入密码解锁';
+  String get vault_enter_password => '輸入密碼解鎖';
 
   @override
-  String get vault_set_password => '设置密码';
+  String get vault_set_password => '設定密碼';
 
   @override
-  String get vault_confirm_password => '再次输入以确认';
+  String get vault_confirm_password => '再次輸入以確認';
 
   @override
-  String get vault_pins_mismatch => '两次输入的密码不一致';
+  String get vault_pins_mismatch => '兩次輸入的密碼不一致';
 
   @override
-  String get vault_incorrect_password => '密码错误，请重试';
+  String get vault_incorrect_password => '密碼錯誤，請重試';
 
   @override
-  String get vault_password_set => '密码已设置';
+  String get vault_password_set => '密碼已設定';
 
   @override
   String get vault_next => '下一步';
 
   @override
-  String get vault_unlock => '解锁';
+  String get vault_unlock => '解鎖';
 
   @override
-  String get vault_use_keypad => '使用数字键盘';
+  String get vault_use_keypad => '使用數字鍵盤';
 
   @override
-  String get vault_use_text_input => '使用字母数字';
+  String get vault_use_text_input => '使用字母數字';
 
   @override
-  String get vault_fingerprint => '使用指纹解锁';
+  String get vault_fingerprint => '使用指紋解鎖';
 
   @override
-  String get vault_fingerprint_failed => '指纹验证失败';
+  String get vault_fingerprint_failed => '指紋驗證失敗';
 
   @override
-  String get vault_min_length => '密码至少需要 4 位';
+  String get vault_min_length => '密碼至少需要 4 位';
 
   @override
   String get vault_pwd_alphanumeric => '可含字母、數字或符號的密碼';
 
   @override
-  String get vault_enable_fingerprint => '启用指纹解锁';
+  String get vault_enable_fingerprint => '啟用指紋解鎖';
 
   @override
-  String get vault_biometric_desc => '使用指纹快速解锁保险箱';
+  String get vault_biometric_desc => '使用指紋快速解鎖保險箱';
 
   @override
-  String get vault_export_backup => '导出备份';
+  String get vault_export_backup => '匯出備份';
 
   @override
-  String get vault_export_backup_desc => '导出加密的保险箱备份 (.zip)';
+  String get vault_export_backup_desc => '匯出加密的保險箱備份 (.zip)';
 
   @override
-  String get vault_import_backup => '导入备份';
+  String get vault_import_backup => '匯入備份';
 
   @override
   String get vault_backup_restore => '備份/還原';
 
   @override
-  String get vault_import_backup_desc => '从备份文件 (.zip) 还原保险箱';
+  String get vault_import_backup_desc => '從備份檔案 (.zip) 還原保險箱';
 
   @override
-  String get vault_uninstall_warning_title => '卸载警告';
+  String get vault_uninstall_warning_title => '解除安裝警告';
 
   @override
-  String get vault_uninstall_warning => '卸載應用會清空沙盒加密，建議先匯出備份';
+  String get vault_uninstall_warning => '解除安裝應用會清空沙盒加密，建議先匯出備份';
 
   @override
-  String get vault_backup_exported => '备份已导出到';
+  String get vault_backup_exported => '備份已匯出到';
 
   @override
-  String get vault_backup_imported => '已导入条目';
+  String get vault_backup_imported => '已匯入條目';
 
   @override
-  String get vault_export_failed => '备份导出失败';
+  String get vault_export_failed => '備份匯出失敗';
 
   @override
-  String get vault_import_failed => '备份导入失败';
+  String get vault_import_failed => '備份匯入失敗';
 
   @override
-  String get ui_font_size => '字體';
+  String get ui_font_size => '字型';
 
   @override
   String get ui_line_width => '線粗';
 
   @override
   String archive_open_failed_with_reason(String e) {
-    return '無法打開: $e';
+    return '無法開啟: $e';
   }
 
   @override
@@ -13344,19 +13371,19 @@ class L10nZhTw extends L10nZh {
   String get vault_open_backup_location => '是否開啟備份檔案所在位置？';
 
   @override
-  String get open_file => '打開';
+  String get open_file => '開啟';
 
   @override
-  String get open_in_location => '打開檔案所在位置';
+  String get open_in_location => '開啟檔案所在位置';
 
   @override
-  String get open_with_title => '打開方式';
+  String get open_with_title => '開啟方式';
 
   @override
-  String get share_permission_title => '需要權限';
+  String get share_permission_title => '需要許可權';
 
   @override
-  String get share_permission_message => 'ZenFile 沒有權限存取該檔案，請重新分享或授予權限後重試。';
+  String get share_permission_message => 'ZenFile 沒有許可權存取該檔案，請重新分享或授予許可權後重試。';
 
   @override
   String get qqGroup => 'QQ 群：792408214';
@@ -13418,7 +13445,7 @@ class L10nZhTw extends L10nZh {
   String get vt_upload_scan => '上傳完整掃描';
 
   @override
-  String get vt_open_report => '查看詳細報告';
+  String get vt_open_report => '檢視詳細報告';
 
   @override
   String get vt_apikey_title => 'VirusTotal API Key';
@@ -13496,16 +13523,16 @@ class L10nZhTw extends L10nZh {
   String get vt_step_1 => '1. 開啟 virustotal.com 並登入（可用 Google 帳號免費註冊）';
 
   @override
-  String get vt_step_2 => '2. 點擊右上角頭像，選擇「API key」';
+  String get vt_step_2 => '2. 點選右上角頭像，選擇「API key」';
 
   @override
-  String get vt_step_3 => '3. 點擊複製圖示，複製你的 API Key';
+  String get vt_step_3 => '3. 點選複製圖示，複製你的 API Key';
 
   @override
   String get vt_step_4 => '4. 回到本頁面，貼到上方輸入框';
 
   @override
-  String get vt_step_5 => '5. 點擊「儲存並驗證」，無效的 Key 會被提示';
+  String get vt_step_5 => '5. 點選「儲存並驗證」，無效的 Key 會被提示';
 
   @override
   String get vt_open_vt => '開啟官網';
@@ -13521,10 +13548,10 @@ class L10nZhTw extends L10nZh {
   String get vt_silent_install => '靜安裝';
 
   @override
-  String get vt_silent_install_ready => '已取得 Root 或 Shizuku 權限，開啟後安裝無需手動確認';
+  String get vt_silent_install_ready => '已取得 Root 或 Shizuku 許可權，開啟後安裝無需手動確認';
 
   @override
-  String get vt_silent_install_requires => '需要 Root 或 Shizuku 權限才能啟用';
+  String get vt_silent_install_requires => '需要 Root 或 Shizuku 許可權才能啟用';
 
   @override
   String get vt_install_success => '安裝成功';
@@ -13555,7 +13582,7 @@ class L10nZhTw extends L10nZh {
   String get biometric_reason_vault => '驗證指紋以解鎖保險箱';
 
   @override
-  String get biometric_reason_remote_guard => '驗證指紋以通過遠端守衛';
+  String get biometric_reason_remote_guard => '驗證指紋以透過遠端守衛';
 
   @override
   String get biometric_reason_app_lock => '驗證指紋以進入應用程式';
@@ -13579,7 +13606,7 @@ class L10nZhTw extends L10nZh {
   String get ui_noise_filter_audios_subtitle => '隱藏音效/提示音/錄音 (<60秒)';
 
   @override
-  String get ui_noise_filter_documents_subtitle => '隱藏損壞/空文件 (0KB)';
+  String get ui_noise_filter_documents_subtitle => '隱藏損壞/空檔案 (0KB)';
 
   @override
   String get ui_noise_filter_archives_subtitle => '隱藏損壞/空壓縮檔 (<100B)';
@@ -13609,22 +13636,22 @@ class L10nZhTw extends L10nZh {
   String get ui_media_filter_restore_default => '恢復預設';
 
   @override
-  String get ui_category_settings_title => '类别设置';
+  String get ui_category_settings_title => '類別設定';
 
   @override
-  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+  String get ui_category_settings_description => '管理該分類的過濾規則與掃描位置';
 
   @override
-  String get ui_excluded_folders_title => '屏蔽資料夾';
+  String get ui_excluded_folders_title => '遮蔽資料夾';
 
   @override
-  String get ui_excluded_folders_empty => '暫無屏蔽資料夾，新增後該分類將不再掃描此資料夾下的檔案';
+  String get ui_excluded_folders_empty => '暫無遮蔽資料夾，新增後該分類將不再掃描此資料夾下的檔案';
 
   @override
-  String get ui_add_excluded_folder => '新增屏蔽資料夾';
+  String get ui_add_excluded_folder => '新增遮蔽資料夾';
 
   @override
-  String get ui_remove_excluded_folder => '移除屏蔽';
+  String get ui_remove_excluded_folder => '移除遮蔽';
 
   @override
   String get vt_extracting => '正在解壓安裝套件…';
@@ -13642,7 +13669,7 @@ class L10nZhTw extends L10nZh {
   String get vt_open_report_failed => '無法開啟報告連結';
 
   @override
-  String get vt_silent_fallback => '已嘗試靜默安裝，權限不足，改用系統安裝程式';
+  String get vt_silent_fallback => '已嘗試靜默安裝，許可權不足，改用系統安裝程式';
 
   @override
   String get ui_nav_back => '後退';
@@ -13667,7 +13694,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get cl211_feat_1 =>
-      '應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點擊提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。';
+      '應用程式圖示支援匯入自訂圖片：設定 → 外觀與主題 → 應用程式圖示，選擇圖片後可在桌面新增為捷徑或 1×1 小工具。同時修復了先前點選提示「已新增」但桌面沒有圖示的問題；部分系統限制捷徑時，可改用桌面小工具。';
 
   @override
   String get cl211_feat_2 =>
@@ -13740,11 +13767,35 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get cl212_fix_2 =>
-      '修復 APK 安全掃描設定好 API Key 後、關閉再打開開關無法再次進入設定頁重新設定的問題；現在開關打開與點擊卡片均可進入設定頁修改 Key。';
+      '修復 APK 安全掃描設定好 API Key 後、關閉再開啟開關無法再次進入設定頁重新設定的問題；現在開關開啟與點選卡片均可進入設定頁修改 Key。';
 
   @override
   String get cl212_fix_3 =>
-      '修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「權限不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。';
+      '修復「靜默安裝」在已授權 Shizuku 的情況下仍提示「許可權不足」無法安裝的問題：Shizuku 路徑改為系統 PackageInstaller 會話安裝，不再依賴部分系統禁止的 shell 安裝指令。';
+
+  @override
+  String get cl213_fixes => '問題修復';
+
+  @override
+  String get cl213_feat_2 =>
+      '遠端檔案「開啟方式」可持久化：選擇「一律使用本應用程式 / 外部應用程式開啟」後，同類型檔案直接開啟，不再重複跳出視窗詢問。';
+
+  @override
+  String get cl213_fix_1 => '修復：遠端圖片檢視器左右滑動只在已下載的圖片之間循環，現可翻頁瀏覽遠端目錄中的其他圖片並按需下載。';
+
+  @override
+  String get cl213_fix_2 =>
+      '修復：連線測試視窗等介面在韓語、日語、德語等語言下誤顯示中文（歷史佔位值未翻譯），現已補齊各語言譯文。';
+
+  @override
+  String get cl213_fix_3 => '修復：繁體中文（台灣）介面先前有部分文案顯示為簡體。';
+
+  @override
+  String get cl213_features => '遠端瀏覽與錯誤提示';
+
+  @override
+  String get cl213_feat_1 =>
+      'FTP / WebDAV / SFTP / SMB 等遠端客戶端的報錯，由原始英文例外改為清晰的多語言文字提示（如：連線失敗、登入失敗、逾時、許可權不足、檔案不存在），便於理解問題原因。';
 
   @override
   String get remote_err_cancelled => '操作已取消';
@@ -13762,7 +13813,7 @@ class L10nZhTw extends L10nZh {
   String get remote_err_timeout => '連線逾時：伺服器回應過慢或網路不穩定，請稍後重試。';
 
   @override
-  String get remote_err_connection => '無法連線到伺服器：請檢查位址、連接埠、網路，以及伺服器是否已開啟。';
+  String get remote_err_connection => '無法連線到伺服器：請檢查位址、連線埠、網路，以及伺服器是否已開啟。';
 
   @override
   String get remote_err_reconnect => '與伺服器的連線已中斷，正在嘗試重新連線。';
@@ -13783,7 +13834,7 @@ class L10nZhTw extends L10nZh {
   String get remote_err_create_dir => '建立資料夾失敗，請重試。';
 
   @override
-  String get remote_err_dir_open => '無法開啟此資料夾，請確認你有存取權限。';
+  String get remote_err_dir_open => '無法開啟此資料夾，請確認你有存取許可權。';
 
   @override
   String remote_err_server(Object code) {
@@ -13865,7 +13916,7 @@ class L10nZhTw extends L10nZh {
   String get cl210_feat_2 => '影片定時關閉：可設定 15 / 30 / 45 / 60 分鐘後停止播放，已設定時可隨時取消。';
 
   @override
-  String get cl210_feat_3 => '資料夾新增「開啟方式」：此前僅檔案有此項目，網格、清單與雙窗格檢視皆已支援。';
+  String get cl210_feat_3 => '資料夾新增「開啟方式」：此前僅檔案有此專案，網格、清單與雙窗格檢視皆已支援。';
 
   @override
   String get cl210_feat_4 => '屬性入口補齊：瀏覽頁、最近頁與分類頁的三點選單皆可檢視檔案或資料夾的屬性。';
@@ -13877,7 +13928,7 @@ class L10nZhTw extends L10nZh {
   String get cl210_ui => '介面與操作';
 
   @override
-  String get cl210_ui_1 => '三點選單改為圖示方格：圖示在上、文字在下，長標題以兩行顯示，並依項目數量自動排為三欄或四欄。';
+  String get cl210_ui_1 => '三點選單改為圖示方格：圖示在上、文字在下，長標題以兩行顯示，並依專案數量自動排為三欄或四欄。';
 
   @override
   String get cl210_ui_2 => '統一瀏覽頁與分類頁的選單順序，「設為首頁」與「在位置中顯示」位於相同位置。';
@@ -13909,7 +13960,7 @@ class L10nZhTw extends L10nZh {
   String get cl210_fix_4 => '修復「取消設為首頁」無效的問題：首頁設定此前未被真正清除。';
 
   @override
-  String get cl210_fix_5 => '修復部分頁面「屬性」點擊沒有回應的問題。';
+  String get cl210_fix_5 => '修復部分頁面「屬性」點選沒有回應的問題。';
 
   @override
   String get cl200_notice => '版本與套件名稱變更（請務必閱讀）';
@@ -13931,21 +13982,21 @@ class L10nZhTw extends L10nZh {
       '確認新版資料完整無誤後再移除舊版。沙盒加密檔案存放於應用程式私有目錄，移除應用程式時會一併清除，切勿先移除。';
 
   @override
-  String get cl200_notice_5 => '套件名稱變更後，Shizuku 等依套件名稱授予的權限需要在新版重新授權一次。';
+  String get cl200_notice_5 => '套件名稱變更後，Shizuku 等依套件名稱授予的許可權需要在新版重新授權一次。';
 
   @override
   String get cl200_vault => '保險箱';
 
   @override
-  String get cl200_vault_1 => '多組密碼設定：可為不同目錄綁定不同的密碼設定，加解密全部在本機完成，主密碼與加鹽只儲存在本機。';
+  String get cl200_vault_1 => '多組密碼設定：可為不同目錄繫結不同的密碼設定，加解密全部在本機完成，主密碼與加鹽只儲存在本機。';
 
   @override
   String get cl200_vault_2 =>
-      '遠端加密目錄：可直接關聯雲端上的 rclone crypt 加密目錄，由用戶端解密後以明文列出，影音支援串流播放，無須整包下載。';
+      '遠端加密目錄：可直接關聯雲端上的 rclone crypt 加密目錄，由使用者端解密後以明文列出，影音支援串流播放，無須整包下載。';
 
   @override
   String get cl200_vault_3 =>
-      '原地加密：把檔案「就地」加密，位置與目錄結構維持不變，瀏覽頁會加上🔐徽標，其他應用程式只會看到密文檔名。';
+      '原地加密：把檔案「就地」加密，位置與目錄結構維持不變，瀏覽頁會加上🔐徽標，其他應用程式只會看到密檔名。';
 
   @override
   String get cl200_vault_4 => '說明頁：保險箱首頁右上角的「已啟用」已改成「說明」入口，內含功能亮點、基本操作與相容性說明。';
@@ -14000,7 +14051,7 @@ class L10nZhTw extends L10nZh {
   String get vault_help_hl3_title => '多組密碼 + 遠端直讀';
 
   @override
-  String get vault_help_hl3_desc => '可為不同目錄綁定不同密碼設定；遠端密文目錄無須整包下載即可解密瀏覽與播放。';
+  String get vault_help_hl3_desc => '可為不同目錄繫結不同密碼設定；遠端密文目錄無須整包下載即可解密瀏覽與播放。';
 
   @override
   String get vault_help_basics => '基本操作';
@@ -14021,13 +14072,13 @@ class L10nZhTw extends L10nZh {
   String get vault_help_b3_title => '③ 檢視與開啟';
 
   @override
-  String get vault_help_b3_desc => '加密項目會集中在保險箱中列出，點選後會自動暫時解密並預覽。';
+  String get vault_help_b3_desc => '加密專案會集中在保險箱中列出，點選後會自動暫時解密並預覽。';
 
   @override
   String get vault_help_b4_title => '④ 解密還原';
 
   @override
-  String get vault_help_b4_desc => '選取項目後點選解密，即可還原為一般檔案並放回原位置。';
+  String get vault_help_b4_desc => '選取專案後點選解密，即可還原為一般檔案並放回原位置。';
 
   @override
   String get vault_help_b5_title => '⑤ 備份與還原';
@@ -14043,7 +14094,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_help_c1_desc =>
-      '內容為 XSalsa20-Poly1305，檔名經 EME 加密後以 base32/base64 編碼，可帶 .bin 後綴。';
+      '內容為 XSalsa20-Poly1305，檔名經 EME 加密後以 base32/base64 編碼，可帶 .bin 字尾。';
 
   @override
   String get vault_help_c2_title => '雲端與同步';
@@ -14075,7 +14126,7 @@ class L10nZhTw extends L10nZh {
   String get vault_help_ip2_title => '其他應用程式看到什麼';
 
   @override
-  String get vault_help_ip2_desc => '其他檔案管理器與播放器只會看到無意義的密文檔名且無法開啟，這正是保護效果。';
+  String get vault_help_ip2_desc => '其他檔案管理器與播放器只會看到無意義的密檔名且無法開啟，這正是保護效果。';
 
   @override
   String get vault_help_ip3_title => '適合的情境';
@@ -14088,7 +14139,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_help_ip4_desc =>
-      '加密會直接取代原檔，中斷可能留下殘檔；重要檔案請先備份，解密時目標目錄需有寫入權限。';
+      '加密會直接取代原檔，中斷可能留下殘檔；重要檔案請先備份，解密時目標目錄需有寫入許可權。';
 
   @override
   String get vault_help_notice => '注意事項';
@@ -14100,7 +14151,7 @@ class L10nZhTw extends L10nZh {
   String get vault_help_n2 => '沙盒加密的檔案存放於應用程式私有目錄，解除安裝時會一併清除。';
 
   @override
-  String get vault_help_n3 => '忘記主密碼將無法還原任何已加密檔案，請務必匯出備份並妥善保存。';
+  String get vault_help_n3 => '忘記主密碼將無法還原任何已加密檔案，請務必匯出備份並妥善儲存。';
 
   @override
   String get vault_remote_encrypt => '遠端加密';
@@ -14116,7 +14167,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_link_remote_crypt_desc =>
-      '關聯伺服器上已有的 rclone crypt 密文目錄（在用戶端解密）';
+      '關聯伺服器上已有的 rclone crypt 密文目錄（在使用者端解密）';
 
   @override
   String get vault_encrypt_upload => '加密上傳到遠端';
@@ -14152,7 +14203,7 @@ class L10nZhTw extends L10nZh {
   String get vault_remote_crypt_open_failed => '開啟遠端加密檔案失敗';
 
   @override
-  String get vault_remote_crypt_unsupported => '此類型暫不支援遠端加密串流播放';
+  String get vault_remote_crypt_unsupported => '此型別暫不支援遠端加密串流播放';
 
   @override
   String get vault_link_remote_crypt => '關聯遠端加密目錄';
@@ -14188,11 +14239,11 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
-  String get vault_restore_folder_hint => '資料夾請長按後選擇「還原」到原始位置查看';
+  String get vault_restore_folder_hint => '資料夾請長按後選擇「還原」到原始位置檢視';
 
   @override
   String vault_decrypt_open_failed(Object error) {
-    return '解密並開啟項目失敗：$error';
+    return '解密並開啟專案失敗：$error';
   }
 
   @override
@@ -14245,7 +14296,7 @@ class L10nZhTw extends L10nZh {
   String get crypt_profile_set_default => '設為預設配置';
 
   @override
-  String get crypt_profile_set_default_desc => '未綁定配置的檔案將使用此配置';
+  String get crypt_profile_set_default_desc => '未繫結配置的檔案將使用此配置';
 
   @override
   String get crypt_profile_default_done => '已更新預設配置';
@@ -14263,7 +14314,7 @@ class L10nZhTw extends L10nZh {
   String get crypt_profile_select_title => '選擇加密配置';
 
   @override
-  String get crypt_profile_bound_done => '已綁定此加密配置';
+  String get crypt_profile_bound_done => '已繫結此加密配置';
 
   @override
   String get crypt_profile_credential_locked => '不可修改';
@@ -14273,7 +14324,7 @@ class L10nZhTw extends L10nZh {
       '密碼與加鹽決定金鑰，修改後已加密檔案將無法解密；如需更換請新增配置。';
 
   @override
-  String get crypt_profile_suffix_none => '無後綴';
+  String get crypt_profile_suffix_none => '無字尾';
 
   @override
   String get crypt_profile_sandbox_title => '切換沙盒配置';
@@ -14286,49 +14337,49 @@ class L10nZhTw extends L10nZh {
   String get crypt_mount_section => '加密位置';
 
   @override
-  String get crypt_settings_subtitle => '管理加密文件夹和挂载点';
+  String get crypt_settings_subtitle => '管理加密資料夾和掛載點';
 
   @override
-  String get crypt_add_mount => '添加加密文件夹';
+  String get crypt_add_mount => '新增加密資料夾';
 
   @override
-  String get crypt_edit_mount => '编辑加密文件夹';
+  String get crypt_edit_mount => '編輯加密資料夾';
 
   @override
-  String get crypt_no_mounts_title => '暂无加密文件夹';
+  String get crypt_no_mounts_title => '暫無加密資料夾';
 
   @override
-  String get crypt_no_mounts_subtitle => '点击下方按钮添加第一个加密文件夹';
+  String get crypt_no_mounts_subtitle => '點選下方按鈕新增第一個加密資料夾';
 
   @override
-  String get crypt_field_name => '名称';
+  String get crypt_field_name => '名稱';
 
   @override
-  String get crypt_field_name_hint => '可选，留空则使用文件夹名';
+  String get crypt_field_name_hint => '可選，留空則使用資料夾名';
 
   @override
-  String get crypt_field_path => '文件夹路径';
+  String get crypt_field_path => '資料夾路徑';
 
   @override
-  String get crypt_field_path_hint => '选择要加密的文件夹';
+  String get crypt_field_path_hint => '選擇要加密的資料夾';
 
   @override
-  String get crypt_field_password => '密码';
+  String get crypt_field_password => '密碼';
 
   @override
-  String get crypt_field_confirm_password => '确认密码';
+  String get crypt_field_confirm_password => '確認密碼';
 
   @override
-  String get crypt_error_path_required => '请选择文件夹路径';
+  String get crypt_error_path_required => '請選擇資料夾路徑';
 
   @override
-  String get crypt_error_password_required => '请输入密码';
+  String get crypt_error_password_required => '請輸入密碼';
 
   @override
-  String get crypt_error_password_short => '密码至少4个字符';
+  String get crypt_error_password_short => '密碼至少4個字元';
 
   @override
-  String get crypt_error_password_mismatch => '两次输入的密码不一致';
+  String get crypt_error_password_mismatch => '兩次輸入的密碼不一致';
 
   @override
   String get crypt_section_mode => '加密模式';
@@ -14337,63 +14388,63 @@ class L10nZhTw extends L10nZh {
   String get crypt_mode_inplace => '原地加密';
 
   @override
-  String get crypt_mode_inplace_desc => '文件保留在原位置，文件名和内容被加密';
+  String get crypt_mode_inplace_desc => '檔案保留在原位置，檔名和內容被加密';
 
   @override
   String get crypt_mode_sandbox => '沙盒加密';
 
   @override
-  String get crypt_mode_sandbox_desc => '文件移动到沙盒目录，更安全但访问稍慢';
+  String get crypt_mode_sandbox_desc => '檔案移動到沙盒目錄，更安全但訪問稍慢';
 
   @override
-  String get crypt_section_advanced => '高级选项';
+  String get crypt_section_advanced => '高階選項';
 
   @override
-  String get crypt_advanced_toggle => '显示高级加密选项';
+  String get crypt_advanced_toggle => '顯示高階加密選項';
 
   @override
-  String get crypt_field_filename_enc => '文件名加密';
+  String get crypt_field_filename_enc => '檔名加密';
 
   @override
-  String get crypt_field_dirname_enc => '加密目录名';
+  String get crypt_field_dirname_enc => '加密目錄名';
 
   @override
-  String get crypt_field_filename_encoding => '文件名编码';
+  String get crypt_field_filename_encoding => '檔名編碼';
 
   @override
-  String get crypt_field_suffix => '加密后缀';
+  String get crypt_field_suffix => '加密字尾';
 
   @override
-  String get crypt_field_salt => '盐（可选）';
+  String get crypt_field_salt => '鹽（可選）';
 
   @override
-  String get crypt_field_salt_hint => '留空则自动生成';
+  String get crypt_field_salt_hint => '留空則自動生成';
 
   @override
-  String get crypt_action_browse => '浏览';
+  String get crypt_action_browse => '瀏覽';
 
   @override
-  String get crypt_delete_title => '删除加密文件夹';
+  String get crypt_delete_title => '刪除加密資料夾';
 
   @override
   String crypt_delete_message(Object name) {
-    return '确定要删除\"$name\"的加密配置吗？文件本身不会被删除。';
+    return '確定要刪除\"$name\"的加密配置嗎？檔案本身不會被刪除。';
   }
 
   @override
-  String get crypt_filename_enc => '文件名加密';
+  String get crypt_filename_enc => '檔名加密';
 
   @override
-  String get crypt_share_title => '分享加密文件夹';
+  String get crypt_share_title => '分享加密資料夾';
 
   @override
-  String get crypt_share_hint => '扫描二维码可导入加密配置，但需要手动输入密码才能解密文件';
+  String get crypt_share_hint => '掃描二維碼可匯入加密配置，但需要手動輸入密碼才能解密檔案';
 
   @override
   String get crypt_action_share => '分享';
 
   @override
-  String get crypt_share_password_note => '二维码中不包含密码，请通过安全渠道单独告知密码';
+  String get crypt_share_password_note => '二維碼中不包含密碼，請透過安全渠道單獨告知密碼';
 
   @override
   String get crypt_action_encrypt => '立即加密';
@@ -14402,11 +14453,11 @@ class L10nZhTw extends L10nZh {
   String get crypt_action_decrypt => '解密';
 
   @override
-  String get crypt_encrypt_title => '加密确认';
+  String get crypt_encrypt_title => '加密確認';
 
   @override
   String get crypt_encrypt_message =>
-      '此操作将加密文件夹中的所有文件和子文件夹。加密后，其他文件管理器将无法查看文件内容和文件名。确定要继续吗？';
+      '此操作將加密資料夾中的所有檔案和子資料夾。加密後，其他檔案管理器將無法檢視檔案內容和檔名。確定要繼續嗎？';
 
   @override
   String get crypt_encrypting => '正在加密...';
@@ -14416,15 +14467,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String crypt_encrypt_failed(Object error) {
-    return '加密失败：$error';
+    return '加密失敗：$error';
   }
 
   @override
-  String get crypt_decrypt_title => '解密确认';
+  String get crypt_decrypt_title => '解密確認';
 
   @override
   String get crypt_decrypt_message =>
-      '此操作将解密文件夹中的所有文件和子文件夹。解密后，文件将恢复为普通文件。确定要继续吗？';
+      '此操作將解密資料夾中的所有檔案和子資料夾。解密後，檔案將恢復為普通檔案。確定要繼續嗎？';
 
   @override
   String get crypt_decrypting => '正在解密...';
@@ -14434,14 +14485,14 @@ class L10nZhTw extends L10nZh {
 
   @override
   String crypt_decrypt_failed(Object error) {
-    return '解密失败：$error';
+    return '解密失敗：$error';
   }
 
   @override
-  String get crypt_filename_enc_off => '关闭';
+  String get crypt_filename_enc_off => '關閉';
 
   @override
-  String get crypt_filename_enc_standard => '标准';
+  String get crypt_filename_enc_standard => '標準';
 
   @override
   String get crypt_filename_enc_obfuscate => '混淆';
@@ -14462,63 +14513,63 @@ class L10nZhTw extends L10nZh {
   String get crypt_dirname_enc_no => '否';
 
   @override
-  String get vault_encrypt_files => '+ 加密文件';
+  String get vault_encrypt_files => '+ 加密檔案';
 
   @override
-  String get vault_select_encryption_method => '选择加密方式';
+  String get vault_select_encryption_method => '選擇加密方式';
 
   @override
   String get vault_inplace_encrypt => '原地加密';
 
   @override
-  String get vault_inplace_encrypt_desc => '文件留在原目录，加密后文件名变为加密格式，浏览页显示🔐图徽';
+  String get vault_inplace_encrypt_desc => '檔案留在原目錄，加密後檔名變為加密格式，瀏覽頁顯示🔐圖徽';
 
   @override
   String get vault_sandbox_encrypt => '沙盒加密';
 
   @override
-  String get vault_sandbox_encrypt_desc => '文件移动到保险箱私有目录，隐藏文件名，仅在保险箱页面可见';
+  String get vault_sandbox_encrypt_desc => '檔案移動到保險箱私有目錄，隱藏檔名，僅在保險箱頁面可見';
 
   @override
-  String get vault_need_set_password => '需要先设置加密主密码';
+  String get vault_need_set_password => '需要先設定加密主密碼';
 
   @override
-  String get vault_need_set_password_desc => '请先在加密设置中配置加密主密码和加盐，保存后即可进行原地加密。';
+  String get vault_need_set_password_desc => '請先在加密設定中配置加密主密碼和加鹽，儲存後即可進行原地加密。';
 
   @override
-  String get vault_go_set_password => '去设置主密码';
+  String get vault_go_set_password => '去設定主密碼';
 
   @override
   String get vault_encrypting => '正在加密...';
 
   @override
-  String get vault_encrypting_desc => '正在加密选中的文件/文件夹，请稍候...';
+  String get vault_encrypting_desc => '正在加密選中的檔案/資料夾，請稍候...';
 
   @override
   String vault_inplace_encrypt_done(Object count) {
-    return '原地加密完成，共加密 $count 个文件/文件夹';
+    return '原地加密完成，共加密 $count 個檔案/資料夾';
   }
 
   @override
   String vault_encrypt_failed(Object error) {
-    return '加密失败: $error';
+    return '加密失敗: $error';
   }
 
   @override
   String get vault_inplace_section => '原地加密';
 
   @override
-  String get vault_open_location => '打开位置';
+  String get vault_open_location => '開啟位置';
 
   @override
   String get vault_decrypt_action => '解密';
 
   @override
-  String get vault_decrypt_confirm_title => '解密文件';
+  String get vault_decrypt_confirm_title => '解密檔案';
 
   @override
   String vault_decrypt_confirm_desc(Object name) {
-    return '确定要解密「$name」吗？解密后文件将恢复为普通文件。';
+    return '確定要解密「$name」嗎？解密後檔案將恢復為普通檔案。';
   }
 
   @override
@@ -14526,11 +14577,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String vault_decrypt_failed(Object error) {
-    return '解密失败: $error';
+    return '解密失敗: $error';
   }
 
   @override
-  String get crypt_set_master_password => '设置加密主密码';
+  String get crypt_set_master_password => '設定加密主密碼';
 
   @override
   String get vault_section_unencrypted => '未加密檔案';
@@ -14554,12 +14605,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String vault_import_partial(Object enc, Object failed, Object plain) {
-    return '導入完成：未加密 $plain 項，已加密 $enc 項，失敗 $failed 項';
+    return '匯入完成：未加密 $plain 項，已加密 $enc 項，失敗 $failed 項';
   }
 
   @override
   String vault_import_failed_detail(Object error) {
-    return '導入失敗：$error';
+    return '匯入失敗：$error';
   }
 
   @override
@@ -14626,7 +14677,7 @@ class L10nZhTw extends L10nZh {
   String get scan_switch_camera => '切換攝影機';
 
   @override
-  String get scan_camera_error => '無法存取相機，請檢查相機權限';
+  String get scan_camera_error => '無法存取相機，請檢查相機許可權';
 
   @override
   String get scan_hint => '將 QR Code/條碼放入框內即可自動掃描';
@@ -14716,14 +14767,14 @@ class L10nZhTw extends L10nZh {
       '電鋸（約110 dB）、搖滾音樂會前排、爆竹、噴射機起飛。';
 
   @override
-  String get decibel_meter_perm_denied => '需要麥克風權限才能測量環境音量，請在設定中開啟。';
+  String get decibel_meter_perm_denied => '需要麥克風許可權才能測量環境音量，請在設定中開啟。';
 
   @override
-  String get decibel_meter_perm_title => '需要麥克風權限';
+  String get decibel_meter_perm_title => '需要麥克風許可權';
 
   @override
   String get decibel_meter_perm_settings =>
-      '麥克風權限已被永久拒絕，請前往系統設定中為 ZenFile 開啟麥克風權限後重試。';
+      '麥克風許可權已被永久拒絕，請前往系統設定中為 ZenFile 開啟麥克風許可權後重試。';
 
   @override
   String get decibel_meter_perm_open_settings => '前往設定';
