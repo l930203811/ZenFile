@@ -975,11 +975,17 @@ class SmbService {
             "backups", "sync", "workspace",
         )
 
+        // Windows 盘符共享（用户常直接共享整个盘，如 D 盘共享名就叫 "D"）
+        // 以及盘符管理共享 C$ D$ 等。RPC 枚举失败时 probing 兜底用。
+        val driveLetters = ('C'..'Z').map { it.toString() } +
+            ('C'..'Z').map { "$it$" }
+        val allNames = commonNames + driveLetters
+
         // Deduplicate case-insensitively, then build final list
         val tried = mutableSetOf<String>()
         val uniqueNames = mutableListOf<String>()
 
-        for (name in commonNames) {
+        for (name in allNames) {
             if (name.isNotEmpty() && tried.add(name.lowercase())) {
                 uniqueNames.add(name)
             }
