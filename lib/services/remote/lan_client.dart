@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'remote_client.dart';
@@ -11,12 +12,36 @@ class LanDiscoveredServer {
   final String type; // 'FTP', 'SFTP', 'SMB', 'WebDav'
   final String name;
 
+  /// 通过 NetBIOS 名称服务解析出的计算机名（解析不到时为 null）。
+  final String? hostName;
+
   LanDiscoveredServer({
     required this.host,
     required this.port,
     required this.type,
     required this.name,
+    this.hostName,
   });
+}
+
+/// 局域网扫描得到的 SMB 主机：地址 + 解析出的主机名 + 可列出的共享名。
+/// 无主机名时 [displayName] 回退为 IP，保证旧行为不变。
+class SmbDiscoveredDevice {
+  final String host;
+  final String? hostName;
+  final List<String> shares;
+
+  SmbDiscoveredDevice({
+    required this.host,
+    this.hostName,
+    this.shares = const <String>[],
+  });
+
+  String get displayName =>
+      (hostName != null && hostName!.isNotEmpty) ? hostName! : host;
+
+  /// 是否解析到了与 IP 不同的主机名（用于决定是否额外显示 IP 副标题）。
+  bool get hasHostName => hostName != null && hostName!.isNotEmpty && hostName != host;
 }
 
 /// Real SMB client backed by Android native smbj via MethodChannel.
@@ -81,6 +106,9 @@ class LanClient extends RemoteClient {
   /// 端口探测：SMB(445) 每个主机尝试 2 次、单次 500ms —— 首次连接含 ARP
   /// 解析常超 150ms（尤其路由器/NAS），旧版 150ms 单次超时会漏掉大量主机；
   /// 其余端口 300ms 单次。并发按 64 个主机分批，避免一次性打满 socket 表。
+  ///
+  /// 探测结束后对已响应主机做一次 NetBIOS 名称解析（[resolveNetbiosName]），
+  /// 让 UI 能显示计算机名而非只有 IP。
   static Future<List<LanDiscoveredServer>> scanSubnet({
     required Function(double progress) onProgress,
   }) async {
@@ -158,7 +186,208 @@ class LanClient extends RemoteClient {
       }
       if (futures.isNotEmpty) await Future.wait(futures);
     }
-    return discovered;
+
+    // 3) 对已响应主机解析 NetBIOS 计算机名（只解析有响应的主机，通常 < 20 台）
+    final uniqueIps = discovered.map((d) => d.host).toSet().toList();
+    final nameMap = <String, String>{};
+    const nameBatch = 16;
+    for (var i = 0; i < uniqueIps.length; i += nameBatch) {
+      final slice = uniqueIps.sublist(
+        i,
+        i + nameBatch > uniqueIps.length ? uniqueIps.length : i + nameBatch,
+      );
+      final resolved = await Future.wait(
+        slice.map((ip) => resolveNetbiosName(ip)),
+      );
+      for (var j = 0; j < slice.length; j++) {
+        final n = resolved[j];
+        if (n != null && n.isNotEmpty) nameMap[slice[j]] = n;
+      }
+    }
+
+    return discovered.map((d) {
+      final n = nameMap[d.host];
+      return LanDiscoveredServer(
+        host: d.host,
+        port: d.port,
+        type: d.type,
+        name: n != null ? '$n (${d.host})' : '${d.type} Server (${d.host})',
+        hostName: n,
+      );
+    }).toList();
+  }
+
+  static final Random _random = Random();
+
+  /// 通过 NetBIOS 名称服务（NBNS，UDP 137）查询主机的计算机名。
+  ///
+  /// 发送 NBSTAT（Node Status Request，通配名 `*`）后解析应答的名称表：
+  /// 取「后缀 0x00 且非组名」的条目即计算机名（Windows / Samba / 多数 NAS
+  /// 都会应答）。不支持 NetBIOS 的设备（部分 Android、禁用 NBNS 的群晖等）
+  /// 不响应，超时返回 null——调用方回退为 IP 展示即可。
+  static Future<String?> resolveNetbiosName(
+    String ip, {
+    Duration timeout = const Duration(milliseconds: 500),
+  }) async {
+    RawDatagramSocket? sock;
+    StreamSubscription<RawSocketEvent>? sub;
+    try {
+      final s = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      sock = s;
+
+      // 组包：header(12) + 通配名问题(NBSTAT)
+      final txId = _random.nextInt(0xFFFF);
+      final packet = <int>[
+        (txId >> 8) & 0xFF,
+        txId & 0xFF,
+        0x00, 0x00, // flags：标准查询
+        0x00, 0x01, // QDCOUNT
+        0x00, 0x00, // ANCOUNT
+        0x00, 0x00, // NSCOUNT
+        0x00, 0x00, // ARCOUNT
+        0x20, // 名称长度：32 字符（nibble 编码）
+        0x43, 0x4B, // 通配名 '*'（0x2A）的前两个 nibble
+        ...List<int>.filled(30, 0x41), // 其余 15 个 0x00 → 'A'
+        0x00, // 名称终止符
+        0x00, 0x21, // QTYPE = NBSTAT
+        0x00, 0x01, // QCLASS = IN
+      ];
+
+      final completer = Completer<String?>();
+      sub = s.listen((event) {
+        if (event != RawSocketEvent.read) return;
+        for (Datagram? dg = s.receive(); dg != null; dg = s.receive()) {
+          if (dg.address.address != ip) continue;
+          if (!completer.isCompleted) {
+            completer.complete(_parseNbstatName(dg.data));
+          }
+          return;
+        }
+      });
+      s.send(packet, InternetAddress(ip), 137);
+      return await completer.future.timeout(timeout, onTimeout: () => null);
+    } catch (_) {
+      return null;
+    } finally {
+      final s0 = sub;
+      if (s0 != null) {
+        try {
+          await s0.cancel();
+        } catch (_) {}
+      }
+      try {
+        sock?.close();
+      } catch (_) {}
+    }
+  }
+
+  /// 仅供测试：解析一段 NBSTAT 应答报文（真实设备不可 mock，故开放解析入口）。
+  @visibleForTesting
+  static String? parseNbstatNameForTest(List<int> data) => _parseNbstatName(data);
+
+  /// 解析 NBSTAT 应答：跳过问题段/答案段的名称，读 RDATA 里的名称表。
+  static String? _parseNbstatName(List<int> data) {
+    try {
+      if (data.length < 12 + 5) return null;
+      final anCount = (data[6] << 8) | data[7];
+      if (anCount < 1) return null;
+
+      var o = 12;
+      o = _skipDnsName(data, o); // 问题段名称
+      o += 4; // QTYPE + QCLASS
+      final answerStart = o;
+
+      // 部分 Samba 响应（如 OpenWrt/Kwrt）不回显问题段，answer name 直接从
+      // 偏移 12 开始（完整编码通配名），answer 的 TYPE/CLASS 紧跟在被当作
+      // "问题段名称"跳过的那个名字后面。此时 answerStart 处已经是 TTL（4 个
+      // 零字节），后接 RDLEN（2 字节），不再有独立的 answer name / TYPE / CLASS 字段。
+      // 判断：连续 4 个零字节 + RDLEN 不超过报文剩余长度。
+      final possibleRdLen = o + 6 <= data.length
+          ? ((data[o + 4] << 8) | data[o + 5])
+          : 0;
+      final noQuestionEcho = o + 6 <= data.length &&
+          data[o] == 0 && data[o + 1] == 0 &&
+          data[o + 2] == 0 && data[o + 3] == 0 &&
+          possibleRdLen > 0 && possibleRdLen <= data.length - o - 6;
+      if (noQuestionEcho) {
+        o += 4; // 跳过 TTL
+      } else {
+        o = _skipDnsName(data, o); // 答案段名称
+        o += 8; // TYPE(2) + CLASS(2) + TTL(4)
+      }
+      if (o + 2 > data.length) return null;
+      final rdLength = (data[o] << 8) | data[o + 1];
+      o += 2;
+      if (o >= data.length) return null;
+      final picked = _pickNameFromTable(data, o + 1, data[o], rdLength);
+      if (picked != null) return picked;
+
+      // 兜底：报文结构意外时，从答案段起搜 NBSTAT 记录头
+      final p = _indexOfSeq(data, const [0x00, 0x21, 0x00, 0x01], 12);
+      if (p < 0) return null;
+      final q = p + 4 + 4; // TYPE/CLASS + TTL
+      if (q + 2 > data.length) return null;
+      final rd = (data[q] << 8) | data[q + 1];
+      final start = q + 2;
+      if (start >= data.length) return null;
+      return _pickNameFromTable(data, start + 1, data[start], rd);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 跳过 DNS 名称（支持 0xC0 压缩指针），返回下一个字段的偏移。
+  static int _skipDnsName(List<int> data, int offset) {
+    var o = offset;
+    while (o < data.length) {
+      final len = data[o];
+      if (len == 0) return o + 1;
+      if ((len & 0xC0) == 0xC0) return o + 2;
+      o += 1 + len;
+    }
+    return o;
+  }
+
+  /// 从 NBSTAT 名称表里挑计算机名：优先「后缀 0x00 唯一」，其次「后缀 0x20 唯一」。
+  static String? _pickNameFromTable(
+    List<int> data,
+    int tableStart,
+    int numNames,
+    int rdLength,
+  ) {
+    String? fallback;
+    final tableEnd = tableStart + rdLength;
+    for (var i = 0; i < numNames; i++) {
+      final e = tableStart + i * 18; // 每条 15 名称 + 1 后缀 + 2 flags
+      if (e + 18 > tableEnd || e + 18 > data.length) break;
+      final suffix = data[e + 15];
+      final isGroup = (data[e + 16] & 0x80) != 0;
+      var name = '';
+      for (var k = 0; k < 15; k++) {
+        final ch = data[e + k];
+        if (ch == 0 || ch == 0x20) break; // NetBIOS 名以空格/0 补齐
+        name += String.fromCharCode(ch);
+      }
+      name = name.trim();
+      if (name.isEmpty || isGroup) continue;
+      if (suffix == 0x00) return name;
+      if (suffix == 0x20) fallback ??= name;
+    }
+    return fallback;
+  }
+
+  static int _indexOfSeq(List<int> data, List<int> seq, int from) {
+    for (var i = from; i + seq.length <= data.length; i++) {
+      var ok = true;
+      for (var j = 0; j < seq.length; j++) {
+        if (data[i + j] != seq[j]) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) return i;
+    }
+    return -1;
   }
 
   /// TCP 端口探测：[attempts] 次尝试内任一次连通即视为开放。
