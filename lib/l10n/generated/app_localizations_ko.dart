@@ -5957,6 +5957,9 @@ class L10nKo extends L10n {
   String get ui_no_shares_found => '공유를 찾을 수 없음';
 
   @override
+  String get ui_anonymous_login => '익명 로그인';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return '공유 스캔 실패: \$error';
   }

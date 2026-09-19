@@ -3008,24 +3008,39 @@ class FileManagerProvider extends ChangeNotifier {
     final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
     final result = <String, List<String>>{};
     for (final d in smbDevices) {
-      final client = LanClient(
-        host: d.host,
-        port: d.port,
-        username: username,
-        password: password,
-      );
-      try {
-        await client.connect().timeout(const Duration(seconds: 6));
-        final shares = await listSmbShares(client);
-        result[d.host] = shares.map((s) => s.startsWith('/') ? s.substring(1) : s).toList();
-      } catch (_) {
-        result[d.host] = const [];
-      } finally {
+      // 依次尝试：已填凭据 → guest 匿名兜底（很多家用 NAS/路由器共享允许匿名列出）
+      final attempts = <List<String>>[
+        [username, password],
+        if (username.isNotEmpty) const ['', ''],
+      ];
+      List<String>? shares;
+      Object? lastErr;
+      for (final cred in attempts) {
+        final client = LanClient(
+          host: d.host,
+          port: d.port,
+          username: cred[0],
+          password: cred[1],
+        );
         try {
-          await client.disconnect();
-        } catch (_) {
-          // 忽略断开异常
+          await client.connect().timeout(const Duration(seconds: 6));
+          final list = await listSmbShares(client);
+          shares = list.map((s) => s.startsWith('/') ? s.substring(1) : s).toList();
+          break;
+        } catch (e) {
+          lastErr = e;
+        } finally {
+          try {
+            await client.disconnect();
+          } catch (_) {
+            // 忽略断开异常
+          }
         }
+      }
+      // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
+      result[d.host] = shares ?? const <String>[];
+      if (shares == null && lastErr != null && username.isEmpty) {
+        debugPrint('[ZenFile] discoverSmbDevices: ${d.host} share list failed: $lastErr');
       }
     }
     return result;

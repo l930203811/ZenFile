@@ -6186,6 +6186,9 @@ class L10nDe extends L10n {
   String get ui_no_shares_found => 'Keine Freigaben gefunden';
 
   @override
+  String get ui_anonymous_login => 'Anonyme Anmeldung';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'Fehler beim Scannen der Freigaben: \$error';
   }

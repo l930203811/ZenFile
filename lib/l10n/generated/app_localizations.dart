@@ -10966,6 +10966,12 @@ abstract class L10n {
   /// **'未找到共享名'**
   String get ui_no_shares_found;
 
+  /// SMB wizard: anonymous login checkbox label (zh)
+  ///
+  /// In zh, this message translates to:
+  /// **'匿名登录'**
+  String get ui_anonymous_login;
+
   /// SMB wizard: share scan failed with error
   ///
   /// In zh, this message translates to:

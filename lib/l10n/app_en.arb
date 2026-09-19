@@ -6203,6 +6203,10 @@
   "@ui_no_shares_found": {
     "description": "SMB wizard: no share names found on the server"
   },
+  "ui_anonymous_login": "Anonymous login",
+  "@ui_anonymous_login": {
+    "description": "SMB wizard: anonymous login checkbox label (en)"
+  },
   "ui_share_scan_failed": "Failed to scan shares: $error",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",

@@ -6205,6 +6205,9 @@ class L10nEs extends L10n {
   String get ui_no_shares_found => 'No se encontraron recursos';
 
   @override
+  String get ui_anonymous_login => 'Inicio de sesión anónimo';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'Error al escanear recursos: \$error';
   }

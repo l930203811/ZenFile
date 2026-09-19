@@ -92,7 +92,7 @@ class SettingsBackupService {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (['SMB', 'Samba', 'CIFS'].contains(conn.type)) {
+    } else if (NetworkConnectionsService.isSmbType(conn.type)) {
       return LanClient(
         host: conn.host,
         port: conn.port,

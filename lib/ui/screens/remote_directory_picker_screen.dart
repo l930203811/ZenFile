@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/utils.dart';
 import '../../models/network_connection_model.dart';
+import '../../services/network_connections_service.dart';
 import '../../services/remote/ftp_client.dart';
 import '../../services/remote/lan_client.dart';
 import '../../services/remote/remote_client.dart';
@@ -81,7 +82,7 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (['SMB', 'Samba', 'CIFS'].contains(conn.type)) {
+    } else if (NetworkConnectionsService.isSmbType(conn.type)) {
       _client = LanClient(
         host: conn.host,
         port: conn.port,

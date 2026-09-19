@@ -5853,6 +5853,9 @@ class L10nZh extends L10n {
   String get ui_no_shares_found => '未找到共享名';
 
   @override
+  String get ui_anonymous_login => '匿名登录';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return '扫描共享名失败：\$error';
   }
@@ -13237,6 +13240,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_no_shares_found => '未找到共享名';
+
+  @override
+  String get ui_anonymous_login => '匿名登入';
 
   @override
   String ui_share_scan_failed(Object error) {

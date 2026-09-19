@@ -6187,6 +6187,9 @@ class L10nRu extends L10n {
   String get ui_no_shares_found => 'Папки не найдены';
 
   @override
+  String get ui_anonymous_login => 'Анонимный вход';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'Ошибка сканирования папок: \$error';
   }

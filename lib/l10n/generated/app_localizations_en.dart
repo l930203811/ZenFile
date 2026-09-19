@@ -6126,6 +6126,9 @@ class L10nEn extends L10n {
   String get ui_no_shares_found => 'No shares found';
 
   @override
+  String get ui_anonymous_login => 'Anonymous login';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'Failed to scan shares: \$error';
   }

@@ -5958,6 +5958,9 @@ class L10nJa extends L10n {
   String get ui_no_shares_found => '共有が見つかりません';
 
   @override
+  String get ui_anonymous_login => '匿名ログイン';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return '共有のスキャンに失敗しました: \$error';
   }

@@ -6137,6 +6137,10 @@
   "@ui_no_shares_found": {
     "description": "SMB wizard: no share names found on the server"
   },
+  "ui_anonymous_login": "익명 로그인",
+  "@ui_anonymous_login": {
+    "description": "SMB wizard: anonymous login checkbox label (ko)"
+  },
   "ui_share_scan_failed": "공유 스캔 실패: $error",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",

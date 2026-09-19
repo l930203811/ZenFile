@@ -73,59 +73,109 @@ class LanClient extends RemoteClient {
     return ips;
   }
 
-  /// Scan the local subnet for likely file-share services.
+  /// Scan the local subnet(s) for likely file-share services.
   /// This is a TCP port-probe only; it does not actually authenticate.
+  ///
+  /// 网段来源：遍历所有活动网卡的 /24 子网，WLAN 网卡优先（多网卡设备如
+  /// 同时开移动数据/VPN 时，取 `localIps.first` 可能选错网段导致扫不到设备）。
+  /// 端口探测：SMB(445) 每个主机尝试 2 次、单次 500ms —— 首次连接含 ARP
+  /// 解析常超 150ms（尤其路由器/NAS），旧版 150ms 单次超时会漏掉大量主机；
+  /// 其余端口 300ms 单次。并发按 64 个主机分批，避免一次性打满 socket 表。
   static Future<List<LanDiscoveredServer>> scanSubnet({
     required Function(double progress) onProgress,
   }) async {
     final discovered = <LanDiscoveredServer>[];
-    final localIps = await getLocalIps();
 
-    var baseSubnet = '192.168.1';
-    if (localIps.isNotEmpty) {
-      final parts = localIps.first.split('.');
-      if (parts.length >= 3) {
-        baseSubnet = '${parts[0]}.${parts[1]}.${parts[2]}';
+    // 1) 收集待扫网段：WLAN 优先，其余非回环 IPv4 网段兜底
+    final wlanSubnets = <String>[];
+    final otherSubnets = <String>[];
+    try {
+      final interfaces = await NetworkInterface.list();
+      for (final interface in interfaces) {
+        final isWlan = interface.name.toLowerCase().contains('wlan');
+        for (final addr in interface.addresses) {
+          if (addr.type != InternetAddressType.IPv4 || addr.isLoopback) continue;
+          final parts = addr.address.split('.');
+          if (parts.length < 4) continue;
+          final subnet = '${parts[0]}.${parts[1]}.${parts[2]}';
+          if (isWlan) {
+            if (!wlanSubnets.contains(subnet)) wlanSubnets.add(subnet);
+          } else if (!otherSubnets.contains(subnet) && !wlanSubnets.contains(subnet)) {
+            otherSubnets.add(subnet);
+          }
+        }
       }
-    }
+    } catch (_) {}
+    final subnets = [...wlanSubnets, ...otherSubnets];
+    if (subnets.isEmpty) subnets.add('192.168.1');
 
-    final targetPorts = {
+    // 2) SMB 放最前优先探测
+    final targetPorts = <int, String>{
+      445: 'SMB',
       21: 'FTP',
       22: 'SFTP',
-      445: 'SMB',
       80: 'WebDav',
       8080: 'WebDav',
     };
 
-    const maxIps = 254;
+    const hostsPerSubnet = 254;
+    const batchSize = 64;
+    final totalHosts = hostsPerSubnet * subnets.length;
     var scannedCount = 0;
 
-    final futures = <Future<void>>[];
-    for (var i = 1; i <= maxIps; i++) {
-      final ip = '$baseSubnet.$i';
-      futures.add(Future(() async {
-        for (final entry in targetPorts.entries) {
-          final port = entry.key;
-          final type = entry.value;
-          try {
-            final socket = await Socket.connect(ip, port,
-                timeout: const Duration(milliseconds: 150));
-            socket.destroy();
-            discovered.add(LanDiscoveredServer(
-              host: ip,
-              port: port,
-              type: type,
-              name: '$type Server ($ip)',
-            ));
-          } catch (_) {}
+    for (final baseSubnet in subnets) {
+      final futures = <Future<void>>[];
+      for (var i = 1; i <= hostsPerSubnet; i++) {
+        final ip = '$baseSubnet.$i';
+        futures.add(Future(() async {
+          for (final entry in targetPorts.entries) {
+            final port = entry.key;
+            final type = entry.value;
+            // SMB 加一次重试：首连包含 ARP 解析，经常超过单次超时
+            final ok = await _probePort(
+              ip,
+              port,
+              timeout: Duration(milliseconds: port == 445 ? 500 : 300),
+              attempts: port == 445 ? 2 : 1,
+            );
+            if (ok) {
+              discovered.add(LanDiscoveredServer(
+                host: ip,
+                port: port,
+                type: type,
+                name: '$type Server ($ip)',
+              ));
+            }
+          }
+          scannedCount++;
+          onProgress(scannedCount / totalHosts);
+        }));
+        // 分批限流：避免 254×5 个 socket 同时并发被系统丢弃
+        if (futures.length >= batchSize) {
+          await Future.wait(futures);
+          futures.clear();
         }
-        scannedCount++;
-        onProgress(scannedCount / maxIps);
-      }));
+      }
+      if (futures.isNotEmpty) await Future.wait(futures);
     }
-
-    await Future.wait(futures);
     return discovered;
+  }
+
+  /// TCP 端口探测：[attempts] 次尝试内任一次连通即视为开放。
+  static Future<bool> _probePort(
+    String ip,
+    int port, {
+    Duration timeout = const Duration(milliseconds: 400),
+    int attempts = 1,
+  }) async {
+    for (var i = 0; i < attempts; i++) {
+      try {
+        final socket = await Socket.connect(ip, port, timeout: timeout);
+        socket.destroy();
+        return true;
+      } catch (_) {}
+    }
+    return false;
   }
 
   bool get _connected {

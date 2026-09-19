@@ -6213,6 +6213,9 @@ class L10nFr extends L10n {
   String get ui_no_shares_found => 'Aucun partage trouvé';
 
   @override
+  String get ui_anonymous_login => 'Connexion anonyme';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'Échec de l\'analyse des partages : \$error';
   }

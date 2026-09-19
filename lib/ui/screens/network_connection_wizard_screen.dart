@@ -51,10 +51,29 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // UI states
   bool _obscurePassword = true;
 
+  // SMB 匿名登录：勾选后用户名/密码不可输入，连接时以空凭据走 guest 匿名会话
+  bool _anonymousLogin = false;
+
   // SMB 共享名扫描状态
   bool _isScanningLan = false;
   Map<String, List<String>> _lanDevices = const {};
   String? _lanScanError;
+
+  /// SMB/局域网类型判定（编辑老连接必须容错）。
+  ///
+  /// 先按关键字匹配（覆盖现版本的本地化标签「局域网/SMB」「LAN/SMB」、以及历史
+  /// 遗留的 'SMB'/'Samba'/'CIFS'）；再兜底：凡不属于 FTP/SFTP/WebDav/SAF 的类型
+  /// 一律按 SMB 处理。此前用 `_selectedType == l10n.smb` 精确比对本地化标签，
+  /// 导致编辑历史连接时 SMB 专属 UI（匿名勾选、共享名、局域网扫描）整块消失。
+  bool get _isSmbSelected {
+    if (_selectedType.isEmpty) return false;
+    final t = _selectedType.toLowerCase().trim();
+    if (t.contains('smb') || t.contains('samba') || t == 'cifs') return true;
+    if (t == 'ftp' || t == 'sftp' || t.contains('ftp')) return false;
+    if (t == 'webdav' || t.contains('dav')) return false;
+    if (t == 'saf' || t.contains('saf')) return false;
+    return true; // 未知/历史类型兜底视为 SMB
+  }
 
   @override
   void initState() {
@@ -67,6 +86,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       _portController.text = existing.port.toString();
       _usernameController.text = existing.username;
       _passwordController.text = existing.password;
+      // 编辑已有连接：用户名为空即视为匿名访问（勾选框仅 SMB 类型显示）
+      _anonymousLogin = existing.username.isEmpty;
       _pathController.text = existing.rootPath;
       _sshKeyPath = existing.sshKeyPath;
       _sshKeyPasswordController.text = existing.sshKeyPassword ?? '';
@@ -263,9 +284,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final host = (outHost ?? _hostController.text).trim();
     final port = int.tryParse((outPort != null ? outPort.toString() : _portController.text).trim());
     if (host.isEmpty || port == null) return null;
-    final username = (outUser ?? _usernameController.text).trim();
-    final password = (outPwd ?? _passwordController.text).trim();
-    final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
+    // SMB 匿名登录：忽略输入框内容，空凭据 → 原生层走 guest 匿名会话
+    final isSmb = _isSmbSelected;
+    final username = (_anonymousLogin && isSmb) ? '' : (outUser ?? _usernameController.text).trim();
+    final password = (_anonymousLogin && isSmb) ? '' : (outPwd ?? _passwordController.text).trim();
+    final path = (_selectedType == 'WebDav' || isSmb)
         ? (((outPath != null ? outPath : _pathController.text).trim().isEmpty) ? '/' : (outPath != null ? outPath : _pathController.text).trim())
         : '/';
 
@@ -293,7 +316,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         protocol: _webdavProtocol,
         rootPath: path,
       );
-    } else if (_selectedType == L10n.of(context).smb) {
+    } else if (_isSmbSelected) {
       return LanClient(host: host, port: port, username: username, password: password);
     }
     return null;
@@ -442,9 +465,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     }
     final port = int.tryParse(_portController.text.trim()) ?? 21;
     final host = _hostController.text.trim();
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
-    final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
+    // SMB 匿名登录：保存空凭据（原生层自动以 guest 匿名会话连接）
+    final isSmbSave = _isSmbSelected;
+    final username = (_anonymousLogin && isSmbSave) ? '' : _usernameController.text.trim();
+    final password = (_anonymousLogin && isSmbSave) ? '' : _passwordController.text.trim();
+    final path = (_selectedType == 'WebDav' || isSmbSave)
         ? (_pathController.text.trim().isEmpty ? '/' : _pathController.text.trim())
         : '/';
 
@@ -707,7 +732,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$_selectedType ${l10n.cat_settings}',
+                      // 历史连接的类型可能是旧值，SMB 统一显示当前语言标签
+                      '${_isSmbSelected ? l10n.smb : _selectedType} ${l10n.cat_settings}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -743,7 +769,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             const SizedBox(height: 18),
           ],
 
-          if (_selectedType == l10n.smb) ...[
+          if (_isSmbSelected) ...[
             _buildLanScanSection(theme),
             const SizedBox(height: 18),
           ],
@@ -772,15 +798,57 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               icon: Broken.folder_open,
             ),
             const SizedBox(height: 18),
-          ] else if (_selectedType == l10n.smb) ...[
+          ] else if (_isSmbSelected) ...[
             _buildSmbShareField(theme),
           ],
 
-          _buildInputLabel(l10n.ui_username_optional),
+          // SMB：标签行右侧放「匿名登录」勾选框（勾选后用户名/密码置灰不可输入）
+          if (_isSmbSelected) ...[
+            Row(
+              children: [
+                Expanded(child: _buildInputLabel(l10n.ui_username_optional)),
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => setState(() => _anonymousLogin = !_anonymousLogin),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Checkbox(
+                            value: _anonymousLogin,
+                            onChanged: (v) => setState(() => _anonymousLogin = v ?? false),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          l10n.ui_anonymous_login,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: _anonymousLogin
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else
+            _buildInputLabel(l10n.ui_username_optional),
           _buildTextField(
             controller: _usernameController,
             hint: l10n.anonymousadmin,
             icon: Broken.user,
+            enabled: !(_anonymousLogin && _isSmbSelected),
           ),
           const SizedBox(height: 18),
 
@@ -791,6 +859,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             icon: Broken.lock,
             obscure: _obscurePassword,
             suffix: passwordSuffix,
+            enabled: !(_anonymousLogin && _isSmbSelected),
           ),
 
           // SFTP SSH 密钥认证选项
@@ -993,8 +1062,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   Future<void> _scanLanDevices() async {
     final l10n = L10n.of(context);
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
+    // 匿名勾选时以空凭据扫描（可发现 guest/匿名共享）；未勾选时用已填凭据
+    final isSmbScan = _isSmbSelected;
+    final username = (_anonymousLogin && isSmbScan) ? '' : _usernameController.text.trim();
+    final password = (_anonymousLogin && isSmbScan) ? '' : _passwordController.text.trim();
     if (mounted) {
       setState(() {
         _isScanningLan = true;
@@ -1345,6 +1416,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
     Widget? suffix,
+    bool enabled = true,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -1353,6 +1425,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
+      enabled: enabled,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
@@ -1381,9 +1454,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   Widget _buildProtocolIcon(String name, {required double size, Color? customColor}) {
     IconData iconData;
     Color color;
-    final smbLabel = L10n.of(context).smb;
+    // 容错：历史连接类型可能存成 'SMB'/'Samba'/'CIFS'，不只等于本地化标签
+    final t = name.toLowerCase().trim();
+    final isSmb = name == L10n.of(context).smb ||
+        t.contains('smb') || t.contains('samba') || t == 'cifs';
 
-    if (name == smbLabel) {
+    if (isSmb) {
       iconData = Icons.dns_rounded;
       color = const Color(0xFF5B21B6);
     } else if (name == 'FTP') {

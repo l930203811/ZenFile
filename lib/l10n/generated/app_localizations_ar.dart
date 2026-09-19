@@ -6107,6 +6107,9 @@ class L10nAr extends L10n {
   String get ui_no_shares_found => 'لم يتم العثور على مشاركات';
 
   @override
+  String get ui_anonymous_login => 'تسجيل الدخول المجهول';
+
+  @override
   String ui_share_scan_failed(Object error) {
     return 'فشل مسح المشاركات: \$error';
   }
