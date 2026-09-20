@@ -2004,6 +2004,46 @@ class FileManagerProvider extends ChangeNotifier {
     return [...filteredFolders, ...filteredFiles];
   }
 
+  /// 用 root / Shizuku shell 直接列**文件系统根目录 `/`**，返回已做
+  /// 「隐藏/类型过滤 + 排序」的条目；root 与 Shizuku 都不可用时返回 null。
+  ///
+  /// 只在 [loadDirectory] 的「Dart IO 列不出 `/`」兜底分支里调用。与 Android/data
+  /// 走 shell 同理：app 进程身份读不到的系统目录，交给 shell 身份去读。
+  /// 注意 [RootShizukuService.listFiles] 对根目录传的是空前缀，命令侧由
+  /// `shellListDirArg` 还原成 `/`（否则 `find ""` 报错 → 列表恒为空）。
+  Future<List<FileItemModel>?> _listSystemRootViaShell() async {
+    try {
+      final status = await RootShizukuService.checkStatus();
+      final shizukuOk = status.isShizukuAvailable && status.shizukuPermissionGranted;
+      if (!shizukuOk && !status.isRootAvailable) return null;
+      // 与受限目录分支一致的优先级：Shizuku 已授权优先，其次 root。
+      final useRoot = !shizukuOk;
+      activeTab.isRootAvailable = status.isRootAvailable;
+
+      final items = await RootShizukuService.listFiles(
+        '/',
+        useRoot: useRoot,
+        showHiddenFiles: _showHiddenFiles,
+      );
+      if (items.isEmpty) return null;
+
+      final folders = items.where((e) => e.isDirectory).toList();
+      final files = items.where((e) => !e.isDirectory).toList();
+      final filteredFiles = _filterType == FileFilterType.all
+          ? files
+          : files.where((e) => _matchesFilter(e.path)).toList();
+      final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter)
+          ? <FileItemModel>[]
+          : folders;
+      _sortList(filteredFolders, '/');
+      _sortList(filteredFiles, '/');
+      return [...filteredFolders, ...filteredFiles];
+    } catch (e) {
+      debugPrint('[ZenFile] system root shell listing failed: $e');
+      return null;
+    }
+  }
+
   /// 将 CryptFileEntry 转换为 FileItemModel
   FileItemModel _cryptEntryToFileItem(CryptFileEntry entry) {
     final entity = entry.isDirectory
@@ -5204,9 +5244,24 @@ class FileManagerProvider extends ChangeNotifier {
       }
 
       final dir = Directory(path);
+      var plainLoaded = false;
       if (await dir.exists()) {
         activeTab.currentPath = path;
         activeTab.currentFiles = await _listPlainDirectory(path);
+        plainLoaded = true;
+      }
+      // ── 文件系统根目录 `/` 的兜底 ──────────────────────────────────────
+      // 多数 ROM 的 SELinux 不允许 app 进程 readdir('/')（Dart IO 抛异常），
+      // 部分 ROM 还会静默给出空列表，表现为「打开『系统根目录』一片空白」。
+      // 这与 Android/data 属同一类问题：app 身份读不到，就交给 shell 身份去读。
+      // 仅在真正的根目录、且 Dart IO 没给出任何条目时启用，普通目录不受影响。
+      if (path == '/' && (!plainLoaded || activeTab.currentFiles.isEmpty)) {
+        final shellItems = await _listSystemRootViaShell();
+        if (shellItems != null && shellItems.isNotEmpty) {
+          debugPrint('[ZenFile] system root listed via shell: ${shellItems.length} items');
+          activeTab.currentPath = path;
+          activeTab.currentFiles = shellItems;
+        }
       }
     } catch (e) {
       debugPrint('Error loading directory: $e. Fallback to restricted mode.');

@@ -45,6 +45,18 @@ String fromFuseBypassPath(String path) {
   return path;
 }
 
+/// 传给 `find` / `ls` 的目录参数。
+///
+/// 调用侧对**文件系统根目录**用空串当「空前缀」（历史写法 `for f in /* /.*`
+/// 需要它，见 root_shizuku_service.listFiles）。但换成 `find "$dir"` / `ls -la "$dir"`
+/// 之后，空串会让命令直接报错（toybox：`find: '': No such file or directory`），
+/// 三条策略全部拿不到输出 → 静默返回空 → **「root/Shizuku 授权后打开系统根目录
+/// 一片空白」**（命令压根没跑成，不是权限问题）。这里统一把空串还原成 `/`。
+String shellListDirArg(String dir) {
+  final d = dir.trim();
+  return d.isEmpty ? '/' : d;
+}
+
 /// 一条受限目录条目（纯数据，便于单测；调用方自行转成 FileItemModel）。
 class RestrictedDirEntry {
   final String path;
@@ -127,9 +139,13 @@ List<RestrictedDirEntry> parseLsLongOutput(
   required String dir,
   required bool showHiddenFiles,
 }) {
-  final base = dir.endsWith('/') && dir.length > 1
+  // 剥掉结尾斜杠（`/storage/emulated/0/` → `/storage/emulated/0`），
+  // 但**根目录不能剥**：`/` 只剩一个斜杠，剥掉会让条目变成 `system` 这种
+  // 相对路径；同时也不能让 base 变成 `//`，否则条目是 `//system`。
+  final trimmed = dir.length > 1 && dir.endsWith('/')
       ? dir.substring(0, dir.length - 1)
       : dir;
+  final base = (trimmed.isEmpty || trimmed == '/') ? '' : trimmed;
   final items = <RestrictedDirEntry>[];
   // 权限串后可能跟 '+'（ACL）或 '.'（SELinux），故留一个可选后缀位。
   final re = RegExp(

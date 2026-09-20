@@ -153,4 +153,65 @@ void main() {
       expect(items[0].name, 'my file.txt');
     });
   });
+
+  // ── 系统根目录 `/` ──────────────────────────────────────────────────────
+  //
+  // 背景（真实反馈）：root / Shizuku 授权后打开「系统根目录」一片空白。
+  // 根因不在权限：listFiles 对 `/` 传的是**空前缀**（历史 `for f in /*` 需要它），
+  // 而 find/ls 拿到空串会直接报错（`find: '': No such file or directory`），
+  // 三种策略全部无输出 → 静默返回空列表。上游 NFile 仍用 glob 写法所以正常。
+  group('shellListDirArg（根目录空前缀还原）', () {
+    test('空前缀还原为 /（否则 find "" 直接报错）', () {
+      expect(shellListDirArg(''), '/');
+      expect(shellListDirArg('   '), '/');
+    });
+
+    test('已经是 / 或普通目录时保持不变', () {
+      expect(shellListDirArg('/'), '/');
+      expect(shellListDirArg('/storage/emulated/0'), '/storage/emulated/0');
+      expect(shellListDirArg('/data/media/0/Android/data'),
+          '/data/media/0/Android/data');
+    });
+  });
+
+  group('系统根目录条目解析', () {
+    test('find / 的 stat 输出：路径为 /xxx，且 /data 可被识别为目录', () {
+      const out = 'directory|4096|1700000000|/system\n'
+          'directory|4096|1700000000|/data\n'
+          'directory|0|1700000000|/vendor\n'
+          'regular file|1|1700000000|/default.prop\n';
+      final items = parseStatPipeLines(out, showHiddenFiles: false);
+      expect(items.length, 4);
+      expect(items[0].path, '/system');
+      expect(items[0].name, 'system');
+      expect(items[0].isDirectory, isTrue);
+      // /data 必须原样保留：进入它由 isRestrictedPath 判走受限分支。
+      expect(items[1].path, '/data');
+      expect(items[3].name, 'default.prop');
+    });
+
+    test('ls -la / 兜底：不产生 //system 双斜杠', () {
+      const out = 'total 8\n'
+          'drwxr-xr-x  20 root root 4096 2024-01-02 12:34 system\n'
+          'drwxrwx--x   2 root root 4096 2024-01-02 12:34 data\n';
+      final items = parseLsLongOutput(out, dir: '/', showHiddenFiles: false);
+      expect(items.length, 2);
+      expect(items[0].path, '/system');
+      expect(items[0].name, 'system');
+      expect(items[1].path, '/data');
+    });
+
+    test('历史调用传入空前缀时同样得到 /xxx', () {
+      const out = 'drwxr-xr-x 20 root root 4096 2024-01-02 12:34 system\n';
+      final items = parseLsLongOutput(out, dir: '', showHiddenFiles: false);
+      expect(items.single.path, '/system');
+    });
+
+    test('根目录下的符号链接（如 /sdcard）按非目录处理', () {
+      const out = 'lrwxrwxrwx 1 root root 21 2024-01-02 12:34 sdcard -> /storage/self/primary\n';
+      final items = parseLsLongOutput(out, dir: '/', showHiddenFiles: false);
+      expect(items.single.name, 'sdcard');
+      expect(items.single.isDirectory, isFalse);
+    });
+  });
 }
