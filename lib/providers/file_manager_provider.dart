@@ -2994,10 +2994,10 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 扫描局域网内的 SMB 共享设备（无需预先填写 IP 地址）。
-  /// 先用 [LanClient.scanSubnet] 探测开放 445 端口的设备，再逐台尝试
-  /// 列出根共享名（复用 [listSmbShares] 的过滤逻辑）。
-  /// 返回 `host -> 共享名列表`；能发现但无法列出共享（如需要认证）的值为空列表。
-  static Future<Map<String, List<String>>> discoverSmbDevices({
+  /// 先用 [LanClient.scanSubnet] 探测开放 445 端口的设备（含 NetBIOS 主机名
+  /// 解析），再逐台尝试列出根共享名（复用 [listSmbShares] 的过滤逻辑）。
+  /// 返回设备列表；能发现但无法列出共享（如需要认证）的 shares 为空列表。
+  static Future<List<SmbDiscoveredDevice>> discoverSmbDevices({
     String username = '',
     String password = '',
     Function(double)? onProgress,
@@ -3006,7 +3006,7 @@ class FileManagerProvider extends ChangeNotifier {
       onProgress: onProgress ?? (double _) {},
     );
     final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
-    final result = <String, List<String>>{};
+    final result = <SmbDiscoveredDevice>[];
     for (final d in smbDevices) {
       // 依次尝试：已填凭据 → guest 匿名兜底（很多家用 NAS/路由器共享允许匿名列出）
       final attempts = <List<String>>[
@@ -3038,11 +3038,22 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
       // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
-      result[d.host] = shares ?? const <String>[];
+      result.add(SmbDiscoveredDevice(
+        host: d.host,
+        hostName: d.hostName,
+        shares: shares ?? const <String>[],
+      ));
       if (shares == null && lastErr != null && username.isEmpty) {
         debugPrint('[ZenFile] discoverSmbDevices: ${d.host} share list failed: $lastErr');
       }
     }
+    // 有主机名的排在前面，其余按 IP 末段排序，列表更稳定可读
+    result.sort((a, b) {
+      if (a.hasHostName != b.hasHostName) return a.hasHostName ? -1 : 1;
+      final ai = int.tryParse(a.host.split('.').last) ?? 0;
+      final bi = int.tryParse(b.host.split('.').last) ?? 0;
+      return ai.compareTo(bi);
+    });
     return result;
   }
 
@@ -6152,6 +6163,166 @@ class FileManagerProvider extends ChangeNotifier {
   }
 }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // 粘贴重名冲突（本地 ↔ 远程统一处理）
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// 远程条目 → 冲突弹窗用的信息。
+  ///
+  /// 部分协议/服务端（openlist、某些 WebDAV 实现）对未知 mtime 返回 epoch 0，
+  /// 直接显示会变成「1970-01-01」，按**未知**处理（弹窗显示 `—`）更诚实。
+  ConflictFileInfo _conflictInfoFromRemote(RemoteFileItem item) => ConflictFileInfo(
+        size: item.size >= 0 ? item.size : null,
+        modified:
+            item.modified.millisecondsSinceEpoch > 0 ? item.modified : null,
+      );
+
+  /// 目标远程目录里「已有条目名 → 大小/时间」，作为重名判定与弹窗信息源。
+  ///
+  /// 旧实现只看 `activeTab.currentFiles`（**页面缓存**）：目录尚未加载、列表过期
+  /// （刚新建、上次传输后未刷新、被其它客户端改动）时判不出重名 → 静默覆盖或又
+  /// 写一份，用户看到「没有弹窗，直接又创建了一份」；且弹窗拿不到远程条目信息，
+  /// 只能传 `File('')` → 大小显示 `0 B`、时间显示 `1970-01-01`。
+  ///
+  /// 因此这里对每个目标目录做一次**真实 LIST**（按目录缓存：一次粘贴最多多一次
+  /// 请求，且这些协议的命令本就被客户端串行化）；LIST 失败才退回页面缓存。
+  ///
+  /// ⚠️ 例外：远程**加密**目录（`cryptremote`）的 `currentPath` 是虚拟路径，用底层
+  /// remote 客户端 LIST 它拿不到解密后的名字（只会有密文名 / 直接报错），而该 tab 的
+  /// 页面缓存里正是解密后的显示名 —— 恰好是判重需要的名字，所以这类目录直接用页面
+  /// 缓存，不对服务端发这次 LIST。
+  Future<Map<String, ConflictFileInfo>> _remoteEntriesForConflict(
+    RemoteClient client,
+    String dirPath,
+    Map<String, Map<String, ConflictFileInfo>> cache,
+  ) async {
+    final cached = cache[dirPath];
+    if (cached != null) return cached;
+
+    Map<String, ConflictFileInfo>? fromPageCache() {
+      if (!(activeTab.isRemote && activeTab.currentPath == dirPath)) return null;
+      return {
+        for (final f in activeTab.currentFiles)
+          f.name: ConflictFileInfo(
+            size: f.size,
+            modified:
+                f.modified.millisecondsSinceEpoch > 0 ? f.modified : null,
+          ),
+      };
+    }
+
+    Map<String, ConflictFileInfo> entries;
+    final pageCache = fromPageCache();
+    if (activeTab.isCryptRemote && pageCache != null) {
+      entries = pageCache;
+    } else {
+      try {
+        final items = await client.listDirectory(dirPath, forceRefresh: true);
+        entries = {for (final e in items) e.name: _conflictInfoFromRemote(e)};
+      } catch (e) {
+        debugPrint('[ZenFile] 冲突检测列目录失败 $dirPath: $e');
+        entries = pageCache ?? <String, ConflictFileInfo>{};
+      }
+    }
+    cache[dirPath] = entries;
+    return entries;
+  }
+
+  // 目标目录名判重/唯一化：`lib/core/utils.dart` 的 [uniqueNameAgainst]
+  // （抽成公共函数以便单测；本地/远程各粘贴链路共用同一实现）。
+
+  /// 粘贴重名冲突的统一处理（本地↔本地 / 本地↔远程 / 远程↔本地 / 远程↔远程共用）。
+  ///
+  /// 返回值：
+  /// - `null` → 用户选择「取消粘贴」，调用方应中断整次粘贴；
+  /// - `shouldProcess == false` → 「跳过」本条；
+  /// - 否则用返回的 `destPath` 继续传输（已应用「保留两者 / 重命名」）。
+  ///
+  /// [resolution] 是最终生效的策略（无冲突时为 overwrite），供「同服务器剪切走
+  /// 服务端 rename」这类分支判断是否需要先删掉已存在的目标。
+  ///
+  /// ⚠️ [destExists] 必须由调用方以各自**可信**的方式判定：本地目标用
+  /// `FileSystemEntity.typeSync`，远程目标用 [_remoteEntriesForConflict] 的真实
+  /// LIST 结果 —— 不要再用「页面列表里有没有这条」当唯一依据。
+  ///
+  /// [sourceInfo]/[destInfo] 用于远程侧（没有本地路径）：不给就对本地路径 stat，
+  /// 拿不到（notFound）时弹窗显示 `—`。
+  Future<({String destPath, bool shouldProcess, ConflictResult resolution})?>
+      _resolveTransferConflict({
+    required BuildContext context,
+    required String fileName,
+    required String destPath,
+    required bool destExists,
+    File? sourceFile,
+    File? destFile,
+    ConflictFileInfo? sourceInfo,
+    ConflictFileInfo? destInfo,
+    ConflictResult? cachedResolution,
+    void Function(ConflictResult resolution)? onApplyToAll,
+    required String Function(String desiredName) uniquePathFor,
+  }) async {
+    if (!destExists) {
+      return (
+        destPath: destPath,
+        shouldProcess: true,
+        resolution: ConflictResult.overwrite,
+      );
+    }
+    var resolution = cachedResolution;
+    ConflictDialogResponse? response;
+    if (resolution == null) {
+      if (!context.mounted) return null;
+      response = await ConflictDialog.show(
+        context,
+        fileName: fileName,
+        sourceFile: sourceFile ?? File(''),
+        destFile: destFile ?? File(''),
+        sourceInfo: sourceInfo,
+        destInfo: destInfo,
+      );
+      if (response == null) return null;
+      resolution = response.result;
+      if (resolution == ConflictResult.cancel) return null;
+      if (response.applyToAll &&
+          (resolution == ConflictResult.overwrite ||
+              resolution == ConflictResult.keepBoth ||
+              resolution == ConflictResult.skip)) {
+        onApplyToAll?.call(resolution);
+      }
+    }
+    switch (resolution) {
+      case ConflictResult.cancel:
+        return null;
+      case ConflictResult.skip:
+        return (
+          destPath: destPath,
+          shouldProcess: false,
+          resolution: resolution,
+        );
+      case ConflictResult.keepBoth:
+        return (
+          destPath: uniquePathFor(fileName),
+          shouldProcess: true,
+          resolution: resolution,
+        );
+      case ConflictResult.rename:
+        final customName = response?.customName;
+        return (
+          destPath: uniquePathFor(
+            (customName == null || customName.isEmpty) ? fileName : customName,
+          ),
+          shouldProcess: true,
+          resolution: resolution,
+        );
+      case ConflictResult.overwrite:
+        return (
+          destPath: destPath,
+          shouldProcess: true,
+          resolution: resolution,
+        );
+    }
+  }
+
   Future<void> _pasteFromRemoteToLocal(BuildContext context, bool clearAfterPaste) async {
     final conn = _remoteClipboardConnection;
     if (conn == null) {
@@ -6278,6 +6449,7 @@ class FileManagerProvider extends ChangeNotifier {
       int bytesDone = 0;
       int previousFilesBytes = 0;
       final stopwatch = Stopwatch()..start();
+      ConflictResult? cachedResolution;
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) {
@@ -6285,7 +6457,28 @@ class FileManagerProvider extends ChangeNotifier {
         }
 
         final remoteItem = _remoteClipboardItems[i];
-        final destPath = p.join(targetPath, remoteItem.name);
+
+        // 远程 → 本地：与本地复制/剪切**完全一致**的「文件已存在」弹窗。
+        // 历史实现对本链路没有任何重名检测，直接 downloadFile 覆盖同名文件
+        // （用户反馈：远程到本地没有弹窗）。本地目标用真实文件系统判定，
+        // 所以这里天然可信，不受页面缓存影响。
+        final candidateDest = p.join(targetPath, remoteItem.name);
+        final decision = await _resolveTransferConflict(
+          context: context,
+          fileName: remoteItem.name,
+          destPath: candidateDest,
+          destExists: FileSystemEntity.typeSync(candidateDest) !=
+              FileSystemEntityType.notFound,
+          destFile: File(candidateDest),
+          sourceInfo: _conflictInfoFromRemote(remoteItem),
+          cachedResolution: cachedResolution,
+          onApplyToAll: (r) => cachedResolution = r,
+          uniquePathFor: (desired) =>
+              _getUniquePath(p.join(targetPath, desired), remoteItem.isDirectory),
+        );
+        if (decision == null) throw Exception('Cancelled');
+        if (!decision.shouldProcess) continue;
+        final destPath = decision.destPath;
 
         if (remoteItem.isDirectory) {
           // For folders, track progress per-file inside the directory
@@ -6532,6 +6725,8 @@ class FileManagerProvider extends ChangeNotifier {
       }
 
       ConflictResult? cachedResolution;
+      // 目标远程目录的「已有条目」缓存（按目录），供重名判定与弹窗信息使用。
+      final Map<String, Map<String, ConflictFileInfo>> remoteEntriesCache = {};
 
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -6548,45 +6743,29 @@ class FileManagerProvider extends ChangeNotifier {
           isDir = st.isDirectory;
         }
 
-        // Check conflict with existing remote files
-        final destExists = activeTab.currentFiles.any((f) => f.name == name);
-        if (destExists) {
-          ConflictResult? resolution = cachedResolution;
-          if (resolution == null) {
-            if (!context.mounted) throw Exception('Cancelled');
-            final response = await ConflictDialog.show(
-              context,
-              fileName: name,
-              sourceFile: File(srcPath),
-              destFile: File(''), // remote file, no local path
-            );
-            if (response == null || response.result == ConflictResult.cancel) {
-              throw Exception('Cancelled');
-            }
-            resolution = response.result;
-            if (response.applyToAll &&
-                (resolution == ConflictResult.overwrite ||
-                 resolution == ConflictResult.keepBoth ||
-                 resolution == ConflictResult.skip)) {
-              cachedResolution = resolution;
-            }
-          }
-          if (resolution == ConflictResult.skip) {
-            continue; // skip this file
-          } else if (resolution == ConflictResult.keepBoth) {
-            // Generate unique name
-            String uniqueName = name;
-            int counter = 1;
-            while (activeTab.currentFiles.any((f) => f.name == uniqueName)) {
-              final baseName = p.basenameWithoutExtension(name);
-              final ext = p.extension(name);
-              uniqueName = '$baseName ($counter)$ext';
-              counter++;
-            }
-            destPath = _buildRemotePath(currentPath, uniqueName);
-          }
-          // overwrite: do nothing, keep destPath as is
-        }
+        // 重名检测：对目标远程目录做一次真实 LIST（按目录缓存），不再只看页面
+        // 缓存 activeTab.currentFiles —— 目录未加载 / 列表过期时旧写法判不出重名，
+        // 会直接覆盖或又写一份（用户反馈：本地到远程没有弹窗）。
+        final destEntries =
+            await _remoteEntriesForConflict(client, currentPath, remoteEntriesCache);
+        final decision = await _resolveTransferConflict(
+          context: context,
+          fileName: name,
+          destPath: destPath,
+          destExists: destEntries.containsKey(name),
+          sourceFile: File(srcPath),
+          destInfo: destEntries[name],
+          cachedResolution: cachedResolution,
+          onApplyToAll: (r) => cachedResolution = r,
+          uniquePathFor: (desired) {
+            final unique = uniqueNameAgainst(destEntries.keys.toSet(), desired);
+            destEntries[unique] = destEntries[name] ?? const ConflictFileInfo();
+            return _buildRemotePath(currentPath, unique);
+          },
+        );
+        if (decision == null) throw Exception('Cancelled');
+        if (!decision.shouldProcess) continue;
+        destPath = decision.destPath;
 
         if (isDir) {
           await _uploadLocalDirectory(
@@ -6648,6 +6827,11 @@ class FileManagerProvider extends ChangeNotifier {
           lastUploadedName = p.basename(destPath);
           lastUploadedSize = fileSize;
         }
+
+        // 记入目标目录缓存：同一次粘贴里若存在同名（来自不同源目录）的后续条目，
+        // 也能正确判为冲突，而不是把前一个刚上传的覆盖掉。
+        destEntries[p.basename(destPath)] =
+            ConflictFileInfo(modified: DateTime.now());
 
         if (_isCut) {
           if (bypassUseRoot != null && _needsBypass(srcPath)) {
@@ -6788,6 +6972,8 @@ class FileManagerProvider extends ChangeNotifier {
       int bytesDone = 0;
       int previousFilesBytes = 0;
       ConflictResult? cachedResolution;
+      // 目标远程目录的「已有条目」缓存（按目录），供重名判定与弹窗信息使用。
+      final Map<String, Map<String, ConflictFileInfo>> remoteEntriesCache = {};
       // 滑动窗口实时速率：避免累计平均速率在文件间停顿时持续衰减。
       final speedTracker = _TransferSpeedTracker(window: const Duration(seconds: 2));
       // 节流：同 _pasteLocalToRemote，避免高频 onProgress 导致 O(n²) 性能问题。
@@ -6850,43 +7036,33 @@ class FileManagerProvider extends ChangeNotifier {
         final tempPath = p.join(tempDir.path, remoteItem.name);
         String destPath = _buildRemotePath(currentPath, remoteItem.name);
 
-        // Check conflict with existing remote files
-        final destExists = activeTab.currentFiles.any((f) => f.name == remoteItem.name);
-        ConflictResult? resolution = cachedResolution;
-        if (destExists) {
-          if (resolution == null) {
-            if (!context.mounted) throw Exception('Cancelled');
-            final response = await ConflictDialog.show(
-              context,
-              fileName: remoteItem.name,
-              sourceFile: File(''), // remote file
-              destFile: File(''), // remote file
-            );
-            if (response == null || response.result == ConflictResult.cancel) {
-              throw Exception('Cancelled');
-            }
-            resolution = response.result;
-            if (response.applyToAll &&
-                (resolution == ConflictResult.overwrite ||
-                 resolution == ConflictResult.keepBoth ||
-                 resolution == ConflictResult.skip)) {
-              cachedResolution = resolution;
-            }
-          }
-          if (resolution == ConflictResult.skip) {
-            continue;
-          } else if (resolution == ConflictResult.keepBoth) {
-            String uniqueName = remoteItem.name;
-            int counter = 1;
-            while (activeTab.currentFiles.any((f) => f.name == uniqueName)) {
-              final baseName = p.basenameWithoutExtension(remoteItem.name);
-              final ext = p.extension(remoteItem.name);
-              uniqueName = '$baseName ($counter)$ext';
-              counter++;
-            }
-            destPath = _buildRemotePath(currentPath, uniqueName);
-          }
-        }
+        // 重名检测：与本地复制一致的弹窗（对目标远程目录做真实 LIST，见
+        // _remoteEntriesForConflict）。旧实现只看页面缓存，且弹窗两侧都传
+        // File('') → 大小显示 `0 B`、时间显示 `1970-01-01`，等于没有可用信息。
+        final destEntries =
+            await _remoteEntriesForConflict(targetClient, currentPath, remoteEntriesCache);
+        final destExists = destEntries.containsKey(remoteItem.name);
+        final decision = await _resolveTransferConflict(
+          context: context,
+          fileName: remoteItem.name,
+          destPath: destPath,
+          destExists: destExists,
+          sourceInfo: _conflictInfoFromRemote(remoteItem),
+          destInfo: destEntries[remoteItem.name],
+          cachedResolution: cachedResolution,
+          onApplyToAll: (r) => cachedResolution = r,
+          uniquePathFor: (desired) {
+            final unique = uniqueNameAgainst(destEntries.keys.toSet(), desired);
+            destEntries[unique] =
+                destEntries[remoteItem.name] ?? const ConflictFileInfo();
+            return _buildRemotePath(currentPath, unique);
+          },
+        );
+        if (decision == null) throw Exception('Cancelled');
+        if (!decision.shouldProcess) continue;
+        destPath = decision.destPath;
+        final bool overwriteExisting =
+            destExists && decision.resolution == ConflictResult.overwrite;
 
         // 同服务器剪切：优先服务端 rename 直接移动，避免下载到本地再上传。
         // rename 失败（个别协议/目录不支持）时回退到下方 download+upload 常规流程。
@@ -6895,7 +7071,7 @@ class FileManagerProvider extends ChangeNotifier {
           try {
             // 覆盖已存在目标：WebDAV 的 MOVE 默认不覆盖，需先删除目标；
             // 其它协议 rename 多数自动覆盖，删除目标亦无副作用。
-            if (destExists && resolution == ConflictResult.overwrite) {
+            if (overwriteExisting) {
               try {
                 await targetClient.delete(destPath, remoteItem.isDirectory);
               } catch (_) {}
@@ -6958,6 +7134,10 @@ class FileManagerProvider extends ChangeNotifier {
             lastUploadedSize = fileSize;
           }
         }
+
+        // 记入目标目录缓存：同一次粘贴里若还有同名条目（来自不同源目录），
+        // 也能正确判为冲突，而不是覆盖刚传输完的那一份。
+        destEntries[p.basename(destPath)] = ConflictFileInfo(modified: DateTime.now());
 
         // Step 3: Delete source if cut（rename 路径已移动源文件，无需删除）
         if (_isCut && !movedInPlace) {
@@ -8748,7 +8928,33 @@ class FileManagerProvider extends ChangeNotifier {
         if (activeTab.isRemote && activeTab.remoteClient != null && !File(path).existsSync()) {
           final streamUrl = await _setupRemoteMediaStream(path);
           if (streamUrl != null && context.mounted) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+            // 构建同目录视频播放列表
+            final conn = activeTab.remoteConnection;
+            var playlist = <dynamic>[streamUrl];
+            var playlistTitles = <String>[];
+            var initialIndex = 0;
+            if (conn != null) {
+              final pl = await _buildRemoteMediaPlaylist(
+                client: activeTab.remoteClient!,
+                connectionId: conn.id,
+                remotePath: path,
+                isVideo: true,
+              );
+              if (pl != null) {
+                playlist = pl.$1;
+                playlistTitles = pl.$2;
+                initialIndex = pl.$3;
+              }
+            }
+            if (context.mounted) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
+                videoPath: streamUrl,
+                playlist: playlist,
+                playlistTitles: playlistTitles.isEmpty ? null : playlistTitles,
+                initialIndex: initialIndex,
+                isRemote: true,
+              )));
+            }
             break;
           }
           // 流式失败，回退：下载到本地缓存后播放
@@ -8815,6 +9021,36 @@ class FileManagerProvider extends ChangeNotifier {
   /// 通过系统选择器（Intent.createChooser）打开文件或 URL
   /// 支持本地文件路径和 HTTP(S) URL（远程流式播放）
   static const _platformChannel = MethodChannel('com.sequl.zenfile/root_shizuku');
+
+  /// 列出远程目录中与当前文件同类型的媒体文件，构建播放列表。
+  /// 返回 (playlist, titles, initialIndex)；失败时返回 null（调用方应自行降级为单文件播放）。
+  Future<(List<String>, List<String>, int)?> _buildRemoteMediaPlaylist({
+    required RemoteClient client,
+    required String connectionId,
+    required String remotePath,
+    required bool isVideo,
+  }) async {
+    try {
+      final parent = p.dirname(remotePath);
+      final entries = await client.listDirectory(parent);
+      final exts = isVideo
+          ? const ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.m4v', '.ts', '.mpg', '.mpeg']
+          : const ['.mp3', '.aac', '.wav', '.flac', '.ogg', '.m4a', '.wma', '.opus', '.ape', '.aiff'];
+      final mediaFiles = entries
+          .where((e) => !e.isDirectory)
+          .where((e) => exts.contains(p.extension(e.name).toLowerCase()))
+          .toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      if (mediaFiles.isEmpty) return null;
+      final playlist = mediaFiles.map((e) => 'remote://$connectionId|${e.path}').toList();
+      final titles = mediaFiles.map((e) => e.name).toList();
+      final idx = mediaFiles.indexWhere((e) => e.path == remotePath);
+      return (playlist, titles, idx < 0 ? 0 : idx);
+    } catch (e) {
+      debugPrint('构建远程播放列表失败: $e');
+      return null;
+    }
+  }
 
   /// 为远程文件启动流式播放，返回播放 URL。
   /// WebDAV 优先走直连 HTTP 流式（libmpv 原生 Range 请求，流畅不卡顿），
@@ -9010,26 +9246,71 @@ class FileManagerProvider extends ChangeNotifier {
       if (mount != null) physical = await mount.resolvePhysicalPath(path);
     }
     final isDir = await FileSystemEntity.isDirectory(physical);
+    // 目录是否密文同样只能看磁盘事实，不能用 `physical != path` 判断：
+    // 原地加密目录**会把目录名换成密文名**，但挂载点根（容器）不换名，
+    // 两种情形下 `physical` 都可能等于 `path`，旧写法会把「从仍加密的文件夹里
+    // 复制子文件夹出去」误判成明文，用户拿到的是密文文件。
+    //
+    // ⚠️ 源方向用 [CryptOperations.dirNeedsCryptTransfer]（"目录里有密文"也算），
+    // 与目标方向的 [CryptOperations.isDirectoryStillEncrypted]（只看目录名）
+    // 是**两个不同语义**：解密传输是逐条处理的，明文条目原样复制，不存在
+    // 「把用户文件静默加密」的风险；反过来若源方向也只看目录名，从「夹带密文
+    // 文件的普通目录」复制出去的密文文件会原样落到明文目标，往加密目录里复制
+    // 时还会走「整目录加密」分支把已有密文二次加密。
     final isEncrypted = mount != null &&
         (isDir
-            ? (physical != path && mount.containsPath(path))
+            ? await CryptOperations.dirNeedsCryptTransfer(physical, mount: mount)
             : await _isEncryptedPhysicalFile(physical));
     return (mount: mount, physical: physical, isEncrypted: isEncrypted, isDirectory: isDir);
   }
 
   /// 解析目标目录的加密上下文（[folder] 为虚拟目录路径）。
+  ///
+  /// ⚠️ 只有目标目录**当前确实是加密目录实体**时才返回挂载点，否则一律返回
+  /// `(null, folder)` 按明文目标处理：
+  /// - 解析出的物理路径 ≠ 虚拟路径 ⇒ 该目录在磁盘上的真实名字是密文名
+  ///   （`resolvePhysicalPath` 只在磁盘上确实存在那个密文路径时才会给出不同结果，
+  ///   这里再用 `exists` 复核，避免后缀/编码不一致时按密文写进不存在的路径）；
+  /// - 解析结果就是它自己时（挂载点根 / 普通目录），交给
+  ///   [CryptOperations.isDirectoryStillEncrypted] 按磁盘事实判定。
+  ///
+  /// 绝不能沿用「是挂载点根就继续加密」「目录里有密文就继续加密」这类信号：
+  /// 前者会让**已解密的目录**继续加密新文件；后者会让「文件夹里只躺着一个密文
+  /// 文件」的普通文件夹（用户只原位加密了其中一个文件、或从别处拷来一个密文
+  /// 文件）把新复制/剪切进来的文件**静默加密**（用户反馈的 bug）。
+  ///
+  /// 挂载点查找与浏览层 [loadDirectory] 对齐（持久化挂载点 → 目录内确有密文 →
+  /// 逐级上溯祖先）：加密目录里的子路径是**虚拟路径**，磁盘上并不存在，
+  /// 少了祖先兜底会把「往加密目录里粘贴」当成明文目标、按明文写进不存在的路径。
+  /// 真实存在的目录不做祖先探测（省掉多余的目录扫描开销）。
   Future<({CryptMountPoint? mount, String physicalDir})> _analyzeCryptDestDir(
     String folder,
   ) async {
     await _ensureCryptMountsLoaded();
     CryptMountPoint? mount = _findCryptMountForBrowse(folder);
     mount ??= await _ephemeralMountForDir(folder);
-    String physicalDir = folder;
-    if (mount != null) {
-      physicalDir = await mount.resolvePhysicalPath(folder);
-      if (!await Directory(physicalDir).exists()) physicalDir = folder;
+    if (mount == null && !await Directory(folder).exists()) {
+      mount ??= await _ancestorCryptMountFor(folder);
     }
-    return (mount: mount, physicalDir: physicalDir);
+    if (mount == null) return (mount: null, physicalDir: folder);
+
+    final resolved = await mount.resolvePhysicalPath(folder);
+    final isSamePath = CryptMountService.normalizePosix(resolved) ==
+        CryptMountService.normalizePosix(folder);
+    if (!isSamePath) {
+      // 磁盘上的真实名字是密文名 → 目录实体本身就是一个加密目录
+      if (await Directory(resolved).exists()) {
+        return (mount: mount, physicalDir: resolved);
+      }
+      // 既不是它自己、也没有对应的密文路径 → 不是加密目录
+      return (mount: null, physicalDir: folder);
+    }
+    // 磁盘上就是它自己：只有目录名本身是密文名才算加密目录，
+    // 「夹带零星密文的普通目录」「挂载点根容器」都不算。
+    if (await CryptOperations.isDirectoryStillEncrypted(folder, mount: mount)) {
+      return (mount: mount, physicalDir: folder);
+    }
+    return (mount: null, physicalDir: folder);
   }
 
   /// 删除磁盘上的物理文件/目录（加密场景绕过回收站，直接物理删除）。
@@ -9048,24 +9329,35 @@ class FileManagerProvider extends ChangeNotifier {
   /// - 密文 → 明文：解密到目标（复制保留源密文；移动删源密文）
   /// - 明文 → 密文：用目标目录配置加密到目标（复制保留源明文；移动删源明文）
   /// - 密文 → 密文：跨配置重加密（先解密到临时明文，再加密到目标）
+  /// [onProgress] 为**字节级**进度回调（当前文件已处理字节, 当前文件总字节），
+  /// 由调用方（粘贴进度弹窗）聚合显示；缺省时不影响任何行为。
   Future<void> _cryptAwareCopyOrMove({
     required String source,
     required String destFolder,
     required bool isCut,
+    void Function(int bytes, int total)? onProgress,
   }) async {
     final src = await _analyzeCryptSource(source);
     final dst = await _analyzeCryptDestDir(destFolder);
-    if (src.mount == null && !src.isEncrypted && dst.mount == null) {
-      // 两端皆明文：不应走到这里，交由调用方的原生逻辑处理。
-      return;
-    }
 
     final plainName = p.basename(source); // UI 展示的解密名即目标明文名
 
     if (src.isDirectory) {
-      await _cryptAwareTransferDir(src: src, dst: dst, plainName: plainName, isCut: isCut);
+      await _cryptAwareTransferDir(
+        src: src,
+        dst: dst,
+        plainName: plainName,
+        isCut: isCut,
+        onProgress: onProgress,
+      );
     } else {
-      await _cryptAwareTransferFile(src: src, dst: dst, plainName: plainName, isCut: isCut);
+      await _cryptAwareTransferFile(
+        src: src,
+        dst: dst,
+        plainName: plainName,
+        isCut: isCut,
+        onProgress: onProgress,
+      );
     }
 
     // 加密内容已变化：清空 ephemeral 缓存并刷新相关 tab，让浏览页即时显示。
@@ -9086,33 +9378,82 @@ class FileManagerProvider extends ChangeNotifier {
     required ({CryptMountPoint? mount, String physicalDir}) dst,
     required String plainName,
     required bool isCut,
+    void Function(int bytes, int total)? onProgress,
   }) async {
     if (src.isEncrypted && dst.mount == null) {
       // 密文 → 明文：解密到目标
       final destPlain = p.join(dst.physicalDir, plainName);
-      await CryptOperations(src.mount!).decryptFileTo(src.physical, destPlain);
+      await CryptOperations(src.mount!).decryptFileTo(
+        src.physical,
+        destPlain,
+        onFileProgress: onProgress,
+      );
       if (isCut) await _deletePhysical(src.physical, isDir: false);
     } else if (!src.isEncrypted && dst.mount != null) {
       // 明文 → 密文：用目标目录配置加密到目标
       final encName = dst.mount!.crypt.encryptFileName(plainName);
       final destEnc = p.join(dst.physicalDir, encName);
-      await CryptOperations(dst.mount!).encryptFileTo(src.physical, destEnc);
+      await CryptOperations(dst.mount!).encryptFileTo(
+        src.physical,
+        destEnc,
+        onFileProgress: onProgress,
+      );
       if (isCut) await _deletePhysical(src.physical, isDir: false);
     } else if (src.isEncrypted && dst.mount != null) {
-      // 密文 → 密文：跨配置重加密（先解密到临时明文，再加密到目标）
+      // 密文 → 密文：跨配置重加密（先解密到临时明文，再加密到目标）。
+      // 同一份数据要过两遍（解密 + 加密），若两次都原样上报，进度会冲到 200%；
+      // 这里把两遍各映射到当前文件的 0~50% 与 50~100%，观感与单遍一致。
+      void Function(int, int)? firstPass;
+      void Function(int, int)? secondPass;
+      if (onProgress != null) {
+        final report = onProgress;
+        firstPass = (bytes, total) => report(total > 0 ? bytes ~/ 2 : 0, total ~/ 2);
+        secondPass = (bytes, total) =>
+            report(total > 0 ? total ~/ 2 + bytes ~/ 2 : 0, total);
+      }
       final tempDir = await _getCryptTempDir();
       final tmpPlain = p.join(tempDir, '${DateTime.now().millisecondsSinceEpoch}_$plainName');
-      await CryptOperations(src.mount!).decryptFileTo(src.physical, tmpPlain);
+      await CryptOperations(src.mount!).decryptFileTo(
+        src.physical,
+        tmpPlain,
+        onFileProgress: firstPass,
+      );
       final encName = dst.mount!.crypt.encryptFileName(plainName);
       final destEnc = p.join(dst.physicalDir, encName);
-      await CryptOperations(dst.mount!).encryptFileTo(tmpPlain, destEnc);
+      await CryptOperations(dst.mount!).encryptFileTo(
+        tmpPlain,
+        destEnc,
+        onFileProgress: secondPass,
+      );
       try {
         await File(tmpPlain).delete();
       } catch (_) {}
       if (isCut) await _deletePhysical(src.physical, isDir: false);
     } else {
-      // 两端皆明文兜底（理论上已被调用方拦截）
+      // 两端皆明文（源是挂载点内未加密的普通文件 / 目标也是明文目录）：
+      // 按普通复制处理。⚠️ 绝不能只删源 —— `_pasteCryptAware` 会把剪贴板里的
+      // 每个条目都送进本方法（只要其中有一个涉及加密），只删不复制＝静默丢文件。
+      await _plainCopyPhysical(src.physical, dst.physicalDir, plainName, isDir: false);
       if (isCut) await _deletePhysical(src.physical, isDir: false);
+    }
+  }
+
+  /// 明文 → 明文的兜底复制（保留源），用于 crypt 传输分支里的「两端皆明文」。
+  Future<void> _plainCopyPhysical(
+    String srcPath,
+    String destDir,
+    String name, {
+    required bool isDir,
+  }) async {
+    final destPath = p.join(destDir, name);
+    if (isDir) {
+      final dest = Directory(destPath);
+      if (!await dest.exists()) await dest.create(recursive: true);
+      await _copyDirectory(Directory(srcPath), dest);
+    } else {
+      final parent = Directory(destDir);
+      if (!await parent.exists()) await parent.create(recursive: true);
+      await File(srcPath).copy(destPath);
     }
   }
 
@@ -9126,6 +9467,7 @@ class FileManagerProvider extends ChangeNotifier {
     required ({CryptMountPoint? mount, String physicalDir}) dst,
     required String plainName,
     required bool isCut,
+    void Function(int bytes, int total)? onProgress,
   }) async {
     if (src.isEncrypted && dst.mount == null) {
       await _decryptDirCryptToPlain(
@@ -9133,6 +9475,7 @@ class FileManagerProvider extends ChangeNotifier {
         srcPhysicalDir: src.physical,
         destParentDir: dst.physicalDir,
         plainDirName: plainName,
+        onProgress: onProgress,
       );
       if (isCut) await _deletePhysical(src.physical, isDir: true);
     } else if (!src.isEncrypted && dst.mount != null) {
@@ -9141,6 +9484,7 @@ class FileManagerProvider extends ChangeNotifier {
         dstMount: dst.mount!,
         destParentDir: dst.physicalDir,
         cryptDirName: plainName,
+        onProgress: onProgress,
       );
       if (isCut) await _deletePhysical(src.physical, isDir: true);
     } else if (src.isEncrypted && dst.mount != null) {
@@ -9158,12 +9502,16 @@ class FileManagerProvider extends ChangeNotifier {
         dstMount: dst.mount!,
         destParentDir: dst.physicalDir,
         cryptDirName: plainName,
+        onProgress: onProgress,
       );
       try {
         await Directory(tmpPlainDir).delete(recursive: true);
       } catch (_) {}
       if (isCut) await _deletePhysical(src.physical, isDir: true);
     } else {
+      // 两端皆明文（源是挂载点内未加密的普通目录 / 目标也是明文目录）：
+      // 按普通复制处理，同样不能只删源（见 [_plainCopyPhysical] 注释）。
+      await _plainCopyPhysical(src.physical, dst.physicalDir, plainName, isDir: true);
       if (isCut) await _deletePhysical(src.physical, isDir: true);
     }
   }
@@ -9174,6 +9522,7 @@ class FileManagerProvider extends ChangeNotifier {
     required String srcPhysicalDir,
     required String destParentDir,
     required String plainDirName,
+    void Function(int bytes, int total)? onProgress,
   }) async {
     final plainDir = Directory(p.join(destParentDir, plainDirName));
     if (!await plainDir.exists()) await plainDir.create(recursive: true);
@@ -9187,9 +9536,14 @@ class FileManagerProvider extends ChangeNotifier {
           srcPhysicalDir: entry.physicalPath,
           destParentDir: plainDir.path,
           plainDirName: entry.name,
+          onProgress: onProgress,
         );
       } else if (entry.isEncrypted) {
-        await CryptOperations(srcMount).decryptFileTo(entry.physicalPath, childPlain);
+        await CryptOperations(srcMount).decryptFileTo(
+          entry.physicalPath,
+          childPlain,
+          onFileProgress: onProgress,
+        );
       } else {
         // 源目录内混入的明文文件：直接复制
         await File(entry.physicalPath).copy(childPlain);
@@ -9203,6 +9557,7 @@ class FileManagerProvider extends ChangeNotifier {
     required CryptMountPoint dstMount,
     required String destParentDir,
     required String cryptDirName,
+    void Function(int bytes, int total)? onProgress,
   }) async {
     final cryptDirNameEnc = dstMount.crypt.encryptDirName(cryptDirName);
     final cryptDir = Directory(p.join(destParentDir, cryptDirNameEnc));
@@ -9216,12 +9571,14 @@ class FileManagerProvider extends ChangeNotifier {
           dstMount: dstMount,
           destParentDir: cryptDir.path,
           cryptDirName: childName,
+          onProgress: onProgress,
         );
       } else if (entity is File) {
         final encName = dstMount.crypt.encryptFileName(childName);
         await CryptOperations(dstMount).encryptFileTo(
           entity.path,
           p.join(cryptDir.path, encName),
+          onFileProgress: onProgress,
         );
       }
     }
@@ -9239,39 +9596,178 @@ class FileManagerProvider extends ChangeNotifier {
     return false;
   }
 
+  /// 递归统计条目的总字节数与文件数，作为 crypt 粘贴进度条的**分母**。
+  ///
+  /// 读不到长度的条目按 0 计（不影响流程，只是该条目不贡献进度）。
+  Future<({int bytes, int files})> _measureCryptSource(String path) async {
+    try {
+      final type = await FileSystemEntity.type(path, followLinks: false);
+      if (type == FileSystemEntityType.directory) {
+        var bytes = 0;
+        var files = 0;
+        await for (final e in Directory(path).list(recursive: true, followLinks: false)) {
+          if (e is File) {
+            files++;
+            try {
+              bytes += await e.length();
+            } catch (_) {}
+          }
+        }
+        return (bytes: bytes, files: files);
+      }
+      if (type == FileSystemEntityType.file) {
+        try {
+          return (bytes: await File(path).length(), files: 1);
+        } catch (_) {}
+      }
+    } catch (_) {}
+    return (bytes: 0, files: 0);
+  }
+
   /// 加密感知粘贴：源或目标任一处于加密目录时，逐条走 crypt 传输（自动加/解密）。
+  ///
+  /// 进度：分母取所有源条目（目录递归）的总字节，分子 = 已完成源条目的**前缀和**
+  /// + 当前文件内部已处理字节。历史实现只按「第几个条目」推进（`totalBytes: 1`、
+  /// `currentFileBytes: 0`），而 crypt 传输是流式逐块读写、单条目可能要几十秒，
+  /// 于是弹窗里外圈只在文件间跳变、内圈恒为 0、速率恒为「—」
+  /// （用户反馈：复制文件进加密文件夹时进度条没有实时进度）。
   Future<void> _pasteCryptAware(BuildContext context, bool clearAfterPaste) async {
     final srcs = List<String>.from(_clipboardPaths);
     final isCut = _isCut;
     activeTab.isLoading = true;
     notifyListeners();
+
+    // 预统计分母：总字节 / 总文件数 / 各源条目前缀和。
+    final sizes = <int>[];
+    final fileCounts = <int>[];
+    for (final sp in srcs) {
+      final m = await _measureCryptSource(sp);
+      sizes.add(m.bytes);
+      fileCounts.add(m.files);
+    }
+    var totalBytes = sizes.fold<int>(0, (a, b) => a + b);
+    if (totalBytes <= 0) totalBytes = 1;
+    var totalFileCount = fileCounts.fold<int>(0, (a, b) => a + b);
+    if (totalFileCount <= 0) totalFileCount = srcs.length;
+    final prefixBytes = <int>[];
+    var runningBytes = 0;
+    for (final s in sizes) {
+      prefixBytes.add(runningBytes);
+      runningBytes += s;
+    }
+
+    int processedFileCount = 0;
+    int bytesDone = 0;
+    // 滑动窗口实时速率：与远程复制链路一致，避免累计平均速率在文件间停顿处衰减。
+    final speedTracker = _TransferSpeedTracker(window: const Duration(seconds: 2));
+    // 节流：64KiB 分块下 onFileProgress 调用极密（大文件每秒上千次），
+    // speedTracker.add 限制为每 50ms 一次，避免窗口内样本爆炸拖慢事件循环。
+    int pendingSpeedDelta = 0;
+    DateTime? lastSpeedUpdate;
+
     try {
       for (var i = 0; i < srcs.length; i++) {
+        // 与普通复制链路一致：弹窗点「停止」后不再继续后续条目
+        // （正在加解密的那一个条目会跑完，避免留下半成品密文）。
+        if (_isOperationCancelled) throw Exception('Cancelled');
+
         final sp = srcs[i];
-        progressNotifier.value = FileOperationProgress(
-          totalFiles: srcs.length,
-          currentFileIndex: i + 1,
-          currentFileName: p.basename(sp),
-          percentage: srcs.length > 0 ? i / srcs.length : 0.0,
-          speedMBs: 0.0,
-          eta: Duration.zero,
-          totalBytes: 1,
-          bytesProcessed: i,
+        final plainName = p.basename(sp);
+        final baseBytes = prefixBytes[i];
+        final entryBytes = sizes[i];
+
+        // 统一构造进度通知，保证 percentage / bytesProcessed / speed / eta 一致。
+        void emit(int currentFileBytes, int currentFileTotal) {
+          final newBytesDone =
+              (baseBytes + currentFileBytes).clamp(0, totalBytes);
+          if (newBytesDone > bytesDone) {
+            pendingSpeedDelta += newBytesDone - bytesDone;
+            bytesDone = newBytesDone;
+            final now = DateTime.now();
+            if (lastSpeedUpdate == null ||
+                now.difference(lastSpeedUpdate!) >= const Duration(milliseconds: 50)) {
+              speedTracker.add(pendingSpeedDelta);
+              pendingSpeedDelta = 0;
+              lastSpeedUpdate = now;
+            }
+          }
+          final pct = (bytesDone / totalBytes).clamp(0.0, 1.0);
+          final speedMBs = speedTracker.currentMBs();
+          final remainingBytes = totalBytes - bytesDone;
+          final etaSeconds =
+              speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFileCount,
+            currentFileIndex: processedFileCount + 1,
+            currentFileName: plainName,
+            percentage: pct,
+            speedMBs: speedMBs,
+            eta: Duration(seconds: etaSeconds.round()),
+            totalBytes: totalBytes,
+            bytesProcessed: bytesDone,
+            currentFileBytes: currentFileBytes,
+            currentFileTotal: currentFileTotal,
+          );
+        }
+
+        // 条目起点先落一帧：让弹窗立刻显示当前文件名（并覆盖 "Preparing..."）。
+        emit(0, entryBytes);
+
+        await _cryptAwareCopyOrMove(
+          source: sp,
+          destFolder: currentPath,
+          isCut: isCut,
+          onProgress: emit,
         );
-        await _cryptAwareCopyOrMove(source: sp, destFolder: currentPath, isCut: isCut);
+
+        // 该条目处理完：按前缀和终点对齐，保证整体进度必然收敛到 100%
+        // （目录走 rename / 两端皆明文的兜底复制等分支不会逐块回调）。
+        processedFileCount += fileCounts[i] > 0 ? fileCounts[i] : 1;
+        pendingSpeedDelta += (baseBytes + entryBytes) - bytesDone;
+        speedTracker.add(pendingSpeedDelta);
+        pendingSpeedDelta = 0;
+        bytesDone = (baseBytes + entryBytes).clamp(0, totalBytes);
+        final endPct = (bytesDone / totalBytes).clamp(0.0, 1.0);
+        final endSpeed = speedTracker.currentMBs();
+        final endRemaining = totalBytes - bytesDone;
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: totalFileCount,
+          currentFileIndex: processedFileCount,
+          currentFileName: plainName,
+          percentage: endPct,
+          speedMBs: endSpeed,
+          eta: Duration(
+            seconds: endSpeed > 0
+                ? ((endRemaining / (1024 * 1024)) / endSpeed).round()
+                : 0,
+          ),
+          totalBytes: totalBytes,
+          bytesProcessed: bytesDone,
+          currentFileBytes: entryBytes,
+          currentFileTotal: entryBytes,
+        );
       }
     } catch (e) {
+      final cancelled = e.toString().contains('Cancelled');
       debugPrint('Crypt paste failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L10n.of(context).e1(e)),
-            backgroundColor: Colors.redAccent,
+            content: Text(cancelled
+                ? L10n.of(context).msga45bac47
+                : L10n.of(context).e1(e)),
+            backgroundColor: cancelled ? null : Colors.redAccent,
           ),
         );
       }
     } finally {
       progressNotifier.value = null;
+      // ⚠️ `_isPasting` 由 `_pasteFileToTab` 在进入本分支前置 true，本方法必须
+      // 自己复位：否则它会永久留在 true，`loadDirectory` 的「远程→本地翻转」
+      // 守卫（`if (_isPasting) return;`）会被一直挡住，之后从远程 tab 退回本地
+      // 目录将无法翻转，表现为「浏览远程服务器时莫名卡在远程视图」。
+      _isPasting = false;
+      _isOperationCancelled = false;
       activeTab.isLoading = false;
       notifyListeners();
     }
@@ -9384,7 +9880,24 @@ class FileManagerProvider extends ChangeNotifier {
             }
             // WebDAV 流式播放：保持连接直到播放完成（由 GC 清理）
             if (isVideoFile) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+              // 构建同目录视频播放列表
+              final pl = await _buildRemoteMediaPlaylist(
+                client: remoteClient,
+                connectionId: connectionId,
+                remotePath: remotePath,
+                isVideo: true,
+              );
+              if (pl != null && context.mounted) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
+                  videoPath: streamUrl,
+                  playlist: pl.$1,
+                  playlistTitles: pl.$2,
+                  initialIndex: pl.$3,
+                  isRemote: true,
+                )));
+              } else if (context.mounted) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+              }
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(fileName), isRemote: true)));
             }
