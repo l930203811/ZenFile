@@ -42,6 +42,7 @@ import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
 import '../services/remote/remote_client.dart';
+import '../services/remote/remote_session_recovery.dart';
 import '../services/crypt/crypt.dart';
 import '../services/remote/ftp_client.dart';
 import '../services/remote/sftp_client.dart';
@@ -2834,7 +2835,8 @@ class FileManagerProvider extends ChangeNotifier {
   /// Instead we check if the type contains 'smb' (case-insensitive), which
   /// matches all current locale variants.
   static bool isSmbType(String type) {
-    return type.toLowerCase().contains('smb');
+    // 统一走包含匹配（含历史值 Samba / CIFS），见 NetworkConnectionsService。
+    return NetworkConnectionsService.isSmbType(type);
   }
 
   static const Set<String> _ignoredSmbShareNames = {
@@ -3008,10 +3010,13 @@ class FileManagerProvider extends ChangeNotifier {
     final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
     final result = <SmbDiscoveredDevice>[];
     for (final d in smbDevices) {
-      // 依次尝试：已填凭据 → guest 匿名兜底（很多家用 NAS/路由器共享允许匿名列出）
+      // 候选顺序与正式连接保持一致（见 kSmbAnonymousUsernames）：先按用户填写的
+      // 凭据（用户名为空即标准匿名），再依次兜底其余匿名身份 —— 不同固件的
+      // Samba 匿名账号名不同，只试 guest 会在部分 OpenWrt 固件上扫不出共享。
       final attempts = <List<String>>[
-        [username, password],
-        if (username.isNotEmpty) const ['', ''],
+        <String>[username, password],
+        for (final candidate in kSmbAnonymousUsernames)
+          if (candidate != username) <String>[candidate, ''],
       ];
       List<String>? shares;
       Object? lastErr;
@@ -3058,29 +3063,11 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// Factory: create the correct RemoteClient subclass for a connection model.
+  ///
+  /// 实现委托给 [NetworkConnectionsService.buildRemoteClient]：两处曾是重复代码，
+  /// 类型判定（type 可能是本地化标签）修一处漏一处就会分叉。
   static RemoteClient createRemoteClient(NetworkConnectionModel conn) {
-    if (conn.type == 'FTP') {
-      return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    }
-    if (conn.type == 'SFTP') {
-      return SftpRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
-      );
-    }
-    if (conn.type == 'WebDav') {
-      return WebDavRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        protocol: conn.protocol, rootPath: conn.rootPath,
-      );
-    }
-    if (isSmbType(conn.type)) {
-      return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    }
-    if (conn.type == 'saf') {
-      return SafRemoteClient(rootUri: conn.rootPath);
-    }
-    throw ArgumentError('Unsupported connection type: ${conn.type}');
+    return NetworkConnectionsService.buildRemoteClient(conn);
   }
 
   /// 将 `remote://{connectionId}|{remotePath}` 文件下载到本地缓存并返回本地路径。
@@ -4602,6 +4589,107 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  // ── 远程会话自愈（2026-09-20） ────────────────────────────────────────────
+  //
+  // 背景：应用切到后台、网络切换或服务器空闲回收之后，底层 socket / 原生会话
+  // 其实已经死了，但 Dart 侧只持有自己的「已连接」标记（假连接）→ 用户下一次
+  // 操作必然失败，只能退出连接重进（论坛反馈「必须重新登录」）。
+  // 这里给所有「用户主动发起的远程操作」补上自愈：识别连接类错误 → 重建客户端
+  // → 重试一次。判定与重试流程抽在 remote_session_recovery.dart（可单测）。
+
+  /// 每个连接最近一次自动重建的时间，用于重连冷却
+  /// （服务器真的不可达时，避免每次操作都白等一遍握手）。
+  final Map<String, DateTime> _remoteReconnectAt = {};
+  static const Duration _remoteReconnectCooldown = Duration(seconds: 3);
+
+  /// 重建某个 tab 的远程客户端（原会话已失效时调用）。
+  ///
+  /// - 命中冷却窗口 → 返回 false（调用方抛原始错误，避免连环重连）；
+  /// - 成功 → 新客户端已连上并替换 `tab.remoteClient`，返回 true；
+  /// - cryptremote 不在此处理：其会话由 `CryptStreamServer` 管理（自带
+  ///   「丢弃缓存客户端后重试」逻辑），这里重建会与它抢连接。
+  Future<bool> _rebuildRemoteClient(FolderTab tab) async {
+    if (tab.isCryptRemote) return false;
+    final conn = tab.remoteConnection;
+    if (conn == null) return false;
+    final now = DateTime.now();
+    final last = _remoteReconnectAt[conn.id];
+    if (last != null && now.difference(last) < _remoteReconnectCooldown) {
+      debugPrint('[ZenFile] 远程重连冷却中，跳过重建: ${conn.name}');
+      return false;
+    }
+    _remoteReconnectAt[conn.id] = now;
+    final old = tab.remoteClient;
+    try {
+      final fresh = NetworkConnectionsService.buildRemoteClient(conn);
+      await fresh.connect();
+      tab.remoteClient = fresh;
+      if (old != null) {
+        // 旧客户端显式断开，避免原生会话占着 socket 泄漏。
+        unawaited(old.disconnect().catchError((_) {}));
+      }
+      debugPrint(
+        '[ZenFile] 远程连接已自动重建: ${conn.name}(${conn.id}) path=${tab.currentPath}',
+      );
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile] 远程连接自动重建失败: ${conn.name} → $e');
+      return false;
+    }
+  }
+
+  /// 执行一次远程操作；遇到「连接已失效」类错误时自动重建连接并重试一次。
+  ///
+  /// 所有用户主动发起的远程写操作（删除/重命名/新建文件夹/新建文件）都应走
+  /// 这里：它把「切后台回来第一次操作必失败」变成对用户透明。
+  Future<T> _withRemoteRetry<T>(
+    FolderTab tab,
+    Future<T> Function(RemoteClient client) operation, {
+    required String tag,
+  }) async {
+    final initial = tab.remoteClient;
+    if (initial == null) {
+      throw StateError('远程客户端未就绪: $tag');
+    }
+    return retryWithRemoteReconnect<T>(
+      // 重试时必须用**重建后**的客户端（tab.remoteClient 已被替换）。
+      attempt: () => operation(tab.remoteClient ?? initial),
+      reconnect: () => _rebuildRemoteClient(tab),
+      onError: (e, willRetry) {
+        debugPrint(
+          '[ZenFile] 远程操作失败($tag): $e${willRetry ? ' → 已重建连接，重试一次' : ''}',
+        );
+      },
+    );
+  }
+
+  /// 应用回到前台时的远程会话体检：活跃 tab 的连接若已失效则静默重建。
+  ///
+  /// 由 UI 的 `didChangeAppLifecycleState(resumed)` 以 fire-and-forget 方式调用
+  /// （内部有 8s 超时，不阻塞 UI）。这样用户回到应用后的第一个操作就不会撞墙。
+  Future<void> checkActiveRemoteSession() async {
+    final tab = activeTab;
+    if (!tab.isRemote || tab.isCryptRemote) return;
+    final client = tab.remoteClient;
+    if (client == null) return;
+    bool alive;
+    try {
+      alive = await client.checkAlive().timeout(const Duration(seconds: 8));
+    } catch (_) {
+      alive = false;
+    }
+    if (alive) return;
+    debugPrint(
+      '[ZenFile] 回前台体检：远程会话已失效，重建连接 ${tab.remoteConnection?.name}',
+    );
+    final ok = await _rebuildRemoteClient(tab);
+    if (ok) {
+      // 重建后目录列表可能已过期，静默刷新一次（不打断用户）。
+      unawaited(loadDirectory(tab.currentPath, showLoading: false, clearCache: true));
+    }
+  }
+
   /// 退出当前激活 tab 的远程浏览模式，复位为本地浏览。
   /// 当显式选择本地存储卷/根目录时调用，避免本地路径被误路由到远程客户端，
   /// 导致 loadDirectory 进入远程分支返回空列表（即“返回根目录显示空目录”问题）。
@@ -4770,7 +4858,22 @@ class FileManagerProvider extends ChangeNotifier {
       }
       try {
         activeTab.currentPath = path;
-        final remoteItems = await activeTab.remoteClient!.listDirectory(path, forceRefresh: forceRefresh);
+        List<RemoteFileItem> remoteItems;
+        try {
+          remoteItems = await activeTab.remoteClient!.listDirectory(path, forceRefresh: forceRefresh);
+        } catch (e) {
+          // 会话被系统/服务器回收时（切后台、网络切换）自动重建连接并重试一次。
+          // 否则用户回到应用看到的目录会一直加载失败，且只能退出连接重进。
+          if (!activeTab.isCryptRemote && isRemoteConnectionLostError(e)) {
+            final reconnected = await _rebuildRemoteClient(activeTab);
+            if (!reconnected) rethrow;
+            debugPrint('[ZenFile] 列目录失败已重建连接并重试: $path');
+            remoteItems = await activeTab.remoteClient!
+                .listDirectory(path, forceRefresh: true);
+          } else {
+            rethrow;
+          }
+        }
         remoteItems.sort((a, b) {
           if (a.isDirectory && !b.isDirectory) return -1;
           if (!a.isDirectory && b.isDirectory) return 1;
@@ -6139,8 +6242,7 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       activeTab.isLoading = false;
       _isPasting = false;
-      // 稍等片刻确保文件系统已更新
-      await Future.delayed(const Duration(milliseconds: 500));
+      // 去掉500ms硬延迟，文件复制完成后立即刷新（文件系统已落盘）
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
       // 如果是剪切操作，刷新本地源目录
       final sourceDir = savedSourcePath != null ? p.dirname(savedSourcePath) : null;
@@ -8030,15 +8132,22 @@ class FileManagerProvider extends ChangeNotifier {
         debugPrint('Cannot delete $path: file not found in current list');
         return;
       }
-      final remoteClient = activeTab.remoteClient!;
       final remotePath = file.remoteSource?.path ?? file.path;
+      // 走统一自愈入口：切后台后原生会话被回收时自动重建连接并重试一次，
+      // 而不是把「会话已失效」直接抛给用户（旧行为=只能退出连接重进）。
+      // cryptremote 也走这里，但 _rebuildRemoteClient 会拒绝重建（其会话归
+      // CryptStreamServer 管），行为与旧版一致。
       try {
-        await remoteClient.delete(remotePath, file.isDirectory);
-        await loadDirectory(currentPath, showLoading: false, clearCache: true);
+        await _withRemoteRetry<void>(
+          activeTab,
+          (client) => client.delete(remotePath, file.isDirectory),
+          tag: 'delete',
+        );
       } catch (e) {
         debugPrint('Error deleting remote file: $e');
         rethrow;
       }
+      await loadDirectory(currentPath, showLoading: false, clearCache: true);
       return;
     }
 
@@ -8132,7 +8241,12 @@ class FileManagerProvider extends ChangeNotifier {
       String finalNewPath;
       if (activeTab.isRemote && activeTab.remoteClient != null) {
         final newPath = '${p.url.dirname(oldPath)}/$newName';
-        await activeTab.remoteClient!.rename(oldPath, newPath);
+        // 自愈：会话被回收时自动重建连接并重试一次（旧行为只能退出连接重进）。
+        await _withRemoteRetry<void>(
+          activeTab,
+          (client) => client.rename(oldPath, newPath),
+          tag: 'rename',
+        );
         finalNewPath = newPath;
       } else if (isRestrictedPath(oldPath)) {
         await RootShizukuService.renameItem(oldPath, newName, useRoot: useRootMode);
@@ -8286,14 +8400,29 @@ class FileManagerProvider extends ChangeNotifier {
       }
       if (currIsRemote && activeTab.remoteClient != null) {
         final remotePath = _buildRemotePath(currentPath, finalName);
-        await activeTab.remoteClient!.createDirectory(remotePath);
+        // 自愈：会话被回收时自动重建连接并重试一次。
+        await _withRemoteRetry<void>(
+          activeTab,
+          (client) => client.createDirectory(remotePath),
+          tag: 'createFolder',
+        );
       } else if (isRestrictedPath(currentPath)) {
         await RootShizukuService.createFolder(currentPath, finalName, useRoot: useRootMode);
       } else {
         final newPath = p.join(currentPath, finalName);
         await Directory(newPath).create();
       }
-      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 增量添加新文件夹到列表，避免整目录重载的1-2秒延迟
+      final newItem = FileItemModel.fromCustom(
+        path: p.join(currentPath, finalName),
+        isDirectory: true,
+        size: 0,
+        modified: DateTime.now(),
+      );
+      final cur = List<FileItemModel>.from(activeTab.currentFiles);
+      cur.insert(0, newItem);
+      activeTab.currentFiles = cur;
+      notifyListeners();
       return finalName;
     } catch (e, st) {
       // ⚠️ 旧代码写的是 '创建文件夹出错：{e}'（漏了 $），真实异常永远不会被打印，
@@ -8317,14 +8446,29 @@ class FileManagerProvider extends ChangeNotifier {
       }
       if (currIsRemote && activeTab.remoteClient != null) {
         final remotePath = _buildRemotePath(currentPath, finalName);
-        await activeTab.remoteClient!.createFile(remotePath);
+        // 自愈：会话被回收时自动重建连接并重试一次。
+        await _withRemoteRetry<void>(
+          activeTab,
+          (client) => client.createFile(remotePath),
+          tag: 'createFile',
+        );
       } else if (isRestrictedPath(currentPath)) {
         await RootShizukuService.createFile(currentPath, finalName, useRoot: useRootMode);
       } else {
         final newPath = p.join(currentPath, finalName);
         await File(newPath).create();
       }
-      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 增量添加新文件到列表
+      final newItem = FileItemModel.fromCustom(
+        path: p.join(currentPath, finalName),
+        isDirectory: false,
+        size: 0,
+        modified: DateTime.now(),
+      );
+      final cur = List<FileItemModel>.from(activeTab.currentFiles);
+      cur.add(newItem);
+      activeTab.currentFiles = cur;
+      notifyListeners();
       return finalName;
     } catch (e, st) {
       debugPrint('Error creating file: $e');
