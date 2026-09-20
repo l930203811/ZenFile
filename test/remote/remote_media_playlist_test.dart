@@ -168,4 +168,76 @@ void main() {
       expect(remotePlaylistIndexOf(files, '/Public/Movies/2.mp4'), 1);
     });
   });
+
+  group('buildRemoteAudioSongMaps · 远程音频队列', () {
+    test('每个条目映射成 SongModel 构造 map，_data 为 remote:// URI', () {
+      final maps = buildRemoteAudioSongMaps(
+        ['remote://smb1|/Music/a.mp3', 'remote://smb1|/Music/b.flac'],
+        ['a.mp3', 'b.flac'],
+      );
+
+      expect(maps.length, 2);
+      expect(maps[0]['_data'], 'remote://smb1|/Music/a.mp3');
+      expect(maps[0]['title'], 'a');
+      expect(maps[0]['display_name'], 'a.mp3');
+      expect(maps[0]['display_name_wo_ext'], 'a');
+      expect(maps[0]['is_music'], true);
+      expect(maps[1]['_data'], 'remote://smb1|/Music/b.flac');
+    });
+
+    test('id 全为负数：跳过 MediaStore 封面查询', () {
+      final maps = buildRemoteAudioSongMaps(
+        ['remote://c|/1.mp3', 'remote://c|/2.mp3', 'remote://c|/3.mp3'],
+        ['1.mp3', '2.mp3', '3.mp3'],
+      );
+      final ids = maps.map((m) => m['_id'] as int).toList();
+
+      expect(ids.every((id) => id < 0), true,
+          reason: 'AudioPlayerScreen 只在 song.id > 0 时才去查 MediaStore 封面');
+    });
+
+    test('id 互不相同：否则队列高亮会错位', () {
+      final maps = buildRemoteAudioSongMaps(
+        ['remote://c|/1.mp3', 'remote://c|/2.mp3'],
+        ['1.mp3', '2.mp3'],
+      );
+      final ids = maps.map((m) => m['_id'] as int).toSet();
+      expect(ids.length, 2);
+    });
+
+    test('id 落在 AudioArtworkWidget 的降级区间（<= 100）', () {
+      final maps = buildRemoteAudioSongMaps(['remote://c|/1.mp3'], ['1.mp3']);
+      expect((maps.single['_id'] as int) <= 100, true);
+    });
+
+    test('artist / album 留空，由播放器按 l10n 显示「未知艺术家 / 单曲」', () {
+      final maps = buildRemoteAudioSongMaps(['remote://c|/1.mp3'], ['1.mp3']);
+      expect(maps.single['artist'], '');
+      expect(maps.single['album'], '');
+      expect(maps.single['duration'], 0);
+    });
+
+    test('titles 比 playlist 短时不越界，用 URI 兜底推导文件名', () {
+      final maps = buildRemoteAudioSongMaps(
+        ['remote://c|/dir/song.mp3', 'remote://c|/dir/other.mp3'],
+        ['song.mp3'],
+      );
+      expect(maps.length, 2);
+      expect(maps[0]['title'], 'song');
+      expect(maps[1]['title'], 'other');
+    });
+
+    test('空列表返回空（调用方据此退化为单曲播放）', () {
+      expect(buildRemoteAudioSongMaps(const [], const []), isEmpty);
+    });
+
+    test('扩展名留在 display_name、从 title 去掉（与本地音频行为一致）', () {
+      final maps = buildRemoteAudioSongMaps(
+        ['remote://c|/Music/zhou - qingtian.mp3'],
+        ['zhou - qingtian.mp3'],
+      );
+      expect(maps.single['title'], 'zhou - qingtian');
+      expect(maps.single['display_name'], 'zhou - qingtian.mp3');
+    });
+  });
 }

@@ -9076,12 +9076,13 @@ class FileManagerProvider extends ChangeNotifier {
             final conn = activeTab.remoteConnection;
             if (conn != null) {
               // 同目录视频作为播放列表（列目录失败时自动退化为单文件播放）
-              await _openRemoteVideoWithPlaylist(
+              await _openRemoteMediaWithPlaylist(
                 context,
                 streamUrl: streamUrl,
                 connectionId: conn.id,
                 remotePath: path,
                 listClient: activeTab.remoteClient!,
+                isVideo: true,
               );
             } else {
               Navigator.push(context, MaterialPageRoute(
@@ -9117,9 +9118,22 @@ class FileManagerProvider extends ChangeNotifier {
         if (activeTab.isRemote && activeTab.remoteClient != null && !File(path).existsSync()) {
           final streamUrl = await _setupRemoteMediaStream(path);
           if (streamUrl != null && context.mounted) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(
-              audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true,
-            )));
+            final conn = activeTab.remoteConnection;
+            if (conn != null) {
+              // 同目录音频作为播放队列（列目录失败时退化为单曲播放）
+              await _openRemoteMediaWithPlaylist(
+                context,
+                streamUrl: streamUrl,
+                connectionId: conn.id,
+                remotePath: path,
+                listClient: activeTab.remoteClient!,
+                isVideo: false,
+              );
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(
+                audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true,
+              )));
+            }
             break;
           }
           // 流式失败，回退：下载到本地缓存后播放
@@ -9211,42 +9225,69 @@ class FileManagerProvider extends ChangeNotifier {
     );
   }
 
-  /// 打开远程视频的内置播放器，并把「同目录视频」作为播放列表一起传进去。
+  /// 远程**视频 / 音频**打开的统一入口。
+  ///
+  /// 为什么要收敛成一个函数：本项目的「打开远程媒体」入口分支极多 —— 远程浏览页的
+  /// WebDAV 直连 / 本地代理两条子分支、`remote://` 前缀（分类页、自定义远程扫描）的
+  /// 两条子分支、`_openBuiltInByType` 的 video 分支……历史上已多次出现「只改了一处、
+  /// 其余入口照旧」的漏改。视频与音频共用同一套「建列表 → 打开」流程，就不会再漏。
+  ///
+  /// - 视频 → [VideoPlayerScreen]，playlist 为同目录视频；
+  /// - 音频 → [AudioPlayerScreen]，队列用**手工构造的 SongModel** 表达同目录音频
+  ///   （规则见 `buildRemoteAudioSongMaps`：`_data` 同样填 `remote://{connId}|{path}`，
+  ///   播放器既有的 `_resolveRemotePath` 会在切歌时按需建流，播放器侧无需改动）。
   ///
   /// [streamUrl] 当前文件的播放地址（WebDAV 直连 HTTP URL 或本地代理 URL）；
   /// [remotePath] 当前文件在服务器上的真实路径；[listClient] 用于列目录，
   /// 应传标签页自身已连接的 client（不要用正在推流的 client）。
-  /// 构建列表失败时退化为单文件播放（与旧行为一致，仅少一个列表）。
-  Future<void> _openRemoteVideoWithPlaylist(
+  /// 列表构建失败时退化为单文件播放，绝不影响「能打开」这件事。
+  Future<void> _openRemoteMediaWithPlaylist(
     BuildContext context, {
     required String streamUrl,
     required String connectionId,
     required String remotePath,
     required RemoteClient listClient,
+    required bool isVideo,
+    String? title,
   }) async {
-    List<String>? playlist;
-    List<String>? titles;
-    var initialIndex = 0;
     final pl = await _buildRemoteMediaPlaylist(
       client: listClient,
       connectionId: connectionId,
       remotePath: remotePath,
-      isVideo: true,
+      isVideo: isVideo,
     );
-    if (pl != null) {
-      playlist = pl.$1;
-      titles = pl.$2;
-      initialIndex = pl.$3;
-    }
     if (!context.mounted) return;
+
+    if (isVideo) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VideoPlayerScreen(
+            videoPath: streamUrl,
+            playlist: pl?.$1,
+            playlistTitles: (pl == null || pl.$2.isEmpty) ? null : pl.$2,
+            initialIndex: pl?.$3 ?? 0,
+            isRemote: true,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // 音频：把同目录音频装成 SongModel 队列（构建失败时传 null → 播放器退化为单曲）
+    final songMaps = pl == null
+        ? const <Map<String, dynamic>>[]
+        : buildRemoteAudioSongMaps(pl.$1, pl.$2);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => VideoPlayerScreen(
-          videoPath: streamUrl,
-          playlist: playlist,
-          playlistTitles: (titles == null || titles.isEmpty) ? null : titles,
-          initialIndex: initialIndex,
+        builder: (_) => AudioPlayerScreen(
+          audioPath: streamUrl,
+          title: title ?? p.basenameWithoutExtension(remotePath),
+          allSongs: songMaps.isEmpty
+              ? null
+              : songMaps.map((m) => SongModel(m)).toList(),
+          initialIndex: pl?.$3 ?? 0,
           isRemote: true,
         ),
       ),
@@ -10080,28 +10121,16 @@ class FileManagerProvider extends ChangeNotifier {
               return;
             }
             // WebDAV 流式播放：保持连接直到播放完成（由 GC 清理）
-            if (isVideoFile) {
-              // 构建同目录视频播放列表
-              final pl = await _buildRemoteMediaPlaylist(
-                client: remoteClient,
-                connectionId: connectionId,
-                remotePath: remotePath,
-                isVideo: true,
-              );
-              if (pl != null && context.mounted) {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
-                  videoPath: streamUrl,
-                  playlist: pl.$1,
-                  playlistTitles: pl.$2,
-                  initialIndex: pl.$3,
-                  isRemote: true,
-                )));
-              } else if (context.mounted) {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
-              }
-            } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(fileName), isRemote: true)));
-            }
+            // 视频/音频统一走同一入口：传同目录列表（视频为 playlist，音频为 SongModel 队列）
+            await _openRemoteMediaWithPlaylist(
+              context,
+              streamUrl: streamUrl,
+              connectionId: connectionId,
+              remotePath: remotePath,
+              listClient: remoteClient,
+              isVideo: isVideoFile,
+              title: p.basenameWithoutExtension(fileName),
+            );
             return;
           }
 
@@ -10132,11 +10161,16 @@ class FileManagerProvider extends ChangeNotifier {
               await openWithSystemChooser(proxyUrl, mimeType: fileMime);
               return;
             }
-            if (isVideoFile) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
-            } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: proxyUrl, title: p.basenameWithoutExtension(fileName), isRemote: true)));
-            }
+            // 视频/音频统一入口：同目录列表一并传入（此前此处视频也是裸传，属漏改）
+            await _openRemoteMediaWithPlaylist(
+              context,
+              streamUrl: proxyUrl,
+              connectionId: connectionId,
+              remotePath: remotePath,
+              listClient: remoteClient,
+              isVideo: isVideoFile,
+              title: p.basenameWithoutExtension(fileName),
+            );
             return;
           } catch (e) {
             debugPrint('远程流式代理启动失败，回退到下载模式: $e');
@@ -10198,22 +10232,22 @@ class FileManagerProvider extends ChangeNotifier {
               await openWithSystemChooser(streamUrl, mimeType: fileMime);
               return;
             }
-            // 直接流式播放 — 无需下载
-            if (isVideoFile) {
-              // 同目录视频一并作为播放列表传入（此前只在 remote:// 前缀分支建了列表，
-              // 从远程浏览页直接点开的视频（真实服务器路径）没有列表可选上/下一个）
-              final conn = activeTab.remoteConnection;
-              if (conn != null) {
-                await _openRemoteVideoWithPlaylist(
-                  context,
-                  streamUrl: streamUrl,
-                  connectionId: conn.id,
-                  remotePath: path,
-                  listClient: remoteClient,
-                );
-              } else {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
-              }
+            // 直接流式播放 — 无需下载。
+            // 视频/音频统一入口：同目录媒体一并传入（此前只在 remote:// 前缀分支建了列表，
+            // 从远程浏览页直接点开的视频（真实服务器路径）没有列表；音频两个入口都没有）
+            final conn = activeTab.remoteConnection;
+            if (conn != null) {
+              await _openRemoteMediaWithPlaylist(
+                context,
+                streamUrl: streamUrl,
+                connectionId: conn.id,
+                remotePath: path,
+                listClient: remoteClient,
+                isVideo: isVideoFile,
+                title: p.basenameWithoutExtension(path),
+              );
+            } else if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
             }
@@ -10245,18 +10279,16 @@ class FileManagerProvider extends ChangeNotifier {
               await openWithSystemChooser(proxyUrl, mimeType: fileMime);
               return;
             }
-            if (isVideoFile) {
-              // SMB / FTP / SFTP 走代理流式，同样把同目录视频作为播放列表传入
-              await _openRemoteVideoWithPlaylist(
-                context,
-                streamUrl: proxyUrl,
-                connectionId: conn.id,
-                remotePath: path,
-                listClient: remoteClient,
-              );
-            } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: proxyUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
-            }
+            // SMB / FTP / SFTP 走代理流式，视频/音频统一入口
+            await _openRemoteMediaWithPlaylist(
+              context,
+              streamUrl: proxyUrl,
+              connectionId: conn.id,
+              remotePath: path,
+              listClient: remoteClient,
+              isVideo: isVideoFile,
+              title: p.basenameWithoutExtension(path),
+            );
             return;
           } catch (e) {
             debugPrint('流式代理启动失败，回退到下载模式: $e');

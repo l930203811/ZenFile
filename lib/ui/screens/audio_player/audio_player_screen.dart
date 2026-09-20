@@ -141,6 +141,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   // 远程流式播放
   String? _currentStreamUrl; // 当前远程流式播放的代理 URL
 
+  /// 是否已经开过第一首歌。
+  ///
+  /// 用来区分「首次打开」与「播放列表切歌」两种进入 [_openTrack] 的时机：
+  /// 首次的流由调用方（`FileManagerProvider`）预先建立并放在 `widget.audioPath`
+  /// 里；切歌时才需要播放器自己按 `remote://{connId}|{path}` 建流。
+  /// 不区分会导致首次也重复建流，且调用方那个会话永远不被停止（持续后台下载）。
+  bool _firstTrackOpened = false;
+
   // 播放进度记忆
   bool _hasSeekedToSavedPosition = false;
   Timer? _positionSaveTimer;
@@ -332,16 +340,30 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 处理 remote:// 路径：解析为流式播放 URL
     String playPath = _currentPath;
     if (_currentPath.startsWith('remote://')) {
-      // 清理上一次的远程流式会话
-      await _stopCurrentStream();
-      final resolved = await _resolveRemotePath(_currentPath);
-      if (resolved == null) {
-        debugPrint('远程路径解析失败: $_currentPath');
-        return;
+      // 首次打开时，调用方（FileManagerProvider）已经为当前这首建好了流，地址就在
+      // widget.audioPath 里。此时若再按 remote:// 解析一次会**重复建流**，而且调用方
+      // 建的那个会话永远不会被 stop —— 表现为每打开一首歌就多一个后台下载在跑。
+      // 所以首次直接复用调用方的流；只有切歌（或调用方未提供流）才在这里新建。
+      final canReuseInitialStream = !_firstTrackOpened &&
+          widget.audioPath.isNotEmpty &&
+          !widget.audioPath.startsWith('remote://');
+      if (canReuseInitialStream) {
+        playPath = widget.audioPath;
+        // 记下来，dispose / 切歌时能停掉这个由调用方建立、交给本页接管的会话
+        _currentStreamUrl = playPath;
+      } else {
+        // 清理上一次的远程流式会话
+        await _stopCurrentStream();
+        final resolved = await _resolveRemotePath(_currentPath);
+        if (resolved == null) {
+          debugPrint('远程路径解析失败: $_currentPath');
+          return;
+        }
+        playPath = resolved;
+        _currentStreamUrl = playPath;
       }
-      playPath = resolved;
-      _currentStreamUrl = playPath;
     }
+    _firstTrackOpened = true;
 
     // For remote files that are being cached, wait until the download completes
     // (download goes to .partial file, then renames to the actual file)
