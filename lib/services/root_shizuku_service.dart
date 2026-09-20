@@ -234,7 +234,11 @@ class RootShizukuService {
     // 时累计延迟达数十秒，表现为“进入目录要等很久才打开”。改为 `{} +` 让 find 把
     // 整目录文件分批一次性传给同一个 stat 进程（GNU/toybox find 均支持），进程数从
     // O(n) 降到个位数，整目录元数据一次取回，解析逻辑保持不变。
-    final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec stat -L -c "%F|%s|%Y|%n" {} + 2>/dev/null';
+    // root 模式下 su shell 的默认 PATH 可能不含 /system/bin，导致 find/stat 找不到；
+    // Shizuku 模式继承 adbd 环境 PATH 正常。root 模式显式补全 PATH 并用完整路径。
+    final findBin = useRoot ? '/system/bin/find' : 'find';
+    final statBin = useRoot ? '/system/bin/stat' : 'stat';
+    final cmd = '$findBin "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec $statBin -L -c "%F|%s|%Y|%n" {} + 2>/dev/null';
     debugPrint('[ZenFile] Shell command: useRoot=$useRoot cmdPrefix=$cmdPrefix');
 
     final output = await runCommand(cmd, useRoot: useRoot);
