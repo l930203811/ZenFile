@@ -484,3 +484,25 @@ class FileUtils {
     return codeUnit >= 48 && codeUnit <= 57;
   }
 }
+
+/// 在 [existing]（目标目录里已有的条目名）中为 [desired] 找一个不冲突的名字。
+///
+/// `a.txt` → `a (1).txt` → `a (2).txt` ……（与本地 `_getUniquePath` 同风格）。
+/// 远程目录无法用「路径是否存在」探测（每个文件一次请求太贵），只能拿目录列表
+/// 里的名字集合来判重，故抽成本函数供本地/远程各粘贴链路共用并单测。
+///
+/// 目录（无扩展名）同样适用：`Movies` → `Movies (1)`。
+String uniqueNameAgainst(Set<String> existing, String desired) {
+  if (!existing.contains(desired)) return desired;
+  final dot = desired.lastIndexOf('.');
+  // 前导点（`.nomedia`）不算扩展名；`a.txt` / `Movies` 均按 base+ext 拆分。
+  final hasExt = dot > 0 && dot < desired.length - 1;
+  final base = hasExt ? desired.substring(0, dot) : desired;
+  final ext = hasExt ? desired.substring(dot) : '';
+  var counter = 1;
+  while (true) {
+    final candidate = '$base ($counter)$ext';
+    if (!existing.contains(candidate)) return candidate;
+    counter++;
+  }
+}

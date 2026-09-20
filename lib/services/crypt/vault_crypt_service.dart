@@ -444,10 +444,14 @@ class VaultCryptService {
     );
     if (!stillEncrypted) {
       await CryptMountService.removeEncryptedDir(parentDir);
+      // 「挂载点根容器」登记同样作废：最后一个密文都没了，它就是明文目录
+      await CryptMountService.removeInPlaceContainerDir(parentDir);
     }
 
     // 目录整体解密后自身也是明文：若它当初被登记过（内部直接放过加密文件），
     // 一并注销，包括其所有子目录记录。
+    // （「挂载点根容器」登记由 `CryptOperations.decryptDirectory` 自行注销，
+    //  这里不再重复；上面 `parentDir` 那条处理的是「容器里最后一个密文也没了」）
     if (isDir) {
       try {
         final plainDir = p.join(

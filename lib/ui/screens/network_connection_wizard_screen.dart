@@ -56,7 +56,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   // SMB 共享名扫描状态
   bool _isScanningLan = false;
-  Map<String, List<String>> _lanDevices = const {};
+  List<SmbDiscoveredDevice> _lanDevices = const [];
   String? _lanScanError;
 
   /// SMB/局域网类型判定（编辑老连接必须容错）。
@@ -974,9 +974,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           ),
         ),
         const SizedBox(height: 8),
-        ..._lanDevices.entries.map((entry) {
-          final host = entry.key;
-          final shares = entry.value;
+        ..._lanDevices.map((device) {
+          final host = device.host;
+          final shares = device.shares;
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(12),
@@ -1001,13 +1001,29 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       Icon(Broken.global, size: 18, color: theme.colorScheme.primary),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          host,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: theme.colorScheme.primary,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              device.displayName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            if (device.hasHostName)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  host,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                       Icon(Icons.arrow_forward_ios_rounded,
@@ -1070,7 +1086,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       setState(() {
         _isScanningLan = true;
         _lanScanError = null;
-        _lanDevices = const {};
+        _lanDevices = const [];
       });
     }
     try {

@@ -166,6 +166,28 @@ class SftpRemoteClient extends RemoteClient {
     _sftpClient = null;
   }
 
+  /// 查询会话的真实状态。
+  ///
+  /// 原生通道问 JSch 的 `Session.isConnected()`（该库已配 ServerAlive 探活，
+  /// 被服务端/系统掐断后会自动置为 false）；dartssh2 回退路径看 `isClosed`。
+  /// 不能只信「connect 成功过」这个事实 —— 切后台后 socket 会被回收。
+  @override
+  Future<bool> checkAlive() async {
+    if (_useNative && _nativeSessionId != null) {
+      try {
+        final alive = await const MethodChannel(_kSftpNativeChannel)
+            .invokeMethod<bool>('isAlive', {'sessionId': _nativeSessionId})
+            .timeout(const Duration(seconds: 5));
+        return alive == true;
+      } catch (_) {
+        return false;
+      }
+    }
+    final client = _sshClient;
+    if (client == null || _sftpClient == null) return false;
+    return !client.isClosed;
+  }
+
   @override
   Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
     // 串行化 dartssh2 单会话的目录列举，避免并发 listdir 竞争。

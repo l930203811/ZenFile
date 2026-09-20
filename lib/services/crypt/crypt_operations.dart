@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'crypt_config.dart';
 import 'crypt_mount.dart';
+import 'crypt_mount_service.dart';
 import 'filename_cipher.dart';
 import 'stream_cipher.dart';
 import 'rclone_crypt.dart';
@@ -261,6 +262,166 @@ class CryptOperations {
     }
   }
 
+  /// 目录名 [name] 是否**确实是密文目录名**（能被 [mount] 的密钥解密回另一个名字）。
+  ///
+  /// 这是「目录实体本身是否被加密」的唯一可靠信号：原地加密目录时
+  /// [encryptDirectory] 会把**目录名一并换成密文名**（rclone 语义），
+  /// 因此密文目录在磁盘上的名字必定可解密回原名；普通目录名则不可能。
+  ///
+  /// ⚠️ 唯一例外：目标目录**本身就是加密挂载点根**时，[encryptDirectory] 会
+  /// 跳过改名 —— 那种目录名字是明文、子项却是密文，本方法判不出来
+  /// （详见 [isDirectoryStillEncrypted] 的「挂载点根容器」分支：由登记表兜底）。
+  ///
+  /// [RcloneCrypt.decryptDirName] 对随手起的明文名也可能「解码成功」得到垃圾
+  /// 名字（长度与 PKCS7 填充恰好过关），所以加**往返校验**：
+  /// 密文名必定满足 `encryptDirName(decryptDirName(name)) == name`
+  /// （EME 是确定性加密），明文名几乎不可能满足。
+  ///
+  /// 顺带兼容「目录名也带上加密后缀」的形态（外部工具/其它编码写入的目录名）。
+  static bool isCipherDirName(String name, CryptMountPoint mount) {
+    if (name.isEmpty || name == '.' || name == '..') return false;
+    final stems = <String>[name];
+    final suffix = mount.config.encryptedSuffix;
+    if (suffix.isNotEmpty &&
+        name.length > suffix.length &&
+        name.endsWith(suffix)) {
+      stems.add(name.substring(0, name.length - suffix.length));
+    }
+    for (final stem in stems) {
+      try {
+        final plain = mount.crypt.decryptDirName(stem);
+        if (plain.isEmpty || plain == stem) continue;
+        if (plain.contains('/') || plain.contains('\u0000')) continue;
+        final reEncrypted = mount.crypt.encryptDirName(plain);
+        if (reEncrypted == stem || reEncrypted == name) return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  /// [mount] 的配置是否**无法从名字判断目录有没有被加密**。
+  ///
+  /// - `directoryNameEncryption = false`（目录名不加密）：加密目录在磁盘上
+  ///   也叫明文名 → 名字级信号完全失效；
+  /// - `filenameEncryption = off`：连文件名都不加密，磁盘上全是明文名 → 同样失效。
+  ///
+  /// 这两种配置下只能退回「目录内确有密文」的内容判定。代价是「夹带密文的普通
+  /// 目录」也会被算作加密目录（配置本身决定了无法区分），但宁可多加密也不漏：
+  /// 反过来判定会让用户往**真加密目录**里粘贴时得到未加密的明文文件。
+  static bool _nameSignalUnavailable(CryptMountPoint mount) =>
+      !mount.config.directoryNameEncryption ||
+      mount.config.filenameEncryption == FilenameEncryption.off;
+
+  /// 目录 [dirPath] 是否需要按「加密内容」做加解密传输（**源目录**判定）。
+  ///
+  /// 与 [isDirectoryStillEncrypted]（目标目录该不该自动加密）语义不同：
+  /// 源方向**没有**「把新文件静默加密」的风险，而解密传输本身是**逐条**处理的
+  /// （明文条目原样复制，见 `_decryptDirCryptToPlain`），所以只要目录名是密文名
+  /// **或**目录里有密文，就应当走 crypt 传输 —— 否则用户从「夹带密文文件的普通
+  /// 目录」里复制出来的密文文件会原样落到明文目标；往加密目录里复制时还会因为
+  /// 走「整目录加密」分支而把已有密文**二次加密**。
+  static Future<bool> dirNeedsCryptTransfer(
+    String dirPath, {
+    required CryptMountPoint mount,
+  }) async {
+    try {
+      if (!await Directory(dirPath).exists()) return false;
+    } catch (_) {
+      return false;
+    }
+    if (isCipherDirName(p.basename(dirPath), mount)) return true;
+    try {
+      return await dirContainsCiphertext(dirPath, config: mount.config);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// 目录 [dirPath] 是否**本身就是一个加密目录实体**（判据只取磁盘事实）。
+  ///
+  /// 与「该目录是否被某个加密挂载点覆盖」**无关**：挂载点会因历史登记
+  /// （`CryptMountService` 的挂载点表 / 原地加密目录登记表 / 导入清单）长期
+  /// 残留，一路覆盖到**已经解密**的明文目录上，据此判定就会把明文目录当成
+  /// 加密目标，静默加密用户新复制进来的文件。
+  ///
+  /// ⚠️ 同样**不能**用「目录里有密文子项」当作加密证据（早期实现的错误）：
+  /// - 用户只把目录里的**某一个文件**原地加密（其余仍是明文）→ 目录没被加密；
+  /// - 用户从 OpenList/别处**拷来一个密文文件**放进普通文件夹 → 目录没被加密；
+  /// - 「挂载点根」更是**容器**：`encryptInPlace` 把挂载点建在被加密条目的
+  ///   父目录上，容器自身的名字始终是明文。
+  ///
+  /// 上述三种情况旧判据都返回 true → 用户再往里复制/剪切文件时被**静默加密**
+  /// （用户反馈：「文件夹没有加密，但文件夹中有一个文件加密，复制/剪切其他文件
+  /// 进去，其他文件也被加密了」）。
+  ///
+  /// 现在只认一个信号：**目录名本身是密文名**（[isCipherDirName]）。
+  /// - 原地加密的目录（除挂载点根外）名字必定已是密文 → true；
+  /// - 目录整体解密后名字还原为明文、普通目录、夹带零星密文的普通目录 → false。
+  /// - 例外：名字不加密的配置（见 [_nameSignalUnavailable]）退回内容判定。
+  ///
+  /// 注意：加密目录「新文件继续加密」**不依赖本判定**。密文目录的虚拟路径经
+  /// [CryptMountPoint.resolvePhysicalPath] 会解析到磁盘上的密文路径
+  /// （≠ 虚拟路径），调用方据此走「→ 加密目录」分支。
+  ///
+  /// ⚠️ **「挂载点根容器」分支**（2026-09-19 方案 B）：「整体原地加密过、但目录名
+  /// 保持明文」的文件夹会由 `CryptMountService.addInPlaceContainerDir` 登记 ——
+  /// 本判定对**已登记且目录内确有密文**的目录返回 true，让它继续自动加密新粘贴
+  /// 进来的文件。
+  ///
+  /// - 登记表是唯一可信的区分依据：这种目录的磁盘特征（名字明文 + 子项密文）与
+  ///   「普通文件夹夹带零星密文」**完全一样**，只看磁盘必然二义；
+  /// - 必须**同时**要求目录内确有密文：用户把容器解密/清空后残留的登记不得让明文
+  ///   目录重新被判成加密目录（与「解密了就不再自动加密」的规则一致）；
+  /// - 子目录不参与该分支（`CryptMountService.isInPlaceContainerDir` 只比对自身）：
+  ///   容器内真正的加密子目录在磁盘上名字已是密文名，由 `resolvePhysicalPath`
+  ///   解析出「≠ 虚拟路径」的另一条分支负责；容器内**已解密**的子目录必须继续按
+  ///   明文处理。
+  ///
+  /// 成因：`CryptOperations.encryptDirectory` 末尾的守卫 —— 目标目录 == 挂载点
+  /// `physicalPath` 时跳过给目录改名（否则挂载点根改名后 `containsPath` 失配 →
+  /// 重启后解密层找不到挂载点 → 目录显示密文名甚至空白，历史事故）。而
+  /// `VaultCryptService.encryptInPlace` 把挂载点建在被加密条目的**父目录**上，
+  /// 所以「先加密过该文件夹里的某个文件/子文件夹」这一步就已经把挂载点登记在该
+  /// 文件夹自身上，之后再加密**这个文件夹**即命中守卫。（登记写入就在
+  /// [encryptDirectory] 命中守卫的那个 `else` 分支里，注销见 [decryptDirectory]
+  /// 末尾 —— 加/解密流程即唯一真相源，不在各调用方重复判断。）
+  ///
+  /// 回归护栏：`test/crypt/crypt_inplace_roundtrip_test.dart` 的
+  /// 「原地加密文件夹：目录名与容器登记」用例组。
+  ///
+  /// 两处共用本方法，务必保持唯一实现、不要各自复制一份：
+  /// - 复制/剪切的目标目录该不该继续加密（`FileManagerProvider._analyzeCryptDestDir`）；
+  /// - 保险箱导入清单条目是否已失效（`VaultImportStore.stillEncrypted`）。
+  ///（**源**目录走 [dirNeedsCryptTransfer]，语义不同，别混用。）
+  static Future<bool> isDirectoryStillEncrypted(
+    String dirPath, {
+    required CryptMountPoint mount,
+  }) async {
+    try {
+      if (!await Directory(dirPath).exists()) return false;
+    } catch (_) {
+      return false;
+    }
+    if (isCipherDirName(p.basename(dirPath), mount)) return true;
+    // 「整体原地加密过、但目录名保持明文」的挂载点根容器（方案 B）：
+    // 登记表是唯一可信的区分依据，且必须再看一眼目录内是否确有密文 ——
+    // 用户解密/清空后残留的登记不得让明文目录重新被判成加密目录。
+    if (await CryptMountService.isInPlaceContainerDir(dirPath)) {
+      try {
+        return await dirContainsCiphertext(dirPath, config: mount.config);
+      } catch (_) {
+        return true;
+      }
+    }
+    // 名字级信号失效的配置：只能看内容（保守）
+    if (!_nameSignalUnavailable(mount)) return false;
+    try {
+      return await dirContainsCiphertext(dirPath, config: mount.config);
+    } catch (_) {
+      return true;
+    }
+  }
+
   /// 加密单个文件（原地加密）
   ///
   /// 将普通文件加密为 crypt 格式，加密后原文件被替换为加密文件。
@@ -408,7 +569,14 @@ class CryptOperations {
   ///
   /// 沿用流式 + 原子写（先写 `*.zencrypt_tmp`，成功后才改名）机制，
   /// 中途失败只清理临时文件，不破坏 [sourcePath]。
-  Future<String> encryptFileTo(String sourcePath, String destEncryptedPath) async {
+  /// [onFileProgress] 为**字节级**进度回调（已读字节, 源文件总字节），
+  /// 供复制/移动时的进度弹窗实时刷新；分母取源文件大小（密文略大于明文，
+  /// 差异只有几十字节头，不影响观感）。
+  Future<String> encryptFileTo(
+    String sourcePath,
+    String destEncryptedPath, {
+    void Function(int bytes, int total)? onFileProgress,
+  }) async {
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) {
       throw FileSystemException('File not found', sourcePath);
@@ -421,6 +589,9 @@ class CryptOperations {
       await destParent.create(recursive: true);
     }
 
+    final int totalBytes = await sourceFile.length();
+    var written = 0;
+
     final tmpPath = '$destEncryptedPath$_tmpSuffix';
     final tmpFile = File(tmpPath);
     RandomAccessFile? raf;
@@ -430,6 +601,8 @@ class CryptOperations {
       await for (final chunk in sourceFile.openRead()) {
         final out = encrypter.process(chunk);
         if (out.isNotEmpty) await raf.writeFrom(out);
+        written += chunk.length;
+        onFileProgress?.call(written, totalBytes);
       }
       final tail = encrypter.finish();
       if (tail.isNotEmpty) await raf.writeFrom(tail);
@@ -464,7 +637,13 @@ class CryptOperations {
   /// 与 [decryptFile]（原地替换、删密文）不同：本方法把 [encryptedPath] 解密后
   /// 写入 [destPlainPath]，**不动源密文**。用于「复制密文文件到明文目录」等
   /// 非破坏性场景。同样采用流式 + 原子写。
-  Future<String> decryptFileTo(String encryptedPath, String destPlainPath) async {
+  /// [onFileProgress] 为字节级进度回调（已读字节, 源密文总字节），与
+  /// [encryptFileTo] 对称，用于复制/移动时的实时进度显示。
+  Future<String> decryptFileTo(
+    String encryptedPath,
+    String destPlainPath, {
+    void Function(int bytes, int total)? onFileProgress,
+  }) async {
     final encryptedFile = File(encryptedPath);
     if (!await encryptedFile.exists()) {
       throw FileSystemException('Encrypted file not found', encryptedPath);
@@ -476,6 +655,9 @@ class CryptOperations {
       await destParent.create(recursive: true);
     }
 
+    final int totalBytes = await encryptedFile.length();
+    var written = 0;
+
     final tmpPath = '$destPlainPath$_tmpSuffix';
     final tmpFile = File(tmpPath);
     RandomAccessFile? raf;
@@ -485,6 +667,8 @@ class CryptOperations {
       await for (final chunk in encryptedFile.openRead()) {
         final out = decrypter.process(chunk);
         if (out.isNotEmpty) await raf.writeFrom(out);
+        written += chunk.length;
+        onFileProgress?.call(written, totalBytes);
       }
       final tail = decrypter.finish();
       if (tail.isNotEmpty) await raf.writeFrom(tail);
@@ -575,6 +759,15 @@ class CryptOperations {
         final encryptedDirPath = p.join(dir, encryptedDirName);
         await Directory(sourceDirPath).rename(encryptedDirPath);
       }
+    } else {
+      // 目标目录**恰好就是挂载点根**：目录名不加密（改名会让挂载点
+      // `containsPath` 失配 → 重启后解密层找不到挂载点）→ 磁盘上只剩
+      // 「名字明文 + 子项密文」。这种形态与「普通文件夹里夹带零星密文」
+      // **磁盘特征完全一样**，只能靠登记表区分；不登记的话，之后往这个
+      // 文件夹里复制/剪切的新文件不会被自动加密
+      // （见 [isDirectoryStillEncrypted] 的「挂载点根容器」分支）。
+      // 解密时由 [decryptDirectory] 注销。
+      await CryptMountService.addInPlaceContainerDir(sourceDirPath);
     }
   }
 
@@ -662,6 +855,12 @@ class CryptOperations {
       final decryptedDirPath = p.join(dir, decryptedDirName);
       await Directory(encryptedDirPath).rename(decryptedDirPath);
     }
+
+    // 该目录已整体解密：注销「挂载点根容器」登记（连带其子目录记录），
+    // 否则之后往这个已解密的文件夹里粘贴仍会被自动加密。
+    // ⚠️ 放在这里（而不是各调用方）是为了让加/解密流程成为唯一真相源：
+    // 保险箱页、pane、媒体页、VFS 都会调本方法，判断散到调用方必然漏。
+    await CryptMountService.removeInPlaceContainerDir(encryptedDirPath);
   }
 
   /// 递归解密目录内部的文件

@@ -24,16 +24,65 @@ class ConflictDialogResponse {
   });
 }
 
+/// 冲突弹窗里「大小 / 修改时间」的来源。
+///
+/// 本地文件的这两项由弹窗自己 `stat()` 取得；**远程文件没有本地路径**，只能由
+/// 调用方从远程目录列表条目带入。若不给（继续传 `File('')`），Dart 的
+/// `File('').stat()` 不会抛异常，而是返回 `size: -1 / 1970-01-01`；经 `formatBytes`
+/// 后大小变成「0 B」、时间变成「1970-01-01」，弹窗就把这两个伪值当真实信息展示
+/// （远程粘贴重名时的历史表现）。
+///
+/// 字段为 null 表示「未知」，弹窗显示 `—`。
+class ConflictFileInfo {
+  final int? size;
+  final DateTime? modified;
+  const ConflictFileInfo({this.size, this.modified});
+}
+
+/// 解析冲突弹窗一侧的「大小 / 修改时间」。
+///
+/// - [given] 非空（远程条目 / 调用方已知）→ 直接采用，**不做本地 stat**；
+/// - 否则对本地 [file] 做 `stat()`：`notFound`（含**空路径** —— Dart 对
+///   `File('').stat()` 不抛异常，而是返回 `size: -1 / 1970-01-01`）以及任何异常
+///   都归为**未知**，由弹窗显示 `—`，绝不把伪值当真实信息展示。
+///
+/// 抽成顶层函数以便单测（widget 测试里 FakeAsync 不驱动 `dart:io`，无法覆盖真实
+/// stat 分支）。
+Future<ConflictFileInfo> resolveConflictFileInfo(
+  File file,
+  ConflictFileInfo? given,
+) async {
+  if (given != null) return given;
+  try {
+    final stat = await file.stat();
+    if (stat.type == FileSystemEntityType.notFound) {
+      return const ConflictFileInfo();
+    }
+    return ConflictFileInfo(
+      size: stat.size >= 0 ? stat.size : null,
+      modified: stat.modified.millisecondsSinceEpoch > 0 ? stat.modified : null,
+    );
+  } catch (_) {
+    return const ConflictFileInfo();
+  }
+}
+
 class ConflictDialog extends StatefulWidget {
   final String fileName;
   final File sourceFile;
   final File destFile;
+
+  /// 远程文件（或尚未落盘的目标）的信息：给了就不再对本侧做本地 `stat()`。
+  final ConflictFileInfo? sourceInfo;
+  final ConflictFileInfo? destInfo;
 
   const ConflictDialog({
     super.key,
     required this.fileName,
     required this.sourceFile,
     required this.destFile,
+    this.sourceInfo,
+    this.destInfo,
   });
 
   static Future<ConflictDialogResponse?> show(
@@ -41,6 +90,8 @@ class ConflictDialog extends StatefulWidget {
     required String fileName,
     required File sourceFile,
     required File destFile,
+    ConflictFileInfo? sourceInfo,
+    ConflictFileInfo? destInfo,
   }) {
     return showDialog<ConflictDialogResponse>(
       context: context,
@@ -49,6 +100,8 @@ class ConflictDialog extends StatefulWidget {
         fileName: fileName,
         sourceFile: sourceFile,
         destFile: destFile,
+        sourceInfo: sourceInfo,
+        destInfo: destInfo,
       ),
     );
   }
@@ -59,9 +112,9 @@ class ConflictDialog extends StatefulWidget {
 
 class _ConflictDialogState extends State<ConflictDialog> {
   bool _applyToAll = false;
-  late final FileStat _sourceStat;
-  late final FileStat _destStat;
-  bool _statsLoaded = false;
+  ConflictFileInfo _sourceInfo = const ConflictFileInfo();
+  ConflictFileInfo _destInfo = const ConflictFileInfo();
+  bool _infosLoaded = false;
 
   @override
   void initState() {
@@ -69,24 +122,30 @@ class _ConflictDialogState extends State<ConflictDialog> {
     _loadStats();
   }
 
+  /// 解析两侧的「大小 / 修改时间」（实现见顶层的 [resolveConflictFileInfo]）。
+  ///
+  /// 无论成败都会把 `_infosLoaded` 置 true —— 弹窗绝不会卡在转圈上
+  /// （历史实现里 stat 抛异常就永远转圈，远程冲突时用户只看到无限 loading）。
   Future<void> _loadStats() async {
-    try {
-      final srcStat = await widget.sourceFile.stat();
-      final dstStat = await widget.destFile.stat();
-      if (mounted) {
-        setState(() {
-          _sourceStat = srcStat;
-          _destStat = dstStat;
-          _statsLoaded = true;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _statsLoaded = false;
-        });
-      }
-    }
+    final src = await resolveConflictFileInfo(widget.sourceFile, widget.sourceInfo);
+    final dst = await resolveConflictFileInfo(widget.destFile, widget.destInfo);
+    if (!mounted) return;
+    setState(() {
+      _sourceInfo = src;
+      _destInfo = dst;
+      _infosLoaded = true;
+    });
+  }
+
+  /// 源文件是否比目标新。
+  ///
+  /// 任一侧修改时间未知时返回 null → 不判定、两侧都不显示「较新」角标
+  /// （远程目录列表拿不到 mtime 的协议很常见，不能靠未知值比较）。
+  bool? get _srcNewer {
+    final src = _sourceInfo.modified;
+    final dst = _destInfo.modified;
+    if (src == null || dst == null || src == dst) return null;
+    return src.isAfter(dst);
   }
 
   @override
@@ -123,7 +182,8 @@ class _ConflictDialogState extends State<ConflictDialog> {
             const SizedBox(height: 20),
             
             // Side-by-side or stacked file details comparison
-            if (_statsLoaded)
+            // 两侧时间都已知才判断「较新」，否则不给高亮（避免拿未知值比较）。
+            if (_infosLoaded)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -132,9 +192,9 @@ class _ConflictDialogState extends State<ConflictDialog> {
                     child: _buildFileComparisonCard(
                       theme: theme,
                       title: L10n.of(context).msg_existing_file,
-                      size: _destStat.size,
-                      modified: _destStat.modified,
-                      isNewer: _destStat.modified.isAfter(_sourceStat.modified),
+                      size: _destInfo.size,
+                      modified: _destInfo.modified,
+                      isNewer: _srcNewer == false,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -143,9 +203,9 @@ class _ConflictDialogState extends State<ConflictDialog> {
                     child: _buildFileComparisonCard(
                       theme: theme,
                       title: L10n.of(context).msge48a7157,
-                      size: _sourceStat.size,
-                      modified: _sourceStat.modified,
-                      isNewer: _sourceStat.modified.isAfter(_destStat.modified),
+                      size: _sourceInfo.size,
+                      modified: _sourceInfo.modified,
+                      isNewer: _srcNewer == true,
                     ),
                   ),
                 ],
@@ -293,10 +353,15 @@ class _ConflictDialogState extends State<ConflictDialog> {
   Widget _buildFileComparisonCard({
     required ThemeData theme,
     required String title,
-    required int size,
-    required DateTime modified,
+    required int? size,
+    required DateTime? modified,
     required bool isNewer,
   }) {
+    // 远程条目常常拿不到大小/时间（列表接口不返回）→ 显示「—」而不是 0 / 1970。
+    final sizeText = (size != null && size >= 0)
+        ? FileUtils.formatBytes(size, 2)
+        : '—';
+    final dateText = modified != null ? FileUtils.formatDate(modified) : '—';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -343,12 +408,12 @@ class _ConflictDialogState extends State<ConflictDialog> {
           ),
           const SizedBox(height: 8),
           Text(
-            FileUtils.formatBytes(size, 2),
+            sizeText,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
           ),
           const SizedBox(height: 4),
           Text(
-            FileUtils.formatDate(modified),
+            dateText,
             style: TextStyle(
               fontSize: 11,
               color: theme.colorScheme.onSurface.withOpacity(0.6),

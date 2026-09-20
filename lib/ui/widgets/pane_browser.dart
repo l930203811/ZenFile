@@ -17,6 +17,7 @@ import 'drag_drop_action_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../services/app_manager_service.dart';
 import '../../core/utils.dart';
+import '../../services/remote/remote_error_localizer.dart';
 import 'file_grid_item.dart';
 import 'folder_grid_item.dart';
 import 'drag_drop_handler.dart';
@@ -483,7 +484,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(L10n.of(context).msg_delete_failed(e)),
+                  content: Text(
+                    // 远程链路优先给用户看得懂的连接类文案（如「与服务器的连接已
+                    // 断开，正在尝试重新连接。」）；本地保持原有失败提示。
+                    provider.currIsRemote
+                        ? localizeRemoteError(e, L10n.of(context))
+                        : L10n.of(context).msg_delete_failed(e),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );

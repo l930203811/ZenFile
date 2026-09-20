@@ -218,6 +218,82 @@ class CryptMountService {
     } catch (_) {}
   }
 
+  /// 「整体原地加密过、但**目录名保持明文**」的容器目录登记表。
+  ///
+  /// 为什么单独记：`CryptOperations.encryptDirectory` 末尾有一条守卫 —— 目标目录
+  /// 恰好是挂载点 `physicalPath` 时**跳过给目录改名**（否则挂载点根被改名后
+  /// `containsPath` 失配 → 重启后解密层找不到挂载点 → 目录显示密文名甚至空白，
+  /// 历史事故）。而挂载点是建在被加密条目的**父目录**上的，所以「先加密过该文件夹
+  /// 里的某个文件/子文件夹」这一步就会把挂载点登记在该文件夹自身上 —— 之后再对
+  /// **这个文件夹**原地加密时，命中守卫、只加密子项。
+  ///
+  /// 于是这类文件夹在磁盘上表现为「**名字明文 + 子项密文**」，与「普通文件夹里
+  /// 夹带零星密文」**磁盘特征完全一样**，只看磁盘无法区分（而后者被判为加密目录
+  /// 就会静默加密用户新粘贴进来的文件，是用户反馈过的 bug）。
+  /// 本登记表是唯一的区分依据 —— 写入时机只有「整目录原地加密」本身，可信。
+  ///
+  /// ⚠️ 判据使用它时必须**同时要求目录内确有密文**（`dirContainsCiphertext`）：
+  /// 用户解密/清空后残留的登记不得让明文目录重新被判成加密目录。
+  static const String _kInPlaceContainerDirsKey = 'crypt_inplace_container_dirs';
+
+  /// 读取所有「整体原地加密但目录名保持明文」的容器目录（已 POSIX 归一）
+  static Future<List<String>> loadInPlaceContainerDirs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_kInPlaceContainerDirsKey);
+      if (jsonStr == null || jsonStr.isEmpty) return const [];
+      final list = jsonDecode(jsonStr);
+      if (list is! List) return const [];
+      return list
+          .whereType<String>()
+          .map(normalizePosix)
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// 登记一个「整体原地加密但目录名保持明文」的容器目录
+  static Future<void> addInPlaceContainerDir(String dir) async {
+    try {
+      final normalized = normalizePosix(dir);
+      if (normalized.isEmpty) return;
+      final dirs = (await loadInPlaceContainerDirs()).toList();
+      if (dirs.contains(normalized)) return;
+      dirs.add(normalized);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kInPlaceContainerDirsKey, jsonEncode(dirs));
+    } catch (_) {}
+  }
+
+  /// 注销容器目录（解密还原后调用，连带其所有子目录记录）
+  static Future<void> removeInPlaceContainerDir(String dir) async {
+    try {
+      final normalized = normalizePosix(dir);
+      if (normalized.isEmpty) return;
+      final dirs = await loadInPlaceContainerDirs();
+      final kept = dirs
+          .where((d) => d != normalized && !d.startsWith('$normalized/'))
+          .toList();
+      if (kept.length == dirs.length) return;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kInPlaceContainerDirsKey, jsonEncode(kept));
+    } catch (_) {}
+  }
+
+  /// 该目录是否被登记为上述容器目录（**只比对自身**，不含子目录）
+  ///
+  /// 子目录不参与：容器内真正的加密子目录在磁盘上名字已是密文名，
+  /// 由 `resolvePhysicalPath` 解析成不含虚拟路径的另一条分支负责，无需这里兜底；
+  /// 而容器内**已解密**的子目录必须继续按明文处理（用户规则：解密了就不再加密）。
+  static Future<bool> isInPlaceContainerDir(String dir) async {
+    final normalized = normalizePosix(dir);
+    if (normalized.isEmpty) return false;
+    final dirs = await loadInPlaceContainerDirs();
+    return dirs.contains(normalized);
+  }
+
   // ── 关联的远程加密目录登记表 ─────────────────────────────────────────
 
   /// 读取所有「关联的远程加密目录」记录

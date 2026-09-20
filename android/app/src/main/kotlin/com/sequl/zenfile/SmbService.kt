@@ -159,17 +159,35 @@ class SmbService {
                 .build()
             val client = SMBClient(config)
             val connection = client.connect(host, port)
-            val authContext = if (username.isEmpty()) {
-                // Some SMB servers (e.g. Samba) require a "guest" username for anonymous access
-                AuthenticationContext("guest", CharArray(0), null)
-            } else {
-                AuthenticationContext(username, password?.toCharArray(), domain)
+            var established = false
+            try {
+                val authContext = if (username.isEmpty()) {
+                    // 标准匿名：空用户名 + 空密码（NTLMSSP anonymous）。
+                    //
+                    // ⚠️ 绝不能硬编码 "guest"：用户名一旦非空，smbj 就走普通 NTLM
+                    // 认证，而各家固件的 Samba 匿名账号名并不统一（OpenWrt 上常见
+                    // guest / anonymous / nobody），提交错名字会被 STATUS_LOGON_FAILURE
+                    // 直接拒绝 —— 表现为「别的文件管理器能匿名登入，ZenFile 不行」。
+                    // 需要字面用户名的服务器，交由 Dart 侧 LanClient 的匿名候选链
+                    // （kSmbAnonymousUsernames）逐个重试覆盖。
+                    AuthenticationContext("", CharArray(0), null)
+                } else {
+                    AuthenticationContext(username, password?.toCharArray(), domain)
+                }
+                val session = connection.authenticate(authContext)
+                Log.d("SmbService", "SMB negotiated maxWrite=${connection.getNegotiatedProtocol().getMaxWriteSize()} maxRead=${connection.getNegotiatedProtocol().getMaxReadSize()}")
+                val sessionId = UUID.randomUUID().toString()
+                sessions[sessionId] = SmbSessionEntry(client, connection, session, username, host)
+                established = true
+                return sessionId
+            } finally {
+                // 匿名候选链会对同一主机多次 connect，认证失败时若不关掉这条半开
+                // 连接，就会一路泄漏 socket。
+                if (!established) {
+                    try { connection.close() } catch (_: Throwable) {}
+                    try { client.close() } catch (_: Throwable) {}
+                }
             }
-            val session = connection.authenticate(authContext)
-            Log.d("SmbService", "SMB negotiated maxWrite=${connection.getNegotiatedProtocol().getMaxWriteSize()} maxRead=${connection.getNegotiatedProtocol().getMaxReadSize()}")
-            val sessionId = UUID.randomUUID().toString()
-            sessions[sessionId] = SmbSessionEntry(client, connection, session, username, host)
-            return sessionId
         } catch (e: Exception) {
             throw Exception("Failed to connect to SMB server '${host}:${port}': ${e.message}", e)
         }
@@ -1742,6 +1760,26 @@ class SmbService {
             e.printStackTrace()
         }
         return true
+    }
+
+    /**
+     * 会话是否仍然可用（供 Dart 侧 `LanClient.checkAlive` 调用）。
+     *
+     * 为什么需要它：Dart 侧只保存自己的「已连接」标记，应用切到后台 / 网络切换
+     * 后底层 smbj [Connection] 可能已被系统或服务器回收，标记却仍为 true
+     * （假连接）——于是用户的下一次操作必然失败，只能退出连接重进。这里读的是
+     * 原生对象的真实状态。
+     *
+     * 注意：只判连接层是否存活。若连接还在但会话被服务端注销，操作仍会失败，
+     * 由 Dart 侧「操作失败 → 重建连接 → 重试一次」兜底（两层配合）。
+     */
+    fun isAlive(sessionId: String): Boolean {
+        val entry = sessions[sessionId] ?: return false
+        return try {
+            entry.connection.isConnected
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     /**

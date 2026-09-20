@@ -42,6 +42,7 @@ import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
 import '../services/remote/remote_client.dart';
+import '../services/remote/remote_media_playlist.dart';
 import '../services/remote/remote_session_recovery.dart';
 import '../services/crypt/crypt.dart';
 import '../services/remote/ftp_client.dart';
@@ -9072,32 +9073,19 @@ class FileManagerProvider extends ChangeNotifier {
         if (activeTab.isRemote && activeTab.remoteClient != null && !File(path).existsSync()) {
           final streamUrl = await _setupRemoteMediaStream(path);
           if (streamUrl != null && context.mounted) {
-            // 构建同目录视频播放列表
             final conn = activeTab.remoteConnection;
-            var playlist = <dynamic>[streamUrl];
-            var playlistTitles = <String>[];
-            var initialIndex = 0;
             if (conn != null) {
-              final pl = await _buildRemoteMediaPlaylist(
-                client: activeTab.remoteClient!,
+              // 同目录视频作为播放列表（列目录失败时自动退化为单文件播放）
+              await _openRemoteVideoWithPlaylist(
+                context,
+                streamUrl: streamUrl,
                 connectionId: conn.id,
                 remotePath: path,
-                isVideo: true,
+                listClient: activeTab.remoteClient!,
               );
-              if (pl != null) {
-                playlist = pl.$1;
-                playlistTitles = pl.$2;
-                initialIndex = pl.$3;
-              }
-            }
-            if (context.mounted) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
-                videoPath: streamUrl,
-                playlist: playlist,
-                playlistTitles: playlistTitles.isEmpty ? null : playlistTitles,
-                initialIndex: initialIndex,
-                isRemote: true,
-              )));
+            } else {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
             }
             break;
           }
@@ -9167,33 +9155,102 @@ class FileManagerProvider extends ChangeNotifier {
   static const _platformChannel = MethodChannel('com.sequl.zenfile/root_shizuku');
 
   /// 列出远程目录中与当前文件同类型的媒体文件，构建播放列表。
-  /// 返回 (playlist, titles, initialIndex)；失败时返回 null（调用方应自行降级为单文件播放）。
+  ///
+  /// 返回 `(playlist, titles, initialIndex)`，条目路径统一为
+  /// `remote://{connId}|{远程路径}`（与分类页/自定义远程扫描保持一致），
+  /// 播放器切换时按需解析（`VideoPlayerScreen._resolveRemotePath`）。
+  /// 无法构建时返回 null（调用方降级为单文件播放）。
+  ///
+  /// 取列表的顺序：
+  /// 1. **优先用当前标签页已加载的 [currentFiles]**——但必须先确认里面**确实含当前
+  ///    这个文件**（证明它就是同一个目录）。从远程浏览页点开的视频走这条：列表与
+  ///    用户眼前看到的文件完全一致，且零额外请求（FTP 目录 LIST 很慢，多一次往返
+  ///    会让播放器迟迟打不开）。
+  /// 2. 缓存不适用（用户从分类页/自定义远程扫描等外部入口打开）→ 才做**真实 LIST**，
+  ///    拿服务器当前内容，不受过期缓存影响。
+  ///
+  /// 筛选/排序/下标计算见 [selectRemoteMediaFiles] 等纯函数。
   Future<(List<String>, List<String>, int)?> _buildRemoteMediaPlaylist({
     required RemoteClient client,
     required String connectionId,
     required String remotePath,
     required bool isVideo,
   }) async {
-    try {
-      final parent = p.dirname(remotePath);
-      final entries = await client.listDirectory(parent);
-      final exts = isVideo
-          ? const ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.m4v', '.ts', '.mpg', '.mpeg']
-          : const ['.mp3', '.aac', '.wav', '.flac', '.ogg', '.m4a', '.wma', '.opus', '.ape', '.aiff'];
-      final mediaFiles = entries
-          .where((e) => !e.isDirectory)
-          .where((e) => exts.contains(p.extension(e.name).toLowerCase()))
-          .toList()
-        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      if (mediaFiles.isEmpty) return null;
-      final playlist = mediaFiles.map((e) => 'remote://$connectionId|${e.path}').toList();
-      final titles = mediaFiles.map((e) => e.name).toList();
-      final idx = mediaFiles.indexWhere((e) => e.path == remotePath);
-      return (playlist, titles, idx < 0 ? 0 : idx);
-    } catch (e) {
-      debugPrint('构建远程播放列表失败: $e');
-      return null;
+    var files = <RemoteMediaCandidate>[];
+
+    // 1) 页面缓存（仅当能证明缓存就是当前文件所在目录时使用）
+    final cached = selectRemoteMediaFiles(
+      activeTab.currentFiles
+          .map((f) => (path: f.path, name: f.name, isDirectory: f.isDirectory)),
+      isVideo: isVideo,
+    );
+    if (cached.any((f) => f.path == remotePath)) {
+      files = cached;
     }
+
+    // 2) 缓存不适用：真实 LIST
+    if (files.isEmpty) {
+      try {
+        final parent = p.dirname(remotePath);
+        final entries = await client.listDirectory(parent);
+        files = selectRemoteMediaFiles(
+          entries
+              .map((e) => (path: e.path, name: e.name, isDirectory: e.isDirectory)),
+          isVideo: isVideo,
+        );
+      } catch (e) {
+        debugPrint('构建远程播放列表失败（列目录异常）: $e');
+      }
+    }
+
+    if (files.isEmpty) return null;
+    return (
+      buildRemotePlaylistPaths(connectionId, files),
+      files.map((f) => f.name).toList(),
+      remotePlaylistIndexOf(files, remotePath),
+    );
+  }
+
+  /// 打开远程视频的内置播放器，并把「同目录视频」作为播放列表一起传进去。
+  ///
+  /// [streamUrl] 当前文件的播放地址（WebDAV 直连 HTTP URL 或本地代理 URL）；
+  /// [remotePath] 当前文件在服务器上的真实路径；[listClient] 用于列目录，
+  /// 应传标签页自身已连接的 client（不要用正在推流的 client）。
+  /// 构建列表失败时退化为单文件播放（与旧行为一致，仅少一个列表）。
+  Future<void> _openRemoteVideoWithPlaylist(
+    BuildContext context, {
+    required String streamUrl,
+    required String connectionId,
+    required String remotePath,
+    required RemoteClient listClient,
+  }) async {
+    List<String>? playlist;
+    List<String>? titles;
+    var initialIndex = 0;
+    final pl = await _buildRemoteMediaPlaylist(
+      client: listClient,
+      connectionId: connectionId,
+      remotePath: remotePath,
+      isVideo: true,
+    );
+    if (pl != null) {
+      playlist = pl.$1;
+      titles = pl.$2;
+      initialIndex = pl.$3;
+    }
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VideoPlayerScreen(
+          videoPath: streamUrl,
+          playlist: playlist,
+          playlistTitles: (titles == null || titles.isEmpty) ? null : titles,
+          initialIndex: initialIndex,
+          isRemote: true,
+        ),
+      ),
+    );
   }
 
   /// 为远程文件启动流式播放，返回播放 URL。
@@ -10143,7 +10200,20 @@ class FileManagerProvider extends ChangeNotifier {
             }
             // 直接流式播放 — 无需下载
             if (isVideoFile) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+              // 同目录视频一并作为播放列表传入（此前只在 remote:// 前缀分支建了列表，
+              // 从远程浏览页直接点开的视频（真实服务器路径）没有列表可选上/下一个）
+              final conn = activeTab.remoteConnection;
+              if (conn != null) {
+                await _openRemoteVideoWithPlaylist(
+                  context,
+                  streamUrl: streamUrl,
+                  connectionId: conn.id,
+                  remotePath: path,
+                  listClient: remoteClient,
+                );
+              } else {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+              }
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
             }
@@ -10176,7 +10246,14 @@ class FileManagerProvider extends ChangeNotifier {
               return;
             }
             if (isVideoFile) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
+              // SMB / FTP / SFTP 走代理流式，同样把同目录视频作为播放列表传入
+              await _openRemoteVideoWithPlaylist(
+                context,
+                streamUrl: proxyUrl,
+                connectionId: conn.id,
+                remotePath: path,
+                listClient: remoteClient,
+              );
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: proxyUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
             }

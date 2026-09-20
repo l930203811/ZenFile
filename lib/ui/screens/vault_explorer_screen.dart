@@ -161,6 +161,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     // 从浏览页返回保险箱（复制/移动 OpenList 密文后）重新扫描原地加密列表，
     // 让新拷入的密文即时出现在保险箱「原地加密」区域，无需重启应用。
     _loadInPlaceEncryptedFiles();
+    // 导入清单同步重载：用户在浏览页解密/删除原文件后，陈旧条目必须即时消失。
+    _loadImportEntries();
   }
 
   @override
@@ -194,10 +196,15 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   }
 
   /// 加载导入清单，并尝试把已加密条目的文件名解密为真实名称用于显示。
+  ///
+  /// ⚠️ 加载前先**剔除已失效条目**：用户在浏览页把密文解密（文件变明文）或
+  /// 直接删除原文件后，导入清单里的旧记录不会自动作废，会让「原地加密文件」
+  /// 区域继续显示那些其实已经解密/不存在的文件（用户反馈的问题）。
   Future<void> _loadImportEntries() async {
     try {
-      final entries = await VaultImportStore.load();
-      final decryptedNames = await _decryptImportNames(entries);
+      final mounts = await _loadMountsWithMasterPassword();
+      final entries = await VaultImportStore.pruneStale(mounts);
+      final decryptedNames = await _decryptImportNames(entries, mounts: mounts);
       if (!mounted) return;
       setState(() {
         _importEntries = entries;
@@ -210,16 +217,21 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   ///
   /// 优先使用匹配路径的已持久化挂载点配置，否则回退到「加密设置」中
   /// 保存的主密码/盐/编码/后缀。失败则保留原加密名。
-  Future<Map<String, String>> _decryptImportNames(List<VaultImportEntry> entries) async {
+  ///
+  /// [mounts] 可由调用方传入以复用已加载的挂载点（其构造需跑 scrypt，较贵）。
+  Future<Map<String, String>> _decryptImportNames(
+    List<VaultImportEntry> entries, {
+    List<CryptMountPoint>? mounts,
+  }) async {
     final result = <String, String>{};
     try {
-      final mounts = await _loadMountsWithMasterPassword();
+      final resolvedMounts = mounts ?? await _loadMountsWithMasterPassword();
       final cryptCache = <RcloneCryptConfig, RcloneCrypt>{};
 
       for (final entry in entries.where((e) => e.encrypted)) {
         try {
           CryptMountPoint? matchedMount;
-          for (final m in mounts) {
+          for (final m in resolvedMounts) {
             if (m.containsPath(entry.path)) {
               matchedMount = m;
               break;

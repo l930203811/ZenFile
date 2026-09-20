@@ -55,6 +55,30 @@ String localizeRemoteError(dynamic error, L10n l10n) {
     return l10n.remote_err_not_connected;
   }
 
+  // 5b) 连接/会话已被回收：切后台、网络切换、服务器空闲断开都会走到这里。
+  //     这类错误不是认证或路径问题，重建连接即可恢复 —— 复用现成的
+  //     「与服务器的连接已断开，正在尝试重新连接。」文案（[remote_err_reconnect]）。
+  //     放在 6) 超时之前：JSch/smbj 的会话失效文案常同时含 "timed out"，
+  //     但「连接没了」比「操作超时」更准确地描述用户遇到的情况。
+  if (s.contains('session is down') ||
+      s.contains('session not found') ||
+      s.contains('session has been closed') ||
+      s.contains('broken pipe') ||
+      s.contains('connection reset') ||
+      s.contains('connection closed') ||
+      s.contains('connection aborted') ||
+      s.contains('channel is closed') ||
+      s.contains('channel not opened') ||
+      s.contains('socketexception') ||
+      s.contains('socket closed') ||
+      s.contains('end of file') ||
+      s.contains('pipe closed') ||
+      s.contains('transport closed') ||
+      s.contains('client is closed') ||
+      s.contains('is closed')) {
+    return l10n.remote_err_reconnect;
+  }
+
   // 6) 超时
   if (s.contains('timed out') || s.contains('timeout')) {
     return l10n.remote_err_timeout;

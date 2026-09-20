@@ -58,6 +58,24 @@ class SmbDiscoveredDevice {
 /// backslashes inside the native helper. The first path segment is treated
 /// as the SMB share name; e.g. `/Public/Movies/film.mp4` resolves to
 /// share=`Public`, path=`\Movies\film.mp4`.
+/// 匿名（用户名为空）时依次尝试的身份。
+///
+/// 为什么需要一组候选：Samba 的匿名实现因固件而异 ——
+///  - 标准做法（NTLMSSP anonymous）：提交**空用户名**；
+///  - `map to guest = Bad User` 的服务器：任意无效用户名都会被映射到 guest account；
+///  - 部分固件把匿名账号设成别的名字（如 `anonymous`），只认字面提交。
+/// 旧实现硬编码 `guest`（见原生 SmbService），碰上"匿名账号不叫 guest"的
+/// OpenWrt 固件就会被 STATUS_LOGON_FAILURE 直接拒绝（2026-09-20 用户反馈）。
+/// 顺序按「最标准 → 最特殊」，命中即停。
+const List<String> kSmbAnonymousUsernames = <String>['', 'guest', 'anonymous', 'nobody'];
+
+/// 计算 SMB 实际要尝试的用户名序列：非匿名（用户填了名字）时只试一次。
+List<String> smbUsernameAttempts(String username) {
+  final trimmed = username.trim();
+  if (trimmed.isNotEmpty) return <String>[trimmed];
+  return kSmbAnonymousUsernames;
+}
+
 class LanClient extends RemoteClient {
   static const MethodChannel _channel = MethodChannel('com.sequl.zenfile/smb');
 
@@ -74,6 +92,10 @@ class LanClient extends RemoteClient {
 
   String? _sessionId;
   bool _isConnected = false;
+
+  /// 匿名候选链最终命中的用户名（仅诊断用；非匿名为用户填写的值）。
+  String? _resolvedUsername;
+  String? get resolvedUsername => _resolvedUsername;
 
   LanClient({
     required this.host,
@@ -422,27 +444,88 @@ class LanClient extends RemoteClient {
   @override
   Future<void> connect() async {
     if (_connected) return;
-    try {
-      final result = await _channel.invokeMethod<String>('connect', {
-        'host': host,
-        'port': port,
-        'username': username,
-        'password': password,
-        'domain': domain,
-      }).timeout(const Duration(seconds: 30));
-      if (result == null || result.isEmpty) {
-        throw Exception('Native SMB client returned empty session id');
+    // 匿名（用户名为空）时按候选链依次尝试：不同固件的 Samba 匿名账号名不同，
+    // 只试一个必然在部分固件上失败（见 kSmbAnonymousUsernames 注释）。
+    final attempts = smbUsernameAttempts(username);
+    final failures = <String>[];
+    for (var i = 0; i < attempts.length; i++) {
+      final candidate = attempts[i];
+      final bool isLast = i == attempts.length - 1;
+      // 匿名候选链每步给较短超时（认证被拒通常秒回，30s 只留给真正的连接等待）；
+      // 非匿名（用户填了账号）保持原有 30s 行为。
+      final timeout = attempts.length > 1
+          ? const Duration(seconds: 15)
+          : const Duration(seconds: 30);
+      try {
+        final result = await _channel.invokeMethod<String>('connect', {
+          'host': host,
+          'port': port,
+          'username': candidate,
+          'password': password,
+          'domain': domain,
+        }).timeout(timeout);
+        if (result == null || result.isEmpty) {
+          throw Exception('Native SMB client returned empty session id');
+        }
+        _sessionId = result;
+        _isConnected = true;
+        _resolvedUsername = candidate;
+        if (failures.isNotEmpty) {
+          // 首个候选（标准空用户名）被拒、靠后面的候选救回来：留一笔日志，
+          // 便于定位"某些固件只认 anonymous/guest"这类差异。
+          debugPrint(
+            '[ZenFile] SMB 匿名登录候选回退：${failures.join(' , ')} → '
+            '"${candidate.isEmpty ? '<空用户名>' : candidate}" 成功',
+          );
+        }
+        return;
+      } on PlatformException catch (e) {
+        _isConnected = false;
+        _sessionId = null;
+        final label = candidate.isEmpty ? '<空用户名>' : candidate;
+        failures.add('"$label"(${e.code}: ${e.message})');
+        if (isLast) {
+          throw Exception(
+            'SMB connect failed: ${e.code}: ${e.message}'
+            '${attempts.length > 1 ? '（匿名候选均已尝试：${failures.join(' | ')}）' : ''}',
+          );
+        }
+      } on TimeoutException {
+        _isConnected = false;
+        _sessionId = null;
+        final label = candidate.isEmpty ? '<空用户名>' : candidate;
+        failures.add('"$label"(超时 ${timeout.inSeconds}s)');
+        if (isLast) {
+          throw Exception(
+            'SMB connect timed out after ${timeout.inSeconds}s (host=$host:$port)'
+            '${attempts.length > 1 ? '（匿名候选均已尝试：${failures.join(' | ')}）' : ''}',
+          );
+        }
       }
-      _sessionId = result;
-      _isConnected = true;
-    } on PlatformException catch (e) {
-      _isConnected = false;
-      _sessionId = null;
-      throw Exception('SMB connect failed: ${e.code}: ${e.message}');
-    } on TimeoutException {
-      _isConnected = false;
-      _sessionId = null;
-      throw Exception('SMB connect timed out after 30s (host=$host:$port)');
+    }
+    // 正常路径在循环内必然 return 或 throw，这里是防御式兜底。
+    throw Exception('SMB connect failed（匿名候选均已尝试）：${failures.join(' | ')}');
+  }
+
+  /// 查询原生 JVM 里 smbj Connection 的真实状态。
+  ///
+  /// 不能只信 Dart 侧的 [_isConnected]：应用切后台 / 网络切换后 socket 会被
+  /// 回收，标记却还是 true（假连接），下一次操作必然失败。
+  @override
+  Future<bool> checkAlive() async {
+    final id = _sessionId;
+    if (!_isConnected || id == null) return false;
+    try {
+      final alive = await _channel
+          .invokeMethod<bool>('isAlive', {'sessionId': id})
+          .timeout(const Duration(seconds: 5));
+      if (alive != true) {
+        _isConnected = false;
+      }
+      return alive == true;
+    } catch (_) {
+      // 原生查询失败（通道异常 / 会话已被原生清理）同样视为不可用。
+      return false;
     }
   }
 

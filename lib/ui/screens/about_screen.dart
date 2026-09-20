@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v2.1.3',
+                    'v2.1.4',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -730,15 +730,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV213Changelog(ctx, theme),
-                  const SizedBox(height: 24),
-                  _buildV212Changelog(ctx, theme),
-                  const SizedBox(height: 24),
-                  _buildV211Changelog(ctx, theme),
-                  const SizedBox(height: 24),
-                  _buildV210Changelog(ctx, theme),
-                  const SizedBox(height: 24),
-                  _buildV200Changelog(ctx, theme),
+                  _buildV214Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -749,12 +741,12 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  /// v2.1.0 更新日志卡片。
+  /// v2.1.4 更新日志卡片。
   ///
-  /// 与 v2.0.0 卡片结构一致：版本号标签 + 日期 + 分区标题 + 条目。
-  /// 文案全部走 l10n 键 `cl210_*`（10 语言），版本/日期硬编码。
-  Widget _buildV210Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
+  /// 按用户要求：**只保留当前版本**，上半部分中文、中间以分割线隔开、下半部分英文，
+  /// 供国际用户阅读；文案直接硬编码，不走 l10n（无需多语言翻译）。
+  /// 历史版本卡片（v2.1.3 / v2.1.2 / v2.1.1 / v2.1.0 / v2.0.0）已移除。
+  Widget _buildV214Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
@@ -771,88 +763,20 @@ class AboutZenFileScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Container(height: 1, color: dividerColor),
     );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // 中英文之间的语言分割线（中间标注 English）
+    Widget langDivider() => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v2.1.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-09-15', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
+          Expanded(child: Container(height: 1, color: dividerColor)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text('English', style: TextStyle(fontSize: 12, letterSpacing: 1.2, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.5))),
           ),
-          gap(14),
-
-          // ── 新增功能 ──
-          section('\u2728 ${l10n.cl210_features}'),
-          item(l10n.cl210_feat_6),
-          item(l10n.cl210_feat_1),
-          item(l10n.cl210_feat_2),
-          item(l10n.cl210_feat_3),
-          item(l10n.cl210_feat_4),
-          item(l10n.cl210_feat_5),
-
-          divider(),
-
-          // ── 界面与交互 ──
-          section('\u{1f3a8} ${l10n.cl210_ui}'),
-          item(l10n.cl210_ui_1),
-          item(l10n.cl210_ui_2),
-          item(l10n.cl210_ui_3),
-          item(l10n.cl210_ui_4),
-          item(l10n.cl210_ui_5),
-
-          divider(),
-
-          // ── 问题修复 ──
-          section('\u{1f41b} ${l10n.cl210_fixes}'),
-          item(l10n.cl210_fix_1),
-          item(l10n.cl210_fix_2),
-          item(l10n.cl210_fix_3),
-          item(l10n.cl210_fix_4),
-          item(l10n.cl210_fix_5),
+          Expanded(child: Container(height: 1, color: dividerColor)),
         ],
       ),
     );
-  }
-
-  /// v2.1.2 更新日志卡片。
-  ///
-  /// 与 v2.1.0 卡片结构一致；文案走 l10n 键 `cl212_*`（10 语言），版本/日期硬编码。
-  Widget _buildV212Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget item(String text) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text('\u00b7 $text', style: textStyle),
-    );
-    Widget section(String title) => Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
-    );
-    Widget divider() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Container(height: 1, color: dividerColor),
-    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -873,273 +797,73 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v2.1.2', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v2.1.4', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-17', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-20', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          // ── 新增功能 ──
-          section('\u2728 ${l10n.cl212_features}'),
-          item(l10n.cl212_feat_1),
+          // ══════════════ 中文 ══════════════
+          section('\u2728 新功能'),
+          item('SMB 连接向导新增「匿名登录」勾选框，勾选后用户名与密码自动置灰，直接以匿名会话连接'),
+          item('局域网扫描支持显示计算机名（NetBIOS 名称解析），IP 作为副标题显示'),
+          item('原地加密过的文件夹会继续自动加密新粘贴进来的文件'),
+          item('远程目录中播放视频时自动构建同目录播放列表，「上一个 / 下一个」按钮生效'),
 
           divider(),
 
-          // ── 界面与交互 ──
-          section('\u{1f3a8} ${l10n.cl212_ui}'),
-          item(l10n.cl212_ui_1),
-          item(l10n.cl212_ui_2),
+          section('\u{1f3a8} 界面与交互'),
+          item('创建文件夹 / 文件、粘贴完成后列表立即更新，不再有几秒延迟'),
+          item('复制 / 剪切到加密文件夹时，进度弹窗按真实字节平滑推进，实时显示速度与剩余时间，「停止」按钮真正生效'),
+          item('远程连接失效时统一提示「与服务器的连接已断开，正在尝试重新连接。」（跟随系统语言）'),
+          item('局域网扫描不再只发现匿名共享主机，可找到路由器 / NAS 等全部在线设备'),
 
           divider(),
 
-          // ── 问题修复 ──
-          section('\u{1f41b} ${l10n.cl212_fixes}'),
-          item(l10n.cl212_fix_1),
-          item(l10n.cl212_fix_2),
-          item(l10n.cl212_fix_3),
-        ],
-      ),
-    );
-  }
+          section('\u{1f41b} 问题修复'),
+          item('修复 SFTP / SMB 切换后台后操作失败、必须退出连接重进的问题：现在会自动探测连接状态，失效即静默重建并重试一次，切回前台自动体检'),
+          item('修复 SMB 匿名登录不上：匿名改用标准空用户名，并按「空 → guest → anonymous → nobody」依次尝试，兼容匿名账号不是 guest 的路由器固件'),
+          item('修复原地加密的文件夹解密后，新粘贴进来的文件仍被自动加密'),
+          item('修复普通文件夹中只要存在一个加密文件，往里粘贴的文件就会被静默加密'),
+          item('修复保险箱「原地加密文件」列表残留：在浏览页解密或删除原文件后，重进保险箱条目不再显示'),
+          item('修复 SMB 根目录只显示 Users 共享，现在可以看到盘符共享（D、E… 及 C\$、D\$ 等管理共享）'),
+          item('修复编辑已保存的 SMB 连接时不显示「匿名登录」勾选框；切换系统语言或历史版本的连接也能正常识别'),
+          item('修复 SMB 连接在「远程目录选择 / 备份目标选择」时报 Unsupported remote connection type'),
+          item('修复 ROOT 模式访问 Android/data 目录显示空列表'),
+          item('修复远程粘贴重名冲突弹窗显示「0 B · 1970-01-01」伪值或一直转圈'),
 
-  /// v2.1.3 更新日志卡片。
-  ///
-  /// 与 v2.1.0 卡片结构一致；文案走 l10n 键 `cl213_*`（10 语言），版本/日期硬编码。
-  Widget _buildV213Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
+          langDivider(),
 
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget item(String text) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text('\u00b7 $text', style: textStyle),
-    );
-    Widget section(String title) => Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
-    );
-    Widget divider() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Container(height: 1, color: dividerColor),
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v2.1.3', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-09-19', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          gap(14),
-
-          // ── 新增功能 ──
-          section('\u2728 ${l10n.cl213_features}'),
-          item(l10n.cl213_feat_1),
-          item(l10n.cl213_feat_2),
+          // ══════════════ English ══════════════
+          section('\u2728 New Features'),
+          item('Anonymous login checkbox in the SMB wizard: the username and password fields are greyed out and the session connects anonymously'),
+          item('LAN scanning now shows computer names (NetBIOS name resolution) with the IP as a subtitle'),
+          item('Folders that were encrypted in place keep encrypting newly pasted files automatically'),
+          item('Playing a video from a remote folder now builds a playlist from that folder, so previous / next work'),
 
           divider(),
 
-          // ── 问题修复 ──
-          section('\u{1f41b} ${l10n.cl213_fixes}'),
-          item(l10n.cl213_fix_1),
-          item(l10n.cl213_fix_2),
-          item(l10n.cl213_fix_3),
-        ],
-      ),
-    );
-  }
-
-  /// v2.1.1 更新日志卡片。
-  ///
-  /// 与 v2.1.0 卡片结构一致；文案走 l10n 键 `cl211_*`（10 语言），版本/日期硬编码。
-  Widget _buildV211Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget item(String text) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text('\u00b7 $text', style: textStyle),
-    );
-    Widget section(String title) => Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
-    );
-    Widget divider() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Container(height: 1, color: dividerColor),
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v2.1.1', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-09-16', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          gap(14),
-
-          // ── 新增功能 ──
-          section('\u2728 ${l10n.cl211_features}'),
-          item(l10n.cl211_feat_1),
-          item(l10n.cl211_feat_2),
+          section('\u{1f3a8} UI & Interaction'),
+          item('The file list refreshes instantly after creating a folder or file and after a paste, instead of lagging for seconds'),
+          item('Copying into an encrypted folder shows byte-accurate progress with live speed and remaining time, and the Stop button really works'),
+          item('A dropped remote session now reports "The connection to the server was lost, reconnecting..." in your system language'),
+          item('LAN scanning no longer misses routers and NAS devices that only expose named shares'),
 
           divider(),
 
-          // ── 界面与交互 ──
-          section('\u{1f3a8} ${l10n.cl211_ui}'),
-          item(l10n.cl211_ui_1),
-          item(l10n.cl211_ui_2),
-          item(l10n.cl211_ui_3),
-
-          divider(),
-
-          // ── 问题修复 ──
-          section('\u{1f41b} ${l10n.cl211_fixes}'),
-          item(l10n.cl211_fix_1),
-          item(l10n.cl211_fix_2),
-          item(l10n.cl211_fix_3),
-          item(l10n.cl211_fix_4),
-          item(l10n.cl211_fix_5),
-          item(l10n.cl211_fix_6),
-          item(l10n.cl211_fix_7),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildV200Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    const amber = Color(0xFFF5A623);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget item(String text) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text('\u00b7 $text', style: textStyle),
-    );
-    Widget section(String title, [Color? color]) => Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(title, style: TextStyle(fontSize: 14, height: 1.6, color: color ?? theme.colorScheme.primary, fontWeight: FontWeight.w700)),
-    );
-    Widget divider() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Container(height: 1, color: dividerColor),
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v2.0.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-09-13', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          gap(14),
-
-          // ── 版本与包名变更（重点提示：整块装进琥珀色警示框）──
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
-            decoration: BoxDecoration(
-              color: amber.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: amber.withOpacity(0.45), width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                section('\u26a0\ufe0f ${l10n.cl200_notice}', amber),
-                item(l10n.cl200_notice_1),
-                item(l10n.cl200_notice_2),
-                item(l10n.cl200_notice_3),
-                item(l10n.cl200_notice_4),
-                item(l10n.cl200_notice_5),
-              ],
-            ),
-          ),
-
-          divider(),
-
-          // ── 保险箱 ──
-          section('\u{1f510} ${l10n.cl200_vault}'),
-          item(l10n.cl200_vault_1),
-          item(l10n.cl200_vault_2),
-          item(l10n.cl200_vault_3),
-          item(l10n.cl200_vault_4),
-
-          divider(),
-
-          // ── 设置调整 ──
-          section('\u2699\ufe0f ${l10n.cl200_settings}'),
-          item(l10n.cl200_settings_1),
-
-          divider(),
-
-          // ── 修复与优化 ──
-          section('\u{1f41b} ${l10n.cl200_fixes}'),
-          item(l10n.cl200_fix_1),
-          item(l10n.cl200_fix_2),
-          item(l10n.cl200_fix_3),
-          item(l10n.cl200_fix_4),
+          section('\u{1f41b} Bug Fixes'),
+          item('Fixed SFTP / SMB operations failing after switching apps: sessions are health-checked, silently rebuilt and retried once, and verified when returning to the foreground'),
+          item('Fixed SMB anonymous login being rejected: anonymous now uses the standard empty username and tries empty, guest, anonymous and nobody, covering routers whose anonymous account is not guest'),
+          item('Fixed files pasted into a decrypted folder still being encrypted'),
+          item('Fixed files pasted into a normal folder that holds a single encrypted file being silently encrypted'),
+          item('Fixed stale entries in the Vault in-place encryption list after decrypting or deleting the original files'),
+          item('Fixed SMB roots listing only the Users share; drive-letter shares (D, E ... and admin shares C\$, D\$) are now listed too'),
+          item('Fixed the Anonymous login checkbox missing when editing a saved SMB connection, including connections saved in another language or by older versions'),
+          item('Fixed SMB connections reporting Unsupported remote connection type in the remote folder picker and backup target picker'),
+          item('Fixed Android/data showing an empty list in ROOT mode'),
+          item('Fixed the remote paste conflict dialog showing fake 0 B / 1970-01-01 values or spinning forever'),
         ],
       ),
     );

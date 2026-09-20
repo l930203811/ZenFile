@@ -180,6 +180,24 @@ class SshSftpService {
         cancelFlags.remove(id)
     }
 
+    /**
+     * 会话是否仍然可用（供 Dart 侧 `SftpRemoteClient.checkAlive` 调用）。
+     *
+     * JSch 已配置 ServerAlive/ServerAliveCountMax（见 [connect]），被服务端或系统
+     * 掐断后 `Session.isConnected()` 会转 false —— 这里就是它的暴露口。
+     * 之所以需要：Dart 侧只持有自己的「已连接」标记，应用切到后台后 socket 被
+     * 系统回收时该标记仍是 true（假连接），用户的下一次操作必然失败、只能退出
+     * 连接重进（表现为「必须重新登录」）。
+     */
+    fun isAlive(id: String): Boolean {
+        val holder = sessions[id] ?: return false
+        return try {
+            holder.session.isConnected
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
     // ── 目录 / 文件操作 ───────────────────────────────────────────────────────
 
     /** 列目录，返回 RemoteFileItem 风格的 Map 列表（与 Dart 端 RemoteFileItem 字段对应）。 */

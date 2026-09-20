@@ -184,6 +184,20 @@ class FtpRemoteClient extends RemoteClient {
     _keepAliveTimer = null;
   }
 
+  /// 健康检查：在 [_serialize] 队列里跑一次 [_ensureHealthy]。
+  ///
+  /// FTP 是四个协议里唯一本来就具备惰性重连的（[_ensureHealthy] 内含 NOOP 探测 +
+  /// 立即重连），所以这里只需触发它：能过就是可用，过不去（服务器彻底不可达）才报 false。
+  @override
+  Future<bool> checkAlive() async {
+    try {
+      await _serialize<void>(() => _ensureHealthy());
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// 把 [fn] 串行进队执行，返回其结果。前一个任务异常不会阻塞队列推进。
   ///
   /// 执行期间置 [_busy]（保活探测避让），成功后刷新 [_lastIoAt]（连接健康证据）。

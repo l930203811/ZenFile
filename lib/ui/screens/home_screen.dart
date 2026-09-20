@@ -112,6 +112,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           }
         });
       } catch (_) {}
+      // 回到前台时顺手给当前远程会话做一次体检：切后台期间底层 socket 常被
+      // 系统/服务器回收（Dart 侧仍以为自己连着），不体检的话用户回来第一次
+      // 操作必然失败、只能退出连接重进。fire-and-forget，内部自带超时。
+      try {
+        unawaited(context.read<FileManagerProvider>().checkActiveRemoteSession());
+      } catch (_) {}
     }
   }
 

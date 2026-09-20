@@ -1617,6 +1617,13 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val p = smb.getTransferProgress(sessionId)
                             runOnUiThread { result.success(p) }
                         }
+                        "isAlive" -> {
+                            // 会话存活探测：应用切到后台后 Dart 侧不能只信自己的「已连接」标记，
+                            // 这里读 smbj Connection 的真实状态（SmbService.isAlive）。
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val alive = smb.isAlive(sessionId)
+                            runOnUiThread { result.success(alive) }
+                        }
                         "disconnect" -> {
                             val sessionId = call.argument<String>("sessionId") ?: ""
                             val res = smb.disconnect(sessionId)
@@ -1702,6 +1709,13 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val remotePath = call.argument<String>("remotePath") ?: ""
                             val ok = ssh.uploadFile(id, localPath, remotePath)
                             runOnUiThread { result.success(ok) }
+                        }
+                        "isAlive" -> {
+                            // 会话存活探测：应用切到后台后 Dart 侧不能只信自己的「已连接」标记，
+                            // 这里读 JSch Session 的真实状态（SshSftpService.isAlive）。
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val alive = ssh.isAlive(sessionId)
+                            runOnUiThread { result.success(alive) }
                         }
                         "getFileSize" -> {
                             val id = call.argument<String>("sessionId") ?: ""
