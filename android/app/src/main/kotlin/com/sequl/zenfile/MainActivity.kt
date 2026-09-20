@@ -378,10 +378,11 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "runCommand" -> {
                     val command = call.argument<String>("command") ?: ""
                     val useRoot = call.argument<Boolean>("useRoot") ?: false
+                    val fallbackSu = call.argument<Boolean>("fallbackSu") ?: false
 
                     executor.execute {
                         try {
-                            val output = runShellCommand(command, useRoot)
+                            val output = runShellCommand(command, useRoot, fallbackSu)
                             runOnUiThread { result.success(output) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("EXEC_ERROR", e.message, null) }
@@ -2561,39 +2562,94 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
-    private fun runShellCommand(command: String, useRoot: Boolean): String {
-        val process: java.lang.Process = if (useRoot) {
-            Runtime.getRuntime().exec(arrayOf("su", "-c", command))
-        } else {
-            val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
-            method.isAccessible = true
-            method.invoke(null, arrayOf("sh", "-c", command), null, null) as java.lang.Process
+    // su 调用形式的候选（下标即「上次成功」的记忆值，避免每次都从头试）。
+    // ① 标准写法，Magisk / KernelSU / APatch 均支持；
+    // ② -M = --mount-master，切到 global mount namespace：部分 ROM 在 App 自身的
+    //    mount namespace 下看不到 /data/media/0（FUSE 的真实后端），只有走它才能
+    //    列出 Android/data 这类受限目录，否则 find 报错、输出为空；
+    // ③ 旧式 AOSP su 语法（su 0 sh -c ...）。
+    private val suVariants = arrayOf(
+        arrayOf("su", "-c"),
+        arrayOf("su", "-M", "-c"),
+        arrayOf("su", "0", "sh", "-c"),
+    )
+    @Volatile private var preferredSuVariant = 0
+
+    /// 执行 shell 命令。
+    ///
+    /// [fallbackSu] 为 true 时（只给「列目录」这类**输出为空无法区分『真·空目录』
+    /// 与『命令或路径不可达』**的命令用），root 侧依次尝试多种 su 调用形式，
+    /// 命中「有输出」即采用并记住该形式，后续调用优先复用它。
+    private fun runShellCommand(command: String, useRoot: Boolean, fallbackSu: Boolean = false): String {
+        if (useRoot && fallbackSu) {
+            val n = suVariants.size
+            val order = (0 until n).sortedBy { (it - preferredSuVariant + n) % n }
+            var last = ""
+            for (idx in order) {
+                val text = try {
+                    readProcess(Runtime.getRuntime().exec(suVariants[idx] + command))
+                } catch (e: Exception) {
+                    "EXCEPTION: ${e.message}"
+                }
+                if (text.isNotBlank() && !text.startsWith("EXCEPTION:")) {
+                    preferredSuVariant = idx
+                    return text
+                }
+                last = text
+            }
+            return last
         }
 
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
-        val errReader = BufferedReader(InputStreamReader(process.errorStream))
-
-        val output = StringBuilder()
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            output.append(line).append("\n")
+        if (useRoot) {
+            return readProcess(Runtime.getRuntime().exec(arrayOf("su", "-c", command)))
         }
 
-        val errOutput = StringBuilder()
-        while (errReader.readLine().also { line = it } != null) {
-            errOutput.append(line).append("\n")
+        // Shizuku：以 shell(uid 2000) 身份执行，继承 adbd 环境（PATH 正常）。
+        val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
+        method.isAccessible = true
+        return readProcess(method.invoke(null, arrayOf("sh", "-c", command), null, null) as java.lang.Process)
+    }
+
+    /// 启动进程并完整读出 stdout / stderr，两路输出都不丢。
+    ///
+    /// ⚠️ 必须**并发**排空两个流。若沿用「先读 stdout 到 EOF、再读 stderr」的写法，
+    /// 子进程写 stderr 超过管道缓冲（约 64KB）时会阻塞在写，stdout 也因此永不 EOF，
+    /// 双方互等形成死锁——表现为 loadDirectory 永不返回（界面一直转圈）。
+    /// 命令末尾的 `2>/dev/null` 过去只是**掩盖**了这个隐患。
+    private fun readProcess(process: java.lang.Process): String {
+        val errBuf = StringBuilder()
+        val errThread = Thread {
+            try {
+                BufferedReader(InputStreamReader(process.errorStream)).use { r ->
+                    var l: String?
+                    while (r.readLine().also { l = it } != null) errBuf.append(l).append("\n")
+                }
+            } catch (_: Exception) {
+            }
+        }
+        errThread.isDaemon = true
+        errThread.start()
+
+        val outBuf = StringBuilder()
+        BufferedReader(InputStreamReader(process.inputStream)).use { r ->
+            var l: String?
+            while (r.readLine().also { l = it } != null) outBuf.append(l).append("\n")
         }
 
         val exitCode = process.waitFor()
+        errThread.join(500)
+
+        val output = outBuf.toString()
+        val errOutput = errBuf.toString()
         if (exitCode != 0 && output.isEmpty() && errOutput.isNotEmpty()) {
-            throw Exception(errOutput.toString().trim())
+            throw Exception(errOutput.trim())
         }
         // 非零退出码时把 stderr 附在输出尾部（带 [stderr] 标记），供 Dart 侧
         // 诊断失败根因（EACCES / cross-device / Read-only 等），成功时原样返回。
         if (exitCode != 0 && errOutput.isNotEmpty()) {
-            return output.toString() + "[stderr] " + errOutput.toString().trim()
+            return output + "[stderr] " + errOutput.trim()
         }
-        return output.toString()
+        return output
     }
 
     // ─────────────────────── 分贝仪（AudioRecord 实时音量） ───────────────────────

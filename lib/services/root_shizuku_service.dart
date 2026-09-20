@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item_model.dart';
 import 'package:path/path.dart' as p;
+import 'restricted_dir_parser.dart';
 import 'webdav_debug_log.dart';
 
 class RootShizukuStatus {
@@ -86,36 +87,47 @@ class RootShizukuService {
   /// 路径 `/data/media/0/Android/{data,obb}` 绕过 FUSE 限制。
   /// 此处通过 StorageManager 反射 API 获取实际主卷路径，
   /// 将其映射到对应的 FUSE 路径，确保命令执行在正确的路径上。
-  static String _toFuseBypassPath(String path) {
-    final normalized = path.replaceAll(RegExp(r'/+'), '/');
-    if (normalized.startsWith('/storage/emulated/0/Android/')) {
-      return normalized.replaceFirst('/storage/emulated/0/Android/', '/data/media/0/Android/');
-    }
-    return normalized;
-  }
+  static String _toFuseBypassPath(String path) => toFuseBypassPath(path);
 
   /// 将 stat `%n` 输出的底层路径 `/data/media/0/Android/...` 转回用户可见的
   /// `/storage/emulated/0/Android/...` 路径，保证后续所有操作（打开/复制/删除等）
   /// 基于 `/storage/emulated/0/` 路径，与普通（非受限）路径体系一致，避免路径分裂。
-  static String _fromFuseBypassPath(String path) {
-    if (path.startsWith('/data/media/0/Android/')) {
-      return path.replaceFirst('/data/media/0/Android/', '/storage/emulated/0/Android/');
-    }
-    return path;
-  }
+  static String _fromFuseBypassPath(String path) => fromFuseBypassPath(path);
 
-  static Future<String?> runCommand(String command, {required bool useRoot}) async {
+  /// root 下 `su` 启动的 shell，其 PATH 不保证包含 `/system/bin`（部分 ROM 只给
+  /// 精简 PATH，甚至为空），会让 `find`/`stat`/`rm`/`mv`/`du` 这类**非内建**命令
+  /// 直接 "not found" 并返回空——过去「root 模式打开 Android/data 显示空目录」
+  /// 就属于这一类**静默失败**：命令没跑成，输出为空，界面只会显示「空」。
+  /// 这里对 root 命令统一前置补全 PATH，与命令里已有的绝对路径写法形成双保险。
+  /// Shizuku 分支继承 adbd 环境（PATH 正常），**不改动**。
+  static const String _rootPathPrefix =
+      'export PATH=/system/bin:/system/xbin:/system/sbin:/sbin:/vendor/bin:\$PATH; ';
+
+  /// 执行 shell 命令，返回 stdout。
+  ///
+  /// [fallbackSu] 仅对 root 模式有意义：为 true 时原生侧会依次尝试多种 su 调用
+  /// 形式（`su -c` → `su -M -c` → `su 0 sh -c`）直到某一种真的产生输出。
+  /// **只给「列目录」这类『输出为空』无法区分『目录真空』与『路径不可达』的命令
+  /// 开启**；`rm`/`mv`/`mkdir` 成功时本就没有输出，开了会白跑几次 su。
+  static Future<String?> runCommand(
+    String command, {
+    required bool useRoot,
+    bool fallbackSu = false,
+  }) async {
     if (!Platform.isAndroid) return null;
+    final effective = useRoot ? '$_rootPathPrefix$command' : command;
     try {
       final res = await _channel.invokeMethod('runCommand', {
-        'command': command,
+        'command': effective,
         'useRoot': useRoot,
+        'fallbackSu': fallbackSu,
       });
       final output = res?.toString() ?? '';
-      debugPrint('[ZenFile] runCommand (${useRoot ? "root" : "shizuku"}): "$command" => "${output.substring(0, output.length.clamp(0, 200))}${output.length > 200 ? "..." : ""}"');
+      debugPrint('[ZenFile] runCommand (${useRoot ? "root" : "shizuku"}): "$effective" => "${output.substring(0, output.length.clamp(0, 200))}${output.length > 200 ? "..." : ""}"');
       return output;
     } catch (e) {
       debugPrint('[ZenFile] runCommand exception: $e');
+      _logDiag('runCommand failed useRoot=$useRoot fallbackSu=$fallbackSu cmd="$effective" err=$e');
       throw Exception('Execution failed: $e');
     }
   }
@@ -202,6 +214,9 @@ class RootShizukuService {
     }
   }
 
+  /// shell 侧 stat 的格式串：类型|字节数|修改时间(秒)|路径。
+  static const String _statFormat = '%F|%s|%Y|%n';
+
   static Future<List<FileItemModel>> listFiles(String path, {required bool useRoot, bool showHiddenFiles = false}) async {
     String normalizedPath = _normalize(path);
 
@@ -219,67 +234,114 @@ class RootShizukuService {
     // 路径、放行底层 /data/media/0；vivo 等定制 ROM 的 SELinux 恰好相反——
     // 拦截 shell 访问 /data/media/0、放行 FUSE 直达路径。先底层后 FUSE，
     // 任一条路径能列出内容即采用。
-    var items = await _listViaShell(bypassPrefix, useRoot: useRoot, showHiddenFiles: showHiddenFiles);
-    if (items.isEmpty && bypassPrefix != searchPrefix) {
-      debugPrint('[ZenFile] listFiles: bypass path empty, retry FUSE direct path: $searchPrefix');
-      items = await _listViaShell(searchPrefix, useRoot: useRoot, showHiddenFiles: showHiddenFiles);
+    //
+    // ⚠️ 每条路径各自 try/catch：单条路径抛异常时**不再中断整个列目录**，
+    // 否则另一条路径根本没机会试，调用方只能拿到一个空结果（过去正是如此）。
+    final candidates = <String>[
+      bypassPrefix,
+      if (bypassPrefix != searchPrefix) searchPrefix,
+    ];
+    for (final dir in candidates) {
+      try {
+        final items = await _listViaShell(dir, useRoot: useRoot, showHiddenFiles: showHiddenFiles);
+        if (items.isNotEmpty) return items;
+      } catch (e) {
+        debugPrint('[ZenFile] listFiles path failed ($dir): $e');
+        _logDiag('listFiles path failed dir=$dir useRoot=$useRoot: $e');
+      }
     }
-    return items;
+    return [];
   }
 
+  /// 把解析出的纯数据条目转成 FileItemModel。
+  static List<FileItemModel> _toModels(List<RestrictedDirEntry> entries) => entries
+      .map((e) => FileItemModel.fromCustom(
+            path: e.path,
+            isDirectory: e.isDirectory,
+            size: e.size,
+            modified: e.modified,
+          ))
+      .toList();
+
+  /// 诊断用的输出摘要（单行、限长）。
+  static String _snippet(String text) {
+    final t = text.trim().replaceAll('\n', ' \\n ');
+    return t.length <= 160 ? t : '${t.substring(0, 160)}...';
+  }
+
+  /// 列目录的 shell 实现。
+  ///
+  /// **Shizuku 分支保持历史行为不变**（adbd 环境 PATH 正常，find/stat 直接可用；
+  /// 用户侧已验证该链路工作正常，不做任何改动）。
+  ///
+  /// **root 分支改为多策略回退**。root 的 `su -c` 与 Shizuku 的 `sh -c` 环境
+  /// 不同（PATH、mount namespace、su 语法各家 ROM 不一），任何一处不满足，旧实现
+  /// 都会因为 `2>/dev/null` 把错误吞掉而**静默返回空**——界面只显示「目录是空的」，
+  /// 既看不出是权限、路径不可达还是命令没找到，也无法自愈。现在：
+  ///   ① 用裸命令名（PATH 已在 [runCommand] 统一补全，比写死 `/system/bin/find`
+  ///      覆盖更广：有的 ROM 里 find 在 /system/xbin）；
+  ///   ② 不再用 `2>/dev/null`，stderr 一并取回，由解析器严格过滤非数据行——
+  ///      失败原因进入诊断日志，不再无声无息；
+  ///   ③ 打开 `fallbackSu`，让原生侧换着形式试 su；
+  ///   ④ find `-exec +` 不行 → `find | while read + stat` → `ls -la`，逐级降级。
   static Future<List<FileItemModel>> _listViaShell(String cmdPrefix, {required bool useRoot, required bool showHiddenFiles}) async {
-    // 使用 find 命令列出目录内容，比 glob 更可靠（避免 shell 展开失败）。
-    // 关键性能修复：原 `-exec stat ... {} \;` 会为每个文件单独 fork 一个 stat 进程，
-    // 经 Shizuku 的 adb/IPC 通道逐次调用；文件极多（如 Telegram Images 数千张）
-    // 时累计延迟达数十秒，表现为“进入目录要等很久才打开”。改为 `{} +` 让 find 把
-    // 整目录文件分批一次性传给同一个 stat 进程（GNU/toybox find 均支持），进程数从
-    // O(n) 降到个位数，整目录元数据一次取回，解析逻辑保持不变。
-    // root 模式下 su shell 的默认 PATH 可能不含 /system/bin，导致 find/stat 找不到；
-    // Shizuku 模式继承 adbd 环境 PATH 正常。root 模式显式补全 PATH 并用完整路径。
-    final findBin = useRoot ? '/system/bin/find' : 'find';
-    final statBin = useRoot ? '/system/bin/stat' : 'stat';
-    final cmd = '$findBin "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec $statBin -L -c "%F|%s|%Y|%n" {} + 2>/dev/null';
-    debugPrint('[ZenFile] Shell command: useRoot=$useRoot cmdPrefix=$cmdPrefix');
-
-    final output = await runCommand(cmd, useRoot: useRoot);
-    debugPrint('[ZenFile] listFiles: got ${output?.length ?? 0} chars, ${output?.split('\n').length ?? 0} lines');
-    if (output == null || output.trim().isEmpty) return [];
-
-    final lines = output.split('\n');
-    final items = <FileItemModel>[];
-
-    for (final line in lines) {
-      if (line.trim().isEmpty) continue;
-      final parts = line.split('|');
-      if (parts.length < 4) continue;
-
-      final typeStr = parts[0];
-      final sizeStr = parts[1];
-      final timeStr = parts[2];
-      // stat %n 输出为底层路径 /data/media/0/Android/...（见 _toFuseBypassPath），
-      // 转回用户可见的 /storage/emulated/0/Android/... 路径。
-      final rawPath = parts.sublist(3).join('|');
-      final fullPath = _fromFuseBypassPath(rawPath);
-
-      final name = p.basename(fullPath);
-      if (!showHiddenFiles && name.startsWith('.') && name != '.' && name != '..') {
-        continue;
-      }
-
-      final isDir = typeStr.toLowerCase().contains('directory');
-      final size = int.tryParse(sizeStr) ?? 0;
-      final seconds = int.tryParse(timeStr) ?? 0;
-      final modified = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
-
-      items.add(FileItemModel.fromCustom(
-        path: fullPath,
-        isDirectory: isDir,
-        size: size,
-        modified: modified,
-      ));
+    if (!useRoot) {
+      // ── Shizuku：与历史实现完全一致，不做改动 ──
+      final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 '
+          '-exec stat -L -c "$_statFormat" {} + 2>/dev/null';
+      debugPrint('[ZenFile] Shell command (shizuku): $cmd');
+      final output = await runCommand(cmd, useRoot: false);
+      debugPrint('[ZenFile] listFiles: got ${output?.length ?? 0} chars, ${output?.split('\n').length ?? 0} lines');
+      return _toModels(parseStatPipeLines(output ?? '', showHiddenFiles: showHiddenFiles));
     }
 
-    return items;
+    // ── root：多策略 ──
+    // 说明：`-exec stat ... {} +` 把整目录分批交给同一个 stat 进程（进程数从 O(n)
+    // 降到个位数），是首选；`| while read` 版本多 fork 一个循环 shell，仅在 find
+    // 不支持 `-exec +` 的 ROM 上兜底；`ls -la` 只在 find 完全不可用时使用。
+    final strategies = <(String, String Function(String))>[
+      (
+        'find+stat',
+        (dir) => 'find "$dir" -maxdepth 1 -mindepth 1 '
+            '-exec stat -L -c "$_statFormat" {} + 2>&1',
+      ),
+      (
+        'find-pipe-stat',
+        (dir) => 'find "$dir" -maxdepth 1 -mindepth 1 2>&1 '
+            '| while IFS= read -r f; do stat -L -c "$_statFormat" "\$f" 2>&1; done',
+      ),
+      (
+        'ls-la',
+        (dir) => 'ls -la "$dir" 2>&1',
+      ),
+    ];
+
+    final notes = <String>[];
+    for (final (name, build) in strategies) {
+      final cmd = build(cmdPrefix);
+      try {
+        final output = await runCommand(cmd, useRoot: true, fallbackSu: true);
+        final text = output ?? '';
+        final entries = name == 'ls-la'
+            ? parseLsLongOutput(text, dir: cmdPrefix, showHiddenFiles: showHiddenFiles)
+            : parseStatPipeLines(text, showHiddenFiles: showHiddenFiles);
+        if (entries.isNotEmpty) {
+          debugPrint('[ZenFile] listFiles(root) ok via $name: ${entries.length} items');
+          if (name != 'find+stat') {
+            _logDiag('listFiles(root) 降级到策略 $name 才成功: dir=$cmdPrefix, ${entries.length} 项');
+          }
+          return _toModels(entries);
+        }
+        notes.add('$name=>${_snippet(text)}');
+      } catch (e) {
+        notes.add('$name=>EXCEPTION: $e');
+      }
+    }
+
+    // 全部策略都没拿到条目：把每步的原始输出记进诊断日志（避免再出现
+    // 「就是空的，查不到原因」）。仅在受限目录且结果为空时触发。
+    _logDiag('listFiles(root) 全部策略为空: dir=$cmdPrefix; ${notes.join(" || ")}');
+    return [];
   }
 
   static Future<void> deleteItem(String path, {required bool useRoot}) async {
