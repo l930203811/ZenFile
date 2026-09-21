@@ -8806,8 +8806,10 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   bool hasNativeViewer(String path) {
-    final mimeType = lookupMimeType(path) ?? '';
-    final ext = p.extension(path).toLowerCase();
+    // IM 追加后缀（`app.apk.1`）会让 MIME 嗅探与扩展名判定全部失配 → 按归一化路径判型。
+    final typePath = FileUtils.stripImAppendedSuffix(path);
+    final mimeType = lookupMimeType(typePath) ?? '';
+    final ext = FileUtils.effectiveExtensionWithDot(typePath);
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
     
     if (FileUtils.isArchive(path)) return true;
@@ -8840,7 +8842,7 @@ class FileManagerProvider extends ChangeNotifier {
       ),
       builder: (ctx) => OpenWithSheet(
         fileName: p.basename(path),
-        fileExtension: p.extension(path).toLowerCase(),
+        fileExtension: FileUtils.effectiveExtensionWithDot(path),
       ),
     );
 
@@ -8848,7 +8850,8 @@ class FileManagerProvider extends ChangeNotifier {
 
     final isAlways = result.startsWith('always_');
     final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
-    final ext = p.extension(path).toLowerCase();
+    // 归一化扩展名：`app.apk.1` 与 `app.apk` 共用同一条「默认打开方式」偏好。
+    final ext = FileUtils.effectiveExtensionWithDot(path);
 
     if (selectedType == 'external') {
       // 使用外部系统选择器打开（系统「打开方式...」）
@@ -8875,11 +8878,15 @@ class FileManagerProvider extends ChangeNotifier {
     // 若三者都判不出（密文名无扩展名 + 流式 URL 无扩展名），再用解密出的
     // 真实文件名兜底，避免落到「未知格式」导致无法播放。
     final realName = await _realNameOfEncryptedFile(originalPath);
-    final mimeType = lookupMimeType(path) ??
-        lookupMimeType(originalPath) ??
-        (realName != null ? lookupMimeType(realName) : null) ??
+    // IM 追加后缀（`app.apk.1`）会骗过 MIME 嗅探与扩展名判定，统一按归一化路径判型：
+    // 真实读写仍用原始 path，只有「这是什么类型」的判断走归一化名字。
+    final mimeType = lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ??
+        lookupMimeType(FileUtils.stripImAppendedSuffix(originalPath)) ??
+        (realName != null
+            ? lookupMimeType(FileUtils.stripImAppendedSuffix(realName))
+            : null) ??
         '';
-    final ext = p.extension(realName ?? path).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(realName ?? path);
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
 
     if (FileUtils.isArchive(path)) {
@@ -8948,7 +8955,12 @@ class FileManagerProvider extends ChangeNotifier {
     if (mimeType.startsWith('audio/')) {
       if (!context.mounted) return true;
       final folderAudioFiles = activeTab.currentFiles
-          .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('audio/') == true))
+          .where((f) =>
+              !f.isDirectory &&
+              (lookupMimeType(FileUtils.stripImAppendedSuffix(f.path))
+                      ?.startsWith('audio/') ==
+                  true ||
+                  FileUtils.isAudio(f.path)))
           .toList();
 
       // 对播放列表中的加密文件也进行解密
@@ -9039,7 +9051,7 @@ class FileManagerProvider extends ChangeNotifier {
   /// 弹出文件类型选择器，按用户选定的 text/audio/video/image 类型打开。
   /// [saveDefault] 为 true 时把具体类型存为默认动作。
   Future<void> _pickAndOpenBuiltInType(BuildContext context, String path, {bool saveDefault = false}) async {
-    final ext = p.extension(path).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(path);
 
     final builtInType = await showModalBottomSheet<String>(
       context: context,
@@ -9065,7 +9077,7 @@ class FileManagerProvider extends ChangeNotifier {
   /// 显示「本应用打开 / 外部系统选择器」BottomSheet，并执行对应打开流程。
   /// 用于三点菜单 / 长按菜单 / 分类页的「打开方式...」入口。
   Future<void> showOpenWithSheet(BuildContext context, String path) async {
-    final ext = p.extension(path).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(path);
 
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -9464,7 +9476,8 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> openWithSystemChooser(String path, {String? mimeType}) async {
     try {
-      final mime = mimeType ?? lookupMimeType(path) ?? '*/*';
+      // IM 追加后缀（`app.apk.1`）也要给出正确的系统 MIME，否则系统选择器认不出。
+      final mime = mimeType ?? lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ?? '*/*';
       await _platformChannel.invokeMethod('openWithChooser', {
         'path': path,
         'mimeType': mime,
@@ -10102,13 +10115,14 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    final ext = p.extension(path).toLowerCase();
+    // IM 追加后缀（`app.apk.1`）→ 归一化后再判型；真实读写仍用原始 path。
+    final ext = FileUtils.effectiveExtensionWithDot(path);
 
     String targetPath = path;
 
     // Remote streaming URL (WebDAV HTTP URL): open directly with isRemote flag
     if (isRemoteStream) {
-      final streamExt = p.extension(path).toLowerCase();
+      final streamExt = FileUtils.effectiveExtensionWithDot(path);
       final streamMime = lookupMimeType(streamExt) ?? '';
       if (streamMime.startsWith('video/')) {
         Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: path, isRemote: true)));
@@ -10127,7 +10141,7 @@ class FileManagerProvider extends ChangeNotifier {
       final sepIdx = uriPart.indexOf('|');
       if (sepIdx >= 0) checkPath = uriPart.substring(sepIdx + 1);
     }
-    final checkExt = p.extension(checkPath).toLowerCase();
+    final checkExt = FileUtils.effectiveExtensionWithDot(checkPath);
 
     String? openAction;
     if (forceNative) {
@@ -10148,7 +10162,7 @@ class FileManagerProvider extends ChangeNotifier {
         final connectionId = uriPart.substring(0, separatorIndex);
         final remotePath = uriPart.substring(separatorIndex + 1);
         final fileName = p.basename(remotePath);
-        final fileExt = p.extension(fileName).toLowerCase();
+        final fileExt = FileUtils.effectiveExtensionWithDot(fileName);
         final fileMime = lookupMimeType(fileExt) ?? '';
         final isVideoFile = fileMime.startsWith('video/');
         final isAudioFile = fileMime.startsWith('audio/');
@@ -10359,7 +10373,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (!isVideoFile && !isAudioFile) {
           try {
             final fileName = p.basename(path);
-            final fileExt = p.extension(path).toLowerCase();
+            final fileExt = FileUtils.effectiveExtensionWithDot(path);
 
             // 读取用户已保存的默认打开动作（按扩展名）
             final savedAction = PreferencesService.getDefaultOpenAction(fileExt);
@@ -10462,7 +10476,8 @@ class FileManagerProvider extends ChangeNotifier {
                 final remoteImages = currentFiles
                     .where((f) =>
                         !f.isDirectory &&
-                        imageExts.contains(p.extension(f.path).toLowerCase()))
+                        imageExts.contains(
+                            FileUtils.effectiveExtensionWithDot(f.path)))
                     .map((f) => 'remote://${conn.id}|${f.path}')
                     .toList();
                 final currentRemote = 'remote://${conn.id}|$path';

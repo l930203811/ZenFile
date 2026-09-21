@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
+import '../core/utils.dart';
 import '../models/app_info_model.dart';
 
 class AppManagerService {
@@ -317,12 +318,16 @@ class AppManagerService {
       for (final entity in entities) {
         if (entity is File) {
           final name = p.basename(entity.path);
-          final ext = p.extension(entity.path).toLowerCase();
+          // effectiveExtensionWithDot：忽略 IM（QQ / 微信）追加的序号后缀
+          // （`app.apk.1` → `.apk`），否则被 QQ 传过的备份包不会出现在列表里。
+          final ext = FileUtils.effectiveExtensionWithDot(entity.path);
           if (ext == '.apk' || ext == '.apks') {
             final stat = entity.statSync();
 
             // Try to parse app name and version from filename (e.g. WhatsApp_v2.23.apk)
-            String appName = p.basenameWithoutExtension(entity.path);
+            String appName = p.basenameWithoutExtension(
+              FileUtils.stripImAppendedSuffix(entity.path),
+            );
             String version = 'unknown';
 
             final vIndex = appName.lastIndexOf('_v');

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import '../core/utils.dart';
 
 /// Service for generating media thumbnails from local file paths.
 /// Uses Android's [MediaMetadataRetriever] via platform channel.
@@ -44,7 +45,9 @@ class MediaThumbnailService {
 
   /// Generate a thumbnail from a media file path, auto-detecting type.
   static Future<Uint8List?> generateThumbnail(String filePath) async {
-    final ext = p.extension(filePath).toLowerCase();
+    // effectiveExtensionWithDot：忽略 IM 追加后缀（`clip.mp4.1` → `.mp4`），
+    // 否则 QQ 传来的视频/音频拿不到缩略图。
+    final ext = FileUtils.effectiveExtensionWithDot(filePath);
     final videoExts = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp', '.ts', '.mpeg', '.mpg'];
     final audioExts = ['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg', '.opus', '.wma', '.amr', '.aiff'];
 

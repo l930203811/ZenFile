@@ -453,7 +453,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
 
-      final ext = p.extension(widget.file.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(widget.file.name);
       final tempPath = p.join(
         tempDir.path,
         MediaThumbnailService.uniqueTempName(ext),

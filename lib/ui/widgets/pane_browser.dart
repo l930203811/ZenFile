@@ -2061,7 +2061,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         if (!await tempDir.exists()) await tempDir.create(recursive: true);
       }
 
-      final ext = p.extension(widget.file.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(widget.file.name);
       final tempPath = p.join(
         tempDir.path,
         MediaThumbnailService.uniqueTempName(ext),

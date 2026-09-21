@@ -161,7 +161,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       _loadDirectoryContents(item.path);
     } else {
       // 检查文件类型，媒体文件自动缓存播放
-      final ext = p.extension(item.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(item.name);
       final isVideo = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp'].contains(ext);
       final isAudio = ['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.opus'].contains(ext);
       final isText = ['.txt', '.log', '.md', '.csv', '.json', '.xml', '.html', '.dart', '.py', '.java', '.cpp', '.c', '.h', '.js', '.css'].contains(ext);
@@ -1290,7 +1290,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
   /// 构建远程文件列表项的 leading 图标或缩略图
   Widget _buildRemoteItemLeading(BuildContext context, RemoteFileItem item, ThemeData theme) {
-    final ext = p.extension(item.name).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(item.name);
     final isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic', '.svg'].contains(ext);
     final isVideo = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp'].contains(ext);
     final isAudio = ['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg', '.opus', '.wma', '.amr'].contains(ext);
@@ -1412,11 +1412,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       }
 
       // 下载文件到临时位置（唯一命名，避免并发任务互相覆盖）
-      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(p.extension(item.name)));
+      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(FileUtils.effectiveExtensionWithDot(item.name)));
       await _client!.downloadFile(item.path, tempPath, (_) {});
 
       // 如果是图片，直接复制作为缩略图
-      final ext = p.extension(item.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(item.name);
       if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
         await File(tempPath).copy(thumbPath);
       } else if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp'].contains(ext)) {

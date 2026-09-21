@@ -371,23 +371,27 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     );
   }
 
+  // 以下 4 个类型判定统一走 FileUtils.effectiveExtensionWithDot：
+  // 它会忽略 IM（QQ / 微信）追加的序号后缀（`a.jpg.1` → `.jpg`），
+  // 否则被 IM 传过的文件在搜索结果里会被归到「其他」。
+
   bool _isImage(String name) {
-    final ext = p.extension(name).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(name);
     return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic', '.avif'].contains(ext);
   }
 
   bool _isVideo(String name) {
-    final ext = p.extension(name).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(name);
     return ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.ts'].contains(ext);
   }
 
   bool _isAudio(String name) {
-    final ext = p.extension(name).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(name);
     return ['.mp3', '.m4a', '.wav', '.flac', '.aac', '.ogg', '.opus', '.amr'].contains(ext);
   }
 
   bool _isDoc(String name) {
-    final ext = p.extension(name).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(name);
     return ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv'].contains(ext);
   }
 

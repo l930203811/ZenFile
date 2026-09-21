@@ -81,10 +81,11 @@ extension CategoryFilterTypeExtension on CategoryFilterType {
       case CategoryFilterType.archives:
         return FileUtils.isArchive(path);
       case CategoryFilterType.apks:
-        final ext = path.toLowerCase().split('.').last;
+        // effectiveExtension 已忽略 IM 追加后缀（`app.apk.1` → `apk`）。
+        final ext = FileUtils.effectiveExtension(path);
         return ext == 'apk' || ext == 'aab';
       case CategoryFilterType.others:
-        final ext = path.toLowerCase().split('.').last;
+        final ext = FileUtils.effectiveExtension(path);
         return !FileUtils.isImage(path) &&
             !FileUtils.isVideo(path) &&
             !FileUtils.isAudio(path) &&

@@ -430,7 +430,9 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
           if (_isUnderAppCacheDir(entity.path)) continue;
           dirFiles.add(entity.path);
           final lower = entity.path.toLowerCase();
-          final ext = p.extension(lower);
+          // effectiveExtensionWithDot：忽略 IM 追加后缀（`app.apk.1` → `.apk`），
+          // 否则 QQ 传来的安装包/文档会从分类里漏掉。
+          final ext = FileUtils.effectiveExtensionWithDot(lower);
           if (isDownloadDir && !seenDownloads.contains(entity.path)) {
             seenDownloads.add(entity.path);
             int dlSize = 0;
@@ -2209,7 +2211,7 @@ class MediaProvider extends ChangeNotifier {
         if (path == null) continue;
         final size = (m["size"] as int? ?? 0);
         final modified = (m["modified"] as int? ?? 0);
-        final ext = p.extension(path).toLowerCase();
+        final ext = FileUtils.effectiveExtensionWithDot(path);
         final f = File(path);
         _nonMediaDates[path] = modified;
         _nonMediaSizes[path] = size;
@@ -3017,7 +3019,7 @@ class MediaProvider extends ChangeNotifier {
           (_) => true,
           (file) async {
             final lower = file.path.toLowerCase();
-            final ext = p.extension(lower);
+            final ext = FileUtils.effectiveExtensionWithDot(lower);
             if (_videoExtensions.contains(ext)) {
               // 过滤掉极小视频片段（与 isolate 扫描一致）
               int fileSize = 0;
@@ -3564,7 +3566,9 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
               }
             } else if (entity is File) {
               if (_isUnderAppCacheDir(entity.path)) continue;
-              final ext = p.extension(entity.path).toLowerCase();
+              // 传「有效扩展名（含点，小写）」给 filter，且已忽略 IM 追加后缀
+              // （`app.apk.1` → `.apk`），否则自定义路径扫描会漏掉 QQ 传来的文件。
+              final ext = FileUtils.effectiveExtensionWithDot(entity.path);
               if (shouldInclude(ext)) {
                 await onFound(entity);
                 if (++processed % 256 == 0) {
@@ -3822,7 +3826,8 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
           // 与本地 _scanDirectoryRecursively 保持一致：传「扩展名（含点，小写）」给 filter，
           // 这样文档/压缩包/安装包的 `(ext) => _xxExtensions.contains(ext)` 才能正确匹配
           // （此前误传完整文件名导致远程文档等永远扫描不到）。
-          final ext = p.extension(item.name).toLowerCase();
+          // effectiveExtensionWithDot 已忽略 IM 追加后缀（`app.apk.1` → `.apk`）。
+          final ext = FileUtils.effectiveExtensionWithDot(item.name);
           if (filter(ext)) {
             onFileFound(item.path, item.size, item.modified);
           }

@@ -505,7 +505,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       }
 
       final tempDir = await getTemporaryDirectory();
-      final ext = p.extension(widget.file.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(widget.file.name);
       final tempPath = p.join(
         tempDir.path,
         MediaThumbnailService.uniqueTempName(ext),
