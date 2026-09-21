@@ -299,6 +299,38 @@ class CryptOperations {
     return false;
   }
 
+  /// 文件名 [name] 是否为 [mount] 配置下的密文名（与 [isCipherDirName] 同一套
+  /// 往返校验，只是走**文件名**通道：文件名带 `encryptedSuffix`，目录名不带）。
+  ///
+  /// 用途：把本地文件写进远程加密目录时判断「这份东西是不是已经是密文」——
+  /// 名字能往返说明它**就是用当前挂载点这把钥匙加密的**，于是内容可以按原字节
+  /// 直传、不再二次加密（否则服务端会存下「密文的密文」，客户端解密后拿到的
+  /// 还是密文，用户看到的是乱码文件）。
+  ///
+  /// `filenameEncryption = off` 时名字不参与加密、名字级信号完全失效 → 返回
+  /// false，调用方退回「按内容重新加密」（对任意字节流都是无损的）。
+  static bool isCipherFileName(String name, CryptMountPoint mount) {
+    if (name.isEmpty || name == '.' || name == '..') return false;
+    if (mount.config.filenameEncryption == FilenameEncryption.off) return false;
+    final stems = <String>[name];
+    final suffix = mount.config.encryptedSuffix;
+    if (suffix.isNotEmpty &&
+        name.length > suffix.length &&
+        name.endsWith(suffix)) {
+      stems.add(name.substring(0, name.length - suffix.length));
+    }
+    for (final stem in stems) {
+      try {
+        final plain = mount.crypt.decryptFileName(stem);
+        if (plain.isEmpty || plain == stem) continue;
+        if (plain.contains('/') || plain.contains('\u0000')) continue;
+        final reEncrypted = mount.crypt.encryptFileName(plain);
+        if (reEncrypted == stem || reEncrypted == name) return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
   /// [mount] 的配置是否**无法从名字判断目录有没有被加密**。
   ///
   /// - `directoryNameEncryption = false`（目录名不加密）：加密目录在磁盘上

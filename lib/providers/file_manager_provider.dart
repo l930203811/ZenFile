@@ -2587,30 +2587,87 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 远程目录路径拼接（POSIX 风格，容忍父路径尾部多余的 `/`）。
+  static String _joinRemotePath(String parent, String name) =>
+      parent.endsWith('/') ? '$parent$name' : '$parent/$name';
+
+  /// 本地条目写进远程加密目录时，「服务端名」用哪个真实名。
+  ///
+  /// 磁盘名本身已是本挂载点配置下的**密文名**时（从原地加密目录 / 之前下载的
+  /// 密文里复制出来），先解密回真实名 —— 之后统一 `encryptXxxName(真实名)`，
+  /// 结果与原密文名**逐字节相同**（[CryptOperations.isCipherFileName] 已做往返
+  /// 校验）。这样重名判定、重命名、目录递归全都发生在**真实名空间**里，
+  /// 不会拼出「带 ` (1)` 后缀的密文名」那种再也解不开的名字。
+  String _plainNameForCryptUpload(
+    String diskName,
+    CryptMountPoint mount, {
+    required bool isDirectory,
+  }) {
+    final isCipher = isDirectory
+        ? CryptOperations.isCipherDirName(diskName, mount)
+        : CryptOperations.isCipherFileName(diskName, mount);
+    if (!isCipher) return diskName;
+    final plain = _decryptNameSafe(mount, diskName, isDir: isDirectory);
+    return (plain.isEmpty || plain == diskName) ? diskName : plain;
+  }
+
+  /// 加密上传单个本地条目（目录递归）。
+  ///
+  /// **已加密直传（不二次加密）**：源文件若本身就是「当前挂载点能直接读取的
+  /// 密文」——内容带 rclone magic 头，且磁盘名能按当前配置往返解密——则内容
+  /// 按原字节直接上传（连临时密文都不落盘）。典型来源：从本地原地加密目录、
+  /// 或从远程密文目录下载下来的密文文件。判定失败（含别的密码产生的密文）
+  /// 会退回「加密后上传」，这对任意字节流都是无损的：读出来仍是用户原来那份文件。
+  ///
+  /// [plainNameOverride] 供重名冲突「保留两者 / 重命名」传入最终真实名。
   Future<void> _encryptUploadEntry(
     String localPath,
     RemoteClient client,
     CryptMountPoint mount,
     String serverParent,
     String tempDir,
-    void Function(String name, double progress)? onProgress,
-  ) async {
+    void Function(String name, double progress)? onProgress, {
+    String? plainNameOverride,
+  }) async {
     final isDir = await Directory(localPath).exists();
+    final base = p.basename(localPath);
+    final detectedPlain = _plainNameForCryptUpload(base, mount, isDirectory: isDir);
+    final hasOverride =
+        plainNameOverride != null && plainNameOverride.trim().isNotEmpty;
+    final plainName = hasOverride ? plainNameOverride.trim() : detectedPlain;
+    // 直传只在「名字未被人为改名」时成立：改名说明上游已经决定这条要换个名字，
+    // 此时按常规重新加密，避免密文内容与名字的含义对不上。
+    final nameMatchesDisk = plainName == detectedPlain;
+
     if (isDir) {
-      final encName = mount.crypt.encryptDirName(p.basename(localPath));
-      final serverDir =
-          serverParent.endsWith('/') ? '$serverParent$encName' : '$serverParent/$encName';
+      final encName = mount.crypt.encryptDirName(plainName);
+      final serverDir = _joinRemotePath(serverParent, encName);
       await client.createDirectory(serverDir);
       final entries = Directory(localPath).listSync();
       for (final e in entries) {
         await _encryptUploadEntry(e.path, client, mount, serverDir, tempDir, onProgress);
       }
+      onProgress?.call(plainName, 1.0);
       return;
     }
-    final plainName = p.basename(localPath);
+
     final encName = mount.crypt.encryptFileName(plainName);
-    final serverDest =
-        serverParent.endsWith('/') ? '$serverParent$encName' : '$serverParent/$encName';
+    final serverDest = _joinRemotePath(serverParent, encName);
+
+    // ① 已加密直传：内容已是真密文 → 原文件直接上传，不做任何再加密。
+    if (nameMatchesDisk &&
+        CryptOperations.isCipherFileName(base, mount) &&
+        await _isEncryptedPhysicalFile(localPath)) {
+      debugPrint('[ZenFile] 密文直传（不二次加密）：$base → $serverDest');
+      await client.uploadFile(
+        localPath,
+        serverDest,
+        (prog) => onProgress?.call(plainName, prog),
+      );
+      return;
+    }
+
+    // ② 普通明文：加密到临时文件后上传（本地不留残）。
     final tmp = File('$tempDir/$encName');
     final cf = await CryptFile.open(tmp.path, mount.crypt, mode: CryptFileMode.write);
     final bytes = await File(localPath).readAsBytes();
@@ -5713,6 +5770,16 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
+    // —— 本地剪贴板 → 远程加密目录：自动加密后上传 ——
+    // （已加密源条目会直传、不二次加密；明文条目加密文件名的同时加密内容。）
+    // 必须挡在下面普通上传链路之前：那条链路会把明文与明文名直接写进密文目录。
+    if (activeTab.isCryptRemote &&
+        activeTab.remoteClient != null &&
+        !_isRemoteClipboard) {
+      await _pasteLocalToRemoteCrypt(context, clearAfterPaste);
+      return;
+    }
+
     // 标记本次粘贴的目标 tab 是否为远程，用于最后决定是否恢复 activeTab。
     // 远程上传/粘贴完成后，保持 active 在目标远程 tab，避免双窗口模式下
     // 顶部地址栏显示成源（本地）pane 的路径。
@@ -7071,6 +7138,248 @@ class FileManagerProvider extends ChangeNotifier {
         targetName: lastUploadedName ?? '',
         expectedSize: lastUploadedSize,
       );
+    }
+  }
+
+  /// 本地剪贴板 → 远程加密目录（cryptremote://）粘贴：**自动加密后上传**。
+  ///
+  /// 与「加密上传」菜单共用 [_encryptUploadEntry]，于是：
+  /// - 明文条目 → 文件名与内容都加密后再上传；
+  /// - **已加密条目**（从本地原地加密目录、或之前下载下来的密文里复制过来）
+  ///   → 内容按原字节直传，**不做二次加密**。
+  ///
+  /// ⚠️ 绝不能落到 [_pasteLocalToRemote]：那条链路会把明文与明文名直接写进密文
+  /// 目录，下次进入该目录时被按密文解析 → 文件名与内容全乱。
+  ///
+  /// 重名按 [_resolveTransferConflict] 统一处理（弹窗里「服务端已有条目」来自对
+  /// 目标目录的**真实 LIST**，不是页面缓存）。剪贴板为「剪切」时，只有上传成功
+  /// 的条目才会删除本地源。
+  Future<void> _pasteLocalToRemoteCrypt(
+    BuildContext context,
+    bool clearAfterPaste,
+  ) async {
+    final client = activeTab.remoteClient;
+    if (client == null) {
+      progressNotifier.value = null;
+      return;
+    }
+    if (!await _ensureVaultSession(context)) return;
+    final mount = await _activeCryptRemoteMount();
+    if (mount == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).vault_remote_crypt_open_failed),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
+
+    final int targetTabIndex = activeTabIndex;
+    final virtualDir = activeTab.currentPath;
+    final serverParent = mount.virtualToRemoteServerPath(virtualDir);
+    final bool localWasCut = _isCut;
+    final List<String> sourcePaths = List<String>.from(_clipboardPaths);
+    if (sourcePaths.isEmpty) return;
+
+    _activeTransferClient = client;
+    client.resetCancel();
+    progressNotifier.backgroundMode = false;
+    _isOperationCancelled = false;
+    _isPasting = true;
+    activeTab.isLoading = true;
+    _showTransferProgressDialog(context);
+    notifyListeners();
+
+    try {
+      // 目标目录的真实条目（名字是**解密后**的真实名）——重名判定只信这次 LIST。
+      final destEntries = <String, ConflictFileInfo>{};
+      try {
+        final listed =
+            await RemoteCryptDirectoryLister(mount, client).listDirectory(
+          virtualDir,
+          showHidden: true,
+          onlyEncrypted: false,
+        );
+        for (final e in listed) {
+          destEntries[e.name] =
+              ConflictFileInfo(size: e.size, modified: e.modified);
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] 加密上传：列出目标密文目录失败 $serverParent: $e');
+      }
+
+      // 先把本地源解析成「磁盘真实路径」：本地加密目录里的条目是**虚拟路径**
+      // （磁盘上存的是密文名 + 密文内容），直接 File(src) 读不到。
+      final resolved = <({String src, String physical, bool isDir})>[];
+      for (final src in sourcePaths) {
+        if (src.startsWith('cryptremote://') || src.startsWith('remote://')) {
+          // 兜底：远程条目不该走到这里（复制远程条目会置远程剪贴板，走
+          // cryptRemoteCopyOrMove）。真出现就跳过，别拿虚拟路径当本地文件读。
+          debugPrint('[ZenFile] 加密上传：跳过非本地条目 $src');
+          continue;
+        }
+        final a = await _analyzeCryptSource(src);
+        resolved.add((src: src, physical: a.physical, isDir: a.isDirectory));
+      }
+      if (resolved.isEmpty) return;
+
+      // 进度分母用**磁盘真实路径**统计：加密目录条目的虚拟路径磁盘上不存在，
+      // 按它统计会把字节数算成 0（进度条直接跳满）。
+      final stats = await compute(
+        _countLocalFilesAndBytesIsolate,
+        resolved.map((r) => r.physical).toList(),
+      );
+      final int totalFiles = stats[0] > 0 ? stats[0] : resolved.length;
+      int totalBytes = stats[1];
+      if (totalBytes <= 0) totalBytes = 1;
+
+      int previousFilesBytes = 0;
+      int processedFiles = 0;
+      ConflictResult? cachedResolution;
+      final tmpDir = await _cryptTmpDir();
+      try {
+        for (var i = 0; i < resolved.length; i++) {
+          if (_isOperationCancelled) throw Exception('Cancelled');
+          final src = resolved[i].src;
+          final localPhysical = resolved[i].physical;
+          final isDir = resolved[i].isDir;
+          final base = p.basename(src);
+          // 单条字节数同样按磁盘真实路径统计，否则加密目录条目的当前文件
+          // 大小恒为 0。
+          final itemBytes = (await compute(
+            _countLocalFilesAndBytesIsolate,
+            <String>[localPhysical],
+          ))[1];
+
+          // 真实名空间里的重名判定（服务端名字由真实名重新加密得到）。
+          final desiredPlain =
+              _plainNameForCryptUpload(base, mount, isDirectory: isDir);
+          var finalPlain = desiredPlain;
+          String serverPathFor(String plain) => _joinRemotePath(
+                serverParent,
+                isDir
+                    ? mount.crypt.encryptDirName(plain)
+                    : mount.crypt.encryptFileName(plain),
+              );
+
+          // 弹窗需要 BuildContext：界面已销毁就把这次粘贴按「取消」处理
+          // （否则会在已卸载的树上弹对话框）。
+          if (!context.mounted) throw Exception('Cancelled');
+          final decision = await _resolveTransferConflict(
+            context: context,
+            fileName: desiredPlain,
+            destPath: serverPathFor(desiredPlain),
+            destExists: destEntries.containsKey(desiredPlain),
+            sourceFile: isDir ? null : File(localPhysical),
+            destInfo: destEntries[desiredPlain],
+            cachedResolution: cachedResolution,
+            onApplyToAll: (r) => cachedResolution = r,
+            uniquePathFor: (name) {
+              final unique = uniqueNameAgainst(destEntries.keys.toSet(), name);
+              finalPlain = unique;
+              return serverPathFor(unique);
+            },
+          );
+          if (decision == null) throw Exception('Cancelled');
+          if (!decision.shouldProcess) continue;
+
+          final int baseBytes = previousFilesBytes;
+          await _encryptUploadEntry(
+            localPhysical,
+            client,
+            mount,
+            serverParent,
+            tmpDir.path,
+            (name, prog) {
+              final done = baseBytes + (itemBytes * prog).round();
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFiles,
+                currentFileIndex: processedFiles + 1,
+                currentFileName: name,
+                percentage: (done / totalBytes).clamp(0.0, 1.0),
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: totalBytes,
+                bytesProcessed: done,
+                currentFileBytes: (itemBytes * prog).round(),
+                currentFileTotal: itemBytes,
+              );
+            },
+            plainNameOverride: finalPlain,
+          );
+          previousFilesBytes += itemBytes;
+          processedFiles++;
+
+          // 记入目标目录缓存：同一次粘贴里同名（来自不同源目录）的后续条目也应
+          // 判为冲突，而不是把前一个刚上传的覆盖掉。
+          destEntries[finalPlain] = ConflictFileInfo(modified: DateTime.now());
+
+          if (localWasCut) {
+            try {
+              final type = FileSystemEntity.typeSync(localPhysical);
+              if (type == FileSystemEntityType.directory) {
+                await Directory(localPhysical).delete(recursive: true);
+              } else {
+                await File(localPhysical).delete();
+              }
+            } catch (e) {
+              debugPrint('[ZenFile] 加密上传后删除本地源失败: $e');
+            }
+          }
+        }
+      } finally {
+        try {
+          tmpDir.deleteSync(recursive: true);
+        } catch (_) {}
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).vault_encrypt_upload_done),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 本地 → 远程加密目录粘贴失败: $e');
+      if (context.mounted) {
+        final cancelled = e.toString().contains('Cancelled');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              cancelled
+                  ? L10n.of(context).msga45bac47
+                  : '${L10n.of(context).vault_encrypt_upload_failed}: $e',
+            ),
+            backgroundColor: cancelled ? null : Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      _activeTransferClient = null;
+      progressNotifier.value = null;
+      _isPasting = false;
+      _isOperationCancelled = false;
+      if (clearAfterPaste) clearClipboard();
+      if (localWasCut && sourcePaths.isNotEmpty) {
+        await refreshLocalSourceAfterCut(sourcePaths);
+      }
+      try {
+        await loadDirectoryForTab(
+          targetTabIndex,
+          virtualDir,
+          showLoading: false,
+          clearCache: true,
+        );
+      } catch (_) {}
+      activeTab.isLoading = false;
+      notifyListeners();
     }
   }
 
