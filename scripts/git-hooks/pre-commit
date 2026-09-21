@@ -1,0 +1,92 @@
+#!/bin/sh
+# ═════════════════════════════════════════════════════════════════════════════
+# ZenFile pre-commit 守卫
+#   作用：阻止「调用方已提交、被调用的方法还没提交」的断裂提交。
+#
+# 为什么需要它（2026-09-21 事故 · 提交 368a5fe）：
+#   多路 AI 共用同一个工作区时，`git add <单个文件>` 会把别人**尚未提交**的改动
+#   一起装进本次提交。于是出现过这样一次提交：
+#       apk_installer_service.dart 里调用了 FileUtils.effectiveExtensionWithDot(...)
+#       但定义它的 lib/core/utils.dart / lib/core/im_suffix.dart 当时还没提交
+#   → 推送后的 origin/dev **编译不过**；而本机 `flutter analyze` 依旧全绿
+#     （本机工作区是"全量"的，恰好掩盖了这个断裂）。
+#
+# 它怎么查：只看**索引**（`git ... --cached`，即本次提交真正的内容）。
+#   索引里出现 `类名.方法名`  →  索引里该类的定义文件里必须能找到 `方法名`。
+#   「只看索引」是关键：未提交的改动不在索引里，所以这种断裂一定会被查出来。
+#
+# 设计约束：
+#   · 只用 git + shell 内建命令（不依赖 awk/sed/grep），秒级完成；
+#   · 任何内部异常都不阻止提交（钩子自身出错绝不能卡住正常提交）；
+#   · 要新增受检类，在下面 TARGETS 加一行「类名|定义文件」即可。
+#
+# ⚠️ 本文件必须是 **LF** 行尾（CRLF 会让 sh 报 bad interpreter）。
+# 如确认无误需跳过：`git commit --no-verify`（不建议）。
+# ═════════════════════════════════════════════════════════════════════════════
+
+# 受检项：类名|该类定义所在的文件（相对仓库根，走 <类>.<方法> 调用的静态工具类）
+TARGETS='FileUtils|lib/core/utils.dart'
+
+# 扫描范围（只看业务代码，避免扫 build/ 等）
+SCAN_PATH='lib'
+
+fatal=0
+
+check_target() {
+  cls="$1"
+  def_file="$2"
+
+  # 该类定义文件必须在索引里，否则跳过（例如首次引入这个类）
+  git ls-files --error-unmatch -- "$def_file" >/dev/null 2>&1 || return 0
+
+  # 索引里所有 `cls.<method>` 引用
+  refs=$(git grep --cached -o -h -E "${cls}\\.[A-Za-z_][A-Za-z0-9_]*" -- "$SCAN_PATH" 2>/dev/null) || refs=''
+  [ -z "$refs" ] && return 0
+
+  while IFS= read -r ref; do
+    [ -z "$ref" ] && continue
+    method=${ref#*.}
+    # 在索引版本的定义文件里找「方法名(」；找不到 = 该方法还没进本次提交。
+    # 用字面匹配 + 尾随 '(' ：既避开正则元字符（Dart 标识符允许 $），
+    # 也不会像裸方法名那样误命中 class / 注释里的同名子串。
+    if ! git grep --cached -q -F "${method}(" -- "$def_file" 2>/dev/null; then
+      echo "" >&2
+      echo "✗ pre-commit 守卫：本次提交引用了 $cls.$method ，" >&2
+      echo "  但 $def_file（索引版本）里没有 $method 的定义。" >&2
+      echo "  常见原因：$method 所在的文件还没被 git add（或还躺在别人未提交的工作区里）。" >&2
+      echo "  处理：把定义它的文件一并 'git add' 后重新提交。" >&2
+      echo "  切勿「先提交、等真机验证再补」——已推送的 dev 会编译不过。" >&2
+      fatal=1
+    fi
+  done <<EOF
+$refs
+EOF
+}
+
+while IFS='|' read -r target_cls target_file; do
+  [ -z "$target_cls" ] && continue
+  check_target "$target_cls" "$target_file"
+done <<EOF
+$TARGETS
+EOF
+
+if [ "$fatal" -ne 0 ]; then
+  echo "" >&2
+  echo "本次提交已被 pre-commit 守卫阻止（确需跳过：git commit --no-verify）。" >&2
+  exit 1
+fi
+
+# 提示（不阻止提交）：工作区还有 lib 改动没进本次提交，便于自查是否漏 add 依赖
+pending=$(git diff --name-only -- "$SCAN_PATH" 2>/dev/null) || pending=''
+if [ -n "$pending" ]; then
+  echo "[pre-commit 提示] 以下 lib 文件已修改但未暂存："
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    echo "    $f"
+  done <<EOF
+$pending
+EOF
+  echo "    若本次提交依赖它们的改动，请一并 git add，否则可能重现「调用方已提交、被调用方没提交」。"
+fi
+
+exit 0
