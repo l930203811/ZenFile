@@ -2063,23 +2063,25 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       final isVideo = FileUtils.isVideo(_displayPath);
       final isAudio = FileUtils.isAudio(_displayPath);
       if (isVideo || isAudio) {
-        // 视频/音频只需头部 2MB 即可提取缩略图/封面
-        // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
-        await MediaThumbnailService.withRemoteThrottle(() async {
-          try {
-            await client.downloadRange(
-              dlPath,
-              tempPath,
-              0,
-              2 * 1024 * 1024,
-            );
-          } catch (e) {
-            await client.downloadFile(dlPath, tempPath, (_) {});
-          }
-        });
+        // 视频/音频只需头部 2MB 即可提取缩略图/封面。
+        // 统一走串行队列 + 约 2MB/s 带宽限速，避免打开远程目录时
+        // 多个文件并发完整下载打满带宽导致卡顿。
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: true,
+        );
       } else {
-        // 图片等完整下载
-        await client.downloadFile(dlPath, tempPath, (_) {});
+        // 图片等完整下载（同样受串行队列与带宽限速约束）
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: false,
+        );
       }
 
       // 生成缩略图
@@ -2111,11 +2113,13 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           if (mounted) setState(() => _audioThumb = thumbBytes);
         }
       } else {
-        // 图片直接复制为缩略图
+        // 图片：压缩为最长边 512px 的缩略图缓存（解码失败自动回退原图直存）
         final tempFile = File(tempPath);
         if (tempFile.existsSync()) {
-          await tempFile.copy(thumbPath);
-          thumbBytes = await thumbFile.readAsBytes();
+          thumbBytes = await MediaThumbnailService.makeImageThumbBytes(
+            tempPath,
+            thumbPath,
+          );
         }
       }
 

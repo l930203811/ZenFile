@@ -456,25 +456,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         // 图片/SVG 需要完整文件用于直接显示
         final isVideo = FileUtils.isVideo(_displayPath);
         final isAudio = FileUtils.isAudio(_displayPath);
-        if (isVideo || isAudio) {
-          // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
-          await MediaThumbnailService.withRemoteThrottle(() async {
-            try {
-              await client.downloadRange(
-                dlPath,
-                tempPath,
-                0,
-                2 * 1024 * 1024,
-              );
-            } catch (e) {
-              // 部分服务器/客户端不支持 range 下载，回退到完整下载
-              debugPrint('downloadRange 失败，回退完整下载: $e');
-              await client.downloadFile(dlPath, tempPath, (_) {});
-            }
-          });
-        } else {
-          await client.downloadFile(dlPath, tempPath, (_) {});
-        }
+        // 统一走串行队列 + 约 2MB/s 带宽限速：打开远程目录时多个文件
+        // 按顺序逐个下载，避免并发完整下载打满带宽导致卡顿。
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: isVideo || isAudio,
+        );
 
         // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
         if (ext == '.svg') {
@@ -485,7 +475,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           return;
         }
 
-        // 图片直接复制作为缩略图
+        // 图片：压缩为最长边 512px 的缩略图缓存。
+        // 原图直存会让缓存膨胀到原图大小且二次打开读取/解码慢；
+        // 解码失败（HEIC/超大/损坏）时自动回退原图直存，功能不降级。
         if ([
           '.jpg',
           '.jpeg',
@@ -495,9 +487,10 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           '.bmp',
           '.heic',
         ].contains(ext)) {
-          await File(tempPath).copy(thumbPath);
-          // 读取缩略图字节并更新UI
-          final bytes = await thumbFile.readAsBytes();
+          final bytes = await MediaThumbnailService.makeImageThumbBytes(
+            tempPath,
+            thumbPath,
+          );
           if (mounted && bytes.isNotEmpty) {
             setState(() => _remoteThumb = bytes);
           }
