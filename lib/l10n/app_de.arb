@@ -1801,7 +1801,35 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg64a6476a": "Standard",
-  "@title": {
+
+  "app_icon_classic2": "Klassisch 2",
+  "@app_icon_classic2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic3": "Klassisch Gold",
+  "@app_icon_classic3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_cyberpunk": "Cyberpunk",
+  "@app_icon_cyberpunk": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glassmorphism": "Glasmorphismus",
+  "@app_icon_glassmorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_m3_expressive": "M3 Expressiv",
+  "@app_icon_m3_expressive": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_minimal_flat": "Minimal Flat",
+  "@app_icon_minimal_flat": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_neumorphism": "Neumorphismus",
+  "@app_icon_neumorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },  "@title": {
     "type": "text"
   },
   "title": "App-Symbol gewechselt zu {title}",

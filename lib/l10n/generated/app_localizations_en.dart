@@ -1498,6 +1498,27 @@ class L10nEn extends L10n {
   String get msg64a6476a => 'Default Logo';
 
   @override
+  String get app_icon_classic2 => 'Classic 2';
+
+  @override
+  String get app_icon_classic3 => 'Classic Gold';
+
+  @override
+  String get app_icon_cyberpunk => 'Cyberpunk';
+
+  @override
+  String get app_icon_glassmorphism => 'Glassmorphism';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 Expressive';
+
+  @override
+  String get app_icon_minimal_flat => 'Minimal Flat';
+
+  @override
+  String get app_icon_neumorphism => 'Neumorphism';
+
+  @override
   String title(Object title) {
     return 'App icon switched to $title';
   }

@@ -1534,6 +1534,27 @@ class L10nEs extends L10n {
   String get msg64a6476a => 'Predeterminado';
 
   @override
+  String get app_icon_classic2 => 'Clásico 2';
+
+  @override
+  String get app_icon_classic3 => 'Clásico Dorado';
+
+  @override
+  String get app_icon_cyberpunk => 'Cyberpunk';
+
+  @override
+  String get app_icon_glassmorphism => 'Vidrio Esmerilado';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 Expresivo';
+
+  @override
+  String get app_icon_minimal_flat => 'Plano Mínimo';
+
+  @override
+  String get app_icon_neumorphism => 'Neomorfismo';
+
+  @override
   String title(Object title) {
     return 'Icono de la app cambiado a $title';
   }

@@ -1804,7 +1804,35 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg64a6476a": "По умолчанию",
-  "@title": {
+
+  "app_icon_classic2": "Классика 2",
+  "@app_icon_classic2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic3": "Классик Голд",
+  "@app_icon_classic3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_cyberpunk": "Киберпанк",
+  "@app_icon_cyberpunk": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glassmorphism": "Стекломорфизм",
+  "@app_icon_glassmorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_m3_expressive": "M3 Экспрессив",
+  "@app_icon_m3_expressive": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_minimal_flat": "Минимал Флэт",
+  "@app_icon_minimal_flat": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_neumorphism": "Неоморфизм",
+  "@app_icon_neumorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },  "@title": {
     "type": "text"
   },
   "title": "Значок приложения изменён на {title}",

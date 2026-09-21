@@ -1804,7 +1804,35 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg64a6476a": "Predeterminado",
-  "@title": {
+
+  "app_icon_classic2": "Clásico 2",
+  "@app_icon_classic2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic3": "Clásico Dorado",
+  "@app_icon_classic3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_cyberpunk": "Cyberpunk",
+  "@app_icon_cyberpunk": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glassmorphism": "Vidrio Esmerilado",
+  "@app_icon_glassmorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_m3_expressive": "M3 Expresivo",
+  "@app_icon_m3_expressive": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_minimal_flat": "Plano Mínimo",
+  "@app_icon_minimal_flat": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_neumorphism": "Neomorfismo",
+  "@app_icon_neumorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },  "@title": {
     "type": "text"
   },
   "title": "Icono de la app cambiado a {title}",

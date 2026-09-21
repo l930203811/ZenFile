@@ -1428,6 +1428,27 @@ class L10nZh extends L10n {
   String get msg64a6476a => '默认标志';
 
   @override
+  String get app_icon_classic2 => '经典 2';
+
+  @override
+  String get app_icon_classic3 => '经典金';
+
+  @override
+  String get app_icon_cyberpunk => '赛博朋克';
+
+  @override
+  String get app_icon_glassmorphism => '玻璃拟态';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 表现';
+
+  @override
+  String get app_icon_minimal_flat => '极简扁平';
+
+  @override
+  String get app_icon_neumorphism => '新拟态';
+
+  @override
   String title(Object title) {
     return '应用图标已切换为 $title';
   }
@@ -8844,6 +8865,27 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg64a6476a => '預設標誌';
+
+  @override
+  String get app_icon_classic2 => '經典 2';
+
+  @override
+  String get app_icon_classic3 => '經典金';
+
+  @override
+  String get app_icon_cyberpunk => '賽博龐克';
+
+  @override
+  String get app_icon_glassmorphism => '玻璃擬態';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 表現';
+
+  @override
+  String get app_icon_minimal_flat => '極簡扁平';
+
+  @override
+  String get app_icon_neumorphism => '新擬態';
 
   @override
   String title(Object title) {

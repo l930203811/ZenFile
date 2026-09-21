@@ -1528,6 +1528,27 @@ class L10nRu extends L10n {
   String get msg64a6476a => 'По умолчанию';
 
   @override
+  String get app_icon_classic2 => 'Классика 2';
+
+  @override
+  String get app_icon_classic3 => 'Классик Голд';
+
+  @override
+  String get app_icon_cyberpunk => 'Киберпанк';
+
+  @override
+  String get app_icon_glassmorphism => 'Стекломорфизм';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 Экспрессив';
+
+  @override
+  String get app_icon_minimal_flat => 'Минимал Флэт';
+
+  @override
+  String get app_icon_neumorphism => 'Неоморфизм';
+
+  @override
   String title(Object title) {
     return 'Значок приложения изменён на $title';
   }
