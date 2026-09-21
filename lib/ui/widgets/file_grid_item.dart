@@ -539,6 +539,12 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           '.bmp',
           '.heic',
         ].contains(ext)) {
+          // 超大图片（>8MB）不自动下载缩略图：完整下载原图太慢，会占住
+          // 全局队列把整屏缩略图拖到超时。列表保留占位图标，点击预览时才
+          // 完整下载原图。
+          if (widget.file.size > MediaThumbnailService.kRemoteThumbMaxBytes) {
+            return;
+          }
           final bytes = await MediaThumbnailService.makeImageThumbBytes(
             tempPath,
             thumbPath,
