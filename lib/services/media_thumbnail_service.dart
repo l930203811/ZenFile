@@ -64,19 +64,25 @@ class MediaThumbnailService {
     return null;
   }
 
-  // ---- 远程缩略图串行队列 + 全局带宽限制 ----
+  // ---- 远程缩略图队列（FIFO + 小并发）+ 全局带宽限制 ----
 
-  /// 远程缩略图任务队列（FIFO）。所有远程缩略图下载/生成任务**严格按序**
-  /// 逐个执行（同时只有一个任务在跑），避免打开远程目录时一屏多个文件
-  /// 同时下载打满带宽导致卡顿。
+  /// 超过此大小的远程图片不自动下载缩略图（列表显示占位图标，点击预览时
+  /// 才完整下载）。避免超大原图（如 10-30MB 照片）占住下载队列，把整屏
+  /// 缩略图全部拖到超时/卡住——这是「开了缩略图却显示不出来」的主要根因。
+  static const int kRemoteThumbMaxBytes = 8 * 1024 * 1024; // 8MB
+
+  /// 远程缩略图任务队列（FIFO）。任务按加入顺序出队，但最多同时执行
+  /// [_remoteMaxConcurrent] 个（而不是严格串行）：小缩略图不会被前面一个大
+  /// 文件堵死；总带宽仍受全局令牌桶限制（约 5MB/s），不会打满网络。
   static final _remoteTaskQueue = <Future<void> Function()>[];
-  static bool _remoteWorkerRunning = false;
+  static int _remoteActiveCount = 0;
+  static const int _remoteMaxConcurrent = 3;
 
-  /// 将远程缩略图任务加入全局 FIFO 队列并串行执行。
+  /// 将远程缩略图任务加入全局 FIFO 队列并限并发执行。
   ///
-  /// [bytes]：本任务预计下载的字节数（用于带宽限速，约 2MB/s）。传入 >0 时，
+  /// [bytes]：本任务预计下载的字节数（用于带宽限速，约 5MB/s）。传入 >0 时，
   /// 任务开始前先从全局带宽令牌桶取令牌，令牌不足则等待，从而把「同时下载」
-  /// 变成「按序 + 限速」。
+  /// 变成「小并发 + 全局限速」。
   static Future<T> withRemoteThrottle<T>(
     Future<T> Function() task, {
     int bytes = 0,
@@ -96,30 +102,29 @@ class MediaThumbnailService {
   }
 
   static void _drainRemoteQueue() {
-    if (_remoteWorkerRunning) return;
-    _remoteWorkerRunning = true;
-    _runRemoteWorker();
-  }
-
-  static Future<void> _runRemoteWorker() async {
-    while (_remoteTaskQueue.isNotEmpty) {
+    while (_remoteActiveCount < _remoteMaxConcurrent &&
+        _remoteTaskQueue.isNotEmpty) {
       final next = _remoteTaskQueue.removeAt(0);
-      try {
-        await next();
-      } catch (_) {
-        // 错误已通过 completer 转发给调用方，这里只是防止 worker 中断
-      }
+      _remoteActiveCount++;
+      unawaited(() async {
+        try {
+          await next();
+        } catch (_) {
+          // 错误已通过 completer 转发给调用方，这里只是防止 worker 中断
+        }
+        _remoteActiveCount--;
+        _drainRemoteQueue();
+      }());
     }
-    _remoteWorkerRunning = false;
   }
 
-  // ---- 全局带宽令牌桶（约 2MB/s）----
-  static const double _bandwidthBytesPerSec = 2 * 1024 * 1024; // 2MB/s
+  // ---- 全局带宽令牌桶（约 5MB/s）----
+  static const double _bandwidthBytesPerSec = 5 * 1024 * 1024; // 5MB/s
   static double _bandwidthTokens = 0;
   static DateTime _bandwidthLastRefill = DateTime.now();
-  static const double _bandwidthMaxTokens = 2 * 1024 * 1024; // 桶容量 = 1 秒量
+  static const double _bandwidthMaxTokens = 5 * 1024 * 1024; // 桶容量 = 1 秒量
 
-  /// 获取 [bytes] 字节的带宽令牌；令牌按 2MB/s 速率补充，不足则等待。
+  /// 获取 [bytes] 字节的带宽令牌；令牌按 5MB/s 速率补充，不足则等待。
   static Future<void> _acquireBandwidth(int bytes) async {
     while (true) {
       final now = DateTime.now();
@@ -137,11 +142,12 @@ class MediaThumbnailService {
     }
   }
 
-  /// 远程缩略图统一下载入口：严格串行 + 按文件大小限速（约 2MB/s）。
+  /// 远程缩略图统一下载入口：FIFO 小并发 + 按文件大小限速（约 5MB/s）。
   ///
   /// [useRange] 为 true 时只取头部 [rangeBytes]（视频/音频缩略图只需文件头），
   /// range 失败回退完整下载；false 时（图片）完整下载。下载过程受全局
-  /// 串行队列与带宽令牌桶双重约束，避免目录浏览时多文件同时下载占满带宽。
+  /// 队列（最多 3 并发）与带宽令牌桶双重约束，避免目录浏览时多文件同时
+  /// 下载占满带宽导致卡顿。
   static Future<void> downloadThumbnailFile({
     required RemoteClient client,
     required String remotePath,
