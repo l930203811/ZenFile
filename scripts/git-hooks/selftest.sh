@@ -74,6 +74,30 @@ echo "--- 场景 B：把定义文件也暂存"
 git add lib/core/utils.dart
 check "应放行" 0
 
+echo "--- 场景 D：引用的是常量/字段（不是方法）——早期版本会误判为未定义、卡住正常提交"
+cat > lib/core/utils.dart <<'DART'
+class FileUtils {
+  static int a() => 1;
+  static int c() => 3;
+  static const List<String> exts = ['.apk'];
+}
+DART
+cat > lib/b.dart <<'DART'
+void f() { FileUtils.a(); FileUtils.c(); if (FileUtils.exts.isEmpty) {} }
+DART
+git add lib/core/utils.dart lib/b.dart
+check "应放行（常量定义已在索引里）" 0
+
+echo "--- 场景 E：常量定义留在工作区，只暂存调用方 → 仍应阻止"
+cat > lib/core/utils.dart <<'DART'
+class FileUtils {
+  static int a() => 1;
+  static int c() => 3;
+}
+DART
+git add lib/core/utils.dart
+check "应阻止" 1
+
 cd /
 rm -rf "$w"
 

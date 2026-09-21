@@ -12,7 +12,12 @@
 #     （本机工作区是"全量"的，恰好掩盖了这个断裂）。
 #
 # 它怎么查：只看**索引**（`git ... --cached`，即本次提交真正的内容）。
-#   索引里出现 `类名.方法名`  →  索引里该类的定义文件里必须能找到 `方法名(`。
+#   索引里出现 `类名.成员名`  →  索引里该类的定义文件里必须能找到该成员的定义：
+#     · `成员名(`   —— 方法
+#     · `成员名 =`  —— 常量 / 字段 / getter
+#   ⚠️ 这两种形态都必须认：早期版本只认 `名(`，于是把 `FileUtils.xxxExtensions`
+#      这类**常量引用**误判成「未定义」，直接卡住正常提交（2026-09-21 实测踩到，
+#      故新增 selftest 场景 D/E 兜住它）。
 #   「只看索引」是关键：未提交的改动不在索引里，所以这种断裂一定会被查出来。
 #
 # 性能约束（很重要）：本机是 Windows/MSYS，**每次 fork 一个进程约 0.5~1s**。
@@ -48,14 +53,18 @@ check_target() {
   refs=$(git grep --cached -o -h -E "${cls}\\.[A-Za-z_][A-Za-z0-9_]*" -- "$SCAN_PATH" 2>/dev/null) || refs=''
   [ -z "$refs" ] && return 0
 
-  # ② 索引版定义文件里所有「标识符(」出现处（定义或自调用都算，宁松勿误伤）
-  defs=$(git grep --cached -o -h -E "[A-Za-z_][A-Za-z0-9_]*\\(" -- "$def_file" 2>/dev/null) || defs=''
+  # ② 索引版定义文件里所有「标识符 + `(` / `=` / `;`」出现处
+  #    （方法定义、自调用、常量与字段定义都算；宁松勿误伤）
+  defs=$(git grep --cached -o -h -E "[A-Za-z_][A-Za-z0-9_]*[[:space:]]*[=(;]" -- "$def_file" 2>/dev/null) || defs=''
 
   # 归一成以换行包围的名字表：\n<名1>\n<名2>\n...
   table=''
   while IFS= read -r d; do
     [ -z "$d" ] && continue
-    table="$table${d%(*}
+    n=${d%?}                        # 去掉末尾分隔符（( = ;）
+    n=${n%"${n##*[![:space:]]}"}    # 再剥掉标识符与分隔符之间的空白
+    [ -z "$n" ] && continue
+    table="$table$n
 "
   done <<EOF
 $defs
@@ -71,7 +80,13 @@ $table" in
       *"
 $method
 "*) : ;;
-      *) missing="$missing $cls.$method"; fatal=1 ;;
+      *)
+        # 同一成员常被多处引用，报错信息里只留一条
+        case "$missing" in
+          *" $cls.$method"*) : ;;
+          *) missing="$missing $cls.$method"; fatal=1 ;;
+        esac
+        ;;
     esac
   done <<EOF
 $refs
@@ -79,7 +94,7 @@ EOF
 
   if [ -n "$missing" ]; then
     echo "" >&2
-    echo "✗ pre-commit 守卫：本次提交引用了以下方法，但 $def_file（索引版本）里没有定义：" >&2
+    echo "✗ pre-commit 守卫：本次提交引用了以下成员，但 $def_file（索引版本）里没有定义：" >&2
     echo "   $missing" >&2
     echo "  常见原因：定义它们的文件还没被 git add（或还躺在别人未提交的工作区里）。" >&2
     echo "  处理：把定义文件一并 'git add' 后重新提交。" >&2
