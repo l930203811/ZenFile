@@ -1960,7 +1960,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     // 与 file_grid_item.dart / file_item.dart 的模式保持一致。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lowerPath = _displayPath.toLowerCase();
       // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
@@ -1970,10 +1969,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
       }
     });
@@ -1995,7 +1991,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _apkIcon = null;
         _remoteThumb = null;
       });
-      final lowerPath = _displayPath.toLowerCase();
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
@@ -2004,10 +1999,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
       }
     }
@@ -2241,11 +2233,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     final isImg = FileUtils.isImage(_displayPath);
     final isVid = FileUtils.isVideo(_displayPath);
     final isAud = FileUtils.isAudio(_displayPath);
-    final isApk =
-        _displayPath.toLowerCase().endsWith('.apk') ||
-        _displayPath.toLowerCase().endsWith('.xapk') ||
-        _displayPath.toLowerCase().endsWith('.apks') ||
-        _displayPath.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(_displayPath);
 
     if (widget.isSelected) {
       return Icon(

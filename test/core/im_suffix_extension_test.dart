@@ -131,6 +131,22 @@ void main() {
       expect(FileUtils.isSvg('icon.svg.1'), isTrue);
       expect(FileUtils.isSvg('icon.svg'), isTrue);
       expect(FileUtils.isImage('icon.svg.1'), isFalse);
+      expect(FileUtils.isSvg('icon.png.1'), isFalse);
+      expect(FileUtils.isSvg('note.txt'), isFalse);
+    });
+
+    test('应用图标提取入口：apk.1 必须与原 apk 一致（否则只剩通用图标）', () {
+      // 与 isInstallPackage 的差别只有 .aab（AAB 提不出 launcher icon）。
+      expect(FileUtils.canExtractApkIcon('app.apk.1'), isTrue);
+      expect(FileUtils.canExtractApkIcon('app.apk'), isTrue);
+      expect(FileUtils.canExtractApkIcon('bundle.xapk.2'), isTrue);
+      expect(FileUtils.canExtractApkIcon('bundle.apks.1'), isTrue);
+      expect(FileUtils.canExtractApkIcon('bundle.apkm.9'), isTrue);
+      expect(FileUtils.canExtractApkIcon('bundle.aab'), isFalse);
+      expect(FileUtils.canExtractApkIcon('archive.zip.1'), isFalse);
+      expect(FileUtils.canExtractApkIcon('archive.zip.001'), isFalse);
+      expect(FileUtils.canExtractApkIcon('app.apk.01'), isFalse); // 前导零 = 分卷/序号异常
+      expect(FileUtils.canExtractApkIcon('apk.1'), isFalse); // 点号前没有扩展名
     });
 
     test('压缩包 / 文档', () {

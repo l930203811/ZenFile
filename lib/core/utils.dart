@@ -336,6 +336,20 @@ class FileUtils {
     return labels[ext] ?? (ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase());
   }
 
+  /// 可尝试从包内提取**原始应用图标**的安装包扩展名。
+  ///
+  /// 与 [installPackageExtensions] 的差别：**刻意不含 `.aab`**——AAB 是提交到应用
+  /// 商店的上传格式，PackageManager 解析不出 launcher icon，纳入只会白跑一次原生调用。
+  static const List<String> apkIconExtensions = ['.apk', '.xapk', '.apks', '.apkm'];
+
+  /// 是否应尝试从安装包中提取并渲染原始应用图标（列表项/网格/分类页共用）。
+  ///
+  /// ⚠️ 必须走 [effectiveExtensionWithDot]：IM（QQ / 微信）把重名文件改名成
+  /// `app.apk.1` 后 `endsWith('.apk')` 全部失效，图标会退回通用 APK 图标——
+  /// 「已识别为安装包、但图标没渲染」就是这么来的（分类判定用同一个归一化，两者必须一致）。
+  static bool canExtractApkIcon(String path) =>
+      apkIconExtensions.contains(effectiveExtensionWithDot(path));
+
   /// 返回视频格式的简短标签（大写），用于图标显示。
   /// 例如 .mp4 → "MP4"，.mkv → "MKV"
   static String getVideoTypeLabel(String path) {

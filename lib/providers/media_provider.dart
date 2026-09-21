@@ -3583,17 +3583,19 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   }
 
   static const List<String> _archiveExtensions = ['.zip', '.tar', '.gz', '.bz2', '.rar', '.7z'];
-  static const List<String> _apkExtensions = ['.apk', '.xapk', '.apks', '.aab'];
+  /// 与 [FileUtils.installPackageExtensions] 共用同一份清单：安装包分类、图标提取、
+  /// 安装分发三处必须一致（原先这里漏了 `.apkm`，导致 `.apkm` 能装却不出现在分类里）。
+  static const List<String> _apkExtensions = FileUtils.installPackageExtensions;
 
   Future<void> _scanCustomCategories() async {
     final imagePaths = _customCategoryPaths['图片'] ?? [];
-    _customImages = await _scanCustomPaths(imagePaths, (p) => p.toLowerCase().endsWith('.svg') || FileUtils.isImage(p));
+    _customImages = await _scanCustomPaths(imagePaths, (p) => FileUtils.isSvg(p) || FileUtils.isImage(p));
 
     final videoPaths = _customCategoryPaths['视频'] ?? [];
     _customVideos = await _scanCustomPaths(videoPaths, FileUtils.isVideo);
 
     final screenshotPaths = _customCategoryPaths['截图'] ?? [];
-    _customScreenshots = await _scanCustomPaths(screenshotPaths, (p) => p.toLowerCase().endsWith('.svg') || FileUtils.isImage(p));
+    _customScreenshots = await _scanCustomPaths(screenshotPaths, (p) => FileUtils.isSvg(p) || FileUtils.isImage(p));
 
     final audioPaths = _customCategoryPaths['音频'] ?? [];
     final customAudFiles = await _scanCustomPaths(audioPaths, FileUtils.isAudio);

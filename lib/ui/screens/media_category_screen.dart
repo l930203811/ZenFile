@@ -3469,7 +3469,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         onLongPress: onToggle,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: path.toLowerCase().endsWith('.svg')
+          child: FileUtils.isSvg(path)
               ? SvgPicture.file(
                   File(path),
                   fit: BoxFit.cover,
@@ -3882,7 +3882,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       onTap: () {},
                       onLongPress: () {},
                     )
-                  : path.toLowerCase().endsWith('.svg')
+                  : FileUtils.isSvg(path)
                   ? SvgPicture.file(
                       File(path),
                       fit: BoxFit.cover,
@@ -5266,11 +5266,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = file.path;
     final name = path.split('/').last;
     final iconColor = FileUtils.getColorForFile(name, context);
-    final isApk =
-        name.toLowerCase().endsWith('.apk') ||
-        name.toLowerCase().endsWith('.xapk') ||
-        name.toLowerCase().endsWith('.apks') ||
-        name.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(name);
 
     return ListTile(
       key: ValueKey(path),
@@ -5293,7 +5289,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
             child: isApk
                 ? _ApkThumbnail(path: path, iconColor: iconColor)
-                : path.toLowerCase().endsWith('.svg')
+                : FileUtils.isSvg(path)
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: SvgPicture.file(
@@ -5497,11 +5493,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = file.path;
     final name = path.split('/').last;
     final iconColor = FileUtils.getColorForFile(name, context);
-    final isApk =
-        name.toLowerCase().endsWith('.apk') ||
-        name.toLowerCase().endsWith('.xapk') ||
-        name.toLowerCase().endsWith('.apks') ||
-        name.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(name);
     final dateStr = FileUtils.formatDate(modified);
 
     return GestureDetector(
@@ -6629,7 +6621,7 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
                 ),
               )
             : (_cached != null && _cached!.existsSync()
-                  ? (widget.path.toLowerCase().endsWith('.svg')
+                  ? (FileUtils.isSvg(widget.path)
                         ? SvgPicture.file(
                             _cached!,
                             fit: BoxFit.cover,
@@ -6721,7 +6713,7 @@ class _CachedImageTileState extends State<_CachedImageTile> {
   @override
   Widget build(BuildContext context) {
     final title = widget.asset.title ?? '';
-    final isSvg = title.toLowerCase().endsWith('.svg');
+    final isSvg = FileUtils.isSvg(title);
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -7588,7 +7580,7 @@ class _MediaFolderCover extends StatelessWidget {
       );
     }
     // 图片：直接读取本地文件
-    if (samplePath.toLowerCase().endsWith('.svg')) {
+    if (FileUtils.isSvg(samplePath)) {
       return SvgPicture.file(
         File(samplePath),
         fit: BoxFit.cover,

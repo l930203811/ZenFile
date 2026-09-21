@@ -338,17 +338,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = _displayPath.toLowerCase();
       if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
-      } else if (lowerPath.endsWith('.svg')) {
+      } else if (FileUtils.isSvg(_displayPath)) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
         // 但远程 SVG 需要在 _loadRemoteThumbnail 中下载字节
       }
@@ -377,17 +373,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = _displayPath.toLowerCase();
       if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
-      } else if (lowerPath.endsWith('.svg')) {
+      } else if (FileUtils.isSvg(_displayPath)) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
       }
     }
@@ -710,11 +702,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     final isImg = FileUtils.isImage(_displayPath);
     final isVid = FileUtils.isVideo(_displayPath);
     final isAud = FileUtils.isAudio(_displayPath);
-    final isApk =
-        _displayPath.toLowerCase().endsWith('.apk') ||
-        _displayPath.toLowerCase().endsWith('.xapk') ||
-        _displayPath.toLowerCase().endsWith('.apks') ||
-        _displayPath.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(_displayPath);
 
     if (widget.isSelected) {
       return Icon(
@@ -769,7 +757,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
 
     if (isImg && widget.file.size > 16) {
       // SVG 需要特殊处理（支持本地和远程）
-      if (_displayPath.toLowerCase().endsWith('.svg')) {
+      if (FileUtils.isSvg(_displayPath)) {
         // 远程 SVG 使用已下载的缓存字节
         if (widget.file.isRemote && _remoteThumb != null) {
           return SvgPicture.memory(
@@ -841,7 +829,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     }
 
     // SVG 文件（当 isImg 返回 false 时的兜底处理）
-    if (_displayPath.toLowerCase().endsWith('.svg')) {
+    if (FileUtils.isSvg(_displayPath)) {
       if (widget.file.isRemote && _remoteThumb != null) {
         return SvgPicture.memory(
           _remoteThumb!,

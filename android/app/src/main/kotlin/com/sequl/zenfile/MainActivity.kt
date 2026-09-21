@@ -2463,8 +2463,26 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
+    /**
+     * 去掉 IM（QQ / 微信 / TIM）追加的序号后缀：`app.xapk.1` → `app.xapk`。
+     * 规则与 Dart 侧 `lib/core/im_suffix.dart` 完全一致：末尾 1~4 位纯数字、无前导零、
+     * 且点号前已有扩展名才剥（`.001` 分卷 / `README.1` 不动）。
+     */
+    private fun stripImAppendedSuffix(path: String): String {
+        val dot = path.lastIndexOf('.')
+        if (dot <= 0 || dot == path.length - 1) return path
+        val tail = path.substring(dot + 1)
+        if (tail.length > 4) return path
+        if (tail[0] == '0') return path
+        if (!tail.all { it in '0'..'9' }) return path
+        if (!path.substring(0, dot).contains('.')) return path
+        return path.substring(0, dot)
+    }
+
     private fun getApkIcon(apkPath: String): ByteArray? {
-        val lowerPath = apkPath.lowercase()
+        // bundle（.xapk/.apks/.apkm）靠扩展名分流到「解压取 icon.png / base.apk」分支；
+        // 被 IM 改名成 `app.xapk.1` 时该判定失效 → 落到按内容解析 zip 的分支 → 拿不到图标。
+        val lowerPath = stripImAppendedSuffix(apkPath.lowercase())
         if (lowerPath.endsWith(".xapk") || lowerPath.endsWith(".apks") || lowerPath.endsWith(".apkm")) {
             return try {
                 val zipFile = java.util.zip.ZipFile(apkPath)

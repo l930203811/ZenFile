@@ -1087,8 +1087,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                         imgFile != null &&
                         imgFile.path.toLowerCase().endsWith('.avif');
                     final bool isSvg =
-                        imgFile != null &&
-                        imgFile.path.toLowerCase().endsWith('.svg');
+                        imgFile != null && FileUtils.isSvg(imgFile.path);
 
                     if (isSvg) {
                       return PhotoViewGalleryPageOptions.customChild(
