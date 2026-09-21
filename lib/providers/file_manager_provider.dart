@@ -488,9 +488,20 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    // 仅保留默认启动图标别名。旧版本 bundled 的 design_* 备用图标已移除以缩减 APK；
-    // 启动时 MainActivity.onCreate 已强制启用 MainActivityDefault。
-    await AppManagerService.changeAppIcon('com.sequl.zenfile.MainActivityDefault');
+    // 预设备用图标 → 切换对应 activity-alias（桌面图标随 alias 启用状态变化）。
+    // 与 AndroidManifest / MainActivity.changeAppIcon 中的别名一一对应；
+    // 未匹配（如旧版本遗留的 design_*）回退默认别名。
+    final alias = switch (val) {
+      'classic2' => 'com.sequl.zenfile.MainActivityClassic2',
+      'classic3' => 'com.sequl.zenfile.MainActivityClassic3',
+      'cyberpunk' => 'com.sequl.zenfile.MainActivityCyberpunk',
+      'glassmorphism' => 'com.sequl.zenfile.MainActivityGlassmorphism',
+      'm3_expressive' => 'com.sequl.zenfile.MainActivityM3Expressive',
+      'minimal_flat' => 'com.sequl.zenfile.MainActivityMinimalFlat',
+      'neumorphism' => 'com.sequl.zenfile.MainActivityNeumorphism',
+      _ => 'com.sequl.zenfile.MainActivityDefault',
+    };
+    await AppManagerService.changeAppIcon(alias);
     notifyListeners();
   }
 
