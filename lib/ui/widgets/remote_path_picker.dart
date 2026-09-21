@@ -4,7 +4,118 @@ import '../../providers/file_manager_provider.dart';
 import '../../services/network_connections_service.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/remote/remote_client.dart';
+import 'file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+
+/// 在当前远程目录下新建一个文件夹。
+///
+/// 供「远程目录选择器」复用（分类页远程加号 / 媒体分类设置 / 保险箱关联远程 /
+/// 设置-备份与恢复的自定义远程目录）。弹输入框 → 调 [client.createDirectory]。
+/// 返回 true 表示创建成功，由调用方负责刷新列表。
+/// 取消或名称为空返回 false（不算失败，不提示）。
+Future<bool> createRemoteFolderInteractive({
+  required BuildContext context,
+  required RemoteClient client,
+  required String currentPath,
+}) async {
+  final l10n = L10n.of(context);
+  final input = await FileActionDialogs.showTextInputDialog(
+    context,
+    title: l10n.msgf3a485df,
+    hint: l10n.msgfba1f416,
+    actionText: l10n.ui_create,
+  );
+  final name = input?.trim() ?? '';
+  if (name.isEmpty) return false;
+  final base = currentPath.endsWith('/') ? currentPath : '$currentPath/';
+  try {
+    await client.createDirectory('$base$name');
+    return true;
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.e3(e)), behavior: SnackBarBehavior.floating),
+      );
+    }
+    return false;
+  }
+}
+
+/// 远程目录选择器的底部操作栏（两套选择器共用，保证行为与排版一致）。
+///
+/// ⚠️ 排版约束（2026-09-21 真机回归）：低 DPI / 系统大字号设备上，其它语言的
+/// 长文案（德语 `Neuer Ordner` + `Abbrechen` + `Diesen Ordner auswählen`）
+/// 三个按钮挤在同一行时，会把**主按钮整个顶出屏幕右侧**（真机上只看到
+/// "Diesen…" 被裁掉）。故：
+///   ① 次要操作（新建文件夹 / 取消）单独一行，主操作（选择此文件夹）**独占整行**；
+///   ② 每个文案都带 `ellipsis` 兜底 —— 任何宽度 × 任何字号都只会省略、不会溢出。
+Widget buildRemotePickerActionBar({
+  required BuildContext context,
+  required VoidCallback? onCreateFolder,
+  required VoidCallback? onSelect,
+  required VoidCallback onCancel,
+}) {
+  final l10n = L10n.of(context);
+  return SafeArea(
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: TextButton.icon(
+                  onPressed: onCreateFolder,
+                  icon: const Icon(Icons.create_new_folder_outlined, size: 18),
+                  label: Text(
+                    l10n.msgf3a485df,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: TextButton(
+                  onPressed: onCancel,
+                  child: Text(
+                    l10n.ui_cancel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onSelect,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check, size: 18),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      l10n.ui_select_this_folder,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 /// 显示远程服务器目录选择器，返回 `remote://{connectionId}|{path}` 格式的路径。
 Future<String?> showRemotePathPicker(BuildContext context) async {
@@ -180,6 +291,20 @@ class _RemoteDirectoryPickerPageState extends State<_RemoteDirectoryPickerPage> 
     Navigator.of(context).pop(remotePath);
   }
 
+  /// 在当前远程目录下新建文件夹，成功后刷新当前目录列表。
+  Future<void> _createFolder() async {
+    final client = _client;
+    if (client == null) return;
+    final created = await createRemoteFolderInteractive(
+      context: context,
+      client: client,
+      currentPath: _currentPath,
+    );
+    if (created && mounted) {
+      await _listDir(_currentPath, forceRefresh: true);
+    }
+  }
+
   void _goUp() {
     final parts = _currentPath.split('/').where((s) => s.isNotEmpty).toList();
     if (parts.isNotEmpty) {
@@ -287,23 +412,11 @@ class _RemoteDirectoryPickerPageState extends State<_RemoteDirectoryPickerPage> 
                       ),
                   ],
                 ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ui_cancel)),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                onPressed: _isConnecting || _errorMsg.isNotEmpty ? null : _selectCurrent,
-                icon: const Icon(Icons.check, size: 18),
-                label: Text(l10n.ui_select_this_folder),
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: buildRemotePickerActionBar(
+        context: context,
+        onCreateFolder: (_isConnecting || _errorMsg.isNotEmpty) ? null : _createFolder,
+        onSelect: _isConnecting || _errorMsg.isNotEmpty ? null : _selectCurrent,
+        onCancel: () => Navigator.of(context).pop(),
       ),
     );
   }

@@ -141,7 +141,37 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   Widget _buildPathBreadcrumb(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
     final currentPath = provider.currentPath;
-    final parts = currentPath.split('/').where((n) => n.isNotEmpty).toList();
+    // 面包屑标签与对应「可导航路径」成对出现。
+    // 远程/远程加密目录必须用 `remote://{connId}|{path}` 形式：若按 '/' 切分，
+    // 会得到 '/remote:'、'/cryptremote:' 这类畸形路径——点进去要么被静默吞掉，
+    // 要么被误路由进加密分支用垃圾服务端路径列目录而挂起（页面冻结）。
+    // 见 WORKLOG「远程加解密后导航冻结」修复。
+    final bool isRemotePath =
+        currentPath.startsWith('remote://') || currentPath.startsWith('cryptremote://');
+    late final List<String> labels;
+    late final List<String> targets;
+    if (isRemotePath) {
+      final barIdx = currentPath.indexOf('|');
+      final prefix = currentPath.substring(0, barIdx + 1); // 'remote://connId|' / 'cryptremote://connId|'
+      final serverPath = currentPath.substring(barIdx + 1);
+      final segs = serverPath.split('/').where((n) => n.isNotEmpty).toList();
+      final connName = provider.activeTab.remoteConnection?.name;
+      labels = [
+        if (connName != null && connName.isNotEmpty) connName else currentPath.substring(0, barIdx),
+        ...segs,
+      ];
+      targets = [
+        '$prefix/',
+        for (int k = 0; k < segs.length; k++) '$prefix/${segs.sublist(0, k + 1).join('/')}',
+      ];
+    } else {
+      final segs = currentPath.split('/').where((n) => n.isNotEmpty).toList();
+      labels = segs.isEmpty ? [L10n.of(context).msgc2b9f4b9] : segs;
+      targets = [
+        '/',
+        for (int k = 0; k < segs.length; k++) '/${segs.sublist(0, k + 1).join('/')}',
+      ];
+    }
 
     // 自动滚动到末尾
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -158,11 +188,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     // 这样左项的右箭头凸出恰好填入右项的左凹陷，无缝隙也无覆盖。
     const overlap = 8.0;
 
-    // 路径段为空时（如根目录），也显示一个可点击的“根目录”段，避免地址栏空白。
-    final segments = parts.isEmpty
-        ? [L10n.of(context).msgc2b9f4b9]
-        : parts;
-
     return Listener(
       // 面包屑水平滑动不触发 home 的页面左右切换：按下瞬间置位，home 据此跳过本次手势追踪
       onPointerDown: (_) => provider.setBreadcrumbInteracting(true),
@@ -177,12 +202,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: List.generate(segments.length, (index) {
+          children: List.generate(labels.length, (index) {
             final isFirst = index == 0;
-            final isLast = index == segments.length - 1;
-            final targetPath = parts.isEmpty
-                ? '/'
-                : '/${parts.sublist(0, index + 1).join('/')}';
+            final isLast = index == labels.length - 1;
+            final targetPath = targets[index];
             return Container(
               // 负边距让后一项真正向左 overlap，消除 Row 布局在绘制位置之外的额外空隙。
               margin: EdgeInsets.only(left: isFirst ? 0 : -overlap),
@@ -192,7 +215,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                 },
                 child: _buildBreadcrumbItem(
                   context, theme,
-                  label: segments[index],
+                  label: labels[index],
                   isFirst: isFirst,
                   isActive: isLast,
                 ),
@@ -845,12 +868,24 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         }
         break;
       case 'encrypt':
-        await _handleEncrypt(context, provider, path);
+        // 远程条目（普通远程目录 / 远程加密目录）：加密＝**原地**加密
+        // （下载 → 加密文件名与内容 → 回写同一远程目录 → 删原明文）。
+        // 旧实现一律落到本地加密链路，对远程路径必然抛
+        // 「未找到对应的加密挂载点」（用户反馈：点加密就报错）。
+        if (provider.activeTab.isRemote ||
+            path.startsWith('remote://') ||
+            path.startsWith('cryptremote://')) {
+          await _encryptRemoteInPlace(context, provider, [path]);
+        } else {
+          await _handleEncrypt(context, provider, path);
+        }
         break;
       case 'decrypt':
-        // 远程加密标签页：密文在后端，解密＝把远程密文解密后保存到本地
-        if (provider.activeTab.isCryptRemote) {
-          await _decryptDownloadRemoteCrypt(context, provider, [path]);
+        // 远程加密标签页：密文在后端，解密＝解密到本地 + 明文回写替换远程原密文
+        if (provider.activeTab.isCryptRemote ||
+            provider.activeTab.isRemote ||
+            path.startsWith('cryptremote://')) {
+          await _decryptRemoteInPlace(context, provider, [path]);
         } else {
           await _handleDecrypt(context, provider, path);
         }
@@ -1003,13 +1038,22 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
   }
 
-  /// 远程加密目录：把选中的远程密文条目解密后保存到本地
-  Future<void> _decryptDownloadRemoteCrypt(
+  /// 远程：把选中的密文条目解密到本地并回写替换远程原密文
+  Future<void> _decryptRemoteInPlace(
     BuildContext context,
     FileManagerProvider provider,
     List<String> virtualPaths,
   ) async {
-    await BulkCryptActions.decryptDownloadRemoteCrypt(context, provider, virtualPaths);
+    await BulkCryptActions.decryptRemoteInPlace(context, provider, virtualPaths);
+  }
+
+  /// 远程：把选中的明文条目**原地**加密（下载→加密→回写→删原明文）
+  Future<void> _encryptRemoteInPlace(
+    BuildContext context,
+    FileManagerProvider provider,
+    List<String> paths,
+  ) async {
+    await BulkCryptActions.encryptRemoteInPlace(context, provider, paths);
   }
 
   /// 新建文件/文件夹失败的统一反馈。

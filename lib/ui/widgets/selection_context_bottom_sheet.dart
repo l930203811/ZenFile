@@ -311,6 +311,15 @@ class SelectionContextBottomSheet extends StatelessWidget {
           if (provider.activeTab.isCryptRemote) {
             // 远程加密目录：加密＝选择本地文件加密后上传到当前远程目录
             await BulkCryptActions.encryptUploadRemoteCrypt(effectiveContext, provider);
+          } else if (provider.activeTab.isRemote) {
+            // 普通远程目录：加密＝**原地**加密（下载→加密→回写→删原明文）。
+            // 旧实现落到本地加密链路，对远程路径必然抛
+            // 「未找到对应的加密挂载点」（用户反馈：点加密就报错）。
+            await BulkCryptActions.encryptRemoteInPlace(
+              effectiveContext,
+              provider,
+              provider.selectedPaths.toList(),
+            );
           } else {
             await BulkCryptActions.encryptSelected(effectiveContext, provider);
           }
@@ -319,9 +328,9 @@ class SelectionContextBottomSheet extends StatelessWidget {
           await BulkCryptActions.encryptUploadRemoteCrypt(effectiveContext, provider);
         } else if (action == 'decrypt') {
           final effectiveContext = outerContext ?? context;
-          if (provider.activeTab.isCryptRemote) {
-            // 远程加密目录：解密＝把远程密文解密后保存到本地（目录递归）
-            await BulkCryptActions.decryptDownloadRemoteCrypt(
+          if (provider.activeTab.isCryptRemote || provider.activeTab.isRemote) {
+            // 远程：解密＝解密到本地 + 明文回写替换远程原密文（目录递归）
+            await BulkCryptActions.decryptRemoteInPlace(
               effectiveContext,
               provider,
               provider.selectedPaths.toList(),
@@ -424,10 +433,9 @@ class SelectionContextBottomSheet extends StatelessWidget {
               child: Row(children: [
                 Icon(Icons.lock_open, size: 20, color: Theme.of(context).colorScheme.primary),
                 SizedBox(width: 12),
-                // 远程加密目录里「解密」＝解密并下载到本地，用更贴切的文案
-                Text(isCryptRemote
-                    ? L10n.of(context).crypt_remote_download
-                    : L10n.of(context).crypt_action_decrypt),
+                // 远程「解密」＝解密到本地 + 回写替换远程原密文（真·原地解密），
+                // 不再是「只下载到本地」，文案统一成「解密」。
+                Text(L10n.of(context).crypt_action_decrypt),
               ]),
             ),
           if (anyPlain || anyEncrypted) const PopupMenuDivider(),

@@ -422,10 +422,25 @@ class _PaneBrowserState extends State<PaneBrowser> {
         await provider.extractArchiveDirectly(context, path);
         break;
       case 'encrypt':
-        await _handleEncrypt(context, provider, path);
+        // 远程条目：走**原地**加密（下载 → 加密文件名与内容 → 回写 → 删原明文）。
+        // 旧实现一律落到本地加密链路，远程路径必然抛「未找到对应的加密挂载点」。
+        if (provider.activeTab.isRemote ||
+            path.startsWith('remote://') ||
+            path.startsWith('cryptremote://')) {
+          await BulkCryptActions.encryptRemoteInPlace(context, provider, [path]);
+        } else {
+          await _handleEncrypt(context, provider, path);
+        }
         break;
       case 'decrypt':
-        await _handleDecrypt(context, provider, path);
+        // 远程密文：解密到本地 + 明文回写替换远程原密文
+        if (provider.activeTab.isCryptRemote ||
+            provider.activeTab.isRemote ||
+            path.startsWith('cryptremote://')) {
+          await BulkCryptActions.decryptRemoteInPlace(context, provider, [path]);
+        } else {
+          await _handleDecrypt(context, provider, path);
+        }
         break;
       case 'open_with':
         // 与单窗口 directory_screen 的 _handleAction 保持一致

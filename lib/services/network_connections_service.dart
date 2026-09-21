@@ -90,7 +90,16 @@ class NetworkConnectionsService {
   /// 服务再反向调用 `FileManagerProvider.createRemoteClient` 就会形成环。
   /// 本方法无 UI / 无 crypt 依赖，可被两侧安全复用，逻辑与
   /// [FileManagerProvider.createRemoteClient] 保持一致。
+  /// 测试注入点：非 null 时由用例提供伪造的 [RemoteClient]。
+  ///
+  /// 供「远程密文解密到本地 / 远程原地加解密」这类上层链路写集成测试用
+  /// （本项目的约定：不要靠加日志让用户反复复现，给关键类留注入点本机验证）。
+  /// 生产环境恒为 null，走下方真实协议分支。
+  static RemoteClient Function(NetworkConnectionModel conn)? builderForTest;
+
   static RemoteClient buildRemoteClient(NetworkConnectionModel conn) {
+    final fake = builderForTest;
+    if (fake != null) return fake(conn);
     // 一律走 detectRemoteProtocolKind（包含匹配）而非 `conn.type == 'XXX'`：
     // type 可能是本地化标签，精确比较在换语言 / 编辑老连接时会失配并抛
     // ArgumentError('Unsupported connection type')，表现为整条连接打不开。

@@ -6,6 +6,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -2099,7 +2100,11 @@ class FileManagerProvider extends ChangeNotifier {
       size: entry.size,
       modified: entry.modified,
       remoteSource: remote,
-      isEncrypted: true,
+      // ⚠️ 不能恒为 true：远程加密目录里可能有**已经不是密文**的条目
+      // （原地解密后回写的明文、或用户手工丢进目录的普通文件）。恒为 true 会让
+      // 这些条目也显示 🔒 并只提供「解密」——点了必然解密失败，也没法再加密。
+      // 以枚举时的解密结果为准（[RemoteCryptDirectoryLister] 已按名字做过往返校验）。
+      isEncrypted: entry.isEncrypted,
     );
   }
 
@@ -2495,11 +2500,57 @@ class FileManagerProvider extends ChangeNotifier {
     return base;
   }
 
+  /// `cryptremote://{connId}|{serverPath}` 的条目**是否真的是密文**。
+  ///
+  /// 判定用「名字能否按挂载点配置往返解密」（与枚举层
+  /// [RemoteCryptDirectoryLister] 同一套信号，零网络开销）：能往返 ⇒ 密文；
+  /// 不能 ⇒ 它是加密目录里的一份**普通文件**（原地解密回写的明文、或用户手工
+  /// 放进来的文件），应当按普通远程文件打开，而不是硬走密文流式解密。
+  ///
+  /// 挂载点尚未注册时保守返回 true：沿用原有密文链路，失败也有明确报错。
+  bool _remoteCryptPathIsCiphertext(String virtualPath) {
+    try {
+      final mount = CryptStreamServer.instance.findRemoteMount(virtualPath);
+      if (mount == null) return true;
+      final serverPath = mount.virtualToRemoteServerPath(virtualPath);
+      final base = p.posix.basename(serverPath);
+      if (base.isEmpty) return true;
+      return CryptOperations.isCipherFileName(base, mount) ||
+          CryptOperations.isCipherDirName(base, mount);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// `cryptremote://{connId}|{serverPath}` → `remote://{connId}|{serverPath}`。
+  static String _asPlainRemotePath(String virtualPath) =>
+      'remote://${virtualPath.substring('cryptremote://'.length)}';
+
+  /// 测试注入点：加解密临时目录根。非 null 时用它（用例给系统临时目录），
+  /// 真机默认走存储根下的 `ZenFile/.crypt_tmp/<毫秒>`。
+  static String? cryptTempRootOverride;
+
   /// 远程加密临时目录（加密上传时本地落盘密文用）
   Future<Directory> _cryptTmpDir() async {
-    final dir = Directory('/storage/emulated/0/ZenFile/.crypt_tmp/${DateTime.now().millisecondsSinceEpoch}');
+    final dir = Directory(
+      cryptTempRootOverride ??
+          '/storage/emulated/0/ZenFile/.crypt_tmp/${DateTime.now().millisecondsSinceEpoch}',
+    );
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
+  }
+
+  /// 远程解密的默认本地落盘目录。
+  /// - [replaceRemote]=false（纯下载留存本地）：落在共享根 `RemoteDecrypted`，保持旧行为、文件保留。
+  /// - [replaceRemote]=true（解密 + 回写替换服务端原密文）：本地明文只是**中转**，
+  ///   用 per-op 子目录，便于整目录清理（见 `decryptRemoteInPlace` 的 finally）。
+  /// 测试注入点 [cryptTempRootOverride] 会把根重定向到临时目录。
+  String _remoteDecryptDefaultTarget(bool replaceRemote) {
+    final base = cryptTempRootOverride != null
+        ? p.join(cryptTempRootOverride!, 'RemoteDecrypted')
+        : '/storage/emulated/0/ZenFile/RemoteDecrypted';
+    if (!replaceRemote) return base;
+    return p.join(base, '${DateTime.now().millisecondsSinceEpoch}');
   }
 
   /// 当前远程加密标签页对应的挂载点（按需构造）。
@@ -2516,6 +2567,7 @@ class FileManagerProvider extends ChangeNotifier {
     List<String> localPaths, {
     BuildContext? context,
     void Function(String name, double progress)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     if (!activeTab.isCryptRemote || activeTab.remoteClient == null) return;
     if (!await _ensureVaultSession(context)) return;
@@ -2525,8 +2577,18 @@ class FileManagerProvider extends ChangeNotifier {
     final serverParent = mount.virtualToRemoteServerPath(activeTab.currentPath);
     final tmp = await _cryptTmpDir();
     try {
-      for (final localPath in localPaths) {
-        await _encryptUploadEntry(localPath, client, mount, serverParent, tmp.path, onProgress);
+      // 条目级进度折算成整体进度：第 i 条占 [i/n, (i+1)/n]（与本地批量加解密一致）
+      final n = localPaths.length;
+      for (var i = 0; i < n; i++) {
+        await _encryptUploadEntry(
+          localPaths[i],
+          client,
+          mount,
+          serverParent,
+          tmp.path,
+          onProgress == null ? null : (name, prog) => onProgress(name, (i + prog) / n),
+          onFileProgress: onFileProgress,
+        );
       }
       await loadDirectory(activeTab.currentPath, showLoading: false, clearCache: true);
     } finally {
@@ -2545,6 +2607,7 @@ class FileManagerProvider extends ChangeNotifier {
     String? profileId,
     BuildContext? context,
     void Function(String name, double progress)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     if (!await _ensureVaultSession(context)) return;
     RcloneCryptConfig? config = profileId != null
@@ -2572,8 +2635,17 @@ class FileManagerProvider extends ChangeNotifier {
       final tmp = await _cryptTmpDir();
       try {
         final serverParent = mount.virtualToRemoteServerPath('cryptremote://$connId|$serverPath');
-        for (final localPath in localPaths) {
-          await _encryptUploadEntry(localPath, client, mount, serverParent, tmp.path, onProgress);
+        final n = localPaths.length;
+        for (var i = 0; i < n; i++) {
+          await _encryptUploadEntry(
+            localPaths[i],
+            client,
+            mount,
+            serverParent,
+            tmp.path,
+            onProgress == null ? null : (name, prog) => onProgress(name, (i + prog) / n),
+            onFileProgress: onFileProgress,
+          );
         }
       } finally {
         try {
@@ -2620,6 +2692,8 @@ class FileManagerProvider extends ChangeNotifier {
   /// 会退回「加密后上传」，这对任意字节流都是无损的：读出来仍是用户原来那份文件。
   ///
   /// [plainNameOverride] 供重名冲突「保留两者 / 重命名」传入最终真实名。
+  /// [onFileProgress] 为当前文件的**字节级**进度（已, 总量）：加密与上传各占一半，
+  /// 分母是「加密前明文字节 × 2」，保证单调不回退（供双层圆环进度弹窗的内圈）。
   Future<void> _encryptUploadEntry(
     String localPath,
     RemoteClient client,
@@ -2628,6 +2702,7 @@ class FileManagerProvider extends ChangeNotifier {
     String tempDir,
     void Function(String name, double progress)? onProgress, {
     String? plainNameOverride,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
     final isDir = await Directory(localPath).exists();
     final base = p.basename(localPath);
@@ -2645,7 +2720,15 @@ class FileManagerProvider extends ChangeNotifier {
       await client.createDirectory(serverDir);
       final entries = Directory(localPath).listSync();
       for (final e in entries) {
-        await _encryptUploadEntry(e.path, client, mount, serverDir, tempDir, onProgress);
+        await _encryptUploadEntry(
+          e.path,
+          client,
+          mount,
+          serverDir,
+          tempDir,
+          onProgress,
+          onFileProgress: onFileProgress,
+        );
       }
       onProgress?.call(plainName, 1.0);
       return;
@@ -2653,6 +2736,10 @@ class FileManagerProvider extends ChangeNotifier {
 
     final encName = mount.crypt.encryptFileName(plainName);
     final serverDest = _joinRemotePath(serverParent, encName);
+    int plainSize = 0;
+    try {
+      plainSize = await File(localPath).length();
+    } catch (_) {}
 
     // ① 已加密直传：内容已是真密文 → 原文件直接上传，不做任何再加密。
     if (nameMatchesDisk &&
@@ -2662,43 +2749,61 @@ class FileManagerProvider extends ChangeNotifier {
       await client.uploadFile(
         localPath,
         serverDest,
-        (prog) => onProgress?.call(plainName, prog),
+        (prog) {
+          onProgress?.call(plainName, prog);
+          if (plainSize > 0) {
+            onFileProgress?.call((prog * plainSize).round(), plainSize * 2);
+          }
+        },
       );
+      if (plainSize > 0) onFileProgress?.call(plainSize * 2, plainSize * 2);
       return;
     }
 
     // ② 普通明文：加密到临时文件后上传（本地不留残）。
+    // 加密走 CryptOperations.encryptFileTo（流式，不把整文件读进内存），
+    // 大文件下比原先的 readAsBytes + CryptFile.write 安全得多。
     final tmp = File('$tempDir/$encName');
-    final cf = await CryptFile.open(tmp.path, mount.crypt, mode: CryptFileMode.write);
-    final bytes = await File(localPath).readAsBytes();
-    await cf.write(0, bytes);
-    await cf.close();
-    await client.uploadFile(tmp.path, serverDest, (prog) => onProgress?.call(plainName, prog));
+    final denom = plainSize > 0 ? plainSize * 2 : 0;
+    await CryptOperations(mount).encryptFileTo(
+      localPath,
+      tmp.path,
+      onFileProgress: denom > 0
+          ? (bytes, _) => onFileProgress?.call(bytes, denom)
+          : null,
+    );
+    if (denom > 0) onFileProgress?.call(plainSize, denom);
+    await client.uploadFile(tmp.path, serverDest, (prog) {
+      onProgress?.call(plainName, prog);
+      if (denom > 0) {
+        onFileProgress?.call(plainSize + (prog * plainSize).round(), denom);
+      }
+    });
+    if (denom > 0) onFileProgress?.call(denom, denom);
     try {
       await tmp.delete();
     } catch (_) {}
   }
 
-  /// 解密下载：把当前远程加密目录下的密文文件/目录解密后保存到本地（默认 Downloads 目录）。
+  /// 解密下载：把远程加密目录下的密文条目解密后**只**保存到本地（不回写远程）。
+  ///
+  /// 保留给「只想取一份明文副本、不动服务端」的场景；浏览页菜单里的「解密」
+  /// 走 [decryptRemoteInPlace]（本地留副本 + 服务端原地换明文）。
   Future<void> decryptDownloadFromRemoteCrypt(
     List<String> virtualPaths, {
     BuildContext? context,
     String? destDir,
     void Function(String name, double progress)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
   }) async {
-    if (!activeTab.isCryptRemote || activeTab.remoteClient == null) return;
-    if (!await _ensureVaultSession(context)) return;
-    final mount = await _activeCryptRemoteMount();
-    if (mount == null) return;
-    final client = activeTab.remoteClient!;
-    final target = destDir ??
-        '/storage/emulated/0/ZenFile/RemoteDecrypted';
-    for (final virtualPath in virtualPaths) {
-      final serverPath = mount.virtualToRemoteServerPath(virtualPath);
-      final plainName = _decryptNameSafe(mount, serverPath, isDir: false);
-      final localDest = p.join(target, plainName);
-      await _decryptDownloadEntry(virtualPath, client, mount, target, localDest, onProgress);
-    }
+    await decryptRemoteInPlace(
+      virtualPaths,
+      context: context,
+      destDir: destDir,
+      replaceRemote: false,
+      onProgress: onProgress,
+      onFileProgress: onFileProgress,
+    );
   }
 
   Future<void> _decryptDownloadEntry(
@@ -2707,8 +2812,10 @@ class FileManagerProvider extends ChangeNotifier {
     CryptMountPoint mount,
     String localParent,
     String localDest,
-    void Function(String name, double progress)? onProgress,
-  ) async {
+    void Function(String name, double progress)? onProgress, {
+    /// 当前文件的**明文**字节进度（已解密字节, 该文件解密后总字节）。
+    void Function(int bytes, int total)? onFileProgress,
+  }) async {
     final serverPath = mount.virtualToRemoteServerPath(virtualPath);
     final plainName = _decryptNameSafe(mount, serverPath, isDir: false);
     final isDir = await _remoteCryptIsDir(mount, virtualPath);
@@ -2718,7 +2825,15 @@ class FileManagerProvider extends ChangeNotifier {
       final entries = await lister.listDirectory(virtualPath, showHidden: true, onlyEncrypted: false);
       for (final e in entries) {
         final childLocal = p.join(localDest, e.name);
-        await _decryptDownloadEntry(e.physicalPath, client, mount, localDest, childLocal, onProgress);
+        await _decryptDownloadEntry(
+          e.physicalPath,
+          client,
+          mount,
+          localDest,
+          childLocal,
+          onProgress,
+          onFileProgress: onFileProgress,
+        );
       }
       return;
     }
@@ -2734,9 +2849,442 @@ class FileManagerProvider extends ChangeNotifier {
       await raf.writeFrom(data);
       pos += data.length;
       onProgress?.call(plainName, decryptedSize > 0 ? pos / decryptedSize : 1.0);
+      onFileProgress?.call(pos, decryptedSize);
     }
     await raf.close();
     await rc.close();
+  }
+
+  // ── 远程原地加密 / 解密（与本地「原地加密 / 原地解密」语义对齐）──────────
+  //
+  // 远程没有本地磁盘可以直接改写，因此实现为：
+  //   **下载 → 本地加/解密 → 回写覆盖原位置 → 删除原件**。
+  //
+  // 安全约定（必须保持）：**先上传（回写）成功，才删除原件**。中途失败只会
+  // 留下「新文件 + 原件」并存的中间态，绝不会出现两边都没有的空窗。
+
+  /// 把浏览页条目路径解析成远程后端**真实路径**。
+  ///
+  /// 兼容三种形态：`remote://{connId}|{path}`、`cryptremote://{connId}|{path}`
+  /// 与裸后端路径（普通远程标签页里 `FileItemModel.path` 就是后端路径）。
+  static String _serverPathFromBrowserPath(String path) {
+    var s = path;
+    if (s.startsWith('remote://')) {
+      s = s.substring('remote://'.length);
+    } else if (s.startsWith('cryptremote://')) {
+      s = s.substring('cryptremote://'.length);
+    }
+    final bar = s.indexOf('|');
+    if (bar >= 0) s = s.substring(bar + 1);
+    return s;
+  }
+
+  /// 解析/构造条目所属的远程加密挂载点。
+  ///
+  /// - [rawPath] 是 `cryptremote://…`（远程加密标签页内）→ 复用已注册挂载点，
+  ///   否则按登记表即时构造（与浏览层 `loadDirectory` 同一套解析）；
+  /// - 是普通后端路径（普通远程目录）→ 以**条目所在目录**为密文根构造临时挂载点，
+  ///   即「原地加密后该目录成为加密根」，与本地原地加密的语义一致。
+  Future<CryptMountPoint?> _resolveRemoteMountForInPlace(
+    String rawPath, {
+    required String connId,
+    required RcloneCryptConfig config,
+    String? profileId,
+  }) async {
+    if (rawPath.startsWith('cryptremote://')) {
+      final existing = CryptStreamServer.instance.findRemoteMount(rawPath);
+      if (existing != null) return existing;
+      return _buildRemoteMountForPath(rawPath);
+    }
+    final serverPath = _serverPathFromBrowserPath(rawPath);
+    if (serverPath.isEmpty) return null;
+    return CryptMountPoint.remote(
+      connId: connId,
+      basePath: p.posix.dirname(serverPath),
+      config: config,
+      profileId: profileId,
+    );
+  }
+
+  /// LIST 远程目录并建立「名字 → 条目」索引（用于判型/取大小）。
+  ///
+  /// ⚠️ 强制真实 LIST（`forceRefresh: true`）：原地加解密会立刻改变服务端条目，
+  /// 页面缓存里的旧类型/旧大小会让流程走错分支。
+  Future<Map<String, RemoteFileItem>> _listRemoteIndex(
+    RemoteClient client,
+    String serverDir,
+  ) async {
+    try {
+      final items = await client.listDirectory(serverDir, forceRefresh: true);
+      return {for (final it in items) it.name: it};
+    } catch (e) {
+      debugPrint('[ZenFile] LIST 远程目录失败 $serverDir: $e');
+      return <String, RemoteFileItem>{};
+    }
+  }
+
+  /// 递归删除远程条目（部分协议 `delete(path, isDir)` 只删空目录，这里自底向上兜底）。
+  Future<void> _deleteRemoteTree(
+    RemoteClient client,
+    String serverPath,
+    bool isDir,
+  ) async {
+    if (!isDir) {
+      await client.delete(serverPath, false);
+      return;
+    }
+    List<RemoteFileItem> children;
+    try {
+      children = await client.listDirectory(serverPath, forceRefresh: true);
+    } catch (_) {
+      children = const [];
+    }
+    for (final child in children) {
+      await _deleteRemoteTree(
+        client,
+        _joinRemotePath(serverPath, child.name),
+        child.isDirectory,
+      );
+    }
+    await client.delete(serverPath, true);
+  }
+
+  /// 把本地明文目录树按**明文名**上传到远程目录（原地解密的回写阶段用）。
+  Future<void> _uploadPlainTree(
+    Directory dir,
+    RemoteClient client,
+    String serverDir,
+  ) async {
+    await client.createDirectory(serverDir);
+    for (final entity in dir.listSync()) {
+      final name = p.basename(entity.path);
+      final dest = _joinRemotePath(serverDir, name);
+      if (entity is Directory) {
+        await _uploadPlainTree(entity, client, dest);
+      } else if (entity is File) {
+        await client.uploadFile(entity.path, dest, (_) {});
+      }
+    }
+  }
+
+  /// 远程原地加密：把远程明文条目加密后写回**同一远程目录**。
+  ///
+  /// [paths] 兼容 `cryptremote://{connId}|{serverPath}` 虚拟路径（加密标签页里
+  /// 混入的明文条目）与普通远程目录里的后端真实路径。
+  ///
+  /// 单条目流程：下载到本地临时目录 → 按挂载点配置加密**文件名 + 内容** →
+  /// 上传回原父目录 → 成功后删除原明文（目录递归）。
+  ///
+  /// ⚠️ 加密后服务端文件名变成密文名，普通远程列表会显示成一串乱码名；因此这里
+  /// **同时把该目录登记为「关联远程加密目录」**（与本地原地加密登记父目录同理），
+  /// 之后浏览该目录会自动切换成客户端解密视图（明文名 + 🔒 角标）。
+  ///
+  /// [onProgress] 为**条目级**进度（0~1，已折算成多条目总进度），
+  /// [onFileProgress] 为当前条目的**字节级**进度（下载 + 上传两段合计）。
+  Future<void> encryptRemoteInPlace(
+    List<String> paths, {
+    BuildContext? context,
+    void Function(String name, double progress)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
+  }) async {
+    if (paths.isEmpty) return;
+    if (!await _ensureVaultSession(context)) return;
+    final conn = activeTab.remoteConnection;
+    final client = activeTab.remoteClient;
+    if (conn == null || client == null) throw StateError('远程连接不可用');
+    final config = await VaultCryptService.instance.getMasterConfig();
+    if (config == null) throw StateError('未配置加密主密码');
+    final activeProfile = await CryptProfileService.instance.activeProfile();
+
+    final total = paths.length;
+    final tmpDir = await _cryptTmpDir();
+    // 待登记为「关联远程加密目录」的目录（原地加密后它们即密文根）。
+    // 已被登记表覆盖的目录（含子目录）不重复登记——加密目录内部再加密一个条目时，
+    // 父目录已经是一个密文子目录，把它当成新的密文根会把整个加密视图搞乱。
+    final registeredDirs = <String>{};
+    List<RemoteCryptDirRecord> knownRemoteDirs = const [];
+    try {
+      knownRemoteDirs = await CryptMountService.loadRemoteEncryptedDirs();
+    } catch (_) {}
+    try {
+      for (var i = 0; i < total; i++) {
+        if (_isOperationCancelled) throw Exception('Cancelled');
+        final raw = paths[i];
+        final serverPath = _serverPathFromBrowserPath(raw);
+        if (serverPath.isEmpty) continue;
+        final parentServer = p.posix.dirname(serverPath);
+        final baseName = p.posix.basename(serverPath);
+        final mount = await _resolveRemoteMountForInPlace(
+          raw,
+          connId: conn.id,
+          config: config,
+          profileId: activeProfile?.id,
+        );
+        if (mount == null) continue;
+
+        final index = await _listRemoteIndex(client, parentServer);
+        final info = index[baseName];
+        if (info == null) continue; // 已被外部删除
+        final isDir = info.isDirectory;
+        final itemBytes = isDir ? 0 : info.size.clamp(0, 1 << 62);
+
+        // 进度：条目 i 占 [i, i+1]，条目内「下载」占前半段、「加密上传」占后半段。
+        void emitOverall(double fileFrac) =>
+            onProgress?.call(baseName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
+        // 字节进度：下载 d∈[0,size] + 上传 u∈[0,size]，分母 2*size，保证单调不回退。
+        void emitBytes(int downloaded, int uploaded) {
+          if (itemBytes <= 0) {
+            onFileProgress?.call(0, 0);
+            return;
+          }
+          onFileProgress?.call(downloaded + uploaded, itemBytes * 2);
+        }
+
+        emitOverall(0);
+        emitBytes(0, 0);
+
+        final localTmp = p.join(tmpDir.path, baseName);
+        if (isDir) {
+          await _downloadRemoteDirectory(client, serverPath, localTmp);
+          emitOverall(0.5);
+        } else {
+          await client.downloadFile(serverPath, localTmp, (prog) {
+            emitOverall(0.5 * prog);
+            emitBytes((prog * itemBytes).round(), 0);
+          });
+          emitOverall(0.5);
+          emitBytes(itemBytes, 0);
+        }
+
+        // 加密文件名 + 内容后上传回原父目录（复用与「加密上传」完全相同的入口）
+        await _encryptUploadEntry(
+          localTmp,
+          client,
+          mount,
+          parentServer,
+          tmpDir.path,
+          (name, prog) {
+            emitOverall(0.5 + 0.5 * prog);
+            if (itemBytes > 0) emitBytes(itemBytes, (prog * itemBytes).round());
+          },
+          // 加密阶段本身也报字节（大文件加密是纯 CPU 耗时段，没有它内圈会卡住）
+          onFileProgress: (bytes, tot) {
+            if (itemBytes <= 0 || tot <= 0) return;
+            emitBytes(itemBytes, ((bytes / tot) * itemBytes).round());
+          },
+        );
+
+        // 上传成功后才删除原件
+        await _deleteRemoteTree(client, serverPath, isDir);
+        try {
+          if (isDir && Directory(localTmp).existsSync()) {
+            Directory(localTmp).deleteSync(recursive: true);
+          } else if (File(localTmp).existsSync()) {
+            File(localTmp).deleteSync();
+          }
+        } catch (_) {}
+
+        emitOverall(1.0);
+        emitBytes(itemBytes, itemBytes);
+
+        // 「原地加密后该目录即密文根」：登记后浏览层自动切到客户端解密视图
+        // （明文名 + 🔒），否则用户只能看到一串乱码密文名。
+        final alreadyCovered = knownRemoteDirs.any(
+          (r) =>
+              r.connId == conn.id &&
+              (parentServer == r.serverPath ||
+                  parentServer.startsWith('${r.serverPath}/')),
+        );
+        if (!alreadyCovered) registeredDirs.add(parentServer);
+      }
+      for (final dir in registeredDirs) {
+        await CryptMountService.addRemoteEncryptedDir(
+          conn.id,
+          dir,
+          profileId: activeProfile?.id,
+          name: p.posix.basename(dir),
+        );
+      }
+      await refreshCryptMountPoints();
+      await loadDirectory(activeTab.currentPath, showLoading: false, clearCache: true);
+    } finally {
+      try {
+        tmpDir.deleteSync(recursive: true);
+      } catch (_) {}
+    }
+  }
+
+  /// 远程原地解密：把远程密文条目解密后**保存到本地**，并把明文回写到远程原目录
+  /// 替换掉原密文（回写成功后删除原密文，目录递归）。
+  ///
+  /// 与旧的「仅解密下载到本地」相比，用户的诉求是「解密＝真的把这份文件从加密
+  /// 状态里取出来」：本地留一份明文副本，服务端原目录里也换成明文（同名）。
+  ///
+  /// [virtualPaths] 为 `cryptremote://{connId}|{serverEncryptedPath}` 虚拟路径。
+  /// [destDir] 为本地明文副本目录，缺省 `/storage/emulated/0/ZenFile/RemoteDecrypted`。
+  /// [replaceRemote] 为 true（默认）时把明文回写替换掉服务端原密文；为 false 时
+  /// 只取本地副本（等价于旧的「解密下载」，服务端保持密文不动）。
+  Future<void> decryptRemoteInPlace(
+    List<String> virtualPaths, {
+    BuildContext? context,
+    String? destDir,
+    bool replaceRemote = true,
+    void Function(String name, double progress)? onProgress,
+    void Function(int bytes, int total)? onFileProgress,
+  }) async {
+    if (virtualPaths.isEmpty) return;
+    if (!await _ensureVaultSession(context)) return;
+    final client = activeTab.remoteClient;
+    if (client == null) throw StateError('远程连接不可用');
+    final target = destDir ?? _remoteDecryptDefaultTarget(replaceRemote);
+    await Directory(target).create(recursive: true);
+    // 默认落盘目录（未显式指定 [destDir]）且是「解密 + 回写替换」时，本地明文只是
+    // **中转**——整个操作完成后必须自动清理，否则 `RemoteDecrypted` 越积越多
+    // （用户反馈：远程解密后该目录的临时文件没被清理）。
+    // 显式指定 [destDir] 视为用户要保留的落盘位置，不清理；纯下载（replaceRemote=false）
+    // 落盘即最终产物，也不清理。
+    final bool cleanupStaging = destDir == null && replaceRemote;
+
+    final total = virtualPaths.length;
+    final touchedDirs = <String, CryptMountPoint>{};
+    try {
+      for (var i = 0; i < total; i++) {
+        if (_isOperationCancelled) throw Exception('Cancelled');
+        final virtualPath = virtualPaths[i];
+        var mount = CryptStreamServer.instance.findRemoteMount(virtualPath);
+        mount ??= await _buildRemoteMountForPath(virtualPath);
+        if (mount == null) continue;
+        final serverPath = mount.virtualToRemoteServerPath(virtualPath);
+        final parentServer = p.posix.dirname(serverPath);
+        final index = await _listRemoteIndex(client, parentServer);
+        final info = index[p.posix.basename(serverPath)];
+        final isDir = info?.isDirectory ?? false;
+        final plainName = _decryptNameSafe(mount, serverPath, isDir: isDir);
+        final itemBytes =
+            (!isDir && info != null) ? info.size.clamp(0, 1 << 62) : 0;
+
+        // 「解密 + 回写」是两段各占该条目一半；只下载时整段都归解密阶段。
+        final firstSpan = replaceRemote ? 0.5 : 1.0;
+        void emitOverall(double fileFrac) =>
+            onProgress?.call(plainName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
+
+        emitOverall(0);
+        onFileProgress?.call(0, 0);
+
+        final localDest = p.join(target, plainName);
+        if (isDir) await Directory(localDest).create(recursive: true);
+
+        // ① 解密到本地（目录递归）。字节进度按「解密 + 回写」两段折算，
+        //    分母取解密后大小 ×2，保证内圈单调不回退。
+        final byteDenom = itemBytes > 0 ? itemBytes * 2 : 0;
+          await _decryptDownloadEntry(
+            virtualPath,
+            client,
+            mount,
+            target,
+            localDest,
+            (name, prog) => emitOverall(firstSpan * prog),
+            // 0..size 的解密字节映射到「两段分母」的前半段
+            onFileProgress: byteDenom > 0
+                ? (bytes, _) => onFileProgress?.call(bytes, byteDenom)
+                : onFileProgress,
+          );
+          emitOverall(firstSpan);
+
+        if (replaceRemote) {
+          // ② 明文回写到远程原目录（同名替换）
+          final remoteDir = _joinRemotePath(parentServer, plainName);
+          if (isDir) {
+            await _uploadPlainTree(Directory(localDest), client, remoteDir);
+          } else {
+            final size = await File(localDest).length();
+            await client.uploadFile(localDest, remoteDir, (prog) {
+              emitOverall(firstSpan + (1 - firstSpan) * prog);
+              if (size > 0) {
+                onFileProgress?.call(size + (prog * size).round(), size * 2);
+              }
+            });
+          }
+          // ③ 回写成功后才删除原密文
+          await _deleteRemoteTree(client, serverPath, isDir);
+        }
+
+        emitOverall(1.0);
+        if (byteDenom > 0) onFileProgress?.call(byteDenom, byteDenom);
+        touchedDirs[parentServer] = mount;
+      }
+
+      // 目录里已无密文 → 注销「关联远程加密目录」登记（与本地原地解密同理）。
+      // 仍留有密文时保留登记，否则同目录其它密文会又变回乱码名。
+      if (replaceRemote) {
+        await _dropRemoteCryptDirIfEmpty(client, touchedDirs);
+      }
+      await refreshCryptMountPoints();
+      await loadDirectory(activeTab.currentPath, showLoading: false, clearCache: true);
+    } finally {
+      if (cleanupStaging) {
+        try {
+          final dir = Directory(target);
+          if (dir.existsSync()) dir.deleteSync(recursive: true);
+          // 中转父目录（RemoteDecrypted）若已空则一并移除，避免留下空壳目录。
+          final parent = Directory(p.dirname(target));
+          if (parent.existsSync()) {
+            try {
+              if (parent.listSync().isEmpty) parent.deleteSync(recursive: true);
+            } catch (_) {}
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
+  /// 目录内已无密文时注销远程加密目录登记（按登记表的**根目录**判定）。
+  Future<void> _dropRemoteCryptDirIfEmpty(
+    RemoteClient client,
+    Map<String, CryptMountPoint> touchedDirs,
+  ) async {
+    if (touchedDirs.isEmpty) return;
+    try {
+      final records = await CryptMountService.loadRemoteEncryptedDirs();
+      for (final r in records) {
+        final hit = touchedDirs.entries.any(
+          (e) =>
+              e.value.remoteConnId == r.connId &&
+              (e.key == r.serverPath || e.key.startsWith('${r.serverPath}/')),
+        );
+        if (!hit) continue;
+        // 用**登记记录自己的**密码/盐判定残留（该目录可能绑定的是非默认档案）
+        final virtualRoot = 'cryptremote://${r.connId}|${r.serverPath}';
+        var mount = CryptStreamServer.instance.findRemoteMount(virtualRoot);
+        mount ??= await _buildRemoteMountForPath(virtualRoot);
+        if (mount == null) continue;
+        if (await _remoteDirHasCiphertext(client, mount, r.serverPath)) continue;
+        await CryptMountService.removeRemoteEncryptedDir(r.connId, r.serverPath);
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 注销远程加密目录失败: $e');
+    }
+  }
+
+  /// 远程目录内是否仍存在**能按 [mount] 解密**的密文条目。
+  Future<bool> _remoteDirHasCiphertext(
+    RemoteClient client,
+    CryptMountPoint mount,
+    String serverDir,
+  ) async {
+    try {
+      final items = await client.listDirectory(serverDir, forceRefresh: true);
+      for (final it in items) {
+        final isCipher = it.isDirectory
+            ? CryptOperations.isCipherDirName(it.name, mount)
+            : CryptOperations.isCipherFileName(it.name, mount);
+        if (isCipher) return true;
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 检查远程密文残留失败 $serverDir: $e');
+      return true; // 查不到就当作还有密文，宁可保留登记
+    }
+    return false;
   }
 
   /// 远程加密内部复制/移动：把源密文条目复制或移动到目标远程加密目录。
@@ -3884,12 +4432,47 @@ class FileManagerProvider extends ChangeNotifier {
   /// 越过存储根目录。
   String _parentOf(String path) {
     if (path.isEmpty || path == '/') return path;
+    // 远程/远程加密目录：父目录需在「连接根」之上截止，且始终落到合法的
+    // `remote://{connId}|{serverPath}`（即便从 cryptremote:// 向上也退回普通远程
+    // 视图，避免构造出空服务端路径导致挂载点解析失败 / WebDAV 列目录挂起）。
+    if (path.startsWith('remote://') || path.startsWith('cryptremote://')) {
+      final remoteParent = _remoteParentPath(path);
+      return remoteParent ?? path; // 已到连接根：返回自身（上层据此切到本地 tab）
+    }
     final parent = p.dirname(path);
     final resolved = parent.isEmpty ? '/' : parent;
     // 本地路径越过根目录（如 /storage/emulated/0 → /storage/emulated）时回到自身
     if (!activeTab.isRemote && resolved.length < _rootPath.length) return path;
     return resolved;
   }
+
+  /// 计算远程/远程加密虚拟路径的「父目录可导航路径」。
+  ///
+  /// 规则：截掉 `|` 后的服务端路径求 dirname；若已到连接根（dirname 为 `/` 或空），
+  /// 返回普通远程根 `remote://{connId}|/`（绝不返回空服务端路径的 cryptremote://，
+  /// 否则 `_buildRemoteMountForPath` 会返回 null、列目录抛错）。
+  /// 从 `cryptremote://` 向上一律落到普通 `remote://`，让浏览层自动识别视图接管。
+  ///
+  /// 返回 null 仅当路径不含 `|`（非远程路径），调用方应自行兜底。
+  static String? _remoteParentPath(String path) {
+    final barIdx = path.indexOf('|');
+    if (barIdx < 0) return null;
+    final schemePart = path.substring(0, barIdx); // 'remote://connId' / 'cryptremote://connId'
+    final at = schemePart.indexOf('://');
+    if (at < 0) return null;
+    final connId = schemePart.substring(at + 3);
+    final serverPath = path.substring(barIdx + 1);
+    final parentServer = p.posix.dirname(serverPath.isEmpty ? '/' : serverPath);
+    if (parentServer == '/' || parentServer.isEmpty) {
+      return 'remote://$connId|/';
+    }
+    return 'remote://$connId|$parentServer';
+  }
+
+  /// 测试访问器：暴露 [_remoteParentPath] 的路径计算，供导航回归测试使用
+  /// （远程加解密后「向上/返回」需落在合法 `remote://` 路径，否则会冻结）。
+  @visibleForTesting
+  static String? remoteParentPathForTest(String path) => _remoteParentPath(path);
 
   /// 返回当前 tab 的“根路径”：远程取连接自身的 rootPath（如 SMB/WebDAV 共享
   /// 根可能非 '/'），兜底为 '/'；本地为存储根目录。
@@ -4863,16 +5446,22 @@ class FileManagerProvider extends ChangeNotifier {
         !path.startsWith('remote://') &&
         activeTab.isRemote &&
         activeTab.remoteConnection != null) {
-      final connId = activeTab.remoteConnection!.id;
-      if (await _isUnderRemoteCryptDir(connId, path)) {
-        await loadDirectory(
-          'cryptremote://$connId|$path',
-          showLoading: showLoading,
-          clearCache: clearCache,
-          recordHistory: recordHistory,
-          forceRefresh: forceRefresh,
-        );
-        return;
+      // 仅对「真正的服务端路径」做自动识别：以 '/' 开头、且不含 scheme 冒号或 `|`
+      // 分隔符。否则面包屑等入口产生的畸形路径（如 '/cryptremote:'）会被误判命中
+      // 登记表，进而被强制路由进 cryptremote 分支、用垃圾服务端路径列目录——
+      // WebDAV 无超时一直挂起（页面冻结，重进远程目录才恢复）。详见 WORKLOG。
+      if (path.startsWith('/') && !path.contains(':') && !path.contains('|')) {
+        final connId = activeTab.remoteConnection!.id;
+        if (await _isUnderRemoteCryptDir(connId, path)) {
+          await loadDirectory(
+            'cryptremote://$connId|$path',
+            showLoading: showLoading,
+            clearCache: clearCache,
+            recordHistory: recordHistory,
+            forceRefresh: forceRefresh,
+          );
+          return;
+        }
       }
     }
 
@@ -5785,6 +6374,18 @@ class FileManagerProvider extends ChangeNotifier {
     // 顶部地址栏显示成源（本地）pane 的路径。
     final bool targetIsRemote = _tabs[targetTabIndex].isRemote;
 
+    // —— 远程加密目录 → 本地：**原样搬运密文，不自动解密** ——
+    //
+    // 剪贴板里存的是 `FileItemModel.remoteSource`（后端密文全路径 + 密文名），
+    // 所以这里直接走下面的普通远程下载分支即可：落盘的是一份「名字与内容都还是
+    // 密文」的文件，与服务端上的实体逐字节一致。
+    //
+    // ⚠️ 曾在此处加过「边下载边解密」，已被否决：复制/剪切只负责**搬运**，
+    // 不得改变文件的加密状态。要明文请走菜单里的「解密」
+    // （远程 = `decryptRemoteInPlace`：本地留明文副本 + 服务端原地换明文；
+    //  本地 = `decryptInPlace`）。本地加密文件复制到普通目录同理，见
+    // `_cryptAwareTransferFile` 的「密文 → 明文目标」分支。
+
     // 在清除剪贴板之前保存源目录路径，用于后续刷新
     final String? savedSourcePath = _isCut && _clipboardPaths.isNotEmpty
         ? _clipboardPaths.first
@@ -5872,7 +6473,9 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    // 加密感知粘贴：源或目标任一处于加密目录时，逐条走 crypt 传输（自动加/解密）。
+    // 加密感知粘贴：源或目标任一处于加密目录时，逐条走 crypt 传输。
+    // 注意方向语义：**只有「明文写入加密目录」会加密**；「加密文件写入普通目录」
+    // 原样搬运密文、不自动解密（见 `_cryptAwareCopyOrMove` 的分支说明）。
     // 前置会话解锁闸门。放在受限分支之后、主复制循环之前。
     if (!currIsRemote && !activeTab.isRemote && !targetIsRemote) {
       final involvesCrypt = await _pasteInvolvesCrypt();
@@ -9958,10 +10561,16 @@ class FileManagerProvider extends ChangeNotifier {
   /// 加密感知的复制/移动（剪切）单个条目。
   ///
   /// [isCut]=true 为移动（完成后删除源）；false 为复制（保留源）。
-  /// 自动在「明文 ↔ 密文」之间加解密：
-  /// - 密文 → 明文：解密到目标（复制保留源密文；移动删源密文）
-  /// - 明文 → 密文：用目标目录配置加密到目标（复制保留源明文；移动删源明文）
-  /// - 密文 → 密文：跨配置重加密（先解密到临时明文，再加密到目标）
+  ///
+  /// **语义约定（用户明确要求，勿改）**：复制/剪切只负责「搬运」，**不得改变
+  /// 文件的加密状态** —— 密文走到哪都还是密文，不会有任何一步自动解密。
+  /// 要拿到明文只能显式走「解密」。四个分支：
+  /// - 密文 → 明文目标：**原样搬运**密文（磁盘名 + 字节都不动；复制留源，移动删源）
+  /// - 明文 → 密文目标：用目标目录配置加密到目标（复制留源明文；移动删源明文）
+  /// - 密文 → 密文目标：跨配置重加密（先解密到临时明文，再加密到目标）；
+  ///   这是**目标本身是加密目录**的必要步骤（换钥匙不重加密等于写进一份解不开的
+  ///   文件），产物仍是密文，不属于「自动解密」
+  /// - 两端皆明文：普通复制
   /// [onProgress] 为**字节级**进度回调（当前文件已处理字节, 当前文件总字节），
   /// 由调用方（粘贴进度弹窗）聚合显示；缺省时不影响任何行为。
   Future<void> _cryptAwareCopyOrMove({
@@ -10001,6 +10610,45 @@ class FileManagerProvider extends ChangeNotifier {
     if (isCut) MediaProvider.instance?.pruneDeletedMediaPaths([source]);
   }
 
+  /// 测试注入点：只跑 [_cryptAwareCopyOrMove] 的**核心搬运逻辑**（挂载点解析 +
+  /// 明文/密文方向分支），**不做**刷新浏览页、不发 UI 通知。
+  ///
+  /// 为什么需要它：复制/剪切的核心语义（尤其「密文走到哪都还是密文」）值得用本机
+  /// 集成测试锁死，而 `copyItem`/`moveItem` 尾部会 `loadDirectory` 刷新标签页 ——
+  /// 在 `testWidgets` 的 FakeAsync 里真实文件 IO 与刷新会互相等待而挂起，只能靠
+  /// 真机复现。这里把纯逻辑摘出来，用普通 `test()` 即可验证。
+  ///
+  /// 生产链路恒不经过本方法（`copyItem` / `moveItem` / `_pasteCryptAware` 各自直接
+  /// 调 `_cryptAwareCopyOrMove`）。
+  @visibleForTesting
+  Future<void> debugCryptTransfer({
+    required String source,
+    required String destFolder,
+    required bool isCut,
+    void Function(int bytes, int total)? onProgress,
+  }) async {
+    final src = await _analyzeCryptSource(source);
+    final dst = await _analyzeCryptDestDir(destFolder);
+    final plainName = p.basename(source);
+    if (src.isDirectory) {
+      await _cryptAwareTransferDir(
+        src: src,
+        dst: dst,
+        plainName: plainName,
+        isCut: isCut,
+        onProgress: onProgress,
+      );
+    } else {
+      await _cryptAwareTransferFile(
+        src: src,
+        dst: dst,
+        plainName: plainName,
+        isCut: isCut,
+        onProgress: onProgress,
+      );
+    }
+  }
+
   Future<void> _cryptAwareTransferFile({
     required ({
       CryptMountPoint? mount,
@@ -10014,13 +10662,19 @@ class FileManagerProvider extends ChangeNotifier {
     void Function(int bytes, int total)? onProgress,
   }) async {
     if (src.isEncrypted && dst.mount == null) {
-      // 密文 → 明文：解密到目标
-      final destPlain = p.join(dst.physicalDir, plainName);
-      await CryptOperations(src.mount!).decryptFileTo(
-        src.physical,
-        destPlain,
-        onFileProgress: onProgress,
-      );
+      // 密文 → 明文目标：**原样搬运密文，不自动解密**。
+      //
+      // 复制/剪切只负责搬运，不得改变文件的加密状态（用户明确要求：加密文件
+      // 复制到其它目录后「仍然是密文文件，不再自动解密」）。落盘名沿用磁盘上的
+      // **密文名**，这样目标里躺着的是一份可被 crypt 工具/本应用重新识别并使用
+      // 的合法密文文件，而不是「明文名 + 密文内容」那种打开必乱的假文件。
+      //
+      // ⚠️ 不要改回「解密到目标」：那会让「复制」与菜单里的「解密」产生歧义，
+      // 用户无法通过一次复制就静默拿到明文。要明文请走「解密」（本地 =
+      // `VaultCryptService.decryptInPlace`；远程 = `decryptRemoteInPlace`）。
+      // 远端方向同理：远程加密文件复制到本地也是原样搬运密文，见 `_pasteFileToTab`。
+      final diskName = p.basename(src.physical);
+      await _plainCopyPhysical(src.physical, dst.physicalDir, diskName, isDir: false);
       if (isCut) await _deletePhysical(src.physical, isDir: false);
     } else if (!src.isEncrypted && dst.mount != null) {
       // 明文 → 密文：用目标目录配置加密到目标
@@ -10103,13 +10757,10 @@ class FileManagerProvider extends ChangeNotifier {
     void Function(int bytes, int total)? onProgress,
   }) async {
     if (src.isEncrypted && dst.mount == null) {
-      await _decryptDirCryptToPlain(
-        srcMount: src.mount!,
-        srcPhysicalDir: src.physical,
-        destParentDir: dst.physicalDir,
-        plainDirName: plainName,
-        onProgress: onProgress,
-      );
+      // 密文目录 → 明文目标：整棵树**原样搬运密文，不自动解密**（同文件分支）。
+      // 磁盘上的密文目录名与各层密文名都保留，目标里得到一份等价的密文目录。
+      final diskName = p.basename(src.physical);
+      await _plainCopyPhysical(src.physical, dst.physicalDir, diskName, isDir: true);
       if (isCut) await _deletePhysical(src.physical, isDir: true);
     } else if (!src.isEncrypted && dst.mount != null) {
       await _encryptDirPlainToCrypt(
@@ -10257,7 +10908,11 @@ class FileManagerProvider extends ChangeNotifier {
     return (bytes: 0, files: 0);
   }
 
-  /// 加密感知粘贴：源或目标任一处于加密目录时，逐条走 crypt 传输（自动加/解密）。
+  /// 加密感知粘贴：源或目标任一处于加密目录时，逐条走 crypt 传输。
+  ///
+  /// ⚠️ 只做「明文 → 加密目录」的加密；反向（加密文件 → 普通目录）**原样搬运密文**，
+  /// 不会自动解密 —— 这是用户明确要求的产品语义（复制 ≠ 解密）。详见
+  /// `_cryptAwareCopyOrMove`。
   ///
   /// 进度：分母取所有源条目（目录递归）的总字节，分子 = 已完成源条目的**前缀和**
   /// + 当前文件内部已处理字节。历史实现只按「第几个条目」推进（`totalBytes: 1`、
@@ -10434,6 +11089,13 @@ class FileManagerProvider extends ChangeNotifier {
     // crypt 流式服务「边拉取远程密文边本地解密」播放/查看。
     if (path.startsWith('cryptremote://')) {
       if (!await _ensureVaultSession(context)) return;
+      // ⚠️ 加密目录里可能躺着**已不是密文**的条目（原地解密回写的明文、或手工
+      // 放进去的普通文件）：它们的名字解密不出往返一致的结果，硬走「密文流式
+      // 解密」只会失败。这种情况退回普通远程文件打开链路（远程流式/下载打开）。
+      if (!_remoteCryptPathIsCiphertext(path)) {
+        await openFile(context, _asPlainRemotePath(path), forceNative: forceNative);
+        return;
+      }
       await _openRemoteCryptFile(context, path);
       return;
     }
