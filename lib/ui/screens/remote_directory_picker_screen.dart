@@ -9,6 +9,7 @@ import '../../services/remote/remote_client.dart';
 import '../../services/remote/saf_client.dart';
 import '../../services/remote/sftp_client.dart';
 import '../../services/remote/webdav_client.dart';
+import '../widgets/remote_path_picker.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class RemoteDirectoryPickerScreen extends StatefulWidget {
@@ -156,10 +157,23 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
     Navigator.pop(context, _currentPath);
   }
 
+  /// 在当前远程目录下新建文件夹，成功后刷新当前目录列表。
+  Future<void> _createFolder() async {
+    final client = _client;
+    if (client == null) return;
+    final created = await createRemoteFolderInteractive(
+      context: context,
+      client: client,
+      currentPath: _currentPath,
+    );
+    if (created && mounted) {
+      await _loadDirectoryContents(_currentPath);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = L10n.of(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -172,16 +186,6 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
           color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.bold,
         ),
-        actions: [
-          TextButton.icon(
-            onPressed: _isLoading ? null : _selectCurrentFolder,
-            icon: Icon(Icons.check, color: theme.colorScheme.primary),
-            label: Text(
-              l10n.ui_select_this_folder,
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -207,6 +211,12 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
             child: _buildBody(context, theme),
           ),
         ],
+      ),
+      bottomNavigationBar: buildRemotePickerActionBar(
+        context: context,
+        onCreateFolder: (_isLoading || _client == null) ? null : _createFolder,
+        onSelect: _isLoading ? null : _selectCurrentFolder,
+        onCancel: () => Navigator.pop(context),
       ),
     );
   }

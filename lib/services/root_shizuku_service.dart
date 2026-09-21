@@ -224,7 +224,10 @@ class RootShizukuService {
         ? normalizedPath
         : normalizedPath.substring(0, normalizedPath.length - 1);
 
-    // If cleanPath is "/", use empty string prefix to prevent search pattern from becoming //* and //.*
+    // 根目录用「空前缀」表示（旧实现 `for f in "$p"/*` 拼出来才是 `/*`）。
+    // ⚠️ 空前缀只在本函数的候选集里有意义：真正拼 find/ls 命令时由
+    // _listViaShell → shellListDirArg 还原成 `/`，否则命令会带着空参数报错、
+    // 让系统根目录恒为空（过去 root/Shizuku 授权后打开「系统根目录」空白的原因）。
     final searchPrefix = cleanPath == '/' ? '' : cleanPath;
     // FUSE 绕过（见 _toFuseBypassPath 注释）。ES 文件管理器做法一致：
     // 对 Android/data 用底层 ext4 路径执行 glob/stat。
@@ -285,9 +288,15 @@ class RootShizukuService {
   ///   ③ 打开 `fallbackSu`，让原生侧换着形式试 su；
   ///   ④ find `-exec +` 不行 → `find | while read + stat` → `ls -la`，逐级降级。
   static Future<List<FileItemModel>> _listViaShell(String cmdPrefix, {required bool useRoot, required bool showHiddenFiles}) async {
+    // ⚠️ 系统根目录（`/`）在 listFiles 里传下来的是**空前缀**（历史写法 `for f in /*`
+    // 需要它），但 find/ls 必须拿到真正的以 `/` 开头（或非空）的目录参数——
+    // `find "" -maxdepth 1` / `ls -la ""` 会直接报错，导致根目录恒为空
+    // （见 restricted_dir_parser.shellListDirArg 的注释）。这里统一还原。
+    final dir = shellListDirArg(cmdPrefix);
+
     if (!useRoot) {
       // ── Shizuku：与历史实现完全一致，不做改动 ──
-      final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 '
+      final cmd = 'find "$dir" -maxdepth 1 -mindepth 1 '
           '-exec stat -L -c "$_statFormat" {} + 2>/dev/null';
       debugPrint('[ZenFile] Shell command (shizuku): $cmd');
       final output = await runCommand(cmd, useRoot: false);
@@ -318,17 +327,17 @@ class RootShizukuService {
 
     final notes = <String>[];
     for (final (name, build) in strategies) {
-      final cmd = build(cmdPrefix);
+      final cmd = build(dir);
       try {
         final output = await runCommand(cmd, useRoot: true, fallbackSu: true);
         final text = output ?? '';
         final entries = name == 'ls-la'
-            ? parseLsLongOutput(text, dir: cmdPrefix, showHiddenFiles: showHiddenFiles)
+            ? parseLsLongOutput(text, dir: dir, showHiddenFiles: showHiddenFiles)
             : parseStatPipeLines(text, showHiddenFiles: showHiddenFiles);
         if (entries.isNotEmpty) {
           debugPrint('[ZenFile] listFiles(root) ok via $name: ${entries.length} items');
           if (name != 'find+stat') {
-            _logDiag('listFiles(root) 降级到策略 $name 才成功: dir=$cmdPrefix, ${entries.length} 项');
+            _logDiag('listFiles(root) 降级到策略 $name 才成功: dir=$dir, ${entries.length} 项');
           }
           return _toModels(entries);
         }
@@ -340,7 +349,7 @@ class RootShizukuService {
 
     // 全部策略都没拿到条目：把每步的原始输出记进诊断日志（避免再出现
     // 「就是空的，查不到原因」）。仅在受限目录且结果为空时触发。
-    _logDiag('listFiles(root) 全部策略为空: dir=$cmdPrefix; ${notes.join(" || ")}');
+    _logDiag('listFiles(root) 全部策略为空: dir=$dir; ${notes.join(" || ")}');
     return [];
   }
 

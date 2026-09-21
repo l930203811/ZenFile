@@ -1811,7 +1811,47 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg64a6476a": "Default Logo",
-  "@title": {
+
+  "app_icon_classic2": "Classic 2",
+  "@app_icon_classic2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic3": "Classic Gold",
+  "@app_icon_classic3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_cyberpunk": "Cyberpunk",
+  "@app_icon_cyberpunk": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glassmorphism": "Glassmorphism",
+  "@app_icon_glassmorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_m3_expressive": "M3 Expressive",
+  "@app_icon_m3_expressive": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_minimal_flat": "Minimal Flat",
+  "@app_icon_minimal_flat": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_neumorphism": "Neumorphism",
+  "@app_icon_neumorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "Classic 4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3D Gradient",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "Glossy Blue",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },  "@title": {
     "type": "text"
   },
   "title": "App icon switched to {title}",

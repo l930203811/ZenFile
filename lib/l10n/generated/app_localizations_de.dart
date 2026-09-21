@@ -1523,6 +1523,36 @@ class L10nDe extends L10n {
   String get msg64a6476a => 'Standard';
 
   @override
+  String get app_icon_classic2 => 'Klassisch 2';
+
+  @override
+  String get app_icon_classic3 => 'Klassisch Gold';
+
+  @override
+  String get app_icon_cyberpunk => 'Cyberpunk';
+
+  @override
+  String get app_icon_glassmorphism => 'Glasmorphismus';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 Expressiv';
+
+  @override
+  String get app_icon_minimal_flat => 'Minimal Flat';
+
+  @override
+  String get app_icon_neumorphism => 'Neumorphismus';
+
+  @override
+  String get app_icon_classic4 => 'Klassik 4';
+
+  @override
+  String get app_icon_3d_gradient => '3D-Verlauf';
+
+  @override
+  String get app_icon_glossy_blue => 'Glänzendes Blau';
+
+  @override
   String title(Object title) {
     return 'App-Symbol gewechselt zu $title';
   }

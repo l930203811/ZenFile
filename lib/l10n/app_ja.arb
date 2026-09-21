@@ -1808,7 +1808,47 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg64a6476a": "デフォルト",
-  "@title": {
+
+  "app_icon_classic2": "クラシック 2",
+  "@app_icon_classic2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic3": "クラシック ゴールド",
+  "@app_icon_classic3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_cyberpunk": "サイバーパンク",
+  "@app_icon_cyberpunk": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glassmorphism": "グラスモーフィズム",
+  "@app_icon_glassmorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_m3_expressive": "M3 エクスプレッシブ",
+  "@app_icon_m3_expressive": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_minimal_flat": "ミニマル フラット",
+  "@app_icon_minimal_flat": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_neumorphism": "ニューモーフィズム",
+  "@app_icon_neumorphism": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "クラシック4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3Dグラデーション",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "グロッシーブルー",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },  "@title": {
     "type": "text"
   },
   "title": "アプリアイコンを{title}に切り替えました",

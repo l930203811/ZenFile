@@ -1351,12 +1351,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             if (count == 1) {
               if (match.type == AssetType.image) {
                 dimensionsOrDuration = '${match.width} x ${match.height}';
-                mimeType = match.mimeType ?? 'image/${f.path.split('.').last}';
+                mimeType = match.mimeType ?? 'image/${FileUtils.effectiveExtension(f.path)}';
               } else if (match.type == AssetType.video) {
                 final d = Duration(seconds: match.duration);
                 dimensionsOrDuration =
                     '${match.width} x ${match.height} • ${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, "0")}';
-                mimeType = match.mimeType ?? 'video/${f.path.split('.').last}';
+                mimeType = match.mimeType ?? 'video/${FileUtils.effectiveExtension(f.path)}';
               }
             }
           }
@@ -1388,7 +1388,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         if (count == 1) {
           lastMod = modified;
           permissionsStr = permissions;
-          final ext = path_helper.extension(p).toLowerCase();
+          final ext = FileUtils.effectiveExtensionWithDot(p);
           if (widget.mediaType == MediaType.audios) {
             mimeType = 'audio/$ext';
           } else if (widget.mediaType == MediaType.apks) {
@@ -3469,7 +3469,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         onLongPress: onToggle,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: path.toLowerCase().endsWith('.svg')
+          child: FileUtils.isSvg(path)
               ? SvgPicture.file(
                   File(path),
                   fit: BoxFit.cover,
@@ -3882,7 +3882,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       onTap: () {},
                       onLongPress: () {},
                     )
-                  : path.toLowerCase().endsWith('.svg')
+                  : FileUtils.isSvg(path)
                   ? SvgPicture.file(
                       File(path),
                       fit: BoxFit.cover,
@@ -5266,11 +5266,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = file.path;
     final name = path.split('/').last;
     final iconColor = FileUtils.getColorForFile(name, context);
-    final isApk =
-        name.toLowerCase().endsWith('.apk') ||
-        name.toLowerCase().endsWith('.xapk') ||
-        name.toLowerCase().endsWith('.apks') ||
-        name.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(name);
 
     return ListTile(
       key: ValueKey(path),
@@ -5293,7 +5289,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
             child: isApk
                 ? _ApkThumbnail(path: path, iconColor: iconColor)
-                : path.toLowerCase().endsWith('.svg')
+                : FileUtils.isSvg(path)
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: SvgPicture.file(
@@ -5497,11 +5493,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = file.path;
     final name = path.split('/').last;
     final iconColor = FileUtils.getColorForFile(name, context);
-    final isApk =
-        name.toLowerCase().endsWith('.apk') ||
-        name.toLowerCase().endsWith('.xapk') ||
-        name.toLowerCase().endsWith('.apks') ||
-        name.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(name);
     final dateStr = FileUtils.formatDate(modified);
 
     return GestureDetector(
@@ -6629,7 +6621,7 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
                 ),
               )
             : (_cached != null && _cached!.existsSync()
-                  ? (widget.path.toLowerCase().endsWith('.svg')
+                  ? (FileUtils.isSvg(widget.path)
                         ? SvgPicture.file(
                             _cached!,
                             fit: BoxFit.cover,
@@ -6721,7 +6713,7 @@ class _CachedImageTileState extends State<_CachedImageTile> {
   @override
   Widget build(BuildContext context) {
     final title = widget.asset.title ?? '';
-    final isSvg = title.toLowerCase().endsWith('.svg');
+    final isSvg = FileUtils.isSvg(title);
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -7588,7 +7580,7 @@ class _MediaFolderCover extends StatelessWidget {
       );
     }
     // 图片：直接读取本地文件
-    if (samplePath.toLowerCase().endsWith('.svg')) {
+    if (FileUtils.isSvg(samplePath)) {
       return SvgPicture.file(
         File(samplePath),
         fit: BoxFit.cover,
@@ -7818,7 +7810,8 @@ class _ApkThumbnailState extends State<_ApkThumbnail> {
 
 /// 从文件名/标题推导图片或视频的格式标签（无扩展名时回退为 IMG/VID）。
 String _videoImageLabel(String src, {required bool video}) {
-  final ext = path_helper.extension(src).toLowerCase().replaceAll('.', '');
+  // effectiveExtension：忽略 IM 追加的序号后缀，`clip.mp4.1` → `mp4`（标签才不会被推成 1/VID）。
+  final ext = FileUtils.effectiveExtension(src);
   if (ext.isEmpty) return video ? 'VID' : 'IMG';
   return video
       ? FileUtils.getVideoTypeLabel('x.$ext')

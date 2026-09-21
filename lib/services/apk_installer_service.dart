@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../core/utils.dart';
 import 'archive_service.dart';
 import 'app_manager_service.dart';
 import 'preferences_service.dart';
@@ -14,13 +15,17 @@ import 'virus_total_service.dart';
 class ApkInstallerService {
   static const List<String> apkExtensions = ['.apk', '.xapk', '.apks', '.apkm', '.aab'];
 
-  static bool isApk(String path) {
-    final ext = p.extension(path).toLowerCase();
-    return apkExtensions.contains(ext);
-  }
+  /// 是否为「可直接安装」的包。
+  ///
+  /// ⚠️ 必须走 [FileUtils.effectiveExtensionWithDot]：IM（QQ / 微信等）遇到重名文件会
+  /// 追加序号，`app.apk` 落地成 `app.apk.1`，此时 `p.extension()` 给出的是 `.1` →
+  /// 这里判成「不是 APK」，再往下就被当成 zip bundle 去解压安装，用户看到的
+  /// 就是「点了安装没反应 / 提示包内没有 APK」。
+  static bool isApk(String path) =>
+      apkExtensions.contains(FileUtils.effectiveExtensionWithDot(path));
 
   static Future<void> installApk(BuildContext context, String path) async {
-    final ext = p.extension(path).toLowerCase();
+    final ext = FileUtils.effectiveExtensionWithDot(path);
     final apiKey = VirusTotalService.getApiKey();
     final hasKey = apiKey != null && apiKey.isNotEmpty;
     // 扫描需同时满足：已配置 Key + 扫描开关已开启（关闭开关不清空 Key）
@@ -45,11 +50,15 @@ class ApkInstallerService {
   }
 
   /// 打开安装器。单 APK 支持静默安装（root/shizuku），bundle 自动解压安装。
-  static Future<void> _openInstaller(BuildContext context, String path) async {
-    final ext = p.extension(path).toLowerCase();
+  ///
+  /// 返回 true 表示安装已通过静默安装**确认完成**（调用方可安全清理 bundle
+  /// 解压目录等不再被引用的临时文件）；返回 false 表示走系统安装器
+  /// （仅代表安装界面已启动，用户可能尚未确认，不得据此清理临时文件）。
+  static Future<bool> _openInstaller(BuildContext context, String path) async {
+    final ext = FileUtils.effectiveExtensionWithDot(path);
     if (ext != '.apk') {
       await _installBundle(context, path);
-      return;
+      return false;
     }
 
     // 开启"保留安装包"时，先复制到临时目录再安装，防止系统安装器删除源文件
@@ -67,12 +76,15 @@ class ApkInstallerService {
         tried = true;
       }
       if (ok) {
+        // 静默安装已确认完成（pm install 返回 success），临时副本不再需要，
+        // 立即删除，避免 apk_install 目录堆积占用存储空间。
+        await _deleteTempCopy(installPath);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(L10n.of(context).vt_install_success)),
           );
         }
-        return;
+        return true;
       }
       // 静默安装失败 → 回退系统安装器。若已具备 root/shizuku 权限仍失败
       // （多为 shell 无安装权限 / 受限 ROM），给用户明确提示，避免误解为静默成功。
@@ -90,6 +102,7 @@ class ApkInstallerService {
       // 最后兜底：OpenFilex
       await OpenFilex.open(installPath);
     }
+    return false;
   }
 
   /// 开启"安装后保留安装包"时，把 APK 复制一份到共享目录再安装，防止系统安装器删除源文件。
@@ -103,16 +116,66 @@ class ApkInstallerService {
   /// 文件名加时间戳后缀，避免多个同名 split 相互覆盖。
   static Future<String> _prepareInstallPath(String path) async {
     if (!PreferencesService.getKeepApkAfterInstall()) return path;
+    // 复制新副本前先清理历史残留，避免 apk_install / apk_extract 长期堆积。
+    await _cleanupStaleTempFiles();
     try {
       final baseDir = Directory('/storage/emulated/0/ZenFile/apk_install');
       if (!await baseDir.exists()) await baseDir.create(recursive: true);
       final stamp = DateTime.now().millisecondsSinceEpoch;
-      final dest = p.join(baseDir.path, '${stamp}_${p.basename(path)}');
+      // 复制时顺手去掉 IM 追加的序号后缀（`app.apk.1` → `app.apk`）：系统安装器 /
+      // OpenFilex 兜底都按扩展名嗅探 MIME，名字带 `.1` 会让兜底路径失败。
+      final dest = p.join(
+        baseDir.path,
+        '${stamp}_${FileUtils.stripImAppendedSuffix(p.basename(path))}',
+      );
       await File(path).copy(dest);
       return dest;
     } catch (_) {
       return path;
     }
+  }
+
+  /// 清理安装临时目录中已过期的残留文件。
+  ///
+  /// 系统安装器（ACTION_VIEW）路径下，应用无法得知用户何时完成/取消安装，
+  /// 立即删除临时副本会导致系统安装器正在读取时文件消失、安装失败。
+  /// 因此对这类路径采用"延迟兜底"：每次复制新副本前，把超过
+  /// [_tempRetention] 的旧副本 / 旧解压目录一并清掉。
+  ///
+  /// 覆盖两个目录：
+  ///  - `apk_install/`：开启"安装后保留安装包"时复制的临时 APK 副本；
+  ///  - `apk_extract/`：bundle 解压出的 split APK / OBB 目录。
+  static const Duration _tempRetention = Duration(hours: 24);
+
+  static Future<void> _cleanupStaleTempFiles() async {
+    for (final dirName in ['apk_install', 'apk_extract']) {
+      try {
+        final dir = Directory('/storage/emulated/0/ZenFile/$dirName');
+        if (!await dir.exists()) continue;
+        final cutoff = DateTime.now().subtract(_tempRetention);
+        await for (final entity in dir.list()) {
+          try {
+            final stat = await entity.stat();
+            if (stat.modified.isBefore(cutoff)) {
+              await entity.delete(recursive: true);
+            }
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+  }
+
+  /// 静默安装成功后，删除本次复制出的临时副本。
+  ///
+  /// 仅删除 `apk_install/` 目录内、由 [_prepareInstallPath] 复制的临时文件；
+  /// 若传入的是用户原始文件路径（未开启"保留安装包"），不会误删。
+  static Future<void> _deleteTempCopy(String installPath) async {
+    const base = '/storage/emulated/0/ZenFile/apk_install/';
+    if (!installPath.startsWith(base)) return;
+    try {
+      final f = File(installPath);
+      if (await f.exists()) await f.delete();
+    } catch (_) {}
   }
 
   /// 解压并安装 bundle（.xapk/.apks/.apkm/.aab）。
@@ -140,14 +203,15 @@ class ApkInstallerService {
       if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
     }
 
-    try {
-      // 解压目标放共享目录（非 app 私有 cache）：bundle 内 split APK 需经
-      // Shizuku shell pm install 读取，shell(uid 2000) 读不到 /data/user/0/...
-      final baseDir = Directory('/storage/emulated/0/ZenFile/apk_extract');
-      if (!await baseDir.exists()) await baseDir.create(recursive: true);
-      final bundleDirName = p.basenameWithoutExtension(path).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final extractDir = Directory(p.join(baseDir.path, '${DateTime.now().millisecondsSinceEpoch}_$bundleDirName'));
+    // 解压目录声明在 try 之外：catch 分支也需要引用它做残留清理。
+    // 目标放共享目录（非 app 私有 cache）：bundle 内 split APK 需经
+    // Shizuku shell pm install 读取，shell(uid 2000) 读不到 /data/user/0/...
+    final baseDir = Directory('/storage/emulated/0/ZenFile/apk_extract');
+    final bundleDirName = p.basenameWithoutExtension(path).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final extractDir = Directory(p.join(baseDir.path, '${DateTime.now().millisecondsSinceEpoch}_$bundleDirName'));
 
+    try {
+      if (!await baseDir.exists()) await baseDir.create(recursive: true);
       await extractDir.create(recursive: true);
 
       await ArchiveService.extractArchive(
@@ -175,6 +239,10 @@ class ApkInstallerService {
       }
 
       if (allApks.isEmpty) {
+        // 解压成功但包内没有 APK：清理解压残留，避免 apk_extract 堆积。
+        try {
+          if (await extractDir.exists()) await extractDir.delete(recursive: true);
+        } catch (_) {}
         await closeDialog();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +256,15 @@ class ApkInstallerService {
       if (!context.mounted) return;
 
       if (allApks.length == 1) {
-        await _openInstaller(context, allApks.first.path);
+        final installed = await _openInstaller(context, allApks.first.path);
+        // 仅当静默安装确认完成时清理解压目录：此时 extractDir 内的原文件
+        // 要么已被复制走（开启保留）、要么已读完（未开启保留），删除安全；
+        // 回退系统安装器时用户可能仍在确认，extractDir 留给 24h 过期兜底。
+        if (installed) {
+          try {
+            if (await extractDir.exists()) await extractDir.delete(recursive: true);
+          } catch (_) {}
+        }
       } else {
         // 开启"保留安装包"时，每个内部 APK 先复制到共享目录
         final apkPaths = <String>[];
@@ -209,6 +285,14 @@ class ApkInstallerService {
             tried = true;
           }
           if (ok) {
+            // 静默分包安装成功：删除复制到 apk_install 的临时 split 副本，
+            // 并清理解压目录 apk_extract（split 已安装，不再需要源文件）。
+            for (final apkPath in apkPaths) {
+              await _deleteTempCopy(apkPath);
+            }
+            try {
+              if (await extractDir.exists()) await extractDir.delete(recursive: true);
+            } catch (_) {}
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(l10n.vt_install_success)),
@@ -231,6 +315,10 @@ class ApkInstallerService {
         }
       }
     } catch (e) {
+      // 解压/安装过程异常：清理已产生的解压残留，防止共享目录堆积。
+      try {
+        if (await extractDir.exists()) await extractDir.delete(recursive: true);
+      } catch (_) {}
       await closeDialog();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

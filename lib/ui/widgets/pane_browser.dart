@@ -422,10 +422,25 @@ class _PaneBrowserState extends State<PaneBrowser> {
         await provider.extractArchiveDirectly(context, path);
         break;
       case 'encrypt':
-        await _handleEncrypt(context, provider, path);
+        // 远程条目：走**原地**加密（下载 → 加密文件名与内容 → 回写 → 删原明文）。
+        // 旧实现一律落到本地加密链路，远程路径必然抛「未找到对应的加密挂载点」。
+        if (provider.activeTab.isRemote ||
+            path.startsWith('remote://') ||
+            path.startsWith('cryptremote://')) {
+          await BulkCryptActions.encryptRemoteInPlace(context, provider, [path]);
+        } else {
+          await _handleEncrypt(context, provider, path);
+        }
         break;
       case 'decrypt':
-        await _handleDecrypt(context, provider, path);
+        // 远程密文：解密到本地 + 明文回写替换远程原密文
+        if (provider.activeTab.isCryptRemote ||
+            provider.activeTab.isRemote ||
+            path.startsWith('cryptremote://')) {
+          await BulkCryptActions.decryptRemoteInPlace(context, provider, [path]);
+        } else {
+          await _handleDecrypt(context, provider, path);
+        }
         break;
       case 'open_with':
         // 与单窗口 directory_screen 的 _handleAction 保持一致
@@ -1960,7 +1975,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     // 与 file_grid_item.dart / file_item.dart 的模式保持一致。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lowerPath = _displayPath.toLowerCase();
       // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
@@ -1970,10 +1984,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
       }
     });
@@ -1995,7 +2006,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _apkIcon = null;
         _remoteThumb = null;
       });
-      final lowerPath = _displayPath.toLowerCase();
       if (widget.file.isRemote &&
           widget.remoteClient != null &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
@@ -2004,10 +2014,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
       }
     }
@@ -2061,7 +2068,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         if (!await tempDir.exists()) await tempDir.create(recursive: true);
       }
 
-      final ext = p.extension(widget.file.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(widget.file.name);
       final tempPath = p.join(
         tempDir.path,
         MediaThumbnailService.uniqueTempName(ext),
@@ -2071,23 +2078,25 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       final isVideo = FileUtils.isVideo(_displayPath);
       final isAudio = FileUtils.isAudio(_displayPath);
       if (isVideo || isAudio) {
-        // 视频/音频只需头部 2MB 即可提取缩略图/封面
-        // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
-        await MediaThumbnailService.withRemoteThrottle(() async {
-          try {
-            await client.downloadRange(
-              dlPath,
-              tempPath,
-              0,
-              2 * 1024 * 1024,
-            );
-          } catch (e) {
-            await client.downloadFile(dlPath, tempPath, (_) {});
-          }
-        });
+        // 视频/音频只需头部 2MB 即可提取缩略图/封面。
+        // 统一走串行队列 + 约 2MB/s 带宽限速，避免打开远程目录时
+        // 多个文件并发完整下载打满带宽导致卡顿。
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: true,
+        );
       } else {
-        // 图片等完整下载
-        await client.downloadFile(dlPath, tempPath, (_) {});
+        // 图片等完整下载（同样受串行队列与带宽限速约束）
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: false,
+        );
       }
 
       // 生成缩略图
@@ -2119,11 +2128,13 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           if (mounted) setState(() => _audioThumb = thumbBytes);
         }
       } else {
-        // 图片直接复制为缩略图
+        // 图片：压缩为最长边 512px 的缩略图缓存（解码失败自动回退原图直存）
         final tempFile = File(tempPath);
         if (tempFile.existsSync()) {
-          await tempFile.copy(thumbPath);
-          thumbBytes = await thumbFile.readAsBytes();
+          thumbBytes = await MediaThumbnailService.makeImageThumbBytes(
+            tempPath,
+            thumbPath,
+          );
         }
       }
 
@@ -2241,11 +2252,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     final isImg = FileUtils.isImage(_displayPath);
     final isVid = FileUtils.isVideo(_displayPath);
     final isAud = FileUtils.isAudio(_displayPath);
-    final isApk =
-        _displayPath.toLowerCase().endsWith('.apk') ||
-        _displayPath.toLowerCase().endsWith('.xapk') ||
-        _displayPath.toLowerCase().endsWith('.apks') ||
-        _displayPath.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(_displayPath);
 
     if (widget.isSelected) {
       return Icon(

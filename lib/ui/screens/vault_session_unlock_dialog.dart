@@ -17,6 +17,12 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 ///
 /// 与 [VaultLockScreen] 的区别：本弹窗**不进入**保险箱页面，只是一次门禁校验，
 /// 校验通过即回调 `true`，由调用方继续执行原操作。
+///
+/// 解锁方式优先级（与「启动应用保护」「远程守卫」保持一致）：
+/// 已启用指纹（安全设置开关开启 + 已存凭据 + 设备支持）时**进弹窗即自动弹出系统
+/// 指纹**；只有用户上次明确用密码解锁过（`VaultBiometricStore.readPreferredUnlock`
+/// == `'password'`）才默认走密码输入。指纹取消 / 失败 → 回落到底部密码框，光标
+/// 自动落位，指纹图标按钮仍可手动重试。
 class VaultSessionUnlockBottomSheet extends StatefulWidget {
   const VaultSessionUnlockBottomSheet({super.key});
 
@@ -36,6 +42,17 @@ class _VaultSessionUnlockBottomSheetState
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
 
+  /// 本次是否「进弹窗即自动弹指纹」。
+  ///
+  /// 策略与「启动应用保护」「远程守卫」保持一致（见 remote_guard_screen.dart）：
+  /// 已启用指纹 + 设备支持 + 上次不是明确选了密码 → 优先弹指纹。
+  bool _willAutoBiometric = false;
+
+  /// 自动弹只触发一次，避免 setState / 重建时重复拉起系统弹窗。
+  bool _autoPromptedBiometric = false;
+
+  final FocusNode _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -44,8 +61,16 @@ class _VaultSessionUnlockBottomSheetState
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _textController.dispose();
     super.dispose();
+  }
+
+  /// 把光标交给密码输入框（等价于旧版的 `autofocus`，但改为按需触发）。
+  void _focusPasswordField() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
   }
 
   Future<void> _initBiometric() async {
@@ -53,13 +78,33 @@ class _VaultSessionUnlockBottomSheetState
       final available = await BiometricAuthHelper.auth.getAvailableBiometrics();
       final enabled = (await VaultBiometricStore.hasCredential()) &&
           PreferencesService.getBiometricUnlockEnabled();
+      // 偏好解锁方式与 vault_lock_screen / remote_guard_screen 共用同一份语义：
+      // 只有用户上次**明确用密码**解锁过才不自动弹指纹；没有记录（新用户，或刚在
+      // 安全设置里打开指纹开关）一律优先指纹——这正是本次要修的那条反馈。
+      final preferred = await VaultBiometricStore.readPreferredUnlock();
       if (!mounted) return;
+      final willAuto = available.isNotEmpty && enabled && preferred != 'password';
       setState(() {
         _biometricAvailable = available.isNotEmpty;
         _biometricEnabled = enabled;
+        _willAutoBiometric = willAuto;
+      });
+      if (!willAuto) {
+        _focusPasswordField();
+        return;
+      }
+      // 底部弹窗自带入场动画，立刻拉起系统指纹弹窗会被动画抢焦点（部分 ROM 干脆
+      // 不弹）。等一帧、让动画基本走完再触发。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 280), () {
+          if (!mounted || _autoPromptedBiometric) return;
+          _autoPromptedBiometric = true;
+          _onFingerprint();
+        });
       });
     } catch (_) {
-      // 设备不支持生物识别：静默降级为手动输入
+      // 设备不支持生物识别：静默降级为手动输入（仍要把光标给密码框）
+      _focusPasswordField();
     }
   }
 
@@ -110,12 +155,18 @@ class _VaultSessionUnlockBottomSheetState
   }
 
   Future<void> _onFingerprint() async {
+    if (_checking) return;
     try {
       final did = await BiometricAuthHelper.authenticate(
         context,
         scenario: BiometricScenario.vault,
       );
-      if (!did) return;
+      // 用户在系统弹窗里取消（或自动弹失败）：不打错误提示，把焦点交给密码框，
+      // 让用户直接手动输入——旧版这里会静默 return，用户看不到任何反馈。
+      if (!did) {
+        if (mounted) _focusNode.requestFocus();
+        return;
+      }
       final pw = await VaultBiometricStore.read();
       if (pw != null && await VaultService.verifyPassword(pw)) {
         HapticFeedback.mediumImpact();
@@ -126,6 +177,7 @@ class _VaultSessionUnlockBottomSheetState
       }
     } catch (_) {
       _showError(L10n.of(context).vault_fingerprint_failed);
+      if (mounted) _focusNode.requestFocus();
     }
   }
 
@@ -188,7 +240,13 @@ class _VaultSessionUnlockBottomSheetState
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _isError ? _message : l10n.vault_enter_password,
+                  _isError
+                      ? _message
+                      // 自动指纹时提示「使用指纹解锁」，让用户知道系统弹窗即将/已经出现；
+                      // 取消或失败后 _isError 会用具体错误覆盖它。
+                      : (_willAutoBiometric
+                          ? l10n.vault_fingerprint
+                          : l10n.vault_enter_password),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: _isError
                         ? theme.colorScheme.error
@@ -198,12 +256,14 @@ class _VaultSessionUnlockBottomSheetState
                 const SizedBox(height: 20),
                 TextField(
                   controller: _textController,
+                  focusNode: _focusNode,
                   onChanged: _onTextChanged,
                   obscureText: true,
                   keyboardType: TextInputType.visiblePassword,
                   autocorrect: false,
                   enableSuggestions: false,
-                  autofocus: !(_biometricAvailable && _biometricEnabled),
+                  // 刻意不用 autofocus：是否聚焦改由「有没有自动弹指纹」决定
+                  // （见 _focusPasswordField），否则键盘会与系统指纹弹窗抢焦点。
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 18,

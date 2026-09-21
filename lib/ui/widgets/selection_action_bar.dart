@@ -195,15 +195,22 @@ class SelectionActionBar extends StatelessWidget {
                         if (provider.activeTab.isCryptRemote) {
                           // 远程加密目录：加密＝选择本地文件加密后上传
                           await BulkCryptActions.encryptUploadRemoteCrypt(context, provider);
+                        } else if (provider.activeTab.isRemote) {
+                          // 普通远程目录：加密＝原地加密（下载→加密→回写→删原明文）
+                          await BulkCryptActions.encryptRemoteInPlace(
+                            context,
+                            provider,
+                            provider.selectedPaths.toList(),
+                          );
                         } else {
                           await BulkCryptActions.encryptSelected(context, provider);
                         }
                       } else if (action == 'encrypt_upload') {
                         await BulkCryptActions.encryptUploadRemoteCrypt(context, provider);
                       } else if (action == 'decrypt') {
-                        if (provider.activeTab.isCryptRemote) {
-                          // 远程加密目录：解密＝把远程密文解密后保存到本地
-                          await BulkCryptActions.decryptDownloadRemoteCrypt(
+                        if (provider.activeTab.isCryptRemote || provider.activeTab.isRemote) {
+                          // 远程：解密＝解密到本地 + 明文回写替换远程原密文
+                          await BulkCryptActions.decryptRemoteInPlace(
                             context,
                             provider,
                             provider.selectedPaths.toList(),
@@ -436,10 +443,8 @@ class SelectionActionBar extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  // 远程加密目录里「解密」＝解密并下载到本地
-                                  isCryptRemote
-                                      ? L10n.of(context).crypt_remote_download
-                                      : L10n.of(context).crypt_action_decrypt,
+                                  // 远程「解密」＝解密到本地 + 回写替换远程原密文
+                                  L10n.of(context).crypt_action_decrypt,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w500,
                                   ),

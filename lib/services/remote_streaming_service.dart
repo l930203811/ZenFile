@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
+import '../core/utils.dart';
 import 'http_range_proxy_service.dart';
 import 'remote/remote_client.dart';
 import 'webdav_debug_log.dart';
@@ -182,7 +183,9 @@ class RemoteStreamingService {
             await seekClient.disconnect();
           } catch (_) {}
         }
-        final ext = p.extension(fileName);
+        // 归一化扩展名：`movie.mp4.1` 也要给出 `.mp4`，否则播放器按 URL 后缀
+        // （或临时文件名）识别不出类型，表现为「流式播放起不来」。
+        final ext = FileUtils.effectiveExtensionWithDot(fileName);
         return 'http://127.0.0.1:${entry.key}/stream$ext';
       }
     }
@@ -207,7 +210,7 @@ class RemoteStreamingService {
       debugPrint('RemoteStreamingService: Server error: $e');
     });
 
-    final ext = p.extension(fileName);
+    final ext = FileUtils.effectiveExtensionWithDot(fileName);
     return 'http://127.0.0.1:${server.port}/stream$ext';
   }
 
@@ -1322,11 +1325,11 @@ class _StreamSession {
     try {
       final dir = Directory('/storage/emulated/0/ZenFile/cache/streaming');
       if (!dir.existsSync()) dir.createSync(recursive: true);
-      final ext = p.extension(fileName);
+      final ext = FileUtils.effectiveExtensionWithDot(fileName);
       final safeName = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
       return p.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}_$safeName$ext');
     } catch (_) {
-      final ext = p.extension(fileName);
+      final ext = FileUtils.effectiveExtensionWithDot(fileName);
       return p.join(Directory.systemTemp.path, 'zenfile_stream_${DateTime.now().millisecondsSinceEpoch}$ext');
     }
   }

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:dartssh2/dartssh2.dart';
+import '../core/utils.dart';
 import 'preferences_service.dart';
 
 class WebSharingService extends ChangeNotifier {
@@ -283,7 +284,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     } else if (entityType == FileSystemEntityType.file) {
       // 2. Stream real file with dynamic high-speed buffering
       final file = File(targetPath);
-      final ext = p.extension(targetPath).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(targetPath);
 
       // Resolve proper MIME Type for browsers to stream video/audio inline
       String contentType = 'application/octet-stream';
@@ -572,7 +573,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
     // Helper to categorize a file by extension
     void _categorizeFile(FileSystemEntity item, List<FileSystemEntity> vids, List<FileSystemEntity> auds, List<FileSystemEntity> imgs, List<FileSystemEntity> docs, List<FileSystemEntity> oth) {
-      final ext = p.extension(item.path).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(item.path);
       if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.3gp', '.ts', '.m4v', '.rmvb', '.rm', '.asf', '.f4v'].contains(ext)) {
         vids.add(item);
       } else if (['.mp3', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.aac', '.opus', '.amr', '.mid', '.midi'].contains(ext)) {
@@ -651,7 +652,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
           dateStr = '?';
         }
 
-        final ext = p.extension(item.path).toLowerCase();
+        final ext = FileUtils.effectiveExtensionWithDot(item.path);
         if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.3gp', '.ts', '.m4v', '.rmvb', '.rm', '.asf', '.f4v'].contains(ext)) {
           iconClass = 'video-icon';
           mimeType = 'video/mp4';

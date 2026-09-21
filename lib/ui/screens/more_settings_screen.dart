@@ -2115,6 +2115,16 @@ String _getMenuIconStyleLabel(BuildContext context, String option) {
 String _getAppIconLabel(BuildContext context, String option) {
   switch (option) {
     case 'custom': return L10n.of(context).msg7372dc9f;
+    case 'classic2': return L10n.of(context).app_icon_classic2;
+    case 'classic3': return L10n.of(context).app_icon_classic3;
+    case 'classic4': return L10n.of(context).app_icon_classic4;
+    case 'cyberpunk': return L10n.of(context).app_icon_cyberpunk;
+    case 'glassmorphism': return L10n.of(context).app_icon_glassmorphism;
+    case '3d_gradient': return L10n.of(context).app_icon_3d_gradient;
+    case 'glossy_blue': return L10n.of(context).app_icon_glossy_blue;
+    case 'm3_expressive': return L10n.of(context).app_icon_m3_expressive;
+    case 'minimal_flat': return L10n.of(context).app_icon_minimal_flat;
+    case 'neumorphism': return L10n.of(context).app_icon_neumorphism;
     case 'default':
     default:
       return L10n.of(context).msg3004e40a;
@@ -3095,7 +3105,87 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'default',
                                 title: L10n.of(context).msg64a6476a,
-                                imagePath: 'assets/logo/zf_Classic1.png',
+                                imagePath: 'assets/logo/zf_Classic1.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'classic2',
+                                title: L10n.of(context).app_icon_classic2,
+                                imagePath: 'assets/logo/zf_Classic2.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'classic3',
+                                title: L10n.of(context).app_icon_classic3,
+                                imagePath: 'assets/logo/zf_Classic3.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'cyberpunk',
+                                title: L10n.of(context).app_icon_cyberpunk,
+                                imagePath: 'assets/logo/zf_cyberpunk.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'glassmorphism',
+                                title: L10n.of(context).app_icon_glassmorphism,
+                                imagePath: 'assets/logo/zf_glassmorphism.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'm3_expressive',
+                                title: L10n.of(context).app_icon_m3_expressive,
+                                imagePath: 'assets/logo/zf_m3_expressive_3.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'minimal_flat',
+                                title: L10n.of(context).app_icon_minimal_flat,
+                                imagePath: 'assets/logo/zf_minimal_flat.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'neumorphism',
+                                title: L10n.of(context).app_icon_neumorphism,
+                                imagePath: 'assets/logo/zf_neumorphism.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'classic4',
+                                title: L10n.of(context).app_icon_classic4,
+                                imagePath: 'assets/logo/zf_classic4.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: '3d_gradient',
+                                title: L10n.of(context).app_icon_3d_gradient,
+                                imagePath: 'assets/logo/zf_3d_gradient.webp',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'glossy_blue',
+                                title: L10n.of(context).app_icon_glossy_blue,
+                                imagePath: 'assets/logo/zf_glossy_blue.webp',
                               ),
                               _buildCustomIconOptionCard(
                                 context,

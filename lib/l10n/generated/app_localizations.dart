@@ -2827,6 +2827,66 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'经典 2'**
+  String get app_icon_classic2;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'经典金'**
+  String get app_icon_classic3;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'赛博朋克'**
+  String get app_icon_cyberpunk;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'玻璃拟态'**
+  String get app_icon_glassmorphism;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'M3 表现'**
+  String get app_icon_m3_expressive;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'极简扁平'**
+  String get app_icon_minimal_flat;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新拟态'**
+  String get app_icon_neumorphism;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'经典 4'**
+  String get app_icon_classic4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'3D 渐变'**
+  String get app_icon_3d_gradient;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'光泽蓝'**
+  String get app_icon_glossy_blue;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'应用图标已切换为 {title}'**
   String title(Object title);
 

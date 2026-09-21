@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'icon_fonts/broken_icons.dart';
+import 'im_suffix.dart' as im_suffix;
 
 class FileUtils {
   static String formatBytes(int bytes, int decimals) {
@@ -67,7 +68,7 @@ class FileUtils {
   }
 
   static bool isArchive(String path) {
-    final lower = path.toLowerCase();
+    final lower = stripImAppendedSuffix(path).toLowerCase();
     return lower.endsWith('.zip') ||
         lower.endsWith('.tar') ||
         lower.endsWith('.tar.gz') ||
@@ -91,13 +92,13 @@ class FileUtils {
   /// 返回压缩包格式的简短标签（大写），用于图标显示。
   /// 例如 .zip → "ZIP"，.7z → "7Z"，.tar.gz → "TAR.GZ"
   static String getArchiveTypeLabel(String path) {
-    final lower = path.toLowerCase();
+    final lower = stripImAppendedSuffix(path).toLowerCase();
     if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) return 'GZ';
     if (lower.endsWith('.tar.bz2') || lower.endsWith('.tbz2')) return 'BZ2';
     if (lower.endsWith('.tar.lz4') || lower.endsWith('.tlz4')) return 'LZ4';
     if (lower.endsWith('.tar.zst') || lower.endsWith('.tzst')) return 'ZST';
     // 单扩展名
-    final ext = lower.split('.').last;
+    final ext = effectiveExtension(path);
     switch (ext) {
       case 'zip': return 'ZIP';
       case '7z': return '7Z';
@@ -117,10 +118,12 @@ class FileUtils {
   }
 
   static bool isTextOrCode(String path) {
-    final lower = path.toLowerCase();
+    // IM 追加后缀（`note.txt.1`）先归一化：否则扩展名判定与 MIME 嗅探都会失配。
+    final normalized = stripImAppendedSuffix(path);
+    final lower = normalized.toLowerCase();
     
     // Fallback for files without extension (e.g. hosts)
-    final filename = path.split('/').last.split('\\').last;
+    final filename = _lastSegment(normalized);
     if (!filename.contains('.') && filename.isNotEmpty) {
       return true;
     }
@@ -134,12 +137,14 @@ class FileUtils {
     for (final ext in exts) {
       if (lower.endsWith(ext)) return true;
     }
-    final mime = lookupMimeType(path);
+    final mime = lookupMimeType(normalized);
     return mime != null && mime.startsWith('text/');
   }
 
   static bool isImage(String path) {
-    final lower = path.toLowerCase();
+    // `photo.jpg.1` → `photo.jpg`：不加这一步，MIME 嗅探与后缀判断都会失配。
+    final normalized = stripImAppendedSuffix(path);
+    final lower = normalized.toLowerCase();
 
     if (lower.endsWith('.3ds') ||
         lower.endsWith('.svg') ||
@@ -149,7 +154,7 @@ class FileUtils {
         lower.endsWith('.xcf')) {
       return false;
     }
-    final mimeType = lookupMimeType(path);
+    final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('image/')) {
       final lowerMime = mimeType.toLowerCase();
       if (lowerMime.contains('x-3ds') ||
@@ -173,25 +178,30 @@ class FileUtils {
         lower.endsWith('.heif');
   }
 
+  /// 是否为 SVG。`isImage` 刻意把 SVG 排除在外，所以各处都需要单独判一次；
+  /// 已忽略 IM 追加后缀（`icon.svg.1` → true）。
+  static bool isSvg(String path) => effectiveExtensionWithDot(path) == '.svg';
+
   static bool isVideo(String path) {
-    final mimeType = lookupMimeType(path);
+    final normalized = stripImAppendedSuffix(path);
+    final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('video/')) return true;
-    final lower = path.toLowerCase();
+    final lower = normalized.toLowerCase();
     return lower.endsWith('.mp4') || lower.endsWith('.ts') || lower.endsWith('.mts') || lower.endsWith('.mkv') || lower.endsWith('.webm') || lower.endsWith('.avi') || lower.endsWith('.mov') || lower.endsWith('.flv');
   }
 
   static bool isAudio(String path) {
-    final mimeType = lookupMimeType(path);
+    final normalized = stripImAppendedSuffix(path);
+    final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('audio/')) return true;
-    final lower = path.toLowerCase();
+    final lower = normalized.toLowerCase();
     return lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.m4a') || lower.endsWith('.ogg') || lower.endsWith('.flac') || lower.endsWith('.aac') || lower.endsWith('.wma') || lower.endsWith('.opus');
   }
 
   /// 判断是否为文档文件（非图片/视频/音频/压缩包/APK）
   static bool isDocument(String path) {
     if (isImage(path) || isVideo(path) || isAudio(path) || isArchive(path)) return false;
-    final lower = path.toLowerCase();
-    final ext = lower.split('.').last;
+    final ext = effectiveExtension(path);
     const docExts = [
       'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
       'txt', 'md', 'json', 'xml', 'html', 'htm', 'csv',
@@ -203,12 +213,46 @@ class FileUtils {
     return docExts.contains(ext);
   }
 
+  // ── 扩展名归一化：IM 追加的序号后缀（`.apk.1`） ────────────────────────
+  //
+  // QQ / 微信 / TIM 等在目标目录已存在同名文件时，会把新文件重命名成
+  // 「原名.序号」——典型就是 `app.apk` 被传成 `app.apk.1`。此时
+  // `p.extension()` / `endsWith('.apk')` 全部失效：图标、分类、缩略图、
+  // 打开方式、安装入口统统识别不了（`.apk.1` 还会被当成 zip bundle 去解压安装）。
+  //
+  // 这里统一剥掉「末尾纯数字、且点号前已有扩展名」的追加段（`.1` … `.9999`）：
+  //   - `app.apk.1` → `app.apk`、`movie.mp4.2` → `movie.mp4`
+  //   - **保留** `.001` 这类前导零（zip 分卷的真实扩展名）
+  //   - **不剥** `README.1`：点号前没有扩展名，可能是用户真实文件名，不猜
+  //   - `archive.tar.gz` 末尾不是数字，天然不受影响
+
+  /// 文件名是否带 IM 追加的序号后缀（如 `app.apk.1`）。
+  ///
+  /// 实现在 `im_suffix.dart`（纯字符串逻辑、无 Flutter 依赖），此处仅转发，
+  /// 保证应用层与纯逻辑模块共用同一套规则、不出现两份实现。
+  static bool hasImAppendedSuffix(String name) =>
+      im_suffix.hasImAppendedSuffix(name);
+
+  /// 去掉 IM 追加的序号后缀；无该后缀时原样返回（支持完整路径，只处理最后一段）。
+  static String stripImAppendedSuffix(String path) =>
+      im_suffix.stripImAppendedSuffix(path);
+
+  /// 路径最后一段（同时兼容 `/` 与 `\` 分隔符）。
+  static String _lastSegment(String path) => im_suffix.lastPathSegment(path);
+
   /// 取文件名扩展名（含点，小写），无扩展名返回空串。
-  static String _extOf(String name) {
-    final dot = name.lastIndexOf('.');
-    if (dot < 0) return '';
-    return name.substring(dot).toLowerCase();
-  }
+  ///
+  /// 已自动忽略 IM 追加的序号后缀：`app.apk.1` → `.apk`。
+  /// 前导点不算扩展名（`.nomedia` → 空串）。
+  static String effectiveExtensionWithDot(String path) =>
+      im_suffix.effectiveExtensionWithDot(path);
+
+  /// 取文件名扩展名（不含点，小写），无扩展名返回空串。`app.apk.1` → `apk`
+  static String effectiveExtension(String path) =>
+      im_suffix.effectiveExtension(path);
+
+  /// 取文件名扩展名（含点，小写），无扩展名返回空串。
+  static String _extOf(String name) => effectiveExtensionWithDot(name);
 
   /// 分类同步用：文档扩展名集合（与 MediaProvider 扫描一致）。
   static const List<String> syncDocumentExtensions = [
@@ -228,7 +272,7 @@ class FileUtils {
     switch (categoryLabel) {
       case '图片':
       case '截图':
-        return (name) => name.toLowerCase().endsWith('.svg') || isImage(name);
+        return (name) => isSvg(name) || isImage(name);
       case '视频':
         return isVideo;
       case '音频':
@@ -248,7 +292,7 @@ class FileUtils {
   /// 返回图片格式的简短标签（大写），用于图标显示。
   /// 例如 .jpg → "JPG"，.png → "PNG"
   static String getImageTypeLabel(String path) {
-    final lower = path.toLowerCase();
+    final lower = stripImAppendedSuffix(path).toLowerCase();
     if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'JPG';
     if (lower.endsWith('.png')) return 'PNG';
     if (lower.endsWith('.webp')) return 'WEBP';
@@ -258,32 +302,30 @@ class FileUtils {
     if (lower.endsWith('.heic')) return 'HEIC';
     if (lower.endsWith('.heif')) return 'HEIF';
     // 兜底：取扩展名大写
-    final ext = lower.split('.').last;
+    final ext = effectiveExtension(path);
     return ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase();
   }
 
   /// 返回文档格式的简短标签（大写），用于图标显示。
   /// 例如 .pdf → "PDF"，.docx → "DOCX"
   static String getDocumentTypeLabel(String path) {
-    final lower = path.toLowerCase();
-    final ext = lower.split('.').last;
+    final ext = effectiveExtension(path);
     return ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase();
   }
 
-  /// 判断是否为安装包（Android 应用包）。
-  static bool isInstallPackage(String path) {
-    final lower = path.toLowerCase();
-    return lower.endsWith('.apk') ||
-        lower.endsWith('.xapk') ||
-        lower.endsWith('.apks') ||
-        lower.endsWith('.apkm') ||
-        lower.endsWith('.aab');
-  }
+  /// 安装包类扩展名（含 bundle）。与 [syncApkExtensions] 的差别是多了 `.apkm`。
+  static const List<String> installPackageExtensions = [
+    '.apk', '.xapk', '.apks', '.apkm', '.aab',
+  ];
+
+  /// 判断是否为安装包（Android 应用包）。已忽略 IM 追加后缀（`app.apk.1`）。
+  static bool isInstallPackage(String path) =>
+      installPackageExtensions.contains(effectiveExtensionWithDot(path));
 
   /// 返回安装包格式的简短标签（大写），用于图标显示。
   /// 例如 .apk → "APK"，.apks → "APKS"，.xapk → "XAPK"
   static String getInstallPackageTypeLabel(String path) {
-    final ext = path.toLowerCase().split('.').last;
+    final ext = effectiveExtension(path);
     const labels = {
       'apk': 'APK',
       'xapk': 'XAPK',
@@ -294,10 +336,24 @@ class FileUtils {
     return labels[ext] ?? (ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase());
   }
 
+  /// 可尝试从包内提取**原始应用图标**的安装包扩展名。
+  ///
+  /// 与 [installPackageExtensions] 的差别：**刻意不含 `.aab`**——AAB 是提交到应用
+  /// 商店的上传格式，PackageManager 解析不出 launcher icon，纳入只会白跑一次原生调用。
+  static const List<String> apkIconExtensions = ['.apk', '.xapk', '.apks', '.apkm'];
+
+  /// 是否应尝试从安装包中提取并渲染原始应用图标（列表项/网格/分类页共用）。
+  ///
+  /// ⚠️ 必须走 [effectiveExtensionWithDot]：IM（QQ / 微信）把重名文件改名成
+  /// `app.apk.1` 后 `endsWith('.apk')` 全部失效，图标会退回通用 APK 图标——
+  /// 「已识别为安装包、但图标没渲染」就是这么来的（分类判定用同一个归一化，两者必须一致）。
+  static bool canExtractApkIcon(String path) =>
+      apkIconExtensions.contains(effectiveExtensionWithDot(path));
+
   /// 返回视频格式的简短标签（大写），用于图标显示。
   /// 例如 .mp4 → "MP4"，.mkv → "MKV"
   static String getVideoTypeLabel(String path) {
-    final ext = path.toLowerCase().split('.').last;
+    final ext = effectiveExtension(path);
     const labels = {
       'mp4': 'MP4',
       'mkv': 'MKV',
@@ -317,7 +373,7 @@ class FileUtils {
   /// 返回音频格式的简短标签（大写），用于图标显示。
   /// 例如 .mp3 → "MP3"，.flac → "FLAC"
   static String getAudioTypeLabel(String path) {
-    final ext = path.toLowerCase().split('.').last;
+    final ext = effectiveExtension(path);
     const labels = {
       'mp3': 'MP3',
       'wav': 'WAV',
@@ -334,7 +390,7 @@ class FileUtils {
   }
 
   static IconData getIconForFile(String path) {
-    final ext = path.split('.').last.toLowerCase();
+    final ext = effectiveExtension(path);
     if (isArchive(path)) return Broken.box;
     if (isImage(path)) return Broken.image;
     if (isVideo(path)) return Broken.video;
@@ -370,7 +426,7 @@ class FileUtils {
   }
   
   static Color getColorForFile(String path, BuildContext context) {
-    final ext = path.split('.').last.toLowerCase();
+    final ext = effectiveExtension(path);
     if (isImage(path)) return Colors.purple;
     if (isVideo(path)) return Colors.red.shade700;
     if (isAudio(path)) return Colors.teal.shade700;

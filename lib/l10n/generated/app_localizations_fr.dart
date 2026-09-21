@@ -1532,6 +1532,36 @@ class L10nFr extends L10n {
   String get msg64a6476a => 'Par défaut';
 
   @override
+  String get app_icon_classic2 => 'Classique 2';
+
+  @override
+  String get app_icon_classic3 => 'Classique Or';
+
+  @override
+  String get app_icon_cyberpunk => 'Cyberpunk';
+
+  @override
+  String get app_icon_glassmorphism => 'Verre Dépoli';
+
+  @override
+  String get app_icon_m3_expressive => 'M3 Expressif';
+
+  @override
+  String get app_icon_minimal_flat => 'Plat Minimaliste';
+
+  @override
+  String get app_icon_neumorphism => 'Néomorphisme';
+
+  @override
+  String get app_icon_classic4 => 'Classique 4';
+
+  @override
+  String get app_icon_3d_gradient => 'Dégradé 3D';
+
+  @override
+  String get app_icon_glossy_blue => 'Bleu brillant';
+
+  @override
   String title(Object title) {
     return 'Icône de l\'application changée en $title';
   }

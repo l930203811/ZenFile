@@ -154,7 +154,7 @@ class AboutZenFileScreen extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Image.asset(
-                              'assets/logo/zf_Classic1.png',
+                              'assets/logo/zf_Classic1.webp',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 // Fallback icon in case asset load fails
@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v2.1.4',
+                    'v2.1.5',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -730,7 +730,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV214Changelog(ctx, theme),
+                  _buildV215Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -741,12 +741,12 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  /// v2.1.4 更新日志卡片。
+  /// v2.1.5 更新日志卡片。
   ///
   /// 按用户要求：**只保留当前版本**，上半部分中文、中间以分割线隔开、下半部分英文，
   /// 供国际用户阅读；文案直接硬编码，不走 l10n（无需多语言翻译）。
-  /// 历史版本卡片（v2.1.3 / v2.1.2 / v2.1.1 / v2.1.0 / v2.0.0）已移除。
-  Widget _buildV214Changelog(BuildContext ctx, ThemeData theme) {
+  /// 历史版本卡片（v2.1.4 / v2.1.3 / v2.1.2 / v2.1.1 / v2.1.0 / v2.0.0）已移除。
+  Widget _buildV215Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
@@ -797,78 +797,67 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v2.1.4', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v2.1.5', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-20', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-21', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
           // ══════════════ 中文 ══════════════
           section('\u2728 新功能'),
-          item('SMB 连接向导新增「匿名登录」勾选框，勾选后用户名与密码自动置灰，直接以匿名会话连接'),
-          item('局域网扫描支持显示计算机名（NetBIOS 名称解析），IP 作为副标题显示'),
-          item('原地加密过的文件夹会继续自动加密新粘贴进来的文件'),
-          item('远程目录中播放视频时自动构建同目录播放列表，「上一个 / 下一个」按钮生效'),
+          item('远程目录支持「原地加密 / 解密」：选中文件或文件夹后在原远程目录直接完成加密或解密，无需先下载到本地（下载→加密/解密→回传原目录替换原文件）'),
+          item('远程加密目录中的文件复制 / 剪切到本地或其他目录保持密文，不再自动解密，与本地加密文件行为一致'),
+          item('新增 3 款预设应用图标（Classic 4 / 3D Gradient / Glossy Blue），现共 10 款可选'),
 
           divider(),
 
           section('\u{1f3a8} 界面与交互'),
-          item('创建文件夹 / 文件、粘贴完成后列表立即更新，不再有几秒延迟'),
-          item('复制 / 剪切到加密文件夹时，进度弹窗按真实字节平滑推进，实时显示速度与剩余时间，「停止」按钮真正生效'),
-          item('远程连接失效时统一提示「与服务器的连接已断开，正在尝试重新连接。」（跟随系统语言）'),
-          item('局域网扫描不再只发现匿名共享主机，可找到路由器 / NAS 等全部在线设备'),
+          item('远程加密 / 解密进度弹窗统一为双层圆环，与本地加解密进度一致'),
+          item('保险箱加密 / 解密会话弹窗优先引导生物识别验证'),
+          item('修复预设应用图标切换无效：改为通过 activity-alias 切换，现已真正生效'),
 
           divider(),
 
           section('\u{1f41b} 问题修复'),
-          item('修复 SFTP / SMB 切换后台后操作失败、必须退出连接重进的问题：现在会自动探测连接状态，失效即静默重建并重试一次，切回前台自动体检'),
-          item('修复 SMB 匿名登录不上：匿名改用标准空用户名，并按「空 → guest → anonymous → nobody」依次尝试，兼容匿名账号不是 guest 的路由器固件'),
-          item('修复原地加密的文件夹解密后，新粘贴进来的文件仍被自动加密'),
-          item('修复普通文件夹中只要存在一个加密文件，往里粘贴的文件就会被静默加密'),
-          item('修复保险箱「原地加密文件」列表残留：在浏览页解密或删除原文件后，重进保险箱条目不再显示'),
-          item('修复 SMB 根目录只显示 Users 共享，现在可以看到盘符共享（D、E… 及 C\$、D\$ 等管理共享）'),
-          item('修复编辑已保存的 SMB 连接时不显示「匿名登录」勾选框；切换系统语言或历史版本的连接也能正常识别'),
-          item('修复 SMB 连接在「远程目录选择 / 备份目标选择」时报 Unsupported remote connection type'),
-          item('修复 ROOT 模式访问 Android/data 目录显示空列表'),
-          item('修复远程粘贴重名冲突弹窗显示「0 B · 1970-01-01」伪值或一直转圈'),
+          item('修复远程目录加密 / 解密成功后，点击面包屑或返回按钮无法进入其他目录、页面冻结的问题（WebDAV 复现）'),
+          item('修复远程加密 / 解密产生的临时文件（RemoteDecrypted）未自动清理'),
+          item('修复 ROOT / Shizuku 模式下访问系统根目录「/」显示空列表'),
+          item('修复远程媒体缩略图同时完整下载原图占满带宽导致卡顿：改为串行加载 + 约 2MB/s 限速，并将原图压缩为 512px 缩略图缓存'),
+          item('修复静默安装 APK 后临时副本未清理、以及安装源失效时的回退处理'),
+          item('修复 IM 转发产生的带数字后缀安装包（如 .apk.1）无法识别类型：各文件类型入口统一识别，并渲染真实应用图标'),
+          item('修复预设图标默认图标体积过大：恢复 7 款预设图标为 WebP 并压缩默认图标'),
 
           langDivider(),
 
           // ══════════════ English ══════════════
           section('\u2728 New Features'),
-          item('Anonymous login checkbox in the SMB wizard: the username and password fields are greyed out and the session connects anonymously'),
-          item('LAN scanning now shows computer names (NetBIOS name resolution) with the IP as a subtitle'),
-          item('Folders that were encrypted in place keep encrypting newly pasted files automatically'),
-          item('Playing a video from a remote folder now builds a playlist from that folder, so previous / next work'),
+          item('In-place encrypt / decrypt for remote folders: select a file or folder and encrypt or decrypt it right in the original remote directory, no need to download first (download, encrypt/decrypt, upload back to replace the original)'),
+          item('Copying or moving a file out of a remote encrypted folder keeps it encrypted, instead of decrypting automatically, matching local encrypted files'),
+          item('3 new preset app icons added (Classic 4 / 3D Gradient / Glossy Blue), for a total of 10 to choose from'),
 
           divider(),
 
           section('\u{1f3a8} UI & Interaction'),
-          item('The file list refreshes instantly after creating a folder or file and after a paste, instead of lagging for seconds'),
-          item('Copying into an encrypted folder shows byte-accurate progress with live speed and remaining time, and the Stop button really works'),
-          item('A dropped remote session now reports "The connection to the server was lost, reconnecting..." in your system language'),
-          item('LAN scanning no longer misses routers and NAS devices that only expose named shares'),
+          item('Remote encrypt / decrypt progress dialog now uses the same dual-ring design as the local one'),
+          item('The Vault encrypt / decrypt session dialog now prompts for biometrics first'),
+          item('Fixed preset app icons not switching: switching now works through an activity-alias'),
 
           divider(),
 
           section('\u{1f41b} Bug Fixes'),
-          item('Fixed SFTP / SMB operations failing after switching apps: sessions are health-checked, silently rebuilt and retried once, and verified when returning to the foreground'),
-          item('Fixed SMB anonymous login being rejected: anonymous now uses the standard empty username and tries empty, guest, anonymous and nobody, covering routers whose anonymous account is not guest'),
-          item('Fixed files pasted into a decrypted folder still being encrypted'),
-          item('Fixed files pasted into a normal folder that holds a single encrypted file being silently encrypted'),
-          item('Fixed stale entries in the Vault in-place encryption list after decrypting or deleting the original files'),
-          item('Fixed SMB roots listing only the Users share; drive-letter shares (D, E ... and admin shares C\$, D\$) are now listed too'),
-          item('Fixed the Anonymous login checkbox missing when editing a saved SMB connection, including connections saved in another language or by older versions'),
-          item('Fixed SMB connections reporting Unsupported remote connection type in the remote folder picker and backup target picker'),
-          item('Fixed Android/data showing an empty list in ROOT mode'),
-          item('Fixed the remote paste conflict dialog showing fake 0 B / 1970-01-01 values or spinning forever'),
+          item('Fixed the breadcrumb and back button doing nothing after encrypting / decrypting in a remote folder, freezing the page (reproduced on WebDAV)'),
+          item('Fixed temporary files (RemoteDecrypted) left behind after remote encrypt / decrypt not being cleaned up'),
+          item('Fixed the system root "/" showing an empty list in ROOT / Shizuku mode'),
+          item('Fixed remote thumbnails choking the bandwidth by downloading full-size images at once: now serialized with a ~2MB/s cap and cached as 512px thumbnails'),
+          item('Fixed temp copies left behind after a silent APK install, and the fallback when the install source is gone'),
+          item('Fixed IM-renamed packages with a numeric suffix (e.g. .apk.1) not being recognized: all type entries now detect them and render the real app icon'),
+          item('Fixed the oversized default preset icon: restored 7 preset icons as WebP and compressed the default icon'),
         ],
       ),
     );
   }
-
   void _showImagePreview(BuildContext context, ThemeData theme, String assetPath) {
     Navigator.of(context).push(
       MaterialPageRoute(

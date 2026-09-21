@@ -1,5 +1,6 @@
 /// 远程媒体播放列表构建的**纯逻辑**：不依赖 Flutter、provider 或网络，
 /// 便于单测（见 test/remote/remote_media_playlist_test.dart）。
+/// 扩展名判定复用无 Flutter 依赖的 `core/im_suffix.dart`，因此本文件保持纯净。
 ///
 /// 背景：从远程浏览页/分类页点开一个视频时，播放器需要拿到「同一远程目录里
 /// 其它视频」组成播放列表，条目统一写成 `remote://{connId}|{远程路径}`，
@@ -8,6 +9,8 @@
 library;
 
 import 'package:path/path.dart' as p;
+
+import '../../core/im_suffix.dart';
 
 /// 远程视频扩展名白名单。
 /// 与本地播放列表（`VideoPlayerScreen._resolvePlaylist`）保持接近，
@@ -44,7 +47,7 @@ List<RemoteMediaCandidate> selectRemoteMediaFiles(
   return candidates
       .where((c) => !c.isDirectory)
       .where((c) => !c.path.startsWith('cryptremote://'))
-      .where((c) => exts.contains(p.extension(c.name).toLowerCase()))
+      .where((c) => exts.contains(effectiveExtensionWithDot(c.name)))
       .toList()
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 }

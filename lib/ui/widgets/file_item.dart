@@ -338,17 +338,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = _displayPath.toLowerCase();
       if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
-      } else if (lowerPath.endsWith('.svg')) {
+      } else if (FileUtils.isSvg(_displayPath)) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
         // 但远程 SVG 需要在 _loadRemoteThumbnail 中下载字节
       }
@@ -377,17 +373,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadRemoteThumbnail();
         return;
       }
-      final lowerPath = _displayPath.toLowerCase();
       if (FileUtils.isVideo(_displayPath)) {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(_displayPath)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') ||
-          lowerPath.endsWith('.xapk') ||
-          lowerPath.endsWith('.apks') ||
-          lowerPath.endsWith('.apkm')) {
+      } else if (FileUtils.canExtractApkIcon(_displayPath)) {
         _loadApkIcon();
-      } else if (lowerPath.endsWith('.svg')) {
+      } else if (FileUtils.isSvg(_displayPath)) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
       }
     }
@@ -453,7 +445,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
 
-      final ext = p.extension(widget.file.name).toLowerCase();
+      final ext = FileUtils.effectiveExtensionWithDot(widget.file.name);
       final tempPath = p.join(
         tempDir.path,
         MediaThumbnailService.uniqueTempName(ext),
@@ -464,25 +456,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         // 图片/SVG 需要完整文件用于直接显示
         final isVideo = FileUtils.isVideo(_displayPath);
         final isAudio = FileUtils.isAudio(_displayPath);
-        if (isVideo || isAudio) {
-          // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
-          await MediaThumbnailService.withRemoteThrottle(() async {
-            try {
-              await client.downloadRange(
-                dlPath,
-                tempPath,
-                0,
-                2 * 1024 * 1024,
-              );
-            } catch (e) {
-              // 部分服务器/客户端不支持 range 下载，回退到完整下载
-              debugPrint('downloadRange 失败，回退完整下载: $e');
-              await client.downloadFile(dlPath, tempPath, (_) {});
-            }
-          });
-        } else {
-          await client.downloadFile(dlPath, tempPath, (_) {});
-        }
+        // 统一走串行队列 + 约 2MB/s 带宽限速：打开远程目录时多个文件
+        // 按顺序逐个下载，避免并发完整下载打满带宽导致卡顿。
+        await MediaThumbnailService.downloadThumbnailFile(
+          client: client,
+          remotePath: dlPath,
+          localPath: tempPath,
+          fileSize: widget.file.size,
+          useRange: isVideo || isAudio,
+        );
 
         // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
         if (ext == '.svg') {
@@ -493,7 +475,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           return;
         }
 
-        // 图片直接复制作为缩略图
+        // 图片：压缩为最长边 512px 的缩略图缓存。
+        // 原图直存会让缓存膨胀到原图大小且二次打开读取/解码慢；
+        // 解码失败（HEIC/超大/损坏）时自动回退原图直存，功能不降级。
         if ([
           '.jpg',
           '.jpeg',
@@ -503,9 +487,16 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           '.bmp',
           '.heic',
         ].contains(ext)) {
-          await File(tempPath).copy(thumbPath);
-          // 读取缩略图字节并更新UI
-          final bytes = await thumbFile.readAsBytes();
+          // 超大图片（>8MB）不自动下载缩略图：完整下载原图太慢，会占住
+          // 全局队列把整屏缩略图拖到超时。列表保留占位图标，点击预览时才
+          // 完整下载原图。
+          if (widget.file.size > MediaThumbnailService.kRemoteThumbMaxBytes) {
+            return;
+          }
+          final bytes = await MediaThumbnailService.makeImageThumbBytes(
+            tempPath,
+            thumbPath,
+          );
           if (mounted && bytes.isNotEmpty) {
             setState(() => _remoteThumb = bytes);
           }
@@ -710,11 +701,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     final isImg = FileUtils.isImage(_displayPath);
     final isVid = FileUtils.isVideo(_displayPath);
     final isAud = FileUtils.isAudio(_displayPath);
-    final isApk =
-        _displayPath.toLowerCase().endsWith('.apk') ||
-        _displayPath.toLowerCase().endsWith('.xapk') ||
-        _displayPath.toLowerCase().endsWith('.apks') ||
-        _displayPath.toLowerCase().endsWith('.apkm');
+    final isApk = FileUtils.canExtractApkIcon(_displayPath);
 
     if (widget.isSelected) {
       return Icon(
@@ -769,7 +756,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
 
     if (isImg && widget.file.size > 16) {
       // SVG 需要特殊处理（支持本地和远程）
-      if (_displayPath.toLowerCase().endsWith('.svg')) {
+      if (FileUtils.isSvg(_displayPath)) {
         // 远程 SVG 使用已下载的缓存字节
         if (widget.file.isRemote && _remoteThumb != null) {
           return SvgPicture.memory(
@@ -841,7 +828,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     }
 
     // SVG 文件（当 isImg 返回 false 时的兜底处理）
-    if (_displayPath.toLowerCase().endsWith('.svg')) {
+    if (FileUtils.isSvg(_displayPath)) {
       if (widget.file.isRemote && _remoteThumb != null) {
         return SvgPicture.memory(
           _remoteThumb!,

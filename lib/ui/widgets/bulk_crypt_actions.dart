@@ -10,7 +10,6 @@ import '../../ui/screens/crypt_mount_edit_screen.dart';
 import '../../ui/screens/internal_file_picker_screen.dart';
 import '../../ui/screens/vault_session_unlock_dialog.dart';
 import 'encryption_mode_bottom_sheet.dart';
-import 'progress_overlay.dart';
 import 'crypt_progress_dialog.dart';
 
 /// 批量加解密操作的公共逻辑，供多选菜单（长按底部弹窗 / 底部动作栏）共用。
@@ -279,83 +278,106 @@ class BulkCryptActions {
         await InternalFilePickerScreen.show(context, rootPath: rootPath);
     if (localPaths == null || localPaths.isEmpty || !context.mounted) return;
 
-    final progress = ValueNotifier<double?>(null);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(
-          message: l10n.vault_encrypt_uploading,
-          value: v,
-        ),
-      ),
-    );
-    try {
-      await provider.encryptUploadToRemoteCrypt(
+    await _runRemoteCryptOp(
+      context,
+      message: l10n.vault_encrypt_uploading,
+      doneMessage: l10n.vault_encrypt_upload_done,
+      failedLabel: l10n.vault_encrypt_upload_failed,
+      run: (ctl) => provider.encryptUploadToRemoteCrypt(
         localPaths,
         context: context,
-        onProgress: (_, p) => progress.value = p,
-      );
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.vault_encrypt_upload_done),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.vault_encrypt_upload_failed}: $e'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      progress.dispose();
-    }
+        onProgress: (_, p) => ctl.setOverall(p),
+        onFileProgress: ctl.onFile,
+      ),
+    );
   }
 
-  /// 远程加密目录（cryptremote://）：把远程密文条目解密后保存到本地。
+  /// 远程**原地加密**：把选中的远程明文条目加密后写回同一远程目录。
   ///
-  /// [virtualPaths] 为 cryptremote:// 虚拟路径；目录会递归解密下载。
-  static Future<void> decryptDownloadRemoteCrypt(
+  /// [paths] 既接受远程加密标签页里的 `cryptremote://…` 虚拟路径，也接受普通
+  /// 远程目录里的后端真实路径（provider 内部按形态解析挂载点）。
+  ///
+  /// 进度弹窗与本地「原地加密」完全一致（双层圆环：外圈整体、内圈当前文件字节），
+  /// 历史实现用的是单圈圆形遮罩，与本地观感不一致（用户反馈）。
+  static Future<void> encryptRemoteInPlace(
+    BuildContext context,
+    FileManagerProvider provider,
+    List<String> paths,
+  ) async {
+    final valid = paths.where((p) => p.isNotEmpty).toList();
+    if (valid.isEmpty) return;
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await ensureMasterPassword(context)) return;
+    if (!context.mounted) return;
+    final l10n = L10n.of(context);
+    await _runRemoteCryptOp(
+      context,
+      message: l10n.vault_encrypting,
+      doneMessage: l10n.vault_encrypt_done,
+      failedLabel: l10n.vault_encrypt_upload_failed,
+      run: (ctl) => provider.encryptRemoteInPlace(
+        valid,
+        onProgress: (_, p) => ctl.setOverall(p),
+        onFileProgress: ctl.onFile,
+      ),
+    );
+  }
+
+  /// 远程**原地解密**：解密远程密文条目 → 本地留明文副本 → 明文回写替换远程原密文。
+  ///
+  /// [virtualPaths] 为 `cryptremote://…` 虚拟路径。
+  static Future<void> decryptRemoteInPlace(
     BuildContext context,
     FileManagerProvider provider,
     List<String> virtualPaths,
   ) async {
-    if (virtualPaths.isEmpty) return;
+    final valid = virtualPaths
+        .where((v) => v.startsWith('cryptremote://'))
+        .toList();
+    if (valid.isEmpty) return;
+    if (!await requireVaultSessionUnlock(context)) return;
+    if (!await ensureMasterPassword(context)) return;
+    if (!context.mounted) return;
     final l10n = L10n.of(context);
-    final progress = ValueNotifier<double?>(null);
+    await _runRemoteCryptOp(
+      context,
+      message: l10n.vault_decrypting,
+      doneMessage: l10n.crypt_remote_download_done,
+      failedLabel: l10n.crypt_remote_download_failed,
+      run: (ctl) => provider.decryptRemoteInPlace(
+        valid,
+        onProgress: (_, p) => ctl.setOverall(p),
+        onFileProgress: ctl.onFile,
+      ),
+    );
+  }
+
+  /// 远程加解密操作的统一外壳：双层圆环进度弹窗（与本地加解密一致）+ 成功/失败反馈。
+  ///
+  /// ⚠️ 过去远程链路用的是 [ProgressOverlay]（单圈 + 百分比），本地用的是
+  /// [CryptProgressDialog]（双层圆环），两者观感割裂；这里统一走后者。
+  static Future<void> _runRemoteCryptOp(
+    BuildContext context, {
+    required String message,
+    required String doneMessage,
+    required String failedLabel,
+    required Future<void> Function(CryptProgressController ctl) run,
+  }) async {
+    final ctl = CryptProgressController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ValueListenableBuilder<double?>(
-        valueListenable: progress,
-        builder: (_, v, __) => ProgressOverlay(
-          message: l10n.crypt_remote_downloading,
-          value: v,
-        ),
+      builder: (_) => ValueListenableBuilder<CryptProgressData?>(
+        valueListenable: ctl.notifier,
+        builder: (_, v, __) => CryptProgressDialog(message: message, progress: v),
       ),
     );
     try {
-      await provider.decryptDownloadFromRemoteCrypt(
-        virtualPaths,
-        context: context,
-        onProgress: (_, p) => progress.value = p,
-      );
+      await run(ctl);
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.crypt_remote_download_done),
-            behavior: SnackBarBehavior.floating,
-          ),
+          SnackBar(content: Text(doneMessage), behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
@@ -363,13 +385,13 @@ class BulkCryptActions {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${l10n.crypt_remote_download_failed}: $e'),
+            content: Text('$failedLabel: $e'),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } finally {
-      progress.dispose();
+      ctl.dispose();
     }
   }
 }

@@ -4,6 +4,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import 'package:path/path.dart' as p;
 
 class FileActionDialogs {
   static Future<String?> showTextInputDialog(
@@ -567,6 +568,8 @@ class ActionGridSheet {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                  if (title != null)
+                    Divider(height: 1, thickness: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
                     child: GridView.count(
@@ -729,6 +732,10 @@ class FileActionSheet {
           onTap: () => onAction('share'),
         ),
     ];
-    return ActionGridSheet.show(context, items: items);
+    return ActionGridSheet.show(
+      context,
+      items: items,
+      title: filePath != null ? p.basename(filePath) : null,
+    );
   }
 }

@@ -212,14 +212,49 @@ class MainActivity : AudioServiceFragmentActivity() {
             e.printStackTrace()
         }
 
-        // 启动修复：确保默认启动图标别名始终处于启用状态。
-        // 旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
-        // 而组件启用状态跨应用更新持久化；本版本已移除 design_* 别名，
-        // 若不在此强制启用，之前启用过 design 图标的用户更新后将失去桌面启动图标。
+        // 启动修复：按用户保存的图标偏好恢复对应启动别名，保证「重启后仍保持所选图标」。
+        // 背景：旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
+        // 组件启用状态跨应用更新持久化；此处先统一重置为「仅目标别名启用、其余禁用」，
+        // 既修复旧用户升级后丢失桌面图标的问题，也确保新选的备用图标在进程重建后不失效。
         try {
             val pm = packageManager
-            val defaultComponent = android.content.ComponentName(this, "com.sequl.zenfile.MainActivityDefault")
-            pm.setComponentEnabledSetting(defaultComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+            val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+            val saved = try { prefs.getString("flutter.active_app_icon", "default") } catch (e: Exception) { "default" }
+            val aliasMap = mapOf(
+                "classic2" to "com.sequl.zenfile.MainActivityClassic2",
+                "classic3" to "com.sequl.zenfile.MainActivityClassic3",
+                "classic4" to "com.sequl.zenfile.MainActivityClassic4",
+                "cyberpunk" to "com.sequl.zenfile.MainActivityCyberpunk",
+                "glassmorphism" to "com.sequl.zenfile.MainActivityGlassmorphism",
+                "3d_gradient" to "com.sequl.zenfile.MainActivity3DGradient",
+                "glossy_blue" to "com.sequl.zenfile.MainActivityGlossyBlue",
+                "m3_expressive" to "com.sequl.zenfile.MainActivityM3Expressive",
+                "minimal_flat" to "com.sequl.zenfile.MainActivityMinimalFlat",
+                "neumorphism" to "com.sequl.zenfile.MainActivityNeumorphism",
+            )
+            val target = aliasMap[saved] ?: "com.sequl.zenfile.MainActivityDefault"
+            val allAliases = listOf(
+                "com.sequl.zenfile.MainActivityDefault",
+                "com.sequl.zenfile.MainActivityClassic2",
+                "com.sequl.zenfile.MainActivityClassic3",
+                "com.sequl.zenfile.MainActivityClassic4",
+                "com.sequl.zenfile.MainActivityCyberpunk",
+                "com.sequl.zenfile.MainActivityGlassmorphism",
+                "com.sequl.zenfile.MainActivity3DGradient",
+                "com.sequl.zenfile.MainActivityGlossyBlue",
+                "com.sequl.zenfile.MainActivityM3Expressive",
+                "com.sequl.zenfile.MainActivityMinimalFlat",
+                "com.sequl.zenfile.MainActivityNeumorphism",
+            )
+            for (alias in allAliases) {
+                val componentName = android.content.ComponentName(this, alias)
+                val state = if (alias == target) {
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                } else {
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                }
+                pm.setComponentEnabledSetting(componentName, state, PackageManager.DONT_KILL_APP)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -751,10 +786,21 @@ class MainActivity : AudioServiceFragmentActivity() {
                     val iconAlias = call.argument<String>("alias") ?: "com.sequl.zenfile.MainActivityDefault"
                     executor.execute {
                         try {
-                            // 仅保留默认启动图标别名。本版本已移除 design_* 备用图标
-                            // 与 MainActivityCustom 别名（自定义图标改用桌面快捷方式实现）。
+                            // 预设备用图标别名（classic2/classic3/cyberpunk/glassmorphism/
+                            // m3_expressive/minimal_flat/neumorphism）；自定义图标走桌面快捷方式，
+                            // 不注册 activity-alias（Android 无法在 alias 的 android:icon 引用运行时文件）。
                             val aliases = listOf(
-                                "com.sequl.zenfile.MainActivityDefault"
+                                "com.sequl.zenfile.MainActivityDefault",
+                                "com.sequl.zenfile.MainActivityClassic2",
+                                "com.sequl.zenfile.MainActivityClassic3",
+                                "com.sequl.zenfile.MainActivityClassic4",
+                                "com.sequl.zenfile.MainActivityCyberpunk",
+                                "com.sequl.zenfile.MainActivityGlassmorphism",
+                                "com.sequl.zenfile.MainActivity3DGradient",
+                                "com.sequl.zenfile.MainActivityGlossyBlue",
+                                "com.sequl.zenfile.MainActivityM3Expressive",
+                                "com.sequl.zenfile.MainActivityMinimalFlat",
+                                "com.sequl.zenfile.MainActivityNeumorphism"
                             )
 
                             for (alias in aliases) {
@@ -2417,8 +2463,26 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
+    /**
+     * 去掉 IM（QQ / 微信 / TIM）追加的序号后缀：`app.xapk.1` → `app.xapk`。
+     * 规则与 Dart 侧 `lib/core/im_suffix.dart` 完全一致：末尾 1~4 位纯数字、无前导零、
+     * 且点号前已有扩展名才剥（`.001` 分卷 / `README.1` 不动）。
+     */
+    private fun stripImAppendedSuffix(path: String): String {
+        val dot = path.lastIndexOf('.')
+        if (dot <= 0 || dot == path.length - 1) return path
+        val tail = path.substring(dot + 1)
+        if (tail.length > 4) return path
+        if (tail[0] == '0') return path
+        if (!tail.all { it in '0'..'9' }) return path
+        if (!path.substring(0, dot).contains('.')) return path
+        return path.substring(0, dot)
+    }
+
     private fun getApkIcon(apkPath: String): ByteArray? {
-        val lowerPath = apkPath.lowercase()
+        // bundle（.xapk/.apks/.apkm）靠扩展名分流到「解压取 icon.png / base.apk」分支；
+        // 被 IM 改名成 `app.xapk.1` 时该判定失效 → 落到按内容解析 zip 的分支 → 拿不到图标。
+        val lowerPath = stripImAppendedSuffix(apkPath.lowercase())
         if (lowerPath.endsWith(".xapk") || lowerPath.endsWith(".apks") || lowerPath.endsWith(".apkm")) {
             return try {
                 val zipFile = java.util.zip.ZipFile(apkPath)
