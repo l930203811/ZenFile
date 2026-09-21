@@ -1839,6 +1839,18 @@
   "app_icon_neumorphism": "Neumorphism",
   "@app_icon_neumorphism": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "Classic 4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3D Gradient",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "Glossy Blue",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   },  "@title": {
     "type": "text"
   },

@@ -1836,6 +1836,18 @@
   "app_icon_neumorphism": "ニューモーフィズム",
   "@app_icon_neumorphism": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "クラシック4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3Dグラデーション",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "グロッシーブルー",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   },  "@title": {
     "type": "text"
   },

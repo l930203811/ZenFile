@@ -1866,6 +1866,18 @@
   "app_icon_neumorphism": "新拟态",
   "@app_icon_neumorphism": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "经典 4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3D 渐变",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "光泽蓝",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   },  "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },

@@ -2869,6 +2869,24 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'经典 4'**
+  String get app_icon_classic4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'3D 渐变'**
+  String get app_icon_3d_gradient;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'光泽蓝'**
+  String get app_icon_glossy_blue;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'应用图标已切换为 {title}'**
   String title(Object title);
 

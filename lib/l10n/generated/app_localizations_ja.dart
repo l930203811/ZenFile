@@ -1452,6 +1452,15 @@ class L10nJa extends L10n {
   String get app_icon_neumorphism => 'ニューモーフィズム';
 
   @override
+  String get app_icon_classic4 => 'クラシック4';
+
+  @override
+  String get app_icon_3d_gradient => '3Dグラデーション';
+
+  @override
+  String get app_icon_glossy_blue => 'グロッシーブルー';
+
+  @override
   String title(Object title) {
     return 'アプリアイコンを$titleに切り替えました';
   }

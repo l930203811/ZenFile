@@ -1513,6 +1513,15 @@ class L10nAr extends L10n {
   String get app_icon_neumorphism => 'نيومورفيزم';
 
   @override
+  String get app_icon_classic4 => 'كلاسيكي 4';
+
+  @override
+  String get app_icon_3d_gradient => 'تدرج ثلاثي الأبعاد';
+
+  @override
+  String get app_icon_glossy_blue => 'أزرق لامع';
+
+  @override
   String title(Object title) {
     return 'تم تغيير أيقونة التطبيق إلى $title';
   }

@@ -1832,6 +1832,18 @@
   "app_icon_neumorphism": "뉴모피즘",
   "@app_icon_neumorphism": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_classic4": "클래식 4",
+  "@app_icon_classic4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_3d_gradient": "3D 그라데이션",
+  "@app_icon_3d_gradient": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "app_icon_glossy_blue": "글로시 블루",
+  "@app_icon_glossy_blue": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   },  "@title": {
     "type": "text"
   },

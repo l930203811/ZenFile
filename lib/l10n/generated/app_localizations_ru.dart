@@ -1549,6 +1549,15 @@ class L10nRu extends L10n {
   String get app_icon_neumorphism => 'Неоморфизм';
 
   @override
+  String get app_icon_classic4 => 'Классика 4';
+
+  @override
+  String get app_icon_3d_gradient => '3D-градиент';
+
+  @override
+  String get app_icon_glossy_blue => 'Глянцевый синий';
+
+  @override
   String title(Object title) {
     return 'Значок приложения изменён на $title';
   }

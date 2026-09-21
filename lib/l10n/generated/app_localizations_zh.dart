@@ -1449,6 +1449,15 @@ class L10nZh extends L10n {
   String get app_icon_neumorphism => '新拟态';
 
   @override
+  String get app_icon_classic4 => '经典 4';
+
+  @override
+  String get app_icon_3d_gradient => '3D 渐变';
+
+  @override
+  String get app_icon_glossy_blue => '光泽蓝';
+
+  @override
   String title(Object title) {
     return '应用图标已切换为 $title';
   }
@@ -8886,6 +8895,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get app_icon_neumorphism => '新擬態';
+
+  @override
+  String get app_icon_classic4 => '經典 4';
+
+  @override
+  String get app_icon_3d_gradient => '3D 漸變';
+
+  @override
+  String get app_icon_glossy_blue => '光澤藍';
 
   @override
   String title(Object title) {

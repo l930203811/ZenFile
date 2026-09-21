@@ -1553,6 +1553,15 @@ class L10nFr extends L10n {
   String get app_icon_neumorphism => 'Néomorphisme';
 
   @override
+  String get app_icon_classic4 => 'Classique 4';
+
+  @override
+  String get app_icon_3d_gradient => 'Dégradé 3D';
+
+  @override
+  String get app_icon_glossy_blue => 'Bleu brillant';
+
+  @override
   String title(Object title) {
     return 'Icône de l\'application changée en $title';
   }

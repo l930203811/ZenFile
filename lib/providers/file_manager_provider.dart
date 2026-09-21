@@ -494,8 +494,11 @@ class FileManagerProvider extends ChangeNotifier {
     final alias = switch (val) {
       'classic2' => 'com.sequl.zenfile.MainActivityClassic2',
       'classic3' => 'com.sequl.zenfile.MainActivityClassic3',
+      'classic4' => 'com.sequl.zenfile.MainActivityClassic4',
       'cyberpunk' => 'com.sequl.zenfile.MainActivityCyberpunk',
       'glassmorphism' => 'com.sequl.zenfile.MainActivityGlassmorphism',
+      '3d_gradient' => 'com.sequl.zenfile.MainActivity3DGradient',
+      'glossy_blue' => 'com.sequl.zenfile.MainActivityGlossyBlue',
       'm3_expressive' => 'com.sequl.zenfile.MainActivityM3Expressive',
       'minimal_flat' => 'com.sequl.zenfile.MainActivityMinimalFlat',
       'neumorphism' => 'com.sequl.zenfile.MainActivityNeumorphism',

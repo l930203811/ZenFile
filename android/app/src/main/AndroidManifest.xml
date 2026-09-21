@@ -224,6 +224,45 @@
             </intent-filter>
         </activity-alias>
 
+        <activity-alias
+            android:name=".MainActivityClassic4"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_classic4"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivity3DGradient"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_3d_gradient"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityGlossyBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_glossy_blue"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Flutter plugin registration metadata -->
         <meta-data
             android:name="flutterEmbedding"

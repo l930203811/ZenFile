@@ -1451,6 +1451,15 @@ class L10nKo extends L10n {
   String get app_icon_neumorphism => '뉴모피즘';
 
   @override
+  String get app_icon_classic4 => '클래식 4';
+
+  @override
+  String get app_icon_3d_gradient => '3D 그라데이션';
+
+  @override
+  String get app_icon_glossy_blue => '글로시 블루';
+
+  @override
   String title(Object title) {
     return '앱 아이콘이 $title(으)로 전환되었습니다';
   }
