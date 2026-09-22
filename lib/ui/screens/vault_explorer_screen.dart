@@ -2,25 +2,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:mime/mime.dart';
-import 'package:open_filex/open_filex.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/vault_service.dart';
 import 'package:path_provider/path_provider.dart';
-import 'image_viewer_screen.dart';
-import 'video_player/video_player_screen.dart';
-import 'audio_player/audio_player_screen.dart';
-import 'text_editor_screen.dart';
 import 'internal_file_picker_screen.dart';
 import 'crypt_mount_edit_screen.dart';
 import 'crypt_settings_screen.dart';
 import 'vault_help_screen.dart';
 import 'vault_session_unlock_dialog.dart';
 import '../../services/crypt/crypt.dart';
-import 'archive_viewer_screen.dart';
-import 'remote_crypt_explorer_screen.dart';
+import 'sandbox_crypt_browser_screen.dart';
 import '../widgets/archive_type_icon.dart';
 import '../widgets/progress_overlay.dart';
 import '../widgets/remote_path_picker.dart';
@@ -1430,96 +1423,59 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     }
   }
 
+  /// 点击沙盒加密条目：文件临时解密后打开，文件夹进入解密浏览视图。
+  ///
+  /// ⚠️ 必须走 [FileManagerProvider.openFile] 这条**统一打开链路**，不要在本页
+  /// 自己 `decryptToTemp` + `OpenFilex.open`。旧实现有两个硬伤：
+  /// ① 临时文件名直接沿用**密文名**（解密后丢掉了扩展名）→ MIME 判不出来 →
+  ///    非音视频文件连内置查看器都进不去，只能扔给系统；
+  /// ② `OpenFilex.open` 启动外部应用后**立刻删除**临时文件 → 系统安装器还没读完
+  ///    就开始装 → 「安装包解析失败」，即沙盒里的 apk 装不上。
+  /// 统一链路会按**解密后的真实文件名**落盘（扩展名正确）、apk 走内置安装器、
+  /// 临时文件在操作结束后自动清理。
   Future<void> _previewFile(VaultFileRecord record) async {
     // 需求3/5：临时解密查看前先过保险箱会话闸门
     // （本次启动已解锁则免验证；未解锁 / 重启后需先验证保险箱密码）。
     if (!await requireVaultSessionUnlock(context)) return;
-    // 目录要预览需整目录递归解密，成本高且无对应查看器，
-    // 引导用户用「恢复」还原到原位置后查看。
+    if (!mounted) return;
+
+    final mount = await _sandboxMount();
+    if (mount == null) return;
+    if (!mounted) return;
+
+    // 虚拟（明文）路径：沙盒密文名与明文名之间的换算就是挂载点本身的职责，
+    // 交给统一链路时给虚拟路径，避免多走一次目录扫描兜底。
+    final virtualPath = p.join(mount.physicalPath, record.originalName);
+
     if (record.isFolder) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).vault_restore_folder_hint)),
-        );
-      }
+      // 目录：进入解密浏览视图（逐层解密列名 + 下钻），不再只提示「请用恢复」
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SandboxCryptBrowserScreen(
+            mount: mount,
+            virtualPath: virtualPath,
+            title: record.originalName,
+          ),
+        ),
+      );
       return;
     }
 
-    final l10n = L10n.of(context);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(L10n.of(context).msg_decrypting, style: const TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    await context.read<FileManagerProvider>().openFile(context, virtualPath);
+  }
 
+  /// 取沙盒（`isSandboxMode`）挂载点，空密码已用主密码补齐。
+  Future<CryptMountPoint?> _sandboxMount() async {
     try {
-      // 解密到临时文件用于预览（旧版 V2/V3 已移除，只剩 crypt 通路）
-      final tempFile = await VaultCryptService.instance.decryptToTemp(
-        encryptedPath: record.scrambledPath,
-      );
-      Navigator.pop(context); // Dismiss loading dialog
-
-      final path = tempFile.path;
-
-      if (record.isFolder) {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ArchiveViewerScreen(archivePath: path),
-          ),
-        );
-      } else {
-        final mimeType = lookupMimeType(path) ?? '';
-
-        if (mimeType.startsWith('image/')) {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => ImageViewerScreen(imagePath: path)));
-        } else if (mimeType.startsWith('video/')) {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: path)));
-        } else if (mimeType.startsWith('audio/')) {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AudioPlayerScreen(
-                audioPath: path,
-                title: record.originalName,
-              ),
-            ),
-          );
-        } else if (FileUtils.isTextOrCode(path)) {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: path)));
-        } else {
-          await OpenFilex.open(path);
-        }
+      final mounts = await _loadMountsWithMasterPassword();
+      for (final m in mounts) {
+        if (m.isSandboxMode) return m;
       }
-
-      // Cleanup temporary file safely
-      try {
-        if (await tempFile.exists()) {
-          await tempFile.delete();
-        }
-      } catch (_) {}
     } catch (e) {
-      Navigator.pop(context); // Dismiss loading dialog
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vault_decrypt_open_failed(e.toString()))),
-        );
-      }
+      debugPrint('[vault] 取沙盒挂载点失败: $e');
     }
+    return null;
   }
 
   void _showInfoDialog(VaultFileRecord record) {

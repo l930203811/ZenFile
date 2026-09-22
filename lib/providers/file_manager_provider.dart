@@ -2139,13 +2139,99 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 获取加密文件临时解密目录路径
+  ///
+  /// 测试注入点 [cryptTempRootOverride] 非 null 时改用它下面的同名子目录，
+  /// 让回归测试不必依赖 `path_provider` 的平台通道。
   Future<String> _getCryptTempDir() async {
-    final tempDir = await getTemporaryDirectory();
-    final cryptTempDir = Directory(p.join(tempDir.path, _cryptTempDirName));
+    final override = cryptTempRootOverride;
+    final String basePath;
+    if (override != null) {
+      basePath = override;
+    } else {
+      basePath = (await getTemporaryDirectory()).path;
+    }
+    final cryptTempDir = Directory(p.join(basePath, _cryptTempDirName));
     if (!await cryptTempDir.exists()) {
       await cryptTempDir.create(recursive: true);
     }
     return cryptTempDir.path;
+  }
+
+  /// 已登记的「延迟清理」临时解密文件。
+  ///
+  /// 临时解密出的明文副本**不能立即删除**：`打开` 只是把文件交给系统安装器 /
+  /// 外部应用，对方何时读完不可知，立即删会出现「安装包解析失败 / 外部应用空白」。
+  /// 但也**不能留着**：明文副本长期躺在缓存里等于加密白做了。
+  /// 折中是「打开后延迟 [Duration] 删除」+ 应用启动时整目录清扫双保险。
+  final Map<String, Timer> _cryptTempCleanupTimers = {};
+
+  /// 登记一个临时解密文件，稍后自动删除。
+  void _scheduleCryptTempCleanup(String tempPath, {Duration? delay}) {
+    final effectiveDelay =
+        delay ?? cryptTempCleanupDelayOverride ?? const Duration(minutes: 5);
+    _cryptTempCleanupTimers.remove(tempPath)?.cancel();
+    _cryptTempCleanupTimers[tempPath] = Timer(effectiveDelay, () async {
+      _cryptTempCleanupTimers.remove(tempPath);
+      try {
+        final f = File(tempPath);
+        if (await f.exists()) await f.delete();
+      } catch (_) {}
+    });
+  }
+
+  /// 把**完整解密** [physicalPath]（磁盘上的密文实体）写到 `crypt_temp/` 下，
+  /// 返回临时文件路径（文件名用解密后的真实名，保证扩展名正确）；失败返回 null。
+  ///
+  /// 抽出来供两处复用：内置播放器/查看器链路（[_decryptCryptFileIfNeeded]）
+  /// 与「交给系统安装器 / 外部应用」链路（[_materializeLocalCryptFile]）。
+  Future<String?> _decryptToCryptTemp(
+    CryptMountPoint mount,
+    String physicalPath,
+    String realName,
+  ) async {
+    try {
+      final physicalFile = File(physicalPath);
+      if (!await physicalFile.exists()) {
+        debugPrint('[ZenFile] Crypt file not found: $physicalPath');
+        return null;
+      }
+
+      // 解密到临时目录
+      final tempDirPath = await _getCryptTempDir();
+      // 使用解密后的真实文件名作为临时文件名（保证扩展名正确，便于播放器识别）
+      final tempFilePath = p.join(
+        tempDirPath,
+        '${DateTime.now().millisecondsSinceEpoch}_$realName',
+      );
+
+      final cryptFile = await CryptFile.open(physicalPath, mount.crypt,
+          mode: CryptFileMode.read);
+      final tempFile = File(tempFilePath);
+      final raf = await tempFile.open(mode: FileMode.write);
+      try {
+        // 流式分块解密写入临时文件，避免大文件一次性读入内存 OOM
+        const chunkSize = 256 * 1024; // 256KB
+        var offset = 0;
+        final decryptedSize = cryptFile.length;
+        while (offset < decryptedSize) {
+          final toRead = (offset + chunkSize > decryptedSize)
+              ? decryptedSize - offset
+              : chunkSize;
+          final data = await cryptFile.read(offset, toRead);
+          await raf.writeFrom(data);
+          offset += data.length;
+        }
+      } finally {
+        await raf.close();
+        await cryptFile.close();
+      }
+
+      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath');
+      return tempFilePath;
+    } catch (e) {
+      debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+      return null;
+    }
   }
 
   /// 清理加密文件临时解密目录（应用启动时调用）
@@ -2242,47 +2328,78 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
-    try {
-      final physicalFile = File(physicalPath);
-      if (!await physicalFile.exists()) {
-        debugPrint('[ZenFile] Crypt file not found: $physicalPath');
-        return path;
-      }
+    final tempFilePath = await _decryptToCryptTemp(mount, physicalPath, realName);
+    if (tempFilePath == null) return path;
+    // 内置查看器（文本 / 文档 / 压缩包…）会直接读取这个临时文件，所以这里只登记
+    // **延迟清理**，绝不立即删除；应用启动时另有整目录清扫兜底。
+    _scheduleCryptTempCleanup(tempFilePath);
+    return tempFilePath;
+  }
 
-      // 解密到临时目录
-      final tempDirPath = await _getCryptTempDir();
-      // 使用解密后的真实文件名作为临时文件名（保证扩展名正确，便于播放器识别）
-      final decryptedName = realName;
-      final tempFilePath = p.join(tempDirPath, '${DateTime.now().millisecondsSinceEpoch}_$decryptedName');
-
-      final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
-      final tempFile = File(tempFilePath);
-      final raf = await tempFile.open(mode: FileMode.write);
-      try {
-        // 流式分块解密写入临时文件，避免大文件一次性读入内存 OOM
-        const chunkSize = 256 * 1024; // 256KB
-        var offset = 0;
-        final decryptedSize = cryptFile.length;
-        while (offset < decryptedSize) {
-          final toRead = (offset + chunkSize > decryptedSize)
-              ? decryptedSize - offset
-              : chunkSize;
-          final data = await cryptFile.read(offset, toRead);
-          await raf.writeFrom(data);
-          offset += data.length;
-        }
-      } finally {
-        await raf.close();
-        await cryptFile.close();
-      }
-
-      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath (${cryptFile.length} bytes)');
-      return tempFilePath;
-    } catch (e) {
-      debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+  /// 把**本地加密文件**落地成磁盘上真实存在的文件路径，供「交给系统安装器 /
+  /// 外部应用 / 内置查看器」的链路使用。
+  ///
+  /// 与 [_decryptCryptFileIfNeeded] 的分工：
+  /// - [_decryptCryptFileIfNeeded] 面向**内置播放器 / 查看器**：音视频与图片返回
+  ///   流式解密 URL（边解密边播），其余类型完整解密到临时文件；
+  /// - 本方法面向 [openFile] 里那些**按扩展名判定的早退分支**（APK 安装、外部
+  ///   打开、内置查看器）。这些分支必须先拿到真实文件：crypt 视图给的
+  ///   `path` 是**只存在于视图里的虚拟明文路径**（磁盘上是密文名），直接交给
+  ///   安装器/外部应用就是「文件不存在」——典型症状是**原地加密的 apk 点了
+  ///   不弹安装器**。
+  ///
+  /// ⚠️ 音视频 / 图片一律**原样返回**：它们已有专用流式链路，转成实体反而丢掉
+  /// 边解边播能力，还白等一次全量解密。
+  Future<String> _materializeLocalCryptFile(String path) async {
+    // 快捷路径：磁盘上真实存在且不带 RCLONE magic 头 → 普通文件，零额外开销
+    if (await File(path).exists() && !await _isEncryptedPhysicalFile(path)) {
       return path;
     }
+
+    await _ensureCryptMountsLoaded();
+    var mount = _findCryptMountForPath(path);
+    mount ??= await _ephemeralMountForDir(p.dirname(path));
+    mount ??= await _ancestorCryptMountFor(path);
+    if (mount == null && await _isEncryptedPhysicalFile(path)) {
+      mount = await _buildMasterMountFor(p.dirname(path));
+    }
+    if (mount == null) return path;
+
+    final physicalPath = await mount.resolvePhysicalPath(path);
+    if (!await _isEncryptedPhysicalFile(physicalPath)) {
+      // 未加密：优先返回磁盘上真实存在的那个路径，绝不返回不存在的虚拟路径
+      if (await File(path).exists()) return path;
+      if (await File(physicalPath).exists()) return physicalPath;
+      return path;
+    }
+
+    String realName;
+    try {
+      realName = mount.crypt.decryptFileName(p.basename(physicalPath));
+    } catch (_) {
+      realName = p.basename(path);
+    }
+    // 音视频 / 图片：交给 [_decryptCryptFileIfNeeded] 的流式链路
+    if (_isVideoOrAudio(realName) || _isImage(realName)) return path;
+
+    final tempFilePath = await _decryptToCryptTemp(mount, physicalPath, realName);
+    if (tempFilePath == null) return path;
+    _scheduleCryptTempCleanup(tempFilePath);
+    return tempFilePath;
   }
+
+  /// 测试注入点：把「延迟清理」的等待时长压到毫秒级，便于断言清理真的发生。
+  @visibleForTesting
+  static Duration? cryptTempCleanupDelayOverride;
+
+  /// 测试注入点：[openFile] 内「本地加密文件落地」这一步的公开入口。
+  ///
+  /// 该步骤在 [openFile] 里依赖 `BuildContext`（要 push 查看器 / 弹「打开方式」），
+  /// 单测无法驱动那些 UI 分支，因此把落地本身单独暴露，用于验证
+  /// 「crypt 视图的虚拟明文路径 → 磁盘上真实存在的文件」这条不变式。
+  @visibleForTesting
+  Future<String> materializeLocalCryptFileForTest(String path) =>
+      _materializeLocalCryptFile(path);
 
   /// 判断物理文件是否为真实的 rclone/OpenList 加密文件（文件头带 RCLONE magic）
   Future<bool> _isEncryptedPhysicalFile(String physicalPath) =>
@@ -4551,7 +4668,10 @@ class FileManagerProvider extends ChangeNotifier {
   /// 远程时一律以连接根为起点逐段累加，**绝不生成 `/` 目标**——否则点根段会请求到
   /// 连接范围之外（`http://host/` 而非 `http://host/dav/`）→ 回不去
   ///（用户反馈：WebDAV「点面包屑 dav 无法返回网盘列表」）。
-  @visibleForTesting
+  ///
+  /// 公开而非 `@visibleForTesting`：UI（`directory_screen`）与回归测试都要用它，
+  /// 标注 `@visibleForTesting` 会让生产代码的调用被判成
+  /// `invalid_use_of_visible_for_testing_member`（analyze 里的 warning，只允许测试用）。
   static ({List<String> labels, List<String> targets}) breadcrumbPaths({
     required String currentPath,
     required bool isRemoteTab,
@@ -11669,6 +11789,19 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (e) {
         debugPrint('Error creating temporary copy for restricted file: $e');
       }
+    }
+
+    // 本地加密文件（音视频 / 图片除外）：先临时解密成磁盘上真实存在的文件。
+    //
+    // 下面所有分支都按**扩展名 / 文件是否存在**判定，而 crypt 视图给出的 `path`
+    // 是**只存在于视图里的虚拟明文路径**（磁盘上是密文名）。不先落地就会出现
+    // 「原地加密的 apk 点了不弹安装器」「外部应用提示文件不存在」这类失败。
+    // 音视频 / 图片由 `_materializeLocalCryptFile` 原样放行，继续走流式解密链路。
+    if (!activeTab.isRemote &&
+        !path.startsWith('http') &&
+        !path.startsWith('remote://') &&
+        !path.startsWith('cryptremote://')) {
+      targetPath = await _materializeLocalCryptFile(targetPath);
     }
 
     // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，
