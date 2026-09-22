@@ -19,6 +19,7 @@ import '../../../services/lyric_search_service.dart';
 import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
 import '../../../services/audio_equalizer_service.dart';
+import '../../../services/mpv_audio_output_service.dart';
 import '../../../providers/file_manager_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
@@ -234,18 +235,24 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         try {
           final platform = player.platform;
           if (platform is NativePlayer) {
-            // OpenSL ES 输出流（设置页「音效与均衡器」内开关，兼容
-            // RootlessJamesDSP 等免 Root 音效软件）：必须在 open 之前设置，
-            // mpv 初始化音频输出链时即生效；开启后切歌不再重建 AudioTrack。
-            if (PreferencesService.getOpenSLESOutput()) {
-              await platform.setProperty('ao', 'opensles');
-            }
+            // 音频输出（AO 链 + 音频会话 id）配置：必须在 open 之前完成，
+            // mpv 只在初始化音频输出链时读这些选项。细节见服务内注释
+            // （单值 ao=opensles 会把 audiotrack 从候选里删掉且不回退）。
+            await MpvAudioOutputService.configureBeforeOpen(
+              platform,
+              openSlEsEnabled: PreferencesService.getOpenSLESOutput(),
+              tag: 'audio',
+            );
             await platform.setProperty('network-timeout', '60');
             await platform.setProperty('cache-secs', '10');
           }
         } catch (e) {
           debugPrint('设置 audio network-timeout 失败: $e');
         }
+        // 起播后回读「实际生效的 AO」——判 opensles 有没有真的建起来，
+        // 只能靠这个回读值，体感无法区分「没生效」与「建不起来所以静音」。
+        // 仅在诊断日志开启时产生（否则内部直接返回，零开销）。
+        MpvAudioOutputService.scheduleActualAoSample(player, 'audio');
         _openTrack();
       }();
       if (_isBackgroundMode) {

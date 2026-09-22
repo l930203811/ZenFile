@@ -2274,6 +2274,26 @@ class MainActivity : AudioServiceFragmentActivity() {
                 result.error("VOLUME_ERROR", e.message, null)
             }
         }
+
+        // 音频会话 ID：mpv 的 ao_audiotrack 驱动只暴露两个选项 —— pcm-float
+        // 与 session-id（options_prefix=audiotrack，故 Dart 侧属性名为
+        // audiotrack-session-id）。不设置时 Android 会为每个新建的 AudioTrack
+        // 另分配一个会话号，于是按 session 追踪或挂音效的软件（如免 Root 的
+        // RootlessJamesDSP）会在开播/切歌时「丢失目标」。这里提供一个由系统
+        // 生成的会话号，供 mpv 在创建 AudioTrack 时绑定。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_session").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "generateAudioSessionId" -> {
+                        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                        result.success(audioManager.generateAudioSessionId())
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("AUDIO_SESSION_ERROR", e.message, null)
+            }
+        }
     }
 
     /// 修改 APK 的 AndroidManifest.xml（简化版：使用 aapt 工具或二进制修改）。
