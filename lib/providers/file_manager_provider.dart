@@ -4615,10 +4615,16 @@ class FileManagerProvider extends ChangeNotifier {
         ],
       );
     }
-    // 本地路径：沿用「以 '/' 为根」的历史语义，行为不变。
+    // 本地路径：以 `/` 为根逐段累加。
+    //
+    // ⚠️ 标签与目标**必须一一对应**：UI 用 `List.generate(labels.length)` 并按同一
+    // 下标取 `targets[index]`。历史上这里 labels 比 targets 少一项（`/` 那一段没配
+    // 标签），于是**每个标签都错位指向上一层**路径 —— 用户反馈的
+    // 「打开 /storage/emulated/0 的子目录时，点面包屑 `0` 跳到 /storage/emulated」
+    // 就是这么来的（`0` 取到了「/storage/emulated」那格目标）。
     final segs = currentPath.split('/').where((n) => n.isNotEmpty).toList();
     return (
-      labels: segs.isEmpty ? [rootLabel] : segs,
+      labels: [rootLabel, ...segs],
       targets: [
         '/',
         for (int k = 0; k < segs.length; k++) '/${segs.sublist(0, k + 1).join('/')}',

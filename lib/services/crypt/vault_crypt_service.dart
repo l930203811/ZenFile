@@ -239,11 +239,32 @@ class VaultCryptService {
     // 确保父目录有对应的 crypt 挂载点
     final mounts = await CryptMountService.loadMountPoints();
     CryptMountPoint? parentMount;
+    // ⚠️ 目标条目**本身就是某个挂载点的根**：这时不能拿它去加密。
+    //
+    // 触发条件（很常见）：`encryptInPlace` 把挂载点建在被加密条目的**父目录**上，
+    // 所以「此前对它**里面的**文件/子文件夹做过原地加密」这一步，就已经把挂载点
+    // 登记在这个文件夹自身了（例如从分类页/最近文件里加密过夹内某个文件）。
+    //
+    // 若直接沿用该挂载点，`CryptOperations.encryptDirectory` 会命中末尾那条守卫 ——
+    // 「目标目录 == 挂载点 physicalPath → 跳过给目录改名」（守卫的初衷是保护存储根
+    // 级别的挂载点：根被改名后 `containsPath` 失配）→ 只加密子项、目录名保持明文。
+    // 用户反馈的正是这个：「原地加密的文件夹解密后再次原地加密，该文件夹不会被
+    // 加密、名字显示明文，不过文件夹内的文件倒是可以正常加密」。
+    //
+    // 它**不是**「不能改名的根」（真正不能改名的只有存储根目录级别的挂载点）：
+    // 把根上移到父目录即可继续覆盖整棵子树，目标目录随之正常改名。
+    CryptMountPoint? selfMount;
     for (final mount in mounts) {
       // ⚠️ 必须跳过「整机根目录」级别的挂载点：浏览页与解密层都会排除它，
       // 若加密时沿用了它，就会出现「加密用了 A 挂载点、浏览/解密用 B」的错配，
       // 表现为加密后浏览页仍显示密文、重启后目录空白。
       if (mount.isSandboxMode || _isStorageRootPath(mount.physicalPath)) continue;
+      // 比较方式必须与 `encryptDirectory` 里的守卫一致（`p.equals`），
+      // 否则会出现「这边以为是父目录挂载点、那边却判定为根」的分歧。
+      if (p.equals(mount.physicalPath, sourcePath)) {
+        selfMount = mount;
+        continue;
+      }
       if (mount.containsPath(sourcePath)) {
         parentMount = mount;
         break;
@@ -255,7 +276,11 @@ class VaultCryptService {
       // 保证与 OpenList / rclone 配置一致。
       // 传 sourcePath 让「路径绑定」优先生效：用户给这片目录指定过哪份档案，
       // 加密时就用哪份（未指定则回退当前默认档案）。
-      final config = await requireMasterConfig(path: sourcePath);
+      // 已有「根落在目标条目自身」的挂载点时，退回它记录的配置兜底 ——
+      // 那是当初加密该目录内部内容所用的钥匙，必须保持一致。
+      final config = selfMount != null
+          ? (await getMasterConfig(path: sourcePath) ?? selfMount.config)
+          : await requireMasterConfig(path: sourcePath);
       parentMount = CryptMountPoint(
         physicalPath: parentDir,
         config: config,
@@ -298,6 +323,19 @@ class VaultCryptService {
     // 结果就是显示密文名、点进去空白、音视频图片全部打不开。
     // 登记表与挂载点解耦，可以安全地记下根目录，供浏览层精确按需挂载。
     await CryptMountService.addEncryptedDir(parentDir);
+
+    // 「根 == 目标条目」的旧挂载点必须作废：目标目录此刻已改名成密文，那个路径在
+    // 磁盘上已不存在。留着会让浏览层把这个**密文目录**当成挂载点根
+    // （`containsPath` 命中 → 虚拟路径等于它自己的密文名）→ 显示密文名、点进去空白。
+    // 覆盖责任已由上面的父目录挂载点 + 登记表接管。
+    // （改名失败时异常已抛出、走不到这里 —— 挂载点与磁盘状态始终保持一致。）
+    if (selfMount != null && !p.equals(parentMount.physicalPath, sourcePath)) {
+      await CryptMountService.removeMountPoint(selfMount.physicalPath);
+      // 历史遗留：旧版在这里命中守卫时，会把该目录登记成「名字明文 + 子项密文」的
+      // 容器。现在目录名已是密文，这条登记不再成立（留着不会被误判成加密目录，
+      // 但没必要长期滞留）。
+      await CryptMountService.removeInPlaceContainerDir(sourcePath);
+    }
 
     // 记下「这片目录用的是哪份档案」，浏览层据此 O(1) 取到正确密钥，
     // 无需逐个档案试解（每个 CryptMountPoint 构造都要跑一次 scrypt）。

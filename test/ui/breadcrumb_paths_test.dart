@@ -170,8 +170,9 @@ void main() {
           currentPath: '/storage/emulated/0/Download',
           isRemoteTab: false,
           remoteRoot: '/',
+          rootLabel: '根目录',
         ),
-        ['storage', 'emulated', '0', 'Download'],
+        ['根目录', 'storage', 'emulated', '0', 'Download'],
       );
       expect(
         targetsOf(
@@ -198,6 +199,70 @@ void main() {
         targetsOf(currentPath: '/', isRemoteTab: false, remoteRoot: '/'),
         ['/'],
       );
+    });
+  });
+
+  group('标签与目标必须一一对应（用户反馈：点 `0` 跳到 /storage/emulated）', () {
+    /// UI 用 `List.generate(labels.length)` 且按同一下标取 `targets[index]`，
+    /// 所以两者长度必须相等，且**每格目标就是那格标签指向的目录**。
+    /// 历史 bug：本地分支 labels 比 targets 少一项（`/` 那段没配标签），
+    /// 于是所有标签集体错位指向上一层，点 `0` 会退到 `/storage/emulated`。
+    void expectAligned({
+      required String currentPath,
+      required bool isRemoteTab,
+      required String remoteRoot,
+      String connName = '',
+    }) {
+      final labels = labelsOf(
+        currentPath: currentPath,
+        isRemoteTab: isRemoteTab,
+        remoteRoot: remoteRoot,
+        connName: connName,
+      );
+      final targets = targetsOf(
+        currentPath: currentPath,
+        isRemoteTab: isRemoteTab,
+        remoteRoot: remoteRoot,
+        connName: connName,
+      );
+      expect(labels.length, targets.length,
+          reason: '$currentPath：标签数必须等于目标数（否则 UI 会错位）');
+      expect(targets.last, currentPath, reason: '最后一段必须指向当前路径本身');
+    }
+
+    test('/storage/emulated/0 的子目录：点 `0` 应落在 /storage/emulated/0', () {
+      const current = '/storage/emulated/0/我的文件夹';
+      final labels =
+          labelsOf(currentPath: current, isRemoteTab: false, remoteRoot: '/');
+      final targets =
+          targetsOf(currentPath: current, isRemoteTab: false, remoteRoot: '/');
+      expectAligned(currentPath: current, isRemoteTab: false, remoteRoot: '/');
+
+      // 按标签找「那一格」——正是用户手指点的东西
+      final idx = labels.indexOf('0');
+      expect(idx, isNot(-1));
+      expect(targets[idx], '/storage/emulated/0',
+          reason: '点标签 `0` 必须进入 /storage/emulated/0，不能退到 /storage/emulated');
+      expect(labels.indexOf('storage'), 1);
+      expect(targets[1], '/storage');
+    });
+
+    test('本地 / 远程（含 remote:// 与 cryptremote://）一律对齐', () {
+      expectAligned(currentPath: '/storage/emulated/0/Download', isRemoteTab: false, remoteRoot: '/');
+      expectAligned(currentPath: '/', isRemoteTab: false, remoteRoot: '/');
+      expectAligned(currentPath: '/dav/115网盘', isRemoteTab: true, remoteRoot: '/dav', connName: '115');
+      expectAligned(currentPath: '/dav', isRemoteTab: true, remoteRoot: '/dav');
+      expectAligned(currentPath: '/share/docs', isRemoteTab: true, remoteRoot: '/', connName: 'NAS');
+      expectAligned(
+          currentPath: 'remote://abc|/dav/115网盘',
+          isRemoteTab: true,
+          remoteRoot: '/dav',
+          connName: '115');
+      expectAligned(
+          currentPath: 'cryptremote://abc|/dav/加密夹',
+          isRemoteTab: true,
+          remoteRoot: '/dav',
+          connName: '115');
     });
   });
 }
