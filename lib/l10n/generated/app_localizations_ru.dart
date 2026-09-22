@@ -7933,4 +7933,11 @@ class L10nRu extends L10n {
   @override
   String get video_vo_compat =>
       'Обнаружена проблема рендеринга видео. Переключено в режим совместимости.';
+
+  @override
+  String get audio_opensles_title => 'Вывод OpenSL ES';
+
+  @override
+  String get audio_opensles_desc =>
+      'Включить вывод OpenSL ES для совместимости с приложениями звука без root (например, RootlessJamesDSP). После переключения перезапустите плеер';
 }

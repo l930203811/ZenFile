@@ -7856,4 +7856,11 @@ class L10nEn extends L10n {
   @override
   String get video_vo_compat =>
       'Video rendering issue detected. Switched to compatibility rendering mode.';
+
+  @override
+  String get audio_opensles_title => 'OpenSL ES Output';
+
+  @override
+  String get audio_opensles_desc =>
+      'Enable OpenSL ES output for compatibility with rootless audio effects apps like RootlessJamesDSP; reopen the player after toggling';
 }

@@ -7950,5 +7950,14 @@
   "ui_delete_confirm_subtitle": "Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.",
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
   "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
-  "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet."
+  "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.",
+  "audio_opensles_title": "OpenSL ES-Ausgabe",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "OpenSL ES-Ausgabe für Kompatibilität mit Root-freien Sound-Apps wie RootlessJamesDSP aktivieren. Nach dem Umschalten muss der Player neu geöffnet werden",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

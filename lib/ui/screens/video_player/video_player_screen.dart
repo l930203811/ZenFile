@@ -269,6 +269,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       try {
         final platform = player.platform;
       if (platform is NativePlayer) {
+        // OpenSL ES 输出流（设置页「音效与均衡器」内开关，兼容 RootlessJamesDSP
+        // 等免 Root 音效软件）：必须在 open 之前设置，mpv 初始化音频输出链时
+        // 即生效；开启后切歌不再重建 AudioTrack。
+        if (PreferencesService.getOpenSLESOutput()) {
+          await platform.setProperty('ao', 'opensles');
+        }
         await platform.setProperty('network-timeout', '60');
         // 远程（含本地代理 127.0.0.1）播放：放大缓存与解复用缓冲，吸收代理喂流的
         // 脉冲式抖动，使 SFTP/FTP/SMB 与 WebDAV 直连一样流畅。此前这些仅在软解模式
@@ -1651,6 +1657,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
+        // OpenSL ES 输出流（设置页「音效与均衡器」内开关，兼容 RootlessJamesDSP
+        // 等免 Root 音效软件）：必须在 open 之前设置，mpv 初始化音频输出链时
+        // 即生效；开启后切歌不再重建 AudioTrack。
+        if (PreferencesService.getOpenSLESOutput()) {
+          await platform.setProperty('ao', 'opensles');
+        }
         await platform.setProperty('network-timeout', '60');
         // 与初始播放一致：所有解码模式都放大缓存/解复用缓冲，掩盖代理喂流抖动
         // （硬解默认路径此前只有 cache-secs=10，demuxer 缓冲极小 → 远程视频卡顿）。

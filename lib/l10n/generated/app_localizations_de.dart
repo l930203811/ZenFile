@@ -7945,4 +7945,11 @@ class L10nDe extends L10n {
   @override
   String get video_vo_compat =>
       'Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.';
+
+  @override
+  String get audio_opensles_title => 'OpenSL ES-Ausgabe';
+
+  @override
+  String get audio_opensles_desc =>
+      'OpenSL ES-Ausgabe für Kompatibilität mit Root-freien Sound-Apps wie RootlessJamesDSP aktivieren. Nach dem Umschalten muss der Player neu geöffnet werden';
 }

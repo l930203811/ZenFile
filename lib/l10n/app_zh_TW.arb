@@ -8101,5 +8101,14 @@
   "ui_delete_confirm_subtitle": "刪除檔案時顯示二次確認彈窗，關閉後直接刪除",
   "ui_delete_confirm_dont_ask": "刪除不再提示",
   "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
-  "video_vo_compat": "影片渲染異常，已切換為相容渲染模式"
+  "video_vo_compat": "影片渲染異常，已切換為相容渲染模式",
+  "audio_opensles_title": "OpenSL ES 輸出流",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "啟用 OpenSL ES 輸出，相容 RootlessJamesDSP 等免 Root 音效軟體；切換後需重新開啟播放器生效",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

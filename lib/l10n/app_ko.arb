@@ -7953,5 +7953,14 @@
   "ui_delete_confirm_subtitle": "파일 삭제 전에 확인 대화상자를 표시합니다. 끄면 바로 삭제합니다.",
   "ui_delete_confirm_dont_ask": "다시 묻지 않음",
   "video_auto_fallback_soft": "하드웨어 디코딩 오류가 감지되어 소프트웨어 디코딩으로 자동 전환했습니다.",
-  "video_vo_compat": "비디오 렌더링 오류가 감지되어 호환 렌더링 모드로 전환했습니다."
+  "video_vo_compat": "비디오 렌더링 오류가 감지되어 호환 렌더링 모드로 전환했습니다.",
+  "audio_opensles_title": "OpenSL ES 출력",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "RootlessJamesDSP 등 루트 없는 사운드 앱과의 호환을 위해 OpenSL ES 출력을 활성화합니다. 전환 후 플레이어를 다시 열어야 합니다",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

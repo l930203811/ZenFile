@@ -234,6 +234,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         try {
           final platform = player.platform;
           if (platform is NativePlayer) {
+            // OpenSL ES 输出流（设置页「音效与均衡器」内开关，兼容
+            // RootlessJamesDSP 等免 Root 音效软件）：必须在 open 之前设置，
+            // mpv 初始化音频输出链时即生效；开启后切歌不再重建 AudioTrack。
+            if (PreferencesService.getOpenSLESOutput()) {
+              await platform.setProperty('ao', 'opensles');
+            }
             await platform.setProperty('network-timeout', '60');
             await platform.setProperty('cache-secs', '10');
           }
@@ -1868,6 +1874,31 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ── OpenSL ES 输出流（兼容免 Root 音效软件） ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(L10n.of(dialogContext).audio_opensles_title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(L10n.of(dialogContext).audio_opensles_desc, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: PreferencesService.getOpenSLESOutput(),
+                            activeColor: Colors.deepPurpleAccent,
+                            onChanged: (v) {
+                              PreferencesService.saveOpenSLESOutput(v);
+                              setModalState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       // ── 均衡器预设（实时生效） ──
                       Text(L10n.of(dialogContext).eq_presets, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),

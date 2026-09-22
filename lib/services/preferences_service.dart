@@ -943,6 +943,7 @@ class PreferencesService {
   static const String _keyAudioBackgroundPlay = 'audio_background_play';
   static const String _keyActiveAppIcon = 'active_app_icon';
   static const String _keyDesktopLyricEnabled = 'desktop_lyric_enabled';
+  static const String _keyOpenSLESOutput = 'opensles_output';
 
   static bool getAudioBackgroundPlay() {
     return _prefs?.getBool(_keyAudioBackgroundPlay) ?? false;
@@ -950,6 +951,19 @@ class PreferencesService {
 
   static Future<void> saveAudioBackgroundPlay(bool val) async {
     await _prefs?.setBool(_keyAudioBackgroundPlay, val);
+  }
+
+  /// 是否使用 OpenSL ES 输出流（mpv `--ao=opensles`）。
+  ///
+  /// 默认关闭（沿用 mpv 默认 AudioTrack 输出）。开启后 libmpv 改用 OpenSL ES
+  /// 输出，兼容 RootlessJamesDSP 等免 Root 音效软件（它们依赖 OpenSL ES 流），
+  /// 避免被判定为「不支持的应用程序」以及切歌时音轨重建导致断音。
+  static bool getOpenSLESOutput() {
+    return _prefs?.getBool(_keyOpenSLESOutput) ?? false;
+  }
+
+  static Future<void> saveOpenSLESOutput(bool val) async {
+    await _prefs?.setBool(_keyOpenSLESOutput, val);
   }
 
   static bool getDesktopLyricEnabled() {

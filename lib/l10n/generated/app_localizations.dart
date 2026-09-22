@@ -13971,6 +13971,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'视频渲染异常，已切换为兼容渲染模式'**
   String get video_vo_compat;
+
+  /// audio_player_screen.dart OpenSL ES output switch
+  ///
+  /// In zh, this message translates to:
+  /// **'OpenSL ES 输出流'**
+  String get audio_opensles_title;
+
+  /// audio_player_screen.dart OpenSL ES output switch subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'启用 OpenSL ES 输出，兼容 RootlessJamesDSP 等免 Root 音效软件；切换后需重新打开播放器生效'**
+  String get audio_opensles_desc;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

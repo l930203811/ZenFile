@@ -8240,5 +8240,14 @@
   "ui_delete_confirm_subtitle": "删除文件时显示二次确认弹窗，关闭后直接删除",
   "ui_delete_confirm_dont_ask": "删除不再提示",
   "video_auto_fallback_soft": "检测到硬解异常，已自动切换为软解",
-  "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式"
+  "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式",
+  "audio_opensles_title": "OpenSL ES 输出流",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "启用 OpenSL ES 输出，兼容 RootlessJamesDSP 等免 Root 音效软件；切换后需重新打开播放器生效",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

@@ -7957,5 +7957,14 @@
   "ui_delete_confirm_subtitle": "ファイル削除前に確認ダイアログを表示します。オフにすると直接削除します。",
   "ui_delete_confirm_dont_ask": "今後確認しない",
   "video_auto_fallback_soft": "ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。",
-  "video_vo_compat": "動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。"
+  "video_vo_compat": "動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。",
+  "audio_opensles_title": "OpenSL ES 出力",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "RootlessJamesDSP などの root 不要の音響アプリとの互換性のため OpenSL ES 出力を有効にします。切り替え後はプレイヤーを開き直してください",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

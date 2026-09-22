@@ -7979,4 +7979,11 @@ class L10nFr extends L10n {
   @override
   String get video_vo_compat =>
       'Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité.';
+
+  @override
+  String get audio_opensles_title => 'Sortie OpenSL ES';
+
+  @override
+  String get audio_opensles_desc =>
+      'Activer la sortie OpenSL ES pour la compatibilité avec les applications audio sans root comme RootlessJamesDSP ; rouvrir le lecteur après modification';
 }

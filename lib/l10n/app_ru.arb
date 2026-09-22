@@ -7953,5 +7953,14 @@
   "ui_delete_confirm_subtitle": "Показывать подтверждение перед удалением файлов. Выкл. = удалять сразу.",
   "ui_delete_confirm_dont_ask": "Больше не спрашивать",
   "video_auto_fallback_soft": "Обнаружена проблема аппаратного декодирования. Автоматически переключено на программное.",
-  "video_vo_compat": "Обнаружена проблема рендеринга видео. Переключено в режим совместимости."
+  "video_vo_compat": "Обнаружена проблема рендеринга видео. Переключено в режим совместимости.",
+  "audio_opensles_title": "Вывод OpenSL ES",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "Включить вывод OpenSL ES для совместимости с приложениями звука без root (например, RootlessJamesDSP). После переключения перезапустите плеер",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

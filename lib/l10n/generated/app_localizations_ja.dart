@@ -7618,4 +7618,11 @@ class L10nJa extends L10n {
 
   @override
   String get video_vo_compat => '動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。';
+
+  @override
+  String get audio_opensles_title => 'OpenSL ES 出力';
+
+  @override
+  String get audio_opensles_desc =>
+      'RootlessJamesDSP などの root 不要の音響アプリとの互換性のため OpenSL ES 出力を有効にします。切り替え後はプレイヤーを開き直してください';
 }

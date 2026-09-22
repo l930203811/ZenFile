@@ -7450,6 +7450,13 @@ class L10nZh extends L10n {
 
   @override
   String get video_vo_compat => '视频渲染异常，已切换为兼容渲染模式';
+
+  @override
+  String get audio_opensles_title => 'OpenSL ES 输出流';
+
+  @override
+  String get audio_opensles_desc =>
+      '启用 OpenSL ES 输出，兼容 RootlessJamesDSP 等免 Root 音效软件；切换后需重新打开播放器生效';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14868,4 +14875,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get video_vo_compat => '影片渲染異常，已切換為相容渲染模式';
+
+  @override
+  String get audio_opensles_title => 'OpenSL ES 輸出流';
+
+  @override
+  String get audio_opensles_desc =>
+      '啟用 OpenSL ES 輸出，相容 RootlessJamesDSP 等免 Root 音效軟體；切換後需重新開啟播放器生效';
 }

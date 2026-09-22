@@ -7828,4 +7828,11 @@ class L10nAr extends L10n {
   @override
   String get video_vo_compat =>
       'تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.';
+
+  @override
+  String get audio_opensles_title => 'مخرجات OpenSL ES';
+
+  @override
+  String get audio_opensles_desc =>
+      'تفعيل مخرجات OpenSL ES للتوافق مع تطبيقات الصوت بدون صلاحيات الجذر مثل RootlessJamesDSP؛ أعد فتح المشغل بعد التبديل';
 }

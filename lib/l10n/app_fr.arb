@@ -7953,5 +7953,14 @@
   "ui_delete_confirm_subtitle": "Afficher une confirmation avant de supprimer des fichiers. Désactivé = suppression directe.",
   "ui_delete_confirm_dont_ask": "Ne plus demander",
   "video_auto_fallback_soft": "Problème de décodage matériel détecté. Bascule automatique en décodage logiciel.",
-  "video_vo_compat": "Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité."
+  "video_vo_compat": "Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité.",
+  "audio_opensles_title": "Sortie OpenSL ES",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "Activer la sortie OpenSL ES pour la compatibilité avec les applications audio sans root comme RootlessJamesDSP ; rouvrir le lecteur après modification",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }
