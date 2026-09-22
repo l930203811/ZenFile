@@ -335,6 +335,69 @@ void main() {
       );
     });
 
+    test('目录「加密 → 解密 → 再加密」：第二次加密仍必须把目录名换成密文', () async {
+      // 用户反馈：原地加密 → 解密 → 再次原地加密时，目录名仍是明文
+      // （目录内的文件倒是加密了）。用真实字节复刻整条往返链路。
+      final dir = Directory(p.join(serverRoot.path, 'crypt', 'Docs'))
+        ..createSync(recursive: true);
+      await File(p.join(dir.path, 'a.txt')).writeAsBytes(payload(300), flush: true);
+
+      // ① 首次原地加密
+      await provider.encryptRemoteInPlace(['$serverBase/Docs']);
+      final encDirName = crypt.encryptDirName('Docs');
+      final encDir = Directory(p.join(serverRoot.path, 'crypt', encDirName));
+      expect(encDir.existsSync(), isTrue, reason: '① 首次加密应生成密文目录');
+
+      // ② 原地解密（明文回写替换）
+      await provider.decryptRemoteInPlace(
+        ['cryptremote://$connId|$serverBase/$encDirName'],
+      );
+      expect(dir.existsSync(), isTrue, reason: '② 解密后应回到明文目录');
+
+      // ③ 再次原地加密
+      await provider.encryptRemoteInPlace(['$serverBase/Docs']);
+
+      expect(dir.existsSync(), isFalse,
+          reason: '③ 再次加密后明文目录必须消失（目录名应换成密文）');
+      expect(encDir.existsSync(), isTrue,
+          reason: '③ 再次加密后应重新出现密文目录');
+      final names = encDir.listSync().map((e) => p.basename(e.path)).toSet();
+      expect(names, {crypt.encryptFileName('a.txt')});
+    });
+
+    test('加密目录里的明文条目用 cryptremote 虚拟路径可原地加密（不再静默跳过）', () async {
+      // 复刻用户操作：目录已被登记为「关联加密目录」（crypt 视图），其中有一个
+      // **尚未加密**的明文条目。用户在 crypt 视图里对它点「加密」——旧逻辑会把
+      // 「加密」入口藏掉 / 查表按明文名 miss 后静默 continue，表现为"没反应"。
+      await CryptMountService.addRemoteEncryptedDir(connId, serverBase);
+      final dir = Directory(p.join(serverRoot.path, 'crypt', 'Docs'))
+        ..createSync(recursive: true);
+      await File(p.join(dir.path, 'a.txt')).writeAsBytes(payload(256), flush: true);
+
+      await provider.encryptRemoteInPlace(
+        ['cryptremote://$connId|$serverBase/Docs'],
+      );
+
+      expect(dir.existsSync(), isFalse, reason: '明文目录必须被换成密文名');
+      final encDir =
+          Directory(p.join(serverRoot.path, 'crypt', crypt.encryptDirName('Docs')));
+      expect(encDir.existsSync(), isTrue, reason: 'cryptremote 虚拟路径也要能命中并加密');
+      expect(
+        encDir.listSync().map((e) => p.basename(e.path)).toSet(),
+        {crypt.encryptFileName('a.txt')},
+      );
+    });
+
+    test('服务端查不到条目时给出可见错误（不再"什么都不发生"）', () async {
+      // 一个都不存在 → 必须抛错（UI 会弹失败提示），而不是静默返回。
+      await expectLater(
+        provider.encryptRemoteInPlace(
+          ['cryptremote://$connId|$serverBase/NoSuchDir'],
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('进度：条目进度单调不减且收尾于 1.0，字节进度收尾于 2×明文大小', () async {
       await serverFile('big.bin').writeAsBytes(payload(4096), flush: true);
 

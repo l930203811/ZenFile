@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,9 +73,17 @@ class VaultCryptService {
     return password;
   }
 
+  /// 测试注入点：覆盖「应用文档目录」，让沙盒回归测试不必依赖 path_provider
+  /// 平台通道（与 `FileManagerProvider.cryptTempRootOverride` 同一套路）。
+  /// 生产代码永远为 null。
+  @visibleForTesting
+  static String? sandboxDocsDirOverride;
+
   /// 获取沙盒加密目录路径
   Future<String> getSandboxDir() async {
-    final docDir = await getApplicationDocumentsDirectory();
+    final docDir = sandboxDocsDirOverride != null
+        ? Directory(sandboxDocsDirOverride!)
+        : await getApplicationDocumentsDirectory();
     final sandboxDir = Directory(p.join(docDir.path, _sandboxDirName));
     if (!await sandboxDir.exists()) {
       await sandboxDir.create(recursive: true);
@@ -818,6 +827,24 @@ class VaultCryptService {
       await saveSandboxOrigins(
         relPairs.map((k, v) => MapEntry(p.join(sandboxDir.path, k), v)),
       );
+    }
+
+    // ⚠️ 沙盒挂载点必须在这里重建：上面的 `saveMountPoints(const [])` 会把
+    // 「沙盒」与「原地加密」两类挂载点**一并清空**（两者同表存储）。密文虽然
+    // 已经写回 `vault_crypt/`，但保险箱列表（`_loadCryptSandboxRecords` 只在
+    // 存在 `isSandboxMode` 挂载点时才会枚举条目）会因查不到沙盒挂载点而返回
+    // 空列表 —— 用户看到的表现正是「提示恢复成功、数量也对，但沙盒列表里
+    // 看不到恢复回来的文件」（文件其实已在磁盘上）。
+    // `ensureSandboxMount()` 内部走 `getSandboxConfig()`，取的正是本次刚恢复的
+    // 主密码/盐/编码/后缀，因此重建出的挂载点一定能解开备份里的密文。
+    if (await sandboxDir.exists()) {
+      try {
+        await ensureSandboxMount();
+      } catch (e) {
+        // 备份未携带主密码（旧包）/ 用户尚未配置主密码：解不开就只能保持
+        // 「列表为空」，但不能因此把整个导入判为失败（文件已经恢复了）。
+        debugPrint('[vault] 恢复后重建沙盒挂载点失败: $e');
+      }
     }
 
     return imported;

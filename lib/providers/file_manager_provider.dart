@@ -2923,6 +2923,28 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 在远程目录索引里按名字找条目：先按原始名，再按「解密后的明文名」别名匹配。
+  ///
+  /// cryptremote 虚拟路径给的是**明文名**，而服务端真实名可能是密文名（原地加密
+  /// 过的条目）；只按原始名查表会 miss → 上游静默跳过，用户看到「点了没反应」。
+  RemoteFileItem? _lookupRemoteEntry(
+    Map<String, RemoteFileItem> index,
+    String name,
+    CryptMountPoint mount,
+  ) {
+    final direct = index[name];
+    if (direct != null) return direct;
+    for (final it in index.values) {
+      try {
+        final plain = it.isDirectory
+            ? mount.crypt.decryptDirName(it.name)
+            : mount.crypt.decryptFileName(it.name);
+        if (plain.isNotEmpty && plain == name) return it;
+      } catch (_) {}
+    }
+    return null;
+  }
+
   /// 递归删除远程条目（部分协议 `delete(path, isDir)` 只删空目录，这里自底向上兜底）。
   Future<void> _deleteRemoteTree(
     RemoteClient client,
@@ -3002,6 +3024,10 @@ class FileManagerProvider extends ChangeNotifier {
     // 已被登记表覆盖的目录（含子目录）不重复登记——加密目录内部再加密一个条目时，
     // 父目录已经是一个密文子目录，把它当成新的密文根会把整个加密视图搞乱。
     final registeredDirs = <String>{};
+    // 处理失败的条目（服务端查不到 / 挂载点解析不到），用于结束后给出可见反馈，
+    // 避免「点了加密但什么都没发生」（历史 bug：查不到就静默 continue）。
+    final skipped = <String>[];
+    var processed = 0;
     List<RemoteCryptDirRecord> knownRemoteDirs = const [];
     try {
       knownRemoteDirs = await CryptMountService.loadRemoteEncryptedDirs();
@@ -3020,17 +3046,35 @@ class FileManagerProvider extends ChangeNotifier {
           config: config,
           profileId: activeProfile?.id,
         );
-        if (mount == null) continue;
+        if (mount == null) {
+          skipped.add(baseName);
+          continue;
+        }
 
         final index = await _listRemoteIndex(client, parentServer);
-        final info = index[baseName];
-        if (info == null) continue; // 已被外部删除
+        // 命中可能来自两种路径形态：
+        //  · 普通远程目录 → baseName 就是服务端真名，直接命中；
+        //  · cryptremote 虚拟路径 → baseName 是**明文名**，而服务端真名可能是密文名
+        //    （原地加密过的条目）→ 需要按「解密后的明文名」建别名再匹配。
+        //    旧实现只按原始名查表，miss 后**静默 continue**，于是「解密后再次原地
+        //    加密」看起来什么都没发生（用户反馈：文件夹不会被加密、名字还是明文）。
+        final info = _lookupRemoteEntry(index, baseName, mount);
+        if (info == null) {
+          skipped.add(baseName);
+          continue; // 服务端已无此条目（外部删除 / 名字对不上）
+        }
+        // 一律用 LIST 到的**真实服务端路径**做下载/删除，而不是把虚拟明文路径直接
+        // 当服务端路径用（对密文条目会指向一个不存在的名字）。
+        final realServerPath = info.path.isNotEmpty
+            ? info.path
+            : _joinRemotePath(parentServer, info.name);
+        final realBaseName = p.posix.basename(realServerPath);
         final isDir = info.isDirectory;
         final itemBytes = isDir ? 0 : info.size.clamp(0, 1 << 62);
 
         // 进度：条目 i 占 [i, i+1]，条目内「下载」占前半段、「加密上传」占后半段。
         void emitOverall(double fileFrac) =>
-            onProgress?.call(baseName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
+            onProgress?.call(realBaseName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
         // 字节进度：下载 d∈[0,size] + 上传 u∈[0,size]，分母 2*size，保证单调不回退。
         void emitBytes(int downloaded, int uploaded) {
           if (itemBytes <= 0) {
@@ -3043,12 +3087,12 @@ class FileManagerProvider extends ChangeNotifier {
         emitOverall(0);
         emitBytes(0, 0);
 
-        final localTmp = p.join(tmpDir.path, baseName);
+        final localTmp = p.join(tmpDir.path, realBaseName);
         if (isDir) {
-          await _downloadRemoteDirectory(client, serverPath, localTmp);
+          await _downloadRemoteDirectory(client, realServerPath, localTmp);
           emitOverall(0.5);
         } else {
-          await client.downloadFile(serverPath, localTmp, (prog) {
+          await client.downloadFile(realServerPath, localTmp, (prog) {
             emitOverall(0.5 * prog);
             emitBytes((prog * itemBytes).round(), 0);
           });
@@ -3075,7 +3119,8 @@ class FileManagerProvider extends ChangeNotifier {
         );
 
         // 上传成功后才删除原件
-        await _deleteRemoteTree(client, serverPath, isDir);
+        await _deleteRemoteTree(client, realServerPath, isDir);
+        processed++;
         try {
           if (isDir && Directory(localTmp).existsSync()) {
             Directory(localTmp).deleteSync(recursive: true);
@@ -3096,6 +3141,14 @@ class FileManagerProvider extends ChangeNotifier {
                   parentServer.startsWith('${r.serverPath}/')),
         );
         if (!alreadyCovered) registeredDirs.add(parentServer);
+      }
+      if (skipped.isNotEmpty) {
+        debugPrint('[ZenFile] encryptRemoteInPlace 跳过 ${skipped.length} 个条目: '
+            '${skipped.join(', ')}');
+      }
+      // 一个都没处理成（全被跳过）时给出可见错误，而不是「什么都不发生」。
+      if (processed == 0 && skipped.isNotEmpty && !_isOperationCancelled) {
+        throw StateError('未找到可原地加密的远程条目：${skipped.join('、')}');
       }
       for (final dir in registeredDirs) {
         await CryptMountService.addRemoteEncryptedDir(
@@ -4481,6 +4534,96 @@ class FileManagerProvider extends ChangeNotifier {
     if (!tab.isRemote) return _rootPath;
     final rp = tab.remoteConnection?.rootPath;
     return (rp != null && rp.isNotEmpty) ? rp : '/';
+  }
+
+  /// 公开访问器：当前 tab 的「根路径」。
+  ///
+  /// 远程连接的根**可能不是 `/`**（例如 WebDAV 连接把 `192.168.100.1:5244/dav`
+  /// 里的 `/dav` 存成 `rootPath`）。UI（面包屑等）若一律把根当成 `/`，点根段就会
+  /// 请求到连接范围之外（`http://host/` 而不是 `http://host/dav/`）→ 回不去
+  /// （用户反馈：WebDAV「点面包屑 dav 无法返回网盘列表」）。
+  String get activeRootPath => _activeTabRoot;
+
+  /// 面包屑「标签 + 目标路径」计算（纯函数：UI 与回归测试共用）。
+  ///
+  /// [remoteRoot] 为当前标签页的根：远程＝连接的 rootPath（**可能非 `/`**，例如
+  /// WebDAV 把 `192.168.100.1:5244/dav` 的 `/dav` 存成 rootPath），本地＝`/`。
+  /// 远程时一律以连接根为起点逐段累加，**绝不生成 `/` 目标**——否则点根段会请求到
+  /// 连接范围之外（`http://host/` 而非 `http://host/dav/`）→ 回不去
+  ///（用户反馈：WebDAV「点面包屑 dav 无法返回网盘列表」）。
+  @visibleForTesting
+  static ({List<String> labels, List<String> targets}) breadcrumbPaths({
+    required String currentPath,
+    required bool isRemoteTab,
+    required String remoteRoot,
+    String connName = '',
+    String rootLabel = 'Root',
+  }) {
+    final bool isRemotePath = currentPath.startsWith('remote://') ||
+        currentPath.startsWith('cryptremote://');
+    var root = '/';
+    if (isRemoteTab) {
+      root = remoteRoot;
+      if (root.isEmpty) root = '/';
+      if (!root.startsWith('/')) root = '/$root';
+      if (root.length > 1 && root.endsWith('/')) {
+        root = root.substring(0, root.length - 1);
+      }
+    }
+    final String suffix = root == '/' ? '' : root;
+
+    String rel(String abs) {
+      if (suffix.isEmpty) return abs;
+      if (abs == suffix) return '';
+      if (abs.startsWith('$suffix/')) return abs.substring(suffix.length);
+      return abs;
+    }
+
+    if (isRemoteTab && isRemotePath) {
+      final barIdx = currentPath.indexOf('|');
+      final prefix = currentPath.substring(0, barIdx + 1);
+      final serverPath = currentPath.substring(barIdx + 1);
+      final segs = rel(serverPath).split('/').where((n) => n.isNotEmpty).toList();
+      return (
+        labels: [
+          if (connName.isNotEmpty) connName else currentPath.substring(0, barIdx),
+          ...segs,
+        ],
+        targets: [
+          '$prefix${suffix.isEmpty ? '/' : suffix}',
+          for (int k = 0; k < segs.length; k++)
+            '$prefix${suffix.isEmpty ? '' : suffix}/${segs.sublist(0, k + 1).join('/')}',
+        ],
+      );
+    }
+    if (isRemoteTab && !isRemotePath) {
+      final segs = rel(currentPath).split('/').where((n) => n.isNotEmpty).toList();
+      return (
+        labels: [
+          if (connName.isNotEmpty)
+            connName
+          else if (suffix.isEmpty)
+            rootLabel
+          else
+            suffix.split('/').last,
+          ...segs,
+        ],
+        targets: [
+          root,
+          for (int k = 0; k < segs.length; k++)
+            '${suffix.isEmpty ? '' : suffix}/${segs.sublist(0, k + 1).join('/')}',
+        ],
+      );
+    }
+    // 本地路径：沿用「以 '/' 为根」的历史语义，行为不变。
+    final segs = currentPath.split('/').where((n) => n.isNotEmpty).toList();
+    return (
+      labels: segs.isEmpty ? [rootLabel] : segs,
+      targets: [
+        '/',
+        for (int k = 0; k < segs.length; k++) '/${segs.sublist(0, k + 1).join('/')}',
+      ],
+    );
   }
 
   /// 高亮刚刚离开的目录，2 秒后自动取消高亮（返回/导航时的视觉反馈）。

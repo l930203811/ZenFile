@@ -1041,6 +1041,35 @@ class MediaProvider extends ChangeNotifier {
   List<FileSystemEntity> _downloads = [];
   List<FileSystemEntity> _apks = [];
   List<FileSystemEntity> _screenshots = [];
+
+  /// 本会话「已删除」的媒体路径黑名单（规范化路径）。
+  ///
+  /// MediaStore / 系统索引在文件被删除后常有滞后：`loadMedia(forceRefresh:)`、
+  /// 下拉刷新或后台 onResume 刷新时，`querySongs` / 文件系统扫描仍可能把**已删除**
+  /// 的条目带回来（用户反馈：浏览页删除音频后，分类页「音频」一直显示该文件，
+  /// 手动刷新也不消失——因为刷新反而把它从滞后的索引里重新拉了回来）。
+  /// 这里记录删除路径，在所有音频合并/恢复点统一过滤，直到重新启动重新建库。
+  final Set<String> _deletedMediaPaths = <String>{};
+
+  /// 黑名单上限，避免长时间运行无限增长（Set 保持插入序，超出后丢最旧的）。
+  static const int _kDeletedMediaPathsCap = 4096;
+
+  bool _isDeletedMediaPath(String path) {
+    if (_deletedMediaPaths.isEmpty || path.isEmpty) return false;
+    return _deletedMediaPaths.contains(_normalizeMediaPath(path));
+  }
+
+  /// 过滤掉本会话已删除的音频（按规范化路径匹配），并打印过滤条数便于排查。
+  List<SongModel> _stripDeletedAudios(List<SongModel> input) {
+    if (_deletedMediaPaths.isEmpty || input.isEmpty) return input;
+    final kept = input.where((s) => !_isDeletedMediaPath(s.data)).toList();
+    if (kept.length != input.length) {
+      debugPrint(
+          '[ZenFile] 过滤本会话已删除音频 ${input.length - kept.length} 条（MediaStore 滞后）');
+    }
+    return kept;
+  }
+
   /// 各分类文件总大小缓存（字节），扫描完成后统一计算，避免 UI 构建时重复 stat。
   final Map<String, int> _categorySizeCache = {};
   /// 远程文件元数据缓存：remote:// 路径无法被本地 stat，扫描远程服务器时把
@@ -1913,7 +1942,8 @@ class MediaProvider extends ChangeNotifier {
         } catch (_) {}
       }
       if (songs.isNotEmpty) {
-        _audios = songs;
+        // 缓存恢复同样要过滤本会话已删除的路径，否则从缓存"复活"刚删的音频。
+        _audios = _stripDeletedAudios(songs);
         _audioFolders = _groupAudiosByParentDir(_audios);
         _fsCategorySizes['音频'] = _calcAudioSize(_audios);
         // 对齐内存计数：本次会话的「上次保存数量」即磁盘缓存数量，使
@@ -2661,7 +2691,7 @@ class MediaProvider extends ChangeNotifier {
       for (final m in result.audios) {
         final data = (m['_data'] as String?) ?? '';
         if (data.isEmpty) continue;
-        if (audioSeen.add(_normalizeMediaPath(data))) {
+        if (!_isDeletedMediaPath(data) && audioSeen.add(_normalizeMediaPath(data))) {
           final map = Map<String, dynamic>.from(m);
           map['_id'] = synthId++;
           _audios.add(SongModel(map));
@@ -2830,7 +2860,7 @@ class MediaProvider extends ChangeNotifier {
           if (m is! Map) continue;
           final data = m['_data'] as String?;
           if (data == null || data.isEmpty) continue;
-          if (audioSeen.add(_normalizeMediaPath(data))) {
+          if (!_isDeletedMediaPath(data) && audioSeen.add(_normalizeMediaPath(data))) {
             final map = Map<String, dynamic>.from(m);
             map['_id'] = synthId++;
             _audios.add(SongModel(map));
@@ -3085,7 +3115,7 @@ class MediaProvider extends ChangeNotifier {
           if (s.id >= synthId && s.id < 900000) synthId = s.id + 1;
         }
         for (final s in audios) {
-          if (audioSeen.add(_normalizeMediaPath(s.data))) {
+          if (!_isDeletedMediaPath(s.data) && audioSeen.add(_normalizeMediaPath(s.data))) {
             final map = Map<String, dynamic>.from(s.getMap);
             map['_id'] = synthId++;
             _audios.add(SongModel(map));
@@ -3371,6 +3401,10 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
       if (songs != null && audioExcl.isNotEmpty) {
         songs = songs.where((s) => !_isPathExcluded(s.data, audioExcl)).toList();
       }
+
+      // 过滤本会话已删除的路径：MediaStore 滞后时 querySongs 仍会返回已删除音频，
+      // 不过滤就会让「浏览页删除音频」在分类页反复复活、手动刷新也去不掉。
+      if (songs != null) songs = _stripDeletedAudios(songs);
 
       if (songs != null && songs.isNotEmpty) {
         // 仅在结果不比现有更少时覆盖：后台刷新（onResume）若拿到部分结果
@@ -4232,6 +4266,15 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     if (paths.isEmpty) return;
     final set = paths.where((p) => p.isNotEmpty).toSet();
     if (set.isEmpty) return;
+    // 记录删除路径：MediaStore / 系统索引滞后时，后续刷新会把已删除条目重新带回
+    // （音频尤其明显——querySongs 会短暂仍返回已删文件），故在这里登记黑名单，
+    // 之后所有音频合并/恢复点都过滤它，保证「删掉就是删掉了」。
+    for (final pth in set) {
+      _deletedMediaPaths.add(_normalizeMediaPath(pth));
+    }
+    while (_deletedMediaPaths.length > _kDeletedMediaPathsCap) {
+      _deletedMediaPaths.remove(_deletedMediaPaths.first);
+    }
     final before = _images.length +
         _videos.length +
         _screenshots.length +

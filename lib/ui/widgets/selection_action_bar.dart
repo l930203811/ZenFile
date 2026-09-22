@@ -413,7 +413,9 @@ class SelectionActionBar extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (anyPlain && !isCryptRemote)
+                        // 明文条目一律提供「加密」（含加密目录里的明文条目 →
+                        // 原地加密）。旧逻辑 `!isCryptRemote` 会在加密目录里藏掉入口。
+                        if (anyPlain)
                           PopupMenuItem(
                             value: 'encrypt',
                             child: Row(
