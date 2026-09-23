@@ -1895,8 +1895,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           const SizedBox(height: 2),
                           Text(L10n.of(dialogContext).audio_opensles_desc, style: const TextStyle(color: Colors.white54, fontSize: 11)),
                           const SizedBox(height: 8),
-                          // 档位名（OpenSL ES / AudioTrack）是产品/技术名，各语言不译，
-                          // 故刻意不进 l10n；切换后需重新打开播放器才生效。
+                          // 档位名（Auto / AudioTrack / OpenSL ES）是产品/技术名，
+                          // 各语言不译，故刻意不进 l10n；切换后对**正在播放的**
+                          // 播放器立即生效（见 _aoModeChip 的 onSelected）。
                           Wrap(
                             spacing: 8,
                             runSpacing: 6,
@@ -2028,9 +2029,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  /// 语义：`auto` = 完全不覆盖 mpv 的 `ao`（media_kit 在真机默认 = opensles
-  /// 单值）；`AudioTrack` = 把 audiotrack 放到候选链最前（其源码不请求低延迟、
-  /// 走 75~150ms 普通缓冲、USAGE_MEDIA，理论上免 Root 音效软件能接管它）。
+  /// 语义（真机实测定稿，见 [MpvAoMode]）：`Auto (AudioTrack)` / `AudioTrack 16-bit`
+  /// = 链 `audiotrack,opensles` + 固定会话号 + 会话广播 ⇒ 免 Root 音效软件能接管；
+  /// `OpenSL ES` = 链 `opensles,audiotrack`，会话号由系统分配 ⇒ **无法**被音效软件
+  /// 接管（仅作 audiotrack 建不起来时的兜底）。
   Widget _aoModeChip(MpvAoMode mode, StateSetter setModalState) {
     final isSelected = PreferencesService.getAudioOutputMode() == mode;
     return ChoiceChip(

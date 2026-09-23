@@ -7624,9 +7624,9 @@ class L10nKo extends L10n {
   String get video_vo_compat => '비디오 렌더링 오류가 감지되어 호환 렌더링 모드로 전환했습니다.';
 
   @override
-  String get audio_opensles_title => 'OpenSL ES 출력';
+  String get audio_opensles_title => '오디오 출력(AO) 모드';
 
   @override
   String get audio_opensles_desc =>
-      'RootlessJamesDSP 등 루트 없는 사운드 앱과의 호환을 위해 OpenSL ES 출력을 활성화합니다. 전환 후 플레이어를 다시 열어야 합니다';
+      '사운드 효과 앱(RootlessJamesDSP 등)이 연결할 수 있는 것은 AudioTrack뿐입니다. OpenSL ES는 세션 ID를 시스템이 할당하므로 연결할 수 없습니다. 전환은 즉시 반영됩니다.';
 }

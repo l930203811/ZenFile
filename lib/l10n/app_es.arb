@@ -7954,11 +7954,11 @@
   "ui_delete_confirm_dont_ask": "No preguntar de nuevo",
   "video_auto_fallback_soft": "Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.",
   "video_vo_compat": "Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad.",
-  "audio_opensles_title": "Salida OpenSL ES",
+  "audio_opensles_title": "Modo de salida de audio (AO)",
   "@audio_opensles_title": {
     "description": "audio_player_screen.dart OpenSL ES output switch"
   },
-  "audio_opensles_desc": "Habilitar salida OpenSL ES para compatibilidad con apps de audio sin root como RootlessJamesDSP; reabrir el reproductor tras el cambio",
+  "audio_opensles_desc": "Las apps de efectos de audio (p. ej. RootlessJamesDSP) solo pueden engancharse a los modos AudioTrack; OpenSL ES usa una sesión asignada por el sistema, a la que no pueden engancharse. El cambio es inmediato.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
   }

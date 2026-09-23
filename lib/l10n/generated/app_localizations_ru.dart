@@ -7935,9 +7935,9 @@ class L10nRu extends L10n {
       'Обнаружена проблема рендеринга видео. Переключено в режим совместимости.';
 
   @override
-  String get audio_opensles_title => 'Вывод OpenSL ES';
+  String get audio_opensles_title => 'Режим аудиовыхода (AO)';
 
   @override
   String get audio_opensles_desc =>
-      'Включить вывод OpenSL ES для совместимости с приложениями звука без root (например, RootlessJamesDSP). После переключения перезапустите плеер';
+      'Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.';
 }

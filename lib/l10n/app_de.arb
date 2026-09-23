@@ -7951,11 +7951,11 @@
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
   "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
   "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.",
-  "audio_opensles_title": "OpenSL ES-Ausgabe",
+  "audio_opensles_title": "Audioausgabe (AO)-Modus",
   "@audio_opensles_title": {
     "description": "audio_player_screen.dart OpenSL ES output switch"
   },
-  "audio_opensles_desc": "OpenSL ES-Ausgabe für Kompatibilität mit Root-freien Sound-Apps wie RootlessJamesDSP aktivieren. Nach dem Umschalten muss der Player neu geöffnet werden",
+  "audio_opensles_desc": "Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
   }

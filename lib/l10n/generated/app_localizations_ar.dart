@@ -7830,9 +7830,9 @@ class L10nAr extends L10n {
       'تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.';
 
   @override
-  String get audio_opensles_title => 'مخرجات OpenSL ES';
+  String get audio_opensles_title => 'وضع إخراج الصوت (AO)';
 
   @override
   String get audio_opensles_desc =>
-      'تفعيل مخرجات OpenSL ES للتوافق مع تطبيقات الصوت بدون صلاحيات الجذر مثل RootlessJamesDSP؛ أعد فتح المشغل بعد التبديل';
+      'لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.';
 }

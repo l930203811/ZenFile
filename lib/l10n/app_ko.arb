@@ -7954,11 +7954,11 @@
   "ui_delete_confirm_dont_ask": "다시 묻지 않음",
   "video_auto_fallback_soft": "하드웨어 디코딩 오류가 감지되어 소프트웨어 디코딩으로 자동 전환했습니다.",
   "video_vo_compat": "비디오 렌더링 오류가 감지되어 호환 렌더링 모드로 전환했습니다.",
-  "audio_opensles_title": "OpenSL ES 출력",
+  "audio_opensles_title": "오디오 출력(AO) 모드",
   "@audio_opensles_title": {
     "description": "audio_player_screen.dart OpenSL ES output switch"
   },
-  "audio_opensles_desc": "RootlessJamesDSP 등 루트 없는 사운드 앱과의 호환을 위해 OpenSL ES 출력을 활성화합니다. 전환 후 플레이어를 다시 열어야 합니다",
+  "audio_opensles_desc": "사운드 효과 앱(RootlessJamesDSP 등)이 연결할 수 있는 것은 AudioTrack뿐입니다. OpenSL ES는 세션 ID를 시스템이 할당하므로 연결할 수 없습니다. 전환은 즉시 반영됩니다.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
   }

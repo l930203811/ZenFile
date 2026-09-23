@@ -8102,11 +8102,11 @@
   "ui_delete_confirm_dont_ask": "刪除不再提示",
   "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
   "video_vo_compat": "影片渲染異常，已切換為相容渲染模式",
-  "audio_opensles_title": "OpenSL ES 輸出流",
+  "audio_opensles_title": "音訊輸出（AO）模式",
   "@audio_opensles_title": {
     "description": "audio_player_screen.dart OpenSL ES output switch"
   },
-  "audio_opensles_desc": "啟用 OpenSL ES 輸出，相容 RootlessJamesDSP 等免 Root 音效軟體；切換後需重新開啟播放器生效",
+  "audio_opensles_desc": "音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
   }

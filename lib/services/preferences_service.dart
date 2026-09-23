@@ -956,7 +956,8 @@ class PreferencesService {
     await _prefs?.setBool(_keyAudioBackgroundPlay, val);
   }
 
-  /// mpv 音频输出（AO）兼容模式，默认 [MpvAoMode.auto]（沿用 media_kit 默认）。
+  /// mpv 音频输出（AO）兼容模式，默认 [MpvAoMode.auto]（audiotrack 优先，可被
+  /// 音效类应用接管）。档位语义见 [MpvAoMode]。
   ///
   /// ⚠️ 旧实现是布尔开关 `opensles_output`，其注释「默认走 AudioTrack、开启才切
   /// OpenSL ES」是**错的**：media_kit 在 Android 真机上默认就已把 `ao` 写成单值
@@ -971,7 +972,9 @@ class PreferencesService {
 
   static Future<void> saveAudioOutputMode(MpvAoMode mode) async {
     await _prefs?.setString(_keyAudioOutputMode, mode.key);
-    // 旧键同步维护：让回退到旧版本时行为不至于跳变（旧版本只认这个布尔值）。
+    // 旧键同步维护：让回退到旧版本时行为不至于完全跳变（旧版本只认这个布尔值，
+    // 且它当年是「要不要把 audiotrack 加进候选」）。降级场景下的档位语义本就
+    // 无法一一对应，这里只保证布尔值处于「合理」一侧：非 auto 视为开。
     await _prefs?.setBool(_keyOpenSLESOutput, mode != MpvAoMode.auto);
   }
 

@@ -7452,11 +7452,11 @@ class L10nZh extends L10n {
   String get video_vo_compat => '视频渲染异常，已切换为兼容渲染模式';
 
   @override
-  String get audio_opensles_title => 'OpenSL ES 输出流';
+  String get audio_opensles_title => '音频输出（AO）模式';
 
   @override
   String get audio_opensles_desc =>
-      '启用 OpenSL ES 输出，兼容 RootlessJamesDSP 等免 Root 音效软件；切换后需重新打开播放器生效';
+      '音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14877,9 +14877,9 @@ class L10nZhTw extends L10nZh {
   String get video_vo_compat => '影片渲染異常，已切換為相容渲染模式';
 
   @override
-  String get audio_opensles_title => 'OpenSL ES 輸出流';
+  String get audio_opensles_title => '音訊輸出（AO）模式';
 
   @override
   String get audio_opensles_desc =>
-      '啟用 OpenSL ES 輸出，相容 RootlessJamesDSP 等免 Root 音效軟體；切換後需重新開啟播放器生效';
+      '音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。';
 }

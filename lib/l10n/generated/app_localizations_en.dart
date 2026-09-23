@@ -7858,9 +7858,9 @@ class L10nEn extends L10n {
       'Video rendering issue detected. Switched to compatibility rendering mode.';
 
   @override
-  String get audio_opensles_title => 'OpenSL ES Output';
+  String get audio_opensles_title => 'Audio Output (AO) Mode';
 
   @override
   String get audio_opensles_desc =>
-      'Enable OpenSL ES output for compatibility with rootless audio effects apps like RootlessJamesDSP; reopen the player after toggling';
+      'Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.';
 }

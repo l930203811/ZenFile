@@ -7981,9 +7981,9 @@ class L10nFr extends L10n {
       'Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité.';
 
   @override
-  String get audio_opensles_title => 'Sortie OpenSL ES';
+  String get audio_opensles_title => 'Mode de sortie audio (AO)';
 
   @override
   String get audio_opensles_desc =>
-      'Activer la sortie OpenSL ES pour la compatibilité avec les applications audio sans root comme RootlessJamesDSP ; rouvrir le lecteur après modification';
+      'Les applications d’effets audio (RootlessJamesDSP, etc.) ne peuvent s’attacher qu’aux modes AudioTrack ; OpenSL ES utilise une session attribuée par le système, à laquelle elles ne peuvent pas s’attacher. Le changement est immédiat.';
 }

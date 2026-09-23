@@ -41,7 +41,20 @@ typedef MpvPropertyGetter = Future<String> Function(String key);
 ///
 /// ⇒ 真正**从没被验证过**的组合是「把 `audiotrack` 放到链路**最前面**」：
 /// media_kit 默认是 opensles 单值，我们此前也只是把 opensles 放在前面。
-/// 见 [MpvAoMode.audioTrack]。
+///
+/// ## 2026-09-23 真机逐档位实测（定稿结论）
+///
+/// | 档位 | 真机 `current-ao` | 会话号被采用 | 音效软件（RJ） |
+/// |---|---|---|---|
+/// | `audiotrack` 优先（[MpvAoMode.auto] / [MpvAoMode.audioTrack16]） | `audiotrack` | ✅ | ✅ 接管成功、音效可听 |
+/// | `opensles` 优先（[MpvAoMode.openSlEs]） | `opensles` | ❌ 被 mpv 丢弃 | ❌ 仍弹「不兼容」 |
+///
+/// 关键机理：`ao_opensles` **不认识** `audiotrack-session-id`，它自建的 AudioTrack
+/// 由系统另分配会话号 ⇒ 我们**无从广播**「本应用在哪个会话上出声」
+/// （日志实证 `skip OPEN：current-ao="opensles"`）⇒ 效果软件只能去猜、猜不到就判
+/// 「不受支持」。这是协议层面的死结，不是参数问题：
+/// **opensles 档位无法与音效类应用共存**。
+/// ⇒ 默认档位绝不能落在 opensles 上，见 [MpvAoMode.auto]。
 ///
 /// ## 设计约束
 ///
@@ -50,13 +63,21 @@ typedef MpvPropertyGetter = Future<String> Function(String key);
 /// * [configureBeforeOpen] **必须**在 `player.open()` 之前调用：mpv 只在初始化
 ///   AO 时读这些选项，播放开始后再设已经晚了一个 AudioTrack。
 enum MpvAoMode {
-  /// 不覆盖 `ao`：完全沿用 media_kit 默认（Android 真机 = 单值 `opensles`）。
+  /// **推荐默认档位**：`audiotrack` 优先（失败回退 `opensles`）+ 固定音频会话号
+  /// + 广播「音频效果控制会话」。
+  ///
+  /// ⚠️ 本档位**曾经**的语义是「完全不覆盖 `ao`，沿用 media_kit 默认」，而
+  /// media_kit 在 Android 真机上的默认值是**单值 `opensles`** —— 那等于把默认
+  /// 用户直接送进「音效软件判不兼容」的坑里（真机日志 `current-ao="opensles"`
+  /// + `skip OPEN`）。「什么都不做」在本项目里**不是安全默认**，它的两个后果
+  /// 都已实测：会话号由系统分配 ⇒ 无从广播；单值候选链建不起来 ⇒ 不回退、直接静音。
+  ///
+  /// 现在它等价于原 `AudioTrack` 档位（v2.1.5 的独立 `audiotrack` 档位已合并进来，
+  /// 见 [fromKey]）。选它的理由：`ao_audiotrack` 不请求低延迟、走 75~150ms 普通
+  /// 缓冲、USAGE_MEDIA，是**唯一**能被免 Root 音效软件接管的链路。
   auto('auto'),
 
-  /// `audiotrack` 优先（普通轨道、USAGE_MEDIA、可挂音效），opensles 兜底。
-  audioTrack('audiotrack'),
-
-  /// 同 [audioTrack]，但把送进 AudioTrack 的采样格式从 float32 换成 16-bit PCM
+  /// 同 [auto]，但把送进 AudioTrack 的采样格式从 float32 换成 16-bit PCM
   /// （`audiotrack-pcm-float=no`）—— 用于排除个别设备 float 输出异常的情况。
   ///
   /// ⚠️ **实现方式必须是独立属性**，绝不能写成 `--ao=audiotrack:pcm-float=no`：
@@ -70,11 +91,17 @@ enum MpvAoMode {
   /// 正是此症；见 [extraOptions] 与 [applyAudioOutputConfig] 的写后回读校验）。
   ///
   /// 注：经核对 `ao_audiotrack.c`，其缓冲窗口按 `bps * channels` 换算后 clamp 到
-  /// 75~150ms，16-bit 与 float32 **帧数一致**，故本档位与 [audioTrack] 在
+  /// 75~150ms，16-bit 与 float32 **帧数一致**，故本档位与 [auto] 在
   /// 「是否为低延迟/fast 轨道」上没有差别，只影响送进 AudioTrack 的位深。
   audioTrack16('audiotrack16'),
 
   /// `opensles` 优先，audiotrack 兜底（= 旧「OpenSL ES 输出流」开关的语义）。
+  ///
+  /// ⚠️ **本档位无法与音效类应用共存**（真机实测，2026-09-23）：`ao_opensles`
+  /// 自建 AudioTrack 且不认识 `audiotrack-session-id` ⇒ 会话号由系统分配 ⇒
+  /// 我们无从广播 OPEN ⇒ RootlessJamesDSP 之类仍会弹「不兼容」。
+  /// 保留它只为「个别设备上 audiotrack 建不起来」这一种兜底场景（此时链路会
+  /// 自动回退到 audiotrack 并正常广播），**不要**把它当推荐档位。
   openSlEs('opensles');
 
   const MpvAoMode(this.key);
@@ -84,22 +111,27 @@ enum MpvAoMode {
 
   /// 面向用户的技术标签。`OpenSL ES` / `AudioTrack` 是产品/技术名，
   /// 各语言均不译，因此这一行**刻意不进 l10n**。
+  ///
+  /// `Auto` 后面标出实际驱动（`audiotrack` 优先）—— 否则用户无法从档位名看出
+  /// 「Auto 到底走的是哪条链路」，而那正是本 bug 的现场（名字叫 Auto，
+  /// 实际走 opensles，于是音效软件判我们不兼容）。
   String get label => switch (this) {
-        MpvAoMode.auto => 'Auto',
-        MpvAoMode.audioTrack => 'AudioTrack',
+        MpvAoMode.auto => 'Auto (AudioTrack)',
         MpvAoMode.audioTrack16 => 'AudioTrack 16-bit',
         MpvAoMode.openSlEs => 'OpenSL ES',
       };
 
-  /// 写入 mpv 的 `ao` 候选链；`null` 表示**不覆盖**（沿用 media_kit 默认）。
+  /// 写入 mpv 的 `ao` 候选链。
   ///
   /// ⚠️ 每条链都**必须**保留第二个候选：`--ao` 是候选列表（前一个建不起来才
   /// 试下一个），写单值等于把另一个从候选里整个删掉 —— 建不起来时 mpv
   /// **不回退、直接静音**，而「静音」与「开关没生效」在体感上无法区分，
   /// 正是这个 bug 长期定位不到的原因。
-  String? get aoChain => switch (this) {
-        MpvAoMode.auto => null,
-        MpvAoMode.audioTrack => 'audiotrack,opensles',
+  ///
+  /// ⚠️ 本属性**非空**：没有任何档位允许「不写 `ao`」—— 不写就沿用 media_kit
+  /// 真机默认的**单值 `opensles`**，那是上面两个坑的合集（见 [auto] 的注释）。
+  String get aoChain => switch (this) {
+        MpvAoMode.auto => 'audiotrack,opensles',
         // ⚠️ 这里**只放驱动名**：`--ao=驱动:子选项=值` 语法自 mpv 0.23.0 起已移除，
         // 带 `:` 会让整条 ao 被拒（静默失败）。子选项走 [extraOptions]。
         MpvAoMode.audioTrack16 => 'audiotrack,opensles',
@@ -113,39 +145,35 @@ enum MpvAoMode {
   /// 这些键同样要经 `setProperty` + **写后回读**校验，否则「写了但没生效」
   /// 会毫无痕迹（media_kit 吞异常的坑）。
   ///
-  /// ⚠️ `audiotrack` 档位**显式写 `yes`**（= mpv 默认值）而不是「不写」：mpv 的
-  /// 选项在**同一实例内是残留的**，从 [audioTrack16] 切回 [audioTrack] 若什么都不写，
+  /// ⚠️ [auto] **显式写 `yes`**（= mpv 默认值）而不是「不写」：mpv 的选项在
+  /// **同一实例内是残留的**，从 [audioTrack16] 切回 [auto] 若什么都不写，
   /// 位深会静默留在 16-bit（「切了档位行为却不变」正是本项目反复踩的坑）。
-  /// [auto]/[openSlEs] 不写：前者要求完全沿用 media_kit 默认，后者走 opensles
-  /// 驱动、该选项对它无效。
+  /// [openSlEs] 不写：它走 opensles 驱动，该选项只对 `ao_audiotrack` 有意义。
   List<MapEntry<String, String>> get extraOptions => switch (this) {
-        MpvAoMode.audioTrack => const [
+        MpvAoMode.auto => const [
             MapEntry<String, String>('audiotrack-pcm-float', 'yes'),
           ],
         MpvAoMode.audioTrack16 => const [
             MapEntry<String, String>('audiotrack-pcm-float', 'no'),
           ],
-        _ => const <MapEntry<String, String>>[],
+        MpvAoMode.openSlEs => const <MapEntry<String, String>>[],
       };
 
-  /// **热切换**（播放中改档位）用的链 —— 见 [MpvAoMode] 与
-  /// `MpvAudioOutputService.applyToRunningPlayer`。
+  /// 该档位是否需要固定音频会话号（`audiotrack-session-id` 只有 `ao_audiotrack`
+  /// 认识；`ao_opensles` 会把它丢在一边）。
   ///
-  /// 与 [aoChain] 的唯一差别在 `auto`：`open` 之前"不写"即可实现 auto 语义，
-  /// 但运行中一旦覆盖过 `ao` 就**无法"取消覆盖"**，只能显式写回 media_kit 在
-  /// Android 真机上的默认值（`opensles` 单值），否则从别的档位切回 `Auto`
-  /// 会静默留在旧驱动上。
+  /// 判据是**候选链里有没有 audiotrack**，而不是「当前驱动是不是 audiotrack」：
+  /// 即使 opensles 排在首位（[openSlEs]），一旦它建不起来就会回退到 audiotrack，
+  /// 那时固定的会话号依然有效、并且**依然可以广播 OPEN**（[shouldAnnounceOpen]
+  /// 会在回读 `current-ao` 后决定是否真宣告）。反过来，链里没有 audiotrack 时
+  /// 向系统要会话号才是纯粹的浪费。
+  bool get usesSessionId => aoChain.contains('audiotrack');
+
+  /// 从持久化键还原档位。
   ///
-  /// ⚠️ **刻意例外**：`auto` 的 [hotChain] 是**单值**，与本类「禁止写单值」
-  /// 的规则（[aoChain] 的注释）相反 —— 因为 auto 的定义就是"完全按 media_kit
-  /// 默认"，而 media_kit 真机默认恰恰是单值 `opensles`；给它加候选就不再是
-  /// auto 了。风险没有新增：真正 auto（我们从不碰 `ao`）在 opensles 建不起来
-  /// 时同样静音，行为一致。
-  String get hotChain => aoChain ?? 'opensles';
-
-  /// 该模式是否要求固定音频会话号（只有 `audiotrack` 驱动认这个选项）。
-  bool get usesSessionId => this != MpvAoMode.auto;
-
+  /// ⚠️ **历史键 `audiotrack`**（v2.1.5 曾是一个独立档位）已**合并**进 [auto]
+  /// （两者行为逐字节相同：链 `audiotrack,opensles` + 固定会话号 + 会话广播），
+  /// 故它不在 [values] 里，经 [orElse] 落到 [auto] —— 老用户设置不会跳变。
   static MpvAoMode fromKey(String? key) =>
       values.firstWhere((m) => m.key == key, orElse: () => MpvAoMode.auto);
 }
@@ -196,7 +224,8 @@ class MpvAudioOutputService {
     final platform = player.platform;
     if (platform is! NativePlayer) return null;
 
-    // 只有 audiotrack 驱动认这个选项；其他模式无需向系统要会话号。
+    // 只要候选链里有 audiotrack 就固定会话号（[MpvAoMode.usesSessionId]）：
+    // 那是宣告「本应用在哪个会话上出声」的唯一凭据。
     final sessionId = mode.usesSessionId ? await _generateAudioSessionId() : null;
 
     await applyAudioOutputConfig(
@@ -244,7 +273,6 @@ class MpvAudioOutputService {
       mode: mode,
       sessionId: sessionId,
       tag: tag,
-      hot: true,
     );
 
     if (sessionId != null) _sessionIdOf[player] = sessionId;
@@ -266,7 +294,7 @@ class MpvAudioOutputService {
         final after = await _tryGetProperty(platform, 'current-ao');
         final same = before == after;
         WebdavDebugLog.log(
-          '[AO/$tag] hot-switch mode=${mode.key} chain="${mode.hotChain}" '
+          '[AO/$tag] hot-switch mode=${mode.key} chain="${mode.aoChain}" '
           'current-ao: "$before" -> "$after"${same ? '（未变化：该档位与当前驱动等价，或 mpv 忽略了热切换）' : ''}',
         );
       } catch (_) {
@@ -276,7 +304,11 @@ class MpvAudioOutputService {
   }
 
   /// [configureBeforeOpen] 的可测内核：原生调用以回调注入，便于单测覆盖
-  /// 「各模式链」「session 有无」「写属性失败」等分支。
+  /// 「各档位链」「session 有无」「写属性失败」等分支。
+  ///
+  /// `open` 之前与播放中热切换走的是**同一条**路径：所有档位在任何时刻都显式
+  /// 写 `ao`（[MpvAoMode.aoChain] 非空），不存在「不覆盖」这一态 —— 原因见
+  /// [MpvAoMode.auto] 的注释（不覆盖 = 落到 media_kit 真机默认的单值 opensles）。
   @visibleForTesting
   static Future<void> applyAudioOutputConfig({
     required MpvPropertySetter setProperty,
@@ -284,25 +316,20 @@ class MpvAudioOutputService {
     required MpvAoMode mode,
     required int? sessionId,
     required String tag,
-    bool hot = false,
   }) async {
     WebdavDebugLog.log(
-      '[AO/$tag] mode=${mode.key} 意图：ao="${(hot ? mode.hotChain : mode.aoChain) ?? "(不覆盖)"}" '
+      '[AO/$tag] mode=${mode.key} 意图：ao="${mode.aoChain}" '
       'sessionId=${sessionId ?? "-"}',
     );
 
-    // ① AO 候选链：`auto` 模式在 open 前刻意不覆盖（= media_kit 默认）；
-    //    热切换（`hot`）时必须显式写回，原因见 [MpvAoMode.hotChain]。
-    final chain = hot ? mode.hotChain : mode.aoChain;
-    if (chain != null) {
-      await setAndVerify(
-        setProperty: setProperty,
-        getProperty: getProperty,
-        key: 'ao',
-        value: chain,
-        tag: tag,
-      );
-    }
+    // ① AO 候选链。
+    await setAndVerify(
+      setProperty: setProperty,
+      getProperty: getProperty,
+      key: 'ao',
+      value: mode.aoChain,
+      tag: tag,
+    );
 
     // ② 固定音频会话：0 与 null 都表示「没有可用会话号」，跳过即可
     //    （设 0 等于让系统另分配，与不设无异）。
@@ -475,8 +502,9 @@ class MpvAudioOutputService {
   /// 注册的就是这两个 action，而 VLC / YouTube Music / Poweramp 全都实现了它。
   ///
   /// 只对**固定了会话号**的档位有意义：会话号来自 `audiotrack-session-id`，
-  /// 由 mpv 的 `ao_audiotrack` 使用。走 `opensles`（含 `auto` 档位）时会话号由
-  /// 系统分配，我们无从得知，也就无从宣告。
+  /// 由 mpv 的 `ao_audiotrack` 使用。走 `opensles`（[MpvAoMode.openSlEs] 档位，
+  /// 或 [MpvAoMode.auto] 回退到 opensles 时）会话号由系统分配，我们无从得知、
+  /// 也就无从宣告 —— 此时 [shouldAnnounceOpen] 会拦住这次广播。
   ///
   /// ⚠️ 全程不抛异常：广播失败**绝不能**影响播放。
   static void attachEffectSessionNotifier(
@@ -558,7 +586,9 @@ class MpvAudioOutputService {
         if (!shouldAnnounceOpen(sessionId: sid, currentAo: ao)) {
           WebdavDebugLog.log(
             '[FX/$tag] skip OPEN：current-ao="$ao"（固定会话号未被 mpv 采用；'
-            '要让音效类应用接管需选「AudioTrack」档位）',
+            '不要让音效类应用接管就忽略本条；想让它接管请改用「Auto (AudioTrack)」或'
+            '「AudioTrack 16-bit」档位 —— OpenSL ES 的会话号由系统分配，'
+            '在协议层面无法宣告，本应用对其无能为力）',
           );
           return;
         }

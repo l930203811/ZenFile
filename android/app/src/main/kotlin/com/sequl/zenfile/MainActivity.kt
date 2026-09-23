@@ -2441,9 +2441,23 @@ class MainActivity : AudioServiceFragmentActivity() {
                     configs?.forEach { c ->
                         try {
                             val attr = c.audioAttributes
+                            // ⚠️ getAudioDeviceInfo() 是 @hide（在 audio_services
+                            // 模块里，不在 framework.jar 的公开 API 中）⇒ 真机上必然抛
+                            // NoSuchMethodError。必须**单独** try 住它：它原本与
+                            // usage/content/flags 写在同一个表达式里，一次异常就把整条
+                            // 属性全吞掉 —— 而 usage/contentType 恰恰是判断「我们的轨道是
+                            // 普通轨道还是 fast 轨道」最有用的信息（2026-09-23 日志里那两
+                            // 行 attrError 就是被吞掉的现场）。
+                            val dev = try {
+                                if (android.os.Build.VERSION.SDK_INT >= 28)
+                                    c.audioDeviceInfo?.type?.toString() ?: "?"
+                                else "na"
+                            } catch (_: Throwable) {
+                                "unavailable"
+                            }
                             items.add(
                                 "usage=${attr.usage}/content=${attr.contentType}/" +
-                                    "flags=0x${Integer.toHexString(attr.flags)}/dev=${if (android.os.Build.VERSION.SDK_INT >= 28) c.audioDeviceInfo?.let { d -> d.type.toString() } ?: "?" else "na"}"
+                                    "flags=0x${Integer.toHexString(attr.flags)}/dev=$dev"
                             )
                         } catch (t: Throwable) {
                             // 无 MODIFY_AUDIO_ROUTING 时读属性可能抛异常：把原因带出来，
