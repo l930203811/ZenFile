@@ -7490,6 +7490,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "偵測到上次異常結束，診斷報告已儲存到 ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"

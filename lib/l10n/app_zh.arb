@@ -7629,6 +7629,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "检测到上次异常退出，诊断报告已保存到 ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"

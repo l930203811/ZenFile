@@ -7362,6 +7362,9 @@ class L10nFr extends L10n {
   String get vault_decrypt_open_progress => 'Déchiffrement et ouverture...';
 
   @override
+  String get crash_report_saved => 'Arrêt anormal précédent détecté. Rapport de diagnostic enregistré dans ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'L\'importation remplacera le sandbox et la configuration de chiffrement actuels par le contenu de la sauvegarde (le mot de passe de déverrouillage n\'est pas affecté). Continuer ?';
 

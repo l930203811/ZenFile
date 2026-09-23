@@ -6881,6 +6881,9 @@ class L10nZh extends L10n {
   String get vault_decrypt_open_progress => '正在解密并打开...';
 
   @override
+  String get crash_report_saved => '检测到上次异常退出，诊断报告已保存到 ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       '导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？';
 
@@ -14307,6 +14310,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_decrypt_open_progress => '正在解密並開啟...';
+
+  @override
+  String get crash_report_saved => '偵測到上次異常結束，診斷報告已儲存到 ZenFile/crash';
 
   @override
   String get vault_import_backup_confirm =>

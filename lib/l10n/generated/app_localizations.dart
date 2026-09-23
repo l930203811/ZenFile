@@ -12898,6 +12898,12 @@ abstract class L10n {
   /// **'正在解密并打开...'**
   String get vault_decrypt_open_progress;
 
+  /// crash forensics: crash_report_saved
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到上次异常退出，诊断报告已保存到 ZenFile/crash'**
+  String get crash_report_saved;
+
   /// vault/crypt: vault_import_backup_confirm
   ///
   /// In zh, this message translates to:

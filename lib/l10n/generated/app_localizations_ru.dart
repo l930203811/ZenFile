@@ -7325,6 +7325,9 @@ class L10nRu extends L10n {
   String get vault_decrypt_open_progress => 'Расшифровка и открытие...';
 
   @override
+  String get crash_report_saved => 'Обнаружено аварийное завершение. Отчёт диагностики сохранён в ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'Импорт перезапишет текущую песочницу и настройки шифрования содержимым резервной копии (пароль разблокировки не изменится). Продолжить?';
 

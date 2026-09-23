@@ -7344,6 +7344,9 @@ class L10nEs extends L10n {
   String get vault_decrypt_open_progress => 'Descifrando y abriendo...';
 
   @override
+  String get crash_report_saved => 'Se detectó un cierre anormal anterior. Informe de diagnóstico guardado en ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'La importación sobrescribirá el sandbox y la configuración de cifrado actuales con el contenido de la copia (la contraseña de desbloqueo no se ve afectada). ¿Continuar?';
 

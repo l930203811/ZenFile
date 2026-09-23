@@ -7342,6 +7342,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "تم اكتشاف خروج غير طبيعي سابق. تم حفظ تقرير التشخيص في ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"

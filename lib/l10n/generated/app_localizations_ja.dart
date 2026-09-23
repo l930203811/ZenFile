@@ -7037,6 +7037,9 @@ class L10nJa extends L10n {
   String get vault_decrypt_open_progress => '復号して開いています...';
 
   @override
+  String get crash_report_saved => '前回の異常終了を検出しました。診断レポートを ZenFile/crash に保存しました';
+
+  @override
   String get vault_import_backup_confirm =>
       'インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？';
 

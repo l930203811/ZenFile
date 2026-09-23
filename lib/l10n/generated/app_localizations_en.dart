@@ -7252,6 +7252,9 @@ class L10nEn extends L10n {
   String get vault_decrypt_open_progress => 'Decrypting and opening...';
 
   @override
+  String get crash_report_saved => 'Previous abnormal exit detected. Diagnostic report saved to ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?';
 

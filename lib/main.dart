@@ -26,6 +26,7 @@ import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/mpv_audio_output_service.dart';
+import 'services/crash_forensics_service.dart';
 import 'services/network_connections_service.dart';
 import 'services/intent_handler_service.dart';
 import 'services/pin_service.dart';
@@ -83,6 +84,11 @@ void main() {
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
       debugPrint('[ZenFile] Flutter error: ${details.exception}');
+      // 崩溃取证：框架层错误也留证。它通常不会杀死进程，但往往正是「用户看到
+      // 的异常表现」的根源，且时间戳能与原生 report 互相印证。
+      // recordError 内部全程 try/catch，绝不会反过来影响这里。
+      CrashForensicsService.recordError(
+          'FlutterError', details.exception, details.stack);
     };
 
     // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
@@ -200,9 +206,14 @@ void main() {
     // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
     // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
     unawaited(_logBootFingerprint());
+
+    // 崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
+    // 与指纹哨兵同理，**只能**放在 `runApp()` 之后（要 await 原生通道）。
+    unawaited(_checkCrashForensics());
   }, (error, stackTrace) {
     // 捕获所有未处理的异步错误，防止 release 模式闪退
     debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
+    CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
   });
 }
 
@@ -229,6 +240,54 @@ Future<void> _logBootFingerprint() async {
     // 诊断绝不能有阻断启动的能力
     debugPrint('[ZenFile] boot fingerprint failed: $e');
   }
+}
+
+/// 启动期崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
+///
+/// 没有 adb 的环境里（如云电脑），这是唯一能拿到崩溃现场的手段：原生侧用
+/// `ApplicationExitInfo` 在 `MainActivity.onCreate` 最早期就把系统记录的原因与
+/// trace 落盘（见 `CrashForensics.kt`），这里负责把它导出到
+/// `/storage/emulated/0/ZenFile/crash/`，让用户能用任意文件管理器取出。
+///
+/// ⚠️ 与 [_logBootFingerprint] 同样**只能在 `runApp()` 之后调用**：内部要 await
+/// 一次原生通道。它服务的是**下一次**崩溃，本次启动快慢与它无关；但它同样
+/// 不该有拖挂启动的能力，故整个函数包在 try/catch 里。
+Future<void> _checkCrashForensics() async {
+  try {
+    final result = await CrashForensicsService.checkPreviousExit();
+    if (result == null) return;
+    WebdavDebugLog.log(
+      '[crash] forensics new=${result.newReports} skipped=${result.skipped} '
+      'dir=${result.dir ?? "-"} error=${result.error ?? "-"}',
+    );
+    if (result.hasNewReport) {
+      _notifyCrashReportSaved();
+    }
+  } catch (e) {
+    debugPrint('[ZenFile] crash forensics failed: $e');
+  }
+}
+
+/// 提示用户「已保存诊断报告」。刻意做得极保守：
+/// 延迟到启动动画之后、拿不到 ScaffoldMessenger 就静默跳过 ——
+/// **弹提示失败绝不能变成又一次崩溃**。
+void _notifyCrashReportSaved() {
+  Timer(const Duration(milliseconds: 1200), () {
+    try {
+      final ctx = navigatorKey.currentContext;
+      if (ctx == null) return;
+      final messenger = ScaffoldMessenger.maybeOf(ctx);
+      if (messenger == null) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(ctx).crash_report_saved),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    } catch (_) {
+      // 静默：提示失败不影响任何功能
+    }
+  });
 }
 
 const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
