@@ -9545,10 +9545,19 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
         final type = FileSystemEntity.typeSync(oldPath);
-        if (type == FileSystemEntityType.directory) {
-          await _renameWithFallback(Directory(oldPath), finalNewPath);
+        final FileSystemEntity entity = type == FileSystemEntityType.directory
+            ? Directory(oldPath)
+            : File(oldPath);
+        final normalizedOld = p.normalize(oldPath);
+        final normalizedFinal = p.normalize(finalNewPath);
+        // 仅大小写不同的改名：FUSE/sdcardfs 会把 rename 当成同名操作而静默保留旧大小写，
+        // 需要经临时名两步改名才能让新大小写真正落盘。
+        final isCaseOnlyRename = normalizedFinal != normalizedOld &&
+            normalizedFinal.toLowerCase() == normalizedOld.toLowerCase();
+        if (isCaseOnlyRename) {
+          await _renameCasePreserving(entity, finalNewPath);
         } else {
-          await _renameWithFallback(File(oldPath), finalNewPath);
+          await _renameWithFallback(entity, finalNewPath);
         }
       }
       // 刷新被重命名文件所在目录对应的 tab（而非全局 activeTab），
@@ -9582,6 +9591,38 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       PaintingBinding.instance.imageCache.evict(FileImage(File(path)));
     } catch (_) {}
+  }
+
+  static int _caseRenameCounter = 0;
+
+  /// 仅大小写不同的改名（a.jpg → a.JPG）专用：在大小写不敏感的 FUSE/sdcardfs 上，
+  /// 直接 rename 会被当作「同名改名」静默忽略，目录项仍保留旧大小写。
+  /// 经同目录临时名两步改名，强制文件系统创建新目录项，让新大小写真正落盘。
+  Future<void> _renameCasePreserving(FileSystemEntity entity, String newPath) async {
+    final oldPath = entity.path;
+    final dir = p.dirname(oldPath);
+    String tmp;
+    do {
+      _caseRenameCounter++;
+      tmp = p.join(dir,
+          '.zenfile_case_${DateTime.now().microsecondsSinceEpoch}_$_caseRenameCounter.tmp');
+    } while (FileSystemEntity.typeSync(tmp) != FileSystemEntityType.notFound);
+
+    await _renameWithFallback(entity, tmp);
+    // rename 后实体路径已变为 tmp，第二步要用新对象
+    final FileSystemEntity tmpEntity =
+        FileSystemEntity.typeSync(tmp) == FileSystemEntityType.directory
+            ? Directory(tmp)
+            : File(tmp);
+    try {
+      await _renameWithFallback(tmpEntity, newPath);
+    } catch (e) {
+      // 第二步失败则尝试回滚到原名，避免留下 .tmp 残留
+      try {
+        await _renameWithFallback(tmpEntity, oldPath);
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   /// 重命名实体，若 rename() 失败（跨文件系统/路径过长/权限等），
