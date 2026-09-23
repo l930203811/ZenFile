@@ -95,28 +95,27 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
     }
+    WebdavDebugLog.log('[boot] MediaKit ok');
 
     try {
       await PreferencesService.init();
     } catch (e) {
       debugPrint('[ZenFile] PreferencesService.init failed: $e');
     }
+    WebdavDebugLog.log('[boot] prefs ok');
 
-    // 诊断哨兵：每次启动写一行，用于**无 adb** 的真机排查里确认两件事 ——
-    // 「手机上跑的到底是哪个包」以及「当前 AO 档位 / 日志开关状态」。
-    // 没有它，「日志里一行都没有」既可能是调用点没走到，也可能是装的根本不是
-    // 新包，两者无法区分（2026-09-23 已因此白跑一轮构建）。
-    // `apk=` 是安装包指纹（版本号 @ lastUpdateTime）：版本号在两版诊断包之间
-    // 通常不变，**只有 lastUpdateTime 能区分「装的是旧包」**。
+    // 启动里程碑哨兵（**诊断版专用**）。
     //
-    // ⚠️ 先写一行**不含 await** 的哨兵。下一行要 `await` 一次原生通道，
-    // 而 `runApp()` 之前任何挂住的 await 都会让应用起不来 —— 那样连「进程启动
-    // 过」都不会留痕，排查会彻底失去着力点。（该 await 已加 3s 超时兜底。）
+    // `WebdavDebugLog.enabled == false` 时 `log()` 直接 return，release 下零开销；
+    // 一旦打开开关，这些行是**无 adb** 真机排查里唯一能回答「崩在哪一步」的依据：
+    // 日志停在哪个里程碑，故障就在它之后那段初始化里；**一行都没有**则说明崩在
+    // Dart 之前（引擎 / 原生层，Dart 侧再怎么写日志也看不到）。
+    //
+    // ⚠️ 这里**绝不能有 `await`**：`runApp()` 之前任何挂住的 await 都会让应用起不来，
+    // 那样连「进程启动过」都不留痕，排查会彻底失去着力点（2026-09-23 已因此白跑
+    // 一轮构建）。安装包指纹要 await 一次原生通道，故移到 `runApp()` **之后**再写
+    // —— 见 [_logBootFingerprint]。
     WebdavDebugLog.log('[boot] main() entered');
-    WebdavDebugLog.log(
-      '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
-      'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',
-    );
 
     try {
       await PinService.init();
@@ -135,6 +134,7 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] RecycleBinService.init failed: $e');
     }
+    WebdavDebugLog.log('[boot] services ok');
 
     // Load custom font dynamically if configured
     try {
@@ -152,6 +152,7 @@ void main() {
     } catch (e) {
       debugPrint('Error loading custom font at startup: $e');
     }
+    WebdavDebugLog.log('[boot] font ok');
 
     // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
     // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
@@ -177,7 +178,9 @@ void main() {
       isAudioServiceInitialized = false;
       debugPrint('[ZenFile] Media notification init failed: $e');
     }
+    WebdavDebugLog.log('[boot] audio_service ok=$isAudioServiceInitialized');
 
+    WebdavDebugLog.log('[boot] runApp() calling');
     runApp(
       MultiProvider(
         providers: [
@@ -187,10 +190,45 @@ void main() {
         child: ZenFileApp(key: appStateKey),
       ),
     );
+
+    // 「界面真的起来了」的证明。与上面的里程碑合起来可区分「崩在起 UI 之前」
+    // 与「UI 起来了才崩」——这两者要查的方向完全相反。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WebdavDebugLog.log('[boot] first frame rendered');
+    });
+
+    // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
+    // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
+    unawaited(_logBootFingerprint());
   }, (error, stackTrace) {
     // 捕获所有未处理的异步错误，防止 release 模式闪退
     debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
   });
+}
+
+/// 启动指纹哨兵：记下「本机跑的到底是哪个包」+ 当前 AO 档位 / 日志开关状态。
+///
+/// ⚠️ **只能在 `runApp()` 之后调用**：它要 `await` 一次原生 MethodChannel
+/// （`buildStamp`）。`runApp()` 之前任何等待都会推迟界面启动，最坏情况是原生侧
+/// 不回应、靠 3s 超时兜底 —— 等于白等 3 秒，低端机上足够触发「应用无响应」，
+/// 用户看到的就是「打开就崩/闪退」。诊断信息再有用，也不该有这种能力。
+///
+/// `apk=` 是安装包指纹「版本号 @ lastUpdateTime」：版本号在两版诊断包之间通常
+/// 不变，**只有 lastUpdateTime 能证明装的是哪一次构建的包**（2026-09-23 曾因
+/// 无法区分「装的是旧包」与「代码路径没走到」白跑一轮构建）。
+///
+/// 开关关闭（release）时**直接返回**，连那一次原生往返都省掉。
+Future<void> _logBootFingerprint() async {
+  if (!WebdavDebugLog.enabled) return;
+  try {
+    WebdavDebugLog.log(
+      '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
+      'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',
+    );
+  } catch (e) {
+    // 诊断绝不能有阻断启动的能力
+    debugPrint('[ZenFile] boot fingerprint failed: $e');
+  }
 }
 
 const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
