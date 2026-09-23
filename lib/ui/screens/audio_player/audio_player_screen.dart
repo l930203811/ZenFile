@@ -19,6 +19,7 @@ import '../../../services/lyric_search_service.dart';
 import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
 import '../../../services/audio_equalizer_service.dart';
+import '../../../services/mpv_audio_output_service.dart';
 import '../../../providers/file_manager_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
@@ -198,6 +199,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         getAudioHandler().setSkipCallback(_onBackgroundSkip);
         _updateBackgroundItem();
       }
+      // ⚠️ 复用已有播放器**不会**走下面 else 分支的 configureBeforeOpen，
+      // 档位会完全失效（从播放列表/通知栏返回正是这条路径）。补一次热应用。
+      _applyAudioOutputToReusedPlayer('audio-reuse');
     } else if (_isBackgroundMode && getAudioHandler().hasActivePlayer) {
       // 后台播放中从通知栏返回：复用 handler 的 player，避免新建导致 UI 与播放状态脱节
       player = getAudioHandler().currentPlayer!;
@@ -220,6 +224,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       } else {
         _updateBackgroundItem();
       }
+      // 同上：后台 player 复用路径也必须补一次档位应用。
+      _applyAudioOutputToReusedPlayer('audio-reuse-bg');
     } else {
       player = Player(
         configuration: const PlayerConfiguration(
@@ -234,12 +240,25 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         try {
           final platform = player.platform;
           if (platform is NativePlayer) {
+            // 音频输出（AO 候选链 + 音频会话 id）配置：必须在 open 之前完成，
+            // mpv 只在初始化音频输出链时读这些选项。⚠️ media_kit 在 Android 真机
+            // 默认就把 ao 写成单值 opensles，所以「模式」决定的是候选链顺序，
+            // 不是「要不要用 OpenSL ES」。细节见服务内注释。
+            await MpvAudioOutputService.configureBeforeOpen(
+              player,
+              mode: PreferencesService.getAudioOutputMode(),
+              tag: 'audio',
+            );
             await platform.setProperty('network-timeout', '60');
             await platform.setProperty('cache-secs', '10');
           }
         } catch (e) {
           debugPrint('设置 audio network-timeout 失败: $e');
         }
+        // 起播后采集一次音频输出诊断：回读**实际生效**的 AO（current-ao，
+        // 而不是候选列表回显）+ mpv 自身日志 + 复刻 RJ 的挂音效自检。
+        // 仅在诊断日志开启时产生（否则内部直接返回，零开销）。
+        MpvAudioOutputService.schedulePlaybackDiagnostics(player, 'audio');
         _openTrack();
       }();
       if (_isBackgroundMode) {
@@ -1858,7 +1877,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 children: [
                   const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
                   const SizedBox(width: 10),
-                  Text(L10n.of(context).msgb7c87215, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Expanded(
+                    child: Text(
+                      L10n.of(context).msgb7c87215,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               content: SizedBox(
@@ -1868,6 +1894,28 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ── 音频输出（AO）兼容模式（兼容免 Root 音效软件） ──
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(L10n.of(dialogContext).audio_opensles_title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(L10n.of(dialogContext).audio_opensles_desc, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                          const SizedBox(height: 8),
+                          // 档位名（Auto / AudioTrack / OpenSL ES）是产品/技术名，
+                          // 各语言不译，故刻意不进 l10n；切换后对**正在播放的**
+                          // 播放器立即生效（见 _aoModeChip 的 onSelected）。
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              for (final mode in MpvAoMode.values)
+                                _aoModeChip(mode, setModalState),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       // ── 均衡器预设（实时生效） ──
                       Text(L10n.of(dialogContext).eq_presets, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
@@ -1964,6 +2012,54 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   /// 均衡器预设芯片组件。
+  /// 音频输出（AO）档位芯片。
+  ///
+  /// 标签用技术名（`AudioTrack` / `OpenSL ES`），各语言不译，所以不进 l10n。
+  /// 对**当前正在播放的** Player 立即应用 AO 档位。
+  ///
+  /// 两个必须走它的场景：
+  /// 1. 用户在均衡器面板切档位 —— 只存偏好不会有任何听感变化（AO 是音频
+  ///    输出路径、不是音质），必须热应用才谈得上"生效"；
+  /// 2. 复用已有 Player（`existingPlayer` / 后台 player）进入本页 —— 该路径
+  ///    **不经过** `configureBeforeOpen`，档位此前完全失效。
+  ///
+  /// 全程吞异常：档位应用**绝不能**影响正常播放；诊断日志由服务内部负责。
+  void _applyAudioOutputToReusedPlayer(String tag) {
+    try {
+      unawaited(MpvAudioOutputService.applyToRunningPlayer(
+        player,
+        mode: PreferencesService.getAudioOutputMode(),
+        tag: tag,
+      ));
+    } catch (_) {
+      // 忽略：档位应用失败不应影响播放
+    }
+  }
+
+  /// 语义（真机实测定稿，见 [MpvAoMode]）：`Auto (AudioTrack)` / `AudioTrack 16-bit`
+  /// = 链 `audiotrack,opensles` + 固定会话号 + 会话广播 ⇒ 免 Root 音效软件能接管；
+  /// `OpenSL ES` = 链 `opensles,audiotrack`，会话号由系统分配 ⇒ **无法**被音效软件
+  /// 接管（仅作 audiotrack 建不起来时的兜底）。
+  Widget _aoModeChip(MpvAoMode mode, StateSetter setModalState) {
+    final isSelected = PreferencesService.getAudioOutputMode() == mode;
+    return ChoiceChip(
+      label: Text(mode.label, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.white70)),
+      selected: isSelected,
+      selectedColor: Colors.deepPurpleAccent,
+      backgroundColor: const Color(0xFF2A2A3E),
+      onSelected: (selected) {
+        if (!selected) return;
+        setModalState(() {});
+        PreferencesService.saveAudioOutputMode(mode);
+        // ⚠️ 必须**立即**对正在播放的播放器热应用：档位改的是 AO（音频输出
+        // 路径），只有音频输出重建时才生效。只存偏好而不应用，「切档位」在
+        // 听感上会毫无变化（AO 不是音质），体感等同功能失效 —— 真机反馈
+        // 「切换了 4 个模式没有任何效果」。热切换会有极短暂音。
+        _applyAudioOutputToReusedPlayer('audio-switch');
+      },
+    );
+  }
+
   Widget _eqPresetChip(EqPreset preset, StateSetter setModalState) {
     final isSelected = _eqPreset == preset;
     return ChoiceChip(

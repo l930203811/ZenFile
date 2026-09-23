@@ -7224,6 +7224,9 @@ class L10nAr extends L10n {
   String get vault_decrypting => 'جارٍ فك التشفير...';
 
   @override
+  String get vault_decrypt_open_progress => 'جارٍ فك التشفير والفتح...';
+
+  @override
   String get vault_import_backup_confirm =>
       'سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟';
 
@@ -7828,4 +7831,11 @@ class L10nAr extends L10n {
   @override
   String get video_vo_compat =>
       'تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.';
+
+  @override
+  String get audio_opensles_title => 'وضع إخراج الصوت (AO)';
+
+  @override
+  String get audio_opensles_desc =>
+      'لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.';
 }

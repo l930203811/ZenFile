@@ -12892,6 +12892,12 @@ abstract class L10n {
   /// **'正在解密...'**
   String get vault_decrypting;
 
+  /// vault/crypt: vault_decrypt_open_progress
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解密并打开...'**
+  String get vault_decrypt_open_progress;
+
   /// vault/crypt: vault_import_backup_confirm
   ///
   /// In zh, this message translates to:
@@ -13971,6 +13977,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'视频渲染异常，已切换为兼容渲染模式'**
   String get video_vo_compat;
+
+  /// audio_player_screen.dart OpenSL ES output switch
+  ///
+  /// In zh, this message translates to:
+  /// **'音频输出（AO）模式'**
+  String get audio_opensles_title;
+
+  /// audio_player_screen.dart OpenSL ES output switch subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。'**
+  String get audio_opensles_desc;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

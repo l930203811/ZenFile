@@ -7404,6 +7404,10 @@
   "@vault_decrypting": {
     "description": "vault/crypt: vault_decrypting"
   },
+  "vault_decrypt_open_progress": "Decrypting and opening...",
+  "@vault_decrypt_open_progress": {
+    "description": "vault/crypt: vault_decrypt_open_progress"
+  },
   "vault_import_backup_confirm": "Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -8019,5 +8023,14 @@
   "ui_delete_confirm_subtitle": "Show a confirmation dialog before deleting files. Turn off to delete directly.",
   "ui_delete_confirm_dont_ask": "Don't ask again",
   "video_auto_fallback_soft": "Hardware decoding issue detected. Switched to software decoding automatically.",
-  "video_vo_compat": "Video rendering issue detected. Switched to compatibility rendering mode."
+  "video_vo_compat": "Video rendering issue detected. Switched to compatibility rendering mode.",
+  "audio_opensles_title": "Audio Output (AO) Mode",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

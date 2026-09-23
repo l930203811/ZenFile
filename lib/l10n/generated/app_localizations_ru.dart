@@ -7322,6 +7322,9 @@ class L10nRu extends L10n {
   String get vault_decrypting => 'Расшифровка...';
 
   @override
+  String get vault_decrypt_open_progress => 'Расшифровка и открытие...';
+
+  @override
   String get vault_import_backup_confirm =>
       'Импорт перезапишет текущую песочницу и настройки шифрования содержимым резервной копии (пароль разблокировки не изменится). Продолжить?';
 
@@ -7933,4 +7936,11 @@ class L10nRu extends L10n {
   @override
   String get video_vo_compat =>
       'Обнаружена проблема рендеринга видео. Переключено в режим совместимости.';
+
+  @override
+  String get audio_opensles_title => 'Режим аудиовыхода (AO)';
+
+  @override
+  String get audio_opensles_desc =>
+      'Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.';
 }

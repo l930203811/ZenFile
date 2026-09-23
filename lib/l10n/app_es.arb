@@ -7338,6 +7338,10 @@
   "@vault_decrypting": {
     "description": "vault/crypt: vault_decrypting"
   },
+  "vault_decrypt_open_progress": "Descifrando y abriendo...",
+  "@vault_decrypt_open_progress": {
+    "description": "vault/crypt: vault_decrypt_open_progress"
+  },
   "vault_import_backup_confirm": "La importación sobrescribirá el sandbox y la configuración de cifrado actuales con el contenido de la copia (la contraseña de desbloqueo no se ve afectada). ¿Continuar?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7953,5 +7957,14 @@
   "ui_delete_confirm_subtitle": "Mostrar confirmación antes de eliminar archivos. Desactivado = eliminar directamente.",
   "ui_delete_confirm_dont_ask": "No preguntar de nuevo",
   "video_auto_fallback_soft": "Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.",
-  "video_vo_compat": "Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad."
+  "video_vo_compat": "Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad.",
+  "audio_opensles_title": "Modo de salida de audio (AO)",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "Las apps de efectos de audio (p. ej. RootlessJamesDSP) solo pueden engancharse a los modos AudioTrack; OpenSL ES usa una sesión asignada por el sistema, a la que no pueden engancharse. El cambio es inmediato.",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

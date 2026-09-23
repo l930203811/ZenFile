@@ -15,6 +15,7 @@ import 'package:zenfile/services/network_connections_service.dart';
 import 'package:zenfile/services/subtitle_parser.dart';
 import 'package:zenfile/services/audio_background_handler.dart';
 import 'package:zenfile/services/audio_equalizer_service.dart';
+import 'package:zenfile/services/mpv_audio_output_service.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:zenfile/providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
@@ -269,6 +270,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       try {
         final platform = player.platform;
       if (platform is NativePlayer) {
+        // 音频输出（AO 候选链 + 音频会话 id）配置：必须在 open 之前完成，
+        // mpv 只在初始化音频输出链时读这些选项；档位语义见服务内注释。
+        await MpvAudioOutputService.configureBeforeOpen(
+          player,
+          mode: PreferencesService.getAudioOutputMode(),
+          tag: 'video',
+        );
         await platform.setProperty('network-timeout', '60');
         // 远程（含本地代理 127.0.0.1）播放：放大缓存与解复用缓冲，吸收代理喂流的
         // 脉冲式抖动，使 SFTP/FTP/SMB 与 WebDAV 直连一样流畅。此前这些仅在软解模式
@@ -301,6 +309,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
       }
+      // 起播后采集音频输出诊断（回读实际生效的 AO + 复刻 RJ 的挂音效自检）
+      // 仅在诊断日志开启时产生，否则零开销。
+      MpvAudioOutputService.schedulePlaybackDiagnostics(player, 'video');
       _startPlayback();
       _resolvePlaylist();
     }();
@@ -1651,6 +1662,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
+        // 切换解码方式后同样要重设音频输出选项 —— 这里会重建 Player，
+        // 新 Player 的 AO 还没初始化，是补设的唯一时机。
+        await MpvAudioOutputService.configureBeforeOpen(
+          player,
+          mode: PreferencesService.getAudioOutputMode(),
+          tag: 'video-switch',
+        );
         await platform.setProperty('network-timeout', '60');
         // 与初始播放一致：所有解码模式都放大缓存/解复用缓冲，掩盖代理喂流抖动
         // （硬解默认路径此前只有 cache-secs=10，demuxer 缓冲极小 → 远程视频卡顿）。

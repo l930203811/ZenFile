@@ -7359,6 +7359,9 @@ class L10nFr extends L10n {
   String get vault_decrypting => 'Déchiffrement...';
 
   @override
+  String get vault_decrypt_open_progress => 'Déchiffrement et ouverture...';
+
+  @override
   String get vault_import_backup_confirm =>
       'L\'importation remplacera le sandbox et la configuration de chiffrement actuels par le contenu de la sauvegarde (le mot de passe de déverrouillage n\'est pas affecté). Continuer ?';
 
@@ -7979,4 +7982,11 @@ class L10nFr extends L10n {
   @override
   String get video_vo_compat =>
       'Problème de rendu vidéo détecté. Passage en mode de rendu de compatibilité.';
+
+  @override
+  String get audio_opensles_title => 'Mode de sortie audio (AO)';
+
+  @override
+  String get audio_opensles_desc =>
+      'Les applications d’effets audio (RootlessJamesDSP, etc.) ne peuvent s’attacher qu’aux modes AudioTrack ; OpenSL ES utilise une session attribuée par le système, à laquelle elles ne peuvent pas s’attacher. Le changement est immédiat.';
 }

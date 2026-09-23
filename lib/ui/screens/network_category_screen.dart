@@ -193,14 +193,31 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            '${conn.type} · ${conn.host}:${conn.port}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: theme.colorScheme.onSurface.withOpacity(0.5),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          // 类型与 host:port 分两行显示：单行挤压时总有一方被省略号截掉，
+                          // 而垂直方向本就有空间，两行都能完整展示
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                conn.type,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${conn.host}:${conn.port}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
                         trailing: Row(

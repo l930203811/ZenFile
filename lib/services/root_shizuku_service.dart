@@ -405,6 +405,51 @@ class RootShizukuService {
     final rawOld = _toFuseBypassPath(fuseOld);
     final fuseNew = _normalize(p.join(p.dirname(oldPath), newName));
     final rawNew = _toFuseBypassPath(fuseNew);
+
+    // 仅大小写不同的改名（a.jpg → a.JPG）：FUSE 大小写不敏感，直接 mv 会被当作
+    // 同名改名静默忽略（返回成功但目录项大小写不变），且下方 _exists 校验同样
+    // 是大小写不敏感的、查不出来。改走「临时名 → 目标名」两步 mv 强制落盘。
+    final isCaseOnly = fuseNew != fuseOld &&
+        fuseNew.toLowerCase() == fuseOld.toLowerCase();
+    if (isCaseOnly) {
+      final dir = p.dirname(fuseOld);
+      final fuseTmp =
+          p.join(dir, '.zenfile_case_${DateTime.now().millisecondsSinceEpoch}.tmp');
+      final rawTmp = _toFuseBypassPath(fuseTmp);
+      // 第一步：原 → 临时（同样 FUSE 优先、底层回退）
+      if (rawOld != fuseOld || rawTmp != fuseTmp) {
+        await runCommand('mv "$fuseOld" "$fuseTmp" 2>/dev/null || mv "$rawOld" "$rawTmp"', useRoot: useRoot);
+      } else {
+        await runCommand('mv "$fuseOld" "$fuseTmp"', useRoot: useRoot);
+      }
+      if (!await _exists(fuseTmp, useRoot: useRoot)) {
+        throw Exception('Rename failed (step1): $oldPath');
+      }
+      // 第二步：临时 → 目标；失败回滚到原名，不留 .tmp 残留
+      try {
+        if (rawNew != fuseNew || rawTmp != fuseTmp) {
+          await runCommand('mv "$fuseTmp" "$fuseNew" 2>/dev/null || mv "$rawTmp" "$rawNew"', useRoot: useRoot);
+        } else {
+          await runCommand('mv "$fuseTmp" "$fuseNew"', useRoot: useRoot);
+        }
+      } catch (e) {
+        try {
+          await runCommand('mv "$fuseTmp" "$fuseOld" 2>/dev/null || true', useRoot: useRoot);
+        } catch (_) {}
+        rethrow;
+      }
+      // 大小写精确校验：_exists 大小写不敏感，必须 ls + grep -Fx 逐字匹配目标名
+      final lsOut = await runCommand(
+            'ls -1 "$dir" | grep -Fx -- "$newName"',
+            useRoot: useRoot,
+          ) ??
+          '';
+      if (lsOut.trim() != newName) {
+        throw Exception('Rename failed (case not applied): $oldPath -> $newName');
+      }
+      return;
+    }
+
     // 与 moveItem/deleteItem/copyItem 一致的「FUSE 直接路径优先、底层路径回退」
     // 双跳：底层 /data/media/0 上其它应用的 Android/{data,obb} 文件属主为对应
     // app uid，shell（Shizuku uid 2000）无权限；FUSE 直接路径对 shell 可写

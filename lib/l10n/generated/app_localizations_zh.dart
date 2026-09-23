@@ -6878,6 +6878,9 @@ class L10nZh extends L10n {
   String get vault_decrypting => '正在解密...';
 
   @override
+  String get vault_decrypt_open_progress => '正在解密并打开...';
+
+  @override
   String get vault_import_backup_confirm =>
       '导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？';
 
@@ -7450,6 +7453,13 @@ class L10nZh extends L10n {
 
   @override
   String get video_vo_compat => '视频渲染异常，已切换为兼容渲染模式';
+
+  @override
+  String get audio_opensles_title => '音频输出（AO）模式';
+
+  @override
+  String get audio_opensles_desc =>
+      '音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14296,6 +14306,9 @@ class L10nZhTw extends L10nZh {
   String get vault_decrypting => '正在解密...';
 
   @override
+  String get vault_decrypt_open_progress => '正在解密並開啟...';
+
+  @override
   String get vault_import_backup_confirm =>
       '匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？';
 
@@ -14868,4 +14881,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get video_vo_compat => '影片渲染異常，已切換為相容渲染模式';
+
+  @override
+  String get audio_opensles_title => '音訊輸出（AO）模式';
+
+  @override
+  String get audio_opensles_desc =>
+      '音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。';
 }

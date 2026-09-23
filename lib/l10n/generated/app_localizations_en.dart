@@ -7249,6 +7249,9 @@ class L10nEn extends L10n {
   String get vault_decrypting => 'Decrypting...';
 
   @override
+  String get vault_decrypt_open_progress => 'Decrypting and opening...';
+
+  @override
   String get vault_import_backup_confirm =>
       'Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?';
 
@@ -7856,4 +7859,11 @@ class L10nEn extends L10n {
   @override
   String get video_vo_compat =>
       'Video rendering issue detected. Switched to compatibility rendering mode.';
+
+  @override
+  String get audio_opensles_title => 'Audio Output (AO) Mode';
+
+  @override
+  String get audio_opensles_desc =>
+      'Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.';
 }

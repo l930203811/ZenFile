@@ -7034,6 +7034,9 @@ class L10nJa extends L10n {
   String get vault_decrypting => '復号中...';
 
   @override
+  String get vault_decrypt_open_progress => '復号して開いています...';
+
+  @override
   String get vault_import_backup_confirm =>
       'インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？';
 
@@ -7618,4 +7621,11 @@ class L10nJa extends L10n {
 
   @override
   String get video_vo_compat => '動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。';
+
+  @override
+  String get audio_opensles_title => '音声出力（AO）モード';
+
+  @override
+  String get audio_opensles_desc =>
+      '音響エフェクトアプリ（RootlessJamesDSP など）に対応するのは AudioTrack のみです。OpenSL ES はセッションIDをシステムが割り当てるため対応できません。切り替えは即時反映されます。';
 }

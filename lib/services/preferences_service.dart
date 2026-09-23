@@ -5,6 +5,7 @@ import '../providers/file_manager_provider.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/category_filter_type.dart';
 import '../services/quick_transfer_service.dart';
+import '../services/mpv_audio_output_service.dart';
 
 class PreferencesService {
   static const String _keyThemeMode = 'theme_mode';
@@ -943,6 +944,9 @@ class PreferencesService {
   static const String _keyAudioBackgroundPlay = 'audio_background_play';
   static const String _keyActiveAppIcon = 'active_app_icon';
   static const String _keyDesktopLyricEnabled = 'desktop_lyric_enabled';
+  static const String _keyOpenSLESOutput = 'opensles_output';
+  /// mpv AO 兼容模式（[MpvAoMode.key]）。旧键 [_keyOpenSLESOutput] 仅作迁移来源。
+  static const String _keyAudioOutputMode = 'audio_output_mode';
 
   static bool getAudioBackgroundPlay() {
     return _prefs?.getBool(_keyAudioBackgroundPlay) ?? false;
@@ -950,6 +954,28 @@ class PreferencesService {
 
   static Future<void> saveAudioBackgroundPlay(bool val) async {
     await _prefs?.setBool(_keyAudioBackgroundPlay, val);
+  }
+
+  /// mpv 音频输出（AO）兼容模式，默认 [MpvAoMode.auto]（audiotrack 优先，可被
+  /// 音效类应用接管）。档位语义见 [MpvAoMode]。
+  ///
+  /// ⚠️ 旧实现是布尔开关 `opensles_output`，其注释「默认走 AudioTrack、开启才切
+  /// OpenSL ES」是**错的**：media_kit 在 Android 真机上默认就已把 `ao` 写成单值
+  /// `opensles`，所以那个开关开/关时实际 AO 完全一样。这里保留旧键做迁移：
+  /// 老用户若开过开关，迁移为 [MpvAoMode.openSlEs]（保持其原有行为）。
+  static MpvAoMode getAudioOutputMode() {
+    final stored = _prefs?.getString(_keyAudioOutputMode);
+    if (stored != null) return MpvAoMode.fromKey(stored);
+    final legacy = _prefs?.getBool(_keyOpenSLESOutput) ?? false;
+    return legacy ? MpvAoMode.openSlEs : MpvAoMode.auto;
+  }
+
+  static Future<void> saveAudioOutputMode(MpvAoMode mode) async {
+    await _prefs?.setString(_keyAudioOutputMode, mode.key);
+    // 旧键同步维护：让回退到旧版本时行为不至于完全跳变（旧版本只认这个布尔值，
+    // 且它当年是「要不要把 audiotrack 加进候选」）。降级场景下的档位语义本就
+    // 无法一一对应，这里只保证布尔值处于「合理」一侧：非 auto 视为开。
+    await _prefs?.setBool(_keyOpenSLESOutput, mode != MpvAoMode.auto);
   }
 
   static bool getDesktopLyricEnabled() {

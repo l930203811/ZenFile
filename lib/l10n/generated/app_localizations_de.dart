@@ -7330,6 +7330,9 @@ class L10nDe extends L10n {
   String get vault_decrypting => 'Wird entschlüsselt...';
 
   @override
+  String get vault_decrypt_open_progress => 'Entschlüsseln und öffnen...';
+
+  @override
   String get vault_import_backup_confirm =>
       'Beim Import werden die aktuelle Sandbox und die Verschlüsselungskonfiguration mit dem Backup-Inhalt überschrieben (das Entsperren-Passwort bleibt unberührt). Fortfahren?';
 
@@ -7945,4 +7948,11 @@ class L10nDe extends L10n {
   @override
   String get video_vo_compat =>
       'Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.';
+
+  @override
+  String get audio_opensles_title => 'Audioausgabe (AO)-Modus';
+
+  @override
+  String get audio_opensles_desc =>
+      'Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.';
 }

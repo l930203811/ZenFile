@@ -7625,6 +7625,10 @@
   "@vault_decrypting": {
     "description": "vault/crypt: vault_decrypting"
   },
+  "vault_decrypt_open_progress": "正在解密并打开...",
+  "@vault_decrypt_open_progress": {
+    "description": "vault/crypt: vault_decrypt_open_progress"
+  },
   "vault_import_backup_confirm": "导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -8240,5 +8244,14 @@
   "ui_delete_confirm_subtitle": "删除文件时显示二次确认弹窗，关闭后直接删除",
   "ui_delete_confirm_dont_ask": "删除不再提示",
   "video_auto_fallback_soft": "检测到硬解异常，已自动切换为软解",
-  "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式"
+  "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式",
+  "audio_opensles_title": "音频输出（AO）模式",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

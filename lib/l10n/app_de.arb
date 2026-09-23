@@ -7335,6 +7335,10 @@
   "@vault_decrypting": {
     "description": "vault/crypt: vault_decrypting"
   },
+  "vault_decrypt_open_progress": "Entschlüsseln und öffnen...",
+  "@vault_decrypt_open_progress": {
+    "description": "vault/crypt: vault_decrypt_open_progress"
+  },
   "vault_import_backup_confirm": "Beim Import werden die aktuelle Sandbox und die Verschlüsselungskonfiguration mit dem Backup-Inhalt überschrieben (das Entsperren-Passwort bleibt unberührt). Fortfahren?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7950,5 +7954,14 @@
   "ui_delete_confirm_subtitle": "Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.",
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
   "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
-  "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet."
+  "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.",
+  "audio_opensles_title": "Audioausgabe (AO)-Modus",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }

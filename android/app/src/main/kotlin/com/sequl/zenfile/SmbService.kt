@@ -6,6 +6,7 @@ import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation
 import com.hierynomus.mssmb2.SMB2CreateDisposition
 import com.hierynomus.mssmb2.SMB2CreateOptions
+import com.hierynomus.mssmb2.SMB2Dialect
 import com.hierynomus.mssmb2.SMB2ImpersonationLevel
 import com.hierynomus.mssmb2.SMB2ShareAccess
 import com.hierynomus.mssmb2.SMBApiException
@@ -146,8 +147,37 @@ class SmbService {
      * @return a freshly generated sessionId that must be passed to subsequent calls.
      */
     fun connect(host: String, port: Int, username: String, password: String?, domain: String?): String {
+        if (username.isNotEmpty()) {
+            return connectInternal(host, port, username, password, domain, smb2Only = false)
+        }
+        // 匿名（空用户名）：smbj 0.14.0 走 NTLMSSP_NEGOTIATE_ANONYMOUS 规范握手，
+        // 合规服务器会在 SESSION_SETUP 响应里打 IS_NULL 标志，SMB3 下跳过会话密钥
+        // 派生；但 MS-SMB2 里该标志只是 SHOULD —— 对不打标志的非合规服务器，
+        // smbj 会在 deriveKeys() 里对 null sessionKey 调 getEncoded() 抛 NPE。
+        // SMB2 方言根本不派生会话密钥，因此命中该 NPE 时用 SMB2-only 方言重试，
+        // 把「依赖服务器合规」变成确定性成功。
+        return try {
+            connectInternal(host, port, username, password, domain, smb2Only = false)
+        } catch (e: Exception) {
+            if (!isAnonymousSessionKeyNpe(e)) throw e
+            Log.w("SmbService", "anonymous SMB3 session-key NPE against ${host}:${port}, retrying with SMB2-only dialects")
+            connectInternal(host, port, username, password, domain, smb2Only = true)
+        }
+    }
+
+    /** 匿名路径特有的 NPE：SMB3 派生密钥时 sessionKey 为 null（服务器未打 IS_NULL 标志）。 */
+    private fun isAnonymousSessionKeyNpe(e: Throwable): Boolean {
+        var cur: Throwable? = e
+        while (cur != null) {
+            if (cur is NullPointerException && cur.message?.contains("getEncoded") == true) return true
+            cur = cur.cause
+        }
+        return false
+    }
+
+    private fun connectInternal(host: String, port: Int, username: String, password: String?, domain: String?, smb2Only: Boolean): String {
         try {
-            val config = SmbConfig.builder()
+            val builder = SmbConfig.builder()
                 .withSoTimeout(60, TimeUnit.SECONDS)
                 .withDfsEnabled(true)
                 // 让 SMB2 读/写缓冲大小由服务端协商到其支持的最大值
@@ -156,7 +186,10 @@ class SmbService {
                 // 实际生效值取「本端上限」与「服务端上限」的较小者，对不支持
                 // 大 MTU 的服务器会自动降级，不会请求超出其能力的数据。
                 .withNegotiatedBufferSize()
-                .build()
+            if (smb2Only) {
+                builder.withDialects(SMB2Dialect.SMB_2_1, SMB2Dialect.SMB_2_0_2)
+            }
+            val config = builder.build()
             val client = SMBClient(config)
             val connection = client.connect(host, port)
             var established = false

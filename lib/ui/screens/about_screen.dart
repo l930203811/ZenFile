@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v2.1.5',
+                    'v2.1.6',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -730,7 +730,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV215Changelog(ctx, theme),
+                  _buildV216Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -741,12 +741,12 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  /// v2.1.5 更新日志卡片。
+  /// v2.1.6 更新日志卡片。
   ///
   /// 按用户要求：**只保留当前版本**，上半部分中文、中间以分割线隔开、下半部分英文，
   /// 供国际用户阅读；文案直接硬编码，不走 l10n（无需多语言翻译）。
-  /// 历史版本卡片（v2.1.4 / v2.1.3 / v2.1.2 / v2.1.1 / v2.1.0 / v2.0.0）已移除。
-  Widget _buildV215Changelog(BuildContext ctx, ThemeData theme) {
+  /// 历史版本卡片（v2.1.5 / v2.1.4 / v2.1.3 / v2.1.2 / v2.1.1 / v2.1.0 / v2.0.0）已移除。
+  Widget _buildV216Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
@@ -797,63 +797,63 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v2.1.5', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v2.1.6', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-21', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-23', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
           // ══════════════ 中文 ══════════════
           section('\u2728 新功能'),
-          item('远程目录支持「原地加密 / 解密」：选中文件或文件夹后在原远程目录直接完成加密或解密，无需先下载到本地（下载→加密/解密→回传原目录替换原文件）'),
-          item('远程加密目录中的文件复制 / 剪切到本地或其他目录保持密文，不再自动解密，与本地加密文件行为一致'),
-          item('新增 3 款预设应用图标（Classic 4 / 3D Gradient / Glossy Blue），现共 10 款可选'),
+          item('新增「音频输出（AO）模式」设置（播放页 → 音效与均衡器）：Auto (AudioTrack) / AudioTrack 16-bit / OpenSL ES 三档，默认 AudioTrack 优先'),
+          item('修复与 RootlessJamesDSP 等免 Root 音效软件不兼容：应用按 Android 官方协议广播音频效果控制会话，音效软件可正常接管，不再提示「不支持的应用程序」'),
+          item('修复播放中切换音频输出模式不生效的问题，切换立即生效；修复切歌时音轨重建导致的断音'),
 
           divider(),
 
           section('\u{1f3a8} 界面与交互'),
-          item('远程加密 / 解密进度弹窗统一为双层圆环，与本地加解密进度一致'),
-          item('保险箱加密 / 解密会话弹窗优先引导生物识别验证'),
-          item('修复预设应用图标切换无效：改为通过 activity-alias 切换，现已真正生效'),
+          item('修复均衡器面板标题在部分语言下超出窗口'),
+          item('服务器列表副标题类型与 IP 分行显示，IP 不再被省略号截断'),
+          item('SMB 向导局域网扫描提速（约 3~4 倍）'),
 
           divider(),
 
           section('\u{1f41b} 问题修复'),
-          item('修复远程目录加密 / 解密成功后，点击面包屑或返回按钮无法进入其他目录、页面冻结的问题（WebDAV 复现）'),
-          item('修复远程加密 / 解密产生的临时文件（RemoteDecrypted）未自动清理'),
-          item('修复 ROOT / Shizuku 模式下访问系统根目录「/」显示空列表'),
-          item('修复远程媒体缩略图同时完整下载原图占满带宽导致卡顿：改为串行加载 + 约 2MB/s 限速，并将原图压缩为 512px 缩略图缓存'),
-          item('修复静默安装 APK 后临时副本未清理、以及安装源失效时的回退处理'),
-          item('修复 IM 转发产生的带数字后缀安装包（如 .apk.1）无法识别类型：各文件类型入口统一识别，并渲染真实应用图标'),
-          item('修复预设图标默认图标体积过大：恢复 7 款预设图标为 WebP 并压缩默认图标'),
+          item('修复仅大小写不同的重命名（如 a.jpg → a.JPG）不生效的问题（本地与 Root/Shizuku 受限路径均修复）'),
+          item('修复本地/远程文件夹「解密后再原地加密」目录名不变密文的问题'),
+          item('加密文件打开优化：原地加密的 APK/DOC/ZIP 点击后可临时解密并打开，操作结束自动清理；保险箱文件夹支持直接浏览'),
+          item('修复分类页已删除音频重新出现的问题'),
+          item('修复保险箱备份恢复后列表为空的问题'),
+          item('修复 WebDAV 与本地面包屑导航错位的问题'),
+          item('修复 SMB 匿名登录在 SMB 3.x 服务器上的崩溃（升级 smbj 0.14.0 + SMB2 方言自动兜底）'),
 
           langDivider(),
 
           // ══════════════ English ══════════════
           section('\u2728 New Features'),
-          item('In-place encrypt / decrypt for remote folders: select a file or folder and encrypt or decrypt it right in the original remote directory, no need to download first (download, encrypt/decrypt, upload back to replace the original)'),
-          item('Copying or moving a file out of a remote encrypted folder keeps it encrypted, instead of decrypting automatically, matching local encrypted files'),
-          item('3 new preset app icons added (Classic 4 / 3D Gradient / Glossy Blue), for a total of 10 to choose from'),
+          item('New "Audio Output (AO) Mode" setting (Playback → Sound Effects & Equalizer): Auto (AudioTrack) / AudioTrack 16-bit / OpenSL ES, AudioTrack-first by default'),
+          item('Fixed incompatibility with rootless audio effect apps (e.g. RootlessJamesDSP): the app now broadcasts audio effect control sessions per Android\'s official protocol, so effect apps can take over normally ("unsupported app" no longer shown)'),
+          item('Fixed switching AO mode during playback not taking effect — changes apply immediately; fixed audio gaps when switching tracks'),
 
           divider(),
 
           section('\u{1f3a8} UI & Interaction'),
-          item('Remote encrypt / decrypt progress dialog now uses the same dual-ring design as the local one'),
-          item('The Vault encrypt / decrypt session dialog now prompts for biometrics first'),
-          item('Fixed preset app icons not switching: switching now works through an activity-alias'),
+          item('Fixed the equalizer panel title overflowing the window in some languages'),
+          item('Server list subtitle now shows type and IP on separate lines; IPs are no longer truncated'),
+          item('LAN share scanning in the SMB wizard is ~3-4x faster'),
 
           divider(),
 
           section('\u{1f41b} Bug Fixes'),
-          item('Fixed the breadcrumb and back button doing nothing after encrypting / decrypting in a remote folder, freezing the page (reproduced on WebDAV)'),
-          item('Fixed temporary files (RemoteDecrypted) left behind after remote encrypt / decrypt not being cleaned up'),
-          item('Fixed the system root "/" showing an empty list in ROOT / Shizuku mode'),
-          item('Fixed remote thumbnails choking the bandwidth by downloading full-size images at once: now serialized with a ~2MB/s cap and cached as 512px thumbnails'),
-          item('Fixed temp copies left behind after a silent APK install, and the fallback when the install source is gone'),
-          item('Fixed IM-renamed packages with a numeric suffix (e.g. .apk.1) not being recognized: all type entries now detect them and render the real app icon'),
-          item('Fixed the oversized default preset icon: restored 7 preset icons as WebP and compressed the default icon'),
+          item('Fixed case-only renames (e.g. a.jpg → a.JPG) not taking effect (local & Root/Shizuku restricted paths)'),
+          item('Fixed folder names not becoming ciphertext when re-encrypting in place after decryption (local & remote)'),
+          item('Improved opening encrypted files: in-place encrypted APK/DOC/ZIP can be temporarily decrypted and opened, auto-cleaned afterward; vault folders can be browsed directly'),
+          item('Fixed deleted audio files reappearing in the category page'),
+          item('Fixed empty file list after restoring vault backup'),
+          item('Fixed breadcrumb navigation going to the wrong level (WebDAV & local root)'),
+          item('Fixed SMB anonymous login crash on SMB 3.x servers (upgraded smbj to 0.14.0 with SMB2 dialect fallback)'),
         ],
       ),
     );

@@ -2274,6 +2274,207 @@ class MainActivity : AudioServiceFragmentActivity() {
                 result.error("VOLUME_ERROR", e.message, null)
             }
         }
+
+        // 音频会话 ID：mpv 的 ao_audiotrack 驱动只暴露两个选项 —— pcm-float
+        // 与 session-id（options_prefix=audiotrack，故 Dart 侧属性名为
+        // audiotrack-session-id）。不设置时 Android 会为每个新建的 AudioTrack
+        // 另分配一个会话号，于是按 session 追踪或挂音效的软件（如免 Root 的
+        // RootlessJamesDSP）会在开播/切歌时「丢失目标」。这里提供一个由系统
+        // 生成的会话号，供 mpv 在创建 AudioTrack 时绑定。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_session").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "generateAudioSessionId" -> {
+                        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                        result.success(audioManager.generateAudioSessionId())
+                    }
+                    // 自检：复刻 RootlessJamesDSP 的「往该会话挂静音音效」动作。
+                    "probeEffectAttach" -> {
+                        val sid = call.argument<Number>("sessionId")?.toInt() ?: -1
+                        result.success(probeEffectAttach(sid))
+                    }
+                    // 设备音频输出画像（fast mixer 帧数/原生采样率 + 活跃播放配置）
+                    "describeAudioOutput" -> result.success(describeAudioOutput())
+                    // 音频效果控制会话广播 —— Android 官方的「播放器宣告自己正在哪个
+                    // 会话上出声」协议（AudioEffect.ACTION_OPEN/CLOSE_AUDIO_EFFECT_
+                    // CONTROL_SESSION）。**播放器侧必须主动广播**，效果类应用（系统
+                    // 均衡器、免 Root 音效软件如 RootlessJamesDSP）才能按会话挂效果。
+                    // 详见 notifyEffectSession() 的注释。
+                    "notifyEffectSession" -> {
+                        val sid = call.argument<Number>("sessionId")?.toInt() ?: 0
+                        val isOpen = call.argument<Boolean>("open") ?: true
+                        val contentType = call.argument<Number>("contentType")?.toInt()
+                            ?: android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC
+                        result.success(notifyEffectSession(sid, isOpen, contentType))
+                    }
+                    // 安装包指纹：证明「手机上跑的到底是哪个包」。版本号在两版诊断包
+                    // 之间通常不变，故**必须**带上 lastUpdateTime，否则无法区分
+                    // 「装的是旧包」与「代码路径没走到」（2026-09-23 白跑一轮的教训）。
+                    "buildStamp" -> {
+                        val pi = packageManager.getPackageInfo(packageName, 0)
+                        val stampTime = java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US)
+                            .format(java.util.Date(pi.lastUpdateTime))
+                        result.success("${pi.versionName ?: "?"}@$stampTime")
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("AUDIO_SESSION_ERROR", e.message, null)
+            }
+        }
+    }
+
+    /**
+     * 复刻 RootlessJamesDSP 的「往目标音频会话挂一个静音音效」动作，用于在
+     * **设备上**直接自证兼容性（本机是云电脑、无法用 adb，只能靠应用自己取证）。
+     *
+     * RJ（rootless）的判定链：从 `dumpsys media.audio_flinger` 拿到 sid →
+     * `RootlessSessionDatabase.createSession` → `MutedAudioEffectFactory.make`：
+     * 先试 `DynamicsProcessing`，失败再试隐藏的 Volume 效果；**两个都挂不上**
+     * 就调 `onAppProblemDetected(uid)` → 弹「不兼容」并 `stopSelf()`，
+     * 也就是用户截图那一幕（文案见 RJ 的 app_compat_* 字符串）。
+     *
+     * ⚠️ 这里只 create + 立即 release：**不 enable、不改增益**，因此绝不会
+     * 静音正常播放。priority 取 0（而非 RJ 的 Int.MAX_VALUE）是为了**不去抢**
+     * RJ 已持有的控制权 —— 抢控制会让 RJ 误判「会话控制丢失」，反而破坏现场。
+     */
+    /**
+     * 广播「本应用开始在会话 [sessionId] 上播放音频」/「已停止播放」。
+     *
+     * 这是 Android 官方的**音频效果控制协议**：
+     * `AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION` 由**播放器**在开始
+     * 播放时发出，携带 `EXTRA_AUDIO_SESSION` / `EXTRA_PACKAGE_NAME` /
+     * `EXTRA_CONTENT_TYPE`；停止时发对应的 `..._CLOSE_...`。系统的音频效果面板、
+     * 系统均衡器以及免 Root 音效软件（RootlessJamesDSP）都靠这条广播按会话挂效果。
+     *
+     * ⚠️ 少了这条广播，效果类应用只能从 `dumpsys media.audio_flinger` 的 dump 里
+     * 猜我们的会话；猜不到 / 挂不上就判定本应用「不受支持」并停止处理
+     * （RootlessJamesDSP 的表现就是弹「音频处理已暂停，以防止重复音频」）。
+     * 这是本应用与其它播放器之间**唯一**的协议级差异 —— VLC / YouTube Music /
+     * Poweramp 都实现了它，所以它们能被处理而我们不能。
+     *
+     * ⚠️ 依赖**固定的会话号**：由 `audiotrack-session-id` 交给 mpv 的
+     * `ao_audiotrack` 使用。走 opensles 时（含 `auto` 档位）会话号由系统分配，
+     * 本应用无从得知，也就无从宣告 —— 这是「AudioTrack 档位才谈得上兼容音效
+     * 软件」的根本原因。
+     */
+    private fun notifyEffectSession(sessionId: Int, isOpen: Boolean, contentType: Int): String {
+        if (sessionId <= 0) return "skip:invalid-session($sessionId)"
+        return try {
+            val action = if (isOpen)
+                android.media.audiofx.AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION
+            else
+                android.media.audiofx.AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION
+            val intent = Intent(action)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, contentType)
+            sendBroadcast(intent)
+            (if (isOpen) "open" else "close") + ":" + sessionId
+        } catch (t: Throwable) {
+            "error:" + (t.message ?: t.javaClass.simpleName)
+        }
+    }
+
+    private fun probeEffectAttach(sessionId: Int): String {
+        if (sessionId <= 0) return "skip:invalid-session($sessionId)"
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) {
+            return "skip:sdk<28"
+        }
+        // ① RJ 的首选：DynamicsProcessing（API 28+）。
+        //    注意：公开构造函数只有 DynamicsProcessing(int audioSession) 一个；
+        //    RJ 用的 (priority, session, config) 三参版本是 @hide，Kotlin 编译期就过不了。
+        var dp: android.media.audiofx.DynamicsProcessing? = null
+        try {
+            dp = android.media.audiofx.DynamicsProcessing(sessionId)
+            return "ok:DynamicsProcessing"
+        } catch (t: Throwable) {
+            val dyn = "fail:DynamicsProcessing:${t.javaClass.simpleName}:${t.message}"
+            // ② 兜底探针：RJ 的兜底是隐藏的 "Volume" 效果
+            //    （靠 AudioEffect(uuid, EFFECT_TYPE_NULL, priority, session) 四参构造 + EFFECT_TYPE_NULL 常量，
+            //    两者均 @hide，无法直接调用）。Equalizer 与它同属「可挂到任意 session 的
+            //    普通效果」，作为等价探针足够：它能挂上就说明这条轨道本身允许挂效果。
+            //    priority 取 0（！=控制权抢占级）且仅 create+release，不 enable、不改增益。
+            var eq: Equalizer? = null
+            try {
+                eq = Equalizer(0, sessionId)
+                return "ok:Equalizer; $dyn"
+            } catch (t2: Throwable) {
+                return "$dyn | fail:Equalizer:${t2.javaClass.simpleName}:${t2.message}"
+            } finally {
+                try {
+                    eq?.release()
+                } catch (_: Throwable) {
+                }
+            }
+        } finally {
+            try {
+                dp?.release()
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    /**
+     * 设备侧音频输出画像：fast mixer 的帧数/原生采样率（Android 公共低延迟属性）
+     * + 当前活跃的播放配置（usage / contentType / flags / isActive）。
+     *
+     * 为什么需要它：RJ 把「挂不上静音音效」归因为 fast track（其文档原话
+     * "HW-accelerated audio playback (fast tracks)"），而 fast 路径对采样率、
+     * 声道、缓冲都有要求；这两个属性正是判断我们这条轨道有没有落进 fast 的依据。
+     * 注：无 MODIFY_AUDIO_ROUTING 时 clientUid 会被打码，故**不按 uid 过滤**，
+     * 而是把当前活跃配置整体带出来（同时一般只有一两条）。
+     */
+    private fun describeAudioOutput(): String {
+        val sb = StringBuilder()
+        try {
+            val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            sb.append("rate=")
+                .append(am.getProperty(android.media.AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE) ?: "?")
+            sb.append(",framesPerBuffer=")
+                .append(am.getProperty(android.media.AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER) ?: "?")
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val configs = am.activePlaybackConfigurations
+                sb.append(",active=").append(configs?.size ?: 0).append(": ")
+                val items = ArrayList<String>()
+                try {
+                    configs?.forEach { c ->
+                        try {
+                            val attr = c.audioAttributes
+                            // ⚠️ getAudioDeviceInfo() 是 @hide（在 audio_services
+                            // 模块里，不在 framework.jar 的公开 API 中）⇒ 真机上必然抛
+                            // NoSuchMethodError。必须**单独** try 住它：它原本与
+                            // usage/content/flags 写在同一个表达式里，一次异常就把整条
+                            // 属性全吞掉 —— 而 usage/contentType 恰恰是判断「我们的轨道是
+                            // 普通轨道还是 fast 轨道」最有用的信息（2026-09-23 日志里那两
+                            // 行 attrError 就是被吞掉的现场）。
+                            val dev = try {
+                                if (android.os.Build.VERSION.SDK_INT >= 28)
+                                    c.audioDeviceInfo?.type?.toString() ?: "?"
+                                else "na"
+                            } catch (_: Throwable) {
+                                "unavailable"
+                            }
+                            items.add(
+                                "usage=${attr.usage}/content=${attr.contentType}/" +
+                                    "flags=0x${Integer.toHexString(attr.flags)}/dev=$dev"
+                            )
+                        } catch (t: Throwable) {
+                            // 无 MODIFY_AUDIO_ROUTING 时读属性可能抛异常：把原因带出来，
+                            // 否则「有 N 条活跃配置却一条都列不出来」无法解释。
+                            items.add("attrError=${t.javaClass.simpleName}:${t.message}")
+                        }
+                    }
+                } catch (_: Throwable) {
+                }
+                sb.append(items.take(4).joinToString(" | "))
+            } else {
+                sb.append(",active=?")
+            }
+        } catch (t: Throwable) {
+            sb.append("error:${t.javaClass.simpleName}:${t.message}")
+        }
+        return sb.toString()
     }
 
     /// 修改 APK 的 AndroidManifest.xml（简化版：使用 aapt 工具或二进制修改）。

@@ -39,6 +39,7 @@ import '../ui/widgets/pick_file_type_sheet.dart';
 import '../ui/widgets/conflict_dialog.dart';
 import '../ui/widgets/file_action_dialogs.dart';
 import '../ui/widgets/file_operation_progress_dialog.dart';
+import '../ui/widgets/progress_overlay.dart';
 import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
@@ -2139,13 +2140,109 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 获取加密文件临时解密目录路径
+  ///
+  /// 测试注入点 [cryptTempRootOverride] 非 null 时改用它下面的同名子目录，
+  /// 让回归测试不必依赖 `path_provider` 的平台通道。
   Future<String> _getCryptTempDir() async {
-    final tempDir = await getTemporaryDirectory();
-    final cryptTempDir = Directory(p.join(tempDir.path, _cryptTempDirName));
+    final override = cryptTempRootOverride;
+    final String basePath;
+    if (override != null) {
+      basePath = override;
+    } else {
+      basePath = (await getTemporaryDirectory()).path;
+    }
+    final cryptTempDir = Directory(p.join(basePath, _cryptTempDirName));
     if (!await cryptTempDir.exists()) {
       await cryptTempDir.create(recursive: true);
     }
     return cryptTempDir.path;
+  }
+
+  /// 已登记的「延迟清理」临时解密文件。
+  ///
+  /// 临时解密出的明文副本**不能立即删除**：`打开` 只是把文件交给系统安装器 /
+  /// 外部应用，对方何时读完不可知，立即删会出现「安装包解析失败 / 外部应用空白」。
+  /// 但也**不能留着**：明文副本长期躺在缓存里等于加密白做了。
+  /// 折中是「打开后延迟 [Duration] 删除」+ 应用启动时整目录清扫双保险。
+  final Map<String, Timer> _cryptTempCleanupTimers = {};
+
+  /// 登记一个临时解密文件，稍后自动删除。
+  void _scheduleCryptTempCleanup(String tempPath, {Duration? delay}) {
+    final effectiveDelay =
+        delay ?? cryptTempCleanupDelayOverride ?? const Duration(minutes: 5);
+    _cryptTempCleanupTimers.remove(tempPath)?.cancel();
+    _cryptTempCleanupTimers[tempPath] = Timer(effectiveDelay, () async {
+      _cryptTempCleanupTimers.remove(tempPath);
+      try {
+        final f = File(tempPath);
+        if (await f.exists()) await f.delete();
+      } catch (_) {}
+    });
+  }
+
+  /// 把**完整解密** [physicalPath]（磁盘上的密文实体）写到 `crypt_temp/` 下，
+  /// 返回临时文件路径（文件名用解密后的真实名，保证扩展名正确）；失败返回 null。
+  ///
+  /// 抽出来供两处复用：内置播放器/查看器链路（[_decryptCryptFileIfNeeded]）
+  /// 与「交给系统安装器 / 外部应用」链路（[_materializeLocalCryptFile]）。
+  ///
+  /// [onProgress] 供「打开前的等待」链路显示进度（大文件可达数秒，静默等待会被
+  /// 用户当成没点中）；[onError] 供调用方区分「解不开」与「已解开但文件不存在」。
+  Future<String?> _decryptToCryptTemp(
+    CryptMountPoint mount,
+    String physicalPath,
+    String realName, {
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onError,
+  }) async {
+    try {
+      final physicalFile = File(physicalPath);
+      if (!await physicalFile.exists()) {
+        debugPrint('[ZenFile] Crypt file not found: $physicalPath');
+        // 传明文名而不是密文名：这个字符串会出现在用户可见的失败提示里
+        onError?.call(realName);
+        return null;
+      }
+
+      // 解密到临时目录
+      final tempDirPath = await _getCryptTempDir();
+      // 使用解密后的真实文件名作为临时文件名（保证扩展名正确，便于播放器识别）
+      final tempFilePath = p.join(
+        tempDirPath,
+        '${DateTime.now().millisecondsSinceEpoch}_$realName',
+      );
+
+      final cryptFile = await CryptFile.open(physicalPath, mount.crypt,
+          mode: CryptFileMode.read);
+      final tempFile = File(tempFilePath);
+      final raf = await tempFile.open(mode: FileMode.write);
+      try {
+        // 流式分块解密写入临时文件，避免大文件一次性读入内存 OOM
+        const chunkSize = 256 * 1024; // 256KB
+        var offset = 0;
+        final decryptedSize = cryptFile.length;
+        onProgress?.call(0, decryptedSize);
+        while (offset < decryptedSize) {
+          final toRead = (offset + chunkSize > decryptedSize)
+              ? decryptedSize - offset
+              : chunkSize;
+          final data = await cryptFile.read(offset, toRead);
+          await raf.writeFrom(data);
+          offset += data.length;
+          onProgress?.call(offset, decryptedSize);
+        }
+      } finally {
+        await raf.close();
+        await cryptFile.close();
+      }
+
+      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath');
+      return tempFilePath;
+    } catch (e) {
+      debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+      onError?.call(e);
+      return null;
+    }
   }
 
   /// 清理加密文件临时解密目录（应用启动时调用）
@@ -2242,47 +2339,239 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
-    try {
-      final physicalFile = File(physicalPath);
-      if (!await physicalFile.exists()) {
-        debugPrint('[ZenFile] Crypt file not found: $physicalPath');
-        return path;
-      }
+    final tempFilePath = await _decryptToCryptTemp(mount, physicalPath, realName);
+    if (tempFilePath == null) return path;
+    // 内置查看器（文本 / 文档 / 压缩包…）会直接读取这个临时文件，所以这里只登记
+    // **延迟清理**，绝不立即删除；应用启动时另有整目录清扫兜底。
+    _scheduleCryptTempCleanup(tempFilePath);
+    return tempFilePath;
+  }
 
-      // 解密到临时目录
-      final tempDirPath = await _getCryptTempDir();
-      // 使用解密后的真实文件名作为临时文件名（保证扩展名正确，便于播放器识别）
-      final decryptedName = realName;
-      final tempFilePath = p.join(tempDirPath, '${DateTime.now().millisecondsSinceEpoch}_$decryptedName');
-
-      final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
-      final tempFile = File(tempFilePath);
-      final raf = await tempFile.open(mode: FileMode.write);
-      try {
-        // 流式分块解密写入临时文件，避免大文件一次性读入内存 OOM
-        const chunkSize = 256 * 1024; // 256KB
-        var offset = 0;
-        final decryptedSize = cryptFile.length;
-        while (offset < decryptedSize) {
-          final toRead = (offset + chunkSize > decryptedSize)
-              ? decryptedSize - offset
-              : chunkSize;
-          final data = await cryptFile.read(offset, toRead);
-          await raf.writeFrom(data);
-          offset += data.length;
-        }
-      } finally {
-        await raf.close();
-        await cryptFile.close();
-      }
-
-      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath (${cryptFile.length} bytes)');
-      return tempFilePath;
-    } catch (e) {
-      debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+  /// 把**本地加密文件**落地成磁盘上真实存在的文件路径，供「交给系统安装器 /
+  /// 外部应用 / 内置查看器」的链路使用。
+  ///
+  /// 与 [_decryptCryptFileIfNeeded] 的分工：
+  /// - [_decryptCryptFileIfNeeded] 面向**内置播放器 / 查看器**：音视频与图片返回
+  ///   流式解密 URL（边解密边播），其余类型完整解密到临时文件；
+  /// - 本方法面向 [openFile] 里那些**按扩展名判定的早退分支**（APK 安装、外部
+  ///   打开、内置查看器）。这些分支必须先拿到真实文件：crypt 视图给的
+  ///   `path` 是**只存在于视图里的虚拟明文路径**（磁盘上是密文名），直接交给
+  ///   安装器/外部应用就是「文件不存在」——典型症状是**原地加密的 apk 点了
+  ///   不弹安装器**。
+  ///
+  /// ⚠️ 音视频 / 图片一律**原样返回**：它们已有专用流式链路，转成实体反而丢掉
+  /// 边解边播能力，还白等一次全量解密。
+  ///
+  /// 三个可选回调（都只为「让等待可见」，不改变任何行为）：
+  /// - [onSlowPath]：确认**不是**磁盘上已有的普通文件（即可能要挂载点解析 / scrypt /
+  ///   全量解密）时立即回调一次 —— 调用方据此**延迟**弹出进度提示；
+  /// - [onProgress]：解密到临时文件的字节进度；
+  /// - [onDecryptFailed]：确实需要解密、但解密失败（密码/盐不符、密文缺失、IO 错误）。
+  Future<String> _materializeLocalCryptFile(
+    String path, {
+    VoidCallback? onSlowPath,
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onDecryptFailed,
+  }) async {
+    // 快捷路径：磁盘上真实存在且不带 RCLONE magic 头 → 普通文件，零额外开销
+    if (await File(path).exists() && !await _isEncryptedPhysicalFile(path)) {
       return path;
     }
+
+    await _ensureCryptMountsLoaded();
+    var mount = _findCryptMountForPath(path);
+    mount ??= await _ephemeralMountForDir(p.dirname(path));
+    mount ??= await _ancestorCryptMountFor(path);
+    if (mount == null && await _isEncryptedPhysicalFile(path)) {
+      mount = await _buildMasterMountFor(p.dirname(path));
+    }
+    if (mount == null) return path;
+
+    final physicalPath = await mount.resolvePhysicalPath(path);
+    if (!await _isEncryptedPhysicalFile(physicalPath)) {
+      // 未加密：优先返回磁盘上真实存在的那个路径，绝不返回不存在的虚拟路径
+      if (await File(path).exists()) return path;
+      if (await File(physicalPath).exists()) return physicalPath;
+      return path;
+    }
+
+    String realName;
+    try {
+      realName = mount.crypt.decryptFileName(p.basename(physicalPath));
+    } catch (_) {
+      realName = p.basename(path);
+    }
+    // 音视频 / 图片：交给 [_decryptCryptFileIfNeeded] 的流式链路
+    if (_isVideoOrAudio(realName) || _isImage(realName)) return path;
+
+    // 确认要**全量解密**了（大文件可达数秒）—— 从这里开始才谈得上「让用户看到进度」。
+    // 刻意放在音视频/图片放行之后：那两类走流式、没有这段等待，不该为它们弹提示。
+    onSlowPath?.call();
+
+    final tempFilePath = await _decryptToCryptTemp(
+      mount,
+      physicalPath,
+      realName,
+      onProgress: onProgress,
+      onError: onDecryptFailed,
+    );
+    if (tempFilePath == null) return path;
+    _scheduleCryptTempCleanup(tempFilePath);
+    return tempFilePath;
   }
+
+  /// 打开加密文件的进度提示**延迟出现**阈值：比它更快完成的解密不值得打扰用户。
+  static const Duration kCryptOpenFeedbackDelay = Duration(milliseconds: 260);
+
+  /// 进度提示**最短可见时长**：一旦露过脸就至少停留这么久。
+  ///
+  /// 没有这条会出现「出现 40ms 又消失」的闪烁 —— 那比不提示更像故障。
+  static const Duration kCryptOpenFeedbackMinVisible = Duration(milliseconds: 450);
+
+  /// [openFile] 专用：把「静默解密等待」变成**用户看得见**的等待。
+  ///
+  /// 背景：落地阶段此前完全静默（scrypt 派生 + 全量解密，大文件可达数秒）。用户点了
+  /// 保险箱里的 apk，屏幕上什么都没发生，以为没点中，就退出页面去做别的事了 ——
+  /// 等安装器弹出来时已经找不到人。
+  ///
+  /// 三条不变式（改这里时不要破坏）：
+  /// 1. **延迟出现**（[kCryptOpenFeedbackDelay]）：普通文件 / 小文件瞬间完成，
+  ///    不该闪一个遮罩；
+  /// 2. **一旦出现就至少停留** [kCryptOpenFeedbackMinVisible]；
+  /// 3. **失败返回 `null`**：调用方**必须中止**后续动作 —— 绝不把一个不存在的路径
+  ///    丢给安装器 / 外部应用（那会变成「安装包解析失败」，让人误以为是包坏了）。
+  ///
+  /// 拿不到 localizations（少见的非 UI 调用）时**退化为静默但功能正常**，
+  /// 绝不因为「想加个提示」而把打开本身弄挂。
+  Future<String?> _materializeLocalCryptFileWithFeedback(
+    BuildContext context,
+    String path,
+  ) async {
+    String? resolved;
+    try {
+      resolved = L10n.of(context).vault_decrypt_open_progress;
+    } catch (_) {
+      resolved = null;
+    }
+    if (resolved == null) {
+      var failed = false;
+      final landed = await _materializeLocalCryptFile(
+        path,
+        onDecryptFailed: (_) => failed = true,
+      );
+      return failed ? null : landed;
+    }
+    // 提升成不可空的 final，供下面闭包安全捕获（闭包内不能再依赖流分析提升）
+    final message = resolved;
+
+    NavigatorState? navigator;
+    try {
+      navigator = Navigator.of(context, rootNavigator: true);
+    } catch (_) {
+      navigator = null;
+    }
+
+    final progress = ValueNotifier<double?>(null);
+    var armed = false; // 已确认要全量解密
+    var shown = false; // 遮罩真的显示过
+    DateTime? shownAt;
+    Timer? armTimer;
+    Object? failure;
+    // 弹出层「彻底退场」的 future：释放 notifier 前要等它，否则退场动画期间
+    // 若发生重建就会用到已释放的 notifier（debug 断言 / 白屏）。
+    Future<void>? dialogClosed;
+
+    void arm() {
+      armed = true;
+      if (shown || navigator == null) return;
+      armTimer ??= Timer(kCryptOpenFeedbackDelay, () {
+        if (shown || navigator == null || !navigator.mounted) return;
+        if (!context.mounted) return;
+        shown = true;
+        shownAt = DateTime.now();
+        dialogClosed = showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => PopScope(
+            canPop: false, // 系统返回键也不能把「正在解密」的遮罩掀掉
+            child: ValueListenableBuilder<double?>(
+              valueListenable: progress,
+              builder: (_, value, _) =>
+                  ProgressOverlay(message: message, value: value),
+            ),
+          ),
+        ).then((_) {});
+      });
+    }
+
+    String? landed;
+    try {
+      landed = await _materializeLocalCryptFile(
+        path,
+        onSlowPath: arm,
+        onDecryptFailed: (error) => failure = error,
+        onProgress: (bytes, total) {
+          if (!armed) return;
+          progress.value = total > 0 ? (bytes / total).clamp(0.0, 1.0) : null;
+        },
+      );
+    } finally {
+      armTimer?.cancel();
+      if (shown && navigator != null && navigator.mounted) {
+        // 已经露过脸 → 保证一个最短可读时间，避免「出现几十毫秒又消失」
+        final elapsed = DateTime.now().difference(shownAt!);
+        if (elapsed < kCryptOpenFeedbackMinVisible) {
+          await Future<void>.delayed(kCryptOpenFeedbackMinVisible - elapsed);
+        }
+        shown = false;
+        if (navigator.mounted) navigator.pop();
+        final closed = dialogClosed;
+        if (closed != null) await closed;
+      }
+      progress.dispose();
+    }
+
+    if (failure != null) {
+      // 失败提示放在遮罩收起之后：否则会被对话框的 barrier 压住，用户根本看不到
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).vault_decrypt_open_failed('$failure')),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return null;
+    }
+    return landed;
+  }
+
+  /// 测试注入点：把「延迟清理」的等待时长压到毫秒级，便于断言清理真的发生。
+  @visibleForTesting
+  static Duration? cryptTempCleanupDelayOverride;
+
+  /// 测试注入点：[openFile] 内「本地加密文件落地」这一步的公开入口。
+  ///
+  /// 该步骤在 [openFile] 里依赖 `BuildContext`（要 push 查看器 / 弹「打开方式」），
+  /// 单测无法驱动那些 UI 分支，因此把落地本身单独暴露，用于验证
+  /// 「crypt 视图的虚拟明文路径 → 磁盘上真实存在的文件」这条不变式。
+  ///
+  /// 三个回调与 [_materializeLocalCryptFile] 一一对应，用于钉住「打开前的等待
+  /// 必须可观测」：普通文件**不得**触发 [onSlowPath]（否则会平白弹提示），
+  /// 加密文件必须触发且进度单调递增到 100%，失败必须回调 [onDecryptFailed]。
+  @visibleForTesting
+  Future<String> materializeLocalCryptFileForTest(
+    String path, {
+    VoidCallback? onSlowPath,
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onDecryptFailed,
+  }) =>
+      _materializeLocalCryptFile(
+        path,
+        onSlowPath: onSlowPath,
+        onProgress: onProgress,
+        onDecryptFailed: onDecryptFailed,
+      );
 
   /// 判断物理文件是否为真实的 rclone/OpenList 加密文件（文件头带 RCLONE magic）
   Future<bool> _isEncryptedPhysicalFile(String physicalPath) =>
@@ -2923,6 +3212,28 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 在远程目录索引里按名字找条目：先按原始名，再按「解密后的明文名」别名匹配。
+  ///
+  /// cryptremote 虚拟路径给的是**明文名**，而服务端真实名可能是密文名（原地加密
+  /// 过的条目）；只按原始名查表会 miss → 上游静默跳过，用户看到「点了没反应」。
+  RemoteFileItem? _lookupRemoteEntry(
+    Map<String, RemoteFileItem> index,
+    String name,
+    CryptMountPoint mount,
+  ) {
+    final direct = index[name];
+    if (direct != null) return direct;
+    for (final it in index.values) {
+      try {
+        final plain = it.isDirectory
+            ? mount.crypt.decryptDirName(it.name)
+            : mount.crypt.decryptFileName(it.name);
+        if (plain.isNotEmpty && plain == name) return it;
+      } catch (_) {}
+    }
+    return null;
+  }
+
   /// 递归删除远程条目（部分协议 `delete(path, isDir)` 只删空目录，这里自底向上兜底）。
   Future<void> _deleteRemoteTree(
     RemoteClient client,
@@ -3002,6 +3313,10 @@ class FileManagerProvider extends ChangeNotifier {
     // 已被登记表覆盖的目录（含子目录）不重复登记——加密目录内部再加密一个条目时，
     // 父目录已经是一个密文子目录，把它当成新的密文根会把整个加密视图搞乱。
     final registeredDirs = <String>{};
+    // 处理失败的条目（服务端查不到 / 挂载点解析不到），用于结束后给出可见反馈，
+    // 避免「点了加密但什么都没发生」（历史 bug：查不到就静默 continue）。
+    final skipped = <String>[];
+    var processed = 0;
     List<RemoteCryptDirRecord> knownRemoteDirs = const [];
     try {
       knownRemoteDirs = await CryptMountService.loadRemoteEncryptedDirs();
@@ -3020,17 +3335,35 @@ class FileManagerProvider extends ChangeNotifier {
           config: config,
           profileId: activeProfile?.id,
         );
-        if (mount == null) continue;
+        if (mount == null) {
+          skipped.add(baseName);
+          continue;
+        }
 
         final index = await _listRemoteIndex(client, parentServer);
-        final info = index[baseName];
-        if (info == null) continue; // 已被外部删除
+        // 命中可能来自两种路径形态：
+        //  · 普通远程目录 → baseName 就是服务端真名，直接命中；
+        //  · cryptremote 虚拟路径 → baseName 是**明文名**，而服务端真名可能是密文名
+        //    （原地加密过的条目）→ 需要按「解密后的明文名」建别名再匹配。
+        //    旧实现只按原始名查表，miss 后**静默 continue**，于是「解密后再次原地
+        //    加密」看起来什么都没发生（用户反馈：文件夹不会被加密、名字还是明文）。
+        final info = _lookupRemoteEntry(index, baseName, mount);
+        if (info == null) {
+          skipped.add(baseName);
+          continue; // 服务端已无此条目（外部删除 / 名字对不上）
+        }
+        // 一律用 LIST 到的**真实服务端路径**做下载/删除，而不是把虚拟明文路径直接
+        // 当服务端路径用（对密文条目会指向一个不存在的名字）。
+        final realServerPath = info.path.isNotEmpty
+            ? info.path
+            : _joinRemotePath(parentServer, info.name);
+        final realBaseName = p.posix.basename(realServerPath);
         final isDir = info.isDirectory;
         final itemBytes = isDir ? 0 : info.size.clamp(0, 1 << 62);
 
         // 进度：条目 i 占 [i, i+1]，条目内「下载」占前半段、「加密上传」占后半段。
         void emitOverall(double fileFrac) =>
-            onProgress?.call(baseName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
+            onProgress?.call(realBaseName, ((i + fileFrac.clamp(0.0, 1.0)) / total));
         // 字节进度：下载 d∈[0,size] + 上传 u∈[0,size]，分母 2*size，保证单调不回退。
         void emitBytes(int downloaded, int uploaded) {
           if (itemBytes <= 0) {
@@ -3043,12 +3376,12 @@ class FileManagerProvider extends ChangeNotifier {
         emitOverall(0);
         emitBytes(0, 0);
 
-        final localTmp = p.join(tmpDir.path, baseName);
+        final localTmp = p.join(tmpDir.path, realBaseName);
         if (isDir) {
-          await _downloadRemoteDirectory(client, serverPath, localTmp);
+          await _downloadRemoteDirectory(client, realServerPath, localTmp);
           emitOverall(0.5);
         } else {
-          await client.downloadFile(serverPath, localTmp, (prog) {
+          await client.downloadFile(realServerPath, localTmp, (prog) {
             emitOverall(0.5 * prog);
             emitBytes((prog * itemBytes).round(), 0);
           });
@@ -3075,7 +3408,8 @@ class FileManagerProvider extends ChangeNotifier {
         );
 
         // 上传成功后才删除原件
-        await _deleteRemoteTree(client, serverPath, isDir);
+        await _deleteRemoteTree(client, realServerPath, isDir);
+        processed++;
         try {
           if (isDir && Directory(localTmp).existsSync()) {
             Directory(localTmp).deleteSync(recursive: true);
@@ -3096,6 +3430,14 @@ class FileManagerProvider extends ChangeNotifier {
                   parentServer.startsWith('${r.serverPath}/')),
         );
         if (!alreadyCovered) registeredDirs.add(parentServer);
+      }
+      if (skipped.isNotEmpty) {
+        debugPrint('[ZenFile] encryptRemoteInPlace 跳过 ${skipped.length} 个条目: '
+            '${skipped.join(', ')}');
+      }
+      // 一个都没处理成（全被跳过）时给出可见错误，而不是「什么都不发生」。
+      if (processed == 0 && skipped.isNotEmpty && !_isOperationCancelled) {
+        throw StateError('未找到可原地加密的远程条目：${skipped.join('、')}');
       }
       for (final dir in registeredDirs) {
         await CryptMountService.addRemoteEncryptedDir(
@@ -3666,10 +4008,14 @@ class FileManagerProvider extends ChangeNotifier {
   }) async {
     final discovered = await LanClient.scanSubnet(
       onProgress: onProgress ?? (double _) {},
+      // SMB 向导只关心 445：扫 5 个端口会让每台不可达主机白等 ~1.2s
+      ports: const {445: 'SMB'},
     );
     final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
-    final result = <SmbDiscoveredDevice>[];
-    for (final d in smbDevices) {
+    // 多台设备并行探测共享名：旧版逐台串行，每台最坏 4 组凭据 × 6s 超时，
+    // 设备一多总等待线性累加。每台内部仍按候选链顺序串行（顺序有意义：
+    // 用户凭据优先，且避免对同一服务器并发发起多次认证）。
+    final result = await Future.wait(smbDevices.map((d) async {
       // 候选顺序与正式连接保持一致（见 kSmbAnonymousUsernames）：先按用户填写的
       // 凭据（用户名为空即标准匿名），再依次兜底其余匿名身份 —— 不同固件的
       // Samba 匿名账号名不同，只试 guest 会在部分 OpenWrt 固件上扫不出共享。
@@ -3702,16 +4048,16 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
-      // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
-      result.add(SmbDiscoveredDevice(
-        host: d.host,
-        hostName: d.hostName,
-        shares: shares ?? const <String>[],
-      ));
       if (shares == null && lastErr != null && username.isEmpty) {
         debugPrint('[ZenFile] discoverSmbDevices: ${d.host} share list failed: $lastErr');
       }
-    }
+      // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
+      return SmbDiscoveredDevice(
+        host: d.host,
+        hostName: d.hostName,
+        shares: shares ?? const <String>[],
+      );
+    }));
     // 有主机名的排在前面，其余按 IP 末段排序，列表更稳定可读
     result.sort((a, b) {
       if (a.hasHostName != b.hasHostName) return a.hasHostName ? -1 : 1;
@@ -4481,6 +4827,105 @@ class FileManagerProvider extends ChangeNotifier {
     if (!tab.isRemote) return _rootPath;
     final rp = tab.remoteConnection?.rootPath;
     return (rp != null && rp.isNotEmpty) ? rp : '/';
+  }
+
+  /// 公开访问器：当前 tab 的「根路径」。
+  ///
+  /// 远程连接的根**可能不是 `/`**（例如 WebDAV 连接把 `192.168.100.1:5244/dav`
+  /// 里的 `/dav` 存成 `rootPath`）。UI（面包屑等）若一律把根当成 `/`，点根段就会
+  /// 请求到连接范围之外（`http://host/` 而不是 `http://host/dav/`）→ 回不去
+  /// （用户反馈：WebDAV「点面包屑 dav 无法返回网盘列表」）。
+  String get activeRootPath => _activeTabRoot;
+
+  /// 面包屑「标签 + 目标路径」计算（纯函数：UI 与回归测试共用）。
+  ///
+  /// [remoteRoot] 为当前标签页的根：远程＝连接的 rootPath（**可能非 `/`**，例如
+  /// WebDAV 把 `192.168.100.1:5244/dav` 的 `/dav` 存成 rootPath），本地＝`/`。
+  /// 远程时一律以连接根为起点逐段累加，**绝不生成 `/` 目标**——否则点根段会请求到
+  /// 连接范围之外（`http://host/` 而非 `http://host/dav/`）→ 回不去
+  ///（用户反馈：WebDAV「点面包屑 dav 无法返回网盘列表」）。
+  ///
+  /// 公开而非 `@visibleForTesting`：UI（`directory_screen`）与回归测试都要用它，
+  /// 标注 `@visibleForTesting` 会让生产代码的调用被判成
+  /// `invalid_use_of_visible_for_testing_member`（analyze 里的 warning，只允许测试用）。
+  static ({List<String> labels, List<String> targets}) breadcrumbPaths({
+    required String currentPath,
+    required bool isRemoteTab,
+    required String remoteRoot,
+    String connName = '',
+    String rootLabel = 'Root',
+  }) {
+    final bool isRemotePath = currentPath.startsWith('remote://') ||
+        currentPath.startsWith('cryptremote://');
+    var root = '/';
+    if (isRemoteTab) {
+      root = remoteRoot;
+      if (root.isEmpty) root = '/';
+      if (!root.startsWith('/')) root = '/$root';
+      if (root.length > 1 && root.endsWith('/')) {
+        root = root.substring(0, root.length - 1);
+      }
+    }
+    final String suffix = root == '/' ? '' : root;
+
+    String rel(String abs) {
+      if (suffix.isEmpty) return abs;
+      if (abs == suffix) return '';
+      if (abs.startsWith('$suffix/')) return abs.substring(suffix.length);
+      return abs;
+    }
+
+    if (isRemoteTab && isRemotePath) {
+      final barIdx = currentPath.indexOf('|');
+      final prefix = currentPath.substring(0, barIdx + 1);
+      final serverPath = currentPath.substring(barIdx + 1);
+      final segs = rel(serverPath).split('/').where((n) => n.isNotEmpty).toList();
+      return (
+        labels: [
+          if (connName.isNotEmpty) connName else currentPath.substring(0, barIdx),
+          ...segs,
+        ],
+        targets: [
+          '$prefix${suffix.isEmpty ? '/' : suffix}',
+          for (int k = 0; k < segs.length; k++)
+            '$prefix${suffix.isEmpty ? '' : suffix}/${segs.sublist(0, k + 1).join('/')}',
+        ],
+      );
+    }
+    if (isRemoteTab && !isRemotePath) {
+      final segs = rel(currentPath).split('/').where((n) => n.isNotEmpty).toList();
+      return (
+        labels: [
+          if (connName.isNotEmpty)
+            connName
+          else if (suffix.isEmpty)
+            rootLabel
+          else
+            suffix.split('/').last,
+          ...segs,
+        ],
+        targets: [
+          root,
+          for (int k = 0; k < segs.length; k++)
+            '${suffix.isEmpty ? '' : suffix}/${segs.sublist(0, k + 1).join('/')}',
+        ],
+      );
+    }
+    // 本地路径：以 `/` 为根逐段累加。
+    //
+    // ⚠️ 标签与目标**必须一一对应**：UI 用 `List.generate(labels.length)` 并按同一
+    // 下标取 `targets[index]`。历史上这里 labels 比 targets 少一项（`/` 那一段没配
+    // 标签），于是**每个标签都错位指向上一层**路径 —— 用户反馈的
+    // 「打开 /storage/emulated/0 的子目录时，点面包屑 `0` 跳到 /storage/emulated」
+    // 就是这么来的（`0` 取到了「/storage/emulated」那格目标）。
+    final segs = currentPath.split('/').where((n) => n.isNotEmpty).toList();
+    return (
+      labels: [rootLabel, ...segs],
+      targets: [
+        '/',
+        for (int k = 0; k < segs.length; k++) '/${segs.sublist(0, k + 1).join('/')}',
+      ],
+    );
   }
 
   /// 高亮刚刚离开的目录，2 秒后自动取消高亮（返回/导航时的视觉反馈）。
@@ -9240,8 +9685,16 @@ class FileManagerProvider extends ChangeNotifier {
         // 与粘贴等其它操作保持一致的交互（覆盖 / 保留两者 / 重命名 / 取消）。
         if (context != null) {
           final targetType = FileSystemEntity.typeSync(newPath);
+          final normalizedOld = p.normalize(oldPath);
+          final normalizedNew = p.normalize(newPath);
+          // 仅大小写不同的改名（a.jpg → a.JPG）：Android 模拟存储（FUSE/sdcardfs）
+          // 大小写不敏感，typeSync(newPath) 会命中源文件自身而误弹冲突框；
+          // 此类改名在大小写不敏感存储上不可能撞到别的文件，直接执行不询问。
+          final isCaseOnlyRename = normalizedNew != normalizedOld &&
+              normalizedNew.toLowerCase() == normalizedOld.toLowerCase();
           if (targetType != FileSystemEntityType.notFound &&
-              p.normalize(newPath) != p.normalize(oldPath)) {
+              normalizedNew != normalizedOld &&
+              !isCaseOnlyRename) {
             final response = await ConflictDialog.show(
               context,
               fileName: newName,
@@ -9264,10 +9717,19 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
         final type = FileSystemEntity.typeSync(oldPath);
-        if (type == FileSystemEntityType.directory) {
-          await _renameWithFallback(Directory(oldPath), finalNewPath);
+        final FileSystemEntity entity = type == FileSystemEntityType.directory
+            ? Directory(oldPath)
+            : File(oldPath);
+        final normalizedOld = p.normalize(oldPath);
+        final normalizedFinal = p.normalize(finalNewPath);
+        // 仅大小写不同的改名：FUSE/sdcardfs 会把 rename 当成同名操作而静默保留旧大小写，
+        // 需要经临时名两步改名才能让新大小写真正落盘。
+        final isCaseOnlyRename = normalizedFinal != normalizedOld &&
+            normalizedFinal.toLowerCase() == normalizedOld.toLowerCase();
+        if (isCaseOnlyRename) {
+          await _renameCasePreserving(entity, finalNewPath);
         } else {
-          await _renameWithFallback(File(oldPath), finalNewPath);
+          await _renameWithFallback(entity, finalNewPath);
         }
       }
       // 刷新被重命名文件所在目录对应的 tab（而非全局 activeTab），
@@ -9301,6 +9763,38 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       PaintingBinding.instance.imageCache.evict(FileImage(File(path)));
     } catch (_) {}
+  }
+
+  static int _caseRenameCounter = 0;
+
+  /// 仅大小写不同的改名（a.jpg → a.JPG）专用：在大小写不敏感的 FUSE/sdcardfs 上，
+  /// 直接 rename 会被当作「同名改名」静默忽略，目录项仍保留旧大小写。
+  /// 经同目录临时名两步改名，强制文件系统创建新目录项，让新大小写真正落盘。
+  Future<void> _renameCasePreserving(FileSystemEntity entity, String newPath) async {
+    final oldPath = entity.path;
+    final dir = p.dirname(oldPath);
+    String tmp;
+    do {
+      _caseRenameCounter++;
+      tmp = p.join(dir,
+          '.zenfile_case_${DateTime.now().microsecondsSinceEpoch}_$_caseRenameCounter.tmp');
+    } while (FileSystemEntity.typeSync(tmp) != FileSystemEntityType.notFound);
+
+    await _renameWithFallback(entity, tmp);
+    // rename 后实体路径已变为 tmp，第二步要用新对象
+    final FileSystemEntity tmpEntity =
+        FileSystemEntity.typeSync(tmp) == FileSystemEntityType.directory
+            ? Directory(tmp)
+            : File(tmp);
+    try {
+      await _renameWithFallback(tmpEntity, newPath);
+    } catch (e) {
+      // 第二步失败则尝试回滚到原名，避免留下 .tmp 残留
+      try {
+        await _renameWithFallback(tmpEntity, oldPath);
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   /// 重命名实体，若 rename() 失败（跨文件系统/路径过长/权限等），
@@ -11520,6 +12014,29 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (e) {
         debugPrint('Error creating temporary copy for restricted file: $e');
       }
+    }
+
+    // 本地加密文件（音视频 / 图片除外）：先临时解密成磁盘上真实存在的文件。
+    //
+    // 下面所有分支都按**扩展名 / 文件是否存在**判定，而 crypt 视图给出的 `path`
+    // 是**只存在于视图里的虚拟明文路径**（磁盘上是密文名）。不先落地就会出现
+    // 「原地加密的 apk 点了不弹安装器」「外部应用提示文件不存在」这类失败。
+    // 音视频 / 图片由 `_materializeLocalCryptFileWithFeedback` 原样放行，继续走流式解密链路。
+    //
+    // ⚠️ 这一段**必须让用户看得见**：解密是个耗时动作，静默等待的用户会以为「没点中」
+    // 而离开页面（详见 `_materializeLocalCryptFileWithFeedback` 的注释）。
+    if (!activeTab.isRemote &&
+        !path.startsWith('http') &&
+        !path.startsWith('remote://') &&
+        !path.startsWith('cryptremote://')) {
+      final materialized =
+          await _materializeLocalCryptFileWithFeedback(context, targetPath);
+      if (materialized == null) {
+        // 解密失败：已经提示过用户，这里必须**中止**——继续往下会把一个不存在的
+        // 路径丢给安装器/外部应用，症状是「安装包解析失败」，会被误判成包坏了。
+        return;
+      }
+      targetPath = materialized;
     }
 
     // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，

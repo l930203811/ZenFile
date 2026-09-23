@@ -146,32 +146,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     // 会得到 '/remote:'、'/cryptremote:' 这类畸形路径——点进去要么被静默吞掉，
     // 要么被误路由进加密分支用垃圾服务端路径列目录而挂起（页面冻结）。
     // 见 WORKLOG「远程加解密后导航冻结」修复。
-    final bool isRemotePath =
-        currentPath.startsWith('remote://') || currentPath.startsWith('cryptremote://');
-    late final List<String> labels;
-    late final List<String> targets;
-    if (isRemotePath) {
-      final barIdx = currentPath.indexOf('|');
-      final prefix = currentPath.substring(0, barIdx + 1); // 'remote://connId|' / 'cryptremote://connId|'
-      final serverPath = currentPath.substring(barIdx + 1);
-      final segs = serverPath.split('/').where((n) => n.isNotEmpty).toList();
-      final connName = provider.activeTab.remoteConnection?.name;
-      labels = [
-        if (connName != null && connName.isNotEmpty) connName else currentPath.substring(0, barIdx),
-        ...segs,
-      ];
-      targets = [
-        '$prefix/',
-        for (int k = 0; k < segs.length; k++) '$prefix/${segs.sublist(0, k + 1).join('/')}',
-      ];
-    } else {
-      final segs = currentPath.split('/').where((n) => n.isNotEmpty).toList();
-      labels = segs.isEmpty ? [L10n.of(context).msgc2b9f4b9] : segs;
-      targets = [
-        '/',
-        for (int k = 0; k < segs.length; k++) '/${segs.sublist(0, k + 1).join('/')}',
-      ];
-    }
+    // 面包屑标签与「可导航路径」成对出现，由 provider 的纯函数统一计算：
+    //  - 远程/远程加密目录用 `remote://{connId}|{path}` 形式（按 '/' 切分会得到
+    //    '/remote:'、'/cryptremote:' 这类畸形路径 → 点进去被吞掉或误路由而挂起）；
+    //  - 远程连接的**根可能不是 `/`**（WebDAV 可配 `/dav` 子路径），必须用连接根，
+    //    否则点根段会请求到连接范围之外 → 回不去（用户反馈：点面包屑 dav 无反应）。
+    final bc = FileManagerProvider.breadcrumbPaths(
+      currentPath: currentPath,
+      isRemoteTab: provider.activeTab.isRemote,
+      remoteRoot: provider.activeRootPath,
+      connName: provider.activeTab.remoteConnection?.name ?? '',
+      rootLabel: L10n.of(context).msgc2b9f4b9,
+    );
+    final labels = bc.labels;
+    final targets = bc.targets;
 
     // 自动滚动到末尾
     WidgetsBinding.instance.addPostFrameCallback((_) {

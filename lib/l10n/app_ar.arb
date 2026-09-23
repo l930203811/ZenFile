@@ -7338,6 +7338,10 @@
   "@vault_decrypting": {
     "description": "vault/crypt: vault_decrypting"
   },
+  "vault_decrypt_open_progress": "جارٍ فك التشفير والفتح...",
+  "@vault_decrypt_open_progress": {
+    "description": "vault/crypt: vault_decrypt_open_progress"
+  },
   "vault_import_backup_confirm": "سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7953,5 +7957,14 @@
   "ui_delete_confirm_subtitle": "عرض مربع تأكيد قبل حذف الملفات. عند إيقاف التشغيل يتم الحذف مباشرة.",
   "ui_delete_confirm_dont_ask": "لا تسأل مرة أخرى",
   "video_auto_fallback_soft": "تم اكتشاف مشكلة في فك التشفير بالأجهزة. تم التبديل تلقائيًا إلى فك التشفير البرمجي.",
-  "video_vo_compat": "تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق."
+  "video_vo_compat": "تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.",
+  "audio_opensles_title": "وضع إخراج الصوت (AO)",
+  "@audio_opensles_title": {
+    "description": "audio_player_screen.dart OpenSL ES output switch"
+  },
+  "audio_opensles_desc": "لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.",
+  "@audio_opensles_desc": {
+    "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  }
+
 }
