@@ -99,7 +99,11 @@ dependencies {
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("androidx.fragment:fragment:1.8.5")
     // SMB support (smbj pulls BouncyCastle bcprov-jdk15on transitively for NTLMSSP)
-    implementation("com.hierynomus:smbj:0.13.0")
+    // ≥0.14.0 修复上游 #792：匿名/guest 会话跳过 setSessionKey，而服务器又未按规范
+    // 设置 IS_NULL/IS_GUEST 标志时，SMB 3.x 的 deriveKeys() 会对 null sessionKey
+    // 调 getEncoded() 抛 NPE（Key.getEncoded() on a null object reference）——
+    // 表现为「服务器明明接受了匿名登录，客户端却报连接失败」。
+    implementation("com.hierynomus:smbj:0.14.0")
     implementation("com.rapid7.client:dcerpc:0.12.13") {
         exclude(group = "com.google.guava", module = "guava")
         exclude(group = "com.hierynomus", module = "smbj")
