@@ -7224,6 +7224,9 @@ class L10nAr extends L10n {
   String get vault_decrypting => 'جارٍ فك التشفير...';
 
   @override
+  String get vault_decrypt_open_progress => 'جارٍ فك التشفير والفتح...';
+
+  @override
   String get vault_import_backup_confirm =>
       'سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟';
 

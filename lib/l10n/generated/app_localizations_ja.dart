@@ -7034,6 +7034,9 @@ class L10nJa extends L10n {
   String get vault_decrypting => '復号中...';
 
   @override
+  String get vault_decrypt_open_progress => '復号して開いています...';
+
+  @override
   String get vault_import_backup_confirm =>
       'インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？';
 

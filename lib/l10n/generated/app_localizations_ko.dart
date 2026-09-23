@@ -7033,6 +7033,9 @@ class L10nKo extends L10n {
   String get vault_decrypting => '복호화하는 중...';
 
   @override
+  String get vault_decrypt_open_progress => '복호화하여 여는 중...';
+
+  @override
   String get vault_import_backup_confirm =>
       '가져오면 백업 내용으로 현재 금고 샌드박스와 암호화 설정을 덮어씁니다(잠금 해제 비밀번호는 영향 없음). 계속하시겠습니까?';
 

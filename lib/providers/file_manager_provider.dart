@@ -39,6 +39,7 @@ import '../ui/widgets/pick_file_type_sheet.dart';
 import '../ui/widgets/conflict_dialog.dart';
 import '../ui/widgets/file_action_dialogs.dart';
 import '../ui/widgets/file_operation_progress_dialog.dart';
+import '../ui/widgets/progress_overlay.dart';
 import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
@@ -2184,15 +2185,22 @@ class FileManagerProvider extends ChangeNotifier {
   ///
   /// 抽出来供两处复用：内置播放器/查看器链路（[_decryptCryptFileIfNeeded]）
   /// 与「交给系统安装器 / 外部应用」链路（[_materializeLocalCryptFile]）。
+  ///
+  /// [onProgress] 供「打开前的等待」链路显示进度（大文件可达数秒，静默等待会被
+  /// 用户当成没点中）；[onError] 供调用方区分「解不开」与「已解开但文件不存在」。
   Future<String?> _decryptToCryptTemp(
     CryptMountPoint mount,
     String physicalPath,
-    String realName,
-  ) async {
+    String realName, {
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onError,
+  }) async {
     try {
       final physicalFile = File(physicalPath);
       if (!await physicalFile.exists()) {
         debugPrint('[ZenFile] Crypt file not found: $physicalPath');
+        // 传明文名而不是密文名：这个字符串会出现在用户可见的失败提示里
+        onError?.call(realName);
         return null;
       }
 
@@ -2213,6 +2221,7 @@ class FileManagerProvider extends ChangeNotifier {
         const chunkSize = 256 * 1024; // 256KB
         var offset = 0;
         final decryptedSize = cryptFile.length;
+        onProgress?.call(0, decryptedSize);
         while (offset < decryptedSize) {
           final toRead = (offset + chunkSize > decryptedSize)
               ? decryptedSize - offset
@@ -2220,6 +2229,7 @@ class FileManagerProvider extends ChangeNotifier {
           final data = await cryptFile.read(offset, toRead);
           await raf.writeFrom(data);
           offset += data.length;
+          onProgress?.call(offset, decryptedSize);
         }
       } finally {
         await raf.close();
@@ -2230,6 +2240,7 @@ class FileManagerProvider extends ChangeNotifier {
       return tempFilePath;
     } catch (e) {
       debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+      onError?.call(e);
       return null;
     }
   }
@@ -2350,7 +2361,18 @@ class FileManagerProvider extends ChangeNotifier {
   ///
   /// ⚠️ 音视频 / 图片一律**原样返回**：它们已有专用流式链路，转成实体反而丢掉
   /// 边解边播能力，还白等一次全量解密。
-  Future<String> _materializeLocalCryptFile(String path) async {
+  ///
+  /// 三个可选回调（都只为「让等待可见」，不改变任何行为）：
+  /// - [onSlowPath]：确认**不是**磁盘上已有的普通文件（即可能要挂载点解析 / scrypt /
+  ///   全量解密）时立即回调一次 —— 调用方据此**延迟**弹出进度提示；
+  /// - [onProgress]：解密到临时文件的字节进度；
+  /// - [onDecryptFailed]：确实需要解密、但解密失败（密码/盐不符、密文缺失、IO 错误）。
+  Future<String> _materializeLocalCryptFile(
+    String path, {
+    VoidCallback? onSlowPath,
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onDecryptFailed,
+  }) async {
     // 快捷路径：磁盘上真实存在且不带 RCLONE magic 头 → 普通文件，零额外开销
     if (await File(path).exists() && !await _isEncryptedPhysicalFile(path)) {
       return path;
@@ -2382,10 +2404,146 @@ class FileManagerProvider extends ChangeNotifier {
     // 音视频 / 图片：交给 [_decryptCryptFileIfNeeded] 的流式链路
     if (_isVideoOrAudio(realName) || _isImage(realName)) return path;
 
-    final tempFilePath = await _decryptToCryptTemp(mount, physicalPath, realName);
+    // 确认要**全量解密**了（大文件可达数秒）—— 从这里开始才谈得上「让用户看到进度」。
+    // 刻意放在音视频/图片放行之后：那两类走流式、没有这段等待，不该为它们弹提示。
+    onSlowPath?.call();
+
+    final tempFilePath = await _decryptToCryptTemp(
+      mount,
+      physicalPath,
+      realName,
+      onProgress: onProgress,
+      onError: onDecryptFailed,
+    );
     if (tempFilePath == null) return path;
     _scheduleCryptTempCleanup(tempFilePath);
     return tempFilePath;
+  }
+
+  /// 打开加密文件的进度提示**延迟出现**阈值：比它更快完成的解密不值得打扰用户。
+  static const Duration kCryptOpenFeedbackDelay = Duration(milliseconds: 260);
+
+  /// 进度提示**最短可见时长**：一旦露过脸就至少停留这么久。
+  ///
+  /// 没有这条会出现「出现 40ms 又消失」的闪烁 —— 那比不提示更像故障。
+  static const Duration kCryptOpenFeedbackMinVisible = Duration(milliseconds: 450);
+
+  /// [openFile] 专用：把「静默解密等待」变成**用户看得见**的等待。
+  ///
+  /// 背景：落地阶段此前完全静默（scrypt 派生 + 全量解密，大文件可达数秒）。用户点了
+  /// 保险箱里的 apk，屏幕上什么都没发生，以为没点中，就退出页面去做别的事了 ——
+  /// 等安装器弹出来时已经找不到人。
+  ///
+  /// 三条不变式（改这里时不要破坏）：
+  /// 1. **延迟出现**（[kCryptOpenFeedbackDelay]）：普通文件 / 小文件瞬间完成，
+  ///    不该闪一个遮罩；
+  /// 2. **一旦出现就至少停留** [kCryptOpenFeedbackMinVisible]；
+  /// 3. **失败返回 `null`**：调用方**必须中止**后续动作 —— 绝不把一个不存在的路径
+  ///    丢给安装器 / 外部应用（那会变成「安装包解析失败」，让人误以为是包坏了）。
+  ///
+  /// 拿不到 localizations（少见的非 UI 调用）时**退化为静默但功能正常**，
+  /// 绝不因为「想加个提示」而把打开本身弄挂。
+  Future<String?> _materializeLocalCryptFileWithFeedback(
+    BuildContext context,
+    String path,
+  ) async {
+    String? resolved;
+    try {
+      resolved = L10n.of(context).vault_decrypt_open_progress;
+    } catch (_) {
+      resolved = null;
+    }
+    if (resolved == null) {
+      var failed = false;
+      final landed = await _materializeLocalCryptFile(
+        path,
+        onDecryptFailed: (_) => failed = true,
+      );
+      return failed ? null : landed;
+    }
+    // 提升成不可空的 final，供下面闭包安全捕获（闭包内不能再依赖流分析提升）
+    final message = resolved;
+
+    NavigatorState? navigator;
+    try {
+      navigator = Navigator.of(context, rootNavigator: true);
+    } catch (_) {
+      navigator = null;
+    }
+
+    final progress = ValueNotifier<double?>(null);
+    var armed = false; // 已确认要全量解密
+    var shown = false; // 遮罩真的显示过
+    DateTime? shownAt;
+    Timer? armTimer;
+    Object? failure;
+    // 弹出层「彻底退场」的 future：释放 notifier 前要等它，否则退场动画期间
+    // 若发生重建就会用到已释放的 notifier（debug 断言 / 白屏）。
+    Future<void>? dialogClosed;
+
+    void arm() {
+      armed = true;
+      if (shown || navigator == null) return;
+      armTimer ??= Timer(kCryptOpenFeedbackDelay, () {
+        if (shown || navigator == null || !navigator.mounted) return;
+        if (!context.mounted) return;
+        shown = true;
+        shownAt = DateTime.now();
+        dialogClosed = showDialog<int>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => PopScope(
+            canPop: false, // 系统返回键也不能把「正在解密」的遮罩掀掉
+            child: ValueListenableBuilder<double?>(
+              valueListenable: progress,
+              builder: (_, value, _) =>
+                  ProgressOverlay(message: message, value: value),
+            ),
+          ),
+        ).then((_) {});
+      });
+    }
+
+    String? landed;
+    try {
+      landed = await _materializeLocalCryptFile(
+        path,
+        onSlowPath: arm,
+        onDecryptFailed: (error) => failure = error,
+        onProgress: (bytes, total) {
+          if (!armed) return;
+          progress.value = total > 0 ? (bytes / total).clamp(0.0, 1.0) : null;
+        },
+      );
+    } finally {
+      armTimer?.cancel();
+      if (shown && navigator != null && navigator.mounted) {
+        // 已经露过脸 → 保证一个最短可读时间，避免「出现几十毫秒又消失」
+        final elapsed = DateTime.now().difference(shownAt!);
+        if (elapsed < kCryptOpenFeedbackMinVisible) {
+          await Future<void>.delayed(kCryptOpenFeedbackMinVisible - elapsed);
+        }
+        shown = false;
+        if (navigator.mounted) navigator.pop();
+        final closed = dialogClosed;
+        if (closed != null) await closed;
+      }
+      progress.dispose();
+    }
+
+    if (failure != null) {
+      // 失败提示放在遮罩收起之后：否则会被对话框的 barrier 压住，用户根本看不到
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).vault_decrypt_open_failed('$failure')),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return null;
+    }
+    return landed;
   }
 
   /// 测试注入点：把「延迟清理」的等待时长压到毫秒级，便于断言清理真的发生。
@@ -2397,9 +2555,23 @@ class FileManagerProvider extends ChangeNotifier {
   /// 该步骤在 [openFile] 里依赖 `BuildContext`（要 push 查看器 / 弹「打开方式」），
   /// 单测无法驱动那些 UI 分支，因此把落地本身单独暴露，用于验证
   /// 「crypt 视图的虚拟明文路径 → 磁盘上真实存在的文件」这条不变式。
+  ///
+  /// 三个回调与 [_materializeLocalCryptFile] 一一对应，用于钉住「打开前的等待
+  /// 必须可观测」：普通文件**不得**触发 [onSlowPath]（否则会平白弹提示），
+  /// 加密文件必须触发且进度单调递增到 100%，失败必须回调 [onDecryptFailed]。
   @visibleForTesting
-  Future<String> materializeLocalCryptFileForTest(String path) =>
-      _materializeLocalCryptFile(path);
+  Future<String> materializeLocalCryptFileForTest(
+    String path, {
+    VoidCallback? onSlowPath,
+    void Function(int bytes, int total)? onProgress,
+    void Function(Object error)? onDecryptFailed,
+  }) =>
+      _materializeLocalCryptFile(
+        path,
+        onSlowPath: onSlowPath,
+        onProgress: onProgress,
+        onDecryptFailed: onDecryptFailed,
+      );
 
   /// 判断物理文件是否为真实的 rclone/OpenList 加密文件（文件头带 RCLONE magic）
   Future<bool> _isEncryptedPhysicalFile(String physicalPath) =>
@@ -11849,12 +12021,22 @@ class FileManagerProvider extends ChangeNotifier {
     // 下面所有分支都按**扩展名 / 文件是否存在**判定，而 crypt 视图给出的 `path`
     // 是**只存在于视图里的虚拟明文路径**（磁盘上是密文名）。不先落地就会出现
     // 「原地加密的 apk 点了不弹安装器」「外部应用提示文件不存在」这类失败。
-    // 音视频 / 图片由 `_materializeLocalCryptFile` 原样放行，继续走流式解密链路。
+    // 音视频 / 图片由 `_materializeLocalCryptFileWithFeedback` 原样放行，继续走流式解密链路。
+    //
+    // ⚠️ 这一段**必须让用户看得见**：解密是个耗时动作，静默等待的用户会以为「没点中」
+    // 而离开页面（详见 `_materializeLocalCryptFileWithFeedback` 的注释）。
     if (!activeTab.isRemote &&
         !path.startsWith('http') &&
         !path.startsWith('remote://') &&
         !path.startsWith('cryptremote://')) {
-      targetPath = await _materializeLocalCryptFile(targetPath);
+      final materialized =
+          await _materializeLocalCryptFileWithFeedback(context, targetPath);
+      if (materialized == null) {
+        // 解密失败：已经提示过用户，这里必须**中止**——继续往下会把一个不存在的
+        // 路径丢给安装器/外部应用，症状是「安装包解析失败」，会被误判成包坏了。
+        return;
+      }
+      targetPath = materialized;
     }
 
     // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，

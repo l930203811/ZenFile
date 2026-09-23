@@ -15,7 +15,9 @@
 ///   **解密后的真实名**（扩展名决定系统/内置查看器能否识别类型）；
 /// * 音视频 / 图片**不得**落地（它们有专用流式解密链路，转成实体反而丢掉
 ///   边解边播能力）；
-/// * 落地出的临时文件必须**延迟自动清理**。
+/// * 落地出的临时文件必须**延迟自动清理**；
+/// * 落地期间的等待必须**可观测**（普通文件不得触发提示；加密文件要报告进度；
+///   失败要被调用方感知，从而中止「交给安装器」这一步）。
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -184,6 +186,77 @@ void main() {
           reason: '临时文件名沿用密文名会丢扩展名 → MIME 判不出 → 打开失败');
       expect(File(landed).existsSync(), isTrue);
       expect(await File(landed).readAsBytes(), payload(3000));
+    });
+  });
+
+  /// 「点击 → 弹出安装器」之间那段静默解密，是用户误以为「没点中」的根源。
+  /// 这一组钉住「等待必须可观测」的三个契约。
+  group('打开前的等待必须可观测（进度回调）', () {
+    test('普通文件：既不通知「可能要等」，也不报进度', () async {
+      final f = File(p.join(docsDir.path, 'plain.txt'))
+        ..writeAsStringSync('hello');
+
+      var slow = 0;
+      var ticks = 0;
+      final landed = await provider.materializeLocalCryptFileForTest(
+        f.path,
+        onSlowPath: () => slow++,
+        onProgress: (_, _) => ticks++,
+      );
+
+      expect(landed, f.path);
+      expect(slow, 0,
+          reason: '磁盘上已有的普通文件瞬间返回，弹任何提示都是打扰（还会闪一下）');
+      expect(ticks, 0);
+    });
+
+    test('加密文件：通知一次「可能要等」，进度单调递增且收尾到 100%', () async {
+      final plain = payload(700 * 1024); // > 2 个 256KB 分块，能看出多次回调
+      await putCipher('big.apk', plain);
+
+      var slow = 0;
+      final ticks = <double>[];
+      final landed = await provider.materializeLocalCryptFileForTest(
+        p.join(docsDir.path, 'big.apk'),
+        onSlowPath: () => slow++,
+        onProgress: (bytes, total) {
+          expect(total, plain.length);
+          ticks.add(total > 0 ? bytes / total : 0.0);
+        },
+      );
+
+      expect(slow, 1, reason: '必须且只通知一次，调用方据此起「延迟出现」的提示');
+      expect(ticks.length, greaterThan(1),
+          reason: '大文件要能报出中间进度，否则用户只看到一个不动的转圈');
+      for (var i = 1; i < ticks.length; i++) {
+        expect(ticks[i], greaterThanOrEqualTo(ticks[i - 1]),
+            reason: '进度不得回退');
+      }
+      expect(ticks.last, 1.0,
+          reason: '必须收尾到 100%，否则进度条停在半路，比不显示更让人不安');
+      expect(await File(landed).readAsBytes(), plain);
+    });
+
+    test('解密失败：回调 onDecryptFailed，调用方据此中止「交给安装器」', () async {
+      await putCipher('broken.apk', payload(2048));
+
+      // 把临时目录根指到一个**文件**上：建目录必然失败 → 模拟解密写盘失败
+      final blocked = File(p.join(root.path, 'blocked'))
+        ..writeAsStringSync('x');
+      FileManagerProvider.cryptTempRootOverride = blocked.path;
+
+      Object? failure;
+      final virtualPath = p.join(docsDir.path, 'broken.apk');
+      final landed = await provider.materializeLocalCryptFileForTest(
+        virtualPath,
+        onDecryptFailed: (e) => failure = e,
+      );
+
+      expect(failure, isNotNull,
+          reason: '解密失败必须能被调用方感知，否则用户看到的是「点了没反应」或'
+              '「安装包解析失败」——两种都会被误判成别的原因');
+      expect(landed, virtualPath,
+          reason: '失败时返回原虚拟路径；调用方**必须**据此中止，不能把它丢给安装器');
     });
   });
 }
