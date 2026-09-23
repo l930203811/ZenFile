@@ -1877,7 +1877,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 children: [
                   const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
                   const SizedBox(width: 10),
-                  Text(L10n.of(context).msgb7c87215, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Expanded(
+                    child: Text(
+                      L10n.of(context).msgb7c87215,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               content: SizedBox(
