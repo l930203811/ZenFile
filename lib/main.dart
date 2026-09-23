@@ -24,6 +24,8 @@ import 'core/navigator_key.dart';
 import 'providers/file_manager_provider.dart';
 import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
+import 'services/webdav_debug_log.dart';
+import 'services/mpv_audio_output_service.dart';
 import 'services/network_connections_service.dart';
 import 'services/intent_handler_service.dart';
 import 'services/pin_service.dart';
@@ -99,6 +101,17 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] PreferencesService.init failed: $e');
     }
+
+    // 诊断哨兵：每次启动写一行，用于**无 adb** 的真机排查里确认两件事 ——
+    // 「手机上跑的到底是哪个包」以及「当前 AO 档位 / 日志开关状态」。
+    // 没有它，「日志里一行都没有」既可能是调用点没走到，也可能是装的根本不是
+    // 新包，两者无法区分（2026-09-23 已因此白跑一轮构建）。
+    // `apk=` 是安装包指纹（版本号 @ lastUpdateTime）：版本号在两版诊断包之间
+    // 通常不变，**只有 lastUpdateTime 能区分「装的是旧包」**。
+    WebdavDebugLog.log(
+      '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
+      'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',
+    );
 
     try {
       await PinService.init();

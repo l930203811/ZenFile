@@ -5,6 +5,7 @@ import '../providers/file_manager_provider.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/category_filter_type.dart';
 import '../services/quick_transfer_service.dart';
+import '../services/mpv_audio_output_service.dart';
 
 class PreferencesService {
   static const String _keyThemeMode = 'theme_mode';
@@ -944,6 +945,8 @@ class PreferencesService {
   static const String _keyActiveAppIcon = 'active_app_icon';
   static const String _keyDesktopLyricEnabled = 'desktop_lyric_enabled';
   static const String _keyOpenSLESOutput = 'opensles_output';
+  /// mpv AO 兼容模式（[MpvAoMode.key]）。旧键 [_keyOpenSLESOutput] 仅作迁移来源。
+  static const String _keyAudioOutputMode = 'audio_output_mode';
 
   static bool getAudioBackgroundPlay() {
     return _prefs?.getBool(_keyAudioBackgroundPlay) ?? false;
@@ -953,17 +956,23 @@ class PreferencesService {
     await _prefs?.setBool(_keyAudioBackgroundPlay, val);
   }
 
-  /// 是否使用 OpenSL ES 输出流（mpv `--ao=opensles`）。
+  /// mpv 音频输出（AO）兼容模式，默认 [MpvAoMode.auto]（沿用 media_kit 默认）。
   ///
-  /// 默认关闭（沿用 mpv 默认 AudioTrack 输出）。开启后 libmpv 改用 OpenSL ES
-  /// 输出，兼容 RootlessJamesDSP 等免 Root 音效软件（它们依赖 OpenSL ES 流），
-  /// 避免被判定为「不支持的应用程序」以及切歌时音轨重建导致断音。
-  static bool getOpenSLESOutput() {
-    return _prefs?.getBool(_keyOpenSLESOutput) ?? false;
+  /// ⚠️ 旧实现是布尔开关 `opensles_output`，其注释「默认走 AudioTrack、开启才切
+  /// OpenSL ES」是**错的**：media_kit 在 Android 真机上默认就已把 `ao` 写成单值
+  /// `opensles`，所以那个开关开/关时实际 AO 完全一样。这里保留旧键做迁移：
+  /// 老用户若开过开关，迁移为 [MpvAoMode.openSlEs]（保持其原有行为）。
+  static MpvAoMode getAudioOutputMode() {
+    final stored = _prefs?.getString(_keyAudioOutputMode);
+    if (stored != null) return MpvAoMode.fromKey(stored);
+    final legacy = _prefs?.getBool(_keyOpenSLESOutput) ?? false;
+    return legacy ? MpvAoMode.openSlEs : MpvAoMode.auto;
   }
 
-  static Future<void> saveOpenSLESOutput(bool val) async {
-    await _prefs?.setBool(_keyOpenSLESOutput, val);
+  static Future<void> saveAudioOutputMode(MpvAoMode mode) async {
+    await _prefs?.setString(_keyAudioOutputMode, mode.key);
+    // 旧键同步维护：让回退到旧版本时行为不至于跳变（旧版本只认这个布尔值）。
+    await _prefs?.setBool(_keyOpenSLESOutput, mode != MpvAoMode.auto);
   }
 
   static bool getDesktopLyricEnabled() {

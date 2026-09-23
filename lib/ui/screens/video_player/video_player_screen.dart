@@ -270,12 +270,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       try {
         final platform = player.platform;
       if (platform is NativePlayer) {
-        // 音频输出（AO 链 + 音频会话 id）配置：必须在 open 之前完成，
-        // mpv 只在初始化音频输出链时读这些选项；细节见服务内注释
-        // （单值 ao=opensles 会把 audiotrack 从候选里删掉且不回退）。
+        // 音频输出（AO 候选链 + 音频会话 id）配置：必须在 open 之前完成，
+        // mpv 只在初始化音频输出链时读这些选项；档位语义见服务内注释。
         await MpvAudioOutputService.configureBeforeOpen(
-          platform,
-          openSlEsEnabled: PreferencesService.getOpenSLESOutput(),
+          player,
+          mode: PreferencesService.getAudioOutputMode(),
           tag: 'video',
         );
         await platform.setProperty('network-timeout', '60');
@@ -310,8 +309,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
       }
-      // 起播后回读「实际生效的 AO」（仅在诊断日志开启时产生，否则零开销）
-      MpvAudioOutputService.scheduleActualAoSample(player, 'video');
+      // 起播后采集音频输出诊断（回读实际生效的 AO + 复刻 RJ 的挂音效自检）
+      // 仅在诊断日志开启时产生，否则零开销。
+      MpvAudioOutputService.schedulePlaybackDiagnostics(player, 'video');
       _startPlayback();
       _resolvePlaylist();
     }();
@@ -1665,8 +1665,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         // 切换解码方式后同样要重设音频输出选项 —— 这里会重建 Player，
         // 新 Player 的 AO 还没初始化，是补设的唯一时机。
         await MpvAudioOutputService.configureBeforeOpen(
-          platform,
-          openSlEsEnabled: PreferencesService.getOpenSLESOutput(),
+          player,
+          mode: PreferencesService.getAudioOutputMode(),
           tag: 'video-switch',
         );
         await platform.setProperty('network-timeout', '60');
