@@ -249,6 +249,7 @@ class MpvAudioOutputService {
 
     if (sessionId != null) _sessionIdOf[player] = sessionId;
     attachEffectSessionNotifier(player, isVideo: tag.startsWith('video'), tag: tag);
+    _reannounceIfPlaying(player, isVideo: tag.startsWith('video'), tag: tag);
     _verifyHotSwitch(platform, tag: tag, mode: mode, before: before);
   }
 
@@ -499,6 +500,30 @@ class MpvAudioOutputService {
           tag: tag,
         ));
       });
+    } catch (_) {
+      // 广播失败绝不影响播放
+    }
+  }
+
+  /// 会话号变化后**补一次宣告**。
+  ///
+  /// 为什么必须补：播放中切档位会重新取一个会话号，而 `playing` **不会**因为换
+  /// 会话号而重复发射（它一直是 true）⇒ 光靠 [attachEffectSessionNotifier] 的
+  /// 监听，效果软件会永远停在**旧会话**上，表现为「切了档位音效就没了」。
+  static void _reannounceIfPlaying(
+    Player player, {
+    required bool isVideo,
+    required String tag,
+  }) {
+    try {
+      if (!player.state.playing) return;
+      _fxAnnounced[player] = true;
+      unawaited(_announceEffectSession(
+        player,
+        open: true,
+        isVideo: isVideo,
+        tag: tag,
+      ));
     } catch (_) {
       // 广播失败绝不影响播放
     }
