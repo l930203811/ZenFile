@@ -32,7 +32,8 @@ class WebdavDebugLog {
   /// 2026-09-23 RootlessJamesDSP「不兼容」排查期间**重新开启**：需要采集
   /// 「实际生效的 mpv 音频输出（AO）」等运行期证据（见
   /// `MpvAudioOutputService`）。⚠️ **发版前必须改回 false**。
-  static bool enabled = true;
+  /// 2026-09-23 v2.1.6 发版：已改回 false。
+  static bool enabled = false;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
   static void log(String msg) {
