@@ -193,14 +193,29 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            '${conn.type} · ${conn.host}:${conn.port}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: theme.colorScheme.onSurface.withOpacity(0.5),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              // 类型可截断（图标/颜色已表达类型），host:port 必须完整显示
+                              Flexible(
+                                child: Text(
+                                  conn.type,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                ' · ${conn.host}:${conn.port}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                                maxLines: 1,
+                              ),
+                            ],
                           ),
                         ),
                         trailing: Row(

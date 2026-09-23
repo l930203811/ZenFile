@@ -3836,10 +3836,14 @@ class FileManagerProvider extends ChangeNotifier {
   }) async {
     final discovered = await LanClient.scanSubnet(
       onProgress: onProgress ?? (double _) {},
+      // SMB 向导只关心 445：扫 5 个端口会让每台不可达主机白等 ~1.2s
+      ports: const {445: 'SMB'},
     );
     final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
-    final result = <SmbDiscoveredDevice>[];
-    for (final d in smbDevices) {
+    // 多台设备并行探测共享名：旧版逐台串行，每台最坏 4 组凭据 × 6s 超时，
+    // 设备一多总等待线性累加。每台内部仍按候选链顺序串行（顺序有意义：
+    // 用户凭据优先，且避免对同一服务器并发发起多次认证）。
+    final result = await Future.wait(smbDevices.map((d) async {
       // 候选顺序与正式连接保持一致（见 kSmbAnonymousUsernames）：先按用户填写的
       // 凭据（用户名为空即标准匿名），再依次兜底其余匿名身份 —— 不同固件的
       // Samba 匿名账号名不同，只试 guest 会在部分 OpenWrt 固件上扫不出共享。
@@ -3872,16 +3876,16 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
-      // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
-      result.add(SmbDiscoveredDevice(
-        host: d.host,
-        hostName: d.hostName,
-        shares: shares ?? const <String>[],
-      ));
       if (shares == null && lastErr != null && username.isEmpty) {
         debugPrint('[ZenFile] discoverSmbDevices: ${d.host} share list failed: $lastErr');
       }
-    }
+      // 无论共享是否可列，只要 445 端口开放就展示该主机（不可列时为空列表）
+      return SmbDiscoveredDevice(
+        host: d.host,
+        hostName: d.hostName,
+        shares: shares ?? const <String>[],
+      );
+    }));
     // 有主机名的排在前面，其余按 IP 末段排序，列表更稳定可读
     result.sort((a, b) {
       if (a.hasHostName != b.hasHostName) return a.hasHostName ? -1 : 1;

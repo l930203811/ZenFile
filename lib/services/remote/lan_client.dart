@@ -133,6 +133,9 @@ class LanClient extends RemoteClient {
   /// 让 UI 能显示计算机名而非只有 IP。
   static Future<List<LanDiscoveredServer>> scanSubnet({
     required Function(double progress) onProgress,
+    /// 限定要探测的端口（默认 445/21/22/80/8080 全扫）。SMB 向导只关心 445，
+    /// 收窄后不可达主机的串行等待从 ~2.2s 降到 ~1.0s，整网段扫描近乎减半。
+    Map<int, String>? ports,
   }) async {
     final discovered = <LanDiscoveredServer>[];
 
@@ -160,13 +163,14 @@ class LanClient extends RemoteClient {
     if (subnets.isEmpty) subnets.add('192.168.1');
 
     // 2) SMB 放最前优先探测
-    final targetPorts = <int, String>{
-      445: 'SMB',
-      21: 'FTP',
-      22: 'SFTP',
-      80: 'WebDav',
-      8080: 'WebDav',
-    };
+    final targetPorts = ports ??
+        <int, String>{
+          445: 'SMB',
+          21: 'FTP',
+          22: 'SFTP',
+          80: 'WebDav',
+          8080: 'WebDav',
+        };
 
     const hostsPerSubnet = 254;
     const batchSize = 64;
