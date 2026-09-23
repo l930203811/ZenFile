@@ -9513,8 +9513,16 @@ class FileManagerProvider extends ChangeNotifier {
         // 与粘贴等其它操作保持一致的交互（覆盖 / 保留两者 / 重命名 / 取消）。
         if (context != null) {
           final targetType = FileSystemEntity.typeSync(newPath);
+          final normalizedOld = p.normalize(oldPath);
+          final normalizedNew = p.normalize(newPath);
+          // 仅大小写不同的改名（a.jpg → a.JPG）：Android 模拟存储（FUSE/sdcardfs）
+          // 大小写不敏感，typeSync(newPath) 会命中源文件自身而误弹冲突框；
+          // 此类改名在大小写不敏感存储上不可能撞到别的文件，直接执行不询问。
+          final isCaseOnlyRename = normalizedNew != normalizedOld &&
+              normalizedNew.toLowerCase() == normalizedOld.toLowerCase();
           if (targetType != FileSystemEntityType.notFound &&
-              p.normalize(newPath) != p.normalize(oldPath)) {
+              normalizedNew != normalizedOld &&
+              !isCaseOnlyRename) {
             final response = await ConflictDialog.show(
               context,
               fileName: newName,
