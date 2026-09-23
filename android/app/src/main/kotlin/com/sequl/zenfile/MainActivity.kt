@@ -2295,6 +2295,18 @@ class MainActivity : AudioServiceFragmentActivity() {
                     }
                     // 设备音频输出画像（fast mixer 帧数/原生采样率 + 活跃播放配置）
                     "describeAudioOutput" -> result.success(describeAudioOutput())
+                    // 音频效果控制会话广播 —— Android 官方的「播放器宣告自己正在哪个
+                    // 会话上出声」协议（AudioEffect.ACTION_OPEN/CLOSE_AUDIO_EFFECT_
+                    // CONTROL_SESSION）。**播放器侧必须主动广播**，效果类应用（系统
+                    // 均衡器、免 Root 音效软件如 RootlessJamesDSP）才能按会话挂效果。
+                    // 详见 notifyEffectSession() 的注释。
+                    "notifyEffectSession" -> {
+                        val sid = call.argument<Number>("sessionId")?.toInt() ?: 0
+                        val isOpen = call.argument<Boolean>("open") ?: true
+                        val contentType = call.argument<Number>("contentType")?.toInt()
+                            ?: android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC
+                        result.success(notifyEffectSession(sid, isOpen, contentType))
+                    }
                     // 安装包指纹：证明「手机上跑的到底是哪个包」。版本号在两版诊断包
                     // 之间通常不变，故**必须**带上 lastUpdateTime，否则无法区分
                     // 「装的是旧包」与「代码路径没走到」（2026-09-23 白跑一轮的教训）。
@@ -2326,6 +2338,44 @@ class MainActivity : AudioServiceFragmentActivity() {
      * 静音正常播放。priority 取 0（而非 RJ 的 Int.MAX_VALUE）是为了**不去抢**
      * RJ 已持有的控制权 —— 抢控制会让 RJ 误判「会话控制丢失」，反而破坏现场。
      */
+    /**
+     * 广播「本应用开始在会话 [sessionId] 上播放音频」/「已停止播放」。
+     *
+     * 这是 Android 官方的**音频效果控制协议**：
+     * `AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION` 由**播放器**在开始
+     * 播放时发出，携带 `EXTRA_AUDIO_SESSION` / `EXTRA_PACKAGE_NAME` /
+     * `EXTRA_CONTENT_TYPE`；停止时发对应的 `..._CLOSE_...`。系统的音频效果面板、
+     * 系统均衡器以及免 Root 音效软件（RootlessJamesDSP）都靠这条广播按会话挂效果。
+     *
+     * ⚠️ 少了这条广播，效果类应用只能从 `dumpsys media.audio_flinger` 的 dump 里
+     * 猜我们的会话；猜不到 / 挂不上就判定本应用「不受支持」并停止处理
+     * （RootlessJamesDSP 的表现就是弹「音频处理已暂停，以防止重复音频」）。
+     * 这是本应用与其它播放器之间**唯一**的协议级差异 —— VLC / YouTube Music /
+     * Poweramp 都实现了它，所以它们能被处理而我们不能。
+     *
+     * ⚠️ 依赖**固定的会话号**：由 `audiotrack-session-id` 交给 mpv 的
+     * `ao_audiotrack` 使用。走 opensles 时（含 `auto` 档位）会话号由系统分配，
+     * 本应用无从得知，也就无从宣告 —— 这是「AudioTrack 档位才谈得上兼容音效
+     * 软件」的根本原因。
+     */
+    private fun notifyEffectSession(sessionId: Int, isOpen: Boolean, contentType: Int): String {
+        if (sessionId <= 0) return "skip:invalid-session($sessionId)"
+        return try {
+            val action = if (isOpen)
+                android.media.audiofx.AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION
+            else
+                android.media.audiofx.AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION
+            val intent = Intent(action)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, contentType)
+            sendBroadcast(intent)
+            (if (isOpen) "open" else "close") + ":" + sessionId
+        } catch (t: Throwable) {
+            "error:" + (t.message ?: t.javaClass.simpleName)
+        }
+    }
+
     private fun probeEffectAttach(sessionId: Int): String {
         if (sessionId <= 0) return "skip:invalid-session($sessionId)"
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) {

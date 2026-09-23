@@ -108,6 +108,11 @@ void main() {
     // 新包，两者无法区分（2026-09-23 已因此白跑一轮构建）。
     // `apk=` 是安装包指纹（版本号 @ lastUpdateTime）：版本号在两版诊断包之间
     // 通常不变，**只有 lastUpdateTime 能区分「装的是旧包」**。
+    //
+    // ⚠️ 先写一行**不含 await** 的哨兵。下一行要 `await` 一次原生通道，
+    // 而 `runApp()` 之前任何挂住的 await 都会让应用起不来 —— 那样连「进程启动
+    // 过」都不会留痕，排查会彻底失去着力点。（该 await 已加 3s 超时兜底。）
+    WebdavDebugLog.log('[boot] main() entered');
     WebdavDebugLog.log(
       '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
       'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',

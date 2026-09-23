@@ -172,6 +172,17 @@ class MpvAudioOutputService {
   /// 用它去重，保证同一实例只写一组数据）。
   static final Expando<bool> _diagnosed = Expando<bool>('zenfile.aoDiagnosed');
 
+  /// APK 指纹（`versionName @ lastUpdateTime`）的缓存。首次取值走一次原生通道，
+  /// 之后复用 —— 这样每条播放日志都能带上它，代价接近零。
+  static String? _apkStamp;
+
+  /// 已经挂上「音频效果控制会话广播器」的 [Player]（同一实例只挂一次）。
+  static final Expando<bool> _fxNotifier = Expando<bool>('zenfile.fxSessionNotifier');
+
+  /// 上一次**广播出去**的播放状态。`playing` 事件会重复发射，而 OPEN/CLOSE
+  /// 只应在状态**翻转**时各发一次，否则效果类应用会被反复重建会话。
+  static final Expando<bool> _fxAnnounced = Expando<bool>('zenfile.fxSessionAnnounced');
+
   /// 在 `player.open()` **之前**完成 AO 相关配置。
   ///
   /// [tag] 仅用于日志区分调用方（`audio` / `video` / `video-switch`）。
@@ -197,6 +208,9 @@ class MpvAudioOutputService {
     );
 
     if (sessionId != null) _sessionIdOf[player] = sessionId;
+    // 音频效果控制会话广播（Android 官方协议）——起播时挂上监听。这不是诊断，
+    // 是**功能**：没有它，系统均衡器与免 Root 音效软件都不知道我们的会话。
+    attachEffectSessionNotifier(player, isVideo: tag.startsWith('video'), tag: tag);
     return sessionId;
   }
 
@@ -234,6 +248,7 @@ class MpvAudioOutputService {
     );
 
     if (sessionId != null) _sessionIdOf[player] = sessionId;
+    attachEffectSessionNotifier(player, isVideo: tag.startsWith('video'), tag: tag);
     _verifyHotSwitch(platform, tag: tag, mode: mode, before: before);
   }
 
@@ -374,6 +389,11 @@ class MpvAudioOutputService {
     // 上一轮真机测试的日志里连一行 AO 都没有，当时无法区分「调用点根本没走到」
     // 与「走到了但事件没触发」→ 白跑一轮构建。有这一行就能一眼分开。
     WebdavDebugLog.log('[AO/$tag] diagnostics armed (playing=${player.state.playing})');
+    // 再补一行**包指纹**。理由：`[boot]` 只在进程启动时写一次，而实测日志里
+    // 常常见不到它（用户为取干净日志会先删掉日志文件，删掉后新文件就从半路
+    // 开始记）。此时「手机上跑的到底是哪个包」又变成一笔糊涂账，只能再花一次
+    // 构建去确认。把指纹挂在每次播放上，半路开始的日志也能自证。
+    unawaited(_logApkStamp(tag));
 
     // ① 事件触发（起播瞬间采样最准）。
     try {
@@ -429,6 +449,146 @@ class MpvAudioOutputService {
     }
   }
 
+  /// 往日志里补一行 APK 指纹（版本号 @ 安装时间），供**半路开始**的日志自证
+  /// 「手机上跑的到底是哪个包」。指纹只在首次取值时走一次原生通道并缓存。
+  static Future<void> _logApkStamp(String tag) async {
+    try {
+      _apkStamp ??= await buildStamp();
+      WebdavDebugLog.log('[AO/$tag] apk=${_apkStamp}');
+    } catch (_) {
+      // 诊断绝不能影响播放
+    }
+  }
+
+  /// 挂上「音频效果控制会话」广播器：起播 → OPEN，停止 → CLOSE。
+  ///
+  /// ## 为什么必须有它（2026-09-23 追到 RootlessJamesDSP 源码级后的结论）
+  ///
+  /// Android 的音频效果控制协议要求**播放器自己**广播
+  /// `AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION`（带会话号 + 包名 +
+  /// 内容类型），效果类应用（系统均衡器、免 Root 音效软件）才知道「这个应用的
+  /// 音频在哪个会话上」，从而按会话挂效果。
+  ///
+  /// 本应用此前**从未**广播过 —— 这正是「同一台机器上 RJ 能处理 Poweramp、
+  /// 却点名 ZenFile 不受支持」的**协议级差异**：RJ 的 `SessionReceiver` 在清单里
+  /// 注册的就是这两个 action，而 VLC / YouTube Music / Poweramp 全都实现了它。
+  ///
+  /// 只对**固定了会话号**的档位有意义：会话号来自 `audiotrack-session-id`，
+  /// 由 mpv 的 `ao_audiotrack` 使用。走 `opensles`（含 `auto` 档位）时会话号由
+  /// 系统分配，我们无从得知，也就无从宣告。
+  ///
+  /// ⚠️ 全程不抛异常：广播失败**绝不能**影响播放。
+  static void attachEffectSessionNotifier(
+    Player player, {
+    required bool isVideo,
+    required String tag,
+  }) {
+    if (_fxNotifier[player] == true) return;
+    _fxNotifier[player] = true;
+    try {
+      player.stream.playing.listen((playing) {
+        final last = _fxAnnounced[player];
+        if (last == playing) return; // 只认状态翻转
+        // 从未宣告过 OPEN 就不必发 CLOSE（避免给一个没人知道的会话发关闭）。
+        if (!playing && last != true) return;
+        _fxAnnounced[player] = playing;
+        unawaited(_announceEffectSession(
+          player,
+          open: playing,
+          isVideo: isVideo,
+          tag: tag,
+        ));
+      });
+    } catch (_) {
+      // 广播失败绝不影响播放
+    }
+  }
+
+  /// 真正的广播动作（OPEN 前先确认 mpv 确实把 AudioTrack 建在我们固定的会话号上）。
+  static Future<void> _announceEffectSession(
+    Player player, {
+    required bool open,
+    required bool isVideo,
+    required String tag,
+  }) async {
+    try {
+      final sid = _sessionIdOf[player];
+      if (sid == null || sid == 0) return; // 会话号由系统分配 → 无从宣告
+      final platform = player.platform;
+      if (platform is! NativePlayer) return;
+      if (open) {
+        // ⚠️ 只有 `current-ao` 真的落在 audiotrack 时，这个会话号才是**有音频流过
+        // 的那个**。否则等于让效果应用去挂一个空会话 —— 那种「挂上了却没有声音
+        // 流过」的状态，在 RJ 那边会被判成「失去路由控制」，反而触发弹窗。
+        //
+        // `playing` 事件可能早于 AO 初始化（远程流首帧更慢），所以给几次机会：
+        // 否则会静默丢掉这一次宣告，而这正是整条链路的起点。
+        var ao = await _tryGetProperty(platform, 'current-ao');
+        for (var attempt = 0;
+            attempt < 3 && !ao.toLowerCase().contains('audiotrack');
+            attempt++) {
+          await Future<void>.delayed(const Duration(seconds: 1));
+          ao = await _tryGetProperty(platform, 'current-ao');
+        }
+        if (!shouldAnnounceOpen(sessionId: sid, currentAo: ao)) {
+          WebdavDebugLog.log(
+            '[FX/$tag] skip OPEN：current-ao="$ao"（固定会话号未被 mpv 采用；'
+            '要让音效类应用接管需选「AudioTrack」档位）',
+          );
+          return;
+        }
+      }
+      final r = await _notifyEffectSessionNative(
+        sessionId: sid,
+        open: open,
+        isVideo: isVideo,
+      );
+      WebdavDebugLog.log(
+        '[FX/$tag] ${open ? "OPEN" : "CLOSE"} session=$sid -> $r',
+      );
+    } catch (_) {
+      // 广播失败绝不影响播放
+    }
+  }
+
+  /// [attachEffectSessionNotifier] 的判定核心：现在该不该向系统宣告
+  /// 「本应用正在这个会话上出声」。
+  ///
+  /// 抽成**纯函数**以便回归测试（真机行为无法自动化）。钉住的不变式：
+  /// 「有会话号」且「该会话号真的被 mpv 用上」（`current-ao` 落在 audiotrack）
+  /// 两个条件**同时**满足才宣告 —— 缺一个就会让效果应用挂到一个空会话上，
+  /// 而那种状态在 RootlessJamesDSP 那边会被判成「失去路由控制」并弹窗。
+  @visibleForTesting
+  static bool shouldAnnounceOpen({
+    required int? sessionId,
+    required String? currentAo,
+  }) {
+    if (sessionId == null || sessionId == 0) return false;
+    return (currentAo ?? '').toLowerCase().contains('audiotrack');
+  }
+
+  static Future<String> _notifyEffectSessionNative({
+    required int sessionId,
+    required bool open,
+    required bool isVideo,
+  }) async {
+    if (!Platform.isAndroid) return 'skip:not-android';
+    try {
+      final r = await _sessionChannel.invokeMethod<String>(
+        'notifyEffectSession',
+        <String, dynamic>{
+          'sessionId': sessionId,
+          'open': open,
+          // AudioEffect.CONTENT_TYPE_MUSIC = 2 / CONTENT_TYPE_MOVIE = 4
+          'contentType': isVideo ? 4 : 2,
+        },
+      );
+      return r ?? 'null';
+    } catch (e) {
+      return 'error:$e';
+    }
+  }
+
   static void _runDiagnostics(Player player, String tag) {
     if (_diagnosed[player] == true) return; // 事件与定时兜底二选一，只采一组
     _diagnosed[player] = true;
@@ -457,13 +617,17 @@ class MpvAudioOutputService {
           WebdavDebugLog.log('[AO/$tag] effect-attach probe: skipped（本模式未固定会话号）');
         } else {
           final verdict = await _probeEffectAttach(sid);
-          // ⚠️ 语义边界（别过度解读）：ok 只证明「本应用有权给音频会话挂效果」，
-          // 即 RJ 失败**不是**权限/效果库问题；该 sid 只有 current-ao=audiotrack
-          // 时才会被 mpv 真正用上，走 opensles 时 mpv 自建会话 → 此时 probe 与
-          // RJ 的实际处境无关，必须结合上面那行 current-ao 一起读。
+          // ⚠️⚠️ 语义边界（**不要**再像 v2 那样把它当成「RJ 会不会判我们不兼容」
+          // 的预测）：这个探针是**本应用 uid 给自己创建的 session** 挂效果 ——
+          // Android 对 session 属主永远放行，所以它必然 ok，与 RJ 的处境是两件事。
+          // RJ 是**从它自己的 uid 往别人的 session** 挂 → 需要
+          // MODIFY_AUDIO_ROUTING 级别权限（Shizuku/root 那条路），本探针测不到。
+          // 它真正能证明的只有两件事：
+          //   ① 该 session id 真实存在于音频系统且接受 effect（⇒ 不是 offload/DIRECT）；
+          //   ② 结合 current-ao=audiotrack，可确认「固定会话号」这条链真的走通了。
           WebdavDebugLog.log(
             '[AO/$tag] effect-attach probe sid=$sid -> $verdict'
-            '（ok=有权挂效果；仅 current-ao=audiotrack 时该 sid 才生效）',
+            '（⚠️本 uid 对自己 session 必然 ok，**不能**预测 RJ 跨 uid 能否挂上）',
           );
         }
         final device = await _describeAudioOutput();
@@ -486,9 +650,14 @@ class MpvAudioOutputService {
     }
   }
 
-  /// 复刻 RJ 的「挂静音音效」自检，返回可读结论。
+  /// 复刻 RJ 的「挂静音音效」动作，返回可读结论。
   ///
-  /// 成功 = `ok:<effect>`，失败 = 带异常类型/消息的 `fail:...`。
+  /// ⚠️ **不要**把它当成「RJ 会不会判我们不兼容」的预测（v2 的诊断文案曾这样写，
+  /// 是错的）：这里用的是**本应用 uid、对自己创建的 session**，属主必然放行。
+  /// 它的价值只有两条：
+  /// 1. 证明该 session 真实有效 —— offload/DIRECT 输出**完全不接受 effect**，
+  ///    能挂上就说明我们不是那条路径；
+  /// 2. 证明 `audiotrack-session-id` 固定下来的会话号真的被 mpv 用上了。
   /// 原生侧只创建 + 立即释放（不 enable、不改增益），**绝不会静音播放**。
   static Future<String> _probeEffectAttach(int sessionId) async {
     if (!Platform.isAndroid) return 'skip:not-android';
@@ -522,7 +691,14 @@ class MpvAudioOutputService {
   static Future<String> buildStamp() async {
     if (!Platform.isAndroid) return 'not-android';
     try {
-      return await _sessionChannel.invokeMethod<String>('buildStamp') ?? '?';
+      // ⚠️ 必须带超时：这个方法在 `main()` 里被 `await`（`[boot]` 哨兵），
+      // 而它走的是 MethodChannel —— 原生侧一旦不回应（引擎未就绪、主线程被
+      // 播放器初始化占住……），`runApp()` 之前的这个 await 就会**把启动卡死**。
+      // 诊断绝不能有这种能力。
+      final r = await _sessionChannel
+          .invokeMethod<String>('buildStamp')
+          .timeout(const Duration(seconds: 3));
+      return r ?? '?';
     } catch (e) {
       return 'error:$e';
     }

@@ -318,4 +318,61 @@ void main() {
       expect(written['ao'], MpvAoMode.openSlEs.aoChain);
     });
   });
+
+  group('音频效果控制会话广播（Android 官方协议）', () {
+    // 背景：RootlessJamesDSP 的「不受支持」弹窗根因是**本应用从未广播**
+    // `AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION` —— 该 action 由
+    // 播放器主动发出，RJ 的 SessionReceiver（清单注册）收到才知道「这个应用的
+    // 音频在哪个会话上」。VLC / YouTube Music / Poweramp 都实现了它。
+    //
+    // 真机无法自动化，故把判定核心抽成纯函数钉在这里：**只有**该会话号真的被
+    // mpv 用上（current-ao 落在 audiotrack）才允许宣告 —— 否则效果应用会挂到
+    // 一个空会话上，那在 RJ 那边会被判成「失去路由控制」反而触发弹窗。
+
+    test('会话号缺失或为 0：不宣告（会话号由系统分配，无从告知）', () {
+      expect(
+        MpvAudioOutputService.shouldAnnounceOpen(
+          sessionId: null,
+          currentAo: 'audiotrack',
+        ),
+        isFalse,
+      );
+      expect(
+        MpvAudioOutputService.shouldAnnounceOpen(
+          sessionId: 0,
+          currentAo: 'audiotrack',
+        ),
+        isFalse,
+      );
+    });
+
+    test('current-ao 不是 audiotrack：不宣告（避免挂到没有音频流过的会话）', () {
+      for (final ao in <String>['opensles', '?', '', 'aaudio']) {
+        expect(
+          MpvAudioOutputService.shouldAnnounceOpen(sessionId: 4242, currentAo: ao),
+          isFalse,
+          reason: '"$ao" 时这个会话号不是**有音频流过**的那个；'
+              '宣告它会让效果应用挂空会话 → RJ 判「失去路由控制」',
+        );
+      }
+    });
+
+    test('会话号有效且 current-ao=audiotrack：宣告（唯一正确组合）', () {
+      expect(
+        MpvAudioOutputService.shouldAnnounceOpen(
+          sessionId: 4242,
+          currentAo: 'audiotrack',
+        ),
+        isTrue,
+      );
+      expect(
+        MpvAudioOutputService.shouldAnnounceOpen(
+          sessionId: 4242,
+          currentAo: 'AudioTrack',
+        ),
+        isTrue,
+        reason: '驱动名大小写不应影响判定',
+      );
+    });
+  });
 }
