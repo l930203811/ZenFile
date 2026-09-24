@@ -52,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   static const double _swipeLongDistance = 110.0;
   static const double _swipeMinVelocity = 260.0;
   static const double _swipeEdgeGuard = 36.0;
+  // 分类页默认上移量：对齐用户视频最后几秒的卡片位置（顶部空白收紧）。
+  final ScrollController _homeTabScroll = ScrollController(initialScrollOffset: 20);
 
   @override
   void initState() {
@@ -92,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void dispose() {
     _refreshIconController.dispose();
+    _homeTabScroll.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -658,6 +661,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 分类页（快捷操作页）：分类网格 + 自定义快捷方式，顶部/底部由 HomeScreen 统一提供。
   Widget _buildHomeTab() {
     return SingleChildScrollView(
+      controller: _homeTabScroll,
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
