@@ -517,8 +517,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+              // v2.1.7: 顶部栏行高由 kToolbarHeight(56) 收紧为 48，分类页卡片整体上移，
+              // 进一步贴紧顶部搜索栏背景（底部导航栏仍用 kToolbarHeight，不受影响）。
             SizedBox(
-              height: kToolbarHeight,
+              height: 48,
               child: Row(
                 children: [
                   IconButton(
