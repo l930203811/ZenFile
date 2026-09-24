@@ -4345,6 +4345,7 @@
   "ui_2columns": "2 Колонки",
   "ui_3columns": "3 Колонки",
   "ui_4columns": "4 Колонки",
+  "ui_show_custom_entry": "Показывать пользовательский вход",
   "msge8b8e9b3": "Быстрые действия",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

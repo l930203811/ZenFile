@@ -4397,6 +4397,7 @@
   "ui_2columns": "2 Columns",
   "ui_3columns": "3 Columns",
   "ui_4columns": "4 Columns",
+  "ui_show_custom_entry": "Show Custom Entry",
   "msge8b8e9b3": "Common Features",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

@@ -4349,6 +4349,7 @@
   "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
+  "ui_show_custom_entry": "カスタム項目を表示",
   "msge8b8e9b3": "クイック操作",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

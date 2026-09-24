@@ -4490,6 +4490,9 @@ class L10nRu extends L10n {
   String get ui_4columns => '4 Колонки';
 
   @override
+  String get ui_show_custom_entry => 'Показывать пользовательский вход';
+
+  @override
   String get msge8b8e9b3 => 'Быстрые действия';
 
   @override

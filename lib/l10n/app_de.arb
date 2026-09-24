@@ -4342,6 +4342,7 @@
   "ui_2columns": "2 Spalten",
   "ui_3columns": "3 Spalten",
   "ui_4columns": "4 Spalten",
+  "ui_show_custom_entry": "Benutzerdefinierten Eintrag anzeigen",
   "msge8b8e9b3": "Schnellaktionen",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

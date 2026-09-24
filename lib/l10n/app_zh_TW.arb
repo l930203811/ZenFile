@@ -4441,6 +4441,7 @@
   "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
+  "ui_show_custom_entry": "在分類頁顯示自定義入口",
   "msge8b8e9b3": "常用功能",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

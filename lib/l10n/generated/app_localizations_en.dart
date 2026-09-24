@@ -4443,6 +4443,9 @@ class L10nEn extends L10n {
   String get ui_4columns => '4 Columns';
 
   @override
+  String get ui_show_custom_entry => 'Show Custom Entry';
+
+  @override
   String get msge8b8e9b3 => 'Common Features';
 
   @override

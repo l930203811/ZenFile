@@ -4484,6 +4484,9 @@ class L10nDe extends L10n {
   String get ui_4columns => '4 Spalten';
 
   @override
+  String get ui_show_custom_entry => 'Benutzerdefinierten Eintrag anzeigen';
+
+  @override
   String get msge8b8e9b3 => 'Schnellaktionen';
 
   @override

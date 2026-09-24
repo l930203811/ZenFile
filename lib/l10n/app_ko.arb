@@ -4345,6 +4345,7 @@
   "ui_2columns": "2열",
   "ui_3columns": "3열",
   "ui_4columns": "4열",
+  "ui_show_custom_entry": "사용자 정의 항목 표시",
   "msge8b8e9b3": "빠른 작업",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

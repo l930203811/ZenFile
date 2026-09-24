@@ -4345,6 +4345,7 @@
   "ui_2columns": "2 Colonnes",
   "ui_3columns": "3 Colonnes",
   "ui_4columns": "4 Colonnes",
+  "ui_show_custom_entry": "Afficher l'entrée personnalisée",
   "msge8b8e9b3": "Actions rapides",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

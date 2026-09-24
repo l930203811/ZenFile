@@ -457,7 +457,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
     final childAspectRatio = columns == 4
         ? 0.78
-        : (columns == 3 ? 1.10 : 1.30);
+        : (columns == 3 ? 1.0 : 1.30);
     final itemHeight = itemWidth / childAspectRatio;
 
     double colFraction = localPosition.dx / (itemWidth + 2);
@@ -802,7 +802,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          const SizedBox(height: 2),
           if (activeList.isEmpty)
             Center(
               child: Padding(
@@ -842,10 +841,15 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     mainAxisSpacing: 2,
                     childAspectRatio: columns == 4
                         ? 0.78
-                        : (columns == 3 ? 1.10 : 1.30),
+                        : (columns == 3 ? 1.0 : 1.30),
                   ),
-                  itemCount: activeList.length,
+                  itemCount: activeList.length +
+                      (PreferencesService.getCustomEntryVisible() ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (PreferencesService.getCustomEntryVisible() &&
+                        index == activeList.length) {
+                      return _buildCustomEntryCard(theme, iconSize);
+                    }
                     final cat = activeList[index];
                     final labelKey = activeLabels[index];
                     final label = cat['label'] as String;
@@ -1024,6 +1028,60 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
+  Widget _buildCustomEntryCard(ThemeData theme, double iconSize) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.22),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => QuickCategoriesGrid.showCustomizeDialog(
+            context,
+            widget.onNavigateTab,
+          ),
+          splashColor: theme.colorScheme.primary.withOpacity(0.25),
+          highlightColor: theme.colorScheme.primary.withOpacity(0.15),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Broken.edit_2,
+                color: theme.colorScheme.primary,
+                size: iconSize,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                L10n.of(context).msgf1d4ff50,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1451,6 +1509,32 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                     }
                                   },
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_show_custom_entry,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Switch(
+                                value: PreferencesService.getCustomEntryVisible(),
+                                onChanged: (v) {
+                                  PreferencesService.saveCustomEntryVisible(v);
+                                  setModalState(() {});
+                                },
                               ),
                             ],
                           ),

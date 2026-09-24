@@ -4425,6 +4425,9 @@ class L10nAr extends L10n {
   String get ui_4columns => '4 أعمدة';
 
   @override
+  String get ui_show_custom_entry => 'إظهار الإدخال المخصص';
+
+  @override
   String get msge8b8e9b3 => 'إجراءات سريعة';
 
   @override

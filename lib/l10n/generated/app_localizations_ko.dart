@@ -4306,6 +4306,9 @@ class L10nKo extends L10n {
   String get ui_4columns => '4열';
 
   @override
+  String get ui_show_custom_entry => '사용자 정의 항목 표시';
+
+  @override
   String get msge8b8e9b3 => '빠른 작업';
 
   @override

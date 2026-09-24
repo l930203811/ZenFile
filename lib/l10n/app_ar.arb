@@ -4345,6 +4345,7 @@
   "ui_2columns": "2 أعمدة",
   "ui_3columns": "3 أعمدة",
   "ui_4columns": "4 أعمدة",
+  "ui_show_custom_entry": "إظهار الإدخال المخصص",
   "msge8b8e9b3": "إجراءات سريعة",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"

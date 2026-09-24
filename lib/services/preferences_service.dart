@@ -1670,7 +1670,18 @@ class PreferencesService {
   // --- Categories Grid Columns ---
   static const String _keyCategoriesGridColumns = 'categories_grid_columns';
 
-  /// 获取分类页网格列数，默认 4 列
+  /// 分类页网格末尾「自定义」入口是否可见（默认开启）
+  static const String _keyCustomEntryVisible = 'custom_entry_visible';
+
+  static bool getCustomEntryVisible({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyCustomEntryVisible) ?? defaultValue;
+  }
+
+  static Future<void> saveCustomEntryVisible(bool visible) async {
+    await _prefs?.setBool(_keyCustomEntryVisible, visible);
+  }
+
+  /// 获取分类页网格列数，默认 3 列
   static int getCategoriesGridColumns({int defaultValue = 3}) {
     return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
   }

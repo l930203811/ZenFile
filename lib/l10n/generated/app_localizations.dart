@@ -8056,6 +8056,12 @@ abstract class L10n {
   /// **'4列'**
   String get ui_4columns;
 
+  /// No description provided for @ui_show_custom_entry.
+  ///
+  /// In zh, this message translates to:
+  /// **'在分类页显示自定义入口'**
+  String get ui_show_custom_entry;
+
   /// Right side menu header title
   ///
   /// In zh, this message translates to:

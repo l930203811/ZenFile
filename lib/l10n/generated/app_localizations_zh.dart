@@ -4272,6 +4272,9 @@ class L10nZh extends L10n {
   String get ui_4columns => '4列';
 
   @override
+  String get ui_show_custom_entry => '在分类页显示自定义入口';
+
+  @override
   String get msge8b8e9b3 => '常用功能';
 
   @override
@@ -11700,6 +11703,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_4columns => '4列';
+
+  @override
+  String get ui_show_custom_entry => '在分類頁顯示自定義入口';
 
   @override
   String get msge8b8e9b3 => '常用功能';

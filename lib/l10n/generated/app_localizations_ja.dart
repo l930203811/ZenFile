@@ -4308,6 +4308,9 @@ class L10nJa extends L10n {
   String get ui_4columns => '4列';
 
   @override
+  String get ui_show_custom_entry => 'カスタム項目を表示';
+
+  @override
   String get msge8b8e9b3 => 'クイック操作';
 
   @override
