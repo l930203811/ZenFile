@@ -7969,6 +7969,8 @@
   "audio_opensles_desc": "لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "النقل",
+  "ui_profile": "الملف الشخصي",
+  "msg_coming_soon": "قريباً"
 }

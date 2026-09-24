@@ -7969,6 +7969,8 @@
   "audio_opensles_desc": "Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "Передачи",
+  "ui_profile": "Профиль",
+  "msg_coming_soon": "Скоро"
 }

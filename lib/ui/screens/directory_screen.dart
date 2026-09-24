@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
-import '../../providers/media_provider.dart';
 import '../../models/file_filter_type.dart';
 import '../../models/file_item_model.dart';
 import '../../models/drag_payload.dart';
@@ -29,10 +28,8 @@ import '../widgets/directory_tab_bar.dart';
 import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
 import '../widgets/file_operation_progress_dialog.dart';
-import '../widgets/progress_overlay.dart';
 import '../../services/network_connections_service.dart';
 import 'network_connection_wizard_screen.dart';
-import '../../services/preferences_service.dart';
 import '../../core/theme.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../widgets/crypt_progress_dialog.dart';
@@ -277,9 +274,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     // 双窗口且不在适用范围内时隐藏，下方面包屑栏和文件列表会自然上移，充分利用屏幕空间。
     final hasTabs = provider.showTabBar;
     final hasAddressBar = provider.showAddressBar;
-    // 当底部导航栏开启时，底部已被镜像 AppBar 占用，浏览操作栏改为显示在顶部
+    // 底部已被 HomeScreen 的 4-tab 导航占用，浏览操作栏始终显示在顶部
     // showFloatingAddButton（设置项"显示操作按钮"）控制操作栏是否显示
-    final hasTopBrowseBar = provider.showBottomActionBar && provider.showFloatingAddButton;
+    final hasTopBrowseBar = provider.showFloatingAddButton;
     if (!hasTabs && !hasAddressBar && !hasTopBrowseBar) {
       return const SizedBox.shrink();
     }
@@ -1416,7 +1413,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final theme = Theme.of(context);
         final isSelectionMode = provider.isSelectionMode;
         final showParentDirectory = !isSelectionMode && provider.canGoUp;
-        final showBottomActionBar = provider.showBottomActionBar;
 
         if (provider.shouldScrollToHighlight) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1472,34 +1468,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           },
           child: Scaffold(
             backgroundColor: AppTheme.getAmoledScaffoldBackground(theme),
-            appBar: (isSelectionMode || !showBottomActionBar)
+            appBar: isSelectionMode
                 ? AppBar(
                     automaticallyImplyLeading: isSelectionMode,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     titleSpacing: 0,
                     centerTitle: true,
-                    title: isSelectionMode
-                        ? const SizedBox.shrink()
-                        : Row(
-                            children: [
-                              // 抽屉按钮（靠左）
-                              IconButton(
-                                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                onPressed: () => widget.onOpenDrawer?.call(),
-                              ),
-                              const Spacer(),
-                              // 分类页/浏览页 合一切换按钮（居中）
-                              _buildCategoryBrowseToggle(context),
-                              const Spacer(),
-                              // 快捷操作按钮（靠右）
-                              IconButton(
-                                icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).msge8b8e9b3,
-                                onPressed: () => widget.onOpenEndDrawer?.call(),
-                              ),
-                            ],
-                          ),
+                    title: const SizedBox.shrink(),
                     // 显式占用 actions，避免 Scaffold 因存在 endDrawer
                     // 自动在右上角补一个与“快捷操作”重复的菜单按钮。
                     actions: const [SizedBox.shrink()],
@@ -1508,8 +1484,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     automaticallyImplyLeading: false,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
-                    toolbarHeight: MediaQuery.of(context).padding.top,
-                    // 与上方分支保持一致，禁止自动注入 endDrawer 按钮。
+                    toolbarHeight: 0,
+                    // 顶部/底部导航栏由 HomeScreen 统一提供，此处置空工具栏。
                     actions: const [SizedBox.shrink()],
                   ),
             body: Column(
@@ -1947,122 +1923,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     ),
             floatingActionButtonLocation: null,
             floatingActionButton: null,
+            // 底部 4-tab 导航由 HomeScreen 统一提供；选择模式使用选择操作栏。
             bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
-                : showBottomActionBar
-                    // 导航栏在底部：四个按钮均匀分布（与顶部布局一致）
-                    ? PreferredSize(
-                        preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
-                        child: Material(
-                          color: AppTheme.getAmoledSurface(theme),
-                          elevation: 8,
-                          child: SafeArea(
-                            top: false,
-                            child: SizedBox(
-                              height: kToolbarHeight,
-                              child: _buildBottomNavRow(context),
-                            ),
-                          ),
-                        ),
-                      )
-                    // 导航栏在顶部：showFloatingAddButton 控制浏览操作栏是否显示
-                    // 使用 SafeArea 处理安卓虚拟导航键（三键导航）的底部间距，
-                    // 避免操作栏与系统导航键重叠。手势导航时 padding.bottom=0 不影响。
-                    : (provider.showFloatingAddButton
-                        ? Material(
-                            color: theme.colorScheme.surface,
-                            child: SafeArea(
-                              top: false,
-                              child: _buildBrowseActionBar(context, provider),
-                            ),
-                          )
-                        : null),
+                : null,
           ),
         );
       },
     );
   }
 
-  Widget _buildCategoryBrowseToggle(BuildContext context) {
-    final theme = Theme.of(context);
-    // 当前为浏览页：按钮显示「分类」，点击切到分类页并刷新媒体
-    return IconButton(
-      tooltip: L10n.of(context).msg6e0f9cef,
-      icon: Icon(Broken.category, color: theme.colorScheme.primary),
-      onPressed: () {
-        widget.onNavigateTab?.call(0);
-        context.read<MediaProvider>().refreshMediaBackground();
-      },
-    );
-  }
-
-  /// 底部导航栏按钮行：根据用户偏好设置按钮位置（展开/居中/靠左/靠右/全宽）
-  Widget _buildBottomNavRow(BuildContext context) {
-    final theme = Theme.of(context);
-    final position = PreferencesService.getBottomBarPosition();
-
-    final drawerBtn = IconButton(
-      icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-      onPressed: () => widget.onOpenDrawer?.call(),
-    );
-    final toggleBtn = _buildCategoryBrowseToggle(context);
-    final moreBtn = IconButton(
-      icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-      tooltip: L10n.of(context).msge8b8e9b3,
-      onPressed: () => widget.onOpenEndDrawer?.call(),
-    );
-
-    switch (position) {
-      case 'left':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            drawerBtn,
-            toggleBtn,
-            moreBtn,
-            const SizedBox(width: 8),
-          ],
-        );
-      case 'right':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            const SizedBox(width: 8),
-            drawerBtn,
-            toggleBtn,
-            moreBtn,
-          ],
-        );
-      case 'full':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [drawerBtn, toggleBtn, moreBtn],
-        );
-      case 'spread':
-        // 与分类页布局一致：抽屉按钮靠左、切换按钮居中、快捷操作按钮靠右
-        return Row(
-          children: [
-            drawerBtn,
-            const Spacer(),
-            toggleBtn,
-            const Spacer(),
-            moreBtn,
-          ],
-        );
-      case 'center':
-      default:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            drawerBtn,
-            const SizedBox(width: 16),
-            toggleBtn,
-            const SizedBox(width: 16),
-            moreBtn,
-          ],
-        );
-    }
-  }
 
   Widget _buildActiveFilterBanner(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);

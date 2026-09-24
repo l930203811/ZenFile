@@ -7966,6 +7966,8 @@
   "audio_opensles_desc": "Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "Übertragungen",
+  "ui_profile": "Profil",
+  "msg_coming_soon": "Bald verfügbar"
 }

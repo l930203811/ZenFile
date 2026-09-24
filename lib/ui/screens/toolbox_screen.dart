@@ -3,11 +3,10 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'vault_lock_screen.dart';
 import 'wake_on_lan_screen.dart';
-import 'quick_transfer_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'decibel_meter_screen.dart';
 
-/// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 快传」三个入口，
+/// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 扫码 / 分贝仪」入口，
 /// 点击进入对应页面。进入/退出本页的动画由调用方（网格/抽屉）统一控制，
 /// 与分类页其它类别的子页面行为保持一致。
 class ToolboxScreen extends StatelessWidget {
@@ -30,12 +29,6 @@ class ToolboxScreen extends StatelessWidget {
         title: l10n.wol_title,
         color: Colors.green,
         buildPage: () => const WakeOnLanScreen(),
-      ),
-      _ToolboxItem(
-        icon: Broken.send_2,
-        title: l10n.quick_transfer,
-        color: Colors.blue,
-        buildPage: () => const QuickTransferScreen(),
       ),
       _ToolboxItem(
         icon: Broken.scan,

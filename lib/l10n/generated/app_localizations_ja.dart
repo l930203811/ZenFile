@@ -2305,6 +2305,10 @@ class L10nJa extends L10n {
   @override
   String get ui_transferring_files => 'ファイル転送中';
 
+  String get ui_transfers => '転送';
+  String get ui_profile => 'プロフィール';
+  String get msg_coming_soon => '近日公開';
+
   @override
   String get ui_time_remaining => '残り';
 
@@ -7037,7 +7041,8 @@ class L10nJa extends L10n {
   String get vault_decrypt_open_progress => '復号して開いています...';
 
   @override
-  String get crash_report_saved => '前回の異常終了を検出しました。診断レポートを ZenFile/crash に保存しました';
+  String get crash_report_saved =>
+      '前回の異常終了を検出しました。診断レポートを ZenFile/crash に保存しました';
 
   @override
   String get vault_import_backup_confirm =>

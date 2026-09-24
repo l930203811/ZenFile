@@ -13,10 +13,7 @@ import '../../models/media_type.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/utils.dart';
 
-import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
-import '../screens/ftp_server_screen.dart';
-import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/toolbox_screen.dart';
 import '../screens/recycle_bin_screen.dart';
@@ -223,34 +220,6 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': formatSizeCount('最近'),
         'isCustom': false,
         'pageBuilder': () => AllRecentFilesScreen(onNavigateTab: onNavigateTab),
-      },
-      '网络': {
-        'label': l10n.cat_network,
-        'icon': Broken.wifi,
-        'color': categoryColor,
-        'iconColor': iconColor(190), // 青
-        'count': '${mediaProvider.getCategoryItemCount("网络")}',
-        'isCustom': false,
-        'pageBuilder': () =>
-            NetworkCategoryScreen(onNavigateTab: onNavigateTab),
-      },
-      'FTP共享': {
-        'label': l10n.ftp,
-        'icon': Icons.swap_horizontal_circle_rounded,
-        'color': categoryColor,
-        'iconColor': iconColor(60), // 黄
-        'count': l10n.cat_service,
-        'isCustom': false,
-        'pageBuilder': () => const FtpServerScreen(),
-      },
-      'Web共享': {
-        'label': l10n.web,
-        'icon': Icons.language_rounded,
-        'color': categoryColor,
-        'iconColor': iconColor(260), // 蓝紫
-        'count': l10n.cat_service,
-        'isCustom': false,
-        'pageBuilder': () => const WebSharingScreen(),
       },
       '工具箱': {
         'label': l10n.cat_toolbox,

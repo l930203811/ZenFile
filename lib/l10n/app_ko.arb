@@ -7969,6 +7969,8 @@
   "audio_opensles_desc": "사운드 효과 앱(RootlessJamesDSP 등)이 연결할 수 있는 것은 AudioTrack뿐입니다. OpenSL ES는 세션 ID를 시스템이 할당하므로 연결할 수 없습니다. 전환은 즉시 반영됩니다.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "전송",
+  "ui_profile": "프로필",
+  "msg_coming_soon": "곧 제공 예정"
 }

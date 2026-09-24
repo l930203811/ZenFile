@@ -8117,6 +8117,8 @@
   "audio_opensles_desc": "音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "傳輸",
+  "ui_profile": "我的",
+  "msg_coming_soon": "即將推出"
 }

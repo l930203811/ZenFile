@@ -7973,6 +7973,8 @@
   "audio_opensles_desc": "音響エフェクトアプリ（RootlessJamesDSP など）に対応するのは AudioTrack のみです。OpenSL ES はセッションIDをシステムが割り当てるため対応できません。切り替えは即時反映されます。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "転送",
+  "ui_profile": "プロフィール",
+  "msg_coming_soon": "近日公開"
 }

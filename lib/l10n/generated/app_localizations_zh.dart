@@ -2296,6 +2296,10 @@ class L10nZh extends L10n {
   @override
   String get ui_transferring_files => '传输文件';
 
+  String get ui_transfers => '传输';
+  String get ui_profile => '我的';
+  String get msg_coming_soon => '即将推出';
+
   @override
   String get ui_time_remaining => '剩下';
 
@@ -9750,6 +9754,10 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_transferring_files => '傳輸檔案';
+
+  String get ui_transfers => '傳輸';
+  String get ui_profile => '我的';
+  String get msg_coming_soon => '即將推出';
 
   @override
   String get ui_time_remaining => '剩下';

@@ -2417,6 +2417,10 @@ class L10nDe extends L10n {
   @override
   String get ui_transferring_files => 'Dateien übertragen';
 
+  String get ui_transfers => 'Übertragungen';
+  String get ui_profile => 'Profil';
+  String get msg_coming_soon => 'Bald verfügbar';
+
   @override
   String get ui_time_remaining => 'übrig';
 
@@ -7333,7 +7337,8 @@ class L10nDe extends L10n {
   String get vault_decrypt_open_progress => 'Entschlüsseln und öffnen...';
 
   @override
-  String get crash_report_saved => 'Vorheriges abnormales Beenden erkannt. Diagnosebericht in ZenFile/crash gespeichert';
+  String get crash_report_saved =>
+      'Vorheriges abnormales Beenden erkannt. Diagnosebericht in ZenFile/crash gespeichert';
 
   @override
   String get vault_import_backup_confirm =>

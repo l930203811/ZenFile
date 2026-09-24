@@ -8256,6 +8256,8 @@
   "audio_opensles_desc": "音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "传输",
+  "ui_profile": "我的",
+  "msg_coming_soon": "即将推出"
 }

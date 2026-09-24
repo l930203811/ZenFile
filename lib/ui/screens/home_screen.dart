@@ -11,7 +11,9 @@ import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
 import 'directory_screen.dart';
-import '../../services/preferences_service.dart';
+import 'transfers_screen.dart';
+import 'profile_placeholder_screen.dart';
+import 'global_search_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -177,11 +179,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 浏览页内的返回（返回上一级 / 远程根→本地根）由内部 directory_screen /
     // pane_browser 的 PopScope 与 provider.goBack 处理；home 层绝不在此弹出
     // 路由，否则会直接跳到分类页。分类页等非浏览 tab 的返回仍走下方 onPopInvoked。
-    final canPopHomeScreen = false;
-
     return PopScope(
       // 编辑路径态下禁止路由返回，交由下方 onPopInvoked 取消编辑并停留在浏览页
-      canPop: canPopHomeScreen && !provider.isPathEditing,
+      canPop: false,
       onPopInvoked: (didPop) {
         if (didPop) return;
         // 抽屉打开时优先关闭抽屉
@@ -262,6 +262,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             provider: context.read<FileManagerProvider>(),
           ),
         ),
+        bottomNavigationBar: _buildNavBottomBar(provider.showBottomActionBar),
         body: Consumer<FileManagerProvider>(
           builder: (context, provider, _) {
             return Listener(
@@ -334,17 +335,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
-                      // 向左滑动：分类页→浏览页，浏览页→快捷操作页面
-                      if (_currentIndex == 0) _switchTab(1);
-                      else if (_currentIndex == 1) _scaffoldKey.currentState?.openEndDrawer();
+                      // 向左滑动：切到下一页（分类→文件→传输→我的）
+                      if (_currentIndex < 3) _switchTab(_currentIndex + 1);
                     } else if (deltaX > _dualFingerSwipeThreshold) {
-                      // 向右滑动：快捷操作页面关闭、浏览页→分类页、分类页→抽屉
+                      // 向右滑动：分类页开抽屉，其余切上一页
                       if (_currentIndex == 0) {
                         _scaffoldKey.currentState?.openDrawer();
-                      } else if (_currentIndex == 1) {
+                      } else {
                         if (!fileProvider.isSelectionMode) {
-                          _switchTab(0);
-                          context.read<MediaProvider>().refreshMediaBackground();
+                          final next = _currentIndex - 1;
+                          _switchTab(next);
+                          if (next == 0) {
+                            context.read<MediaProvider>().refreshMediaBackground();
+                          }
                         }
                       }
                     }
@@ -379,17 +382,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
                         if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
                           if (dx < 0) {
-                            // 向左滑动：分类页→浏览页，浏览页→快捷操作页面
-                            if (_currentIndex == 0) _switchTab(1);
-                            else if (_currentIndex == 1) _scaffoldKey.currentState?.openEndDrawer();
+                            // 向左滑动：切到下一页（分类→文件→传输→我的）
+                            if (_currentIndex < 3) _switchTab(_currentIndex + 1);
                           } else {
-                            // 向右滑动：快捷操作页面关闭、浏览页→分类页、分类页→抽屉
+                            // 向右滑动：分类页开抽屉，其余切上一页
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
-                            } else if (_currentIndex == 1) {
+                            } else {
                               if (!fileProvider.isSelectionMode) {
-                                _switchTab(0);
-                                context.read<MediaProvider>().refreshMediaBackground();
+                                final next = _currentIndex - 1;
+                                _switchTab(next);
+                                if (next == 0) {
+                                  context.read<MediaProvider>().refreshMediaBackground();
+                                }
                               }
                             }
                           }
@@ -429,7 +434,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   context.read<FileManagerProvider>().setCategoryReorderInteracting(false);
                 }
               },
-          child: Consumer<FileManagerProvider>(
+          child: Column(
+            children: [
+              _buildNavTopBar(provider.showBottomActionBar),
+              Expanded(
+                child: Consumer<FileManagerProvider>(
             builder: (context, provider, _) {
               return ValueListenableBuilder<bool>(
                 valueListenable: provider.navigateToBrowseTabNotifier,
@@ -469,12 +478,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         },
                         onRefresh: () => _handleRefresh(),
                       ),
+                      const TransfersScreen(),
+                      const ProfilePlaceholderScreen(),
                     ],
                   );
                 },
               );
             },
           ),
+        ),
+      ],
+      ),
         );
       },
     ),
@@ -482,129 +496,165 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  Widget _buildCategoryBrowseToggle() {
+  /// 顶部栏：位置=底部时显示 3 按钮行（左抽屉 / 中全局搜索 / 右快捷操作），
+  /// 位置=顶部时显示 4-tab 导航。
+  Widget _buildNavTopBar(bool bottomTabs) {
+    return bottomTabs ? _buildTopBarRow() : _buildBottomTabs();
+  }
+
+  /// 底部栏：与顶部栏按「导航栏位置」设置互换。
+  Widget _buildNavBottomBar(bool bottomTabs) {
+    return bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
+  }
+
+  /// 顶部 3 按钮行：左抽屉 / 中全局搜索 / 右快捷操作。
+  Widget _buildTopBarRow() {
     final theme = Theme.of(context);
-    final isCategory = _currentIndex == 0;
-    final showToggle = PreferencesService.getShowHomeBrowseNav();
-    if (!showToggle) {
-      return const SizedBox.shrink();
-    }
-    return IconButton(
-      tooltip: isCategory ? L10n.of(context).ui_browse : L10n.of(context).msg6e0f9cef,
-      icon: Icon(
-        isCategory ? Broken.folder : Broken.category,
-        color: theme.colorScheme.primary,
+    return Material(
+      color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      elevation: 8,
+      child: SafeArea(
+        child: SizedBox(
+          height: kToolbarHeight,
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _buildGlobalSearchBar(theme),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                tooltip: L10n.of(context).msge8b8e9b3,
+                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+              ),
+            ],
+          ),
+        ),
       ),
-      onPressed: () {
-        if (isCategory) {
-          _switchTab(1);
-        } else {
-          _switchTab(0);
-          context.read<MediaProvider>().refreshMediaBackground();
-        }
-      },
     );
   }
 
-  Widget _buildHomeTab() {
-    final theme = Theme.of(context);
-    final fileManager = context.watch<FileManagerProvider>();
-    final showBottomNav = fileManager.showBottomActionBar;
-
-    Widget buildTopNavRow() {
-      return Row(
-        children: [
-          // 抽屉按钮（靠左）
-          IconButton(
-            icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          const Spacer(),
-          // 分类页/浏览页 合一切换按钮（居中）
-          _buildCategoryBrowseToggle(),
-          const Spacer(),
-          // 快捷操作按钮（靠右）
-          IconButton(
-            icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-            tooltip: L10n.of(context).msge8b8e9b3,
-            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-          ),
-        ],
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: showBottomNav
-          ? AppBar(
-              automaticallyImplyLeading: false,
-              surfaceTintColor: Colors.transparent,
-              scrolledUnderElevation: 0,
-              toolbarHeight: MediaQuery.of(context).padding.top,
-            )
-          : AppBar(
-              automaticallyImplyLeading: false,
-              surfaceTintColor: Colors.transparent,
-              scrolledUnderElevation: 0,
-              titleSpacing: 0,
-              centerTitle: true,
-              title: buildTopNavRow(),
-            ),
-      body: Column(
-        children: [
-          // 可滚动内容区域
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  QuickCategoriesGrid(
-                    onNavigateTab: (index) => _switchTab(index),
-                    showTitle: false,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+  /// 全局搜索框（圆角条）：点击进入全局搜索页。
+  Widget _buildGlobalSearchBar(ThemeData theme) {
+    return Material(
+      color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
+          );
+        },
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Icon(Broken.search_normal, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  L10n.of(context).ui_global_search_hint,
+                  style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.45)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 底部 4-tab 导航：分类 / 文件 / 传输 / 我的。
+  Widget _buildBottomTabs() {
+    final theme = Theme.of(context);
+    final l10n = L10n.of(context);
+    final tabData = <List<Object>>[
+      [Broken.category, l10n.cat_quick_categories, 0],
+      [Broken.folder, l10n.ui_file, 1],
+      [Broken.send_2, l10n.ui_transfers, 2],
+      [Broken.user, l10n.ui_profile, 3],
+    ];
+    return Material(
+      color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      elevation: 8,
+      child: SafeArea(
+        child: SizedBox(
+          height: kToolbarHeight,
+          child: Row(
+            children: [
+              for (final tab in tabData)
+                Expanded(
+                  child: _buildTabItem(
+                    tab[0] as IconData,
+                    tab[1] as String,
+                    tab[2] as int,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabItem(IconData icon, String label, int index) {
+    final theme = Theme.of(context);
+    final selected = _currentIndex == index;
+    return InkWell(
+      onTap: () => _switchTab(index),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withOpacity(0.45),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withOpacity(0.55),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
-      // 底部导航栏开启时，四个按钮与顶部布局一致
-      bottomNavigationBar: showBottomNav
-          ? PreferredSize(
-              preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
-              child: Material(
-                color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-                elevation: 8,
-                child: SafeArea(
-                  top: false,
-                  child: SizedBox(
-                    height: kToolbarHeight,
-                    child: Row(
-                      children: [
-                        // 抽屉按钮（靠左）
-                        IconButton(
-                          icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                        ),
-                        const Spacer(),
-                        // 分类页/浏览页 合一切换按钮（居中）
-                        _buildCategoryBrowseToggle(),
-                        const Spacer(),
-                        // 快捷操作按钮（靠右）
-                        IconButton(
-                          icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                          tooltip: L10n.of(context).msge8b8e9b3,
-                          onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null,
+    );
+  }
+
+  /// 分类页（快捷操作页）：分类网格 + 自定义快捷方式，顶部/底部由 HomeScreen 统一提供。
+  Widget _buildHomeTab() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          QuickCategoriesGrid(
+            onNavigateTab: (index) => _switchTab(index),
+            showTitle: false,
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 }

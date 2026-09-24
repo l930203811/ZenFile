@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
-import '../screens/global_search_screen.dart';
 import 'file_action_dialogs.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
@@ -151,23 +150,6 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         onTap: () {
                           Navigator.pop(context);
                           fileManager.toggleSplitScreen();
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Broken.search_normal,
-                        title: L10n.of(context).msg681c0f39,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GlobalSearchScreen(
-                                searchFolderPath: widget.searchFolderPath,
-                              ),
-                            ),
-                          );
                         },
                       ),
                     ],

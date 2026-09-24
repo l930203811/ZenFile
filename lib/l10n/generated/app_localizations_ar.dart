@@ -2377,6 +2377,10 @@ class L10nAr extends L10n {
   @override
   String get ui_transferring_files => 'جارٍ نقل الملفات';
 
+  String get ui_transfers => 'النقل';
+  String get ui_profile => 'الملف الشخصي';
+  String get msg_coming_soon => 'قريباً';
+
   @override
   String get ui_time_remaining => 'متبقي';
 
@@ -7227,7 +7231,8 @@ class L10nAr extends L10n {
   String get vault_decrypt_open_progress => 'جارٍ فك التشفير والفتح...';
 
   @override
-  String get crash_report_saved => 'تم اكتشاف خروج غير طبيعي سابق. تم حفظ تقرير التشخيص في ZenFile/crash';
+  String get crash_report_saved =>
+      'تم اكتشاف خروج غير طبيعي سابق. تم حفظ تقرير التشخيص في ZenFile/crash';
 
   @override
   String get vault_import_backup_confirm =>

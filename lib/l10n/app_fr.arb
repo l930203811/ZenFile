@@ -7969,6 +7969,8 @@
   "audio_opensles_desc": "Les applications d’effets audio (RootlessJamesDSP, etc.) ne peuvent s’attacher qu’aux modes AudioTrack ; OpenSL ES utilise une session attribuée par le système, à laquelle elles ne peuvent pas s’attacher. Le changement est immédiat.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
-  }
-
+  },
+  "ui_transfers": "Transferts",
+  "ui_profile": "Profil",
+  "msg_coming_soon": "Bientôt disponible"
 }

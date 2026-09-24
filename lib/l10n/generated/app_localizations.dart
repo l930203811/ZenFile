@@ -4402,6 +4402,15 @@ abstract class L10n {
   /// **'传输文件'**
   String get ui_transferring_files;
 
+  /// 底部导航 / 传输页标题
+  String get ui_transfers;
+
+  /// 底部导航 / 我的页标题
+  String get ui_profile;
+
+  /// 我的占位页提示
+  String get msg_coming_soon;
+
   /// ui\widgets\file_operation_progress_dialog.dart
   ///
   /// In zh, this message translates to:

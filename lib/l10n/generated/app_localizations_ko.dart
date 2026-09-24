@@ -2301,6 +2301,10 @@ class L10nKo extends L10n {
   @override
   String get ui_transferring_files => '파일 전송 중';
 
+  String get ui_transfers => '전송';
+  String get ui_profile => '프로필';
+  String get msg_coming_soon => '곧 제공 예정';
+
   @override
   String get ui_time_remaining => '남음';
 
@@ -7036,7 +7040,8 @@ class L10nKo extends L10n {
   String get vault_decrypt_open_progress => '복호화하여 여는 중...';
 
   @override
-  String get crash_report_saved => '이전 비정상 종료가 감지되었습니다. 진단 보고서가 ZenFile/crash에 저장되었습니다';
+  String get crash_report_saved =>
+      '이전 비정상 종료가 감지되었습니다. 진단 보고서가 ZenFile/crash에 저장되었습니다';
 
   @override
   String get vault_import_backup_confirm =>

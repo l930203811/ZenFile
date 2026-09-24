@@ -2423,6 +2423,10 @@ class L10nRu extends L10n {
   @override
   String get ui_transferring_files => 'Передача файлов';
 
+  String get ui_transfers => 'Передачи';
+  String get ui_profile => 'Профиль';
+  String get msg_coming_soon => 'Скоро';
+
   @override
   String get ui_time_remaining => 'осталось';
 
@@ -7325,7 +7329,8 @@ class L10nRu extends L10n {
   String get vault_decrypt_open_progress => 'Расшифровка и открытие...';
 
   @override
-  String get crash_report_saved => 'Обнаружено аварийное завершение. Отчёт диагностики сохранён в ZenFile/crash';
+  String get crash_report_saved =>
+      'Обнаружено аварийное завершение. Отчёт диагностики сохранён в ZenFile/crash';
 
   @override
   String get vault_import_backup_confirm =>
