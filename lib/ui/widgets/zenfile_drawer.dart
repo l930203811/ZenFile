@@ -319,6 +319,10 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
                       },
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                      child: Divider(color: theme.colorScheme.onSurface.withOpacity(0.08), height: 1),
+                    ),
                     _buildDrawerTile(
                       context,
                       icon: Broken.refresh,
