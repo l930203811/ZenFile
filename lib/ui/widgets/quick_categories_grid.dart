@@ -960,46 +960,61 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           children: [
                             Material(
                               key: iconKey,
-                              shape: ShapeDecoration(
-                                shape: plateShape,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: plateGradientColors,
-                                ),
-                                shadows: [
-                                  BoxShadow(
-                                    color: glowBlue.withOpacity(0.22),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                              color: Colors.transparent,
+                              child: Ink(
+                                width: plateW,
+                                height: plateH,
+                                decoration: BoxDecoration(
+                                  shape: isSquare
+                                      ? BoxShape.rectangle
+                                      : BoxShape.circle,
+                                  borderRadius: isSquare
+                                      ? BorderRadius.circular(6)
+                                      : null,
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: plateGradientColors,
                                   ),
-                                ],
-                              ),
-                              child: InkWell(
-                                onTap: () {
-                                  if (!_isDragging) {
-                                    if (pageBuilder != null) {
-                                      _navigateWithExpand(
-                                        iconKey: iconKey,
-                                        color: color,
-                                        targetPage: pageBuilder(),
-                                      );
-                                    } else {
-                                      action?.call();
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.10)
+                                        : Colors.white.withOpacity(0.55),
+                                    width: 0.6,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: glowBlue.withOpacity(0.22),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: InkWell(
+                                  onTap: () {
+                                    if (!_isDragging) {
+                                      if (pageBuilder != null) {
+                                        _navigateWithExpand(
+                                          iconKey: iconKey,
+                                          color: color,
+                                          targetPage: pageBuilder(),
+                                        );
+                                      } else {
+                                        action?.call();
+                                      }
                                     }
-                                  }
-                                },
-                                customBorder: plateShape,
-                                splashColor: color.withOpacity(0.25),
-                                highlightColor: color.withOpacity(0.15),
-                                child: Container(
-                                  width: plateW,
-                                  height: plateH,
-                                  alignment: Alignment.center,
-                                  child: Icon(
-                                    icon,
-                                    color: glowBlue,
-                                    size: iconSize,
+                                  },
+                                  customBorder: plateShape,
+                                  splashColor: color.withOpacity(0.25),
+                                  highlightColor: color.withOpacity(0.15),
+                                  child: SizedBox(
+                                    width: plateW,
+                                    height: plateH,
+                                    child: Icon(
+                                      icon,
+                                      color: glowBlue,
+                                      size: iconSize,
+                                    ),
                                   ),
                                 ),
                               ),
