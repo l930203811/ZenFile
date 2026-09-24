@@ -465,7 +465,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
     final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
-    final childAspectRatio = columns == 4 ? 0.62 : 0.85;
+    final childAspectRatio = columns == 4 ? 0.72 : 0.95;
     final itemHeight = itemWidth / childAspectRatio;
 
     double colFraction = localPosition.dx / (itemWidth + 2);
@@ -810,7 +810,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           if (activeList.isEmpty)
             Center(
               child: Padding(
@@ -837,9 +837,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   builder: (context, constraints) {
                     final gridItemW =
                         (constraints.maxWidth - (columns - 1) * 2) / columns;
-                    final plateW = gridItemW * 0.98;
-                    final plateH = plateW * (columns == 4 ? 0.70 : 0.50);
-                    final iconSize = plateW * (columns == 4 ? 0.52 : 0.46);
+                    final iconSize =
+                        gridItemW * (columns == 4 ? 0.50 : 0.44);
                     return GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
@@ -848,7 +847,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     crossAxisCount: columns,
                     crossAxisSpacing: 2,
                     mainAxisSpacing: 2,
-                    childAspectRatio: columns == 4 ? 0.62 : 0.85,
+                    childAspectRatio: columns == 4 ? 0.72 : 0.95,
                   ),
                   itemCount: activeList.length,
                   itemBuilder: (context, index) {
@@ -862,13 +861,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final pageBuilder =
                         cat['pageBuilder'] as Widget Function()?;
                     final action = cat['action'] as VoidCallback?;
-                    final shape = fileManagerProvider.categoryIconShape;
-                    final isSquare = shape == 'square';
-                    final plateShape = isSquare
-                        ? RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          )
-                        : const CircleBorder();
                     final showLabels =
                         PreferencesService.getShowCategoryLabels();
                     final iconKey = GlobalKey();
@@ -938,9 +930,10 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           key: ValueKey(labelKey),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
-                            vertical: 10,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: theme.colorScheme.primary.withOpacity(0.22),
@@ -958,69 +951,69 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                             Material(
-                              key: iconKey,
-                              color: isTarget
-                                  ? color.withOpacity(0.3)
-                                  : color.withOpacity(0.15),
-                              shape: plateShape,
+                              color: Colors.transparent,
                               child: InkWell(
-                                  onTap: () {
-                                    if (!_isDragging) {
-                                      if (pageBuilder != null) {
-                                        _navigateWithExpand(
-                                          iconKey: iconKey,
-                                          color: color,
-                                          targetPage: pageBuilder(),
-                                        );
-                                      } else {
-                                        action?.call();
-                                      }
+                                key: iconKey,
+                                onTap: () {
+                                  if (!_isDragging) {
+                                    if (pageBuilder != null) {
+                                      _navigateWithExpand(
+                                        iconKey: iconKey,
+                                        color: color,
+                                        targetPage: pageBuilder(),
+                                      );
+                                    } else {
+                                      action?.call();
                                     }
-                                  },
-                                  customBorder: plateShape,
-                                  splashColor: color.withOpacity(0.25),
-                                  highlightColor: color.withOpacity(0.15),
-                                  child: SizedBox(
-                                    width: plateW,
-                                    height: plateH,
-                                    child: Icon(
+                                  }
+                                },
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                splashColor: color.withOpacity(0.25),
+                                highlightColor: color.withOpacity(0.15),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
                                       icon,
                                       color: iconColor,
                                       size: iconSize,
                                     ),
-                                  ),
-                                ),
-                            ),
-                            if (showLabels) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                label,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                            ],
-                            SizedBox(
-                              width: double.infinity,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  count,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color
-                                        ?.withOpacity(0.7),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: -0.2,
-                                    height: 1.1,
-                                  ),
-                                  maxLines: 1,
-                                  textAlign: TextAlign.center,
+                                    if (showLabels) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        label,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 1),
+                                    ],
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        count,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme.textTheme.bodySmall
+                                              ?.color
+                                              ?.withOpacity(0.7),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: -0.2,
+                                          height: 1.1,
+                                        ),
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -1372,7 +1365,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
 
                 return StatefulBuilder(
                   builder: (context, setModalState) {
-                    final iconShape = fileManager.categoryIconShape;
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
                     final order = provider.categoryOrder;
@@ -1412,115 +1404,53 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             vertical: 8.0,
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      L10n.of(context).msg2c3c5a35,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
-                                        ),
-                                      ),
-                                      child: DropdownButton<String>(
-                                        value: iconShape,
-                                        isExpanded: true,
-                                        isDense: true,
-                                        underline: const SizedBox(),
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        borderRadius: BorderRadius.circular(8),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
-                                        ),
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 'circle',
-                                            child: Text(L10n.of(context).ui_circle),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'square',
-                                            child: Text(L10n.of(context).ui_square),
-                                          ),
-                                        ],
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            context.read<FileManagerProvider>().setCategoryIconShape(val);
-                                            setModalState(() {});
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  L10n.of(context).ui_columns_per_row,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      L10n.of(context).ui_columns_per_row,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: DropdownButton<int>(
+                                  value: gridColumns,
+                                  isDense: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  borderRadius: BorderRadius.circular(8),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 3,
+                                      child: Text(L10n.of(context).ui_3columns),
                                     ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
-                                        ),
-                                      ),
-                                      child: DropdownButton<int>(
-                                        value: gridColumns,
-                                        isExpanded: true,
-                                        isDense: true,
-                                        underline: const SizedBox(),
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        borderRadius: BorderRadius.circular(8),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
-                                        ),
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 3,
-                                            child: Text(L10n.of(context).ui_3columns),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 4,
-                                            child: Text(L10n.of(context).ui_4columns),
-                                          ),
-                                        ],
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            context.read<FileManagerProvider>().setCategoriesGridColumns(val);
-                                            setModalState(() {});
-                                          }
-                                        },
-                                      ),
+                                    DropdownMenuItem(
+                                      value: 4,
+                                      child: Text(L10n.of(context).ui_4columns),
                                     ),
                                   ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      context.read<FileManagerProvider>().setCategoriesGridColumns(val);
+                                      setModalState(() {});
+                                    }
+                                  },
                                 ),
                               ),
                             ],
@@ -1713,7 +1643,6 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
 @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final iconShape = context.watch<FileManagerProvider>().categoryIconShape;
     final isCustom = widget.cat['isCustom'] == true;
     final label = widget.label;
     final color = widget.cat['color'] as Color;
@@ -1743,12 +1672,8 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             height: 42,
             decoration: BoxDecoration(
               color: color.withOpacity(0.15),
-              shape: iconShape == 'square'
-                  ? BoxShape.rectangle
-                  : BoxShape.circle,
-              borderRadius: iconShape == 'square'
-                  ? BorderRadius.circular(6)
-                  : null,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(icon, color: color, size: 22),
           ),
