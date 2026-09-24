@@ -933,7 +933,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: theme.colorScheme.primary.withOpacity(0.22),
                               width: 1,
@@ -967,7 +967,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                   }
                                 },
                                 customBorder: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 splashColor: color.withOpacity(0.25),
                                 highlightColor: color.withOpacity(0.15),
@@ -1038,7 +1038,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.colorScheme.primary.withOpacity(0.22),
           width: 1,
@@ -1054,7 +1054,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           onTap: () => QuickCategoriesGrid.showCustomizeDialog(
             context,
             widget.onNavigateTab,
