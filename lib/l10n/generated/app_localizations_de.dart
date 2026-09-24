@@ -199,6 +199,45 @@ class L10nDe extends L10n {
   String get ui_view_update => 'Updates ansehen';
 
   @override
+  String get update_github_check => 'GitHub-Versionsprüfung';
+
+  @override
+  String update_current_version(String version) {
+    return 'Aktuelle Version: $version';
+  }
+
+  @override
+  String get update_checking => 'Suche nach Updates…';
+
+  @override
+  String get update_latest => 'Sie verwenden die neueste Version';
+
+  @override
+  String update_new_version(String version) {
+    return 'Neue Version verfügbar: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Update-Prüfung fehlgeschlagen. Netzwerk prüfen und erneut versuchen.';
+
+  @override
+  String get update_retry => 'Wiederholen';
+
+  @override
+  String get update_download_install => 'Herunterladen & installieren';
+
+  @override
+  String get update_downloading => 'Update wird heruntergeladen…';
+
+  @override
+  String get update_download_failed =>
+      'Download fehlgeschlagen. Bitte erneut versuchen.';
+
+  @override
+  String get update_view_github => 'Auf GitHub ansehen';
+
+  @override
   String get zenfileflutter =>
       'ZenFile ist ein schöner, flüssiger, quelloffener Dateimanager und Offline-Mediacenter, entwickelt mit Flutter. Entworfen für maximale Leistung, klare Glasmorphismus-Ästhetik und nahtloses Benutzererlebnis.';
 
@@ -2724,6 +2763,12 @@ class L10nDe extends L10n {
 
   @override
   String get ui_nav => 'Lokal';
+
+  @override
+  String get ui_search_in_settings => 'In den Einstellungen suchen';
+
+  @override
+  String get ui_search_group_nav => 'Navigation';
 
   @override
   String get ui_home => 'Start';

@@ -195,6 +195,44 @@ class L10nEn extends L10n {
   String get ui_view_update => 'View updates';
 
   @override
+  String get update_github_check => 'GitHub version check';
+
+  @override
+  String update_current_version(String version) {
+    return 'Current version: $version';
+  }
+
+  @override
+  String get update_checking => 'Checking for updates…';
+
+  @override
+  String get update_latest => 'You\'re on the latest version';
+
+  @override
+  String update_new_version(String version) {
+    return 'New version available: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Update check failed. Check your network and try again.';
+
+  @override
+  String get update_retry => 'Retry';
+
+  @override
+  String get update_download_install => 'Download & Install';
+
+  @override
+  String get update_downloading => 'Downloading update…';
+
+  @override
+  String get update_download_failed => 'Download failed. Please try again.';
+
+  @override
+  String get update_view_github => 'View on GitHub';
+
+  @override
   String get zenfileflutter =>
       'ZenFile is a beautiful, smooth, open-source file manager and offline media center built with Flutter. Designed for ultimate performance, clean glassmorphism aesthetics, and seamless user experience.';
 
@@ -2685,6 +2723,12 @@ class L10nEn extends L10n {
 
   @override
   String get ui_nav => 'Local';
+
+  @override
+  String get ui_search_in_settings => 'Search in settings';
+
+  @override
+  String get ui_search_group_nav => 'Navigation';
 
   @override
   String get ui_home => 'Home';

@@ -191,6 +191,43 @@ class L10nKo extends L10n {
   String get ui_view_update => '업데이트 보기';
 
   @override
+  String get update_github_check => 'GitHub 버전 확인';
+
+  @override
+  String update_current_version(String version) {
+    return '현재 버전: $version';
+  }
+
+  @override
+  String get update_checking => '업데이트 확인 중…';
+
+  @override
+  String get update_latest => '최신 버전입니다';
+
+  @override
+  String update_new_version(String version) {
+    return '새 버전이 있습니다: $version';
+  }
+
+  @override
+  String get update_check_failed => '업데이트 확인에 실패했습니다. 네트워크를 확인하고 다시 시도하세요';
+
+  @override
+  String get update_retry => '다시 시도';
+
+  @override
+  String get update_download_install => '다운로드 및 설치';
+
+  @override
+  String get update_downloading => '업데이트 다운로드 중…';
+
+  @override
+  String get update_download_failed => '다운로드 실패. 다시 시도하세요';
+
+  @override
+  String get update_view_github => 'GitHub에서 보기';
+
+  @override
   String get zenfileflutter =>
       'ZenFile은 Flutter로 구축된 아름답고 부드러운 오픈소스 파일 관리자 및 오프라인 미디어 센터입니다. 최고의 성능, 깔끔한 글라스모피즘 미학 및 원활한 사용자 경험을 위해 설계되었습니다.';
 
@@ -2599,6 +2636,12 @@ class L10nKo extends L10n {
 
   @override
   String get ui_nav => '로컬';
+
+  @override
+  String get ui_search_in_settings => '설정에서 검색';
+
+  @override
+  String get ui_search_group_nav => '탐색';
 
   @override
   String get ui_home => '홈';

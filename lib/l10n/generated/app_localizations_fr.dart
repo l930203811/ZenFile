@@ -198,6 +198,45 @@ class L10nFr extends L10n {
   String get ui_view_update => 'Voir les mises à jour';
 
   @override
+  String get update_github_check => 'Vérification de version GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'Version actuelle : $version';
+  }
+
+  @override
+  String get update_checking => 'Recherche de mises à jour…';
+
+  @override
+  String get update_latest => 'Vous utilisez la dernière version';
+
+  @override
+  String update_new_version(String version) {
+    return 'Nouvelle version disponible : $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Échec de la vérification. Vérifiez votre réseau et réessayez.';
+
+  @override
+  String get update_retry => 'Réessayer';
+
+  @override
+  String get update_download_install => 'Télécharger et installer';
+
+  @override
+  String get update_downloading => 'Téléchargement de la mise à jour…';
+
+  @override
+  String get update_download_failed =>
+      'Échec du téléchargement. Veuillez réessayer.';
+
+  @override
+  String get update_view_github => 'Voir sur GitHub';
+
+  @override
   String get zenfileflutter =>
       'ZenFile est un gestionnaire de fichiers et centre média hors ligne magnifique, fluide et open source, construit avec Flutter. Conçu pour des performances optimales, une esthétique glassmorphisme épurée et une expérience utilisateur transparente.';
 
@@ -2742,6 +2781,12 @@ class L10nFr extends L10n {
 
   @override
   String get ui_nav => 'Local';
+
+  @override
+  String get ui_search_in_settings => 'Rechercher dans les paramètres';
+
+  @override
+  String get ui_search_group_nav => 'Navigation';
 
   @override
   String get ui_home => 'Accueil';

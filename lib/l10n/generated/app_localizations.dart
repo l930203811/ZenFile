@@ -436,6 +436,72 @@ abstract class L10n {
   /// **'查看更新'**
   String get ui_view_update;
 
+  /// No description provided for @update_github_check.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 版本检测'**
+  String get update_github_check;
+
+  /// No description provided for @update_current_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前版本：{version}'**
+  String update_current_version(String version);
+
+  /// No description provided for @update_checking.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查更新…'**
+  String get update_checking;
+
+  /// No description provided for @update_latest.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前已是最新版本'**
+  String get update_latest;
+
+  /// No description provided for @update_new_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新版本：{version}'**
+  String update_new_version(String version);
+
+  /// No description provided for @update_check_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查更新失败，请检查网络连接后重试'**
+  String get update_check_failed;
+
+  /// No description provided for @update_retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get update_retry;
+
+  /// No description provided for @update_download_install.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载安装'**
+  String get update_download_install;
+
+  /// No description provided for @update_downloading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载更新…'**
+  String get update_downloading;
+
+  /// No description provided for @update_download_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败，请重试'**
+  String get update_download_failed;
+
+  /// No description provided for @update_view_github.
+  ///
+  /// In zh, this message translates to:
+  /// **'前往 GitHub 查看'**
+  String get update_view_github;
+
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
@@ -4959,6 +5025,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'本地'**
   String get ui_nav;
+
+  /// No description provided for @ui_search_in_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'在设置中搜索'**
+  String get ui_search_in_settings;
+
+  /// No description provided for @ui_search_group_nav.
+  ///
+  /// In zh, this message translates to:
+  /// **'导航'**
+  String get ui_search_group_nav;
 
   /// No description provided for @ui_home.
   ///

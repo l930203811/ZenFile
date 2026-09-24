@@ -223,6 +223,23 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "ui_view_update": "查看更新",
+  "update_github_check": "GitHub 版本检测",
+  "update_current_version": "当前版本：{version}",
+  "@update_current_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checking": "正在检查更新…",
+  "update_latest": "当前已是最新版本",
+  "update_new_version": "发现新版本：{version}",
+  "@update_new_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_check_failed": "检查更新失败，请检查网络连接后重试",
+  "update_retry": "重试",
+  "update_download_install": "下载安装",
+  "update_downloading": "正在下载更新…",
+  "update_download_failed": "下载失败，请重试",
+  "update_view_github": "前往 GitHub 查看",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -3200,6 +3217,8 @@
   },
   "cat_quick_categories": "分类",
   "ui_nav": "本地",
+  "ui_search_in_settings": "在设置中搜索",
+  "ui_search_group_nav": "导航",
   "ui_home": "主页",
   "ui_recycle_bin": "回收站",
   "ui_dark_mode": "深色模式",

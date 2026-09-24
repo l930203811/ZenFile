@@ -192,6 +192,43 @@ class L10nZh extends L10n {
   String get ui_view_update => '查看更新';
 
   @override
+  String get update_github_check => 'GitHub 版本检测';
+
+  @override
+  String update_current_version(String version) {
+    return '当前版本：$version';
+  }
+
+  @override
+  String get update_checking => '正在检查更新…';
+
+  @override
+  String get update_latest => '当前已是最新版本';
+
+  @override
+  String update_new_version(String version) {
+    return '发现新版本：$version';
+  }
+
+  @override
+  String get update_check_failed => '检查更新失败，请检查网络连接后重试';
+
+  @override
+  String get update_retry => '重试';
+
+  @override
+  String get update_download_install => '下载安装';
+
+  @override
+  String get update_downloading => '正在下载更新…';
+
+  @override
+  String get update_download_failed => '下载失败，请重试';
+
+  @override
+  String get update_view_github => '前往 GitHub 查看';
+
+  @override
   String get zenfileflutter =>
       'ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。';
 
@@ -2593,6 +2630,12 @@ class L10nZh extends L10n {
 
   @override
   String get ui_nav => '本地';
+
+  @override
+  String get ui_search_in_settings => '在设置中搜索';
+
+  @override
+  String get ui_search_group_nav => '导航';
 
   @override
   String get ui_home => '主页';
@@ -7673,6 +7716,43 @@ class L10nZhTw extends L10nZh {
   String get ui_view_update => '檢視更新';
 
   @override
+  String get update_github_check => 'GitHub 版本偵測';
+
+  @override
+  String update_current_version(String version) {
+    return '目前版本：$version';
+  }
+
+  @override
+  String get update_checking => '正在檢查更新…';
+
+  @override
+  String get update_latest => '目前已是最新版本';
+
+  @override
+  String update_new_version(String version) {
+    return '發現新版本：$version';
+  }
+
+  @override
+  String get update_check_failed => '檢查更新失敗，請檢查網路連線後重試';
+
+  @override
+  String get update_retry => '重試';
+
+  @override
+  String get update_download_install => '下載安裝';
+
+  @override
+  String get update_downloading => '正在下載更新…';
+
+  @override
+  String get update_download_failed => '下載失敗，請重試';
+
+  @override
+  String get update_view_github => '前往 GitHub 查看';
+
+  @override
   String get zenfileflutter =>
       'ZenFile 是一款基於 Flutter 構建的精美、流暢、開源的檔案管理器和離線媒體中心。專為極致效能、乾淨的毛玻璃美學和無縫使用者體驗而設計。';
 
@@ -10065,6 +10145,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_nav => '本地';
+
+  @override
+  String get ui_search_in_settings => '在設定中搜尋';
+
+  @override
+  String get ui_search_group_nav => '導覽';
 
   @override
   String get ui_home => '主頁';

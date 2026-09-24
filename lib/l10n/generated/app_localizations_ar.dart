@@ -194,6 +194,44 @@ class L10nAr extends L10n {
   String get ui_view_update => 'عرض التحديثات';
 
   @override
+  String get update_github_check => 'فحص الإصدار من GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'الإصدار الحالي: $version';
+  }
+
+  @override
+  String get update_checking => 'جارٍ التحقق من التحديثات…';
+
+  @override
+  String get update_latest => 'لديك أحدث إصدار';
+
+  @override
+  String update_new_version(String version) {
+    return 'يتوفر إصدار جديد: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'فشل التحقق من التحديثات. تحقق من الشبكة وأعد المحاولة.';
+
+  @override
+  String get update_retry => 'إعادة المحاولة';
+
+  @override
+  String get update_download_install => 'تنزيل وتثبيت';
+
+  @override
+  String get update_downloading => 'جارٍ تنزيل التحديث…';
+
+  @override
+  String get update_download_failed => 'فشل التنزيل. أعد المحاولة.';
+
+  @override
+  String get update_view_github => 'العرض على GitHub';
+
+  @override
   String get zenfileflutter =>
       'ZenFile هو مدير ملفات ومركز وسائط غير متصل جميل وسلس ومفتوح المصدر مبني بـ Flutter. مصمم لأداء فائق وجمالية نظيفة وتجربة مستخدم سلسة.';
 
@@ -2680,6 +2718,12 @@ class L10nAr extends L10n {
 
   @override
   String get ui_nav => 'محلي';
+
+  @override
+  String get ui_search_in_settings => 'البحث في الإعدادات';
+
+  @override
+  String get ui_search_group_nav => 'التنقل';
 
   @override
   String get ui_home => 'الرئيسية';

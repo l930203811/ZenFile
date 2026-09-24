@@ -16,6 +16,7 @@ import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
+import '../screens/update_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
 import 'quick_categories_grid.dart';
@@ -316,6 +317,16 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
+                      },
+                    ),
+                    _buildDrawerTile(
+                      context,
+                      icon: Broken.refresh,
+                      title: L10n.of(context).ui_view_update,
+                      isPrimary: true,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdateScreen()));
                       },
                     ),
                     Padding(

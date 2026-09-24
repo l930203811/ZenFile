@@ -198,6 +198,44 @@ class L10nRu extends L10n {
   String get ui_view_update => 'Посмотреть обновления';
 
   @override
+  String get update_github_check => 'Проверка версии на GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'Текущая версия: $version';
+  }
+
+  @override
+  String get update_checking => 'Проверка обновлений…';
+
+  @override
+  String get update_latest => 'У вас последняя версия';
+
+  @override
+  String update_new_version(String version) {
+    return 'Доступна новая версия: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Не удалось проверить обновления. Проверьте сеть и повторите.';
+
+  @override
+  String get update_retry => 'Повторить';
+
+  @override
+  String get update_download_install => 'Скачать и установить';
+
+  @override
+  String get update_downloading => 'Загрузка обновления…';
+
+  @override
+  String get update_download_failed => 'Ошибка загрузки. Повторите попытку.';
+
+  @override
+  String get update_view_github => 'Открыть на GitHub';
+
+  @override
   String get zenfileflutter =>
       'ZenFile — это красивый, плавный файловый менеджер и офлайн медиацентр с открытым исходным кодом, созданный на Flutter. Разработан для максимальной производительности, чистой эстетики glassmorphism и бесшовного пользовательского опыта.';
 
@@ -2731,6 +2769,12 @@ class L10nRu extends L10n {
 
   @override
   String get ui_nav => 'Локальный';
+
+  @override
+  String get ui_search_in_settings => 'Поиск в настройках';
+
+  @override
+  String get ui_search_group_nav => 'Навигация';
 
   @override
   String get ui_home => 'Главная';

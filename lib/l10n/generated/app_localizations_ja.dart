@@ -193,6 +193,43 @@ class L10nJa extends L10n {
   String get ui_view_update => '更新を表示';
 
   @override
+  String get update_github_check => 'GitHub バージョンチェック';
+
+  @override
+  String update_current_version(String version) {
+    return '現在のバージョン：$version';
+  }
+
+  @override
+  String get update_checking => 'アップデートを確認中…';
+
+  @override
+  String get update_latest => '最新バージョンです';
+
+  @override
+  String update_new_version(String version) {
+    return '新しいバージョンがあります：$version';
+  }
+
+  @override
+  String get update_check_failed => '更新の確認に失敗しました。ネットワークを確認して再試行してください';
+
+  @override
+  String get update_retry => '再試行';
+
+  @override
+  String get update_download_install => 'ダウンロードしてインストール';
+
+  @override
+  String get update_downloading => 'アップデートをダウンロード中…';
+
+  @override
+  String get update_download_failed => 'ダウンロードに失敗しました。再試行してください';
+
+  @override
+  String get update_view_github => 'GitHub で確認';
+
+  @override
   String get zenfileflutter =>
       'ZenFileはFlutterで構築された美しく、スムーズで、オープンソースのファイルマネージャーとオフラインメディアセンターです。究極のパフォーマンス、クリーンなすりガラスの美学、シームレスなユーザー体験のために設計されています。';
 
@@ -2602,6 +2639,12 @@ class L10nJa extends L10n {
 
   @override
   String get ui_nav => 'ローカル';
+
+  @override
+  String get ui_search_in_settings => '設定内を検索';
+
+  @override
+  String get ui_search_group_nav => 'ナビゲーション';
 
   @override
   String get ui_home => 'ホーム';
