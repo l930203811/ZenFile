@@ -64,6 +64,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   final FocusNode _pathFocusNode = FocusNode();
   final GlobalKey<EditableTextState> _pathTextFieldKey = GlobalKey<EditableTextState>();
   bool _isEditingPath = false;
+  // 浏览操作栏是否可见（列表滚动方向驱动自动折叠/展开）
+  bool _browseBarVisible = true;
 
   @override
   void initState() {
@@ -272,19 +274,15 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     // 标签页栏是否显示由「启用多标签页」开关及其适用范围共同决定：
     // 单窗口下看是否允许单窗口多标签，双窗口下看是否允许双窗口多标签。
     // 双窗口且不在适用范围内时隐藏，下方面包屑栏和文件列表会自然上移，充分利用屏幕空间。
+    // 浏览操作栏已迁移到底部 4-tab 上方（见 _buildCollapsibleBrowseActionBar），顶部不再显示。
     final hasTabs = provider.showTabBar;
     final hasAddressBar = provider.showAddressBar;
-    // 底部已被 HomeScreen 的 4-tab 导航占用，浏览操作栏始终显示在顶部
-    // showFloatingAddButton（设置项"显示操作按钮"）控制操作栏是否显示
-    final hasTopBrowseBar = provider.showFloatingAddButton;
-    if (!hasTabs && !hasAddressBar && !hasTopBrowseBar) {
+    if (!hasTabs && !hasAddressBar) {
       return const SizedBox.shrink();
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 当底部导航栏开启时，浏览操作栏显示在顶部（标签页栏上方）
-        if (hasTopBrowseBar) _buildBrowseActionBar(context, provider),
         if (hasTabs)
           DirectoryTabBar(provider: provider, scrollController: _tabScrollController),
         if (hasAddressBar)
@@ -371,12 +369,35 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
+  /// 可折叠的浏览操作栏：显示在底部 4-tab 导航上方，
+  /// 列表向下滚动时自动折叠、向上滚动/回到顶部时自动展开。
+  Widget _buildCollapsibleBrowseActionBar(BuildContext context, FileManagerProvider provider) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      height: _browseBarVisible ? 44 : 0,
+      child: ClipRect(child: _buildBrowseActionBar(context, provider)),
+    );
+  }
+
+  /// 用户拖动文件列表时驱动浏览操作栏折叠/展开。
+  void _onBrowseListDrag(double delta, double offset) {
+    if (delta > 0 && _browseBarVisible) {
+      // 向下滚动（内容上移）：折叠
+      setState(() => _browseBarVisible = false);
+    } else if (delta < 0 && !_browseBarVisible) {
+      // 向上滚动（内容下移）：展开
+      setState(() => _browseBarVisible = true);
+    } else if (offset < 40 && !_browseBarVisible) {
+      // 回到顶部附近：强制展开
+      setState(() => _browseBarVisible = true);
+    }
+  }
+
   /// 浏览页操作栏：后退 / 前进 / 新建 / 复制标签页 / 向上
   ///
-  /// 位置规则：
-  /// - 当底部导航栏开启（showBottomActionBar == true）时，底部已被 BottomAppBar
-  ///   占用，此操作栏改为显示在顶部 AppBar 下方（作为 _buildFixedTopArea 的一部分）。
-  /// - 当底部导航栏关闭时，此操作栏显示在 bottomNavigationBar 位置。
+  /// 位置规则：显示在底部 4-tab 导航上方（bottomNavigationBar 区域），
+  /// 由 [_buildCollapsibleBrowseActionBar] 包裹，随列表滚动自动折叠/展开。
   Widget _buildBrowseActionBar(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
     return Container(
@@ -1708,7 +1729,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                       },
                                     ),
                                     Expanded(
-                                      child: CustomScrollView(
+                                      child: NotificationListener<ScrollNotification>(
+                                        onNotification: (n) {
+                                          if (n is ScrollUpdateNotification && n.dragDetails != null) {
+                                            _onBrowseListDrag(n.scrollDelta ?? 0, n.metrics.pixels);
+                                          }
+                                          return false;
+                                        },
+                                        child: CustomScrollView(
                                       controller: _scrollController,
                                       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                                       slivers: [
@@ -1913,6 +1941,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     ],
                   ),
                                     ),
+                                    ),
                                   ],
                                 ),
               );
@@ -1924,9 +1953,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             floatingActionButtonLocation: null,
             floatingActionButton: null,
             // 底部 4-tab 导航由 HomeScreen 统一提供；选择模式使用选择操作栏。
+            // 非选择模式下浏览操作栏显示在 4-tab 上方（showFloatingAddButton 控制显隐），
+            // 随列表滚动自动折叠/展开。
             bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
-                : null,
+                : (provider.showFloatingAddButton
+                    ? _buildCollapsibleBrowseActionBar(context, provider)
+                    : null),
           ),
         );
       },

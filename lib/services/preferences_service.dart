@@ -47,6 +47,17 @@ class PreferencesService {
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    await _applyUiNavBarMigration();
+  }
+
+  /// UI 导航栏版本迁移（v2.1.7）：旧版本导航栏位置默认在顶部（false），
+  /// 本次起强制默认底部（true）。仅在升级后首次启动执行一次，之后用户可自由切换。
+  static const String _keyUiNavBarVersion = 'ui_nav_bar_version';
+  static Future<void> _applyUiNavBarMigration() async {
+    final seen = _prefs?.getInt(_keyUiNavBarVersion) ?? 0;
+    if (seen >= 1) return;
+    await _prefs?.setBool(_keyShowBottomActionBar, true);
+    await _prefs?.setInt(_keyUiNavBarVersion, 1);
   }
 
   // --- Theme Mode ---
@@ -140,7 +151,7 @@ class PreferencesService {
   }
 
   static bool getShowBottomActionBar() {
-    return _prefs?.getBool(_keyShowBottomActionBar) ?? false;
+    return _prefs?.getBool(_keyShowBottomActionBar) ?? true;
   }
 
   static Future<void> saveShowBottomActionBar(bool val) async {

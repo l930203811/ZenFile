@@ -512,29 +512,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final theme = Theme.of(context);
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      elevation: 8,
+      elevation: 0,
       child: SafeArea(
-        child: SizedBox(
-          height: kToolbarHeight,
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: kToolbarHeight,
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: _buildGlobalSearchBar(theme),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msge8b8e9b3,
+                    onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                  ),
+                ],
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: _buildGlobalSearchBar(theme),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                tooltip: L10n.of(context).msge8b8e9b3,
-                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-              ),
-            ],
-          ),
+            ),
+            Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withOpacity(0.08)),
+          ],
         ),
       ),
     );
@@ -587,22 +593,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     ];
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      elevation: 8,
+      elevation: 0,
       child: SafeArea(
-        child: SizedBox(
-          height: kToolbarHeight,
-          child: Row(
-            children: [
-              for (final tab in tabData)
-                Expanded(
-                  child: _buildTabItem(
-                    tab[0] as IconData,
-                    tab[1] as String,
-                    tab[2] as int,
-                  ),
-                ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withOpacity(0.08)),
+            SizedBox(
+              height: kToolbarHeight,
+              child: Row(
+                children: [
+                  for (final tab in tabData)
+                    Expanded(
+                      child: _buildTabItem(
+                        tab[0] as IconData,
+                        tab[1] as String,
+                        tab[2] as int,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
