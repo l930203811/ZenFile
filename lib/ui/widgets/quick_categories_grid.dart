@@ -464,12 +464,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
-    final itemWidth = (screenWidth - (columns - 1) * 16) / columns;
-    final childAspectRatio = columns == 4 ? 0.62 : 0.75;
+    final itemWidth = (screenWidth - (columns - 1) * 6) / columns;
+    final childAspectRatio = columns == 4 ? 0.62 : 0.85;
     final itemHeight = itemWidth / childAspectRatio;
 
-    double colFraction = localPosition.dx / (itemWidth + 16);
-    double rowFraction = localPosition.dy / (itemHeight + 8);
+    double colFraction = localPosition.dx / (itemWidth + 6);
+    double rowFraction = localPosition.dy / (itemHeight + 6);
 
     int adjustedCol = colFraction.round();
     int adjustedRow = rowFraction.round();
@@ -833,15 +833,22 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   : null,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: GridView.builder(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final gridItemW =
+                        (constraints.maxWidth - (columns - 1) * 6) / columns;
+                    final plateW = gridItemW * 0.98;
+                    final plateH = plateW * (columns == 4 ? 0.70 : 0.50);
+                    final iconSize = plateW * (columns == 4 ? 0.52 : 0.46);
+                    return GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: columns == 4 ? 0.62 : 0.75,
+                    crossAxisSpacing: 6,
+                    mainAxisSpacing: 6,
+                    childAspectRatio: columns == 4 ? 0.62 : 0.85,
                   ),
                   itemCount: activeList.length,
                   itemBuilder: (context, index) {
@@ -857,6 +864,31 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final action = cat['action'] as VoidCallback?;
                     final shape = fileManagerProvider.categoryIconShape;
                     final isSquare = shape == 'square';
+                    final isDark = theme.brightness == Brightness.dark;
+                    final glowBlue = isDark
+                        ? const Color(0xFF9AA7FF)
+                        : const Color(0xFF4A55E0);
+                    final plateGradientColors = isDark
+                        ? const [Color(0xFF3A3F4A), Color(0xFF20242C)]
+                        : const [Color(0xFFF7FAFF), Color(0xFFD6DEEA)];
+                    final plateShape = isSquare
+                        ? RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            side: BorderSide(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.10)
+                                  : Colors.white.withOpacity(0.55),
+                              width: 0.6,
+                            ),
+                          )
+                        : CircleBorder(
+                            side: BorderSide(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.10)
+                                  : Colors.white.withOpacity(0.55),
+                              width: 0.6,
+                            ),
+                          );
                     final showLabels =
                         PreferencesService.getShowCategoryLabels();
                     final iconKey = GlobalKey();
@@ -928,14 +960,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           children: [
                             Material(
                               key: iconKey,
-                              color: isTarget
-                                  ? color.withOpacity(0.3)
-                                  : color.withOpacity(0.15),
-                              shape: isSquare
-                                  ? RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    )
-                                  : const CircleBorder(),
+                              shape: ShapeDecoration(
+                                shape: plateShape,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: plateGradientColors,
+                                ),
+                                shadows: [
+                                  BoxShadow(
+                                    color: glowBlue.withOpacity(0.22),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
                               child: InkWell(
                                 onTap: () {
                                   if (!_isDragging) {
@@ -950,23 +989,23 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                     }
                                   }
                                 },
-                                customBorder: isSquare
-                                    ? RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      )
-                                    : const CircleBorder(),
+                                customBorder: plateShape,
                                 splashColor: color.withOpacity(0.25),
                                 highlightColor: color.withOpacity(0.15),
                                 child: Container(
-                                  width: 64,
-                                  height: 64,
+                                  width: plateW,
+                                  height: plateH,
                                   alignment: Alignment.center,
-                                  child: Icon(icon, color: iconColor, size: 36),
+                                  child: Icon(
+                                    icon,
+                                    color: glowBlue,
+                                    size: iconSize,
+                                  ),
                                 ),
                               ),
                             ),
                             if (showLabels) ...[
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Text(
                                 label,
                                 style: theme.textTheme.titleMedium?.copyWith(
@@ -1001,6 +1040,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           ],
                         ),
                       ),
+                    );
+                  },
                     );
                   },
                 ),
@@ -1713,15 +1754,27 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
               shape: iconShape == 'square'
                   ? BoxShape.rectangle
                   : BoxShape.circle,
               borderRadius: iconShape == 'square'
                   ? BorderRadius.circular(6)
                   : null,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: Theme.of(context).brightness == Brightness.dark
+                    ? const [Color(0xFF3A3F4A), Color(0xFF20242C)]
+                    : const [Color(0xFFF7FAFF), Color(0xFFD6DEEA)],
+              ),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(
+              icon,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF9AA7FF)
+                  : const Color(0xFF4A55E0),
+              size: 22,
+            ),
           ),
           title: Row(
             children: [
