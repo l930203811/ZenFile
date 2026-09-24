@@ -478,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         },
                         onRefresh: () => _handleRefresh(),
                       ),
-                      const TransfersScreen(),
+                      TransfersScreen(onNavigateTab: (index) => _switchTab(index)),
                       const ProfilePlaceholderScreen(),
                     ],
                   );

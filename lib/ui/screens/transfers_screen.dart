@@ -9,7 +9,10 @@ import 'quick_transfer_screen.dart';
 /// 传输页：以列表形式聚合「网络 / FTP共享 / Web共享 / 快传」四个入口，
 /// UI 风格与工具箱（ToolboxScreen）一致。进入/退出动画由调用方统一控制。
 class TransfersScreen extends StatelessWidget {
-  const TransfersScreen({super.key});
+  /// 子页面（如网络）连接成功后通知首页切换底部 tab 的回调。
+  final Function(int)? onNavigateTab;
+
+  const TransfersScreen({super.key, this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class TransfersScreen extends StatelessWidget {
         title: l10n.cat_network,
         color: Colors.cyan.shade600,
         buildPage: () => NetworkCategoryScreen(
-          onNavigateTab: (index) {},
+          onNavigateTab: onNavigateTab,
         ),
       ),
       _TransferItem(

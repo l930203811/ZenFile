@@ -280,10 +280,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     if (!hasTabs && !hasAddressBar) {
       return const SizedBox.shrink();
     }
+    // 仅单个标签页时不显示标签页栏：避免顶部多出空白层，
+    // 使浏览页与分类页顶部高度保持一致；多标签时才显示以切换标签。
+    final showTabBarArea = hasTabs && provider.tabs.length > 1;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasTabs)
+        if (showTabBarArea)
           DirectoryTabBar(provider: provider, scrollController: _tabScrollController),
         if (hasAddressBar)
           Padding(
