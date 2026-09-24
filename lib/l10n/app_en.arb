@@ -1146,7 +1146,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Select and pin folder",
+  "msg33b0b21c": "Select folder",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1158,7 +1158,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Pin this folder",
+  "msg5dc1fa7b": "Use this folder",
   "selectStorageDrive": "Select Storage Drive",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1249,6 +1249,14 @@
   "msgef7ae768": "Newest First (grouped by month)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Oldest First (grouped by month)",
   "@msg424a0110": {
@@ -3691,9 +3699,9 @@
   "ui_undo": "Undo",
   "ui_redo": "Redo",
   "ui_add_selected": "Add Selected ({count})",
-  "ui_pin_selected": "Pin Selected ({count})",
+  "ui_pin_selected": "Use Selected ({count})",
   "@ui_pin_selected": {
-    "description": "Button label to pin selected folders with count"
+    "description": "Button label to confirm use of the selected items with count"
   },
   "msg_file_exists": "File Already Exists",
   "@msg_file_exists": {
@@ -4386,6 +4394,7 @@
   "cat_backup_restore_desc": "Backup",
   "cat_storage_volume": "Storage",
   "ui_columns_per_row": "Columns per row",
+  "ui_2columns": "2 Columns",
   "ui_3columns": "3 Columns",
   "ui_4columns": "4 Columns",
   "msge8b8e9b3": "Common Features",

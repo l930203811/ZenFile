@@ -1136,7 +1136,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Ordner auswählen und anheften",
+  "msg33b0b21c": "Ordner auswählen",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1148,7 +1148,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Diesen Ordner anheften",
+  "msg5dc1fa7b": "Diesen Ordner verwenden",
   "selectStorageDrive": "Speicherlaufwerk auswählen",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1239,6 +1239,14 @@
   "msgef7ae768": "Neueste zuerst (nach Monat gruppiert)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Älteste zuerst (nach Monat gruppiert)",
   "@msg424a0110": {
@@ -3706,7 +3714,7 @@
   "ui_undo": "Rückgängig",
   "ui_redo": "Wiederholen",
   "ui_add_selected": "Auswahl hinzufügen ({count})",
-  "ui_pin_selected": "Auswahl anheften ({count})",
+  "ui_pin_selected": "Auswahl verwenden ({count})",
   "msg_vault_choose_mode": "Schutzmodus wählen",
   "msg_vault_mode_desc": "Wähle, wie du deine ausgewählten Dateien schützen möchtest. Gesicherte Dateien werden mit AES-256-GCM verschlüsselt.",
   "ui_secure_import": "Sicherer Import (Sandbox)",
@@ -4331,6 +4339,7 @@
   "cat_backup_restore_desc": "Sichern",
   "cat_storage_volume": "Speicher",
   "ui_columns_per_row": "Spalten pro Zeile",
+  "ui_2columns": "2 Spalten",
   "ui_3columns": "3 Spalten",
   "ui_4columns": "4 Spalten",
   "msge8b8e9b3": "Schnellaktionen",

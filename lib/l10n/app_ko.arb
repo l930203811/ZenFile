@@ -1139,7 +1139,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "폴더를 선택하고 고정",
+  "msg33b0b21c": "폴더 선택",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1151,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "이 폴더를 고정",
+  "msg5dc1fa7b": "이 폴더 사용",
   "selectStorageDrive": "저장 드라이브 선택",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1242,14 @@
   "msgef7ae768": "최신순 (월별 그룹화)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}년 {month}월",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "오래된 순 (월별 그룹화)",
   "@msg424a0110": {
@@ -3709,7 +3717,7 @@
   "ui_undo": "실행 취소",
   "ui_redo": "다시 실행",
   "ui_add_selected": "선택 항목 추가 ({count})",
-  "ui_pin_selected": "선택 항목 고정 ({count})",
+  "ui_pin_selected": "선택 항목 사용 ({count})",
   "msg_vault_choose_mode": "보호 모드 선택",
   "msg_vault_mode_desc": "선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 AES-256-GCM으로 암호화됩니다.",
   "ui_secure_import": "보안 가져오기(샌드박스)",
@@ -4334,6 +4342,7 @@
   "cat_backup_restore_desc": "백업",
   "cat_storage_volume": "저장소",
   "ui_columns_per_row": "행당 열 수",
+  "ui_2columns": "2열",
   "ui_3columns": "3열",
   "ui_4columns": "4열",
   "msge8b8e9b3": "빠른 작업",

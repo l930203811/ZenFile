@@ -950,7 +950,7 @@ class L10nAr extends L10n {
   String get msgfba1f416 => 'أدخل اسم المجلد';
 
   @override
-  String get msg33b0b21c => 'اختيار وتثبيت المجلد';
+  String get msg33b0b21c => 'اختيار مجلد';
 
   @override
   String get msgff3200cc => 'مسح التحديد';
@@ -959,7 +959,7 @@ class L10nAr extends L10n {
   String get msg4614630a => 'المجلد فارغ';
 
   @override
-  String get msg5dc1fa7b => 'تثبيت هذا المجلد';
+  String get msg5dc1fa7b => 'استخدام هذا المجلد';
 
   @override
   String get selectStorageDrive => 'اختر محرك التخزين';
@@ -1037,6 +1037,11 @@ class L10nAr extends L10n {
 
   @override
   String get msgb8140039 => 'الأقدم أولاً (مجمعة حسب الشهر)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'تاريخ غير معروف';
@@ -2377,10 +2382,6 @@ class L10nAr extends L10n {
   @override
   String get ui_transferring_files => 'جارٍ نقل الملفات';
 
-  String get ui_transfers => 'النقل';
-  String get ui_profile => 'الملف الشخصي';
-  String get msg_coming_soon => 'قريباً';
-
   @override
   String get ui_time_remaining => 'متبقي';
 
@@ -3660,7 +3661,7 @@ class L10nAr extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'تثبيت المحدد ($count)';
+    return 'استخدام المحدد ($count)';
   }
 
   @override
@@ -4413,6 +4414,9 @@ class L10nAr extends L10n {
 
   @override
   String get ui_columns_per_row => 'الأعمدة لكل صف';
+
+  @override
+  String get ui_2columns => '2 أعمدة';
 
   @override
   String get ui_3columns => '3 أعمدة';
@@ -7846,4 +7850,13 @@ class L10nAr extends L10n {
   @override
   String get audio_opensles_desc =>
       'لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.';
+
+  @override
+  String get ui_transfers => 'النقل';
+
+  @override
+  String get ui_profile => 'الملف الشخصي';
+
+  @override
+  String get msg_coming_soon => 'قريباً';
 }

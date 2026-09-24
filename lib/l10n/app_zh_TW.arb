@@ -1167,7 +1167,7 @@
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "選擇並固定資料夾",
+  "msg33b0b21c": "選擇資料夾",
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1179,7 +1179,7 @@
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "固定此資料夾",
+  "msg5dc1fa7b": "使用此資料夾",
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1278,6 +1278,14 @@
   "msgb8140039": "最舊優先（按月分組）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}年{month}月",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msg424a0110": "未知日期",
   "@msg424a0110": {
@@ -3780,7 +3788,7 @@
   "ui_undo": "撤銷",
   "ui_redo": "重做",
   "ui_add_selected": "新增所選 ({count})",
-  "ui_pin_selected": "固定所選 ({count})",
+  "ui_pin_selected": "使用所選 ({count})",
   "msg_vault_choose_mode": "選擇保護模式",
   "msg_vault_mode_desc": "選擇如何保護選中的檔案。安全檔案將使用 AES-256-GCM 強加密。",
   "ui_secure_import": "安全匯入（沙盒）",
@@ -4430,6 +4438,7 @@
   "cat_backup_restore_desc": "備份",
   "cat_storage_volume": "儲存",
   "ui_columns_per_row": "每行顯示",
+  "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
   "msge8b8e9b3": "常用功能",

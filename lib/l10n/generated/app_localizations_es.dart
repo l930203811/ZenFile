@@ -971,7 +971,7 @@ class L10nEs extends L10n {
   String get msgfba1f416 => 'Ingrese el nombre de la carpeta';
 
   @override
-  String get msg33b0b21c => 'Seleccionar y fijar carpeta';
+  String get msg33b0b21c => 'Seleccionar carpeta';
 
   @override
   String get msgff3200cc => 'Limpiar Selección';
@@ -980,7 +980,7 @@ class L10nEs extends L10n {
   String get msg4614630a => 'La carpeta está vacía';
 
   @override
-  String get msg5dc1fa7b => 'Fijar esta carpeta';
+  String get msg5dc1fa7b => 'Usar esta carpeta';
 
   @override
   String get selectStorageDrive => 'Seleccionar unidad de almacenamiento';
@@ -1058,6 +1058,11 @@ class L10nEs extends L10n {
 
   @override
   String get msgb8140039 => 'Más Antiguos Primero (agrupados por mes)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Fecha Desconocida';
@@ -2431,10 +2436,6 @@ class L10nEs extends L10n {
   @override
   String get ui_transferring_files => 'Transfiriendo archivos';
 
-  String get ui_transfers => 'Transferencias';
-  String get ui_profile => 'Perfil';
-  String get msg_coming_soon => 'Próximamente';
-
   @override
   String get ui_time_remaining => 'restantes';
 
@@ -3738,7 +3739,7 @@ class L10nEs extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Anclar selección ($count)';
+    return 'Usar selección ($count)';
   }
 
   @override
@@ -4495,6 +4496,9 @@ class L10nEs extends L10n {
 
   @override
   String get ui_columns_per_row => 'Columnas por fila';
+
+  @override
+  String get ui_2columns => '2 Columnas';
 
   @override
   String get ui_3columns => '3 Columnas';
@@ -7977,4 +7981,13 @@ class L10nEs extends L10n {
   @override
   String get audio_opensles_desc =>
       'Las apps de efectos de audio (p. ej. RootlessJamesDSP) solo pueden engancharse a los modos AudioTrack; OpenSL ES usa una sesión asignada por el sistema, a la que no pueden engancharse. El cambio es inmediato.';
+
+  @override
+  String get ui_transfers => 'Transferencias';
+
+  @override
+  String get ui_profile => 'Perfil';
+
+  @override
+  String get msg_coming_soon => 'Próximamente';
 }

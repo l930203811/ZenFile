@@ -915,7 +915,7 @@ class L10nZh extends L10n {
   String get msgfba1f416 => '输入文件夹名称';
 
   @override
-  String get msg33b0b21c => '选择并固定文件夹';
+  String get msg33b0b21c => '选择文件夹';
 
   @override
   String get msgff3200cc => '清除选择';
@@ -924,7 +924,7 @@ class L10nZh extends L10n {
   String get msg4614630a => '文件夹为空';
 
   @override
-  String get msg5dc1fa7b => '固定此文件夹';
+  String get msg5dc1fa7b => '使用此文件夹';
 
   @override
   String get selectStorageDrive => '选择存储驱动器';
@@ -1002,6 +1002,11 @@ class L10nZh extends L10n {
 
   @override
   String get msgb8140039 => '最旧优先（按月分组）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '未知日期';
@@ -2296,10 +2301,6 @@ class L10nZh extends L10n {
   @override
   String get ui_transferring_files => '传输文件';
 
-  String get ui_transfers => '传输';
-  String get ui_profile => '我的';
-  String get msg_coming_soon => '即将推出';
-
   @override
   String get ui_time_remaining => '剩下';
 
@@ -3522,7 +3523,7 @@ class L10nZh extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '固定所选 ($count)';
+    return '使用所选 ($count)';
   }
 
   @override
@@ -4260,6 +4261,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_columns_per_row => '每行显示';
+
+  @override
+  String get ui_2columns => '2列';
 
   @override
   String get ui_3columns => '3列';
@@ -7467,6 +7471,15 @@ class L10nZh extends L10n {
   @override
   String get audio_opensles_desc =>
       '音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。';
+
+  @override
+  String get ui_transfers => '传输';
+
+  @override
+  String get ui_profile => '我的';
+
+  @override
+  String get msg_coming_soon => '即将推出';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8380,7 +8393,7 @@ class L10nZhTw extends L10nZh {
   String get msgfba1f416 => '輸入資料夾名稱';
 
   @override
-  String get msg33b0b21c => '選擇並固定資料夾';
+  String get msg33b0b21c => '選擇資料夾';
 
   @override
   String get msgff3200cc => '清除選擇';
@@ -8389,7 +8402,7 @@ class L10nZhTw extends L10nZh {
   String get msg4614630a => '資料夾為空';
 
   @override
-  String get msg5dc1fa7b => '固定此資料夾';
+  String get msg5dc1fa7b => '使用此資料夾';
 
   @override
   String get selectStorageDrive => '選擇儲存裝置';
@@ -8467,6 +8480,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgb8140039 => '最舊優先（按月分組）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '未知日期';
@@ -9755,10 +9773,6 @@ class L10nZhTw extends L10nZh {
   @override
   String get ui_transferring_files => '傳輸檔案';
 
-  String get ui_transfers => '傳輸';
-  String get ui_profile => '我的';
-  String get msg_coming_soon => '即將推出';
-
   @override
   String get ui_time_remaining => '剩下';
 
@@ -10942,7 +10956,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_pin_selected(Object count) {
-    return '固定所選 ($count)';
+    return '使用所選 ($count)';
   }
 
   @override
@@ -11677,6 +11691,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_columns_per_row => '每行顯示';
+
+  @override
+  String get ui_2columns => '2列';
 
   @override
   String get ui_3columns => '3列';
@@ -14902,4 +14919,13 @@ class L10nZhTw extends L10nZh {
   @override
   String get audio_opensles_desc =>
       '音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。';
+
+  @override
+  String get ui_transfers => '傳輸';
+
+  @override
+  String get ui_profile => '我的';
+
+  @override
+  String get msg_coming_soon => '即將推出';
 }

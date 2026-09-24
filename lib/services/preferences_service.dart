@@ -1671,7 +1671,7 @@ class PreferencesService {
   static const String _keyCategoriesGridColumns = 'categories_grid_columns';
 
   /// 获取分类页网格列数，默认 4 列
-  static int getCategoriesGridColumns({int defaultValue = 4}) {
+  static int getCategoriesGridColumns({int defaultValue = 3}) {
     return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
   }
 

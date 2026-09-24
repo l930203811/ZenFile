@@ -968,7 +968,7 @@ class L10nFr extends L10n {
   String get msgfba1f416 => 'Entrez le nom du dossier';
 
   @override
-  String get msg33b0b21c => 'Sélectionner et épingler le dossier';
+  String get msg33b0b21c => 'Sélectionner un dossier';
 
   @override
   String get msgff3200cc => 'Effacer la sélection';
@@ -977,7 +977,7 @@ class L10nFr extends L10n {
   String get msg4614630a => 'Le dossier est vide';
 
   @override
-  String get msg5dc1fa7b => 'Épingler ce dossier';
+  String get msg5dc1fa7b => 'Utiliser ce dossier';
 
   @override
   String get selectStorageDrive => 'Sélectionner le lecteur de stockage';
@@ -1055,6 +1055,11 @@ class L10nFr extends L10n {
 
   @override
   String get msgb8140039 => 'Plus anciens d\'abord (groupés par mois)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Date inconnue';
@@ -2432,10 +2437,6 @@ class L10nFr extends L10n {
   @override
   String get ui_transferring_files => 'Transfert des fichiers';
 
-  String get ui_transfers => 'Transferts';
-  String get ui_profile => 'Profil';
-  String get msg_coming_soon => 'Bientôt disponible';
-
   @override
   String get ui_time_remaining => 'restant';
 
@@ -3739,7 +3740,7 @@ class L10nFr extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Épingler la sélection ($count)';
+    return 'Utiliser la sélection ($count)';
   }
 
   @override
@@ -4499,6 +4500,9 @@ class L10nFr extends L10n {
 
   @override
   String get ui_columns_per_row => 'Colonnes par ligne';
+
+  @override
+  String get ui_2columns => '2 Colonnes';
 
   @override
   String get ui_3columns => '3 Colonnes';
@@ -7997,4 +8001,13 @@ class L10nFr extends L10n {
   @override
   String get audio_opensles_desc =>
       'Les applications d’effets audio (RootlessJamesDSP, etc.) ne peuvent s’attacher qu’aux modes AudioTrack ; OpenSL ES utilise une session attribuée par le système, à laquelle elles ne peuvent pas s’attacher. Le changement est immédiat.';
+
+  @override
+  String get ui_transfers => 'Transferts';
+
+  @override
+  String get ui_profile => 'Profil';
+
+  @override
+  String get msg_coming_soon => 'Bientôt disponible';
 }

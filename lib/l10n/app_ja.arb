@@ -1143,7 +1143,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "フォルダを選択してピン留め",
+  "msg33b0b21c": "フォルダを選択",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1155,7 +1155,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "このフォルダをピン留め",
+  "msg5dc1fa7b": "このフォルダを使用",
   "selectStorageDrive": "ストレージドライブを選択",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1246,6 +1246,14 @@
   "msgef7ae768": "新しいもの順（月別グループ）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}年{month}月",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "古いもの順（月別グループ）",
   "@msg424a0110": {
@@ -3713,7 +3721,7 @@
   "ui_undo": "元に戻す",
   "ui_redo": "やり直す",
   "ui_add_selected": "選択を追加 ({count})",
-  "ui_pin_selected": "選択をピン留め ({count})",
+  "ui_pin_selected": "選択を使用 ({count})",
   "msg_vault_choose_mode": "保護モードを選択",
   "msg_vault_mode_desc": "選択したファイルの保護方法を選択します。保護されたファイルは AES-256-GCM で暗号化されます。",
   "ui_secure_import": "セキュアインポート（サンドボックス）",
@@ -4338,6 +4346,7 @@
   "cat_backup_restore_desc": "バックアップ",
   "cat_storage_volume": "ストレージ",
   "ui_columns_per_row": "1行あたりの列数",
+  "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
   "msge8b8e9b3": "クイック操作",

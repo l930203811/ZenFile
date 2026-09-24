@@ -967,7 +967,7 @@ class L10nDe extends L10n {
   String get msgfba1f416 => 'Ordnernamen eingeben';
 
   @override
-  String get msg33b0b21c => 'Ordner auswählen und anheften';
+  String get msg33b0b21c => 'Ordner auswählen';
 
   @override
   String get msgff3200cc => 'Auswahl aufheben';
@@ -976,7 +976,7 @@ class L10nDe extends L10n {
   String get msg4614630a => 'Ordner ist leer';
 
   @override
-  String get msg5dc1fa7b => 'Diesen Ordner anheften';
+  String get msg5dc1fa7b => 'Diesen Ordner verwenden';
 
   @override
   String get selectStorageDrive => 'Speicherlaufwerk auswählen';
@@ -1055,6 +1055,11 @@ class L10nDe extends L10n {
 
   @override
   String get msgb8140039 => 'Älteste zuerst (nach Monat gruppiert)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Unbekanntes Datum';
@@ -2417,10 +2422,6 @@ class L10nDe extends L10n {
   @override
   String get ui_transferring_files => 'Dateien übertragen';
 
-  String get ui_transfers => 'Übertragungen';
-  String get ui_profile => 'Profil';
-  String get msg_coming_soon => 'Bald verfügbar';
-
   @override
   String get ui_time_remaining => 'übrig';
 
@@ -3716,7 +3717,7 @@ class L10nDe extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Auswahl anheften ($count)';
+    return 'Auswahl verwenden ($count)';
   }
 
   @override
@@ -4472,6 +4473,9 @@ class L10nDe extends L10n {
 
   @override
   String get ui_columns_per_row => 'Spalten pro Zeile';
+
+  @override
+  String get ui_2columns => '2 Spalten';
 
   @override
   String get ui_3columns => '3 Spalten';
@@ -7963,4 +7967,13 @@ class L10nDe extends L10n {
   @override
   String get audio_opensles_desc =>
       'Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.';
+
+  @override
+  String get ui_transfers => 'Übertragungen';
+
+  @override
+  String get ui_profile => 'Profil';
+
+  @override
+  String get msg_coming_soon => 'Bald verfügbar';
 }

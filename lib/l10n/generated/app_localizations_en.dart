@@ -954,7 +954,7 @@ class L10nEn extends L10n {
   String get msgfba1f416 => 'Enter folder name';
 
   @override
-  String get msg33b0b21c => 'Select and pin folder';
+  String get msg33b0b21c => 'Select folder';
 
   @override
   String get msgff3200cc => 'Clear Selection';
@@ -963,7 +963,7 @@ class L10nEn extends L10n {
   String get msg4614630a => 'Folder is empty';
 
   @override
-  String get msg5dc1fa7b => 'Pin this folder';
+  String get msg5dc1fa7b => 'Use this folder';
 
   @override
   String get selectStorageDrive => 'Select Storage Drive';
@@ -1041,6 +1041,11 @@ class L10nEn extends L10n {
 
   @override
   String get msgb8140039 => 'Oldest First (grouped by month)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Unknown Date';
@@ -2383,10 +2388,6 @@ class L10nEn extends L10n {
   @override
   String get ui_transferring_files => 'Transferring files';
 
-  String get ui_transfers => 'Transfers';
-  String get ui_profile => 'Profile';
-  String get msg_coming_soon => 'Coming soon';
-
   @override
   String get ui_time_remaining => 'remaining';
 
@@ -3677,7 +3678,7 @@ class L10nEn extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Pin Selected ($count)';
+    return 'Use Selected ($count)';
   }
 
   @override
@@ -4431,6 +4432,9 @@ class L10nEn extends L10n {
 
   @override
   String get ui_columns_per_row => 'Columns per row';
+
+  @override
+  String get ui_2columns => '2 Columns';
 
   @override
   String get ui_3columns => '3 Columns';
@@ -7874,4 +7878,13 @@ class L10nEn extends L10n {
   @override
   String get audio_opensles_desc =>
       'Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.';
+
+  @override
+  String get ui_transfers => 'Transfers';
+
+  @override
+  String get ui_profile => 'Profile';
+
+  @override
+  String get msg_coming_soon => 'Coming soon';
 }

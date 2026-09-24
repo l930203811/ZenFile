@@ -917,7 +917,7 @@ class L10nJa extends L10n {
   String get msgfba1f416 => 'フォルダ名を入力';
 
   @override
-  String get msg33b0b21c => 'フォルダを選択してピン留め';
+  String get msg33b0b21c => 'フォルダを選択';
 
   @override
   String get msgff3200cc => '選択をクリア';
@@ -926,7 +926,7 @@ class L10nJa extends L10n {
   String get msg4614630a => 'フォルダが空です';
 
   @override
-  String get msg5dc1fa7b => 'このフォルダをピン留め';
+  String get msg5dc1fa7b => 'このフォルダを使用';
 
   @override
   String get selectStorageDrive => 'ストレージドライブを選択';
@@ -1004,6 +1004,11 @@ class L10nJa extends L10n {
 
   @override
   String get msgb8140039 => '古いもの順（月別グループ）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '不明な日付';
@@ -2305,10 +2310,6 @@ class L10nJa extends L10n {
   @override
   String get ui_transferring_files => 'ファイル転送中';
 
-  String get ui_transfers => '転送';
-  String get ui_profile => 'プロフィール';
-  String get msg_coming_soon => '近日公開';
-
   @override
   String get ui_time_remaining => '残り';
 
@@ -3552,7 +3553,7 @@ class L10nJa extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '選択をピン留め ($count)';
+    return '選択を使用 ($count)';
   }
 
   @override
@@ -4296,6 +4297,9 @@ class L10nJa extends L10n {
 
   @override
   String get ui_columns_per_row => '1行あたりの列数';
+
+  @override
+  String get ui_2columns => '2列';
 
   @override
   String get ui_3columns => '3列';
@@ -7636,4 +7640,13 @@ class L10nJa extends L10n {
   @override
   String get audio_opensles_desc =>
       '音響エフェクトアプリ（RootlessJamesDSP など）に対応するのは AudioTrack のみです。OpenSL ES はセッションIDをシステムが割り当てるため対応できません。切り替えは即時反映されます。';
+
+  @override
+  String get ui_transfers => '転送';
+
+  @override
+  String get ui_profile => 'プロフィール';
+
+  @override
+  String get msg_coming_soon => '近日公開';
 }

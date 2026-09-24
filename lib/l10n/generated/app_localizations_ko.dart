@@ -916,7 +916,7 @@ class L10nKo extends L10n {
   String get msgfba1f416 => '폴더 이름 입력';
 
   @override
-  String get msg33b0b21c => '폴더를 선택하고 고정';
+  String get msg33b0b21c => '폴더 선택';
 
   @override
   String get msgff3200cc => '선택 해제';
@@ -925,7 +925,7 @@ class L10nKo extends L10n {
   String get msg4614630a => '폴더가 비어 있습니다';
 
   @override
-  String get msg5dc1fa7b => '이 폴더를 고정';
+  String get msg5dc1fa7b => '이 폴더 사용';
 
   @override
   String get selectStorageDrive => '저장 드라이브 선택';
@@ -1003,6 +1003,11 @@ class L10nKo extends L10n {
 
   @override
   String get msgb8140039 => '오래된 순 (월별 그룹화)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year년 $month월';
+  }
 
   @override
   String get msg424a0110 => '알 수 없는 날짜';
@@ -2301,10 +2306,6 @@ class L10nKo extends L10n {
   @override
   String get ui_transferring_files => '파일 전송 중';
 
-  String get ui_transfers => '전송';
-  String get ui_profile => '프로필';
-  String get msg_coming_soon => '곧 제공 예정';
-
   @override
   String get ui_time_remaining => '남음';
 
@@ -3551,7 +3552,7 @@ class L10nKo extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '선택 항목 고정 ($count)';
+    return '선택 항목 사용 ($count)';
   }
 
   @override
@@ -4294,6 +4295,9 @@ class L10nKo extends L10n {
 
   @override
   String get ui_columns_per_row => '행당 열 수';
+
+  @override
+  String get ui_2columns => '2열';
 
   @override
   String get ui_3columns => '3열';
@@ -7640,4 +7644,13 @@ class L10nKo extends L10n {
   @override
   String get audio_opensles_desc =>
       '사운드 효과 앱(RootlessJamesDSP 등)이 연결할 수 있는 것은 AudioTrack뿐입니다. OpenSL ES는 세션 ID를 시스템이 할당하므로 연결할 수 없습니다. 전환은 즉시 반영됩니다.';
+
+  @override
+  String get ui_transfers => '전송';
+
+  @override
+  String get ui_profile => '프로필';
+
+  @override
+  String get msg_coming_soon => '곧 제공 예정';
 }

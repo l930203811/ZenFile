@@ -1825,7 +1825,7 @@ abstract class L10n {
   /// ui\screens\internal_file_picker_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'选择并固定文件夹'**
+  /// **'选择文件夹'**
   String get msg33b0b21c;
 
   /// ui\screens\internal_file_picker_screen.dart
@@ -1843,7 +1843,7 @@ abstract class L10n {
   /// ui\screens\internal_file_picker_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'固定此文件夹'**
+  /// **'使用此文件夹'**
   String get msg5dc1fa7b;
 
   /// ui\screens\internal_file_picker_screen.dart
@@ -1983,6 +1983,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'最旧优先（按月分组）'**
   String get msgb8140039;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{year}年{month}月'**
+  String ui_month_group_header(int year, int month);
 
   /// ui\screens\media_category_screen.dart
   ///
@@ -4402,15 +4408,6 @@ abstract class L10n {
   /// **'传输文件'**
   String get ui_transferring_files;
 
-  /// 底部导航 / 传输页标题
-  String get ui_transfers;
-
-  /// 底部导航 / 我的页标题
-  String get ui_profile;
-
-  /// 我的占位页提示
-  String get msg_coming_soon;
-
   /// ui\widgets\file_operation_progress_dialog.dart
   ///
   /// In zh, this message translates to:
@@ -6712,7 +6709,7 @@ abstract class L10n {
   /// No description provided for @ui_pin_selected.
   ///
   /// In zh, this message translates to:
-  /// **'固定所选 ({count})'**
+  /// **'使用所选 ({count})'**
   String ui_pin_selected(Object count);
 
   /// Title shown when a file conflict is detected
@@ -8040,6 +8037,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'每行显示'**
   String get ui_columns_per_row;
+
+  /// No description provided for @ui_2columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'2列'**
+  String get ui_2columns;
 
   /// No description provided for @ui_3columns.
   ///
@@ -14004,6 +14007,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。'**
   String get audio_opensles_desc;
+
+  /// No description provided for @ui_transfers.
+  ///
+  /// In zh, this message translates to:
+  /// **'传输'**
+  String get ui_transfers;
+
+  /// No description provided for @ui_profile.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的'**
+  String get ui_profile;
+
+  /// No description provided for @msg_coming_soon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将推出'**
+  String get msg_coming_soon;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

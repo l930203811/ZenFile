@@ -1139,7 +1139,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Sélectionner et épingler le dossier",
+  "msg33b0b21c": "Sélectionner un dossier",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1151,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Épingler ce dossier",
+  "msg5dc1fa7b": "Utiliser ce dossier",
   "selectStorageDrive": "Sélectionner le lecteur de stockage",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1242,14 @@
   "msgef7ae768": "Plus récents d'abord (groupés par mois)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Plus anciens d'abord (groupés par mois)",
   "@msg424a0110": {
@@ -3709,7 +3717,7 @@
   "ui_undo": "Annuler",
   "ui_redo": "Rétablir",
   "ui_add_selected": "Ajouter la sélection ({count})",
-  "ui_pin_selected": "Épingler la sélection ({count})",
+  "ui_pin_selected": "Utiliser la sélection ({count})",
   "msg_vault_choose_mode": "Choisir le mode de protection",
   "msg_vault_mode_desc": "Choisis comment protéger les fichiers sélectionnés. Les fichiers sécurisés sont chiffrés avec AES-256-GCM.",
   "ui_secure_import": "Importation sécurisée (Sandbox)",
@@ -4334,6 +4342,7 @@
   "cat_backup_restore_desc": "Sauvegarder",
   "cat_storage_volume": "Stockage",
   "ui_columns_per_row": "Colonnes par ligne",
+  "ui_2columns": "2 Colonnes",
   "ui_3columns": "3 Colonnes",
   "ui_4columns": "4 Colonnes",
   "msge8b8e9b3": "Actions rapides",

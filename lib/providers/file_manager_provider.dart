@@ -1309,7 +1309,7 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  int _categoriesGridColumns = 4;
+  int _categoriesGridColumns = 3;
   int get categoriesGridColumns => _categoriesGridColumns;
 
   void setCategoriesGridColumns(int columns) {

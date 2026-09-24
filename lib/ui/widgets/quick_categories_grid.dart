@@ -8,7 +8,6 @@ import '../../services/preferences_service.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
-import '../screens/more_settings_screen.dart';
 import '../../models/media_type.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/utils.dart';
@@ -239,17 +238,8 @@ class QuickCategoriesGrid extends StatefulWidget {
         'isCustom': false,
         'pageBuilder': () => const AppManagerScreen(),
       },
-      '设置': {
-        'label': l10n.cat_settings,
-        'icon': Broken.setting_2,
-        'color': categoryColor,
-        'iconColor': isDark
-            ? Colors.blueGrey.shade300
-            : Colors.blueGrey, // 蓝灰（中性）
-        'count': l10n.cat_config,
-        'isCustom': false,
-        'pageBuilder': () => const MoreSettingsScreen(),
-      },
+      // 注意：「设置」不再是分类页卡片（v2.1.7 起移到首页底部「我的」页），
+      // 不要在此恢复 '设置' 定义 —— 否则它会重新出现在分类页与自定义面板里。
       '备份/恢复': {
         'label': l10n.cat_backup_restore,
         'icon': Broken.save_2,
@@ -465,7 +455,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
     final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
-    final childAspectRatio = columns == 4 ? 0.72 : 0.95;
+    final childAspectRatio = columns == 4
+        ? 0.78
+        : (columns == 3 ? 1.10 : 1.30);
     final itemHeight = itemWidth / childAspectRatio;
 
     double colFraction = localPosition.dx / (itemWidth + 2);
@@ -810,7 +802,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           if (activeList.isEmpty)
             Center(
               child: Padding(
@@ -838,7 +830,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final gridItemW =
                         (constraints.maxWidth - (columns - 1) * 2) / columns;
                     final iconSize =
-                        gridItemW * (columns == 4 ? 0.50 : 0.44);
+                        gridItemW *
+                        (columns == 4 ? 0.46 : (columns == 3 ? 0.40 : 0.30));
                     return GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
@@ -847,7 +840,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     crossAxisCount: columns,
                     crossAxisSpacing: 2,
                     mainAxisSpacing: 2,
-                    childAspectRatio: columns == 4 ? 0.72 : 0.95,
+                    childAspectRatio: columns == 4
+                        ? 0.78
+                        : (columns == 3 ? 1.10 : 1.30),
                   ),
                   itemCount: activeList.length,
                   itemBuilder: (context, index) {
@@ -1436,6 +1431,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                     color: theme.colorScheme.onSurface.withOpacity(0.8),
                                   ),
                                   items: [
+                                    DropdownMenuItem(
+                                      value: 2,
+                                      child: Text(L10n.of(context).ui_2columns),
+                                    ),
                                     DropdownMenuItem(
                                       value: 3,
                                       child: Text(L10n.of(context).ui_3columns),

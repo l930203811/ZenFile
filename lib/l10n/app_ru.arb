@@ -1139,7 +1139,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Выбрать и закрепить папку",
+  "msg33b0b21c": "Выбрать папку",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1151,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Закрепить эту папку",
+  "msg5dc1fa7b": "Использовать эту папку",
   "selectStorageDrive": "Выбрать диск хранения",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1242,14 @@
   "msgef7ae768": "Сначала Новые (сгруппировано по месяцам)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Сначала Старые (сгруппировано по месяцам)",
   "@msg424a0110": {
@@ -3709,7 +3717,7 @@
   "ui_undo": "Отменить",
   "ui_redo": "Повторить",
   "ui_add_selected": "Добавить Выбранные ({count})",
-  "ui_pin_selected": "Закрепить выбранное ({count})",
+  "ui_pin_selected": "Использовать выбранное ({count})",
   "msg_vault_choose_mode": "Выбрать режим защиты",
   "msg_vault_mode_desc": "Выберите, как защитить выбранные файлы. Защищённые файлы шифруются с помощью AES-256-GCM.",
   "ui_secure_import": "Безопасный импорт (Песочница)",
@@ -4334,6 +4342,7 @@
   "cat_backup_restore_desc": "Резервное копирование",
   "cat_storage_volume": "Хранилище",
   "ui_columns_per_row": "Колонки в строке",
+  "ui_2columns": "2 Колонки",
   "ui_3columns": "3 Колонки",
   "ui_4columns": "4 Колонки",
   "msge8b8e9b3": "Быстрые действия",

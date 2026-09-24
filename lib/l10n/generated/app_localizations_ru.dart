@@ -967,7 +967,7 @@ class L10nRu extends L10n {
   String get msgfba1f416 => 'Введите имя папки';
 
   @override
-  String get msg33b0b21c => 'Выбрать и закрепить папку';
+  String get msg33b0b21c => 'Выбрать папку';
 
   @override
   String get msgff3200cc => 'Очистить Выбор';
@@ -976,7 +976,7 @@ class L10nRu extends L10n {
   String get msg4614630a => 'Папка пуста';
 
   @override
-  String get msg5dc1fa7b => 'Закрепить эту папку';
+  String get msg5dc1fa7b => 'Использовать эту папку';
 
   @override
   String get selectStorageDrive => 'Выбрать диск хранения';
@@ -1055,6 +1055,11 @@ class L10nRu extends L10n {
 
   @override
   String get msgb8140039 => 'Сначала Старые (сгруппировано по месяцам)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Неизвестная Дата';
@@ -2423,10 +2428,6 @@ class L10nRu extends L10n {
   @override
   String get ui_transferring_files => 'Передача файлов';
 
-  String get ui_transfers => 'Передачи';
-  String get ui_profile => 'Профиль';
-  String get msg_coming_soon => 'Скоро';
-
   @override
   String get ui_time_remaining => 'осталось';
 
@@ -3721,7 +3722,7 @@ class L10nRu extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Закрепить выбранное ($count)';
+    return 'Использовать выбранное ($count)';
   }
 
   @override
@@ -4478,6 +4479,9 @@ class L10nRu extends L10n {
 
   @override
   String get ui_columns_per_row => 'Колонки в строке';
+
+  @override
+  String get ui_2columns => '2 Колонки';
 
   @override
   String get ui_3columns => '3 Колонки';
@@ -7951,4 +7955,13 @@ class L10nRu extends L10n {
   @override
   String get audio_opensles_desc =>
       'Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.';
+
+  @override
+  String get ui_transfers => 'Передачи';
+
+  @override
+  String get ui_profile => 'Профиль';
+
+  @override
+  String get msg_coming_soon => 'Скоро';
 }
