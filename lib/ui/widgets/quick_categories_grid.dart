@@ -464,12 +464,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
-    final itemWidth = (screenWidth - (columns - 1) * 6) / columns;
+    final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
     final childAspectRatio = columns == 4 ? 0.62 : 0.85;
     final itemHeight = itemWidth / childAspectRatio;
 
-    double colFraction = localPosition.dx / (itemWidth + 6);
-    double rowFraction = localPosition.dy / (itemHeight + 6);
+    double colFraction = localPosition.dx / (itemWidth + 2);
+    double rowFraction = localPosition.dy / (itemHeight + 2);
 
     int adjustedCol = colFraction.round();
     int adjustedRow = rowFraction.round();
@@ -836,7 +836,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final gridItemW =
-                        (constraints.maxWidth - (columns - 1) * 6) / columns;
+                        (constraints.maxWidth - (columns - 1) * 2) / columns;
                     final plateW = gridItemW * 0.98;
                     final plateH = plateW * (columns == 4 ? 0.70 : 0.50);
                     final iconSize = plateW * (columns == 4 ? 0.52 : 0.46);
@@ -846,8 +846,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 6,
-                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 2,
+                    mainAxisSpacing: 2,
                     childAspectRatio: columns == 4 ? 0.62 : 0.85,
                   ),
                   itemCount: activeList.length,
@@ -864,31 +864,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final action = cat['action'] as VoidCallback?;
                     final shape = fileManagerProvider.categoryIconShape;
                     final isSquare = shape == 'square';
-                    final isDark = theme.brightness == Brightness.dark;
-                    final glowBlue = isDark
-                        ? const Color(0xFF9AA7FF)
-                        : const Color(0xFF4A55E0);
-                    final plateGradientColors = isDark
-                        ? const [Color(0xFF3A3F4A), Color(0xFF20242C)]
-                        : const [Color(0xFFF7FAFF), Color(0xFFD6DEEA)];
                     final plateShape = isSquare
                         ? RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            side: BorderSide(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.10)
-                                  : Colors.white.withOpacity(0.55),
-                              width: 0.6,
-                            ),
+                            borderRadius: BorderRadius.circular(8),
                           )
-                        : CircleBorder(
-                            side: BorderSide(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.10)
-                                  : Colors.white.withOpacity(0.55),
-                              width: 0.6,
-                            ),
-                          );
+                        : const CircleBorder();
                     final showLabels =
                         PreferencesService.getShowCategoryLabels();
                     final iconKey = GlobalKey();
@@ -954,43 +934,36 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       },
                       child: Opacity(
                         opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
-                        child: Column(
+                        child: Container(
                           key: ValueKey(labelKey),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withOpacity(0.22),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                             Material(
                               key: iconKey,
-                              color: Colors.transparent,
-                              child: Ink(
-                                width: plateW,
-                                height: plateH,
-                                decoration: BoxDecoration(
-                                  shape: isSquare
-                                      ? BoxShape.rectangle
-                                      : BoxShape.circle,
-                                  borderRadius: isSquare
-                                      ? BorderRadius.circular(6)
-                                      : null,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: plateGradientColors,
-                                  ),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? Colors.white.withOpacity(0.10)
-                                        : Colors.white.withOpacity(0.55),
-                                    width: 0.6,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: glowBlue.withOpacity(0.22),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: InkWell(
+                              color: isTarget
+                                  ? color.withOpacity(0.3)
+                                  : color.withOpacity(0.15),
+                              shape: plateShape,
+                              child: InkWell(
                                   onTap: () {
                                     if (!_isDragging) {
                                       if (pageBuilder != null) {
@@ -1017,7 +990,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                     ),
                                   ),
                                 ),
-                              ),
                             ),
                             if (showLabels) ...[
                               const SizedBox(height: 6),
@@ -1053,6 +1025,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                               ),
                             ),
                           ],
+                        ),
                         ),
                       ),
                     );
@@ -1769,19 +1742,13 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
               shape: iconShape == 'square'
                   ? BoxShape.rectangle
                   : BoxShape.circle,
               borderRadius: iconShape == 'square'
                   ? BorderRadius.circular(6)
                   : null,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: Theme.of(context).brightness == Brightness.dark
-                    ? const [Color(0xFF3A3F4A), Color(0xFF20242C)]
-                    : const [Color(0xFFF7FAFF), Color(0xFFD6DEEA)],
-              ),
             ),
             child: Icon(icon, color: color, size: 22),
           ),
