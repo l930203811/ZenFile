@@ -8011,4 +8011,7 @@ class L10nRu extends L10n {
 
   @override
   String get msg_coming_soon => 'Скоро';
+
+  @override
+  String get toolbox_text_editor => 'Текстовый редактор';
 }

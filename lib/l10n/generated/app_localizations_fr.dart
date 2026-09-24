@@ -8058,4 +8058,7 @@ class L10nFr extends L10n {
 
   @override
   String get msg_coming_soon => 'Bientôt disponible';
+
+  @override
+  String get toolbox_text_editor => 'Éditeur de texte';
 }

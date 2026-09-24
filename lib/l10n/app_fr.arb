@@ -7995,5 +7995,9 @@
   },
   "ui_transfers": "Transferts",
   "ui_profile": "Profil",
-  "msg_coming_soon": "Bientôt disponible"
+  "msg_coming_soon": "Bientôt disponible",
+  "toolbox_text_editor": "Éditeur de texte",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

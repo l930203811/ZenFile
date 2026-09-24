@@ -14109,6 +14109,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'即将推出'**
   String get msg_coming_soon;
+
+  /// toolbox: text editor entry
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器'**
+  String get toolbox_text_editor;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

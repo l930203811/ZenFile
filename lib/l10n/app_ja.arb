@@ -7999,5 +7999,9 @@
   },
   "ui_transfers": "転送",
   "ui_profile": "プロフィール",
-  "msg_coming_soon": "近日公開"
+  "msg_coming_soon": "近日公開",
+  "toolbox_text_editor": "テキストエディタ",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

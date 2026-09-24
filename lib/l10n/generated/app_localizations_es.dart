@@ -8037,4 +8037,7 @@ class L10nEs extends L10n {
 
   @override
   String get msg_coming_soon => 'Próximamente';
+
+  @override
+  String get toolbox_text_editor => 'Editor de texto';
 }

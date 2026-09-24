@@ -7526,6 +7526,9 @@ class L10nZh extends L10n {
 
   @override
   String get msg_coming_soon => '即将推出';
+
+  @override
+  String get toolbox_text_editor => '文本编辑器';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15020,4 +15023,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_coming_soon => '即將推出';
+
+  @override
+  String get toolbox_text_editor => '文字編輯器';
 }

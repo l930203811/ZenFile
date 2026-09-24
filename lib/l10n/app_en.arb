@@ -8061,5 +8061,9 @@
   },
   "ui_transfers": "Transfers",
   "ui_profile": "Profile",
-  "msg_coming_soon": "Coming soon"
+  "msg_coming_soon": "Coming soon",
+  "toolbox_text_editor": "Text Editor",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

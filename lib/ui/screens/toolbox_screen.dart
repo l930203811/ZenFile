@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../providers/file_manager_provider.dart';
 import 'vault_lock_screen.dart';
 import 'wake_on_lan_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'decibel_meter_screen.dart';
+import 'internal_file_picker_screen.dart';
+import 'text_editor_screen.dart';
 
 /// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 扫码 / 分贝仪」入口，
 /// 点击进入对应页面。进入/退出本页的动画由调用方（网格/抽屉）统一控制，
@@ -42,6 +46,25 @@ class ToolboxScreen extends StatelessWidget {
         color: Colors.deepPurple,
         buildPage: () => const DecibelMeterScreen(),
       ),
+      _ToolboxItem(
+        icon: Broken.document_text,
+        title: l10n.toolbox_text_editor,
+        color: Colors.blue,
+        onTap: () async {
+          final paths = await InternalFilePickerScreen.show(
+            context,
+            rootPath: context.read<FileManagerProvider>().rootPath,
+          );
+          if (paths != null && paths.isNotEmpty && context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TextEditorScreen(filePath: paths.first),
+              ),
+            );
+          }
+        },
+      ),
     ];
 
     return Scaffold(
@@ -78,12 +101,13 @@ class ToolboxScreen extends StatelessWidget {
                   Icons.chevron_right,
                   color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => item.buildPage()),
-                  );
-                },
+                onTap: item.onTap ??
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => item.buildPage!()),
+                      );
+                    },
               ),
             ),
           );
@@ -97,12 +121,14 @@ class _ToolboxItem {
   final IconData icon;
   final String title;
   final Color color;
-  final Widget Function() buildPage;
+  final Widget Function()? buildPage;
+  final VoidCallback? onTap;
 
   const _ToolboxItem({
     required this.icon,
     required this.title,
     required this.color,
-    required this.buildPage,
+    this.buildPage,
+    this.onTap,
   });
 }

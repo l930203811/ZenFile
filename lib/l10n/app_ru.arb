@@ -7995,5 +7995,9 @@
   },
   "ui_transfers": "Передачи",
   "ui_profile": "Профиль",
-  "msg_coming_soon": "Скоро"
+  "msg_coming_soon": "Скоро",
+  "toolbox_text_editor": "Текстовый редактор",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

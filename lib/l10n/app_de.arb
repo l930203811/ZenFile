@@ -7992,5 +7992,9 @@
   },
   "ui_transfers": "Übertragungen",
   "ui_profile": "Profil",
-  "msg_coming_soon": "Bald verfügbar"
+  "msg_coming_soon": "Bald verfügbar",
+  "toolbox_text_editor": "Texteditor",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

@@ -7934,4 +7934,7 @@ class L10nEn extends L10n {
 
   @override
   String get msg_coming_soon => 'Coming soon';
+
+  @override
+  String get toolbox_text_editor => 'Text Editor';
 }

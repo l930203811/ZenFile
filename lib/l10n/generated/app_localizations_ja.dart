@@ -7695,4 +7695,7 @@ class L10nJa extends L10n {
 
   @override
   String get msg_coming_soon => '近日公開';
+
+  @override
+  String get toolbox_text_editor => 'テキストエディタ';
 }

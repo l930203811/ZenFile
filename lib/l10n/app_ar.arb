@@ -7995,5 +7995,9 @@
   },
   "ui_transfers": "النقل",
   "ui_profile": "الملف الشخصي",
-  "msg_coming_soon": "قريباً"
+  "msg_coming_soon": "قريباً",
+  "toolbox_text_editor": "محرر النصوص",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

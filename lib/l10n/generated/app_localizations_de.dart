@@ -8024,4 +8024,7 @@ class L10nDe extends L10n {
 
   @override
   String get msg_coming_soon => 'Bald verfügbar';
+
+  @override
+  String get toolbox_text_editor => 'Texteditor';
 }

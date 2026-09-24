@@ -24,6 +24,8 @@ import '../screens/recycle_bin_screen.dart';
 import '../screens/quick_transfer_screen.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/decibel_meter_screen.dart';
+import '../screens/internal_file_picker_screen.dart';
+import '../screens/text_editor_screen.dart';
 import '../../services/preferences_service.dart';
 
 class ZenFileDrawer extends StatefulWidget {
@@ -303,6 +305,33 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                           onTap: () {
                             Navigator.pop(context);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const DecibelMeterScreen()));
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.document_text,
+                          title: L10n.of(context).toolbox_text_editor,
+                          onTap: () async {
+                            final navigator = Navigator.of(context);
+                            navigator.pop();
+                            final paths = await navigator.push<List<String>>(
+                              MaterialPageRoute(
+                                builder: (_) => InternalFilePickerScreen(
+                                  rootPath: fileManager.rootPath,
+                                ),
+                              ),
+                            );
+                            if (paths != null &&
+                                paths.isNotEmpty &&
+                                navigator.mounted) {
+                              navigator.push(
+                                MaterialPageRoute(
+                                  builder: (_) => TextEditorScreen(
+                                    filePath: paths.first,
+                                  ),
+                                ),
+                              );
+                            }
                           },
                         ),
                       ],

@@ -8143,5 +8143,9 @@
   },
   "ui_transfers": "傳輸",
   "ui_profile": "我的",
-  "msg_coming_soon": "即將推出"
+  "msg_coming_soon": "即將推出",
+  "toolbox_text_editor": "文字編輯器",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

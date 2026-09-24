@@ -8288,5 +8288,9 @@
   },
   "ui_transfers": "传输",
   "ui_profile": "我的",
-  "msg_coming_soon": "即将推出"
+  "msg_coming_soon": "即将推出",
+  "toolbox_text_editor": "文本编辑器",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  }
 }

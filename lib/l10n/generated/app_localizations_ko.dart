@@ -7699,4 +7699,7 @@ class L10nKo extends L10n {
 
   @override
   String get msg_coming_soon => '곧 제공 예정';
+
+  @override
+  String get toolbox_text_editor => '텍스트 편집기';
 }

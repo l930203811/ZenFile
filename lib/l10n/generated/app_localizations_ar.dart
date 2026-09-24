@@ -7906,4 +7906,7 @@ class L10nAr extends L10n {
 
   @override
   String get msg_coming_soon => 'قريباً';
+
+  @override
+  String get toolbox_text_editor => 'محرر النصوص';
 }
