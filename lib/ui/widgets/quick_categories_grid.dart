@@ -1012,7 +1012,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                     height: plateH,
                                     child: Icon(
                                       icon,
-                                      color: glowBlue,
+                                      color: iconColor,
                                       size: iconSize,
                                     ),
                                   ),
@@ -1783,13 +1783,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                     : const [Color(0xFFF7FAFF), Color(0xFFD6DEEA)],
               ),
             ),
-            child: Icon(
-              icon,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF9AA7FF)
-                  : const Color(0xFF4A55E0),
-              size: 22,
-            ),
+            child: Icon(icon, color: color, size: 22),
           ),
           title: Row(
             children: [
