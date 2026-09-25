@@ -15,6 +15,7 @@ import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
+import '../screens/more_settings_screen.dart';
 import '../screens/update_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
@@ -323,6 +324,17 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       ],
                     ),
 
+                    // ===== 设置 =====
+                    _buildDrawerTile(
+                      context,
+                      icon: Broken.setting_2,
+                      title: L10n.of(context).ui_personalize_settings,
+                      isPrimary: true,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
+                      },
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                       child: Divider(color: theme.colorScheme.onSurface.withOpacity(0.08), height: 1),
