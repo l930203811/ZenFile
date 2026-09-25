@@ -647,20 +647,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       _handleRefresh();
                     },
                   ),
-                  // 常用功能：自定义快捷方式
-                  IconButton(
-                    icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).msge7d18d73,
-                    onPressed: () {
-                      _switchTab(0);
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        QuickCategoriesGrid.showCustomizeDialog(context, (index) {
-                          if (!mounted) return;
-                          _switchTab(index);
-                        });
-                      });
-                    },
-                  ),
                   // 常用功能：排序
                   IconButton(
                     icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
