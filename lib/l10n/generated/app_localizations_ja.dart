@@ -190,7 +190,44 @@ class L10nJa extends L10n {
   String get v1041 => 'v1.0.43 (表示)';
 
   @override
-  String get ui_view_update => '更新を表示';
+  String get ui_view_update => 'バージョン更新';
+
+  @override
+  String get update_github_check => 'GitHub バージョンチェック';
+
+  @override
+  String update_current_version(String version) {
+    return '現在のバージョン：$version';
+  }
+
+  @override
+  String get update_checking => 'アップデートを確認中…';
+
+  @override
+  String get update_latest => '最新バージョンです';
+
+  @override
+  String update_new_version(String version) {
+    return '新しいバージョンがあります：$version';
+  }
+
+  @override
+  String get update_check_failed => '更新の確認に失敗しました。ネットワークを確認して再試行してください';
+
+  @override
+  String get update_retry => '再試行';
+
+  @override
+  String get update_download_install => 'ダウンロードしてインストール';
+
+  @override
+  String get update_downloading => 'アップデートをダウンロード中…';
+
+  @override
+  String get update_download_failed => 'ダウンロードに失敗しました。再試行してください';
+
+  @override
+  String get update_view_github => 'GitHub で確認';
 
   @override
   String get zenfileflutter =>
@@ -917,7 +954,7 @@ class L10nJa extends L10n {
   String get msgfba1f416 => 'フォルダ名を入力';
 
   @override
-  String get msg33b0b21c => 'フォルダを選択してピン留め';
+  String get msg33b0b21c => 'フォルダを選択';
 
   @override
   String get msgff3200cc => '選択をクリア';
@@ -926,7 +963,7 @@ class L10nJa extends L10n {
   String get msg4614630a => 'フォルダが空です';
 
   @override
-  String get msg5dc1fa7b => 'このフォルダをピン留め';
+  String get msg5dc1fa7b => 'このフォルダを使用';
 
   @override
   String get selectStorageDrive => 'ストレージドライブを選択';
@@ -1004,6 +1041,11 @@ class L10nJa extends L10n {
 
   @override
   String get msgb8140039 => '古いもの順（月別グループ）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '不明な日付';
@@ -2599,6 +2641,74 @@ class L10nJa extends L10n {
   String get ui_nav => 'ローカル';
 
   @override
+  String get update_err_network => 'サーバーに接続できません。ネットワークを確認して再試行してください';
+
+  @override
+  String get update_err_timeout => '接続がタイムアウトしました。ネットワークまたはプロキシを確認して再試行してください';
+
+  @override
+  String get update_err_rate_limit => 'GitHub のリクエスト上限に達しました。しばらくしてから再試行してください';
+
+  @override
+  String update_err_http(String code) {
+    return 'サーバーエラーが返されました（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => 'サーバーの応答データが異常です。しばらくしてから再試行してください';
+
+  @override
+  String get update_err_version_unknown =>
+      '現在のバージョン番号を取得できません。アプリを再起動して再試行してください';
+
+  @override
+  String update_remote_version(String version) {
+    return '最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '確認時刻：$time';
+  }
+
+  @override
+  String get update_degraded_hint => 'ウェブ検出に切り替えました（アプリ内ダウンロードは不可）';
+
+  @override
+  String get update_source_label => '更新ソース';
+
+  @override
+  String get update_source_default => 'GitHub 公式';
+
+  @override
+  String get update_source_custom => 'カスタムソース';
+
+  @override
+  String get update_source_dialog_title => 'カスタム更新ソース';
+
+  @override
+  String get update_source_dialog_desc =>
+      '空欄の場合は GitHub 公式 API を使用します。ミラーまたは自作のエンドポイント（GitHub と同じ構造の JSON を返すもの）を入力できます。URL 内の REPO はリポジトリパスを表します。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => 'URL が無効です。http:// または https:// で始めてください';
+
+  @override
+  String get ui_paste_and_clear => '貼り付けて消去';
+
+  @override
+  String get ui_cut_paste_hint => '切り取りは移動です。貼り付け後に自動で消去';
+
+  @override
+  String get ui_search_in_settings => '設定内を検索';
+
+  @override
+  String get ui_search_group_nav => 'ナビゲーション';
+
+  @override
   String get ui_home => 'ホーム';
 
   @override
@@ -3548,7 +3658,7 @@ class L10nJa extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '選択をピン留め ($count)';
+    return '選択を使用 ($count)';
   }
 
   @override
@@ -4294,10 +4404,16 @@ class L10nJa extends L10n {
   String get ui_columns_per_row => '1行あたりの列数';
 
   @override
+  String get ui_2columns => '2列';
+
+  @override
   String get ui_3columns => '3列';
 
   @override
   String get ui_4columns => '4列';
+
+  @override
+  String get ui_show_custom_entry => 'カスタム項目を表示';
 
   @override
   String get msge8b8e9b3 => 'クイック操作';
@@ -4862,7 +4978,7 @@ class L10nJa extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => 'デバイス内のあらゆるファイル、フォルダ、ドキュメント、メディアを即座に検索';
+  String get ui_global_search_hint => 'ファイル、アプリ、設定を検索';
 
   @override
   String get ui_delete_item_confirm => 'この項目を削除してもよろしいですか？この操作は元に戻せません。';
@@ -5992,7 +6108,7 @@ class L10nJa extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '共有のスキャンに失敗しました: \$error';
+    return '共有のスキャンに失敗しました: $error';
   }
 
   @override
@@ -7037,6 +7153,10 @@ class L10nJa extends L10n {
   String get vault_decrypt_open_progress => '復号して開いています...';
 
   @override
+  String get crash_report_saved =>
+      '前回の異常終了を検出しました。診断レポートを ZenFile/crash に保存しました';
+
+  @override
   String get vault_import_backup_confirm =>
       'インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？';
 
@@ -7628,4 +7748,34 @@ class L10nJa extends L10n {
   @override
   String get audio_opensles_desc =>
       '音響エフェクトアプリ（RootlessJamesDSP など）に対応するのは AudioTrack のみです。OpenSL ES はセッションIDをシステムが割り当てるため対応できません。切り替えは即時反映されます。';
+
+  @override
+  String get ui_transfers => '転送';
+
+  @override
+  String get ui_profile => 'プロフィール';
+
+  @override
+  String get msg_coming_soon => '近日公開';
+
+  @override
+  String get toolbox_text_editor => 'テキストエディタ';
+
+  @override
+  String get ui_video_progress_always_show => 'プログレスバー常時表示';
+
+  @override
+  String get ui_image_fit_width => '幅に合わせる';
+
+  @override
+  String get ui_image_fit_height => '高さに合わせる';
+
+  @override
+  String get ui_image_fit_original => '原寸大';
+
+  @override
+  String get ui_image_fit_mode => '表示モード';
+
+  @override
+  String get ui_text_editor_import => 'テキストファイルを読み込む';
 }

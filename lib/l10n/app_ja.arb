@@ -206,7 +206,18 @@
   },
   "v103": "v1.0.3 (表示)",
   "v1041": "v1.0.43 (表示)",
-  "ui_view_update": "更新を表示",
+  "ui_view_update": "バージョン更新",
+  "update_github_check": "GitHub バージョンチェック",
+  "update_current_version": "現在のバージョン：{version}",
+  "update_checking": "アップデートを確認中…",
+  "update_latest": "最新バージョンです",
+  "update_new_version": "新しいバージョンがあります：{version}",
+  "update_check_failed": "更新の確認に失敗しました。ネットワークを確認して再試行してください",
+  "update_retry": "再試行",
+  "update_download_install": "ダウンロードしてインストール",
+  "update_downloading": "アップデートをダウンロード中…",
+  "update_download_failed": "ダウンロードに失敗しました。再試行してください",
+  "update_view_github": "GitHub で確認",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1143,7 +1154,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "フォルダを選択してピン留め",
+  "msg33b0b21c": "フォルダを選択",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1155,7 +1166,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "このフォルダをピン留め",
+  "msg5dc1fa7b": "このフォルダを使用",
   "selectStorageDrive": "ストレージドライブを選択",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1246,6 +1257,14 @@
   "msgef7ae768": "新しいもの順（月別グループ）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}年{month}月",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "古いもの順（月別グループ）",
   "@msg424a0110": {
@@ -3107,6 +3126,36 @@
   "cat_vault_desc": "安全な保存",
   "cat_quick_categories": "カテゴリ",
   "ui_nav": "ローカル",
+  "update_err_network": "サーバーに接続できません。ネットワークを確認して再試行してください",
+  "update_err_timeout": "接続がタイムアウトしました。ネットワークまたはプロキシを確認して再試行してください",
+  "update_err_rate_limit": "GitHub のリクエスト上限に達しました。しばらくしてから再試行してください",
+  "update_err_http": "サーバーエラーが返されました（HTTP {code}）",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "サーバーの応答データが異常です。しばらくしてから再試行してください",
+  "update_err_version_unknown": "現在のバージョン番号を取得できません。アプリを再起動して再試行してください",
+  "update_remote_version": "最新：{version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "確認時刻：{time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "ウェブ検出に切り替えました（アプリ内ダウンロードは不可）",
+  "update_source_label": "更新ソース",
+  "update_source_default": "GitHub 公式",
+  "update_source_custom": "カスタムソース",
+  "update_source_dialog_title": "カスタム更新ソース",
+  "update_source_dialog_desc": "空欄の場合は GitHub 公式 API を使用します。ミラーまたは自作のエンドポイント（GitHub と同じ構造の JSON を返すもの）を入力できます。URL 内の REPO はリポジトリパスを表します。",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "URL が無効です。http:// または https:// で始めてください",
+
+  "ui_paste_and_clear": "貼り付けて消去",
+  "ui_cut_paste_hint": "切り取りは移動です。貼り付け後に自動で消去",
+  "ui_search_in_settings": "設定内を検索",
+  "ui_search_group_nav": "ナビゲーション",
   "ui_home": "ホーム",
   "ui_recycle_bin": "ごみ箱",
   "ui_dark_mode": "ダークモード",
@@ -3713,7 +3762,7 @@
   "ui_undo": "元に戻す",
   "ui_redo": "やり直す",
   "ui_add_selected": "選択を追加 ({count})",
-  "ui_pin_selected": "選択をピン留め ({count})",
+  "ui_pin_selected": "選択を使用 ({count})",
   "msg_vault_choose_mode": "保護モードを選択",
   "msg_vault_mode_desc": "選択したファイルの保護方法を選択します。保護されたファイルは AES-256-GCM で暗号化されます。",
   "ui_secure_import": "セキュアインポート（サンドボックス）",
@@ -4338,8 +4387,10 @@
   "cat_backup_restore_desc": "バックアップ",
   "cat_storage_volume": "ストレージ",
   "ui_columns_per_row": "1行あたりの列数",
+  "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
+  "ui_show_custom_entry": "カスタム項目を表示",
   "msge8b8e9b3": "クイック操作",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4849,7 +4900,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "デバイス内のあらゆるファイル、フォルダ、ドキュメント、メディアを即座に検索",
+  "ui_global_search_hint": "ファイル、アプリ、設定を検索",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6185,7 +6236,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (ja)"
   },
-  "ui_share_scan_failed": "共有のスキャンに失敗しました: $error",
+  "ui_share_scan_failed": "共有のスキャンに失敗しました: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7346,6 +7397,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "前回の異常終了を検出しました。診断レポートを ZenFile/crash に保存しました",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "インポートすると、バックアップの内容でサンドボックスと暗号化設定が上書きされます（ロック解除パスワードは影響しません）。続けますか？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7969,6 +8024,36 @@
   "audio_opensles_desc": "音響エフェクトアプリ（RootlessJamesDSP など）に対応するのは AudioTrack のみです。OpenSL ES はセッションIDをシステムが割り当てるため対応できません。切り替えは即時反映されます。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "転送",
+  "ui_profile": "プロフィール",
+  "msg_coming_soon": "近日公開",
+  "toolbox_text_editor": "テキストエディタ",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "プログレスバー常時表示",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "幅に合わせる",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "高さに合わせる",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "原寸大",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "表示モード",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "テキストファイルを読み込む",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

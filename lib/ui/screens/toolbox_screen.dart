@@ -3,11 +3,11 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'vault_lock_screen.dart';
 import 'wake_on_lan_screen.dart';
-import 'quick_transfer_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'decibel_meter_screen.dart';
+import 'text_editor_screen.dart';
 
-/// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 快传」三个入口，
+/// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 扫码 / 分贝仪」入口，
 /// 点击进入对应页面。进入/退出本页的动画由调用方（网格/抽屉）统一控制，
 /// 与分类页其它类别的子页面行为保持一致。
 class ToolboxScreen extends StatelessWidget {
@@ -32,12 +32,6 @@ class ToolboxScreen extends StatelessWidget {
         buildPage: () => const WakeOnLanScreen(),
       ),
       _ToolboxItem(
-        icon: Broken.send_2,
-        title: l10n.quick_transfer,
-        color: Colors.blue,
-        buildPage: () => const QuickTransferScreen(),
-      ),
-      _ToolboxItem(
         icon: Broken.scan,
         title: l10n.toolbox_scan,
         color: Colors.teal,
@@ -48,6 +42,18 @@ class ToolboxScreen extends StatelessWidget {
         title: l10n.decibel_meter_title,
         color: Colors.deepPurple,
         buildPage: () => const DecibelMeterScreen(),
+      ),
+      _ToolboxItem(
+        icon: Broken.document_text,
+        title: l10n.toolbox_text_editor,
+        color: Colors.blue,
+        onTap: () {
+          // 直接打开空文本编辑器；需要打开已有文件时用编辑器右上角「导入文本文件」
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TextEditorScreen()),
+          );
+        },
       ),
     ];
 
@@ -85,12 +91,13 @@ class ToolboxScreen extends StatelessWidget {
                   Icons.chevron_right,
                   color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => item.buildPage()),
-                  );
-                },
+                onTap: item.onTap ??
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => item.buildPage!()),
+                      );
+                    },
               ),
             ),
           );
@@ -104,12 +111,14 @@ class _ToolboxItem {
   final IconData icon;
   final String title;
   final Color color;
-  final Widget Function() buildPage;
+  final Widget Function()? buildPage;
+  final VoidCallback? onTap;
 
   const _ToolboxItem({
     required this.icon,
     required this.title,
     required this.color,
-    required this.buildPage,
+    this.buildPage,
+    this.onTap,
   });
 }

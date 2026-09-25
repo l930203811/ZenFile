@@ -205,7 +205,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Anzeigen)",
-  "ui_view_update": "Updates ansehen",
+  "ui_view_update": "Versionsupdates",
+  "update_github_check": "GitHub-Versionsprüfung",
+  "update_current_version": "Aktuelle Version: {version}",
+  "update_checking": "Suche nach Updates…",
+  "update_latest": "Sie verwenden die neueste Version",
+  "update_new_version": "Neue Version verfügbar: {version}",
+  "update_check_failed": "Update-Prüfung fehlgeschlagen. Netzwerk prüfen und erneut versuchen.",
+  "update_retry": "Wiederholen",
+  "update_download_install": "Herunterladen & installieren",
+  "update_downloading": "Update wird heruntergeladen…",
+  "update_download_failed": "Download fehlgeschlagen. Bitte erneut versuchen.",
+  "update_view_github": "Auf GitHub ansehen",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1136,7 +1147,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Ordner auswählen und anheften",
+  "msg33b0b21c": "Ordner auswählen",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1148,7 +1159,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Diesen Ordner anheften",
+  "msg5dc1fa7b": "Diesen Ordner verwenden",
   "selectStorageDrive": "Speicherlaufwerk auswählen",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1239,6 +1250,14 @@
   "msgef7ae768": "Neueste zuerst (nach Monat gruppiert)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Älteste zuerst (nach Monat gruppiert)",
   "@msg424a0110": {
@@ -3100,6 +3119,36 @@
   "cat_vault_desc": "Sicherer Speicher",
   "cat_quick_categories": "Kategorien",
   "ui_nav": "Lokal",
+  "update_err_network": "Keine Verbindung zum Server. Prüfe dein Netzwerk und versuche es erneut.",
+  "update_err_timeout": "Zeitüberschreitung. Prüfe Netzwerk oder Proxy und versuche es erneut.",
+  "update_err_rate_limit": "GitHub-Limit erreicht. Bitte später erneut versuchen.",
+  "update_err_http": "Der Server hat einen Fehler zurückgegeben (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Unerwartete Antwort vom Server. Bitte später erneut versuchen.",
+  "update_err_version_unknown": "Aktuelle Version nicht lesbar. Starte die App neu und versuche es erneut.",
+  "update_remote_version": "Neueste: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Geprüft um {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Auf Web-Prüfung zurückgestuft – In-App-Download nicht möglich",
+  "update_source_label": "Update-Quelle",
+  "update_source_default": "GitHub offiziell",
+  "update_source_custom": "Eigene Quelle",
+  "update_source_dialog_title": "Eigene Update-Quelle",
+  "update_source_dialog_desc": "Leer lassen für die offizielle GitHub-API. Du kannst einen Mirror oder einen eigenen Endpunkt eintragen, der JSON in gleicher Struktur liefert; REPO in der URL steht für den Repository-Pfad.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Ungültige Adresse – sie muss mit http:// oder https:// beginnen",
+
+  "ui_paste_and_clear": "Einfügen und leeren",
+  "ui_cut_paste_hint": "Ausschneiden = Verschieben; danach wird geleert",
+  "ui_search_in_settings": "In den Einstellungen suchen",
+  "ui_search_group_nav": "Navigation",
   "ui_home": "Start",
   "ui_recycle_bin": "Papierkorb",
   "ui_dark_mode": "Dunkler Modus",
@@ -3706,7 +3755,7 @@
   "ui_undo": "Rückgängig",
   "ui_redo": "Wiederholen",
   "ui_add_selected": "Auswahl hinzufügen ({count})",
-  "ui_pin_selected": "Auswahl anheften ({count})",
+  "ui_pin_selected": "Auswahl verwenden ({count})",
   "msg_vault_choose_mode": "Schutzmodus wählen",
   "msg_vault_mode_desc": "Wähle, wie du deine ausgewählten Dateien schützen möchtest. Gesicherte Dateien werden mit AES-256-GCM verschlüsselt.",
   "ui_secure_import": "Sicherer Import (Sandbox)",
@@ -4331,8 +4380,10 @@
   "cat_backup_restore_desc": "Sichern",
   "cat_storage_volume": "Speicher",
   "ui_columns_per_row": "Spalten pro Zeile",
+  "ui_2columns": "2 Spalten",
   "ui_3columns": "3 Spalten",
   "ui_4columns": "4 Spalten",
+  "ui_show_custom_entry": "Benutzerdefinierten Eintrag anzeigen",
   "msge8b8e9b3": "Schnellaktionen",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4842,7 +4893,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Finden Sie sofort Dateien, Ordner, Dokumente oder Medien auf Ihrem Gerät",
+  "ui_global_search_hint": "Dateien, Apps und Einstellungen suchen",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6178,7 +6229,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (de)"
   },
-  "ui_share_scan_failed": "Fehler beim Scannen der Freigaben: $error",
+  "ui_share_scan_failed": "Fehler beim Scannen der Freigaben: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7339,6 +7390,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "Vorheriges abnormales Beenden erkannt. Diagnosebericht in ZenFile/crash gespeichert",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "Beim Import werden die aktuelle Sandbox und die Verschlüsselungskonfiguration mit dem Backup-Inhalt überschrieben (das Entsperren-Passwort bleibt unberührt). Fortfahren?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7962,6 +8017,36 @@
   "audio_opensles_desc": "Sound-Apps wie RootlessJamesDSP können sich nur an AudioTrack-Modi anhängen; OpenSL ES nutzt eine vom System zugewiesene Session, an die sie sich nicht anhängen können. Umschalten wirkt sofort.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "Übertragungen",
+  "ui_profile": "Profil",
+  "msg_coming_soon": "Bald verfügbar",
+  "toolbox_text_editor": "Texteditor",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "Fortschrittsbalken immer anzeigen",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "An Breite anpassen",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "An Höhe anpassen",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "Originalgröße",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "Anzeigemodus",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Textdatei importieren",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

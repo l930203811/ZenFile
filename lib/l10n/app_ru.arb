@@ -205,7 +205,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Просмотр)",
-  "ui_view_update": "Посмотреть обновления",
+  "ui_view_update": "Обновления версии",
+  "update_github_check": "Проверка версии на GitHub",
+  "update_current_version": "Текущая версия: {version}",
+  "update_checking": "Проверка обновлений…",
+  "update_latest": "У вас последняя версия",
+  "update_new_version": "Доступна новая версия: {version}",
+  "update_check_failed": "Не удалось проверить обновления. Проверьте сеть и повторите.",
+  "update_retry": "Повторить",
+  "update_download_install": "Скачать и установить",
+  "update_downloading": "Загрузка обновления…",
+  "update_download_failed": "Ошибка загрузки. Повторите попытку.",
+  "update_view_github": "Открыть на GitHub",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1139,7 +1150,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Выбрать и закрепить папку",
+  "msg33b0b21c": "Выбрать папку",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1162,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Закрепить эту папку",
+  "msg5dc1fa7b": "Использовать эту папку",
   "selectStorageDrive": "Выбрать диск хранения",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1253,14 @@
   "msgef7ae768": "Сначала Новые (сгруппировано по месяцам)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Сначала Старые (сгруппировано по месяцам)",
   "@msg424a0110": {
@@ -3103,6 +3122,36 @@
   "cat_vault_desc": "Безопасное хранение",
   "cat_quick_categories": "Категории",
   "ui_nav": "Локальный",
+  "update_err_network": "Не удаётся подключиться к серверу. Проверьте сеть и повторите попытку.",
+  "update_err_timeout": "Время подключения истекло. Проверьте сеть или прокси и повторите попытку.",
+  "update_err_rate_limit": "Достигнут лимит запросов GitHub. Повторите попытку позже.",
+  "update_err_http": "Сервер вернул ошибку (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Неожиданный ответ сервера. Повторите попытку позже.",
+  "update_err_version_unknown": "Не удаётся получить текущую версию. Перезапустите приложение и повторите попытку.",
+  "update_remote_version": "Последняя: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Проверено в {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Переключено на веб-проверку — загрузка в приложении недоступна",
+  "update_source_label": "Источник обновлений",
+  "update_source_default": "Официальный GitHub",
+  "update_source_custom": "Свой источник",
+  "update_source_dialog_title": "Свой источник обновлений",
+  "update_source_dialog_desc": "Оставьте пустым, чтобы использовать официальный API GitHub. Можно указать зеркало или собственный эндпоинт, возвращающий JSON той же структуры; REPO в адресе означает путь репозитория.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Неверный адрес — он должен начинаться с http:// или https://",
+
+  "ui_paste_and_clear": "Вставить и очистить",
+  "ui_cut_paste_hint": "Вырезание = перемещение; после вставки очищается",
+  "ui_search_in_settings": "Поиск в настройках",
+  "ui_search_group_nav": "Навигация",
   "ui_home": "Главная",
   "ui_recycle_bin": "Корзина",
   "ui_dark_mode": "Тёмный Режим",
@@ -3709,7 +3758,7 @@
   "ui_undo": "Отменить",
   "ui_redo": "Повторить",
   "ui_add_selected": "Добавить Выбранные ({count})",
-  "ui_pin_selected": "Закрепить выбранное ({count})",
+  "ui_pin_selected": "Использовать выбранное ({count})",
   "msg_vault_choose_mode": "Выбрать режим защиты",
   "msg_vault_mode_desc": "Выберите, как защитить выбранные файлы. Защищённые файлы шифруются с помощью AES-256-GCM.",
   "ui_secure_import": "Безопасный импорт (Песочница)",
@@ -4334,8 +4383,10 @@
   "cat_backup_restore_desc": "Резервное копирование",
   "cat_storage_volume": "Хранилище",
   "ui_columns_per_row": "Колонки в строке",
+  "ui_2columns": "2 Колонки",
   "ui_3columns": "3 Колонки",
   "ui_4columns": "4 Колонки",
+  "ui_show_custom_entry": "Показывать пользовательский вход",
   "msge8b8e9b3": "Быстрые действия",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4845,7 +4896,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Мгновенно находите любые файлы, папки, документы или медиа на устройстве",
+  "ui_global_search_hint": "Искать файлы, приложения и настройки",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6181,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (ru)"
   },
-  "ui_share_scan_failed": "Ошибка сканирования папок: $error",
+  "ui_share_scan_failed": "Ошибка сканирования папок: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7342,6 +7393,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "Обнаружено аварийное завершение. Отчёт диагностики сохранён в ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "Импорт перезапишет текущую песочницу и настройки шифрования содержимым резервной копии (пароль разблокировки не изменится). Продолжить?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7965,6 +8020,36 @@
   "audio_opensles_desc": "Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "Передачи",
+  "ui_profile": "Профиль",
+  "msg_coming_soon": "Скоро",
+  "toolbox_text_editor": "Текстовый редактор",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "Всегда показывать прогресс",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "По ширине",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "По высоте",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "Оригинальный размер",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "Режим отображения",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Импортировать текстовый файл",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

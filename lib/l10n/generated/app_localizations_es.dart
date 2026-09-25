@@ -196,7 +196,45 @@ class L10nEs extends L10n {
   String get v1041 => 'v1.0.43 (Ver)';
 
   @override
-  String get ui_view_update => 'Ver actualizaciones';
+  String get ui_view_update => 'Actualizaciones de versión';
+
+  @override
+  String get update_github_check => 'Comprobación de versión en GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'Versión actual: $version';
+  }
+
+  @override
+  String get update_checking => 'Buscando actualizaciones…';
+
+  @override
+  String get update_latest => 'Ya tienes la versión más reciente';
+
+  @override
+  String update_new_version(String version) {
+    return 'Nueva versión disponible: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Error al comprobar actualizaciones. Revisa tu red e inténtalo de nuevo.';
+
+  @override
+  String get update_retry => 'Reintentar';
+
+  @override
+  String get update_download_install => 'Descargar e instalar';
+
+  @override
+  String get update_downloading => 'Descargando actualización…';
+
+  @override
+  String get update_download_failed => 'Descarga fallida. Inténtalo de nuevo.';
+
+  @override
+  String get update_view_github => 'Ver en GitHub';
 
   @override
   String get zenfileflutter =>
@@ -971,7 +1009,7 @@ class L10nEs extends L10n {
   String get msgfba1f416 => 'Ingrese el nombre de la carpeta';
 
   @override
-  String get msg33b0b21c => 'Seleccionar y fijar carpeta';
+  String get msg33b0b21c => 'Seleccionar carpeta';
 
   @override
   String get msgff3200cc => 'Limpiar Selección';
@@ -980,7 +1018,7 @@ class L10nEs extends L10n {
   String get msg4614630a => 'La carpeta está vacía';
 
   @override
-  String get msg5dc1fa7b => 'Fijar esta carpeta';
+  String get msg5dc1fa7b => 'Usar esta carpeta';
 
   @override
   String get selectStorageDrive => 'Seleccionar unidad de almacenamiento';
@@ -1058,6 +1096,11 @@ class L10nEs extends L10n {
 
   @override
   String get msgb8140039 => 'Más Antiguos Primero (agrupados por mes)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Fecha Desconocida';
@@ -2739,6 +2782,81 @@ class L10nEs extends L10n {
   String get ui_nav => 'Local';
 
   @override
+  String get update_err_network =>
+      'No se puede conectar al servidor. Comprueba tu red e inténtalo de nuevo.';
+
+  @override
+  String get update_err_timeout =>
+      'Se agotó el tiempo de conexión. Comprueba tu red o proxy e inténtalo de nuevo.';
+
+  @override
+  String get update_err_rate_limit =>
+      'Se alcanzó el límite de GitHub. Inténtalo más tarde.';
+
+  @override
+  String update_err_http(String code) {
+    return 'El servidor devolvió un error (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Respuesta inesperada del servidor. Inténtalo más tarde.';
+
+  @override
+  String get update_err_version_unknown =>
+      'No se puede leer la versión actual. Reinicia la aplicación e inténtalo de nuevo.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Más reciente: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Comprobado a las $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Se cambió a comprobación web: descarga en la app no disponible';
+
+  @override
+  String get update_source_label => 'Fuente de actualización';
+
+  @override
+  String get update_source_default => 'GitHub oficial';
+
+  @override
+  String get update_source_custom => 'Fuente personalizada';
+
+  @override
+  String get update_source_dialog_title =>
+      'Fuente de actualización personalizada';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Déjalo vacío para usar la API oficial de GitHub. Puedes introducir un espejo o tu propio endpoint que devuelva un JSON con la misma estructura; REPO en la URL representa la ruta del repositorio.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Dirección no válida: debe empezar por http:// o https://';
+
+  @override
+  String get ui_paste_and_clear => 'Pegar y vaciar';
+
+  @override
+  String get ui_cut_paste_hint => 'Cortar = mover; se vacía tras pegar';
+
+  @override
+  String get ui_search_in_settings => 'Buscar en los ajustes';
+
+  @override
+  String get ui_search_group_nav => 'Navegación';
+
+  @override
   String get ui_home => 'Inicio';
 
   @override
@@ -3734,7 +3852,7 @@ class L10nEs extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Anclar selección ($count)';
+    return 'Usar selección ($count)';
   }
 
   @override
@@ -4493,10 +4611,16 @@ class L10nEs extends L10n {
   String get ui_columns_per_row => 'Columnas por fila';
 
   @override
+  String get ui_2columns => '2 Columnas';
+
+  @override
   String get ui_3columns => '3 Columnas';
 
   @override
   String get ui_4columns => '4 Columnas';
+
+  @override
+  String get ui_show_custom_entry => 'Mostrar entrada personalizada';
 
   @override
   String get msge8b8e9b3 => 'Acciones rápidas';
@@ -5077,7 +5201,7 @@ class L10nEs extends L10n {
 
   @override
   String get ui_global_search_hint =>
-      'Busca archivos, carpetas, documentos o multimedia al instante en tu dispositivo';
+      'Buscar archivos, aplicaciones y configuración';
 
   @override
   String get ui_delete_item_confirm =>
@@ -6239,7 +6363,7 @@ class L10nEs extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Error al escanear recursos: \$error';
+    return 'Error al escanear recursos: $error';
   }
 
   @override
@@ -7344,6 +7468,10 @@ class L10nEs extends L10n {
   String get vault_decrypt_open_progress => 'Descifrando y abriendo...';
 
   @override
+  String get crash_report_saved =>
+      'Se detectó un cierre anormal anterior. Informe de diagnóstico guardado en ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'La importación sobrescribirá el sandbox y la configuración de cifrado actuales con el contenido de la copia (la contraseña de desbloqueo no se ve afectada). ¿Continuar?';
 
@@ -7969,4 +8097,35 @@ class L10nEs extends L10n {
   @override
   String get audio_opensles_desc =>
       'Las apps de efectos de audio (p. ej. RootlessJamesDSP) solo pueden engancharse a los modos AudioTrack; OpenSL ES usa una sesión asignada por el sistema, a la que no pueden engancharse. El cambio es inmediato.';
+
+  @override
+  String get ui_transfers => 'Transferencias';
+
+  @override
+  String get ui_profile => 'Perfil';
+
+  @override
+  String get msg_coming_soon => 'Próximamente';
+
+  @override
+  String get toolbox_text_editor => 'Editor de texto';
+
+  @override
+  String get ui_video_progress_always_show =>
+      'Mostrar siempre la barra de progreso';
+
+  @override
+  String get ui_image_fit_width => 'Ajustar al ancho';
+
+  @override
+  String get ui_image_fit_height => 'Ajustar a la altura';
+
+  @override
+  String get ui_image_fit_original => 'Tamaño original';
+
+  @override
+  String get ui_image_fit_mode => 'Modo de visualización';
+
+  @override
+  String get ui_text_editor_import => 'Importar archivo de texto';
 }

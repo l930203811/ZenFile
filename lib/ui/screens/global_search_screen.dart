@@ -16,6 +16,7 @@ import '../../services/folder_share_service.dart';
 import '../widgets/directory_tab_bar.dart';
 import '../../core/utils.dart';
 import '../widgets/selection_action_bar.dart';
+import '../widgets/feature_search_index.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class GlobalSearchScreen extends StatefulWidget {
@@ -39,6 +40,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   final Set<String> _selectedPaths = {};
   bool get _isSelectionMode => _selectedPaths.isNotEmpty;
+
+  /// 功能入口清单（设置页 / 左右抽屉），随语言变化在 didChangeDependencies 重建。
+  List<FeatureSearchEntry> _featureIndex = const <FeatureSearchEntry>[];
+
+  /// 当前查询命中的功能入口（展示在文件结果之前）。
+  List<FeatureSearchEntry> _featureResults = const <FeatureSearchEntry>[];
 
   int get _totalSelectedSize {
     int total = 0;
@@ -90,6 +97,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     super.didChangeDependencies();
     // 初始化默认过滤器为"全部"（需在 didChangeDependencies 中执行，因为依赖 L10n）
     _selectedFilter ??= L10n.of(context).ui_all;
+    // 功能入口清单（设置 / 左右抽屉）依赖 L10n，在这里构建并缓存 ——
+    // 纯内存匹配不需要每次输入都重建清单。
+    _featureIndex = FeatureSearchIndex.build(context);
   }
 
   @override
@@ -117,8 +127,15 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   }
 
   void _onSearchChanged(String value) {
+    final queryLower = value.trim().toLowerCase();
     setState(() {
       _query = value.trim();
+      // 功能入口是纯内存匹配，立即出结果、不参与防抖（否则会先闪一下"无结果"）。
+      _featureResults = queryLower.isEmpty
+          ? const <FeatureSearchEntry>[]
+          : _featureIndex
+                .where((entry) => entry.matches(queryLower))
+                .toList();
     });
     // 防抖：用户连续输入时只在停顿后才真正执行搜索，避免每个字符都遍历整个媒体库导致输入卡顿。
     _searchDebounceTimer?.cancel();
@@ -833,65 +850,233 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                         ? L10n.of(context).ui_global_search_hint
                         : L10n.of(context).ui_search_files_subfolders_in(_searchFolderPath!.split("/").last),
                   )
-                : _results.isEmpty && !_isSearching
-                    ? _buildEmptyState(
-                        theme,
-                        Broken.document_filter,
-                        L10n.of(context).ui_no_results,
-                        L10n.of(context).ui_no_match_for(_query),
-                      )
-                    : ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _results.length,
-                        itemBuilder: (context, index) {
-                          final item = _results[index];
-                          final isItemSelected = _selectedPaths.contains(item.path);
-
-                          if (item.isDirectory) {
-                            return FolderItem(
-                              folder: item,
-                              isSelected: isItemSelected,
-                              showShowInLocationOption: true,
-                              onTap: () {
-                                if (_isSelectionMode) {
-                                  _toggleSelection(item.path);
-                                } else {
-                                  // 使用与"查看远程缓存目录"相同的导航模式：
-                                  // 设置待导航路径并切换到浏览 Tab，确保从任何页面
-                                  // （抽屉、分类页等）打开搜索后都能正确跳转到浏览页
-                                  final provider = context.read<FileManagerProvider>();
-                                  provider.setPendingBrowseNavigation(item.path, []);
-                                  provider.setNavigateToBrowseTab(true);
-                                  Navigator.of(context).popUntil((route) => route.isFirst);
-                                }
-                              },
-                              onLongPress: () => _toggleSelection(item.path),
-                              onAction: (action) => _handleAction(context, action, item.path),
-                            );
-                          } else {
-                            return FileItem(
-                              file: item,
-                              isSelected: isItemSelected,
-                              showShowInLocationOption: true,
-                              onTap: () {
-                                if (_isSelectionMode) {
-                                  _toggleSelection(item.path);
-                                } else {
-                                  context.read<FileManagerProvider>().openFile(context, item.path);
-                                }
-                              },
-                              onLongPress: () => _toggleSelection(item.path),
-                              onAction: (action) => _handleAction(context, action, item.path),
-                            );
-                          }
-                        },
-                      ),
+                : _results.isEmpty && !_isSearching && _featureResults.isEmpty
+                    ? _buildNoResultView(theme)
+                    : _buildResultList(theme),
           ),
         ],
       ),
     ),
   );
 }
+
+  /// 文件无结果时的视图。
+  ///
+  /// 仍然给出「在设置中搜索」入口 —— 设置项没有做搜索索引（上百个开关），
+  /// 有没有匹配由设置页自己的过滤逻辑判定，所以这里不能替它下"无结果"的结论。
+  Widget _buildNoResultView(ThemeData theme) {
+    final l10n = L10n.of(context);
+    return Column(
+      children: [
+        _buildFeatureTile(
+          theme,
+          icon: Broken.setting_2,
+          title: l10n.ui_search_in_settings,
+          subtitle: '\u201C$_query\u201D',
+          onTap: _openSettingsSearch,
+        ),
+        Divider(height: 1, color: theme.dividerColor.withAlpha(51)),
+        Expanded(
+          child: _buildEmptyState(
+            theme,
+            Broken.document_filter,
+            l10n.ui_no_results,
+            l10n.ui_no_match_for(_query),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 搜索结果列表：功能入口（设置 / 左右抽屉）分组在前，文件结果在后。
+  Widget _buildResultList(ThemeData theme) {
+    // 多选模式下隐藏功能入口，避免与文件批量操作混淆。
+    final featureTiles = _isSelectionMode
+        ? const <Widget>[]
+        : _buildFeatureTiles(theme);
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      itemCount: featureTiles.length + _results.length,
+      itemBuilder: (context, index) {
+        if (index < featureTiles.length) {
+          return featureTiles[index];
+        }
+        final item = _results[index - featureTiles.length];
+        final isItemSelected = _selectedPaths.contains(item.path);
+
+        if (item.isDirectory) {
+          return FolderItem(
+            folder: item,
+            isSelected: isItemSelected,
+            showShowInLocationOption: true,
+            onTap: () {
+              if (_isSelectionMode) {
+                _toggleSelection(item.path);
+              } else {
+                // 使用与"查看远程缓存目录"相同的导航模式：
+                // 设置待导航路径并切换到浏览 Tab，确保从任何页面
+                // （抽屉、分类页等）打开搜索后都能正确跳转到浏览页
+                final provider = context.read<FileManagerProvider>();
+                provider.setPendingBrowseNavigation(item.path, []);
+                provider.setNavigateToBrowseTab(true);
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
+            },
+            onLongPress: () => _toggleSelection(item.path),
+            onAction: (action) => _handleAction(context, action, item.path),
+          );
+        } else {
+          return FileItem(
+            file: item,
+            isSelected: isItemSelected,
+            showShowInLocationOption: true,
+            onTap: () {
+              if (_isSelectionMode) {
+                _toggleSelection(item.path);
+              } else {
+                context.read<FileManagerProvider>().openFile(context, item.path);
+              }
+            },
+            onLongPress: () => _toggleSelection(item.path),
+            onAction: (action) => _handleAction(context, action, item.path),
+          );
+        }
+      },
+    );
+  }
+
+  /// 功能入口结果：分组标题 + 条目。
+  ///
+  /// 第一条固定是「在设置中搜索 <查询词>」—— 把查询词直接交给设置页自己的过滤
+  /// 逻辑，从而覆盖设置页全部二级页条目（无需为上百个开关维护一份索引）。
+  List<Widget> _buildFeatureTiles(ThemeData theme) {
+    if (_query.isEmpty) return const <Widget>[];
+    final l10n = L10n.of(context);
+    final widgets = <Widget>[];
+
+    widgets.add(_buildFeatureSectionHeader(theme, l10n.cat_settings));
+    widgets.add(
+      _buildFeatureTile(
+        theme,
+        icon: Broken.setting_2,
+        title: l10n.ui_search_in_settings,
+        subtitle: '“$_query”',
+        onTap: _openSettingsSearch,
+      ),
+    );
+
+    for (final group in FeatureSearchGroup.values) {
+      final items =
+          _featureResults.where((entry) => entry.group == group).toList();
+      if (items.isEmpty) continue;
+      widgets.add(
+        _buildFeatureSectionHeader(
+          theme,
+          FeatureSearchIndex.groupTitle(l10n, group),
+        ),
+      );
+      for (final entry in items) {
+        widgets.add(
+          _buildFeatureTile(
+            theme,
+            icon: entry.icon,
+            title: entry.title,
+            subtitle: entry.subtitle,
+            onTap: () {
+              // 先关闭搜索页回到首页，再由条目自己打开目标页 / 触发动作。
+              final navigator = Navigator.of(context);
+              entry.onOpen(context, navigator);
+            },
+          ),
+        );
+      }
+    }
+    return widgets;
+  }
+
+  /// 把当前查询词交给设置页过滤（切到设置 Tab 并进入搜索态）。
+  void _openSettingsSearch() {
+    final provider = context.read<FileManagerProvider>();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    provider.requestSettingsSearch(_query);
+  }
+
+  Widget _buildFeatureSectionHeader(ThemeData theme, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: theme.colorScheme.primary,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureTile(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha(25),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withAlpha(128),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(
+              Broken.arrow_right_3,
+              size: 16,
+              color: theme.colorScheme.onSurface.withAlpha(90),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildEmptyState(ThemeData theme, IconData icon, String title, String subtitle) {
     return Center(

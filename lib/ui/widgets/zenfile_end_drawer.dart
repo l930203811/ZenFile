@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
-import '../screens/global_search_screen.dart';
 import 'file_action_dialogs.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
@@ -88,6 +87,8 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                       setState(() => _isQuickActionsExpanded = expanded);
                       PreferencesService.saveDrawerSectionExpanded('quick_actions', expanded);
                     },
+                    shape: const Border(),
+                    collapsedShape: const Border(),
                     leading: Icon(Broken.command, color: theme.colorScheme.primary, size: 24),
                     title: Text(
                       L10n.of(context).msge8b8e9b3,
@@ -153,23 +154,6 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                           fileManager.toggleSplitScreen();
                         },
                       ),
-                      _buildMenuItem(
-                        context,
-                        icon: Broken.search_normal,
-                        title: L10n.of(context).msg681c0f39,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GlobalSearchScreen(
-                                searchFolderPath: widget.searchFolderPath,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ],
                   ),
 
@@ -182,6 +166,8 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         setState(() => _isFavoritesExpanded = expanded);
                         PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
                       },
+                      shape: const Border(),
+                      collapsedShape: const Border(),
                       leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
                       title: Row(
                         children: [

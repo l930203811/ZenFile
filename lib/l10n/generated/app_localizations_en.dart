@@ -192,7 +192,45 @@ class L10nEn extends L10n {
   String get v1041 => 'v1.0.43 (View)';
 
   @override
-  String get ui_view_update => 'View updates';
+  String get ui_view_update => 'Version updates';
+
+  @override
+  String get update_github_check => 'GitHub version check';
+
+  @override
+  String update_current_version(String version) {
+    return 'Current version: $version';
+  }
+
+  @override
+  String get update_checking => 'Checking for updates…';
+
+  @override
+  String get update_latest => 'You\'re on the latest version';
+
+  @override
+  String update_new_version(String version) {
+    return 'New version available: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Update check failed. Check your network and try again.';
+
+  @override
+  String get update_retry => 'Retry';
+
+  @override
+  String get update_download_install => 'Download & Install';
+
+  @override
+  String get update_downloading => 'Downloading update…';
+
+  @override
+  String get update_download_failed => 'Download failed. Please try again.';
+
+  @override
+  String get update_view_github => 'View on GitHub';
 
   @override
   String get zenfileflutter =>
@@ -954,7 +992,7 @@ class L10nEn extends L10n {
   String get msgfba1f416 => 'Enter folder name';
 
   @override
-  String get msg33b0b21c => 'Select and pin folder';
+  String get msg33b0b21c => 'Select folder';
 
   @override
   String get msgff3200cc => 'Clear Selection';
@@ -963,7 +1001,7 @@ class L10nEn extends L10n {
   String get msg4614630a => 'Folder is empty';
 
   @override
-  String get msg5dc1fa7b => 'Pin this folder';
+  String get msg5dc1fa7b => 'Use this folder';
 
   @override
   String get selectStorageDrive => 'Select Storage Drive';
@@ -1041,6 +1079,11 @@ class L10nEn extends L10n {
 
   @override
   String get msgb8140039 => 'Oldest First (grouped by month)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Unknown Date';
@@ -2682,6 +2725,80 @@ class L10nEn extends L10n {
   String get ui_nav => 'Local';
 
   @override
+  String get update_err_network =>
+      'Can\'t reach the server. Check your network and try again.';
+
+  @override
+  String get update_err_timeout =>
+      'Connection timed out. Check your network or proxy and try again.';
+
+  @override
+  String get update_err_rate_limit =>
+      'GitHub rate limit reached. Please try again later.';
+
+  @override
+  String update_err_http(String code) {
+    return 'Server returned an error (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Unexpected response from the server. Please try again later.';
+
+  @override
+  String get update_err_version_unknown =>
+      'Can\'t read the current version. Restart the app and try again.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Latest: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Checked at $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Fell back to web check — in-app download unavailable';
+
+  @override
+  String get update_source_label => 'Update source';
+
+  @override
+  String get update_source_default => 'GitHub official';
+
+  @override
+  String get update_source_custom => 'Custom source';
+
+  @override
+  String get update_source_dialog_title => 'Custom update source';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Leave empty to use the official GitHub API. You can enter a mirror or your own endpoint that returns JSON in the same structure; REPO in the URL stands for the repository path.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Invalid address — it must start with http:// or https://';
+
+  @override
+  String get ui_paste_and_clear => 'Paste and clear';
+
+  @override
+  String get ui_cut_paste_hint => 'Cut = move; clipboard clears after paste';
+
+  @override
+  String get ui_search_in_settings => 'Search in settings';
+
+  @override
+  String get ui_search_group_nav => 'Navigation';
+
+  @override
   String get ui_home => 'Home';
 
   @override
@@ -3673,7 +3790,7 @@ class L10nEn extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Pin Selected ($count)';
+    return 'Use Selected ($count)';
   }
 
   @override
@@ -4429,10 +4546,16 @@ class L10nEn extends L10n {
   String get ui_columns_per_row => 'Columns per row';
 
   @override
+  String get ui_2columns => '2 Columns';
+
+  @override
   String get ui_3columns => '3 Columns';
 
   @override
   String get ui_4columns => '4 Columns';
+
+  @override
+  String get ui_show_custom_entry => 'Show Custom Entry';
 
   @override
   String get msge8b8e9b3 => 'Common Features';
@@ -5008,8 +5131,7 @@ class L10nEn extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint =>
-      'Find any file, folder, document or media instantly across your device';
+  String get ui_global_search_hint => 'Search files, apps and settings';
 
   @override
   String get ui_delete_item_confirm =>
@@ -6160,7 +6282,7 @@ class L10nEn extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Failed to scan shares: \$error';
+    return 'Failed to scan shares: $error';
   }
 
   @override
@@ -7252,6 +7374,10 @@ class L10nEn extends L10n {
   String get vault_decrypt_open_progress => 'Decrypting and opening...';
 
   @override
+  String get crash_report_saved =>
+      'Previous abnormal exit detected. Diagnostic report saved to ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?';
 
@@ -7866,4 +7992,34 @@ class L10nEn extends L10n {
   @override
   String get audio_opensles_desc =>
       'Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.';
+
+  @override
+  String get ui_transfers => 'Transfers';
+
+  @override
+  String get ui_profile => 'Profile';
+
+  @override
+  String get msg_coming_soon => 'Coming soon';
+
+  @override
+  String get toolbox_text_editor => 'Text Editor';
+
+  @override
+  String get ui_video_progress_always_show => 'Always show progress bar';
+
+  @override
+  String get ui_image_fit_width => 'Fit width';
+
+  @override
+  String get ui_image_fit_height => 'Fit height';
+
+  @override
+  String get ui_image_fit_original => 'Original size';
+
+  @override
+  String get ui_image_fit_mode => 'Fit mode';
+
+  @override
+  String get ui_text_editor_import => 'Import text file';
 }

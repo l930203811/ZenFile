@@ -205,7 +205,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (عرض)",
-  "ui_view_update": "عرض التحديثات",
+  "ui_view_update": "تحديثات الإصدار",
+  "update_github_check": "فحص الإصدار من GitHub",
+  "update_current_version": "الإصدار الحالي: {version}",
+  "update_checking": "جارٍ التحقق من التحديثات…",
+  "update_latest": "لديك أحدث إصدار",
+  "update_new_version": "يتوفر إصدار جديد: {version}",
+  "update_check_failed": "فشل التحقق من التحديثات. تحقق من الشبكة وأعد المحاولة.",
+  "update_retry": "إعادة المحاولة",
+  "update_download_install": "تنزيل وتثبيت",
+  "update_downloading": "جارٍ تنزيل التحديث…",
+  "update_download_failed": "فشل التنزيل. أعد المحاولة.",
+  "update_view_github": "العرض على GitHub",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1139,7 +1150,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "اختيار وتثبيت المجلد",
+  "msg33b0b21c": "اختيار مجلد",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1162,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "تثبيت هذا المجلد",
+  "msg5dc1fa7b": "استخدام هذا المجلد",
   "selectStorageDrive": "اختر محرك التخزين",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1253,14 @@
   "msgef7ae768": "الأحدث أولاً (مجمعة حسب الشهر)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "الأقدم أولاً (مجمعة حسب الشهر)",
   "@msg424a0110": {
@@ -3103,6 +3122,36 @@
   "cat_vault_desc": "تخزين آمن",
   "cat_quick_categories": "الفئات",
   "ui_nav": "محلي",
+  "update_err_network": "تعذّر الاتصال بالخادم. تحقّق من الشبكة ثم أعد المحاولة",
+  "update_err_timeout": "انتهت مهلة الاتصال. تحقّق من الشبكة أو الوكيل ثم أعد المحاولة",
+  "update_err_rate_limit": "تم بلوغ حد طلبات GitHub. أعد المحاولة لاحقًا",
+  "update_err_http": "أعاد الخادم خطأ (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "استجابة غير متوقعة من الخادم. أعد المحاولة لاحقًا",
+  "update_err_version_unknown": "تعذّر قراءة الإصدار الحالي. أعد تشغيل التطبيق ثم حاول مجددًا",
+  "update_remote_version": "الأحدث: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "وقت الفحص: {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "تم التحويل إلى فحص الويب — التنزيل داخل التطبيق غير متاح",
+  "update_source_label": "مصدر التحديث",
+  "update_source_default": "GitHub الرسمي",
+  "update_source_custom": "مصدر مخصّص",
+  "update_source_dialog_title": "مصدر تحديث مخصّص",
+  "update_source_dialog_desc": "اتركه فارغًا لاستخدام واجهة GitHub الرسمية. يمكنك إدخال مرآة أو واجهة خاصة تُعيد JSON بالبنية نفسها؛ REPO في العنوان يعني مسار المستودع.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "عنوان غير صالح — يجب أن يبدأ بـ http:// أو https://",
+
+  "ui_paste_and_clear": "لصق ومسح",
+  "ui_cut_paste_hint": "القص = نقل؛ تُفرَّغ الحافظة بعد اللصق",
+  "ui_search_in_settings": "البحث في الإعدادات",
+  "ui_search_group_nav": "التنقل",
   "ui_home": "الرئيسية",
   "ui_recycle_bin": "سلة المحذوفات",
   "ui_dark_mode": "الوضع الداكن",
@@ -3709,7 +3758,7 @@
   "ui_undo": "تراجع",
   "ui_redo": "إعادة",
   "ui_add_selected": "إضافة المحدد ({count})",
-  "ui_pin_selected": "تثبيت المحدد ({count})",
+  "ui_pin_selected": "استخدام المحدد ({count})",
   "msg_vault_choose_mode": "اختر وضع الحماية",
   "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة باستخدام AES-256-GCM.",
   "ui_secure_import": "استيراد آمن (صندوق عزل)",
@@ -4334,8 +4383,10 @@
   "cat_backup_restore_desc": "نسخ احتياطي",
   "cat_storage_volume": "التخزين",
   "ui_columns_per_row": "الأعمدة لكل صف",
+  "ui_2columns": "2 أعمدة",
   "ui_3columns": "3 أعمدة",
   "ui_4columns": "4 أعمدة",
+  "ui_show_custom_entry": "إظهار الإدخال المخصص",
   "msge8b8e9b3": "إجراءات سريعة",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4845,7 +4896,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك",
+  "ui_global_search_hint": "البحث عن الملفات والتطبيقات والإعدادات",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6181,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (ar)"
   },
-  "ui_share_scan_failed": "فشل مسح المشاركات: $error",
+  "ui_share_scan_failed": "فشل مسح المشاركات: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7342,6 +7393,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "تم اكتشاف خروج غير طبيعي سابق. تم حفظ تقرير التشخيص في ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7965,6 +8020,36 @@
   "audio_opensles_desc": "لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "النقل",
+  "ui_profile": "الملف الشخصي",
+  "msg_coming_soon": "قريباً",
+  "toolbox_text_editor": "محرر النصوص",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "إظهار شريط التقدم دائمًا",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "ملاءمة العرض",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "ملاءمة الارتفاع",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "الحجم الأصلي",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "وضع العرض",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "استيراد ملف نصي",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

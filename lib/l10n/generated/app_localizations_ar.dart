@@ -191,7 +191,45 @@ class L10nAr extends L10n {
   String get v1041 => 'v1.0.43 (عرض)';
 
   @override
-  String get ui_view_update => 'عرض التحديثات';
+  String get ui_view_update => 'تحديثات الإصدار';
+
+  @override
+  String get update_github_check => 'فحص الإصدار من GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'الإصدار الحالي: $version';
+  }
+
+  @override
+  String get update_checking => 'جارٍ التحقق من التحديثات…';
+
+  @override
+  String get update_latest => 'لديك أحدث إصدار';
+
+  @override
+  String update_new_version(String version) {
+    return 'يتوفر إصدار جديد: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'فشل التحقق من التحديثات. تحقق من الشبكة وأعد المحاولة.';
+
+  @override
+  String get update_retry => 'إعادة المحاولة';
+
+  @override
+  String get update_download_install => 'تنزيل وتثبيت';
+
+  @override
+  String get update_downloading => 'جارٍ تنزيل التحديث…';
+
+  @override
+  String get update_download_failed => 'فشل التنزيل. أعد المحاولة.';
+
+  @override
+  String get update_view_github => 'العرض على GitHub';
 
   @override
   String get zenfileflutter =>
@@ -950,7 +988,7 @@ class L10nAr extends L10n {
   String get msgfba1f416 => 'أدخل اسم المجلد';
 
   @override
-  String get msg33b0b21c => 'اختيار وتثبيت المجلد';
+  String get msg33b0b21c => 'اختيار مجلد';
 
   @override
   String get msgff3200cc => 'مسح التحديد';
@@ -959,7 +997,7 @@ class L10nAr extends L10n {
   String get msg4614630a => 'المجلد فارغ';
 
   @override
-  String get msg5dc1fa7b => 'تثبيت هذا المجلد';
+  String get msg5dc1fa7b => 'استخدام هذا المجلد';
 
   @override
   String get selectStorageDrive => 'اختر محرك التخزين';
@@ -1037,6 +1075,11 @@ class L10nAr extends L10n {
 
   @override
   String get msgb8140039 => 'الأقدم أولاً (مجمعة حسب الشهر)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'تاريخ غير معروف';
@@ -2677,6 +2720,80 @@ class L10nAr extends L10n {
   String get ui_nav => 'محلي';
 
   @override
+  String get update_err_network =>
+      'تعذّر الاتصال بالخادم. تحقّق من الشبكة ثم أعد المحاولة';
+
+  @override
+  String get update_err_timeout =>
+      'انتهت مهلة الاتصال. تحقّق من الشبكة أو الوكيل ثم أعد المحاولة';
+
+  @override
+  String get update_err_rate_limit =>
+      'تم بلوغ حد طلبات GitHub. أعد المحاولة لاحقًا';
+
+  @override
+  String update_err_http(String code) {
+    return 'أعاد الخادم خطأ (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'استجابة غير متوقعة من الخادم. أعد المحاولة لاحقًا';
+
+  @override
+  String get update_err_version_unknown =>
+      'تعذّر قراءة الإصدار الحالي. أعد تشغيل التطبيق ثم حاول مجددًا';
+
+  @override
+  String update_remote_version(String version) {
+    return 'الأحدث: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'وقت الفحص: $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'تم التحويل إلى فحص الويب — التنزيل داخل التطبيق غير متاح';
+
+  @override
+  String get update_source_label => 'مصدر التحديث';
+
+  @override
+  String get update_source_default => 'GitHub الرسمي';
+
+  @override
+  String get update_source_custom => 'مصدر مخصّص';
+
+  @override
+  String get update_source_dialog_title => 'مصدر تحديث مخصّص';
+
+  @override
+  String get update_source_dialog_desc =>
+      'اتركه فارغًا لاستخدام واجهة GitHub الرسمية. يمكنك إدخال مرآة أو واجهة خاصة تُعيد JSON بالبنية نفسها؛ REPO في العنوان يعني مسار المستودع.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'عنوان غير صالح — يجب أن يبدأ بـ http:// أو https://';
+
+  @override
+  String get ui_paste_and_clear => 'لصق ومسح';
+
+  @override
+  String get ui_cut_paste_hint => 'القص = نقل؛ تُفرَّغ الحافظة بعد اللصق';
+
+  @override
+  String get ui_search_in_settings => 'البحث في الإعدادات';
+
+  @override
+  String get ui_search_group_nav => 'التنقل';
+
+  @override
   String get ui_home => 'الرئيسية';
 
   @override
@@ -3656,7 +3773,7 @@ class L10nAr extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'تثبيت المحدد ($count)';
+    return 'استخدام المحدد ($count)';
   }
 
   @override
@@ -4411,10 +4528,16 @@ class L10nAr extends L10n {
   String get ui_columns_per_row => 'الأعمدة لكل صف';
 
   @override
+  String get ui_2columns => '2 أعمدة';
+
+  @override
   String get ui_3columns => '3 أعمدة';
 
   @override
   String get ui_4columns => '4 أعمدة';
+
+  @override
+  String get ui_show_custom_entry => 'إظهار الإدخال المخصص';
 
   @override
   String get msge8b8e9b3 => 'إجراءات سريعة';
@@ -4991,8 +5114,7 @@ class L10nAr extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint =>
-      'ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك';
+  String get ui_global_search_hint => 'البحث عن الملفات والتطبيقات والإعدادات';
 
   @override
   String get ui_delete_item_confirm =>
@@ -6141,7 +6263,7 @@ class L10nAr extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'فشل مسح المشاركات: \$error';
+    return 'فشل مسح المشاركات: $error';
   }
 
   @override
@@ -7227,6 +7349,10 @@ class L10nAr extends L10n {
   String get vault_decrypt_open_progress => 'جارٍ فك التشفير والفتح...';
 
   @override
+  String get crash_report_saved =>
+      'تم اكتشاف خروج غير طبيعي سابق. تم حفظ تقرير التشخيص في ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'سيؤدي الاستيراد إلى الكتابة فوق صندوق الخزنة الحالي وإعدادات التشفير بمحتوى النسخة الاحتياطية (كلمة مرور فتح القفل غير متأثرة). المتابعة؟';
 
@@ -7838,4 +7964,34 @@ class L10nAr extends L10n {
   @override
   String get audio_opensles_desc =>
       'لا يمكن لتطبيقات المؤثرات الصوتية (مثل RootlessJamesDSP) الارتباط إلا بأوضاع AudioTrack؛ أما OpenSL ES فيستخدم جلسة يخصصها النظام ولا يمكن الارتباط بها. يسري التبديل فورًا.';
+
+  @override
+  String get ui_transfers => 'النقل';
+
+  @override
+  String get ui_profile => 'الملف الشخصي';
+
+  @override
+  String get msg_coming_soon => 'قريباً';
+
+  @override
+  String get toolbox_text_editor => 'محرر النصوص';
+
+  @override
+  String get ui_video_progress_always_show => 'إظهار شريط التقدم دائمًا';
+
+  @override
+  String get ui_image_fit_width => 'ملاءمة العرض';
+
+  @override
+  String get ui_image_fit_height => 'ملاءمة الارتفاع';
+
+  @override
+  String get ui_image_fit_original => 'الحجم الأصلي';
+
+  @override
+  String get ui_image_fit_mode => 'وضع العرض';
+
+  @override
+  String get ui_text_editor_import => 'استيراد ملف نصي';
 }

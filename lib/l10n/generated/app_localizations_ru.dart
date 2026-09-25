@@ -195,7 +195,45 @@ class L10nRu extends L10n {
   String get v1041 => 'v1.0.43 (Просмотр)';
 
   @override
-  String get ui_view_update => 'Посмотреть обновления';
+  String get ui_view_update => 'Обновления версии';
+
+  @override
+  String get update_github_check => 'Проверка версии на GitHub';
+
+  @override
+  String update_current_version(String version) {
+    return 'Текущая версия: $version';
+  }
+
+  @override
+  String get update_checking => 'Проверка обновлений…';
+
+  @override
+  String get update_latest => 'У вас последняя версия';
+
+  @override
+  String update_new_version(String version) {
+    return 'Доступна новая версия: $version';
+  }
+
+  @override
+  String get update_check_failed =>
+      'Не удалось проверить обновления. Проверьте сеть и повторите.';
+
+  @override
+  String get update_retry => 'Повторить';
+
+  @override
+  String get update_download_install => 'Скачать и установить';
+
+  @override
+  String get update_downloading => 'Загрузка обновления…';
+
+  @override
+  String get update_download_failed => 'Ошибка загрузки. Повторите попытку.';
+
+  @override
+  String get update_view_github => 'Открыть на GitHub';
 
   @override
   String get zenfileflutter =>
@@ -967,7 +1005,7 @@ class L10nRu extends L10n {
   String get msgfba1f416 => 'Введите имя папки';
 
   @override
-  String get msg33b0b21c => 'Выбрать и закрепить папку';
+  String get msg33b0b21c => 'Выбрать папку';
 
   @override
   String get msgff3200cc => 'Очистить Выбор';
@@ -976,7 +1014,7 @@ class L10nRu extends L10n {
   String get msg4614630a => 'Папка пуста';
 
   @override
-  String get msg5dc1fa7b => 'Закрепить эту папку';
+  String get msg5dc1fa7b => 'Использовать эту папку';
 
   @override
   String get selectStorageDrive => 'Выбрать диск хранения';
@@ -1055,6 +1093,11 @@ class L10nRu extends L10n {
 
   @override
   String get msgb8140039 => 'Сначала Старые (сгруппировано по месяцам)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$month/$year';
+  }
 
   @override
   String get msg424a0110 => 'Неизвестная Дата';
@@ -2728,6 +2771,81 @@ class L10nRu extends L10n {
   String get ui_nav => 'Локальный';
 
   @override
+  String get update_err_network =>
+      'Не удаётся подключиться к серверу. Проверьте сеть и повторите попытку.';
+
+  @override
+  String get update_err_timeout =>
+      'Время подключения истекло. Проверьте сеть или прокси и повторите попытку.';
+
+  @override
+  String get update_err_rate_limit =>
+      'Достигнут лимит запросов GitHub. Повторите попытку позже.';
+
+  @override
+  String update_err_http(String code) {
+    return 'Сервер вернул ошибку (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Неожиданный ответ сервера. Повторите попытку позже.';
+
+  @override
+  String get update_err_version_unknown =>
+      'Не удаётся получить текущую версию. Перезапустите приложение и повторите попытку.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Последняя: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Проверено в $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Переключено на веб-проверку — загрузка в приложении недоступна';
+
+  @override
+  String get update_source_label => 'Источник обновлений';
+
+  @override
+  String get update_source_default => 'Официальный GitHub';
+
+  @override
+  String get update_source_custom => 'Свой источник';
+
+  @override
+  String get update_source_dialog_title => 'Свой источник обновлений';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Оставьте пустым, чтобы использовать официальный API GitHub. Можно указать зеркало или собственный эндпоинт, возвращающий JSON той же структуры; REPO в адресе означает путь репозитория.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Неверный адрес — он должен начинаться с http:// или https://';
+
+  @override
+  String get ui_paste_and_clear => 'Вставить и очистить';
+
+  @override
+  String get ui_cut_paste_hint =>
+      'Вырезание = перемещение; после вставки очищается';
+
+  @override
+  String get ui_search_in_settings => 'Поиск в настройках';
+
+  @override
+  String get ui_search_group_nav => 'Навигация';
+
+  @override
   String get ui_home => 'Главная';
 
   @override
@@ -3717,7 +3835,7 @@ class L10nRu extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return 'Закрепить выбранное ($count)';
+    return 'Использовать выбранное ($count)';
   }
 
   @override
@@ -4476,10 +4594,16 @@ class L10nRu extends L10n {
   String get ui_columns_per_row => 'Колонки в строке';
 
   @override
+  String get ui_2columns => '2 Колонки';
+
+  @override
   String get ui_3columns => '3 Колонки';
 
   @override
   String get ui_4columns => '4 Колонки';
+
+  @override
+  String get ui_show_custom_entry => 'Показывать пользовательский вход';
 
   @override
   String get msge8b8e9b3 => 'Быстрые действия';
@@ -5061,8 +5185,7 @@ class L10nRu extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint =>
-      'Мгновенно находите любые файлы, папки, документы или медиа на устройстве';
+  String get ui_global_search_hint => 'Искать файлы, приложения и настройки';
 
   @override
   String get ui_delete_item_confirm =>
@@ -6221,7 +6344,7 @@ class L10nRu extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Ошибка сканирования папок: \$error';
+    return 'Ошибка сканирования папок: $error';
   }
 
   @override
@@ -7325,6 +7448,10 @@ class L10nRu extends L10n {
   String get vault_decrypt_open_progress => 'Расшифровка и открытие...';
 
   @override
+  String get crash_report_saved =>
+      'Обнаружено аварийное завершение. Отчёт диагностики сохранён в ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       'Импорт перезапишет текущую песочницу и настройки шифрования содержимым резервной копии (пароль разблокировки не изменится). Продолжить?';
 
@@ -7943,4 +8070,34 @@ class L10nRu extends L10n {
   @override
   String get audio_opensles_desc =>
       'Приложения звуковых эффектов (например, RootlessJamesDSP) могут подключаться только к режимам AudioTrack; в OpenSL ES идентификатор сеанса назначает система, поэтому подключиться к нему нельзя. Переключение применяется сразу.';
+
+  @override
+  String get ui_transfers => 'Передачи';
+
+  @override
+  String get ui_profile => 'Профиль';
+
+  @override
+  String get msg_coming_soon => 'Скоро';
+
+  @override
+  String get toolbox_text_editor => 'Текстовый редактор';
+
+  @override
+  String get ui_video_progress_always_show => 'Всегда показывать прогресс';
+
+  @override
+  String get ui_image_fit_width => 'По ширине';
+
+  @override
+  String get ui_image_fit_height => 'По высоте';
+
+  @override
+  String get ui_image_fit_original => 'Оригинальный размер';
+
+  @override
+  String get ui_image_fit_mode => 'Режим отображения';
+
+  @override
+  String get ui_text_editor_import => 'Импортировать текстовый файл';
 }

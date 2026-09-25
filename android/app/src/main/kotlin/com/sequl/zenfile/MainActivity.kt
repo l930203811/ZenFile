@@ -158,6 +158,10 @@ class MainActivity : AudioServiceFragmentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 崩溃取证必须在 super.onCreate() **之前**：那一步会创建 FlutterEngine、
+        // 加载 libflutter.so / libmpv.so，正是「启动即崩」的主要发生地。
+        // 同步执行少量 IO（读系统退出记录 + 写几 KB 报告），耗时毫秒级。
+        CrashForensics.captureOnStartup(this)
         super.onCreate(savedInstanceState)
         try {
             Shizuku.addBinderReceivedListenerSticky {
@@ -2322,6 +2326,18 @@ class MainActivity : AudioServiceFragmentActivity() {
                 result.error("AUDIO_SESSION_ERROR", e.message, null)
             }
         }
+
+        // 崩溃取证通道（实现见 CrashForensics）：
+        //   exportToPublicDir → 把私有存档导出到 /storage/emulated/0/ZenFile/crash/
+        //   recordDartError   → Dart 未捕获错误落盘
+        //   describe          → 归档概况（诊断日志用）
+        CrashForensics.registerChannel(flutterEngine.dartExecutor.binaryMessenger, this)
+
+        // 系统 HTTP 代理读取（实现见 NetProxy）：
+        //   getHttpProxy → 返回 "host:port"，供 Dart 侧 HttpClient.findProxy 使用。
+        //   Dart 的 HttpClient 默认忽略 Android 系统代理，读环境变量那条路在
+        //   Android 上无效（进程没有 http_proxy），只能读 Java 层 ProxySelector。
+        NetProxy.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
     }
 
     /**

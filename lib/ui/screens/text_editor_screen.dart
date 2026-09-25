@@ -135,9 +135,10 @@ class CodeTextEditingController extends TextEditingController {
 }
 
 class TextEditorScreen extends StatefulWidget {
-  final String filePath;
+  /// 文本文件路径；为 null 时打开空编辑器（可从右上角菜单导入文本文件）。
+  final String? filePath;
 
-  const TextEditorScreen({super.key, required this.filePath});
+  const TextEditorScreen({super.key, this.filePath});
 
   @override
   State<TextEditorScreen> createState() => _TextEditorScreenState();
@@ -179,9 +180,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   @override
   void initState() {
     super.initState();
-    // Normalize path to collapse double slashes
-    String norm = widget.filePath.replaceAll(RegExp(r'/+'), '/');
-    if (widget.filePath.startsWith('/') && !norm.startsWith('/')) {
+    // Normalize path to collapse double slashes（空编辑器时路径为空串）
+    final rawPath = widget.filePath ?? '';
+    String norm = rawPath.replaceAll(RegExp(r'/+'), '/');
+    if (rawPath.startsWith('/') && !norm.startsWith('/')) {
       norm = '/$norm';
     }
     _currentFilePath = norm;
@@ -308,6 +310,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   }
 
   Future<void> _loadFile() async {
+    if (_currentFilePath.isEmpty) {
+      // 空编辑器：无文件可读，直接结束加载状态
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
     try {
       final provider = context.read<FileManagerProvider>();
       String content;
@@ -361,6 +368,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   }
 
   Future<void> _saveFile() async {
+    if (_currentFilePath.isEmpty) {
+      // 空编辑器没有可写路径：走"另存为"选择保存位置
+      await _saveAsFile();
+      return;
+    }
     setState(() => _isSaving = true);
     try {
       final provider = context.read<FileManagerProvider>();
@@ -408,6 +420,26 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     }
   }
 
+  /// 从文件选择器导入一个文本文件到当前编辑器（空编辑器的主要打开方式）。
+  Future<void> _importFile() async {
+    final paths = await InternalFilePickerScreen.show(
+      context,
+      rootPath: _currentFilePath.isEmpty
+          ? context.read<FileManagerProvider>().rootPath
+          : p.dirname(_currentFilePath),
+    );
+    if (paths == null || paths.isEmpty || !mounted) return;
+    final newPath = paths.first;
+    setState(() {
+      _currentFilePath = newPath;
+      _isModified = false;
+      _history.clear();
+      _redoHistory.clear();
+    });
+    _detectLanguage();
+    await _loadFile();
+  }
+
   Future<void> _createNewFile() async {
     final currentDir = p.dirname(_currentFilePath);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -446,16 +478,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
   Future<void> _saveAsFile() async {
     try {
-      // 弹窗让用户选择保存目录
+      // 弹窗让用户选择保存目录（空编辑器默认从根目录选）
       final selectedDir = await InternalFilePickerScreen.show(
         context,
-        rootPath: p.dirname(_currentFilePath),
+        rootPath: _currentFilePath.isEmpty
+            ? context.read<FileManagerProvider>().rootPath
+            : p.dirname(_currentFilePath),
         pickDirectory: true,
       );
       if (selectedDir == null || selectedDir.isEmpty || !mounted) return;
 
       final destDir = selectedDir.first;
-      final defaultName = p.basenameWithoutExtension(_currentFilePath);
+      final defaultName = _currentFilePath.isEmpty
+          ? 'untitled'
+          : p.basenameWithoutExtension(_currentFilePath);
 
       // 弹窗让用户输入文件名
       final fileNameController = TextEditingController(text: defaultName);
@@ -676,7 +712,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              p.basename(_currentFilePath),
+              _currentFilePath.isEmpty
+                  ? L10n.of(context).ui_new_txt
+                  : p.basename(_currentFilePath),
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -810,9 +848,24 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
               } else if (value == 'syntax') {
                 _showSyntaxPicker();
+              } else if (value == 'import') {
+                await _importFile();
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'import',
+                child: Row(
+                  children: [
+                    const Icon(Broken.import, size: 18, color: Colors.blueAccent),
+                    const SizedBox(width: 12),
+                    Text(
+                      L10n.of(context).ui_text_editor_import,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                    ),
+                  ],
+                ),
+              ),
               if (isHtml)
                 const PopupMenuItem(
                   value: 'html_preview',

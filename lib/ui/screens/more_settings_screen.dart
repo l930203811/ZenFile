@@ -6,6 +6,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../../services/preferences_service.dart';
+import '../../services/cache_clean_service.dart';
 import '../../services/app_manager_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -17,7 +18,37 @@ import 'apk_install_settings_screen.dart';
 import 'security_settings_screen.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
-  const MoreSettingsScreen({super.key});
+  /// 是否作为首页 IndexedStack 的**内嵌页面**（底部导航第 4 项）渲染。
+  ///
+  /// - `false`（默认）：全屏路由页，带返回箭头（抽屉「个性化设置」走这条）。
+  /// - `true`：内嵌页 —— 非搜索态**不显示返回箭头**（没有可 pop 的路由，箭头会误
+  ///   把整个首页 pop 掉），且必须 `Scaffold.primary: false` + `AppBar.primary: false`：
+  ///   首页顶部栏在 `Scaffold.body` 里、body 不去掉状态栏 padding，内层 AppBar 若仍
+  ///   `primary` 会再吃一次状态栏高度并铺成一条 surface 色背景带（项目铁律）。
+  const MoreSettingsScreen({
+    super.key,
+    this.embedded = false,
+    this.initialQuery,
+    this.searchRequestId = 0,
+    this.onSearchActiveChanged,
+  });
+
+  final bool embedded;
+
+  /// 内嵌模式下把「搜索态」上报宿主：搜索中按返回只退出搜索，宿主不该再触发
+  /// 「再按一次退出」（嵌套 PopScope 的 onPopInvoked 会被全部调用）。
+  final ValueChanged<bool>? onSearchActiveChanged;
+
+  /// 由全局搜索「在设置中搜索」注入的初始查询词（null / 空串 = 不进入搜索态）。
+  ///
+  /// 设置页自身**不再提供搜索入口**（v2.1.7 移除 AppBar 搜索按钮）：搜索统一走
+  /// 全局搜索，命中后把查询词注入本页过滤 —— 这样「设置页各二级页里的开关」也能
+  /// 被搜到，而不必为上百个条目手工维护一份搜索索引。
+  final String? initialQuery;
+
+  /// 外部搜索请求序号：**每请求一次自增**。据此判断「即使查询词与上次相同也要重新
+  /// 进入搜索态」（用户可能已经手动退出过搜索）。
+  final int searchRequestId;
 
   @override
   State<MoreSettingsScreen> createState() => _MoreSettingsScreenState();
@@ -28,9 +59,42 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
   String _searchQuery = '';
   bool _isSearching = false;
 
+  /// 统一切换搜索态：内嵌模式下同步上报宿主，避免返回键被 home_screen 二次处理。
+  void _setSearching(bool value) {
+    if (_isSearching != value) {
+      widget.onSearchActiveChanged?.call(value);
+    }
+    setState(() {
+      _isSearching = value;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _applyExternalQuery();
+  }
+
+  @override
+  void didUpdateWidget(covariant MoreSettingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 请求序号变化即重新应用（查询词相同也要重新进入搜索态）。
+    if (widget.searchRequestId != oldWidget.searchRequestId) {
+      _applyExternalQuery();
+    }
+  }
+
+  /// 应用全局搜索注入的查询词：进入搜索态并过滤出匹配的设置项。
+  ///
+  /// 不在这里 setState —— 直接赋值字段，本次 build 即生效；[initState] 里也不允许
+  /// setState。（onSearchActiveChanged 只是让宿主记录状态，宿主不应在此时重建。）
+  void _applyExternalQuery() {
+    final query = widget.initialQuery;
+    if (query == null || query.isEmpty) return;
+    _searchQuery = query;
+    _searchController.text = query;
+    _isSearching = true;
+    widget.onSearchActiveChanged?.call(true);
   }
 
   @override
@@ -284,15 +348,26 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       onPopInvoked: (didPop) {
         if (didPop) return;
         if (_isSearching) {
-          setState(() {
-            _isSearching = false;
-            _searchQuery = '';
-            _searchController.clear();
-          });
+          _searchQuery = '';
+          _searchController.clear();
+          _setSearching(false);
         }
       },
       child: Scaffold(
+        // 内嵌时不能吃状态栏 padding（首页顶部栏在 body 里），否则顶部多一条背景带。
+        primary: !widget.embedded,
         appBar: AppBar(
+          // 同上：AppBar.primary 为 true 会把工具栏包进 SafeArea，再加一次状态栏高度。
+          primary: !widget.embedded,
+          // 内嵌页对齐传输页样式：标题由 body 内的大字渲染，AppBar 收缩到 0 高并去底
+          // 色，否则顶部会多出一条 surface 色背景带、标题字号/位置也与其他页不一致。
+          // 搜索态仍需完整 AppBar（输入框 + 退出按钮），故只在「内嵌且非搜索」时收缩。
+          toolbarHeight: (widget.embedded && !_isSearching) ? 0 : null,
+          backgroundColor: widget.embedded ? Colors.transparent : null,
+          surfaceTintColor: widget.embedded ? Colors.transparent : null,
+          scrolledUnderElevation: widget.embedded ? 0 : null,
+          // 内嵌页没有可 pop 的路由，禁用自动返回箭头，避免误 pop 掉整个首页。
+          automaticallyImplyLeading: false,
           title: _isSearching
               ? TextField(
                   controller: _searchController,
@@ -314,50 +389,62 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   },
                 )
               : Text(L10n.of(context).ui_personalize_settings),
-          leading: IconButton(
-            icon: const Icon(Broken.arrow_left),
-            onPressed: () {
-              if (_isSearching) {
-                setState(() {
-                  _isSearching = false;
-                  _searchQuery = '';
-                  _searchController.clear();
-                });
-              } else {
-                Navigator.pop(context);
-              }
-            },
-          ),
+          // 内嵌页（第 4 页）：非搜索态隐藏返回箭头（无处可返回）；搜索态保留，
+          // 用它退出搜索。自动返回箭头已在上面显式关闭。
+          leading: (widget.embedded && !_isSearching)
+              ? null
+              : IconButton(
+                  icon: const Icon(Broken.arrow_left),
+                  onPressed: () {
+                    if (_isSearching) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                      _setSearching(false);
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+          // 注意：此处**不再提供「进入搜索」的按钮**（v2.1.7 起移除）。
+          // 搜索统一由全局搜索发起（命中设置项 → 「在设置中搜索」→ 经 initialQuery
+          // 注入本页），避免两套搜索入口；这里只保留搜索态下的「关闭过滤」按钮。
           actions: [
             if (_isSearching)
               IconButton(
                 icon: const Icon(Icons.clear_rounded),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                 onPressed: () {
                   setState(() {
-                    if (_searchController.text.isEmpty) {
-                      _isSearching = false;
-                    } else {
-                      _searchController.clear();
-                      _searchQuery = '';
-                    }
+                    _searchController.clear();
+                    _searchQuery = '';
                   });
-                },
-              )
-            else
-              IconButton(
-                icon: const Icon(Broken.search_normal),
-                onPressed: () {
-                  setState(() {
-                    _isSearching = true;
-                  });
+                  _setSearching(false);
                 },
               ),
           ],
         ),
         body: SafeArea(
-          child: ListView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 内嵌页（第 4 页）标题：与传输页同款大字标题（AppBar 已收缩为 0 高）。
+              if (widget.embedded && !_isSearching)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                  child: Text(
+                    L10n.of(context).ui_personalize_settings,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: ListView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+            padding: EdgeInsets.only(top: (widget.embedded && !_isSearching) ? 8 : 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
             children: [
               if (_searchQuery.isEmpty) ...[
                 SettingsTile(
@@ -940,6 +1027,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   ],
                 ],
               ],
+            ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1596,29 +1686,11 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
 
   Future<void> _clearRemoteCache() async {
     try {
-      // 与自动清理一致：清空 /storage/emulated/0/ZenFile 下除 Backups 外的所有内容。
-      final basePath = '/storage/emulated/0/ZenFile';
-      final baseDir = Directory(basePath);
-      if (baseDir.existsSync()) {
-        for (final entity in baseDir.listSync()) {
-          final name = p.basename(entity.path);
-          if (name == 'Backups') continue; // 永远保留用户备份数据
-          try {
-            await entity.delete(recursive: true);
-          } catch (_) {}
-        }
-        // 清理后重建必要的运行目录
-        for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
-          try {
-            await Directory(p.join(basePath, sub)).create(recursive: true);
-          } catch (_) {}
-        }
-        // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
-        try {
-          final marker = File(p.join(basePath, '.nomedia', '.nomedia'));
-          if (!marker.existsSync()) await marker.create();
-        } catch (_) {}
-      }
+      // 与「自动清理」走**同一份实现**（CacheCleanService 是唯一入口）：只清缓存，
+      // 绝不动诊断数据与用户数据（Backups / crash / Receive / webdav_debug.log）。
+      // 此前这里是逐行重复的第二份拷贝，两处一旦不同步就会把崩溃现场删掉
+      // （2026-09-25 事故根因，详见 CacheCleanService 的类注释）。
+      await CacheCleanService.wipe();
 
       // 同时清理旧版残留的缓存位置
       final oldCacheDirs = [

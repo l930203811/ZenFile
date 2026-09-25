@@ -222,7 +222,18 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ui_view_update": "檢視更新",
+  "ui_view_update": "版本更新",
+  "update_github_check": "GitHub 版本偵測",
+  "update_current_version": "目前版本：{version}",
+  "update_checking": "正在檢查更新…",
+  "update_latest": "目前已是最新版本",
+  "update_new_version": "發現新版本：{version}",
+  "update_check_failed": "檢查更新失敗，請檢查網路連線後重試",
+  "update_retry": "重試",
+  "update_download_install": "下載安裝",
+  "update_downloading": "正在下載更新…",
+  "update_download_failed": "下載失敗，請重試",
+  "update_view_github": "前往 GitHub 查看",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1167,7 +1178,7 @@
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "選擇並固定資料夾",
+  "msg33b0b21c": "選擇資料夾",
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1179,7 +1190,7 @@
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "固定此資料夾",
+  "msg5dc1fa7b": "使用此資料夾",
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1278,6 +1289,14 @@
   "msgb8140039": "最舊優先（按月分組）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}年{month}月",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msg424a0110": "未知日期",
   "@msg424a0110": {
@@ -3174,6 +3193,36 @@
   "cat_vault_desc": "安全儲存",
   "cat_quick_categories": "分類",
   "ui_nav": "本地",
+  "update_err_network": "無法連接伺服器，請檢查網路後重試",
+  "update_err_timeout": "連線逾時，請檢查網路或代理後重試",
+  "update_err_rate_limit": "GitHub 要求過於頻繁，請稍後再試",
+  "update_err_http": "伺服器回應異常（HTTP {code}）",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "伺服器回傳資料異常，請稍後重試",
+  "update_err_version_unknown": "無法取得目前版本號，請重新啟動應用程式後重試",
+  "update_remote_version": "遠端最新：{version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "檢查時間：{time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "已降級為網頁檢測，無法於應用程式內下載",
+  "update_source_label": "更新來源",
+  "update_source_default": "GitHub 官方",
+  "update_source_custom": "自訂來源",
+  "update_source_dialog_title": "自訂更新來源",
+  "update_source_dialog_desc": "留空則使用 GitHub 官方介面。可填入鏡像或自建介面，需回傳與 GitHub 相同結構的 JSON；網址中的 REPO 代表倉庫路徑。",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "網址無效，需以 http:// 或 https:// 開頭",
+
+  "ui_paste_and_clear": "貼上並清除",
+  "ui_cut_paste_hint": "剪下為移動，貼上後自動清空",
+  "ui_search_in_settings": "在設定中搜尋",
+  "ui_search_group_nav": "導覽",
   "ui_home": "主頁",
   "ui_recycle_bin": "回收站",
   "ui_dark_mode": "深色模式",
@@ -3780,7 +3829,7 @@
   "ui_undo": "撤銷",
   "ui_redo": "重做",
   "ui_add_selected": "新增所選 ({count})",
-  "ui_pin_selected": "固定所選 ({count})",
+  "ui_pin_selected": "使用所選 ({count})",
   "msg_vault_choose_mode": "選擇保護模式",
   "msg_vault_mode_desc": "選擇如何保護選中的檔案。安全檔案將使用 AES-256-GCM 強加密。",
   "ui_secure_import": "安全匯入（沙盒）",
@@ -4430,8 +4479,10 @@
   "cat_backup_restore_desc": "備份",
   "cat_storage_volume": "儲存",
   "ui_columns_per_row": "每行顯示",
+  "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
+  "ui_show_custom_entry": "在分類頁顯示自定義入口",
   "msge8b8e9b3": "常用功能",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4993,7 +5044,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "在您的裝置上即時查詢任何檔案、資料夾、檔案或媒體",
+  "ui_global_search_hint": "搜尋檔案、應用程式與設定",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6329,7 +6380,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (zh_TW)"
   },
-  "ui_share_scan_failed": "掃描共享名失敗：$error",
+  "ui_share_scan_failed": "掃描共享名失敗：{error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7490,6 +7541,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "偵測到上次異常結束，診斷報告已儲存到 ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -8113,6 +8168,36 @@
   "audio_opensles_desc": "音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "傳輸",
+  "ui_profile": "我的",
+  "msg_coming_soon": "即將推出",
+  "toolbox_text_editor": "文字編輯器",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "進度條常駐",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "適應寬度",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "適應高度",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "原始大小",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "顯示模式",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "匯入文字檔",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

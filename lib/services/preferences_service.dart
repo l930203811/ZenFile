@@ -47,6 +47,17 @@ class PreferencesService {
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    await _applyUiNavBarMigration();
+  }
+
+  /// UI 导航栏版本迁移（v2.1.7）：旧版本导航栏位置默认在顶部（false），
+  /// 本次起强制默认底部（true）。仅在升级后首次启动执行一次，之后用户可自由切换。
+  static const String _keyUiNavBarVersion = 'ui_nav_bar_version';
+  static Future<void> _applyUiNavBarMigration() async {
+    final seen = _prefs?.getInt(_keyUiNavBarVersion) ?? 0;
+    if (seen >= 1) return;
+    await _prefs?.setBool(_keyShowBottomActionBar, true);
+    await _prefs?.setInt(_keyUiNavBarVersion, 1);
   }
 
   // --- Theme Mode ---
@@ -140,7 +151,7 @@ class PreferencesService {
   }
 
   static bool getShowBottomActionBar() {
-    return _prefs?.getBool(_keyShowBottomActionBar) ?? false;
+    return _prefs?.getBool(_keyShowBottomActionBar) ?? true;
   }
 
   static Future<void> saveShowBottomActionBar(bool val) async {
@@ -1023,6 +1034,25 @@ class PreferencesService {
   static const String _keyWebSharePort = 'web_share_port';
   static const String _keyFtpPort = 'ftp_port';
 
+  /// 崩溃取证：已经提示过用户的报告文件名（避免同一份报告反复提示）。
+  static const String _keyNotifiedCrashReports = 'crash_notified_reports';
+
+  /// 自定义更新源（镜像 / 自建接口）地址。空 = 使用 GitHub 官方 API。
+  static const String _keyUpdateApiUrl = 'update_api_url';
+
+  /// 读取自定义更新源；空串表示使用 GitHub 官方源。
+  static String getUpdateApiUrl() => _prefs?.getString(_keyUpdateApiUrl) ?? '';
+
+  /// 保存自定义更新源；传空串 / 纯空白 = 恢复官方源（移除键）。
+  static Future<void> saveUpdateApiUrl(String url) async {
+    final v = url.trim();
+    if (v.isEmpty) {
+      await _prefs?.remove(_keyUpdateApiUrl);
+    } else {
+      await _prefs?.setString(_keyUpdateApiUrl, v);
+    }
+  }
+
   /// 获取自动清理天数，0表示不自动清理
   /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
   static int getRemoteCacheAutoCleanDays() {
@@ -1061,6 +1091,19 @@ class PreferencesService {
 
   static Future<void> saveRemoteCacheLastCleanTime(int timestamp) async {
     await _prefs?.setInt(_keyRemoteCacheLastCleanTime, timestamp);
+  }
+
+  /// 崩溃取证的「已提示过」报告名集合。
+  ///
+  /// 判据必须是**报告名**而不是「本次新增份数」：报告文件一旦被删（缓存清理 /
+  /// 用户手删 / 重装），按份数判就会把同一份报告再提示一次，形成无限重复提示
+  /// （2026-09-25 用户实测）。名字里含崩溃时间戳，天然唯一。
+  static List<String> getNotifiedCrashReports() {
+    return _prefs?.getStringList(_keyNotifiedCrashReports) ?? const <String>[];
+  }
+
+  static Future<void> saveNotifiedCrashReports(List<String> names) async {
+    await _prefs?.setStringList(_keyNotifiedCrashReports, names);
   }
 
   /// 获取远程媒体文件缩略图预览开关
@@ -1467,6 +1510,11 @@ class PreferencesService {
   static const String _keySubtitlePosition = 'video_subtitle_position';
   static const String _keySubtitleNoBackground = 'video_subtitle_no_background';
   static const String _keyVideoHwdec = 'video_hwdec'; // true=硬解(auto-safe), false=软解(no)
+  static const String _keyVideoProgressAlwaysShow = 'video_progress_always_show';
+  static const String _keyVideoPlaybackSpeed = 'video_playback_speed';
+  static const String _keyVideoVolume = 'video_volume';
+  static const String _keyImageFitMode = 'image_fit_mode'; // 0=适应宽度(contained) 1=适应高度 2=原始大小
+  static const String _keyVideoBackgroundMode = 'video_background_mode';
 
   /// 获取视频解码方式：true=硬解, false=软解，默认 true（硬解）
   static bool getUseHardwareDecode({bool defaultValue = true}) {
@@ -1612,6 +1660,56 @@ class PreferencesService {
     await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
   }
 
+  /// 获取视频进度条常驻开关，默认 false（控制条隐藏时进度条一并隐藏）
+  static bool getVideoProgressAlwaysShow() {
+    return _prefs?.getBool(_keyVideoProgressAlwaysShow) ?? false;
+  }
+
+  /// 保存视频进度条常驻开关
+  static Future<void> saveVideoProgressAlwaysShow(bool value) async {
+    await _prefs?.setBool(_keyVideoProgressAlwaysShow, value);
+  }
+
+  /// 获取视频默认播放倍速，默认 1.0
+  static double getVideoPlaybackSpeed() {
+    return _prefs?.getDouble(_keyVideoPlaybackSpeed) ?? 1.0;
+  }
+
+  /// 保存视频默认播放倍速
+  static Future<void> saveVideoPlaybackSpeed(double value) async {
+    await _prefs?.setDouble(_keyVideoPlaybackSpeed, value);
+  }
+
+  /// 获取视频音量（0-1），默认 1.0
+  static double getVideoVolume() {
+    return _prefs?.getDouble(_keyVideoVolume) ?? 1.0;
+  }
+
+  /// 保存视频音量（0-1）
+  static Future<void> saveVideoVolume(double value) async {
+    await _prefs?.setDouble(_keyVideoVolume, value);
+  }
+
+  /// 获取图片显示模式：0=适应宽度(contained) 1=适应高度 2=原始大小，默认 0
+  static int getImageFitMode() {
+    return _prefs?.getInt(_keyImageFitMode) ?? 0;
+  }
+
+  /// 保存图片显示模式
+  static Future<void> saveImageFitMode(int value) async {
+    await _prefs?.setInt(_keyImageFitMode, value);
+  }
+
+  /// 获取视频后台播放偏好（记住上次选择），默认 false
+  static bool getVideoBackgroundMode() {
+    return _prefs?.getBool(_keyVideoBackgroundMode) ?? false;
+  }
+
+  /// 保存视频后台播放偏好
+  static Future<void> saveVideoBackgroundMode(bool value) async {
+    await _prefs?.setBool(_keyVideoBackgroundMode, value);
+  }
+
   /// 移除某视频的手手动字幕映射。
   static Future<void> removeSubtitleMapping(String videoPath) async {
     final json = _prefs?.getString(_keySubtitleMappings);
@@ -1659,8 +1757,19 @@ class PreferencesService {
   // --- Categories Grid Columns ---
   static const String _keyCategoriesGridColumns = 'categories_grid_columns';
 
-  /// 获取分类页网格列数，默认 4 列
-  static int getCategoriesGridColumns({int defaultValue = 4}) {
+  /// 分类页网格末尾「自定义」入口是否可见（默认开启）
+  static const String _keyCustomEntryVisible = 'custom_entry_visible';
+
+  static bool getCustomEntryVisible({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyCustomEntryVisible) ?? defaultValue;
+  }
+
+  static Future<void> saveCustomEntryVisible(bool visible) async {
+    await _prefs?.setBool(_keyCustomEntryVisible, visible);
+  }
+
+  /// 获取分类页网格列数，默认 3 列
+  static int getCategoriesGridColumns({int defaultValue = 3}) {
     return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
   }
 

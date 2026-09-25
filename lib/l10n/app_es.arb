@@ -205,7 +205,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Ver)",
-  "ui_view_update": "Ver actualizaciones",
+  "ui_view_update": "Actualizaciones de versión",
+  "update_github_check": "Comprobación de versión en GitHub",
+  "update_current_version": "Versión actual: {version}",
+  "update_checking": "Buscando actualizaciones…",
+  "update_latest": "Ya tienes la versión más reciente",
+  "update_new_version": "Nueva versión disponible: {version}",
+  "update_check_failed": "Error al comprobar actualizaciones. Revisa tu red e inténtalo de nuevo.",
+  "update_retry": "Reintentar",
+  "update_download_install": "Descargar e instalar",
+  "update_downloading": "Descargando actualización…",
+  "update_download_failed": "Descarga fallida. Inténtalo de nuevo.",
+  "update_view_github": "Ver en GitHub",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1139,7 +1150,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Seleccionar y fijar carpeta",
+  "msg33b0b21c": "Seleccionar carpeta",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1162,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Fijar esta carpeta",
+  "msg5dc1fa7b": "Usar esta carpeta",
   "selectStorageDrive": "Seleccionar unidad de almacenamiento",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1253,14 @@
   "msgef7ae768": "Más Recientes Primero (agrupados por mes)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Más Antiguos Primero (agrupados por mes)",
   "@msg424a0110": {
@@ -3103,6 +3122,36 @@
   "cat_vault_desc": "Almacenamiento seguro",
   "cat_quick_categories": "Categorías",
   "ui_nav": "Local",
+  "update_err_network": "No se puede conectar al servidor. Comprueba tu red e inténtalo de nuevo.",
+  "update_err_timeout": "Se agotó el tiempo de conexión. Comprueba tu red o proxy e inténtalo de nuevo.",
+  "update_err_rate_limit": "Se alcanzó el límite de GitHub. Inténtalo más tarde.",
+  "update_err_http": "El servidor devolvió un error (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Respuesta inesperada del servidor. Inténtalo más tarde.",
+  "update_err_version_unknown": "No se puede leer la versión actual. Reinicia la aplicación e inténtalo de nuevo.",
+  "update_remote_version": "Más reciente: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Comprobado a las {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Se cambió a comprobación web: descarga en la app no disponible",
+  "update_source_label": "Fuente de actualización",
+  "update_source_default": "GitHub oficial",
+  "update_source_custom": "Fuente personalizada",
+  "update_source_dialog_title": "Fuente de actualización personalizada",
+  "update_source_dialog_desc": "Déjalo vacío para usar la API oficial de GitHub. Puedes introducir un espejo o tu propio endpoint que devuelva un JSON con la misma estructura; REPO en la URL representa la ruta del repositorio.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Dirección no válida: debe empezar por http:// o https://",
+
+  "ui_paste_and_clear": "Pegar y vaciar",
+  "ui_cut_paste_hint": "Cortar = mover; se vacía tras pegar",
+  "ui_search_in_settings": "Buscar en los ajustes",
+  "ui_search_group_nav": "Navegación",
   "ui_home": "Inicio",
   "ui_recycle_bin": "Papelera de Reciclaje",
   "ui_dark_mode": "Modo Oscuro",
@@ -3709,7 +3758,7 @@
   "ui_undo": "Deshacer",
   "ui_redo": "Rehacer",
   "ui_add_selected": "Añadir Seleccionados ({count})",
-  "ui_pin_selected": "Anclar selección ({count})",
+  "ui_pin_selected": "Usar selección ({count})",
   "msg_vault_choose_mode": "Elegir modo de protección",
   "msg_vault_mode_desc": "Elige cómo proteger los archivos seleccionados. Los archivos protegidos se cifran con AES-256-GCM.",
   "ui_secure_import": "Importación segura (Sandbox)",
@@ -4334,8 +4383,10 @@
   "cat_backup_restore_desc": "Respaldar",
   "cat_storage_volume": "Almacenamiento",
   "ui_columns_per_row": "Columnas por fila",
+  "ui_2columns": "2 Columnas",
   "ui_3columns": "3 Columnas",
   "ui_4columns": "4 Columnas",
+  "ui_show_custom_entry": "Mostrar entrada personalizada",
   "msge8b8e9b3": "Acciones rápidas",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4845,7 +4896,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Busca archivos, carpetas, documentos o multimedia al instante en tu dispositivo",
+  "ui_global_search_hint": "Buscar archivos, aplicaciones y configuración",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6181,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (es)"
   },
-  "ui_share_scan_failed": "Error al escanear recursos: $error",
+  "ui_share_scan_failed": "Error al escanear recursos: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7342,6 +7393,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "Se detectó un cierre anormal anterior. Informe de diagnóstico guardado en ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "La importación sobrescribirá el sandbox y la configuración de cifrado actuales con el contenido de la copia (la contraseña de desbloqueo no se ve afectada). ¿Continuar?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7965,6 +8020,36 @@
   "audio_opensles_desc": "Las apps de efectos de audio (p. ej. RootlessJamesDSP) solo pueden engancharse a los modos AudioTrack; OpenSL ES usa una sesión asignada por el sistema, a la que no pueden engancharse. El cambio es inmediato.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "Transferencias",
+  "ui_profile": "Perfil",
+  "msg_coming_soon": "Próximamente",
+  "toolbox_text_editor": "Editor de texto",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "Mostrar siempre la barra de progreso",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "Ajustar al ancho",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "Ajustar a la altura",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "Tamaño original",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "Modo de visualización",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Importar archivo de texto",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

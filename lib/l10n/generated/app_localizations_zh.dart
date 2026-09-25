@@ -189,7 +189,44 @@ class L10nZh extends L10n {
   String get v1041 => 'v1.0.43 (查看)';
 
   @override
-  String get ui_view_update => '查看更新';
+  String get ui_view_update => '版本更新';
+
+  @override
+  String get update_github_check => 'GitHub 版本检测';
+
+  @override
+  String update_current_version(String version) {
+    return '当前版本：$version';
+  }
+
+  @override
+  String get update_checking => '正在检查更新…';
+
+  @override
+  String get update_latest => '当前已是最新版本';
+
+  @override
+  String update_new_version(String version) {
+    return '发现新版本：$version';
+  }
+
+  @override
+  String get update_check_failed => '检查更新失败，请检查网络连接后重试';
+
+  @override
+  String get update_retry => '重试';
+
+  @override
+  String get update_download_install => '下载安装';
+
+  @override
+  String get update_downloading => '正在下载更新…';
+
+  @override
+  String get update_download_failed => '下载失败，请重试';
+
+  @override
+  String get update_view_github => '前往 GitHub 查看';
 
   @override
   String get zenfileflutter =>
@@ -915,7 +952,7 @@ class L10nZh extends L10n {
   String get msgfba1f416 => '输入文件夹名称';
 
   @override
-  String get msg33b0b21c => '选择并固定文件夹';
+  String get msg33b0b21c => '选择文件夹';
 
   @override
   String get msgff3200cc => '清除选择';
@@ -924,7 +961,7 @@ class L10nZh extends L10n {
   String get msg4614630a => '文件夹为空';
 
   @override
-  String get msg5dc1fa7b => '固定此文件夹';
+  String get msg5dc1fa7b => '使用此文件夹';
 
   @override
   String get selectStorageDrive => '选择存储驱动器';
@@ -1002,6 +1039,11 @@ class L10nZh extends L10n {
 
   @override
   String get msgb8140039 => '最旧优先（按月分组）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '未知日期';
@@ -2590,6 +2632,73 @@ class L10nZh extends L10n {
   String get ui_nav => '本地';
 
   @override
+  String get update_err_network => '无法连接服务器，请检查网络后重试';
+
+  @override
+  String get update_err_timeout => '连接超时，请检查网络或代理后重试';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 请求过于频繁，请稍后再试';
+
+  @override
+  String update_err_http(String code) {
+    return '服务器返回异常（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => '服务器返回数据异常，请稍后重试';
+
+  @override
+  String get update_err_version_unknown => '无法获取当前版本号，请重启应用后重试';
+
+  @override
+  String update_remote_version(String version) {
+    return '远端最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '检查时间：$time';
+  }
+
+  @override
+  String get update_degraded_hint => '已降级为网页检测，无法应用内下载';
+
+  @override
+  String get update_source_label => '更新源';
+
+  @override
+  String get update_source_default => 'GitHub 官方';
+
+  @override
+  String get update_source_custom => '自定义源';
+
+  @override
+  String get update_source_dialog_title => '自定义更新源';
+
+  @override
+  String get update_source_dialog_desc =>
+      '留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => '地址无效，需以 http:// 或 https:// 开头';
+
+  @override
+  String get ui_paste_and_clear => '粘贴并清除';
+
+  @override
+  String get ui_cut_paste_hint => '剪切为移动，粘贴后自动清空';
+
+  @override
+  String get ui_search_in_settings => '在设置中搜索';
+
+  @override
+  String get ui_search_group_nav => '导航';
+
+  @override
   String get ui_home => '主页';
 
   @override
@@ -3518,7 +3627,7 @@ class L10nZh extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '固定所选 ($count)';
+    return '使用所选 ($count)';
   }
 
   @override
@@ -4258,10 +4367,16 @@ class L10nZh extends L10n {
   String get ui_columns_per_row => '每行显示';
 
   @override
+  String get ui_2columns => '2列';
+
+  @override
   String get ui_3columns => '3列';
 
   @override
   String get ui_4columns => '4列';
+
+  @override
+  String get ui_show_custom_entry => '在分类页显示自定义入口';
 
   @override
   String get msge8b8e9b3 => '常用功能';
@@ -4799,7 +4914,7 @@ class L10nZh extends L10n {
       'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
 
   @override
-  String get ui_global_search_hint => '在您的设备上即时查找任何文件、文件夹、文档或媒体';
+  String get ui_global_search_hint => '搜索文件、应用和设置';
 
   @override
   String get ui_delete_item_confirm => '确定要删除此项目吗？此操作无法撤销。';
@@ -5887,7 +6002,7 @@ class L10nZh extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '扫描共享名失败：\$error';
+    return '扫描共享名失败：$error';
   }
 
   @override
@@ -6881,6 +6996,9 @@ class L10nZh extends L10n {
   String get vault_decrypt_open_progress => '正在解密并打开...';
 
   @override
+  String get crash_report_saved => '检测到上次异常退出，诊断报告已保存到 ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       '导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？';
 
@@ -7460,6 +7578,36 @@ class L10nZh extends L10n {
   @override
   String get audio_opensles_desc =>
       '音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。';
+
+  @override
+  String get ui_transfers => '传输';
+
+  @override
+  String get ui_profile => '我的';
+
+  @override
+  String get msg_coming_soon => '即将推出';
+
+  @override
+  String get toolbox_text_editor => '文本编辑器';
+
+  @override
+  String get ui_video_progress_always_show => '进度条常驻';
+
+  @override
+  String get ui_image_fit_width => '适应宽度';
+
+  @override
+  String get ui_image_fit_height => '适应高度';
+
+  @override
+  String get ui_image_fit_original => '原始大小';
+
+  @override
+  String get ui_image_fit_mode => '显示模式';
+
+  @override
+  String get ui_text_editor_import => '导入文本文件';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7647,7 +7795,44 @@ class L10nZhTw extends L10nZh {
   String get v1041 => 'v1.0.43 (檢視)';
 
   @override
-  String get ui_view_update => '檢視更新';
+  String get ui_view_update => '版本更新';
+
+  @override
+  String get update_github_check => 'GitHub 版本偵測';
+
+  @override
+  String update_current_version(String version) {
+    return '目前版本：$version';
+  }
+
+  @override
+  String get update_checking => '正在檢查更新…';
+
+  @override
+  String get update_latest => '目前已是最新版本';
+
+  @override
+  String update_new_version(String version) {
+    return '發現新版本：$version';
+  }
+
+  @override
+  String get update_check_failed => '檢查更新失敗，請檢查網路連線後重試';
+
+  @override
+  String get update_retry => '重試';
+
+  @override
+  String get update_download_install => '下載安裝';
+
+  @override
+  String get update_downloading => '正在下載更新…';
+
+  @override
+  String get update_download_failed => '下載失敗，請重試';
+
+  @override
+  String get update_view_github => '前往 GitHub 查看';
 
   @override
   String get zenfileflutter =>
@@ -8373,7 +8558,7 @@ class L10nZhTw extends L10nZh {
   String get msgfba1f416 => '輸入資料夾名稱';
 
   @override
-  String get msg33b0b21c => '選擇並固定資料夾';
+  String get msg33b0b21c => '選擇資料夾';
 
   @override
   String get msgff3200cc => '清除選擇';
@@ -8382,7 +8567,7 @@ class L10nZhTw extends L10nZh {
   String get msg4614630a => '資料夾為空';
 
   @override
-  String get msg5dc1fa7b => '固定此資料夾';
+  String get msg5dc1fa7b => '使用此資料夾';
 
   @override
   String get selectStorageDrive => '選擇儲存裝置';
@@ -8460,6 +8645,11 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgb8140039 => '最舊優先（按月分組）';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year年$month月';
+  }
 
   @override
   String get msg424a0110 => '未知日期';
@@ -10039,6 +10229,73 @@ class L10nZhTw extends L10nZh {
   String get ui_nav => '本地';
 
   @override
+  String get update_err_network => '無法連接伺服器，請檢查網路後重試';
+
+  @override
+  String get update_err_timeout => '連線逾時，請檢查網路或代理後重試';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 要求過於頻繁，請稍後再試';
+
+  @override
+  String update_err_http(String code) {
+    return '伺服器回應異常（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => '伺服器回傳資料異常，請稍後重試';
+
+  @override
+  String get update_err_version_unknown => '無法取得目前版本號，請重新啟動應用程式後重試';
+
+  @override
+  String update_remote_version(String version) {
+    return '遠端最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '檢查時間：$time';
+  }
+
+  @override
+  String get update_degraded_hint => '已降級為網頁檢測，無法於應用程式內下載';
+
+  @override
+  String get update_source_label => '更新來源';
+
+  @override
+  String get update_source_default => 'GitHub 官方';
+
+  @override
+  String get update_source_custom => '自訂來源';
+
+  @override
+  String get update_source_dialog_title => '自訂更新來源';
+
+  @override
+  String get update_source_dialog_desc =>
+      '留空則使用 GitHub 官方介面。可填入鏡像或自建介面，需回傳與 GitHub 相同結構的 JSON；網址中的 REPO 代表倉庫路徑。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => '網址無效，需以 http:// 或 https:// 開頭';
+
+  @override
+  String get ui_paste_and_clear => '貼上並清除';
+
+  @override
+  String get ui_cut_paste_hint => '剪下為移動，貼上後自動清空';
+
+  @override
+  String get ui_search_in_settings => '在設定中搜尋';
+
+  @override
+  String get ui_search_group_nav => '導覽';
+
+  @override
   String get ui_home => '主頁';
 
   @override
@@ -10931,7 +11188,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_pin_selected(Object count) {
-    return '固定所選 ($count)';
+    return '使用所選 ($count)';
   }
 
   @override
@@ -11668,10 +11925,16 @@ class L10nZhTw extends L10nZh {
   String get ui_columns_per_row => '每行顯示';
 
   @override
+  String get ui_2columns => '2列';
+
+  @override
   String get ui_3columns => '3列';
 
   @override
   String get ui_4columns => '4列';
+
+  @override
+  String get ui_show_custom_entry => '在分類頁顯示自定義入口';
 
   @override
   String get msge8b8e9b3 => '常用功能';
@@ -12218,7 +12481,7 @@ class L10nZhTw extends L10nZh {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => '在您的裝置上即時查詢任何檔案、資料夾、檔案或媒體';
+  String get ui_global_search_hint => '搜尋檔案、應用程式與設定';
 
   @override
   String get ui_delete_item_confirm => '確定要刪除此專案嗎？此操作無法復原。';
@@ -13316,7 +13579,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '掃描共享名失敗：\$error';
+    return '掃描共享名失敗：$error';
   }
 
   @override
@@ -14309,6 +14572,9 @@ class L10nZhTw extends L10nZh {
   String get vault_decrypt_open_progress => '正在解密並開啟...';
 
   @override
+  String get crash_report_saved => '偵測到上次異常結束，診斷報告已儲存到 ZenFile/crash';
+
+  @override
   String get vault_import_backup_confirm =>
       '匯入將以備份內容覆蓋目前保險箱沙盒與加密配置（解鎖密碼不受影響）。是否繼續？';
 
@@ -14888,4 +15154,34 @@ class L10nZhTw extends L10nZh {
   @override
   String get audio_opensles_desc =>
       '音效類應用程式（如 RootlessJamesDSP）只能接管 AudioTrack 檔位；OpenSL ES 的工作階段 ID 由系統分配，音效軟體無法接管。切換立即生效。';
+
+  @override
+  String get ui_transfers => '傳輸';
+
+  @override
+  String get ui_profile => '我的';
+
+  @override
+  String get msg_coming_soon => '即將推出';
+
+  @override
+  String get toolbox_text_editor => '文字編輯器';
+
+  @override
+  String get ui_video_progress_always_show => '進度條常駐';
+
+  @override
+  String get ui_image_fit_width => '適應寬度';
+
+  @override
+  String get ui_image_fit_height => '適應高度';
+
+  @override
+  String get ui_image_fit_original => '原始大小';
+
+  @override
+  String get ui_image_fit_mode => '顯示模式';
+
+  @override
+  String get ui_text_editor_import => '匯入文字檔';
 }

@@ -8,15 +8,11 @@ import '../../services/preferences_service.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
-import '../screens/more_settings_screen.dart';
 import '../../models/media_type.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/utils.dart';
 
-import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
-import '../screens/ftp_server_screen.dart';
-import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/toolbox_screen.dart';
 import '../screens/recycle_bin_screen.dart';
@@ -27,6 +23,18 @@ class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
   final bool showTitle;
 
+  /// ⚠️ 这个网格**自己不负责滚动，也不允许自己决定卡片行高以外的事**。
+  ///
+  /// 踩过的坑（v2.1.7）：网格的 build 顶层是 `Padding > Column`，`Column` 会给
+  /// 非 flex 子项 **无界高度**（maxHeight = ∞）。所以：
+  /// ① 在网格内部塞 `SingleChildScrollView`，它拿到的可视区高度会等于内容高度
+  ///    ⇒ **永远滚不动**，超出部分被 Column 裁掉（表现为「2 列/加更多快捷方式后
+  ///    底部卡片看不到、也拉不上来」）；
+  /// ② 想靠「把可用高度传进来反推行高」来消灭空白，会在列数变化时把行高算歪。
+  ///
+  /// 结论：滚动和「顶部呼吸位」一律交给**高度有界的外层**（见
+  /// `home_screen._buildHomeTab` 的 `SingleChildScrollView`），本组件只按列数
+  /// 输出固定比例的卡片行高。
   const QuickCategoriesGrid({
     super.key,
     required this.onNavigateTab,
@@ -224,34 +232,6 @@ class QuickCategoriesGrid extends StatefulWidget {
         'isCustom': false,
         'pageBuilder': () => AllRecentFilesScreen(onNavigateTab: onNavigateTab),
       },
-      '网络': {
-        'label': l10n.cat_network,
-        'icon': Broken.wifi,
-        'color': categoryColor,
-        'iconColor': iconColor(190), // 青
-        'count': '${mediaProvider.getCategoryItemCount("网络")}',
-        'isCustom': false,
-        'pageBuilder': () =>
-            NetworkCategoryScreen(onNavigateTab: onNavigateTab),
-      },
-      'FTP共享': {
-        'label': l10n.ftp,
-        'icon': Icons.swap_horizontal_circle_rounded,
-        'color': categoryColor,
-        'iconColor': iconColor(60), // 黄
-        'count': l10n.cat_service,
-        'isCustom': false,
-        'pageBuilder': () => const FtpServerScreen(),
-      },
-      'Web共享': {
-        'label': l10n.web,
-        'icon': Icons.language_rounded,
-        'color': categoryColor,
-        'iconColor': iconColor(260), // 蓝紫
-        'count': l10n.cat_service,
-        'isCustom': false,
-        'pageBuilder': () => const WebSharingScreen(),
-      },
       '工具箱': {
         'label': l10n.cat_toolbox,
         'icon': Icons.home_repair_service,
@@ -270,17 +250,8 @@ class QuickCategoriesGrid extends StatefulWidget {
         'isCustom': false,
         'pageBuilder': () => const AppManagerScreen(),
       },
-      '设置': {
-        'label': l10n.cat_settings,
-        'icon': Broken.setting_2,
-        'color': categoryColor,
-        'iconColor': isDark
-            ? Colors.blueGrey.shade300
-            : Colors.blueGrey, // 蓝灰（中性）
-        'count': l10n.cat_config,
-        'isCustom': false,
-        'pageBuilder': () => const MoreSettingsScreen(),
-      },
+      // 注意：「设置」不再是分类页卡片（v2.1.7 起移到首页底部「我的」页），
+      // 不要在此恢复 '设置' 定义 —— 否则它会重新出现在分类页与自定义面板里。
       '备份/恢复': {
         'label': l10n.cat_backup_restore,
         'icon': Broken.save_2,
@@ -495,12 +466,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
-    final itemWidth = (screenWidth - (columns - 1) * 16) / columns;
-    final childAspectRatio = columns == 4 ? 0.62 : 0.75;
+    final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
+    final childAspectRatio = columns == 4
+        ? 0.78
+        : (columns == 3 ? 1.0 : 1.30);
     final itemHeight = itemWidth / childAspectRatio;
 
-    double colFraction = localPosition.dx / (itemWidth + 16);
-    double rowFraction = localPosition.dy / (itemHeight + 8);
+    double colFraction = localPosition.dx / (itemWidth + 2);
+    double rowFraction = localPosition.dy / (itemHeight + 2);
 
     int adjustedCol = colFraction.round();
     int adjustedRow = rowFraction.round();
@@ -789,6 +762,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         .toList();
 
     final columns = PreferencesService.getCategoriesGridColumns();
+    // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
+    final hasCustomEntry = PreferencesService.getCustomEntryVisible();
+    final itemCount = activeList.length + (hasCustomEntry ? 1 : 0);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -841,7 +817,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          const SizedBox(height: 12),
           if (activeList.isEmpty)
             Center(
               child: Padding(
@@ -864,18 +839,46 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   : null,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: GridView.builder(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    const spacing = 2.0;
+                    final gridItemW =
+                        (constraints.maxWidth - (columns - 1) * spacing) /
+                            columns;
+                    final iconSize =
+                        gridItemW *
+                        (columns == 4 ? 0.46 : (columns == 3 ? 0.40 : 0.30));
+                    // 行高按列数固定（与设计一致），这里不做任何压缩/拉伸：
+                    // 卡片尺寸在任何列数下都可预期，放不下时由外层滚动视图负责。
+                    final ratio = columns == 4
+                        ? 0.78
+                        : (columns == 3 ? 1.0 : 1.30);
+                    final grid = GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  // ⚠️ 这里**必须显式给 padding（哪怕是 zero），绝不能省成默认的 null**：
+                  // `ScrollView`（GridView/ListView 同源）在 `padding == null` 时会自动
+                  // 把 `MediaQuery.padding` 的**纵向分量**（= 状态栏高度，本机 28dp）
+                  // 当作 SliverPadding 加到首尾 —— 见 flutter 源码
+                  // `widgets/scroll_view.dart:900-930`（"Automatically pad sliver with
+                  // padding from MediaQuery"）。现象：卡片与搜索栏之间凭空多出一大段
+                  // 空白（28dp），而且上拉能把它顶上去 —— 因为它是**内容里的空白**，
+                  // 不是布局偏移。顶部呼吸位统一由外层
+                  // `home_screen._buildHomeTab` 的 SingleChildScrollView 提供。
+                  padding: EdgeInsets.zero,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: columns == 4 ? 0.62 : 0.75,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    childAspectRatio: ratio,
                   ),
-                  itemCount: activeList.length,
+                  itemCount: itemCount,
                   itemBuilder: (context, index) {
+                    if (PreferencesService.getCustomEntryVisible() &&
+                        index == activeList.length) {
+                      return _buildCustomEntryCard(theme, iconSize);
+                    }
                     final cat = activeList[index];
                     final labelKey = activeLabels[index];
                     final label = cat['label'] as String;
@@ -886,8 +889,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final pageBuilder =
                         cat['pageBuilder'] as Widget Function()?;
                     final action = cat['action'] as VoidCallback?;
-                    final shape = fileManagerProvider.categoryIconShape;
-                    final isSquare = shape == 'square';
                     final showLabels =
                         PreferencesService.getShowCategoryLabels();
                     final iconKey = GlobalKey();
@@ -953,21 +954,34 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       },
                       child: Opacity(
                         opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
-                        child: Column(
+                        child: Container(
                           key: ValueKey(labelKey),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withOpacity(0.22),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                             Material(
-                              key: iconKey,
-                              color: isTarget
-                                  ? color.withOpacity(0.3)
-                                  : color.withOpacity(0.15),
-                              shape: isSquare
-                                  ? RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    )
-                                  : const CircleBorder(),
+                              color: Colors.transparent,
                               child: InkWell(
+                                key: iconKey,
                                 onTap: () {
                                   if (!_isDragging) {
                                     if (pageBuilder != null) {
@@ -981,63 +995,125 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                     }
                                   }
                                 },
-                                customBorder: isSquare
-                                    ? RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      )
-                                    : const CircleBorder(),
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                                 splashColor: color.withOpacity(0.25),
                                 highlightColor: color.withOpacity(0.15),
-                                child: Container(
-                                  width: 64,
-                                  height: 64,
-                                  alignment: Alignment.center,
-                                  child: Icon(icon, color: iconColor, size: 36),
-                                ),
-                              ),
-                            ),
-                            if (showLabels) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                label,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                            ],
-                            SizedBox(
-                              width: double.infinity,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  count,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color
-                                        ?.withOpacity(0.7),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: -0.2,
-                                    height: 1.1,
-                                  ),
-                                  maxLines: 1,
-                                  textAlign: TextAlign.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      icon,
+                                      color: iconColor,
+                                      size: iconSize,
+                                    ),
+                                    if (showLabels) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        label,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 1),
+                                    ],
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        count,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme.textTheme.bodySmall
+                                              ?.color
+                                              ?.withOpacity(0.7),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: -0.2,
+                                          height: 1.1,
+                                        ),
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ],
                         ),
+                        ),
                       ),
                     );
+                  },
+                    );
+                    // 直接返回：本组件不在内部滚动（见类顶部注释），
+                    // 否则可视区高度=内容高度 ⇒ 永远滚不动。
+                    return grid;
                   },
                 ),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
+  Widget _buildCustomEntryCard(ThemeData theme, double iconSize) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.22),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => QuickCategoriesGrid.showCustomizeDialog(
+            context,
+            widget.onNavigateTab,
+          ),
+          splashColor: theme.colorScheme.primary.withOpacity(0.25),
+          highlightColor: theme.colorScheme.primary.withOpacity(0.15),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Broken.edit_2,
+                color: theme.colorScheme.primary,
+                size: iconSize,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                L10n.of(context).msgf1d4ff50,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1374,7 +1450,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
 
                 return StatefulBuilder(
                   builder: (context, setModalState) {
-                    final iconShape = fileManager.categoryIconShape;
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
                     final order = provider.categoryOrder;
@@ -1414,116 +1489,84 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             vertical: 8.0,
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      L10n.of(context).msg2c3c5a35,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
-                                        ),
-                                      ),
-                                      child: DropdownButton<String>(
-                                        value: iconShape,
-                                        isExpanded: true,
-                                        isDense: true,
-                                        underline: const SizedBox(),
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        borderRadius: BorderRadius.circular(8),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
-                                        ),
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 'circle',
-                                            child: Text(L10n.of(context).ui_circle),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 'square',
-                                            child: Text(L10n.of(context).ui_square),
-                                          ),
-                                        ],
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            context.read<FileManagerProvider>().setCategoryIconShape(val);
-                                            setModalState(() {});
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  L10n.of(context).ui_columns_per_row,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      L10n.of(context).ui_columns_per_row,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: DropdownButton<int>(
+                                  value: gridColumns,
+                                  isDense: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  borderRadius: BorderRadius.circular(8),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 2,
+                                      child: Text(L10n.of(context).ui_2columns),
                                     ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: theme.colorScheme.onSurface.withOpacity(0.1),
-                                        ),
-                                      ),
-                                      child: DropdownButton<int>(
-                                        value: gridColumns,
-                                        isExpanded: true,
-                                        isDense: true,
-                                        underline: const SizedBox(),
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        borderRadius: BorderRadius.circular(8),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface.withOpacity(0.8),
-                                        ),
-                                        items: [
-                                          DropdownMenuItem(
-                                            value: 3,
-                                            child: Text(L10n.of(context).ui_3columns),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 4,
-                                            child: Text(L10n.of(context).ui_4columns),
-                                          ),
-                                        ],
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            context.read<FileManagerProvider>().setCategoriesGridColumns(val);
-                                            setModalState(() {});
-                                          }
-                                        },
-                                      ),
+                                    DropdownMenuItem(
+                                      value: 3,
+                                      child: Text(L10n.of(context).ui_3columns),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 4,
+                                      child: Text(L10n.of(context).ui_4columns),
                                     ),
                                   ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      context.read<FileManagerProvider>().setCategoriesGridColumns(val);
+                                      setModalState(() {});
+                                    }
+                                  },
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_show_custom_entry,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Switch(
+                                value: PreferencesService.getCustomEntryVisible(),
+                                onChanged: (v) {
+                                  PreferencesService.saveCustomEntryVisible(v);
+                                  setModalState(() {});
+                                },
                               ),
                             ],
                           ),
@@ -1715,7 +1758,6 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
 @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final iconShape = context.watch<FileManagerProvider>().categoryIconShape;
     final isCustom = widget.cat['isCustom'] == true;
     final label = widget.label;
     final color = widget.cat['color'] as Color;
@@ -1745,12 +1787,8 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             height: 42,
             decoration: BoxDecoration(
               color: color.withOpacity(0.15),
-              shape: iconShape == 'square'
-                  ? BoxShape.rectangle
-                  : BoxShape.circle,
-              borderRadius: iconShape == 'square'
-                  ? BorderRadius.circular(6)
-                  : null,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(icon, color: color, size: 22),
           ),

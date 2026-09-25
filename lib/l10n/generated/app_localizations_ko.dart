@@ -188,7 +188,44 @@ class L10nKo extends L10n {
   String get v1041 => 'v1.0.43 (보기)';
 
   @override
-  String get ui_view_update => '업데이트 보기';
+  String get ui_view_update => '버전 업데이트';
+
+  @override
+  String get update_github_check => 'GitHub 버전 확인';
+
+  @override
+  String update_current_version(String version) {
+    return '현재 버전: $version';
+  }
+
+  @override
+  String get update_checking => '업데이트 확인 중…';
+
+  @override
+  String get update_latest => '최신 버전입니다';
+
+  @override
+  String update_new_version(String version) {
+    return '새 버전이 있습니다: $version';
+  }
+
+  @override
+  String get update_check_failed => '업데이트 확인에 실패했습니다. 네트워크를 확인하고 다시 시도하세요';
+
+  @override
+  String get update_retry => '다시 시도';
+
+  @override
+  String get update_download_install => '다운로드 및 설치';
+
+  @override
+  String get update_downloading => '업데이트 다운로드 중…';
+
+  @override
+  String get update_download_failed => '다운로드 실패. 다시 시도하세요';
+
+  @override
+  String get update_view_github => 'GitHub에서 보기';
 
   @override
   String get zenfileflutter =>
@@ -916,7 +953,7 @@ class L10nKo extends L10n {
   String get msgfba1f416 => '폴더 이름 입력';
 
   @override
-  String get msg33b0b21c => '폴더를 선택하고 고정';
+  String get msg33b0b21c => '폴더 선택';
 
   @override
   String get msgff3200cc => '선택 해제';
@@ -925,7 +962,7 @@ class L10nKo extends L10n {
   String get msg4614630a => '폴더가 비어 있습니다';
 
   @override
-  String get msg5dc1fa7b => '이 폴더를 고정';
+  String get msg5dc1fa7b => '이 폴더 사용';
 
   @override
   String get selectStorageDrive => '저장 드라이브 선택';
@@ -1003,6 +1040,11 @@ class L10nKo extends L10n {
 
   @override
   String get msgb8140039 => '오래된 순 (월별 그룹화)';
+
+  @override
+  String ui_month_group_header(int year, int month) {
+    return '$year년 $month월';
+  }
 
   @override
   String get msg424a0110 => '알 수 없는 날짜';
@@ -2596,6 +2638,76 @@ class L10nKo extends L10n {
   String get ui_nav => '로컬';
 
   @override
+  String get update_err_network => '서버에 연결할 수 없습니다. 네트워크를 확인한 후 다시 시도하세요';
+
+  @override
+  String get update_err_timeout =>
+      '연결 시간이 초과되었습니다. 네트워크 또는 프록시를 확인한 후 다시 시도하세요';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 요청 한도를 초과했습니다. 잠시 후 다시 시도하세요';
+
+  @override
+  String update_err_http(String code) {
+    return '서버가 오류를 반환했습니다 (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed => '서버 응답 데이터가 비정상입니다. 잠시 후 다시 시도하세요';
+
+  @override
+  String get update_err_version_unknown =>
+      '현재 버전 번호를 가져올 수 없습니다. 앱을 다시 시작한 후 시도하세요';
+
+  @override
+  String update_remote_version(String version) {
+    return '최신: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '확인 시각: $time';
+  }
+
+  @override
+  String get update_degraded_hint => '웹 검사로 전환됨(앱 내 다운로드 불가)';
+
+  @override
+  String get update_source_label => '업데이트 소스';
+
+  @override
+  String get update_source_default => 'GitHub 공식';
+
+  @override
+  String get update_source_custom => '사용자 지정 소스';
+
+  @override
+  String get update_source_dialog_title => '사용자 지정 업데이트 소스';
+
+  @override
+  String get update_source_dialog_desc =>
+      '비워 두면 GitHub 공식 API를 사용합니다. 미러 또는 자체 엔드포인트(동일한 구조의 JSON 반환)를 입력할 수 있으며, 주소의 REPO는 저장소 경로를 의미합니다.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      '주소가 올바르지 않습니다. http:// 또는 https://로 시작해야 합니다';
+
+  @override
+  String get ui_paste_and_clear => '붙여넣기 후 비우기';
+
+  @override
+  String get ui_cut_paste_hint => '잘라내기는 이동입니다. 붙여넣은 후 자동으로 비워집니다';
+
+  @override
+  String get ui_search_in_settings => '설정에서 검색';
+
+  @override
+  String get ui_search_group_nav => '탐색';
+
+  @override
   String get ui_home => '홈';
 
   @override
@@ -3547,7 +3659,7 @@ class L10nKo extends L10n {
 
   @override
   String ui_pin_selected(Object count) {
-    return '선택 항목 고정 ($count)';
+    return '선택 항목 사용 ($count)';
   }
 
   @override
@@ -4292,10 +4404,16 @@ class L10nKo extends L10n {
   String get ui_columns_per_row => '행당 열 수';
 
   @override
+  String get ui_2columns => '2열';
+
+  @override
   String get ui_3columns => '3열';
 
   @override
   String get ui_4columns => '4열';
+
+  @override
+  String get ui_show_custom_entry => '사용자 정의 항목 표시';
 
   @override
   String get msge8b8e9b3 => '빠른 작업';
@@ -4860,7 +4978,7 @@ class L10nKo extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => '기기 전체에서 파일, 폴터, 문서, 미디어를 즉시 찾아보세요';
+  String get ui_global_search_hint => '파일, 앱, 설정 검색';
 
   @override
   String get ui_delete_item_confirm => '이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
@@ -5991,7 +6109,7 @@ class L10nKo extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '공유 스캔 실패: \$error';
+    return '공유 스캔 실패: $error';
   }
 
   @override
@@ -7036,6 +7154,10 @@ class L10nKo extends L10n {
   String get vault_decrypt_open_progress => '복호화하여 여는 중...';
 
   @override
+  String get crash_report_saved =>
+      '이전 비정상 종료가 감지되었습니다. 진단 보고서가 ZenFile/crash에 저장되었습니다';
+
+  @override
   String get vault_import_backup_confirm =>
       '가져오면 백업 내용으로 현재 금고 샌드박스와 암호화 설정을 덮어씁니다(잠금 해제 비밀번호는 영향 없음). 계속하시겠습니까?';
 
@@ -7632,4 +7754,34 @@ class L10nKo extends L10n {
   @override
   String get audio_opensles_desc =>
       '사운드 효과 앱(RootlessJamesDSP 등)이 연결할 수 있는 것은 AudioTrack뿐입니다. OpenSL ES는 세션 ID를 시스템이 할당하므로 연결할 수 없습니다. 전환은 즉시 반영됩니다.';
+
+  @override
+  String get ui_transfers => '전송';
+
+  @override
+  String get ui_profile => '프로필';
+
+  @override
+  String get msg_coming_soon => '곧 제공 예정';
+
+  @override
+  String get toolbox_text_editor => '텍스트 편집기';
+
+  @override
+  String get ui_video_progress_always_show => '진행 바 항상 표시';
+
+  @override
+  String get ui_image_fit_width => '너비에 맞추기';
+
+  @override
+  String get ui_image_fit_height => '높이에 맞추기';
+
+  @override
+  String get ui_image_fit_original => '원본 크기';
+
+  @override
+  String get ui_image_fit_mode => '표시 모드';
+
+  @override
+  String get ui_text_editor_import => '텍스트 파일 가져오기';
 }

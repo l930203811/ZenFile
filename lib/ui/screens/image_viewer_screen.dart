@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:auto_size_text/auto_size_text.dart';
@@ -18,6 +19,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../ui/widgets/file_action_dialogs.dart';
 import '../../services/image_edit_service.dart';
+import '../../services/preferences_service.dart';
 import '../../services/image_metadata_service.dart';
 import 'image_editor_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -130,6 +132,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   bool _isZoomed = false;
   // 查看态旋转角度（弧度），仅用于预览，不写回文件，瞬时完成。切换图片时重置。
   double _rotation = 0.0;
+  // 图片显示模式：0=适应宽度(contained) 1=适应高度 2=原始大小（顶部切换，持久化）
+  int _fitMode = 0;
+  // 当前图片原始尺寸（按高度适配模式计算缩放用），切换图片时重置
+  Size? _imageSize;
 
   // 顶部信息条
   String? _currentDims;
@@ -151,6 +157,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     _pageController = PageController(initialPage: _currentIndex);
     _preloadAdjacent(_currentIndex);
     _refreshMeta();
+    _fitMode = PreferencesService.getImageFitMode();
+    if (_fitMode == 1) {
+      _resolveCurrentImageSize();
+    }
   }
 
   void _findSiblings() {
@@ -397,6 +407,48 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   /// 刷新当前图片的尺寸/大小/格式，以及右上角 EXIF 拍摄参数副行。
+  /// 解析当前页图片的原始尺寸（按高度适配模式需要）。
+  /// 仅对本地文件/已缓存远程文件生效；SVG 与流式解密图保持 contained 适配。
+  Future<void> _resolveCurrentImageSize() async {
+    File? f;
+    final path = _pathAtIndex(_currentIndex);
+    if (path != null && !path.startsWith('remote://')) {
+      f = File(path);
+    } else if (_remoteCache[_currentIndex] != null) {
+      f = _remoteCache[_currentIndex];
+    }
+    if (f == null || !f.existsSync()) return;
+    try {
+      final provider = f.path.toLowerCase().endsWith('.avif')
+          ? FileAvifImage(f) as ImageProvider
+          : FileImage(f) as ImageProvider;
+      final completer = Completer<ImageInfo>();
+      final listener = ImageStreamListener(
+        (info, _) {
+          if (!completer.isCompleted) completer.complete(info);
+        },
+        onError: (e, s) {
+          if (!completer.isCompleted) completer.completeError(e);
+        },
+      );
+      final stream = provider.resolve(ImageConfiguration.empty);
+      stream.addListener(listener);
+      try {
+        final info = await completer.future
+            .timeout(const Duration(seconds: 3));
+        if (mounted) {
+          setState(() {
+            _imageSize =
+                Size(info.image.width.toDouble(), info.image.height.toDouble());
+          });
+        }
+        info.dispose();
+      } finally {
+        stream.removeListener(listener);
+      }
+    } catch (_) {}
+  }
+
   Future<void> _refreshMeta() async {
     final file = _getCurrentFile();
     if (file == null || !file.existsSync()) {
@@ -961,6 +1013,66 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 ),
                 centerTitle: false,
                 titleSpacing: 0,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: PopupMenuButton<int>(
+                      tooltip: L10n.of(context).ui_image_fit_mode,
+                      icon: Icon(
+                        _fitMode == 1
+                            ? Icons.height_rounded
+                            : _fitMode == 2
+                                ? Icons.crop_original_rounded
+                                : Icons.fit_screen_rounded,
+                        color: Colors.white,
+                      ),
+                      color: const Color(0xFF1E1E2E),
+                      onSelected: (m) {
+                        setState(() => _fitMode = m);
+                        PreferencesService.saveImageFitMode(m);
+                        if (m == 1) _resolveCurrentImageSize();
+                      },
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: 0,
+                          child: Text(
+                            L10n.of(context).ui_image_fit_width,
+                            style: TextStyle(
+                              color: _fitMode == 0
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 1,
+                          child: Text(
+                            L10n.of(context).ui_image_fit_height,
+                            style: TextStyle(
+                              color: _fitMode == 1
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 2,
+                          child: Text(
+                            L10n.of(context).ui_image_fit_original,
+                            style: TextStyle(
+                              color: _fitMode == 2
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               )
             : null,
         body: Stack(
@@ -991,7 +1103,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     setState(() {
                       _currentIndex = index;
                       _rotation = 0.0; // 切换图片重置查看态旋转
+                      _imageSize = null;
                     });
+                    if (_fitMode == 1) _resolveCurrentImageSize();
                     _preloadAdjacent(index);
                     _refreshMeta();
                   },
@@ -1106,13 +1220,22 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                               ? MemoryImage(thumbData)
                               : MemoryImage(_kTransparentImage));
 
+                    // 显示模式：0=适应宽度(contained) 1=适应高度(屏高/图高) 2=原始大小(1.0)
+                    final double? fitScale = _fitMode == 0
+                        ? null
+                        : (_fitMode == 2
+                            ? 1.0
+                            : (_imageSize != null && _imageSize!.height > 0
+                                ? MediaQuery.sizeOf(context).height /
+                                    _imageSize!.height
+                                : null));
                     return PhotoViewGalleryPageOptions.customChild(
                       child: Transform.rotate(
                         angle: _rotation,
                         child: Image(image: provider, fit: BoxFit.contain),
                       ),
-                      initialScale: PhotoViewComputedScale.contained,
-                      minScale: PhotoViewComputedScale.contained,
+                      initialScale: fitScale ?? PhotoViewComputedScale.contained,
+                      minScale: fitScale ?? PhotoViewComputedScale.contained,
                       maxScale: PhotoViewComputedScale.covered * 4,
                       heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
                       onTapUp: (context, details, controllerValue) {

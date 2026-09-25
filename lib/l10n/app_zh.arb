@@ -222,7 +222,24 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ui_view_update": "查看更新",
+  "ui_view_update": "版本更新",
+  "update_github_check": "GitHub 版本检测",
+  "update_current_version": "当前版本：{version}",
+  "@update_current_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checking": "正在检查更新…",
+  "update_latest": "当前已是最新版本",
+  "update_new_version": "发现新版本：{version}",
+  "@update_new_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_check_failed": "检查更新失败，请检查网络连接后重试",
+  "update_retry": "重试",
+  "update_download_install": "下载安装",
+  "update_downloading": "正在下载更新…",
+  "update_download_failed": "下载失败，请重试",
+  "update_view_github": "前往 GitHub 查看",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1167,7 +1184,7 @@
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "选择并固定文件夹",
+  "msg33b0b21c": "选择文件夹",
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1179,7 +1196,7 @@
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "固定此文件夹",
+  "msg5dc1fa7b": "使用此文件夹",
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1278,6 +1295,14 @@
   "msgb8140039": "最旧优先（按月分组）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{year}年{month}月",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msg424a0110": "未知日期",
   "@msg424a0110": {
@@ -3192,6 +3217,36 @@
   },
   "cat_quick_categories": "分类",
   "ui_nav": "本地",
+  "update_err_network": "无法连接服务器，请检查网络后重试",
+  "update_err_timeout": "连接超时，请检查网络或代理后重试",
+  "update_err_rate_limit": "GitHub 请求过于频繁，请稍后再试",
+  "update_err_http": "服务器返回异常（HTTP {code}）",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "服务器返回数据异常，请稍后重试",
+  "update_err_version_unknown": "无法获取当前版本号，请重启应用后重试",
+  "update_remote_version": "远端最新：{version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "检查时间：{time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "已降级为网页检测，无法应用内下载",
+  "update_source_label": "更新源",
+  "update_source_default": "GitHub 官方",
+  "update_source_custom": "自定义源",
+  "update_source_dialog_title": "自定义更新源",
+  "update_source_dialog_desc": "留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "地址无效，需以 http:// 或 https:// 开头",
+
+  "ui_paste_and_clear": "粘贴并清除",
+  "ui_cut_paste_hint": "剪切为移动，粘贴后自动清空",
+  "ui_search_in_settings": "在设置中搜索",
+  "ui_search_group_nav": "导航",
   "ui_home": "主页",
   "ui_recycle_bin": "回收站",
   "ui_dark_mode": "深色模式",
@@ -3773,7 +3828,7 @@
   "ui_undo": "撤销",
   "ui_redo": "重做",
   "ui_add_selected": "添加所选 ({count})",
-  "ui_pin_selected": "固定所选 ({count})",
+  "ui_pin_selected": "使用所选 ({count})",
   "msg_file_exists": "文件已存在",
   "@msg_file_exists": {
     "description": "Title shown when a file conflict is detected"
@@ -4555,8 +4610,10 @@
   "cat_backup_restore_desc": "备份",
   "cat_storage_volume": "存储",
   "ui_columns_per_row": "每行显示",
+  "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
+  "ui_show_custom_entry": "在分类页显示自定义入口",
   "msge8b8e9b3": "常用功能",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -5126,7 +5183,7 @@
   "changelog_v1129_fix_8": "修复压缩包图片预览因名称归一化不匹配导致全部无法预览、解压失败无反馈等问题。",
   "changelog_v1129_fix_9": "全局搜索空状态与删除确认文案支持多语言（去除硬编码英文）。",
   "changelog_v1129_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
-  "ui_global_search_hint": "在您的设备上即时查找任何文件、文件夹、文档或媒体",
+  "ui_global_search_hint": "搜索文件、应用和设置",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6468,7 +6525,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (zh)"
   },
-  "ui_share_scan_failed": "扫描共享名失败：$error",
+  "ui_share_scan_failed": "扫描共享名失败：{error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7629,6 +7686,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "检测到上次异常退出，诊断报告已保存到 ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "导入将用备份内容覆盖当前保险箱沙盒与加密配置（解锁密码不受影响）。是否继续？",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -8252,6 +8313,36 @@
   "audio_opensles_desc": "音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "传输",
+  "ui_profile": "我的",
+  "msg_coming_soon": "即将推出",
+  "toolbox_text_editor": "文本编辑器",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "进度条常驻",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "适应宽度",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "适应高度",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "原始大小",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "显示模式",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "导入文本文件",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

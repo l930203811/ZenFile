@@ -209,7 +209,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (View)",
-  "ui_view_update": "View updates",
+  "ui_view_update": "Version updates",
+  "update_github_check": "GitHub version check",
+  "update_current_version": "Current version: {version}",
+  "update_checking": "Checking for updates…",
+  "update_latest": "You're on the latest version",
+  "update_new_version": "New version available: {version}",
+  "update_check_failed": "Update check failed. Check your network and try again.",
+  "update_retry": "Retry",
+  "update_download_install": "Download & Install",
+  "update_downloading": "Downloading update…",
+  "update_download_failed": "Download failed. Please try again.",
+  "update_view_github": "View on GitHub",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1146,7 +1157,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Select and pin folder",
+  "msg33b0b21c": "Select folder",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1158,7 +1169,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Pin this folder",
+  "msg5dc1fa7b": "Use this folder",
   "selectStorageDrive": "Select Storage Drive",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1249,6 +1260,14 @@
   "msgef7ae768": "Newest First (grouped by month)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Oldest First (grouped by month)",
   "@msg424a0110": {
@@ -3110,6 +3129,36 @@
   "cat_vault_desc": "Secure Storage",
   "cat_quick_categories": "Categories",
   "ui_nav": "Local",
+  "update_err_network": "Can't reach the server. Check your network and try again.",
+  "update_err_timeout": "Connection timed out. Check your network or proxy and try again.",
+  "update_err_rate_limit": "GitHub rate limit reached. Please try again later.",
+  "update_err_http": "Server returned an error (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Unexpected response from the server. Please try again later.",
+  "update_err_version_unknown": "Can't read the current version. Restart the app and try again.",
+  "update_remote_version": "Latest: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Checked at {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Fell back to web check — in-app download unavailable",
+  "update_source_label": "Update source",
+  "update_source_default": "GitHub official",
+  "update_source_custom": "Custom source",
+  "update_source_dialog_title": "Custom update source",
+  "update_source_dialog_desc": "Leave empty to use the official GitHub API. You can enter a mirror or your own endpoint that returns JSON in the same structure; REPO in the URL stands for the repository path.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Invalid address — it must start with http:// or https://",
+
+  "ui_paste_and_clear": "Paste and clear",
+  "ui_cut_paste_hint": "Cut = move; clipboard clears after paste",
+  "ui_search_in_settings": "Search in settings",
+  "ui_search_group_nav": "Navigation",
   "ui_home": "Home",
   "ui_recycle_bin": "Recycle Bin",
   "ui_dark_mode": "Dark Mode",
@@ -3691,9 +3740,9 @@
   "ui_undo": "Undo",
   "ui_redo": "Redo",
   "ui_add_selected": "Add Selected ({count})",
-  "ui_pin_selected": "Pin Selected ({count})",
+  "ui_pin_selected": "Use Selected ({count})",
   "@ui_pin_selected": {
-    "description": "Button label to pin selected folders with count"
+    "description": "Button label to confirm use of the selected items with count"
   },
   "msg_file_exists": "File Already Exists",
   "@msg_file_exists": {
@@ -4386,8 +4435,10 @@
   "cat_backup_restore_desc": "Backup",
   "cat_storage_volume": "Storage",
   "ui_columns_per_row": "Columns per row",
+  "ui_2columns": "2 Columns",
   "ui_3columns": "3 Columns",
   "ui_4columns": "4 Columns",
+  "ui_show_custom_entry": "Show Custom Entry",
   "msge8b8e9b3": "Common Features",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4905,7 +4956,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Find any file, folder, document or media instantly across your device",
+  "ui_global_search_hint": "Search files, apps and settings",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6247,7 +6298,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (en)"
   },
-  "ui_share_scan_failed": "Failed to scan shares: $error",
+  "ui_share_scan_failed": "Failed to scan shares: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7408,6 +7459,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "Previous abnormal exit detected. Diagnostic report saved to ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "Importing will overwrite the current vault sandbox and encryption config with the backup contents (unlock password is not affected). Continue?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -8031,6 +8086,36 @@
   "audio_opensles_desc": "Audio effect apps (e.g. RootlessJamesDSP) can only attach to AudioTrack modes; OpenSL ES uses a system-assigned session that they cannot attach to. Switching takes effect immediately.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "Transfers",
+  "ui_profile": "Profile",
+  "msg_coming_soon": "Coming soon",
+  "toolbox_text_editor": "Text Editor",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "Always show progress bar",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "Fit width",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "Fit height",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "Original size",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "Fit mode",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Import text file",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

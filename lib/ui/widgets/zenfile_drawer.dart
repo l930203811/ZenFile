@@ -5,7 +5,6 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
 import '../screens/wake_on_lan_screen.dart';
-import '../screens/more_settings_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
@@ -16,6 +15,7 @@ import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
+import '../screens/update_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
 import 'quick_categories_grid.dart';
@@ -23,6 +23,7 @@ import '../screens/recycle_bin_screen.dart';
 import '../screens/quick_transfer_screen.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/decibel_meter_screen.dart';
+import '../screens/text_editor_screen.dart';
 import '../../services/preferences_service.dart';
 
 class ZenFileDrawer extends StatefulWidget {
@@ -304,18 +305,36 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const DecibelMeterScreen()));
                           },
                         ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.document_text,
+                          title: L10n.of(context).toolbox_text_editor,
+                          onTap: () {
+                            // 直接打开空文本编辑器；需要打开已有文件时用编辑器右上角「导入文本文件」
+                            final navigator = Navigator.of(context);
+                            navigator.pop();
+                            navigator.push(
+                              MaterialPageRoute(
+                                builder: (_) => const TextEditorScreen(),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
 
-                    // ===== 设置 =====
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                      child: Divider(color: theme.colorScheme.onSurface.withOpacity(0.08), height: 1),
+                    ),
                     _buildDrawerTile(
                       context,
-                      icon: Broken.setting_2,
-                      title: L10n.of(context).ui_personalize_settings,
+                      icon: Broken.refresh_2,
+                      title: L10n.of(context).ui_view_update,
                       isPrimary: true,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdateScreen()));
                       },
                     ),
                     Padding(
@@ -346,7 +365,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v2.1.6',
+                'ZenFile v3.0.0',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

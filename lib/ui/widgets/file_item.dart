@@ -854,37 +854,19 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     }
 
     if (isVid && _videoThumb != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.memory(
-            _videoThumb!,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            cacheWidth: 160,
-            cacheHeight: 160,
-            errorBuilder: (context, error, stackTrace) => Icon(
-              Broken.video,
-              color: widget.iconColor,
-              size: 28 * widget.iconScale,
-            ),
-          ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Broken.video,
-                color: Colors.white,
-                size: 16 * widget.iconScale,
-              ),
-            ),
-          ),
-        ],
+      // 完整显示视频缩略图，不在中心叠加视频图标（观感更干净）
+      return Image.memory(
+        _videoThumb!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        cacheWidth: 160,
+        cacheHeight: 160,
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Broken.video,
+          color: widget.iconColor,
+          size: 28 * widget.iconScale,
+        ),
       );
     }
 

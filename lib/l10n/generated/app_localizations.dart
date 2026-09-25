@@ -433,8 +433,74 @@ abstract class L10n {
   /// Button label to view changelog on the about screen
   ///
   /// In zh, this message translates to:
-  /// **'查看更新'**
+  /// **'版本更新'**
   String get ui_view_update;
+
+  /// No description provided for @update_github_check.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 版本检测'**
+  String get update_github_check;
+
+  /// No description provided for @update_current_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前版本：{version}'**
+  String update_current_version(String version);
+
+  /// No description provided for @update_checking.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查更新…'**
+  String get update_checking;
+
+  /// No description provided for @update_latest.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前已是最新版本'**
+  String get update_latest;
+
+  /// No description provided for @update_new_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新版本：{version}'**
+  String update_new_version(String version);
+
+  /// No description provided for @update_check_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查更新失败，请检查网络连接后重试'**
+  String get update_check_failed;
+
+  /// No description provided for @update_retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get update_retry;
+
+  /// No description provided for @update_download_install.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载安装'**
+  String get update_download_install;
+
+  /// No description provided for @update_downloading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载更新…'**
+  String get update_downloading;
+
+  /// No description provided for @update_download_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败，请重试'**
+  String get update_download_failed;
+
+  /// No description provided for @update_view_github.
+  ///
+  /// In zh, this message translates to:
+  /// **'前往 GitHub 查看'**
+  String get update_view_github;
 
   /// ui\screens\about_screen.dart
   ///
@@ -1825,7 +1891,7 @@ abstract class L10n {
   /// ui\screens\internal_file_picker_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'选择并固定文件夹'**
+  /// **'选择文件夹'**
   String get msg33b0b21c;
 
   /// ui\screens\internal_file_picker_screen.dart
@@ -1843,7 +1909,7 @@ abstract class L10n {
   /// ui\screens\internal_file_picker_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'固定此文件夹'**
+  /// **'使用此文件夹'**
   String get msg5dc1fa7b;
 
   /// ui\screens\internal_file_picker_screen.dart
@@ -1983,6 +2049,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'最旧优先（按月分组）'**
   String get msgb8140039;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{year}年{month}月'**
+  String ui_month_group_header(int year, int month);
 
   /// ui\screens\media_category_screen.dart
   ///
@@ -4954,6 +5026,126 @@ abstract class L10n {
   /// **'本地'**
   String get ui_nav;
 
+  /// No description provided for @update_err_network.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接服务器，请检查网络后重试'**
+  String get update_err_network;
+
+  /// No description provided for @update_err_timeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接超时，请检查网络或代理后重试'**
+  String get update_err_timeout;
+
+  /// No description provided for @update_err_rate_limit.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 请求过于频繁，请稍后再试'**
+  String get update_err_rate_limit;
+
+  /// No description provided for @update_err_http.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器返回异常（HTTP {code}）'**
+  String update_err_http(String code);
+
+  /// No description provided for @update_err_malformed.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器返回数据异常，请稍后重试'**
+  String get update_err_malformed;
+
+  /// No description provided for @update_err_version_unknown.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取当前版本号，请重启应用后重试'**
+  String get update_err_version_unknown;
+
+  /// No description provided for @update_remote_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'远端最新：{version}'**
+  String update_remote_version(String version);
+
+  /// No description provided for @update_checked_at.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查时间：{time}'**
+  String update_checked_at(String time);
+
+  /// No description provided for @update_degraded_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'已降级为网页检测，无法应用内下载'**
+  String get update_degraded_hint;
+
+  /// No description provided for @update_source_label.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新源'**
+  String get update_source_label;
+
+  /// No description provided for @update_source_default.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 官方'**
+  String get update_source_default;
+
+  /// No description provided for @update_source_custom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义源'**
+  String get update_source_custom;
+
+  /// No description provided for @update_source_dialog_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义更新源'**
+  String get update_source_dialog_title;
+
+  /// No description provided for @update_source_dialog_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。'**
+  String get update_source_dialog_desc;
+
+  /// No description provided for @update_source_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://example.com/…/releases/latest'**
+  String get update_source_hint;
+
+  /// No description provided for @update_source_invalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址无效，需以 http:// 或 https:// 开头'**
+  String get update_source_invalid;
+
+  /// No description provided for @ui_paste_and_clear.
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴并清除'**
+  String get ui_paste_and_clear;
+
+  /// No description provided for @ui_cut_paste_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切为移动，粘贴后自动清空'**
+  String get ui_cut_paste_hint;
+
+  /// No description provided for @ui_search_in_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'在设置中搜索'**
+  String get ui_search_in_settings;
+
+  /// No description provided for @ui_search_group_nav.
+  ///
+  /// In zh, this message translates to:
+  /// **'导航'**
+  String get ui_search_group_nav;
+
   /// No description provided for @ui_home.
   ///
   /// In zh, this message translates to:
@@ -6703,7 +6895,7 @@ abstract class L10n {
   /// No description provided for @ui_pin_selected.
   ///
   /// In zh, this message translates to:
-  /// **'固定所选 ({count})'**
+  /// **'使用所选 ({count})'**
   String ui_pin_selected(Object count);
 
   /// Title shown when a file conflict is detected
@@ -8032,6 +8224,12 @@ abstract class L10n {
   /// **'每行显示'**
   String get ui_columns_per_row;
 
+  /// No description provided for @ui_2columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'2列'**
+  String get ui_2columns;
+
   /// No description provided for @ui_3columns.
   ///
   /// In zh, this message translates to:
@@ -8043,6 +8241,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'4列'**
   String get ui_4columns;
+
+  /// No description provided for @ui_show_custom_entry.
+  ///
+  /// In zh, this message translates to:
+  /// **'在分类页显示自定义入口'**
+  String get ui_show_custom_entry;
 
   /// Right side menu header title
   ///
@@ -9037,7 +9241,7 @@ abstract class L10n {
   /// Global search empty state subtitle
   ///
   /// In zh, this message translates to:
-  /// **'在您的设备上即时查找任何文件、文件夹、文档或媒体'**
+  /// **'搜索文件、应用和设置'**
   String get ui_global_search_hint;
 
   /// Global search single item delete confirmation content
@@ -11035,7 +11239,7 @@ abstract class L10n {
   /// SMB wizard: share scan failed with error
   ///
   /// In zh, this message translates to:
-  /// **'扫描共享名失败：\$error'**
+  /// **'扫描共享名失败：{error}'**
   String ui_share_scan_failed(Object error);
 
   /// SMB wizard: button to scan LAN for SMB devices without entering an IP
@@ -12898,6 +13102,12 @@ abstract class L10n {
   /// **'正在解密并打开...'**
   String get vault_decrypt_open_progress;
 
+  /// crash forensics: crash_report_saved
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到上次异常退出，诊断报告已保存到 ZenFile/crash'**
+  String get crash_report_saved;
+
   /// vault/crypt: vault_import_backup_confirm
   ///
   /// In zh, this message translates to:
@@ -13989,6 +14199,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'音效类应用（如 RootlessJamesDSP）只能接管 AudioTrack 档位；OpenSL ES 的会话号由系统分配，音效软件无法接管。切换立即生效。'**
   String get audio_opensles_desc;
+
+  /// No description provided for @ui_transfers.
+  ///
+  /// In zh, this message translates to:
+  /// **'传输'**
+  String get ui_transfers;
+
+  /// No description provided for @ui_profile.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的'**
+  String get ui_profile;
+
+  /// No description provided for @msg_coming_soon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将推出'**
+  String get msg_coming_soon;
+
+  /// toolbox: text editor entry
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器'**
+  String get toolbox_text_editor;
+
+  /// media settings: ui_video_progress_always_show
+  ///
+  /// In zh, this message translates to:
+  /// **'进度条常驻'**
+  String get ui_video_progress_always_show;
+
+  /// media settings: ui_image_fit_width
+  ///
+  /// In zh, this message translates to:
+  /// **'适应宽度'**
+  String get ui_image_fit_width;
+
+  /// media settings: ui_image_fit_height
+  ///
+  /// In zh, this message translates to:
+  /// **'适应高度'**
+  String get ui_image_fit_height;
+
+  /// media settings: ui_image_fit_original
+  ///
+  /// In zh, this message translates to:
+  /// **'原始大小'**
+  String get ui_image_fit_original;
+
+  /// media settings: ui_image_fit_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'显示模式'**
+  String get ui_image_fit_mode;
+
+  /// text editor: import text file
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文本文件'**
+  String get ui_text_editor_import;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

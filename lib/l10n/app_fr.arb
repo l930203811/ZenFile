@@ -205,7 +205,18 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Voir)",
-  "ui_view_update": "Voir les mises à jour",
+  "ui_view_update": "Mises à jour de version",
+  "update_github_check": "Vérification de version GitHub",
+  "update_current_version": "Version actuelle : {version}",
+  "update_checking": "Recherche de mises à jour…",
+  "update_latest": "Vous utilisez la dernière version",
+  "update_new_version": "Nouvelle version disponible : {version}",
+  "update_check_failed": "Échec de la vérification. Vérifiez votre réseau et réessayez.",
+  "update_retry": "Réessayer",
+  "update_download_install": "Télécharger et installer",
+  "update_downloading": "Téléchargement de la mise à jour…",
+  "update_download_failed": "Échec du téléchargement. Veuillez réessayer.",
+  "update_view_github": "Voir sur GitHub",
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
   },
@@ -1139,7 +1150,7 @@
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Sélectionner et épingler le dossier",
+  "msg33b0b21c": "Sélectionner un dossier",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
@@ -1151,7 +1162,7 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Épingler ce dossier",
+  "msg5dc1fa7b": "Utiliser ce dossier",
   "selectStorageDrive": "Sélectionner le lecteur de stockage",
   "@selectStorageDrive": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
@@ -1242,6 +1253,14 @@
   "msgef7ae768": "Plus récents d'abord (groupés par mois)",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_month_group_header": "{month}/{year}",
+  "@ui_month_group_header": {
+    "description": "ui\\screens\\media_category_screen.dart",
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
   },
   "msgb8140039": "Plus anciens d'abord (groupés par mois)",
   "@msg424a0110": {
@@ -3103,6 +3122,36 @@
   "cat_vault_desc": "Stockage sécurisé",
   "cat_quick_categories": "Catégories",
   "ui_nav": "Local",
+  "update_err_network": "Impossible de joindre le serveur. Vérifiez votre réseau et réessayez.",
+  "update_err_timeout": "Délai de connexion dépassé. Vérifiez votre réseau ou votre proxy et réessayez.",
+  "update_err_rate_limit": "Limite GitHub atteinte. Veuillez réessayer plus tard.",
+  "update_err_http": "Le serveur a renvoyé une erreur (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Réponse inattendue du serveur. Veuillez réessayer plus tard.",
+  "update_err_version_unknown": "Impossible de lire la version actuelle. Redémarrez l'application et réessayez.",
+  "update_remote_version": "Dernière : {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Vérifié à {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Repli sur la vérification web — téléchargement intégré indisponible",
+  "update_source_label": "Source de mise à jour",
+  "update_source_default": "GitHub officiel",
+  "update_source_custom": "Source personnalisée",
+  "update_source_dialog_title": "Source de mise à jour personnalisée",
+  "update_source_dialog_desc": "Laissez vide pour utiliser l'API GitHub officielle. Vous pouvez saisir un miroir ou votre propre point d'accès renvoyant un JSON de même structure ; REPO dans l'URL désigne le chemin du dépôt.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Adresse invalide — elle doit commencer par http:// ou https://",
+
+  "ui_paste_and_clear": "Coller et vider",
+  "ui_cut_paste_hint": "Couper = déplacer ; vidé après le collage",
+  "ui_search_in_settings": "Rechercher dans les paramètres",
+  "ui_search_group_nav": "Navigation",
   "ui_home": "Accueil",
   "ui_recycle_bin": "Corbeille",
   "ui_dark_mode": "Mode sombre",
@@ -3709,7 +3758,7 @@
   "ui_undo": "Annuler",
   "ui_redo": "Rétablir",
   "ui_add_selected": "Ajouter la sélection ({count})",
-  "ui_pin_selected": "Épingler la sélection ({count})",
+  "ui_pin_selected": "Utiliser la sélection ({count})",
   "msg_vault_choose_mode": "Choisir le mode de protection",
   "msg_vault_mode_desc": "Choisis comment protéger les fichiers sélectionnés. Les fichiers sécurisés sont chiffrés avec AES-256-GCM.",
   "ui_secure_import": "Importation sécurisée (Sandbox)",
@@ -4334,8 +4383,10 @@
   "cat_backup_restore_desc": "Sauvegarder",
   "cat_storage_volume": "Stockage",
   "ui_columns_per_row": "Colonnes par ligne",
+  "ui_2columns": "2 Colonnes",
   "ui_3columns": "3 Colonnes",
   "ui_4columns": "4 Colonnes",
+  "ui_show_custom_entry": "Afficher l'entrée personnalisée",
   "msge8b8e9b3": "Actions rapides",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -4845,7 +4896,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Trouvez instantanément n'importe quel fichier, dossier, document ou média sur votre appareil",
+  "ui_global_search_hint": "Rechercher des fichiers, applications et paramètres",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },
@@ -6181,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (fr)"
   },
-  "ui_share_scan_failed": "Échec de l'analyse des partages : $error",
+  "ui_share_scan_failed": "Échec de l'analyse des partages : {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {
@@ -7342,6 +7393,10 @@
   "@vault_decrypt_open_progress": {
     "description": "vault/crypt: vault_decrypt_open_progress"
   },
+  "crash_report_saved": "Arrêt anormal précédent détecté. Rapport de diagnostic enregistré dans ZenFile/crash",
+  "@crash_report_saved": {
+    "description": "crash forensics: crash_report_saved"
+  },
   "vault_import_backup_confirm": "L'importation remplacera le sandbox et la configuration de chiffrement actuels par le contenu de la sauvegarde (le mot de passe de déverrouillage n'est pas affecté). Continuer ?",
   "@vault_import_backup_confirm": {
     "description": "vault/crypt: vault_import_backup_confirm"
@@ -7965,6 +8020,36 @@
   "audio_opensles_desc": "Les applications d’effets audio (RootlessJamesDSP, etc.) ne peuvent s’attacher qu’aux modes AudioTrack ; OpenSL ES utilise une session attribuée par le système, à laquelle elles ne peuvent pas s’attacher. Le changement est immédiat.",
   "@audio_opensles_desc": {
     "description": "audio_player_screen.dart OpenSL ES output switch subtitle"
+  },
+  "ui_transfers": "Transferts",
+  "ui_profile": "Profil",
+  "msg_coming_soon": "Bientôt disponible",
+  "toolbox_text_editor": "Éditeur de texte",
+  "@toolbox_text_editor": {
+    "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "Toujours afficher la barre de progression",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "Ajuster à la largeur",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "Ajuster à la hauteur",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "Taille originale",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "Mode d'affichage",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Importer un fichier texte",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
-
 }

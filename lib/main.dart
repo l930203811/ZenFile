@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
-import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -26,6 +25,8 @@ import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/mpv_audio_output_service.dart';
+import 'services/cache_clean_service.dart';
+import 'services/crash_forensics_service.dart';
 import 'services/network_connections_service.dart';
 import 'services/intent_handler_service.dart';
 import 'services/pin_service.dart';
@@ -83,6 +84,11 @@ void main() {
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
       debugPrint('[ZenFile] Flutter error: ${details.exception}');
+      // 崩溃取证：框架层错误也留证。它通常不会杀死进程，但往往正是「用户看到
+      // 的异常表现」的根源，且时间戳能与原生 report 互相印证。
+      // recordError 内部全程 try/catch，绝不会反过来影响这里。
+      CrashForensicsService.recordError(
+          'FlutterError', details.exception, details.stack);
     };
 
     // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
@@ -95,28 +101,27 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
     }
+    WebdavDebugLog.log('[boot] MediaKit ok');
 
     try {
       await PreferencesService.init();
     } catch (e) {
       debugPrint('[ZenFile] PreferencesService.init failed: $e');
     }
+    WebdavDebugLog.log('[boot] prefs ok');
 
-    // 诊断哨兵：每次启动写一行，用于**无 adb** 的真机排查里确认两件事 ——
-    // 「手机上跑的到底是哪个包」以及「当前 AO 档位 / 日志开关状态」。
-    // 没有它，「日志里一行都没有」既可能是调用点没走到，也可能是装的根本不是
-    // 新包，两者无法区分（2026-09-23 已因此白跑一轮构建）。
-    // `apk=` 是安装包指纹（版本号 @ lastUpdateTime）：版本号在两版诊断包之间
-    // 通常不变，**只有 lastUpdateTime 能区分「装的是旧包」**。
+    // 启动里程碑哨兵（**诊断版专用**）。
     //
-    // ⚠️ 先写一行**不含 await** 的哨兵。下一行要 `await` 一次原生通道，
-    // 而 `runApp()` 之前任何挂住的 await 都会让应用起不来 —— 那样连「进程启动
-    // 过」都不会留痕，排查会彻底失去着力点。（该 await 已加 3s 超时兜底。）
+    // `WebdavDebugLog.enabled == false` 时 `log()` 直接 return，release 下零开销；
+    // 一旦打开开关，这些行是**无 adb** 真机排查里唯一能回答「崩在哪一步」的依据：
+    // 日志停在哪个里程碑，故障就在它之后那段初始化里；**一行都没有**则说明崩在
+    // Dart 之前（引擎 / 原生层，Dart 侧再怎么写日志也看不到）。
+    //
+    // ⚠️ 这里**绝不能有 `await`**：`runApp()` 之前任何挂住的 await 都会让应用起不来，
+    // 那样连「进程启动过」都不留痕，排查会彻底失去着力点（2026-09-23 已因此白跑
+    // 一轮构建）。安装包指纹要 await 一次原生通道，故移到 `runApp()` **之后**再写
+    // —— 见 [_logBootFingerprint]。
     WebdavDebugLog.log('[boot] main() entered');
-    WebdavDebugLog.log(
-      '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
-      'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',
-    );
 
     try {
       await PinService.init();
@@ -135,6 +140,7 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] RecycleBinService.init failed: $e');
     }
+    WebdavDebugLog.log('[boot] services ok');
 
     // Load custom font dynamically if configured
     try {
@@ -152,6 +158,7 @@ void main() {
     } catch (e) {
       debugPrint('Error loading custom font at startup: $e');
     }
+    WebdavDebugLog.log('[boot] font ok');
 
     // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
     // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
@@ -177,7 +184,9 @@ void main() {
       isAudioServiceInitialized = false;
       debugPrint('[ZenFile] Media notification init failed: $e');
     }
+    WebdavDebugLog.log('[boot] audio_service ok=$isAudioServiceInitialized');
 
+    WebdavDebugLog.log('[boot] runApp() calling');
     runApp(
       MultiProvider(
         providers: [
@@ -187,9 +196,125 @@ void main() {
         child: ZenFileApp(key: appStateKey),
       ),
     );
+
+    // 「界面真的起来了」的证明。与上面的里程碑合起来可区分「崩在起 UI 之前」
+    // 与「UI 起来了才崩」——这两者要查的方向完全相反。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WebdavDebugLog.log('[boot] first frame rendered');
+    });
+
+    // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
+    // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
+    unawaited(_logBootFingerprint());
+
+    // 崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
+    // 与指纹哨兵同理，**只能**放在 `runApp()` 之后（要 await 原生通道）。
+    unawaited(_checkCrashForensics());
   }, (error, stackTrace) {
     // 捕获所有未处理的异步错误，防止 release 模式闪退
     debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
+    CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
+  });
+}
+
+/// 启动指纹哨兵：记下「本机跑的到底是哪个包」+ 当前 AO 档位 / 日志开关状态。
+///
+/// ⚠️ **只能在 `runApp()` 之后调用**：它要 `await` 一次原生 MethodChannel
+/// （`buildStamp`）。`runApp()` 之前任何等待都会推迟界面启动，最坏情况是原生侧
+/// 不回应、靠 3s 超时兜底 —— 等于白等 3 秒，低端机上足够触发「应用无响应」，
+/// 用户看到的就是「打开就崩/闪退」。诊断信息再有用，也不该有这种能力。
+///
+/// `apk=` 是安装包指纹「版本号 @ lastUpdateTime」：版本号在两版诊断包之间通常
+/// 不变，**只有 lastUpdateTime 能证明装的是哪一次构建的包**（2026-09-23 曾因
+/// 无法区分「装的是旧包」与「代码路径没走到」白跑一轮构建）。
+///
+/// 开关关闭（release）时**直接返回**，连那一次原生往返都省掉。
+Future<void> _logBootFingerprint() async {
+  if (!WebdavDebugLog.enabled) return;
+  try {
+    WebdavDebugLog.log(
+      '[boot] ZenFile started  aoMode=${PreferencesService.getAudioOutputMode().key}  '
+      'diag=${WebdavDebugLog.enabled}  apk=${await MpvAudioOutputService.buildStamp()}',
+    );
+  } catch (e) {
+    // 诊断绝不能有阻断启动的能力
+    debugPrint('[ZenFile] boot fingerprint failed: $e');
+  }
+}
+
+/// 启动期崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
+///
+/// 没有 adb 的环境里（如云电脑），这是唯一能拿到崩溃现场的手段：原生侧用
+/// `ApplicationExitInfo` 在 `MainActivity.onCreate` 最早期就把系统记录的原因与
+/// trace 落盘（见 `CrashForensics.kt`），这里负责把它导出到
+/// `/storage/emulated/0/ZenFile/crash/`，让用户能用任意文件管理器取出。
+///
+/// ⚠️ 与 [_logBootFingerprint] 同样**只能在 `runApp()` 之后调用**：内部要 await
+/// 一次原生通道。它服务的是**下一次**崩溃，本次启动快慢与它无关；但它同样
+/// 不该有拖挂启动的能力，故整个函数包在 try/catch 里。
+Future<void> _checkCrashForensics() async {
+  try {
+    final result = await CrashForensicsService.checkPreviousExit();
+    if (result == null) return;
+    WebdavDebugLog.log(
+      '[crash] forensics new=${result.newReports} skipped=${result.skipped} '
+      'dir=${result.dir ?? "-"} error=${result.error ?? "-"}',
+    );
+    _maybeNotifyCrashReports();
+  } catch (e) {
+    debugPrint('[ZenFile] crash forensics failed: $e');
+  }
+}
+
+/// 「要不要提示用户」的判据。
+///
+/// ## 为什么不再看 `newReports`
+/// 旧实现认的是「本次往公共目录里**新增**了几份报告」。这个判据隐含一个假设：
+/// 报告一旦导出就会一直待在公共目录里。而「自动清理缓存」会把 `ZenFile/`
+/// 整棵子树（曾包含 `crash/`）删掉，于是**同一份**崩溃报告会在每次启动时被重新
+/// 导出、每次都被当成「新增」⇒ 用户被无限重复提示（2026-09-25 实测复现）。
+/// 清理范围已修（见 [CacheCleanService]），但判据本身也不该依赖「文件不会被删」。
+///
+/// 现在的判据：
+///  * 只看**真的落在公共目录里**的「异常退出」报告（`exit_*` / `java_crash_*`）
+///    —— 提示文案说的是「报告已保存到 ZenFile/crash」，那就必须真的有；
+///    Dart 层非致命错误（`dart_error_*`）**不算**，那是误报；
+///  * 与持久化的「已提示过」集合比对，**同一次崩溃只提示一次**（现在与将来
+///    都不受清理、手动删除、重装等行为影响）。
+void _maybeNotifyCrashReports() {
+  final exitReports = CrashForensicsService.listExitReports();
+  if (exitReports.isEmpty) return;
+  final fresh = CrashForensicsService.selectUnnotified(
+    exitReports,
+    PreferencesService.getNotifiedCrashReports(),
+  );
+  if (fresh.isEmpty) return;
+  _notifyCrashReportSaved(exitReports);
+}
+
+/// 提示用户「已保存诊断报告」。刻意做得极保守：
+/// 延迟到启动动画之后、拿不到 ScaffoldMessenger 就静默跳过 ——
+/// **弹提示失败绝不能变成又一次崩溃**。
+///
+/// [notified] 提示成功后才落盘：若因为拿不到 messenger 而没弹出来，下次启动会
+/// 再试一次（否则「提示失败」会变成「永远不再提示」，反而丢了现场）。
+void _notifyCrashReportSaved(List<String> notified) {
+  Timer(const Duration(milliseconds: 1200), () {
+    try {
+      final ctx = navigatorKey.currentContext;
+      if (ctx == null) return;
+      final messenger = ScaffoldMessenger.maybeOf(ctx);
+      if (messenger == null) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(ctx).crash_report_saved),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+      unawaited(PreferencesService.saveNotifiedCrashReports(notified));
+    } catch (_) {
+      // 静默：提示失败不影响任何功能
+    }
   });
 }
 
@@ -1274,86 +1399,40 @@ void _cancelAutoCleanTimer() {
   _autoCleanTimer = null;
 }
 
-/// ZenFile 根目录：应用所有缓存 / 临时数据的统一存放点。
-const String _zenFileBasePath = '/storage/emulated/0/ZenFile';
-
-/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）
+/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）。
 ///
-/// 行为：清空 [_zenFileBasePath] 下除 `Backups` 外的所有文件/文件夹。
-/// 时间间隔（默认 5 分钟或用户自定义）仅控制「多久触发一次全量清理」，
-/// 触发后一律整目录清空（而非按文件 mtime 筛选），因此与默认/自定义时间无关、必然生效。
+/// 行为：清空 [CacheCleanService.basePath] 下**除诊断数据与用户数据外**的内容
+/// —— 保留清单见 [CacheCleanService.preservedNames]（`Backups` / `crash` /
+/// `Receive` / `webdav_debug.log`）。
 ///
-/// 关键修复：此前用 `Isolate.run(() { ... })` 且在闭包中捕获了 `Directory` 对象，
-/// 而 `Directory` 无法跨 isolate 序列化，导致 `Isolate.run` 抛异常被外层 try/catch
-/// 静默吞掉（`debugPrint('自动清理缓存失败')`），清理从来没真正执行过，
-/// 表现为「无论默认还是自定义时间都不生效」。现改为调用顶层函数引用（不捕获任何
-/// 不可序列化的对象），路径用模块级常量，在 isolate 内部再构造 `Directory`。
+/// ⚠️ 曾经的实现是「除 `Backups` 外全删」，把崩溃报告目录与诊断日志一起删了，
+/// 直接造成「崩溃后拿不到报告 + 每次启动都重复提示异常退出」的事故（2026-09-25，
+/// 详见 [CacheCleanService] 的类注释）。清理范围**只允许**在
+/// [CacheCleanService.preservedNames] 里维护，不要再在这里写第二份判断。
+///
+/// 间隔（默认 0 = 不自动清理）只控制「多久触发一次全量清理」，触发后一律整目录
+/// 清空（而非按 mtime 筛选），因此与间隔设定无关、必然生效。
 void _autoCleanRemoteCache() {
   try {
     final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     if (autoCleanMinutes <= 0) return; // 未启用自动清理（「不自动清理」选项）
 
-    final baseDir = Directory(_zenFileBasePath);
+    final baseDir = Directory(CacheCleanService.basePath);
     if (!baseDir.existsSync()) return;
 
-    // 调用顶层函数引用，避免跨 isolate 序列化失败。
-    Isolate.run(_wipeZenFileExceptBackups);
+    // 清理交给唯一实现；只传 String 进 isolate，避免跨 isolate 序列化失败
+    // （历史上在闭包里捕获 Directory 导致清理静默失败）。
+    // 结果落一行诊断日志：这次到底删了多少条，事后只有这里有据可查 ——
+    // 2026-09-25 的「报告凭空消失」正是因为清理**一声不响**地删掉了 crash/。
+    unawaited(
+      CacheCleanService.wipe().then(
+        (n) => WebdavDebugLog.log('[cache] auto clean removed=$n entries'),
+      ),
+    );
 
     // 记录本次清理时间
     PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
   } catch (e) {
     debugPrint('自动清理缓存失败: $e');
   }
-}
-
-/// 在独立 isolate 中执行：清空 [_zenFileBasePath] 下除 `Backups` 外的所有内容。
-/// 返回删除的文件数（便于隔离内诊断），调用方忽略返回值。
-int _wipeZenFileExceptBackups() {
-  final baseDir = Directory(_zenFileBasePath);
-  if (!baseDir.existsSync()) return 0;
-
-  int deletedCount = 0;
-  int deletedSize = 0;
-
-  void wipeDirectory(Directory dir) {
-    try {
-      for (final entity in dir.listSync()) {
-        final name = p.basename(entity.path);
-        if (name == 'Backups') continue; // 永远保留用户备份数据
-        if (entity is File) {
-          try {
-            deletedSize += entity.lengthSync();
-            entity.deleteSync();
-            deletedCount++;
-          } catch (_) {}
-        } else if (entity is Directory) {
-          // 递归清空子目录后删除空目录本身
-          wipeDirectory(entity);
-          try {
-            entity.deleteSync();
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
-  }
-
-  wipeDirectory(baseDir);
-
-  // 清理后重建必要的运行目录，避免调用方因目录缺失而异常
-  for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
-    try {
-      Directory(p.join(_zenFileBasePath, sub)).createSync(recursive: true);
-    } catch (_) {}
-  }
-  // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
-  try {
-    final marker = File(p.join(_zenFileBasePath, '.nomedia', '.nomedia'));
-    if (!marker.existsSync()) marker.createSync();
-  } catch (_) {}
-
-  if (deletedCount > 0) {
-    // ignore: avoid_print
-    print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
-  }
-  return deletedCount;
 }
