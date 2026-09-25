@@ -205,7 +205,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Voir)",
-  "ui_view_update": "Voir les mises à jour",
+  "ui_view_update": "Mises à jour de version",
   "update_github_check": "Vérification de version GitHub",
   "update_current_version": "Version actuelle : {version}",
   "update_checking": "Recherche de mises à jour…",
@@ -3122,6 +3122,32 @@
   "cat_vault_desc": "Stockage sécurisé",
   "cat_quick_categories": "Catégories",
   "ui_nav": "Local",
+  "update_err_network": "Impossible de joindre le serveur. Vérifiez votre réseau et réessayez.",
+  "update_err_timeout": "Délai de connexion dépassé. Vérifiez votre réseau ou votre proxy et réessayez.",
+  "update_err_rate_limit": "Limite GitHub atteinte. Veuillez réessayer plus tard.",
+  "update_err_http": "Le serveur a renvoyé une erreur (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Réponse inattendue du serveur. Veuillez réessayer plus tard.",
+  "update_err_version_unknown": "Impossible de lire la version actuelle. Redémarrez l'application et réessayez.",
+  "update_remote_version": "Dernière : {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Vérifié à {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Repli sur la vérification web — téléchargement intégré indisponible",
+  "update_source_label": "Source de mise à jour",
+  "update_source_default": "GitHub officiel",
+  "update_source_custom": "Source personnalisée",
+  "update_source_dialog_title": "Source de mise à jour personnalisée",
+  "update_source_dialog_desc": "Laissez vide pour utiliser l'API GitHub officielle. Vous pouvez saisir un miroir ou votre propre point d'accès renvoyant un JSON de même structure ; REPO dans l'URL désigne le chemin du dépôt.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Adresse invalide — elle doit commencer par http:// ou https://",
+
   "ui_paste_and_clear": "Coller et vider",
   "ui_cut_paste_hint": "Couper = déplacer ; vidé après le collage",
   "ui_search_in_settings": "Rechercher dans les paramètres",
@@ -6206,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (fr)"
   },
-  "ui_share_scan_failed": "Échec de l'analyse des partages : $error",
+  "ui_share_scan_failed": "Échec de l'analyse des partages : {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

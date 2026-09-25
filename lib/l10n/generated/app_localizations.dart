@@ -433,7 +433,7 @@ abstract class L10n {
   /// Button label to view changelog on the about screen
   ///
   /// In zh, this message translates to:
-  /// **'查看更新'**
+  /// **'版本更新'**
   String get ui_view_update;
 
   /// No description provided for @update_github_check.
@@ -5025,6 +5025,102 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'本地'**
   String get ui_nav;
+
+  /// No description provided for @update_err_network.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接服务器，请检查网络后重试'**
+  String get update_err_network;
+
+  /// No description provided for @update_err_timeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接超时，请检查网络或代理后重试'**
+  String get update_err_timeout;
+
+  /// No description provided for @update_err_rate_limit.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 请求过于频繁，请稍后再试'**
+  String get update_err_rate_limit;
+
+  /// No description provided for @update_err_http.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器返回异常（HTTP {code}）'**
+  String update_err_http(String code);
+
+  /// No description provided for @update_err_malformed.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器返回数据异常，请稍后重试'**
+  String get update_err_malformed;
+
+  /// No description provided for @update_err_version_unknown.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取当前版本号，请重启应用后重试'**
+  String get update_err_version_unknown;
+
+  /// No description provided for @update_remote_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'远端最新：{version}'**
+  String update_remote_version(String version);
+
+  /// No description provided for @update_checked_at.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查时间：{time}'**
+  String update_checked_at(String time);
+
+  /// No description provided for @update_degraded_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'已降级为网页检测，无法应用内下载'**
+  String get update_degraded_hint;
+
+  /// No description provided for @update_source_label.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新源'**
+  String get update_source_label;
+
+  /// No description provided for @update_source_default.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 官方'**
+  String get update_source_default;
+
+  /// No description provided for @update_source_custom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义源'**
+  String get update_source_custom;
+
+  /// No description provided for @update_source_dialog_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义更新源'**
+  String get update_source_dialog_title;
+
+  /// No description provided for @update_source_dialog_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。'**
+  String get update_source_dialog_desc;
+
+  /// No description provided for @update_source_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://example.com/…/releases/latest'**
+  String get update_source_hint;
+
+  /// No description provided for @update_source_invalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址无效，需以 http:// 或 https:// 开头'**
+  String get update_source_invalid;
 
   /// No description provided for @ui_paste_and_clear.
   ///
@@ -11143,7 +11239,7 @@ abstract class L10n {
   /// SMB wizard: share scan failed with error
   ///
   /// In zh, this message translates to:
-  /// **'扫描共享名失败：\$error'**
+  /// **'扫描共享名失败：{error}'**
   String ui_share_scan_failed(Object error);
 
   /// SMB wizard: button to scan LAN for SMB devices without entering an IP

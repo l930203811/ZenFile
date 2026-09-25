@@ -196,7 +196,7 @@ class L10nEs extends L10n {
   String get v1041 => 'v1.0.43 (Ver)';
 
   @override
-  String get ui_view_update => 'Ver actualizaciones';
+  String get ui_view_update => 'Actualizaciones de versión';
 
   @override
   String get update_github_check => 'Comprobación de versión en GitHub';
@@ -2780,6 +2780,69 @@ class L10nEs extends L10n {
 
   @override
   String get ui_nav => 'Local';
+
+  @override
+  String get update_err_network =>
+      'No se puede conectar al servidor. Comprueba tu red e inténtalo de nuevo.';
+
+  @override
+  String get update_err_timeout =>
+      'Se agotó el tiempo de conexión. Comprueba tu red o proxy e inténtalo de nuevo.';
+
+  @override
+  String get update_err_rate_limit =>
+      'Se alcanzó el límite de GitHub. Inténtalo más tarde.';
+
+  @override
+  String update_err_http(String code) {
+    return 'El servidor devolvió un error (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Respuesta inesperada del servidor. Inténtalo más tarde.';
+
+  @override
+  String get update_err_version_unknown =>
+      'No se puede leer la versión actual. Reinicia la aplicación e inténtalo de nuevo.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Más reciente: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Comprobado a las $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Se cambió a comprobación web: descarga en la app no disponible';
+
+  @override
+  String get update_source_label => 'Fuente de actualización';
+
+  @override
+  String get update_source_default => 'GitHub oficial';
+
+  @override
+  String get update_source_custom => 'Fuente personalizada';
+
+  @override
+  String get update_source_dialog_title =>
+      'Fuente de actualización personalizada';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Déjalo vacío para usar la API oficial de GitHub. Puedes introducir un espejo o tu propio endpoint que devuelva un JSON con la misma estructura; REPO en la URL representa la ruta del repositorio.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Dirección no válida: debe empezar por http:// o https://';
 
   @override
   String get ui_paste_and_clear => 'Pegar y vaciar';
@@ -6300,7 +6363,7 @@ class L10nEs extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Error al escanear recursos: \$error';
+    return 'Error al escanear recursos: $error';
   }
 
   @override

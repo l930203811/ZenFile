@@ -2332,6 +2332,12 @@ class MainActivity : AudioServiceFragmentActivity() {
         //   recordDartError   → Dart 未捕获错误落盘
         //   describe          → 归档概况（诊断日志用）
         CrashForensics.registerChannel(flutterEngine.dartExecutor.binaryMessenger, this)
+
+        // 系统 HTTP 代理读取（实现见 NetProxy）：
+        //   getHttpProxy → 返回 "host:port"，供 Dart 侧 HttpClient.findProxy 使用。
+        //   Dart 的 HttpClient 默认忽略 Android 系统代理，读环境变量那条路在
+        //   Android 上无效（进程没有 http_proxy），只能读 Java 层 ProxySelector。
+        NetProxy.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
     }
 
     /**

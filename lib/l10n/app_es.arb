@@ -205,7 +205,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Ver)",
-  "ui_view_update": "Ver actualizaciones",
+  "ui_view_update": "Actualizaciones de versión",
   "update_github_check": "Comprobación de versión en GitHub",
   "update_current_version": "Versión actual: {version}",
   "update_checking": "Buscando actualizaciones…",
@@ -3122,6 +3122,32 @@
   "cat_vault_desc": "Almacenamiento seguro",
   "cat_quick_categories": "Categorías",
   "ui_nav": "Local",
+  "update_err_network": "No se puede conectar al servidor. Comprueba tu red e inténtalo de nuevo.",
+  "update_err_timeout": "Se agotó el tiempo de conexión. Comprueba tu red o proxy e inténtalo de nuevo.",
+  "update_err_rate_limit": "Se alcanzó el límite de GitHub. Inténtalo más tarde.",
+  "update_err_http": "El servidor devolvió un error (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Respuesta inesperada del servidor. Inténtalo más tarde.",
+  "update_err_version_unknown": "No se puede leer la versión actual. Reinicia la aplicación e inténtalo de nuevo.",
+  "update_remote_version": "Más reciente: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Comprobado a las {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Se cambió a comprobación web: descarga en la app no disponible",
+  "update_source_label": "Fuente de actualización",
+  "update_source_default": "GitHub oficial",
+  "update_source_custom": "Fuente personalizada",
+  "update_source_dialog_title": "Fuente de actualización personalizada",
+  "update_source_dialog_desc": "Déjalo vacío para usar la API oficial de GitHub. Puedes introducir un espejo o tu propio endpoint que devuelva un JSON con la misma estructura; REPO en la URL representa la ruta del repositorio.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Dirección no válida: debe empezar por http:// o https://",
+
   "ui_paste_and_clear": "Pegar y vaciar",
   "ui_cut_paste_hint": "Cortar = mover; se vacía tras pegar",
   "ui_search_in_settings": "Buscar en los ajustes",
@@ -6206,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (es)"
   },
-  "ui_share_scan_failed": "Error al escanear recursos: $error",
+  "ui_share_scan_failed": "Error al escanear recursos: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

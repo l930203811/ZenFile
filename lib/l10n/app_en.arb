@@ -209,7 +209,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (View)",
-  "ui_view_update": "View updates",
+  "ui_view_update": "Version updates",
   "update_github_check": "GitHub version check",
   "update_current_version": "Current version: {version}",
   "update_checking": "Checking for updates…",
@@ -3129,6 +3129,32 @@
   "cat_vault_desc": "Secure Storage",
   "cat_quick_categories": "Categories",
   "ui_nav": "Local",
+  "update_err_network": "Can't reach the server. Check your network and try again.",
+  "update_err_timeout": "Connection timed out. Check your network or proxy and try again.",
+  "update_err_rate_limit": "GitHub rate limit reached. Please try again later.",
+  "update_err_http": "Server returned an error (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Unexpected response from the server. Please try again later.",
+  "update_err_version_unknown": "Can't read the current version. Restart the app and try again.",
+  "update_remote_version": "Latest: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Checked at {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Fell back to web check — in-app download unavailable",
+  "update_source_label": "Update source",
+  "update_source_default": "GitHub official",
+  "update_source_custom": "Custom source",
+  "update_source_dialog_title": "Custom update source",
+  "update_source_dialog_desc": "Leave empty to use the official GitHub API. You can enter a mirror or your own endpoint that returns JSON in the same structure; REPO in the URL stands for the repository path.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Invalid address — it must start with http:// or https://",
+
   "ui_paste_and_clear": "Paste and clear",
   "ui_cut_paste_hint": "Cut = move; clipboard clears after paste",
   "ui_search_in_settings": "Search in settings",
@@ -6272,7 +6298,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (en)"
   },
-  "ui_share_scan_failed": "Failed to scan shares: $error",
+  "ui_share_scan_failed": "Failed to scan shares: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

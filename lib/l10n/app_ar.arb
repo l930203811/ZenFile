@@ -205,7 +205,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (عرض)",
-  "ui_view_update": "عرض التحديثات",
+  "ui_view_update": "تحديثات الإصدار",
   "update_github_check": "فحص الإصدار من GitHub",
   "update_current_version": "الإصدار الحالي: {version}",
   "update_checking": "جارٍ التحقق من التحديثات…",
@@ -3122,6 +3122,32 @@
   "cat_vault_desc": "تخزين آمن",
   "cat_quick_categories": "الفئات",
   "ui_nav": "محلي",
+  "update_err_network": "تعذّر الاتصال بالخادم. تحقّق من الشبكة ثم أعد المحاولة",
+  "update_err_timeout": "انتهت مهلة الاتصال. تحقّق من الشبكة أو الوكيل ثم أعد المحاولة",
+  "update_err_rate_limit": "تم بلوغ حد طلبات GitHub. أعد المحاولة لاحقًا",
+  "update_err_http": "أعاد الخادم خطأ (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "استجابة غير متوقعة من الخادم. أعد المحاولة لاحقًا",
+  "update_err_version_unknown": "تعذّر قراءة الإصدار الحالي. أعد تشغيل التطبيق ثم حاول مجددًا",
+  "update_remote_version": "الأحدث: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "وقت الفحص: {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "تم التحويل إلى فحص الويب — التنزيل داخل التطبيق غير متاح",
+  "update_source_label": "مصدر التحديث",
+  "update_source_default": "GitHub الرسمي",
+  "update_source_custom": "مصدر مخصّص",
+  "update_source_dialog_title": "مصدر تحديث مخصّص",
+  "update_source_dialog_desc": "اتركه فارغًا لاستخدام واجهة GitHub الرسمية. يمكنك إدخال مرآة أو واجهة خاصة تُعيد JSON بالبنية نفسها؛ REPO في العنوان يعني مسار المستودع.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "عنوان غير صالح — يجب أن يبدأ بـ http:// أو https://",
+
   "ui_paste_and_clear": "لصق ومسح",
   "ui_cut_paste_hint": "القص = نقل؛ تُفرَّغ الحافظة بعد اللصق",
   "ui_search_in_settings": "البحث في الإعدادات",
@@ -6206,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (ar)"
   },
-  "ui_share_scan_failed": "فشل مسح المشاركات: $error",
+  "ui_share_scan_failed": "فشل مسح المشاركات: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

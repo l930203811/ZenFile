@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
-import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -26,6 +25,7 @@ import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/mpv_audio_output_service.dart';
+import 'services/cache_clean_service.dart';
 import 'services/crash_forensics_service.dart';
 import 'services/network_connections_service.dart';
 import 'services/intent_handler_service.dart';
@@ -260,18 +260,45 @@ Future<void> _checkCrashForensics() async {
       '[crash] forensics new=${result.newReports} skipped=${result.skipped} '
       'dir=${result.dir ?? "-"} error=${result.error ?? "-"}',
     );
-    if (result.hasNewReport) {
-      _notifyCrashReportSaved();
-    }
+    _maybeNotifyCrashReports();
   } catch (e) {
     debugPrint('[ZenFile] crash forensics failed: $e');
   }
 }
 
+/// 「要不要提示用户」的判据。
+///
+/// ## 为什么不再看 `newReports`
+/// 旧实现认的是「本次往公共目录里**新增**了几份报告」。这个判据隐含一个假设：
+/// 报告一旦导出就会一直待在公共目录里。而「自动清理缓存」会把 `ZenFile/`
+/// 整棵子树（曾包含 `crash/`）删掉，于是**同一份**崩溃报告会在每次启动时被重新
+/// 导出、每次都被当成「新增」⇒ 用户被无限重复提示（2026-09-25 实测复现）。
+/// 清理范围已修（见 [CacheCleanService]），但判据本身也不该依赖「文件不会被删」。
+///
+/// 现在的判据：
+///  * 只看**真的落在公共目录里**的「异常退出」报告（`exit_*` / `java_crash_*`）
+///    —— 提示文案说的是「报告已保存到 ZenFile/crash」，那就必须真的有；
+///    Dart 层非致命错误（`dart_error_*`）**不算**，那是误报；
+///  * 与持久化的「已提示过」集合比对，**同一次崩溃只提示一次**（现在与将来
+///    都不受清理、手动删除、重装等行为影响）。
+void _maybeNotifyCrashReports() {
+  final exitReports = CrashForensicsService.listExitReports();
+  if (exitReports.isEmpty) return;
+  final fresh = CrashForensicsService.selectUnnotified(
+    exitReports,
+    PreferencesService.getNotifiedCrashReports(),
+  );
+  if (fresh.isEmpty) return;
+  _notifyCrashReportSaved(exitReports);
+}
+
 /// 提示用户「已保存诊断报告」。刻意做得极保守：
 /// 延迟到启动动画之后、拿不到 ScaffoldMessenger 就静默跳过 ——
 /// **弹提示失败绝不能变成又一次崩溃**。
-void _notifyCrashReportSaved() {
+///
+/// [notified] 提示成功后才落盘：若因为拿不到 messenger 而没弹出来，下次启动会
+/// 再试一次（否则「提示失败」会变成「永远不再提示」，反而丢了现场）。
+void _notifyCrashReportSaved(List<String> notified) {
   Timer(const Duration(milliseconds: 1200), () {
     try {
       final ctx = navigatorKey.currentContext;
@@ -284,6 +311,7 @@ void _notifyCrashReportSaved() {
           duration: const Duration(seconds: 6),
         ),
       );
+      unawaited(PreferencesService.saveNotifiedCrashReports(notified));
     } catch (_) {
       // 静默：提示失败不影响任何功能
     }
@@ -1371,86 +1399,40 @@ void _cancelAutoCleanTimer() {
   _autoCleanTimer = null;
 }
 
-/// ZenFile 根目录：应用所有缓存 / 临时数据的统一存放点。
-const String _zenFileBasePath = '/storage/emulated/0/ZenFile';
-
-/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）
+/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）。
 ///
-/// 行为：清空 [_zenFileBasePath] 下除 `Backups` 外的所有文件/文件夹。
-/// 时间间隔（默认 5 分钟或用户自定义）仅控制「多久触发一次全量清理」，
-/// 触发后一律整目录清空（而非按文件 mtime 筛选），因此与默认/自定义时间无关、必然生效。
+/// 行为：清空 [CacheCleanService.basePath] 下**除诊断数据与用户数据外**的内容
+/// —— 保留清单见 [CacheCleanService.preservedNames]（`Backups` / `crash` /
+/// `Receive` / `webdav_debug.log`）。
 ///
-/// 关键修复：此前用 `Isolate.run(() { ... })` 且在闭包中捕获了 `Directory` 对象，
-/// 而 `Directory` 无法跨 isolate 序列化，导致 `Isolate.run` 抛异常被外层 try/catch
-/// 静默吞掉（`debugPrint('自动清理缓存失败')`），清理从来没真正执行过，
-/// 表现为「无论默认还是自定义时间都不生效」。现改为调用顶层函数引用（不捕获任何
-/// 不可序列化的对象），路径用模块级常量，在 isolate 内部再构造 `Directory`。
+/// ⚠️ 曾经的实现是「除 `Backups` 外全删」，把崩溃报告目录与诊断日志一起删了，
+/// 直接造成「崩溃后拿不到报告 + 每次启动都重复提示异常退出」的事故（2026-09-25，
+/// 详见 [CacheCleanService] 的类注释）。清理范围**只允许**在
+/// [CacheCleanService.preservedNames] 里维护，不要再在这里写第二份判断。
+///
+/// 间隔（默认 0 = 不自动清理）只控制「多久触发一次全量清理」，触发后一律整目录
+/// 清空（而非按 mtime 筛选），因此与间隔设定无关、必然生效。
 void _autoCleanRemoteCache() {
   try {
     final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     if (autoCleanMinutes <= 0) return; // 未启用自动清理（「不自动清理」选项）
 
-    final baseDir = Directory(_zenFileBasePath);
+    final baseDir = Directory(CacheCleanService.basePath);
     if (!baseDir.existsSync()) return;
 
-    // 调用顶层函数引用，避免跨 isolate 序列化失败。
-    Isolate.run(_wipeZenFileExceptBackups);
+    // 清理交给唯一实现；只传 String 进 isolate，避免跨 isolate 序列化失败
+    // （历史上在闭包里捕获 Directory 导致清理静默失败）。
+    // 结果落一行诊断日志：这次到底删了多少条，事后只有这里有据可查 ——
+    // 2026-09-25 的「报告凭空消失」正是因为清理**一声不响**地删掉了 crash/。
+    unawaited(
+      CacheCleanService.wipe().then(
+        (n) => WebdavDebugLog.log('[cache] auto clean removed=$n entries'),
+      ),
+    );
 
     // 记录本次清理时间
     PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
   } catch (e) {
     debugPrint('自动清理缓存失败: $e');
   }
-}
-
-/// 在独立 isolate 中执行：清空 [_zenFileBasePath] 下除 `Backups` 外的所有内容。
-/// 返回删除的文件数（便于隔离内诊断），调用方忽略返回值。
-int _wipeZenFileExceptBackups() {
-  final baseDir = Directory(_zenFileBasePath);
-  if (!baseDir.existsSync()) return 0;
-
-  int deletedCount = 0;
-  int deletedSize = 0;
-
-  void wipeDirectory(Directory dir) {
-    try {
-      for (final entity in dir.listSync()) {
-        final name = p.basename(entity.path);
-        if (name == 'Backups') continue; // 永远保留用户备份数据
-        if (entity is File) {
-          try {
-            deletedSize += entity.lengthSync();
-            entity.deleteSync();
-            deletedCount++;
-          } catch (_) {}
-        } else if (entity is Directory) {
-          // 递归清空子目录后删除空目录本身
-          wipeDirectory(entity);
-          try {
-            entity.deleteSync();
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
-  }
-
-  wipeDirectory(baseDir);
-
-  // 清理后重建必要的运行目录，避免调用方因目录缺失而异常
-  for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
-    try {
-      Directory(p.join(_zenFileBasePath, sub)).createSync(recursive: true);
-    } catch (_) {}
-  }
-  // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
-  try {
-    final marker = File(p.join(_zenFileBasePath, '.nomedia', '.nomedia'));
-    if (!marker.existsSync()) marker.createSync();
-  } catch (_) {}
-
-  if (deletedCount > 0) {
-    // ignore: avoid_print
-    print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
-  }
-  return deletedCount;
 }

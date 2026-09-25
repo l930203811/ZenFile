@@ -196,7 +196,7 @@ class L10nDe extends L10n {
   String get v1041 => 'v1.0.43 (Anzeigen)';
 
   @override
-  String get ui_view_update => 'Updates ansehen';
+  String get ui_view_update => 'Versionsupdates';
 
   @override
   String get update_github_check => 'GitHub-Versionsprüfung';
@@ -2763,6 +2763,68 @@ class L10nDe extends L10n {
 
   @override
   String get ui_nav => 'Lokal';
+
+  @override
+  String get update_err_network =>
+      'Keine Verbindung zum Server. Prüfe dein Netzwerk und versuche es erneut.';
+
+  @override
+  String get update_err_timeout =>
+      'Zeitüberschreitung. Prüfe Netzwerk oder Proxy und versuche es erneut.';
+
+  @override
+  String get update_err_rate_limit =>
+      'GitHub-Limit erreicht. Bitte später erneut versuchen.';
+
+  @override
+  String update_err_http(String code) {
+    return 'Der Server hat einen Fehler zurückgegeben (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Unerwartete Antwort vom Server. Bitte später erneut versuchen.';
+
+  @override
+  String get update_err_version_unknown =>
+      'Aktuelle Version nicht lesbar. Starte die App neu und versuche es erneut.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Neueste: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Geprüft um $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Auf Web-Prüfung zurückgestuft – In-App-Download nicht möglich';
+
+  @override
+  String get update_source_label => 'Update-Quelle';
+
+  @override
+  String get update_source_default => 'GitHub offiziell';
+
+  @override
+  String get update_source_custom => 'Eigene Quelle';
+
+  @override
+  String get update_source_dialog_title => 'Eigene Update-Quelle';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Leer lassen für die offizielle GitHub-API. Du kannst einen Mirror oder einen eigenen Endpunkt eintragen, der JSON in gleicher Struktur liefert; REPO in der URL steht für den Repository-Pfad.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Ungültige Adresse – sie muss mit http:// oder https:// beginnen';
 
   @override
   String get ui_paste_and_clear => 'Einfügen und leeren';
@@ -6282,7 +6344,7 @@ class L10nDe extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Fehler beim Scannen der Freigaben: \$error';
+    return 'Fehler beim Scannen der Freigaben: $error';
   }
 
   @override

@@ -6,6 +6,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../../services/preferences_service.dart';
+import '../../services/cache_clean_service.dart';
 import '../../services/app_manager_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -1685,29 +1686,11 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
 
   Future<void> _clearRemoteCache() async {
     try {
-      // 与自动清理一致：清空 /storage/emulated/0/ZenFile 下除 Backups 外的所有内容。
-      final basePath = '/storage/emulated/0/ZenFile';
-      final baseDir = Directory(basePath);
-      if (baseDir.existsSync()) {
-        for (final entity in baseDir.listSync()) {
-          final name = p.basename(entity.path);
-          if (name == 'Backups') continue; // 永远保留用户备份数据
-          try {
-            await entity.delete(recursive: true);
-          } catch (_) {}
-        }
-        // 清理后重建必要的运行目录
-        for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
-          try {
-            await Directory(p.join(basePath, sub)).create(recursive: true);
-          } catch (_) {}
-        }
-        // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
-        try {
-          final marker = File(p.join(basePath, '.nomedia', '.nomedia'));
-          if (!marker.existsSync()) await marker.create();
-        } catch (_) {}
-      }
+      // 与「自动清理」走**同一份实现**（CacheCleanService 是唯一入口）：只清缓存，
+      // 绝不动诊断数据与用户数据（Backups / crash / Receive / webdav_debug.log）。
+      // 此前这里是逐行重复的第二份拷贝，两处一旦不同步就会把崩溃现场删掉
+      // （2026-09-25 事故根因，详见 CacheCleanService 的类注释）。
+      await CacheCleanService.wipe();
 
       // 同时清理旧版残留的缓存位置
       final oldCacheDirs = [

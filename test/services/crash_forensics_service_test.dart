@@ -10,8 +10,10 @@ import 'package:zenfile/services/crash_forensics_service.dart';
 /// 钉住的不变式：
 /// * [CrashForensicsResult.parse] 对**任何**输入都不得抛异常 —— 它跑在启动路径上，
 ///   原生返回的字符串格式一旦变化（或多平台差异），抛异常就等于「取证把启动弄挂」；
-/// * 返回值里的 `newReports` 必须真的是「新增份数」（提示用户与否只认它，认错就会
-///   每次启动都骚扰用户，或永远不提示）；
+/// * 提示用户的判据只能是「公共目录里确实存在异常退出报告、且尚未提示过」
+///   （[CrashForensicsService.listExitReports] + `selectUnnotified`）。**不能**
+///   再用「本次新增份数」—— 报告目录一旦被清理/手删，同一份报告每次启动都会被
+///   重新导出并重复提示（2026-09-25 实测；详见 `CacheCleanService` 类注释）；
 /// * [CrashForensicsService.recordError] **必须落盘**，且**落盘失败绝不外抛**
 ///   （取证要是成了新的崩溃源，就彻底本末倒置）。
 void main() {
@@ -249,6 +251,73 @@ void main() {
       });
       final r = await CrashForensicsService.checkPreviousExit();
       expect(r, isNull);
+    });
+  });
+
+  /// 「要不要提示用户」的判据。
+  ///
+  /// 背景（2026-09-25 用户实测）：旧判据是 `CrashForensicsResult.newReports > 0`
+  /// （本次往公共目录新增了几份），而清理缓存会把 `crash/` 删掉 ⇒ 同一份报告每次
+  /// 启动都被重新导出、都被判成「新增」⇒ **无限重复提示**。且旧判据把 Dart 层
+  /// 非致命错误（`dart_error_*`）也当成「异常退出」，属误报。
+  group('异常退出报告的提示判据', () {
+    test('只有 exit_* / java_crash_* 算「异常退出」，dart_error_* 不算', () {
+      expect(CrashForensicsService.isExitReportName('exit_1700000000000_4.txt'), isTrue);
+      expect(CrashForensicsService.isExitReportName('java_crash_1700000000001.txt'), isTrue);
+      expect(CrashForensicsService.isExitReportName('dart_error_1700000000002.txt'), isFalse,
+          reason: 'Dart 层未捕获错误通常不杀进程，当「异常退出」提示就是误报');
+      expect(CrashForensicsService.isExitReportName('unsupported_sdk29.txt'), isFalse);
+    });
+
+    test('selectUnnotified：按文件名去重（报告被删后重新导出也不再提示）', () {
+      const current = ['exit_1_4.txt', 'exit_2_4.txt'];
+      expect(CrashForensicsService.selectUnnotified(current, const []), current);
+      expect(
+        CrashForensicsService.selectUnnotified(current, const ['exit_1_4.txt']),
+        ['exit_2_4.txt'],
+      );
+      expect(CrashForensicsService.selectUnnotified(current, current), isEmpty,
+          reason: '同一份报告不得提示第二次');
+      expect(CrashForensicsService.selectUnnotified(const [], current), isEmpty);
+    });
+
+    test('listExitReports：只列退出类报告且升序', () {
+      final tmp = Directory.systemTemp.createTempSync('zf_crash_list_');
+      CrashForensicsService.publicDirOverride = tmp.path;
+      try {
+        for (final name in [
+          'exit_20_4.txt',
+          'exit_10_6.txt',
+          'java_crash_30.txt',
+          'dart_error_99.txt', // 非致命错误：导出保留，但不算「异常退出」
+          'unsupported_sdk29.txt',
+        ]) {
+          File(p.join(tmp.path, name)).writeAsStringSync('x');
+        }
+        expect(CrashForensicsService.listExitReports(), [
+          'exit_10_6.txt',
+          'exit_20_4.txt',
+          'java_crash_30.txt',
+        ]);
+      } finally {
+        CrashForensicsService.publicDirOverride = null;
+        tmp.deleteSync(recursive: true);
+      }
+    });
+
+    test('listExitReports：目录不存在或路径非法时返回空而不抛', () {
+      CrashForensicsService.publicDirOverride = p.join(
+        Directory.systemTemp.createTempSync('zf_crash_missing_').path,
+        'not-exists',
+      );
+      expect(CrashForensicsService.listExitReports(), isEmpty);
+
+      final blocker = File(
+        p.join(Directory.systemTemp.createTempSync('zf_crash_blk_').path, 'file'),
+      )..writeAsStringSync('x');
+      CrashForensicsService.publicDirOverride = blocker.path; // 指向文件而非目录
+      expect(() => CrashForensicsService.listExitReports(), returnsNormally);
+      expect(CrashForensicsService.listExitReports(), isEmpty);
     });
   });
 }

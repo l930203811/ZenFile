@@ -191,7 +191,7 @@ class L10nAr extends L10n {
   String get v1041 => 'v1.0.43 (عرض)';
 
   @override
-  String get ui_view_update => 'عرض التحديثات';
+  String get ui_view_update => 'تحديثات الإصدار';
 
   @override
   String get update_github_check => 'فحص الإصدار من GitHub';
@@ -2718,6 +2718,68 @@ class L10nAr extends L10n {
 
   @override
   String get ui_nav => 'محلي';
+
+  @override
+  String get update_err_network =>
+      'تعذّر الاتصال بالخادم. تحقّق من الشبكة ثم أعد المحاولة';
+
+  @override
+  String get update_err_timeout =>
+      'انتهت مهلة الاتصال. تحقّق من الشبكة أو الوكيل ثم أعد المحاولة';
+
+  @override
+  String get update_err_rate_limit =>
+      'تم بلوغ حد طلبات GitHub. أعد المحاولة لاحقًا';
+
+  @override
+  String update_err_http(String code) {
+    return 'أعاد الخادم خطأ (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'استجابة غير متوقعة من الخادم. أعد المحاولة لاحقًا';
+
+  @override
+  String get update_err_version_unknown =>
+      'تعذّر قراءة الإصدار الحالي. أعد تشغيل التطبيق ثم حاول مجددًا';
+
+  @override
+  String update_remote_version(String version) {
+    return 'الأحدث: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'وقت الفحص: $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'تم التحويل إلى فحص الويب — التنزيل داخل التطبيق غير متاح';
+
+  @override
+  String get update_source_label => 'مصدر التحديث';
+
+  @override
+  String get update_source_default => 'GitHub الرسمي';
+
+  @override
+  String get update_source_custom => 'مصدر مخصّص';
+
+  @override
+  String get update_source_dialog_title => 'مصدر تحديث مخصّص';
+
+  @override
+  String get update_source_dialog_desc =>
+      'اتركه فارغًا لاستخدام واجهة GitHub الرسمية. يمكنك إدخال مرآة أو واجهة خاصة تُعيد JSON بالبنية نفسها؛ REPO في العنوان يعني مسار المستودع.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'عنوان غير صالح — يجب أن يبدأ بـ http:// أو https://';
 
   @override
   String get ui_paste_and_clear => 'لصق ومسح';
@@ -6201,7 +6263,7 @@ class L10nAr extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'فشل مسح المشاركات: \$error';
+    return 'فشل مسح المشاركات: $error';
   }
 
   @override

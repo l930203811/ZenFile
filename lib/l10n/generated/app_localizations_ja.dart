@@ -190,7 +190,7 @@ class L10nJa extends L10n {
   String get v1041 => 'v1.0.43 (表示)';
 
   @override
-  String get ui_view_update => '更新を表示';
+  String get ui_view_update => 'バージョン更新';
 
   @override
   String get update_github_check => 'GitHub バージョンチェック';
@@ -2639,6 +2639,62 @@ class L10nJa extends L10n {
 
   @override
   String get ui_nav => 'ローカル';
+
+  @override
+  String get update_err_network => 'サーバーに接続できません。ネットワークを確認して再試行してください';
+
+  @override
+  String get update_err_timeout => '接続がタイムアウトしました。ネットワークまたはプロキシを確認して再試行してください';
+
+  @override
+  String get update_err_rate_limit => 'GitHub のリクエスト上限に達しました。しばらくしてから再試行してください';
+
+  @override
+  String update_err_http(String code) {
+    return 'サーバーエラーが返されました（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => 'サーバーの応答データが異常です。しばらくしてから再試行してください';
+
+  @override
+  String get update_err_version_unknown =>
+      '現在のバージョン番号を取得できません。アプリを再起動して再試行してください';
+
+  @override
+  String update_remote_version(String version) {
+    return '最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '確認時刻：$time';
+  }
+
+  @override
+  String get update_degraded_hint => 'ウェブ検出に切り替えました（アプリ内ダウンロードは不可）';
+
+  @override
+  String get update_source_label => '更新ソース';
+
+  @override
+  String get update_source_default => 'GitHub 公式';
+
+  @override
+  String get update_source_custom => 'カスタムソース';
+
+  @override
+  String get update_source_dialog_title => 'カスタム更新ソース';
+
+  @override
+  String get update_source_dialog_desc =>
+      '空欄の場合は GitHub 公式 API を使用します。ミラーまたは自作のエンドポイント（GitHub と同じ構造の JSON を返すもの）を入力できます。URL 内の REPO はリポジトリパスを表します。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => 'URL が無効です。http:// または https:// で始めてください';
 
   @override
   String get ui_paste_and_clear => '貼り付けて消去';
@@ -6052,7 +6108,7 @@ class L10nJa extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '共有のスキャンに失敗しました: \$error';
+    return '共有のスキャンに失敗しました: $error';
   }
 
   @override

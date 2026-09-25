@@ -205,7 +205,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Просмотр)",
-  "ui_view_update": "Посмотреть обновления",
+  "ui_view_update": "Обновления версии",
   "update_github_check": "Проверка версии на GitHub",
   "update_current_version": "Текущая версия: {version}",
   "update_checking": "Проверка обновлений…",
@@ -3122,6 +3122,32 @@
   "cat_vault_desc": "Безопасное хранение",
   "cat_quick_categories": "Категории",
   "ui_nav": "Локальный",
+  "update_err_network": "Не удаётся подключиться к серверу. Проверьте сеть и повторите попытку.",
+  "update_err_timeout": "Время подключения истекло. Проверьте сеть или прокси и повторите попытку.",
+  "update_err_rate_limit": "Достигнут лимит запросов GitHub. Повторите попытку позже.",
+  "update_err_http": "Сервер вернул ошибку (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Неожиданный ответ сервера. Повторите попытку позже.",
+  "update_err_version_unknown": "Не удаётся получить текущую версию. Перезапустите приложение и повторите попытку.",
+  "update_remote_version": "Последняя: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Проверено в {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Переключено на веб-проверку — загрузка в приложении недоступна",
+  "update_source_label": "Источник обновлений",
+  "update_source_default": "Официальный GitHub",
+  "update_source_custom": "Свой источник",
+  "update_source_dialog_title": "Свой источник обновлений",
+  "update_source_dialog_desc": "Оставьте пустым, чтобы использовать официальный API GitHub. Можно указать зеркало или собственный эндпоинт, возвращающий JSON той же структуры; REPO в адресе означает путь репозитория.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Неверный адрес — он должен начинаться с http:// или https://",
+
   "ui_paste_and_clear": "Вставить и очистить",
   "ui_cut_paste_hint": "Вырезание = перемещение; после вставки очищается",
   "ui_search_in_settings": "Поиск в настройках",
@@ -6206,7 +6232,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (ru)"
   },
-  "ui_share_scan_failed": "Ошибка сканирования папок: $error",
+  "ui_share_scan_failed": "Ошибка сканирования папок: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

@@ -188,7 +188,7 @@ class L10nKo extends L10n {
   String get v1041 => 'v1.0.43 (보기)';
 
   @override
-  String get ui_view_update => '업데이트 보기';
+  String get ui_view_update => '버전 업데이트';
 
   @override
   String get update_github_check => 'GitHub 버전 확인';
@@ -2636,6 +2636,64 @@ class L10nKo extends L10n {
 
   @override
   String get ui_nav => '로컬';
+
+  @override
+  String get update_err_network => '서버에 연결할 수 없습니다. 네트워크를 확인한 후 다시 시도하세요';
+
+  @override
+  String get update_err_timeout =>
+      '연결 시간이 초과되었습니다. 네트워크 또는 프록시를 확인한 후 다시 시도하세요';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 요청 한도를 초과했습니다. 잠시 후 다시 시도하세요';
+
+  @override
+  String update_err_http(String code) {
+    return '서버가 오류를 반환했습니다 (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed => '서버 응답 데이터가 비정상입니다. 잠시 후 다시 시도하세요';
+
+  @override
+  String get update_err_version_unknown =>
+      '현재 버전 번호를 가져올 수 없습니다. 앱을 다시 시작한 후 시도하세요';
+
+  @override
+  String update_remote_version(String version) {
+    return '최신: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '확인 시각: $time';
+  }
+
+  @override
+  String get update_degraded_hint => '웹 검사로 전환됨(앱 내 다운로드 불가)';
+
+  @override
+  String get update_source_label => '업데이트 소스';
+
+  @override
+  String get update_source_default => 'GitHub 공식';
+
+  @override
+  String get update_source_custom => '사용자 지정 소스';
+
+  @override
+  String get update_source_dialog_title => '사용자 지정 업데이트 소스';
+
+  @override
+  String get update_source_dialog_desc =>
+      '비워 두면 GitHub 공식 API를 사용합니다. 미러 또는 자체 엔드포인트(동일한 구조의 JSON 반환)를 입력할 수 있으며, 주소의 REPO는 저장소 경로를 의미합니다.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      '주소가 올바르지 않습니다. http:// 또는 https://로 시작해야 합니다';
 
   @override
   String get ui_paste_and_clear => '붙여넣기 후 비우기';
@@ -6051,7 +6109,7 @@ class L10nKo extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '공유 스캔 실패: \$error';
+    return '공유 스캔 실패: $error';
   }
 
   @override

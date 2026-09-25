@@ -192,7 +192,7 @@ class L10nEn extends L10n {
   String get v1041 => 'v1.0.43 (View)';
 
   @override
-  String get ui_view_update => 'View updates';
+  String get ui_view_update => 'Version updates';
 
   @override
   String get update_github_check => 'GitHub version check';
@@ -2723,6 +2723,68 @@ class L10nEn extends L10n {
 
   @override
   String get ui_nav => 'Local';
+
+  @override
+  String get update_err_network =>
+      'Can\'t reach the server. Check your network and try again.';
+
+  @override
+  String get update_err_timeout =>
+      'Connection timed out. Check your network or proxy and try again.';
+
+  @override
+  String get update_err_rate_limit =>
+      'GitHub rate limit reached. Please try again later.';
+
+  @override
+  String update_err_http(String code) {
+    return 'Server returned an error (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Unexpected response from the server. Please try again later.';
+
+  @override
+  String get update_err_version_unknown =>
+      'Can\'t read the current version. Restart the app and try again.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Latest: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Checked at $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Fell back to web check — in-app download unavailable';
+
+  @override
+  String get update_source_label => 'Update source';
+
+  @override
+  String get update_source_default => 'GitHub official';
+
+  @override
+  String get update_source_custom => 'Custom source';
+
+  @override
+  String get update_source_dialog_title => 'Custom update source';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Leave empty to use the official GitHub API. You can enter a mirror or your own endpoint that returns JSON in the same structure; REPO in the URL stands for the repository path.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Invalid address — it must start with http:// or https://';
 
   @override
   String get ui_paste_and_clear => 'Paste and clear';
@@ -6220,7 +6282,7 @@ class L10nEn extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Failed to scan shares: \$error';
+    return 'Failed to scan shares: $error';
   }
 
   @override

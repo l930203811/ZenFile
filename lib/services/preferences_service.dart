@@ -1034,6 +1034,25 @@ class PreferencesService {
   static const String _keyWebSharePort = 'web_share_port';
   static const String _keyFtpPort = 'ftp_port';
 
+  /// 崩溃取证：已经提示过用户的报告文件名（避免同一份报告反复提示）。
+  static const String _keyNotifiedCrashReports = 'crash_notified_reports';
+
+  /// 自定义更新源（镜像 / 自建接口）地址。空 = 使用 GitHub 官方 API。
+  static const String _keyUpdateApiUrl = 'update_api_url';
+
+  /// 读取自定义更新源；空串表示使用 GitHub 官方源。
+  static String getUpdateApiUrl() => _prefs?.getString(_keyUpdateApiUrl) ?? '';
+
+  /// 保存自定义更新源；传空串 / 纯空白 = 恢复官方源（移除键）。
+  static Future<void> saveUpdateApiUrl(String url) async {
+    final v = url.trim();
+    if (v.isEmpty) {
+      await _prefs?.remove(_keyUpdateApiUrl);
+    } else {
+      await _prefs?.setString(_keyUpdateApiUrl, v);
+    }
+  }
+
   /// 获取自动清理天数，0表示不自动清理
   /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
   static int getRemoteCacheAutoCleanDays() {
@@ -1072,6 +1091,19 @@ class PreferencesService {
 
   static Future<void> saveRemoteCacheLastCleanTime(int timestamp) async {
     await _prefs?.setInt(_keyRemoteCacheLastCleanTime, timestamp);
+  }
+
+  /// 崩溃取证的「已提示过」报告名集合。
+  ///
+  /// 判据必须是**报告名**而不是「本次新增份数」：报告文件一旦被删（缓存清理 /
+  /// 用户手删 / 重装），按份数判就会把同一份报告再提示一次，形成无限重复提示
+  /// （2026-09-25 用户实测）。名字里含崩溃时间戳，天然唯一。
+  static List<String> getNotifiedCrashReports() {
+    return _prefs?.getStringList(_keyNotifiedCrashReports) ?? const <String>[];
+  }
+
+  static Future<void> saveNotifiedCrashReports(List<String> names) async {
+    await _prefs?.setStringList(_keyNotifiedCrashReports, names);
   }
 
   /// 获取远程媒体文件缩略图预览开关

@@ -222,7 +222,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ui_view_update": "查看更新",
+  "ui_view_update": "版本更新",
   "update_github_check": "GitHub 版本检测",
   "update_current_version": "当前版本：{version}",
   "@update_current_version": {
@@ -3217,6 +3217,32 @@
   },
   "cat_quick_categories": "分类",
   "ui_nav": "本地",
+  "update_err_network": "无法连接服务器，请检查网络后重试",
+  "update_err_timeout": "连接超时，请检查网络或代理后重试",
+  "update_err_rate_limit": "GitHub 请求过于频繁，请稍后再试",
+  "update_err_http": "服务器返回异常（HTTP {code}）",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "服务器返回数据异常，请稍后重试",
+  "update_err_version_unknown": "无法获取当前版本号，请重启应用后重试",
+  "update_remote_version": "远端最新：{version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "检查时间：{time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "已降级为网页检测，无法应用内下载",
+  "update_source_label": "更新源",
+  "update_source_default": "GitHub 官方",
+  "update_source_custom": "自定义源",
+  "update_source_dialog_title": "自定义更新源",
+  "update_source_dialog_desc": "留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "地址无效，需以 http:// 或 https:// 开头",
+
   "ui_paste_and_clear": "粘贴并清除",
   "ui_cut_paste_hint": "剪切为移动，粘贴后自动清空",
   "ui_search_in_settings": "在设置中搜索",
@@ -6499,7 +6525,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (zh)"
   },
-  "ui_share_scan_failed": "扫描共享名失败：$error",
+  "ui_share_scan_failed": "扫描共享名失败：{error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

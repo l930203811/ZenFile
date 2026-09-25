@@ -69,6 +69,58 @@ class CrashForensicsService {
     }
   }
 
+  // ────────────────────────────────────────────────────────────────────
+  //  「要不要提示用户」的判据
+  // ────────────────────────────────────────────────────────────────────
+
+  /// **进程异常退出**类报告的文件名前缀（原生侧 [CrashForensics.kt] 生成）。
+  ///
+  /// * `exit_*` —— `ApplicationExitInfo` 里的崩溃 / ANR / 初始化失败；
+  /// * `java_crash_*` —— Java/Kotlin 未捕获异常。
+  static const List<String> _exitReportPrefixes = ['exit_', 'java_crash_'];
+
+  /// 该报告是否属于「异常退出」类。
+  ///
+  /// `dart_error_*` **刻意不算**：Dart 层未捕获错误（Flutter 框架报错、zone 里的
+  /// 异步异常）通常根本不会杀死进程，把它当「上次异常退出」提示用户就是误报 ——
+  /// 用户会以为自己真的崩过。它照样会导出到 `crash/` 供排查，只是不弹提示。
+  static bool isExitReportName(String name) =>
+      _exitReportPrefixes.any(name.startsWith);
+
+  /// 列出公共归档目录里**异常退出类**报告的文件名（升序）。失败返回空列表。
+  ///
+  /// 用公共目录而不是原生私有存档：提示文案说的是「报告已保存到 ZenFile/crash」，
+  /// 那就必须**真的有这个文件**才提示（导出失败时宁可不说，也不能给假地址）。
+  static List<String> listExitReports() {
+    try {
+      final dir = Directory(_dir);
+      if (!dir.existsSync()) return const <String>[];
+      final names = dir
+          .listSync()
+          .whereType<File>()
+          .map((f) => p.basename(f.path))
+          .where(isExitReportName)
+          .toList()
+        ..sort();
+      return names;
+    } catch (_) {
+      return const <String>[];
+    }
+  }
+
+  /// 从 [current] 中挑出 [notified] 里没有的（纯函数，便于单测）。
+  ///
+  /// 判据按**文件名**去重：文件名含崩溃时间戳，同一份报告恒同名，因此
+  /// 「报告被删掉又重新导出」也不会二次提示。
+  static List<String> selectUnnotified(
+    List<String> current,
+    List<String> notified,
+  ) {
+    if (current.isEmpty) return const <String>[];
+    final seen = notified.toSet();
+    return current.where((n) => !seen.contains(n)).toList();
+  }
+
   /// 记录一条 Dart 未捕获错误。
   ///
   /// 策略：**先同步写公共目录**（Dart 层错误多半不致命，但同步写能保证「马上就要

@@ -205,7 +205,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "v1041": "v1.0.43 (Anzeigen)",
-  "ui_view_update": "Updates ansehen",
+  "ui_view_update": "Versionsupdates",
   "update_github_check": "GitHub-Versionsprüfung",
   "update_current_version": "Aktuelle Version: {version}",
   "update_checking": "Suche nach Updates…",
@@ -3119,6 +3119,32 @@
   "cat_vault_desc": "Sicherer Speicher",
   "cat_quick_categories": "Kategorien",
   "ui_nav": "Lokal",
+  "update_err_network": "Keine Verbindung zum Server. Prüfe dein Netzwerk und versuche es erneut.",
+  "update_err_timeout": "Zeitüberschreitung. Prüfe Netzwerk oder Proxy und versuche es erneut.",
+  "update_err_rate_limit": "GitHub-Limit erreicht. Bitte später erneut versuchen.",
+  "update_err_http": "Der Server hat einen Fehler zurückgegeben (HTTP {code})",
+  "@update_err_http": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "update_err_malformed": "Unerwartete Antwort vom Server. Bitte später erneut versuchen.",
+  "update_err_version_unknown": "Aktuelle Version nicht lesbar. Starte die App neu und versuche es erneut.",
+  "update_remote_version": "Neueste: {version}",
+  "@update_remote_version": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "update_checked_at": "Geprüft um {time}",
+  "@update_checked_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "update_degraded_hint": "Auf Web-Prüfung zurückgestuft – In-App-Download nicht möglich",
+  "update_source_label": "Update-Quelle",
+  "update_source_default": "GitHub offiziell",
+  "update_source_custom": "Eigene Quelle",
+  "update_source_dialog_title": "Eigene Update-Quelle",
+  "update_source_dialog_desc": "Leer lassen für die offizielle GitHub-API. Du kannst einen Mirror oder einen eigenen Endpunkt eintragen, der JSON in gleicher Struktur liefert; REPO in der URL steht für den Repository-Pfad.",
+  "update_source_hint": "https://example.com/…/releases/latest",
+  "update_source_invalid": "Ungültige Adresse – sie muss mit http:// oder https:// beginnen",
+
   "ui_paste_and_clear": "Einfügen und leeren",
   "ui_cut_paste_hint": "Ausschneiden = Verschieben; danach wird geleert",
   "ui_search_in_settings": "In den Einstellungen suchen",
@@ -6203,7 +6229,7 @@
   "@ui_anonymous_login": {
     "description": "SMB wizard: anonymous login checkbox label (de)"
   },
-  "ui_share_scan_failed": "Fehler beim Scannen der Freigaben: $error",
+  "ui_share_scan_failed": "Fehler beim Scannen der Freigaben: {error}",
   "@ui_share_scan_failed": {
     "description": "SMB wizard: share scan failed with error",
     "placeholders": {

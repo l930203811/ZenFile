@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -11,8 +10,12 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/apk_installer_service.dart';
+import '../../services/net_proxy_service.dart';
+import '../../services/preferences_service.dart';
+import '../../services/update_check_service.dart';
+import '../../services/webdav_debug_log.dart';
 
-/// 「查看更新」全屏页面（入口在左抽屉：设置 与 关于ZenFile 之间）。
+/// 「版本更新」全屏页面（入口在左抽屉：设置 与 关于ZenFile 之间）。
 ///
 /// 结构：
 /// ① GitHub 版本检测卡片 —— 打开页面自动检测一次，失败/想重查可手动重试；
@@ -30,16 +33,30 @@ class UpdateScreen extends StatefulWidget {
 enum _CheckState { checking, latest, hasUpdate, failed }
 
 class _UpdateScreenState extends State<UpdateScreen> {
-  static const String _releaseApi =
-      'https://api.github.com/repos/l930203811/ZenFile/releases/latest';
   static const String _releasePageUrl =
       'https://github.com/l930203811/ZenFile/releases/latest';
 
   _CheckState _state = _CheckState.checking;
   String _currentVersion = '';
-  String _latestVersion = '';
-  String _latestPageUrl = _releasePageUrl;
-  List<Map<String, String>> _assets = [];
+
+  /// 远端最新 tag（如 `v2.1.7`）。**「已是最新」时也展示它** ——
+  /// 用户据此分辨「真的联网查到了」还是「失败被静默吞掉」。
+  String _remoteVersion = '';
+  String _pageUrl = _releasePageUrl;
+  List<UpdateAsset> _assets = const <UpdateAsset>[];
+
+  /// 失败原因与 HTTP 状态码（决定提示文案；旧实现所有失败共用一句通用文案）。
+  UpdateCheckError? _error;
+  int? _httpStatus;
+
+  /// 是否用过降级通道（网页 302）。用过 ⇒ 界面标注「无法应用内下载」。
+  bool _usedFallback = false;
+
+  /// 最近一次检测完成的时间。
+  DateTime? _checkedAt;
+
+  /// 自定义更新源（镜像 / 自建接口）地址；空 = GitHub 官方源。
+  String _apiUrlOverride = '';
 
   bool _downloading = false;
   double? _downloadProgress; // null = 服务器未给 contentLength，用不确定进度条
@@ -51,6 +68,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
   }
 
   Future<void> _init() async {
+    _apiUrlOverride = PreferencesService.getUpdateApiUrl();
     try {
       final info = await PackageInfo.fromPlatform();
       _currentVersion = info.version;
@@ -60,66 +78,37 @@ class _UpdateScreenState extends State<UpdateScreen> {
     await _check();
   }
 
-  /// 比较两个语义化版本号（允许 v 前缀）。a>b 返回正数，相等 0，a<b 负数。
-  static int _compareVersions(String a, String b) {
-    List<int> parse(String v) => v
-        .replaceFirst(RegExp(r'^[vV]'), '')
-        .split('.')
-        .map((e) => int.tryParse(e.trim()) ?? 0)
-        .toList();
-    final pa = parse(a);
-    final pb = parse(b);
-    final len = pa.length > pb.length ? pa.length : pb.length;
-    for (var i = 0; i < len; i++) {
-      final x = i < pa.length ? pa[i] : 0;
-      final y = i < pb.length ? pb[i] : 0;
-      if (x != y) return x - y;
-    }
-    return 0;
-  }
-
   Future<void> _check() async {
     setState(() {
       _state = _CheckState.checking;
-      _assets = [];
+      _assets = const <UpdateAsset>[];
     });
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
-    try {
-      final req = await client
-          .getUrl(Uri.parse(_releaseApi))
-          .timeout(const Duration(seconds: 10));
-      req.headers.set(HttpHeaders.acceptHeader, 'application/vnd.github+json');
-      req.headers.set(HttpHeaders.userAgentHeader, 'ZenFile-Update-Checker');
-      final resp =
-          await req.close().timeout(const Duration(seconds: 10));
-      final body = await resp.transform(utf8.decoder).join();
-      if (resp.statusCode != 200) {
-        throw HttpException('HTTP ${resp.statusCode}');
+
+    // 检测逻辑已抽到 [UpdateCheckService]（可注入、可单测）。旧实现写在 State 里，
+    // 于是「没有真实新版本就永远测不了」「失败原因分不出来」两件事无解。
+    // 关键修复（都在 service 里）：读响应体带超时、整次检测有总上限、
+    // 拿不到本机版本号不再谎报「已是最新」、失败按原因分类、多通道自动降级。
+    final result = await UpdateCheckService(
+      apiUrlOverride: _apiUrlOverride,
+      httpProxyProvider: NetProxyService.getHttpProxy,
+      logger: WebdavDebugLog.log,
+    ).check(_currentVersion);
+
+    if (!mounted) return;
+    setState(() {
+      _remoteVersion = result.remoteVersion;
+      _pageUrl = result.pageUrl.isNotEmpty ? result.pageUrl : _releasePageUrl;
+      _assets = result.assets;
+      _error = result.error;
+      _httpStatus = result.httpStatus;
+      _usedFallback = result.usedFallback;
+      _checkedAt = DateTime.now();
+      if (!result.ok) {
+        _state = _CheckState.failed;
+      } else {
+        _state = result.hasUpdate ? _CheckState.hasUpdate : _CheckState.latest;
       }
-      final json = jsonDecode(body) as Map<String, dynamic>;
-      final tag = (json['tag_name'] as String? ?? '').trim();
-      if (tag.isEmpty) throw const FormatException('empty tag_name');
-      final assets = <Map<String, String>>[
-        for (final a in (json['assets'] as List? ?? const []))
-          if (a is Map && a['name'] is String && a['browser_download_url'] is String)
-            {'name': a['name'] as String, 'url': a['browser_download_url'] as String},
-      ];
-      if (!mounted) return;
-      setState(() {
-        _latestVersion = tag;
-        _latestPageUrl = (json['html_url'] as String?) ?? _releasePageUrl;
-        _assets = assets;
-        _state = _currentVersion.isNotEmpty &&
-                _compareVersions(tag, _currentVersion) > 0
-            ? _CheckState.hasUpdate
-            : _CheckState.latest;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _state = _CheckState.failed);
-    } finally {
-      client.close();
-    }
+    });
   }
 
   /// 按设备 ABI 选择最匹配的 APK 资产；无匹配则回退到第一个 .apk。
@@ -134,11 +123,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
     }
     for (final abi in abis) {
       for (final a in _assets) {
-        if (a['name']!.contains(abi)) return a['url'];
+        if (a.name.contains(abi)) return a.url;
       }
     }
     for (final a in _assets) {
-      if (a['name']!.endsWith('.apk')) return a['url'];
+      if (a.name.endsWith('.apk')) return a.url;
     }
     return null;
   }
@@ -147,8 +136,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
     if (_downloading) return;
     final url = await _pickAssetUrl();
     if (url == null) {
-      // 没有可下载资产 → 退回浏览器打开 Release 页
-      await _openUrl(_latestPageUrl);
+      // 没有可下载资产（例如降级到了网页通道）→ 退回浏览器打开 Release 页
+      await _openUrl(_pageUrl);
       return;
     }
     setState(() {
@@ -157,18 +146,25 @@ class _UpdateScreenState extends State<UpdateScreen> {
     });
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 15);
     try {
-      final req = await client.getUrl(Uri.parse(url));
+      final req = await client
+          .getUrl(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
       req.headers.set(HttpHeaders.userAgentHeader, 'ZenFile-Update-Checker');
-      final resp = await req.close();
+      final resp = await req.close().timeout(const Duration(seconds: 15));
       if (resp.statusCode != 200) {
         throw HttpException('HTTP ${resp.statusCode}');
       }
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/ZenFile_update_$_latestVersion.apk');
+      final file = File('${dir.path}/ZenFile_update_$_remoteVersion.apk');
       final sink = file.openWrite();
       final total = resp.contentLength; // -1 表示未知
       var received = 0;
-      await for (final chunk in resp) {
+      // 下载同样要有超时：半开连接会让 `await for` 永远挂着（与检测同源的问题，
+      // 在这里表现为「进度条永远停在某个百分比、也不报错」）。
+      await for (final chunk in resp.timeout(
+        const Duration(seconds: 30),
+        onTimeout: (sink) => sink.addError(TimeoutException('download stalled')),
+      )) {
         sink.add(chunk);
         received += chunk.length;
         if (total > 0 && mounted) {
@@ -207,6 +203,117 @@ class _UpdateScreenState extends State<UpdateScreen> {
     } catch (_) {}
   }
 
+  /// 失败提示：按原因分类。
+  ///
+  /// 旧实现所有失败共用一句「检查更新失败，请检查网络连接后重试」——
+  /// 用户既分不清是没网、超时，还是被 GitHub 限速（未认证 60 次/小时/IP，
+  /// 国内共享出口极易触发），也就无从采取正确的下一步。
+  String _errorText(L10n l10n) {
+    switch (_error) {
+      case UpdateCheckError.network:
+        return l10n.update_err_network;
+      case UpdateCheckError.timeout:
+        return l10n.update_err_timeout;
+      case UpdateCheckError.rateLimited:
+        return l10n.update_err_rate_limit;
+      case UpdateCheckError.http:
+        return l10n.update_err_http('${_httpStatus ?? '?'}');
+      case UpdateCheckError.malformed:
+        return l10n.update_err_malformed;
+      case UpdateCheckError.versionUnknown:
+        return l10n.update_err_version_unknown;
+      case UpdateCheckError.unknown:
+      case null:
+        return l10n.update_check_failed;
+    }
+  }
+
+  /// 「已是最新」时的自证信息：远端实际 tag + 本次检查时间。
+  String _metaLine(L10n l10n) {
+    final parts = <String>[];
+    if (_remoteVersion.isNotEmpty) {
+      parts.add(l10n.update_remote_version(_remoteVersion));
+    }
+    final t = _checkedAt;
+    if (t != null) {
+      final hh = t.hour.toString().padLeft(2, '0');
+      final mm = t.minute.toString().padLeft(2, '0');
+      parts.add(l10n.update_checked_at('$hh:$mm'));
+    }
+    return parts.join(' · ');
+  }
+
+  /// 自定义更新源（镜像 / 自建接口）。
+  ///
+  /// 留空 = GitHub 官方接口。校验规则直接复用
+  /// [UpdateCheckService.isValidCustomUrl]，不在 UI 里再写一遍。
+  Future<void> _openSourceDialog() async {
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+    final controller = TextEditingController(text: _apiUrlOverride);
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => ValueListenableBuilder<TextEditingValue>(
+        valueListenable: controller,
+        builder: (_, value, __) {
+          final valid = UpdateCheckService.isValidCustomUrl(value.text);
+          return AlertDialog(
+            title: Text(l10n.update_source_dialog_title),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.update_source_dialog_desc,
+                    style: const TextStyle(fontSize: 12.5, height: 1.5)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  maxLines: 2,
+                  minLines: 1,
+                  keyboardType: TextInputType.url,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    hintText: l10n.update_source_hint,
+                    hintStyle: const TextStyle(fontSize: 12),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                if (!valid) ...[
+                  const SizedBox(height: 8),
+                  Text(l10n.update_source_invalid,
+                      style: TextStyle(
+                          fontSize: 12, color: theme.colorScheme.error)),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+              ),
+              TextButton(
+                // 地址非法时直接禁用「确定」，比让它失败一次再报错更清楚
+                onPressed: valid ? () => Navigator.pop(ctx, true) : null,
+                child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final value = controller.text.trim();
+    controller.dispose();
+    if (saved != true) return;
+
+    await PreferencesService.saveUpdateApiUrl(value);
+    if (!mounted) return;
+    setState(() => _apiUrlOverride = value);
+    await _check();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -233,7 +340,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildV216Changelog(theme),
+          _buildV300Changelog(theme),
         ],
       ),
     );
@@ -295,6 +402,30 @@ class _UpdateScreenState extends State<UpdateScreen> {
               fontFamily: 'LexendDeca',
             ),
           ),
+          const SizedBox(height: 4),
+          // 更新源：刻意放在本页而不是设置页 —— 它是「版本更新」专属配置，
+          // 改完可立刻重试，也让用户一眼看清当前是不是走了镜像。
+          GestureDetector(
+            onTap: _openSourceDialog,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              children: [
+                Icon(Icons.cloud_outlined,
+                    size: 13, color: theme.colorScheme.onSurface.withOpacity(0.45)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '${l10n.update_source_label} · '
+                    '${_apiUrlOverride.isEmpty ? l10n.update_source_default : l10n.update_source_custom}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           _buildCheckStatus(theme, l10n),
         ],
@@ -323,18 +454,37 @@ class _UpdateScreenState extends State<UpdateScreen> {
           ],
         );
       case _CheckState.latest:
-        return Row(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.check_circle_rounded,
-                size: 18, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(l10n.update_latest,
-                  style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.85))),
+            Row(
+              children: [
+                Icon(Icons.check_circle_rounded,
+                    size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l10n.update_latest,
+                      style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface.withOpacity(0.85))),
+                ),
+              ],
             ),
+            // 「已是最新」必须能自证：显示远端实际 tag 与检查时间，用户才能分辨
+            // 「真的联网查到了」还是「请求失败被静默吞掉」。
+            if (_metaLine(l10n).isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 26),
+                child: Text(
+                  _metaLine(l10n),
+                  style: TextStyle(
+                      fontSize: 11.5,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                ),
+              ),
+            ],
           ],
         );
       case _CheckState.failed:
@@ -347,7 +497,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     size: 18, color: theme.colorScheme.error),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(l10n.update_check_failed,
+                  child: Text(_errorText(l10n),
                       style: TextStyle(
                           fontSize: 13.5,
                           color: theme.colorScheme.onSurface.withOpacity(0.85))),
@@ -390,7 +540,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.update_new_version(_latestVersion),
+                    l10n.update_new_version(_remoteVersion),
                     style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
@@ -399,6 +549,27 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 ),
               ],
             ),
+            // 降级到网页通道时拿不到 assets ⇒ 只能跳浏览器。
+            // 这里如实说明，避免用户以为「下载安装」按钮坏了。
+            if (_usedFallback && _assets.isEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.info_outline_rounded,
+                      size: 14,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      l10n.update_degraded_hint,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             if (_downloading) ...[
               LinearProgressIndicator(
@@ -424,7 +595,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                   ),
                   const SizedBox(width: 10),
                   TextButton.icon(
-                    onPressed: () => _openUrl(_latestPageUrl),
+                    onPressed: () => _openUrl(_pageUrl),
                     icon: Icon(Icons.open_in_new,
                         size: 14,
                         color: theme.colorScheme.onSurface.withOpacity(0.5)),
@@ -512,7 +683,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
   // ── ③ 更新日志（自「关于」页迁移，硬编码中英双语，不走 l10n） ──────
 
-  Widget _buildV216Changelog(ThemeData theme) {
+  Widget _buildV300Changelog(ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
@@ -562,63 +733,88 @@ class _UpdateScreenState extends State<UpdateScreen> {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v2.1.6', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v3.0.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-23', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-25', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
           // ══════════════ 中文 ══════════════
           section('\u2728 新功能'),
-          item('新增「音频输出（AO）模式」设置（播放页 → 音效与均衡器）：Auto (AudioTrack) / AudioTrack 16-bit / OpenSL ES 三档，默认 AudioTrack 优先'),
-          item('修复与 RootlessJamesDSP 等免 Root 音效软件不兼容：应用按 Android 官方协议广播音频效果控制会话，音效软件可正常接管，不再提示「不支持的应用程序」'),
-          item('修复播放中切换音频输出模式不生效的问题，切换立即生效；修复切歌时音轨重建导致的断音'),
+          item('全新四标签导航（分类 / 文件 / 传输 / 设置），默认移到底部：原顶部标签栏与抽屉入口重新归位，升级后自动迁移导航偏好'),
+          item('「我的」页下线，设置收敛为底部导航第 4 项（内嵌渲染，不再 push 全屏路由），左抽屉不再重复提供入口'),
+          item('启动期崩溃取证：基于 ApplicationExitInfo 自动留证（用户零操作）；启动路径去掉 runApp() 前的原生通道等待，修复启动阶段闪退'),
+          item('版本更新页：GitHub 版本检测 + 应用内下载安装，「查看更新」由设置迁至左抽屉'),
+          item('文本编辑器：工具箱与左抽屉可直接打开空白编辑器，右上角菜单可导入已有文本文件'),
+          item('视频播放：进度条常驻开关、倍速与音量记忆、后台播放选择持久化'),
+          item('图片查看器三态适配：适应宽度 / 适应高度 / 原始尺寸'),
+          item('全局搜索支持直接跳转功能入口，搜索框移至顶部'),
+          item('分类页新增自定义入口卡片（可开关）与每行显示列数（新增 2 列）'),
+          item('剪贴板新增「粘贴并清除」'),
 
           divider(),
 
           section('\u{1f3a8} 界面与交互'),
-          item('修复均衡器面板标题在部分语言下超出窗口'),
-          item('服务器列表副标题类型与 IP 分行显示，IP 不再被省略号截断'),
-          item('SMB 向导局域网扫描提速（约 3~4 倍）'),
+          item('分类页顶部间距清零、卡片圆角收紧（14→8）、3 列卡片改为正方形，整体更紧凑'),
+          item('顶部背景统一细边框；浏览操作栏移至底部并自动折叠展开'),
+          item('单标签时隐藏空的标签页栏'),
+          item('左抽屉移除「设置」入口；「查看更新」图标更换，与页内重试按钮区分'),
+          item('右抽屉「常用功能」与「收藏夹」同时展开时不再出现两条分割线'),
+          item('视频缩略图不再被中心播放图标覆盖，完整显示（列表/网格同步；音频封面图标保留）'),
+          item('全局搜索提示词更新为「搜索文件、应用和设置」'),
 
           divider(),
 
           section('\u{1f41b} 问题修复'),
-          item('修复仅大小写不同的重命名（如 a.jpg → a.JPG）不生效的问题（本地与 Root/Shizuku 受限路径均修复）'),
-          item('修复本地/远程文件夹「解密后再原地加密」目录名不变密文的问题'),
-          item('加密文件打开优化：原地加密的 APK/DOC/ZIP 点击后可临时解密并打开，操作结束自动清理；保险箱文件夹支持直接浏览'),
-          item('修复分类页已删除音频重新出现的问题'),
-          item('修复保险箱备份恢复后列表为空的问题'),
-          item('修复 WebDAV 与本地面包屑导航错位的问题'),
-          item('修复 SMB 匿名登录在 SMB 3.x 服务器上的崩溃（升级 smbj 0.14.0 + SMB2 方言自动兜底）'),
+          item('修复自动清理缓存连诊断数据一并删除的问题：崩溃报告与调试日志被清空，导致每次启动重复提示「上次异常退出」且丢失事故现场；清理范围收窄为仅清缓存，固定保留 Backups / crash / Receive / 调试日志'),
+          item('崩溃提示判据改为「报告确实存在于公共目录且从未提示过」，同一次崩溃只提示一次；Dart 层非致命错误不再被误报为异常退出'),
+          item('修复版本检测读取响应体没有超时，导致永远停在「正在检查更新…」'),
+          item('修复拿不到本机版本号时谎报「已是最新」且并未联网的问题'),
+          item('检测失败不再静默：按网络不通 / 连接超时 / 请求频繁 / HTTP 错误 / 数据异常分类提示；「已是最新」同时显示远端版本与检查时间'),
+          item('修复版本检测不走系统代理（Dart 默认只读进程环境变量，Android 上恒为空）'),
+          item('官方 API 不可达时自动降级网页检测，并支持在页内填写自定义镜像源'),
+          item('修复传输页网络入口无法跳转远程目录'),
+          item('修复视频进度条常驻时半透明遮罩撑满全屏'),
 
           langDivider(),
 
-          // ══════════════ English ══════════════
           section('\u2728 New Features'),
-          item('New "Audio Output (AO) Mode" setting (Playback → Sound Effects & Equalizer): Auto (AudioTrack) / AudioTrack 16-bit / OpenSL ES, AudioTrack-first by default'),
-          item('Fixed incompatibility with rootless audio effect apps (e.g. RootlessJamesDSP): the app now broadcasts audio effect control sessions per Android\'s official protocol, so effect apps can take over normally ("unsupported app" no longer shown)'),
-          item('Fixed switching AO mode during playback not taking effect — changes apply immediately; fixed audio gaps when switching tracks'),
+          item('Brand-new 4-tab navigation (Categories / Files / Transfers / Settings), now at the bottom by default: top tabs and drawer entries are reorganized, and navigation preference migrates automatically on upgrade'),
+          item('The "Me" page was retired; Settings is now the 4th tab, rendered inline instead of pushed as a full-screen route, and the left drawer no longer duplicates the entry'),
+          item('Startup crash forensics based on ApplicationExitInfo (zero user action); removed native channel awaits before runApp(), fixing startup-stage crashes'),
+          item('Version updates page: GitHub version detection with in-app download & install; the entry moved from Settings to the left drawer'),
+          item('Text editor: open a blank editor directly from the toolbox or drawer, with an import option in the overflow menu'),
+          item('Video playback: always-on progress bar switch, speed & volume memory, and persisted background-play preference'),
+          item('Image viewer: three fit modes (width / height / actual size)'),
+          item('Global search now jumps to feature entries directly; the search field moved to the top'),
+          item('Category page: optional custom entry card and a new 2-column layout option'),
+          item('Clipboard: new "paste and clear" action'),
 
           divider(),
 
           section('\u{1f3a8} UI & Interaction'),
-          item('Fixed the equalizer panel title overflowing the window in some languages'),
-          item('Server list subtitle now shows type and IP on separate lines; IPs are no longer truncated'),
-          item('LAN share scanning in the SMB wizard is ~3-4x faster'),
+          item('Category page: top spacing reset, card radius tightened (14 to 8), square cards at 3 columns - denser and cleaner'),
+          item('Unified thin border on top backgrounds; browse action bar moved to the bottom with auto collapse/expand'),
+          item('Empty tab bar is hidden when only one tab is open'),
+          item('Left drawer: "Settings" entry removed; the update entry icon changed to avoid confusion with the in-page retry button'),
+          item('Right drawer: no more double dividers when "Frequent features" and "Favorites" are both expanded'),
+          item('Video thumbnails are no longer covered by the center play icon (list & grid; audio cover icons kept)'),
+          item('Global search hint updated to "Search files, apps and settings"'),
 
           divider(),
 
           section('\u{1f41b} Bug Fixes'),
-          item('Fixed case-only renames (e.g. a.jpg → a.JPG) not taking effect (local & Root/Shizuku restricted paths)'),
-          item('Fixed folder names not becoming ciphertext when re-encrypting in place after decryption (local & remote)'),
-          item('Improved opening encrypted files: in-place encrypted APK/DOC/ZIP can be temporarily decrypted and opened, auto-cleaned afterward; vault folders can be browsed directly'),
-          item('Fixed deleted audio files reappearing in the category page'),
-          item('Fixed empty file list after restoring vault backup'),
-          item('Fixed breadcrumb navigation going to the wrong level (WebDAV & local root)'),
-          item('Fixed SMB anonymous login crash on SMB 3.x servers (upgraded smbj to 0.14.0 with SMB2 dialect fallback)'),
+          item('Fixed auto cache cleanup deleting diagnostic data along with cache - crash reports and debug logs were wiped, causing a repeated "abnormal exit" notice on every launch and losing the crash scene; cleanup now preserves Backups / crash / Receive / debug log'),
+          item('Crash notices now require that the report really exists and was never notified, so each crash is reported only once; non-fatal Dart errors are no longer misreported as abnormal exits'),
+          item('Fixed the version check hanging forever on "Checking for updates..." because reading the response body had no timeout'),
+          item('Fixed falsely reporting "up to date" without any network request when the local version could not be read'),
+          item('Version check failures are no longer silent: classified into network / timeout / rate limit / HTTP error / malformed data; "up to date" now also shows the remote version and check time'),
+          item('Fixed the version check ignoring the system proxy (Dart only reads process env vars, which are always empty on Android)'),
+          item('Falls back to web-based detection when the official API is unreachable, and supports a custom mirror URL'),
+          item('Fixed the network entry on the Transfers page not opening the remote directory'),
+          item('Fixed the always-on video progress bar causing a full-screen translucent overlay'),
         ],
       ),
     );

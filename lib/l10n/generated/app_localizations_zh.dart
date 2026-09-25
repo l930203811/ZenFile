@@ -189,7 +189,7 @@ class L10nZh extends L10n {
   String get v1041 => 'v1.0.43 (查看)';
 
   @override
-  String get ui_view_update => '查看更新';
+  String get ui_view_update => '版本更新';
 
   @override
   String get update_github_check => 'GitHub 版本检测';
@@ -2630,6 +2630,61 @@ class L10nZh extends L10n {
 
   @override
   String get ui_nav => '本地';
+
+  @override
+  String get update_err_network => '无法连接服务器，请检查网络后重试';
+
+  @override
+  String get update_err_timeout => '连接超时，请检查网络或代理后重试';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 请求过于频繁，请稍后再试';
+
+  @override
+  String update_err_http(String code) {
+    return '服务器返回异常（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => '服务器返回数据异常，请稍后重试';
+
+  @override
+  String get update_err_version_unknown => '无法获取当前版本号，请重启应用后重试';
+
+  @override
+  String update_remote_version(String version) {
+    return '远端最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '检查时间：$time';
+  }
+
+  @override
+  String get update_degraded_hint => '已降级为网页检测，无法应用内下载';
+
+  @override
+  String get update_source_label => '更新源';
+
+  @override
+  String get update_source_default => 'GitHub 官方';
+
+  @override
+  String get update_source_custom => '自定义源';
+
+  @override
+  String get update_source_dialog_title => '自定义更新源';
+
+  @override
+  String get update_source_dialog_desc =>
+      '留空则使用 GitHub 官方接口。可填入镜像或自建接口，需返回与 GitHub 相同结构的 JSON；地址中的 REPO 代表仓库路径。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => '地址无效，需以 http:// 或 https:// 开头';
 
   @override
   String get ui_paste_and_clear => '粘贴并清除';
@@ -5947,7 +6002,7 @@ class L10nZh extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '扫描共享名失败：\$error';
+    return '扫描共享名失败：$error';
   }
 
   @override
@@ -7740,7 +7795,7 @@ class L10nZhTw extends L10nZh {
   String get v1041 => 'v1.0.43 (檢視)';
 
   @override
-  String get ui_view_update => '檢視更新';
+  String get ui_view_update => '版本更新';
 
   @override
   String get update_github_check => 'GitHub 版本偵測';
@@ -10172,6 +10227,61 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_nav => '本地';
+
+  @override
+  String get update_err_network => '無法連接伺服器，請檢查網路後重試';
+
+  @override
+  String get update_err_timeout => '連線逾時，請檢查網路或代理後重試';
+
+  @override
+  String get update_err_rate_limit => 'GitHub 要求過於頻繁，請稍後再試';
+
+  @override
+  String update_err_http(String code) {
+    return '伺服器回應異常（HTTP $code）';
+  }
+
+  @override
+  String get update_err_malformed => '伺服器回傳資料異常，請稍後重試';
+
+  @override
+  String get update_err_version_unknown => '無法取得目前版本號，請重新啟動應用程式後重試';
+
+  @override
+  String update_remote_version(String version) {
+    return '遠端最新：$version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return '檢查時間：$time';
+  }
+
+  @override
+  String get update_degraded_hint => '已降級為網頁檢測，無法於應用程式內下載';
+
+  @override
+  String get update_source_label => '更新來源';
+
+  @override
+  String get update_source_default => 'GitHub 官方';
+
+  @override
+  String get update_source_custom => '自訂來源';
+
+  @override
+  String get update_source_dialog_title => '自訂更新來源';
+
+  @override
+  String get update_source_dialog_desc =>
+      '留空則使用 GitHub 官方介面。可填入鏡像或自建介面，需回傳與 GitHub 相同結構的 JSON；網址中的 REPO 代表倉庫路徑。';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid => '網址無效，需以 http:// 或 https:// 開頭';
 
   @override
   String get ui_paste_and_clear => '貼上並清除';
@@ -13469,7 +13579,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return '掃描共享名失敗：\$error';
+    return '掃描共享名失敗：$error';
   }
 
   @override

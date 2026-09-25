@@ -195,7 +195,7 @@ class L10nRu extends L10n {
   String get v1041 => 'v1.0.43 (Просмотр)';
 
   @override
-  String get ui_view_update => 'Посмотреть обновления';
+  String get ui_view_update => 'Обновления версии';
 
   @override
   String get update_github_check => 'Проверка версии на GitHub';
@@ -2769,6 +2769,68 @@ class L10nRu extends L10n {
 
   @override
   String get ui_nav => 'Локальный';
+
+  @override
+  String get update_err_network =>
+      'Не удаётся подключиться к серверу. Проверьте сеть и повторите попытку.';
+
+  @override
+  String get update_err_timeout =>
+      'Время подключения истекло. Проверьте сеть или прокси и повторите попытку.';
+
+  @override
+  String get update_err_rate_limit =>
+      'Достигнут лимит запросов GitHub. Повторите попытку позже.';
+
+  @override
+  String update_err_http(String code) {
+    return 'Сервер вернул ошибку (HTTP $code)';
+  }
+
+  @override
+  String get update_err_malformed =>
+      'Неожиданный ответ сервера. Повторите попытку позже.';
+
+  @override
+  String get update_err_version_unknown =>
+      'Не удаётся получить текущую версию. Перезапустите приложение и повторите попытку.';
+
+  @override
+  String update_remote_version(String version) {
+    return 'Последняя: $version';
+  }
+
+  @override
+  String update_checked_at(String time) {
+    return 'Проверено в $time';
+  }
+
+  @override
+  String get update_degraded_hint =>
+      'Переключено на веб-проверку — загрузка в приложении недоступна';
+
+  @override
+  String get update_source_label => 'Источник обновлений';
+
+  @override
+  String get update_source_default => 'Официальный GitHub';
+
+  @override
+  String get update_source_custom => 'Свой источник';
+
+  @override
+  String get update_source_dialog_title => 'Свой источник обновлений';
+
+  @override
+  String get update_source_dialog_desc =>
+      'Оставьте пустым, чтобы использовать официальный API GitHub. Можно указать зеркало или собственный эндпоинт, возвращающий JSON той же структуры; REPO в адресе означает путь репозитория.';
+
+  @override
+  String get update_source_hint => 'https://example.com/…/releases/latest';
+
+  @override
+  String get update_source_invalid =>
+      'Неверный адрес — он должен начинаться с http:// или https://';
 
   @override
   String get ui_paste_and_clear => 'Вставить и очистить';
@@ -6282,7 +6344,7 @@ class L10nRu extends L10n {
 
   @override
   String ui_share_scan_failed(Object error) {
-    return 'Ошибка сканирования папок: \$error';
+    return 'Ошибка сканирования папок: $error';
   }
 
   @override
