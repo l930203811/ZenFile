@@ -4859,7 +4859,7 @@ class L10nZh extends L10n {
       'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
 
   @override
-  String get ui_global_search_hint => '在您的设备上即时查找任何文件、文件夹、文档或媒体';
+  String get ui_global_search_hint => '搜索文件、应用和设置';
 
   @override
   String get ui_delete_item_confirm => '确定要删除此项目吗？此操作无法撤销。';
@@ -12371,7 +12371,7 @@ class L10nZhTw extends L10nZh {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => '在您的裝置上即時查詢任何檔案、資料夾、檔案或媒體';
+  String get ui_global_search_hint => '搜尋檔案、應用程式與設定';
 
   @override
   String get ui_delete_item_confirm => '確定要刪除此專案嗎？此操作無法復原。';

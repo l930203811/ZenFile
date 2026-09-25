@@ -5144,7 +5144,7 @@ class L10nFr extends L10n {
 
   @override
   String get ui_global_search_hint =>
-      'Trouvez instantanément n\'importe quel fichier, dossier, document ou média sur votre appareil';
+      'Rechercher des fichiers, applications et paramètres';
 
   @override
   String get ui_delete_item_confirm =>

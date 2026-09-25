@@ -4870,7 +4870,7 @@
   "changelog_v1129_fix_8": "Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.",
   "changelog_v1129_fix_9": "Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).",
   "changelog_v1129_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_global_search_hint": "Trouvez instantanément n'importe quel fichier, dossier, document ou média sur votre appareil",
+  "ui_global_search_hint": "Rechercher des fichiers, applications et paramètres",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },

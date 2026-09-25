@@ -5052,8 +5052,7 @@ class L10nAr extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint =>
-      'ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك';
+  String get ui_global_search_hint => 'البحث عن الملفات والتطبيقات والإعدادات';
 
   @override
   String get ui_delete_item_confirm =>

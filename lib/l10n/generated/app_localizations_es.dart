@@ -5138,7 +5138,7 @@ class L10nEs extends L10n {
 
   @override
   String get ui_global_search_hint =>
-      'Busca archivos, carpetas, documentos o multimedia al instante en tu dispositivo';
+      'Buscar archivos, aplicaciones y configuración';
 
   @override
   String get ui_delete_item_confirm =>

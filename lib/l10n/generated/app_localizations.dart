@@ -9145,7 +9145,7 @@ abstract class L10n {
   /// Global search empty state subtitle
   ///
   /// In zh, this message translates to:
-  /// **'在您的设备上即时查找任何文件、文件夹、文档或媒体'**
+  /// **'搜索文件、应用和设置'**
   String get ui_global_search_hint;
 
   /// Global search single item delete confirmation content

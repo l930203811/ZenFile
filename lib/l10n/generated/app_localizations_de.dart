@@ -5116,8 +5116,7 @@ class L10nDe extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint =>
-      'Finden Sie sofort Dateien, Ordner, Dokumente oder Medien auf Ihrem Gerät';
+  String get ui_global_search_hint => 'Dateien, Apps und Einstellungen suchen';
 
   @override
   String get ui_delete_item_confirm =>

@@ -5157,7 +5157,7 @@
   "changelog_v1129_fix_8": "修复压缩包图片预览因名称归一化不匹配导致全部无法预览、解压失败无反馈等问题。",
   "changelog_v1129_fix_9": "全局搜索空状态与删除确认文案支持多语言（去除硬编码英文）。",
   "changelog_v1129_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
-  "ui_global_search_hint": "在您的设备上即时查找任何文件、文件夹、文档或媒体",
+  "ui_global_search_hint": "搜索文件、应用和设置",
   "@ui_global_search_hint": {
     "description": "Global search empty state subtitle"
   },

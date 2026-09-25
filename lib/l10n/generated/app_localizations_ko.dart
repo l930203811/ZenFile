@@ -4920,7 +4920,7 @@ class L10nKo extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_global_search_hint => '기기 전체에서 파일, 폴터, 문서, 미디어를 즉시 찾아보세요';
+  String get ui_global_search_hint => '파일, 앱, 설정 검색';
 
   @override
   String get ui_delete_item_confirm => '이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
