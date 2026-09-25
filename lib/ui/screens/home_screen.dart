@@ -328,30 +328,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
           ),
           child: ZenFileEndDrawer(
-            toggleTheme: widget.toggleTheme,
-            onRefresh: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(0);
-              _handleRefresh();
-            },
-            onCustomize: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(0);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                QuickCategoriesGrid.showCustomizeDialog(context, (index) {
-                  if (!mounted) return;
-                  _switchTab(index);
-                });
-              });
-            },
-            onShowSortModal: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(1);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                final provider = context.read<FileManagerProvider>();
-                SortModal.show(context, provider);
-              });
-            },
             onNavigateToBrowse: () => _switchTab(1),
             // 不传 searchFolderPath：让 GlobalSearchScreen 在 initState 用
             // fileProvider.currentPath 作为搜索范围（与 ES 一致：在当前文件夹内
@@ -630,9 +606,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     return bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
   }
 
-  /// 顶部 3 按钮行：左抽屉 / 中全局搜索 / 右快捷操作。
+  /// 顶部图标行：左抽屉 / 全局搜索 / 常用功能 5 项(刷新/自定义/排序/主题/单双窗口) / 收藏夹。
+  /// 全部只显示图标（紧凑按钮），文案以 tooltip 呈现。
   Widget _buildTopBarRow() {
     final theme = Theme.of(context);
+    final l10n = L10n.of(context);
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
@@ -640,25 +618,94 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-              // v2.1.7: 顶部栏行高由 kToolbarHeight(56) 收紧为 48，分类页卡片整体上移，
-              // 进一步贴紧顶部搜索栏背景（底部导航栏仍用 kToolbarHeight，不受影响）。
             SizedBox(
               height: 48,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                     icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: _buildGlobalSearchBar(theme),
-                    ),
-                  ),
+                  // 全局搜索：图标样式，点击进入全局搜索页
                   IconButton(
-                    icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).msge8b8e9b3,
+                    icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).ui_global_search_hint,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
+                      );
+                    },
+                  ),
+                  // 常用功能：刷新
+                  IconButton(
+                    icon: Icon(Broken.refresh, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msg354c1c9a,
+                    onPressed: () {
+                      _switchTab(0);
+                      _handleRefresh();
+                    },
+                  ),
+                  // 常用功能：自定义快捷方式
+                  IconButton(
+                    icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msge7d18d73,
+                    onPressed: () {
+                      _switchTab(0);
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        QuickCategoriesGrid.showCustomizeDialog(context, (index) {
+                          if (!mounted) return;
+                          _switchTab(index);
+                        });
+                      });
+                    },
+                  ),
+                  // 常用功能：排序
+                  IconButton(
+                    icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msg97301f64,
+                    onPressed: () {
+                      _switchTab(1);
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        final provider = context.read<FileManagerProvider>();
+                        SortModal.show(context, provider);
+                      });
+                    },
+                  ),
+                  // 常用功能：切换主题
+                  IconButton(
+                    icon: Icon(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Broken.sun_1
+                          : Broken.moon,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: Theme.of(context).brightness == Brightness.dark
+                        ? L10n.of(context).msg8755e992
+                        : L10n.of(context).ui_dark_mode,
+                    onPressed: widget.toggleTheme,
+                  ),
+                  // 常用功能：单/双窗口
+                  IconButton(
+                    icon: Icon(
+                      context
+                              .read<FileManagerProvider>()
+                              .enableSplitScreen
+                          ? Broken.grid_1
+                          : Broken.grid_2,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: context.read<FileManagerProvider>().enableSplitScreen
+                        ? L10n.of(context).ui_single_window
+                        : L10n.of(context).ui_dual_window,
+                    onPressed: () =>
+                        context.read<FileManagerProvider>().toggleSplitScreen(),
+                  ),
+                  // 右抽屉：收藏夹入口
+                  IconButton(
+                    icon: Icon(Broken.folder_favorite, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).ui_favorites,
                     onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                   ),
                 ],
@@ -666,41 +713,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             ),
             Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withOpacity(0.08)),
           ],
-        ),
-      ),
-    );
-  }
-
-  /// 全局搜索框（圆角条）：点击进入全局搜索页。
-  Widget _buildGlobalSearchBar(ThemeData theme) {
-    return Material(
-      color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
-          );
-        },
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: [
-              Icon(Broken.search_normal, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  L10n.of(context).ui_global_search_hint,
-                  style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.45)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
