@@ -1942,6 +1942,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                       PreferencesService.saveSettingsEntryVisible(v);
                     }
                     setModalState(() {});
+                    // 同步触发分类页网格重建：关闭后对应卡片即时从分类页隐藏
+                    context.read<MediaProvider>().notifyListeners();
                   },
                 ),
                 const SizedBox(width: 12),
@@ -2019,6 +2021,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                 }
                 Navigator.of(dialogContext).pop();
                 setModalState(() {});
+                // 分类页网格同步刷新显示名
+                context.read<MediaProvider>().notifyListeners();
               },
               child: Text(
                 L10n.of(dialogContext).ui_done,

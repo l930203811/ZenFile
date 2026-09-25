@@ -7,6 +7,7 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
@@ -731,9 +732,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
     final slot3 = _resolveTabSlot(
       3,
-      defaultIcon: Broken.setting_2,
-      defaultLabel: l10n.cat_settings,
-      defaultIndex: _settingsTabIndex,
+      defaultIcon: Broken.clock,
+      defaultLabel: l10n.cat_recent,
+      defaultIndex: -1,
     );
     final tabData = <List<Object>>[slot0, slot1, slot2, slot3];
     return Material(
@@ -776,6 +777,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   }) {
     final cfg = PreferencesService.getBottomTabSlotConfig(slot);
     if (cfg == null) {
+      // v3.4b2：默认第 4 个槽位由「设置」改为「最近」（isCustomEntry 走 _openBottomTabEntry）
+      if (slot == 3) {
+        return [Broken.clock, L10n.of(context).cat_recent, -1, true, slot];
+      }
       return [defaultIcon, defaultLabel, defaultIndex, false, slot];
     }
     final type = cfg['type'];
@@ -870,7 +875,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 打开被自定义的底部槽位：内置页切 IndexedStack；快捷入口执行与分类页网格一致的 action。
   void _openBottomTabEntry(int slot) {
     final cfg = PreferencesService.getBottomTabSlotConfig(slot);
-    if (cfg == null) return;
+    if (cfg == null) {
+      // 默认槽位：第 4 槽默认「最近」（v3.4b2 起替换设置）
+      if (slot == 3) {
+        setState(() => _activeBottomSlot = slot);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AllRecentFilesScreen(
+              onNavigateTab: (i) => _switchTab(i),
+            ),
+          ),
+        );
+      }
+      return;
+    }
     setState(() => _activeBottomSlot = slot);
     final type = cfg['type'];
     final key = cfg['key'];
