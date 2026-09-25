@@ -523,8 +523,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   bool _isDragging = false;
   int _draggingIndex = -1;
   int _targetIndex = -1;
-  // 拖拽的是「自定义」入口卡片（网格插入点语义，区别于分类 order 索引）
-  bool _draggingIsCustom = false;
   Offset _dragOffset = Offset.zero;
   OverlayEntry? _overlayEntry;
   OverlayEntry? _menuOverlayEntry;
@@ -586,12 +584,10 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     int index,
     Offset localPosition,
     Widget dragWidget,
-    Color color, {
-    bool isCustomEntry = false,
-  }) {
+    Color color,
+  ) {
     _isDragging = true;
     _draggingIndex = index;
-    _draggingIsCustom = isCustomEntry;
     _targetIndex = index;
     _dragOffset = localPosition;
 
@@ -642,80 +638,119 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
     int newIndex = adjustedRow * columns + adjustedCol;
 
-    final activeLabels = _getActiveCategoryLabels(
-      context.read<MediaProvider>(),
-      QuickCategoriesGrid.getAllCategoriesMap(
-        context,
-        Theme.of(context).brightness == Brightness.dark,
-        widget.onNavigateTab,
+    final visible = _visibleOrderOf(
+      PreferencesService.resolveFullOrder(
+        context.read<MediaProvider>().categoryOrder,
       ),
     );
 
     if (newIndex >= 0 && newIndex != _targetIndex) {
-      // 自定义入口卡片：目标可为网格末尾（activeLabels.length）；
-      // 分类卡片：只能在分类区（0..len-1）内排序。
-      _targetIndex = _draggingIsCustom
-          ? newIndex.clamp(0, activeLabels.length)
-          : newIndex.clamp(0, activeLabels.length - 1);
+      // 统一模型：网格显示的是「分类 + 系统入口」的可见序列，
+      // 拖拽目标限制在可见序列内（0..len-1）。
+      _targetIndex = newIndex.clamp(0, visible.length - 1);
       setState(() {});
     }
   }
 
-  /// 结束拖拽排序
-  void _endDrag(
-    MediaProvider mediaProvider,
-    Map<String, Map<String, dynamic>> allCategoriesMap,
-  ) {
+  /// 结束拖拽排序：可见序列重排 → 合并回完整顺序 → 双写
+  /// （full_grid_order 权威，categoryOrder 同步分类部分）
+  void _endDrag() {
     _overlayEntry?.remove();
     _overlayEntry = null;
 
     if (_isDragging &&
         _draggingIndex != _targetIndex &&
         _targetIndex >= 0) {
-      final activeLabels = _getActiveCategoryLabels(
-        mediaProvider,
-        allCategoriesMap,
-      );
-
-      if (_draggingIsCustom) {
-        // 自定义入口：网格插入点 → 完整 order 插入点
-        final fullOrder = mediaProvider.categoryOrder;
-        int customPos;
-        if (_targetIndex >= activeLabels.length) {
-          customPos = fullOrder.length;
-        } else if (_targetIndex > 0) {
-          customPos =
-              fullOrder.indexOf(activeLabels[_targetIndex - 1]) + 1;
-        } else {
-          customPos = 0;
-        }
-        PreferencesService.saveCustomEntryPosition(
-          customPos.clamp(0, fullOrder.length),
-        );
-      } else if (_draggingIndex >= 0) {
-        // 计算在完整 categoryOrder 中的位置
-        final draggingLabel = activeLabels[_draggingIndex];
-        final targetLabel = activeLabels[_targetIndex];
-
-        final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(
-          draggingLabel,
-        );
-        final fullTargetIndex = mediaProvider.categoryOrder.indexOf(
-          targetLabel,
-        );
-
-        if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
-          // 执行 reorder
-          mediaProvider.reorderCategory(fullDraggingIndex, fullTargetIndex);
+      final mediaProvider = context.read<MediaProvider>();
+      final fullOrder =
+          PreferencesService.resolveFullOrder(mediaProvider.categoryOrder);
+      final visible = _visibleOrderOf(fullOrder);
+      if (_draggingIndex >= 0 &&
+          _draggingIndex < visible.length &&
+          _targetIndex <= visible.length) {
+        final newVisible = [...visible];
+        final item = newVisible.removeAt(_draggingIndex);
+        newVisible.insert(_targetIndex.clamp(0, newVisible.length), item);
+        final merged = _mergeVisibleIntoFull(fullOrder, newVisible);
+        PreferencesService.saveFullGridOrder(merged);
+        final newCatOrder = merged
+            .where((e) => !PreferencesService.isSysEntryKey(e))
+            .toList();
+        if (!_sameList(newCatOrder, mediaProvider.categoryOrder)) {
+          mediaProvider.setCategoryOrder(newCatOrder);
         }
       }
     }
 
     _isDragging = false;
-    _draggingIsCustom = false;
     _draggingIndex = -1;
     _targetIndex = -1;
     setState(() {});
+  }
+
+  /// 从完整顺序解析分类页可见顺序（过滤未激活分类与隐藏系统入口）。
+  List<String> _visibleOrderOf(List<String> fullOrder) {
+    final mediaProvider = context.read<MediaProvider>();
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      widget.onNavigateTab,
+    );
+    return fullOrder
+        .where((k) {
+          if (k == PreferencesService.sysCustomKey) {
+            return PreferencesService.getCustomEntryVisible();
+          }
+          if (k == PreferencesService.sysTransfersKey) {
+            return PreferencesService.getTransfersEntryVisible();
+          }
+          if (k == PreferencesService.sysSettingsKey) {
+            return PreferencesService.getSettingsEntryVisible();
+          }
+          return mediaProvider.activeCategories.contains(k) &&
+              allCategoriesMap.containsKey(k);
+        })
+        .toList();
+  }
+
+  /// 可见序列重排后合并回完整顺序：隐藏项保持原相对位置，可见项按新顺序。
+  List<String> _mergeVisibleIntoFull(
+    List<String> fullOrder,
+    List<String> newVisible,
+  ) {
+    final visibleSet = newVisible.toSet();
+    final hidden =
+        fullOrder.where((e) => !visibleSet.contains(e)).toList();
+    final result = <String>[];
+    String? prev;
+    var hi = 0;
+    for (final v in newVisible) {
+      if (prev != null) {
+        final vIdx = fullOrder.indexOf(v);
+        final pIdx = fullOrder.indexOf(prev);
+        while (hi < hidden.length) {
+          final hIdx = fullOrder.indexOf(hidden[hi]);
+          if (hIdx > pIdx && hIdx < vIdx) {
+            result.add(hidden[hi]);
+            hi++;
+          } else {
+            break;
+          }
+        }
+      }
+      result.add(v);
+      prev = v;
+    }
+    result.addAll(hidden.sublist(hi));
+    return result;
+  }
+
+  bool _sameList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   /// 长按类别图标弹出上下文菜单（类似 Android 桌面图标长按效果）
@@ -764,10 +799,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           },
           onDragUpdate: (pos) => _updateDrag(pos),
           onDragEnd: () {
-            final allCatMap = QuickCategoriesGrid.getAllCategoriesMap(
-              context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab,
-            );
-            _endDrag(context.read<MediaProvider>(), allCatMap);
+            _endDrag();
             _closeMenuOverlay();
           },
           onDismiss: _closeMenuOverlay,
@@ -789,14 +821,27 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     _menuOverlayEntry = null;
   }
 
-  /// 「自定义」入口卡片长按菜单（复用分类卡片的 Overlay 菜单结构）。
+  /// 系统入口卡片长按菜单（自定义/传输/设置，复用分类卡片的 Overlay 菜单结构）。
   void _showSystemEntryMenu({
     required Offset position,
     required String entryKey,
     required Color color,
   }) {
     _closeMenuOverlay();
-    final isEnabled = PreferencesService.getCustomEntryVisible();
+    final bool isEnabled;
+    final IconData menuIcon;
+    if (entryKey == PreferencesService.sysCustomKey) {
+      isEnabled = PreferencesService.getCustomEntryVisible();
+      menuIcon = Broken.edit_2;
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
+      isEnabled = PreferencesService.getTransfersEntryVisible();
+      menuIcon = Broken.send_2;
+    } else {
+      isEnabled = PreferencesService.getSettingsEntryVisible();
+      menuIcon = Broken.setting_2;
+    }
+    // 仅自定义入口保留「自定义快捷方式」菜单项
+    final showCustomizeItem = entryKey == PreferencesService.sysCustomKey;
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
 
@@ -811,32 +856,25 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         return _CategoryMenuOverlayWidget(
           menuLeft: menuLeft,
           menuTop: position.dy,
-          labelKey: '__custom_entry__',
+          labelKey: entryKey,
           color: color,
           isEnabled: isEnabled,
           theme: theme,
           l10n: l10n,
+          showCustomizeItem: showCustomizeItem,
           getCategoryIndex: () => -1,
-          getCategoryIcon: () => Broken.edit_2,
+          getCategoryIcon: () => menuIcon,
           onDragStart: (dragPos) {
             _startDrag(
               -1,
               dragPos,
-              Icon(Broken.edit_2, color: color, size: 28),
+              Icon(menuIcon, color: color, size: 28),
               color,
-              isCustomEntry: true,
             );
           },
           onDragUpdate: (pos) => _updateDrag(pos),
           onDragEnd: () {
-            _endDrag(
-              context.read<MediaProvider>(),
-              QuickCategoriesGrid.getAllCategoriesMap(
-                context,
-                Theme.of(context).brightness == Brightness.dark,
-                widget.onNavigateTab,
-              ),
-            );
+            _endDrag();
             _closeMenuOverlay();
           },
           onDismiss: _closeMenuOverlay,
@@ -844,11 +882,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             _closeMenuOverlay();
             switch (action) {
               case 'rename':
-                _showRenameDialogForCustomEntry(context);
+                _showRenameDialogForSysEntry(context, entryKey);
               case 'toggle':
-                PreferencesService.saveCustomEntryVisible(
-                  !PreferencesService.getCustomEntryVisible(),
-                );
+                if (entryKey == PreferencesService.sysCustomKey) {
+                  PreferencesService.saveCustomEntryVisible(
+                    !PreferencesService.getCustomEntryVisible(),
+                  );
+                } else if (entryKey == PreferencesService.sysTransfersKey) {
+                  PreferencesService.saveTransfersEntryVisible(
+                    !PreferencesService.getTransfersEntryVisible(),
+                  );
+                } else {
+                  PreferencesService.saveSettingsEntryVisible(
+                    !PreferencesService.getSettingsEntryVisible(),
+                  );
+                }
               case 'customize':
                 QuickCategoriesGrid.showCustomizeDialog(
                   context,
@@ -865,13 +913,25 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     Overlay.of(context).insert(_menuOverlayEntry!);
   }
 
-  /// 网格内重命名「自定义」入口显示名（与配置区弹窗同构）。
-  Future<void> _showRenameDialogForCustomEntry(BuildContext context) async {
+  /// 网格内重命名系统入口显示名（与配置区弹窗同构）。
+  Future<void> _showRenameDialogForSysEntry(
+    BuildContext context,
+    String entryKey,
+  ) async {
     final theme = Theme.of(context);
-    final controller = TextEditingController(
-      text: PreferencesService.getCustomEntryLabel() ??
-          L10n.of(context).ui_show_custom_entry,
-    );
+    final String initial;
+    final String fallback;
+    if (entryKey == PreferencesService.sysCustomKey) {
+      fallback = L10n.of(context).ui_show_custom_entry;
+      initial = PreferencesService.getCustomEntryLabel() ?? fallback;
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
+      fallback = L10n.of(context).ui_transfers;
+      initial = PreferencesService.getTransfersEntryLabel() ?? fallback;
+    } else {
+      fallback = L10n.of(context).cat_settings;
+      initial = PreferencesService.getSettingsEntryLabel() ?? fallback;
+    }
+    final controller = TextEditingController(text: initial);
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -906,7 +966,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               onPressed: () {
                 final newLabel = controller.text.trim();
                 if (newLabel.isNotEmpty) {
-                  PreferencesService.saveCustomEntryLabel(newLabel);
+                  if (entryKey == PreferencesService.sysCustomKey) {
+                    PreferencesService.saveCustomEntryLabel(newLabel);
+                  } else if (entryKey ==
+                      PreferencesService.sysTransfersKey) {
+                    PreferencesService.saveTransfersEntryLabel(newLabel);
+                  } else {
+                    PreferencesService.saveSettingsEntryLabel(newLabel);
+                  }
                 }
                 Navigator.of(dialogContext).pop();
                 if (mounted) setState(() {});
@@ -1066,48 +1133,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
-    final fileManagerProvider = context.watch<FileManagerProvider>();
 
     final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
       context,
       isDark,
       widget.onNavigateTab,
     );
-    final activeLabels = _getActiveCategoryLabels(
-      mediaProvider,
-      allCategoriesMap,
-    );
-
-    final activeList = activeLabels
-        .map((label) => allCategoriesMap[label]!)
-        .toList();
 
     final columns = PreferencesService.getCategoriesGridColumns();
-    // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
-    final hasCustomEntry = PreferencesService.getCustomEntryVisible();
-    // 自定义入口在完整分类 order 中的插入位置（0..分类数），支持拖动排序。
-    // 未设置（-1，新装用户）默认末尾，避免跑到最前。
-    final customPosRaw = PreferencesService.getCustomEntryPosition();
-    final customPos = (customPosRaw < 0
-            ? mediaProvider.categoryOrder.length
-            : customPosRaw)
-        .clamp(0, mediaProvider.categoryOrder.length);
-    // 网格中自定义入口的显示位置 = activeLabels 里 order 索引 < customPos 的数量。
-    final customGridIndex = hasCustomEntry
-        ? activeLabels
-            .where((l) => mediaProvider.categoryOrder.indexOf(l) < customPos)
-            .length
-        : activeList.length;
-    // 网格末尾的系统入口（传输/设置），各自受开关控制，顺序固定：自定义→传输→设置
-    final hasTransfersEntry = PreferencesService.getTransfersEntryVisible();
-    final hasSettingsEntry = PreferencesService.getSettingsEntryVisible();
-    final sysTailCount =
-        (hasTransfersEntry ? 1 : 0) + (hasSettingsEntry ? 1 : 0);
-    final sysTailStart =
-        activeList.length + (hasCustomEntry ? 1 : 0);
-    final itemCount = activeList.length +
-        (hasCustomEntry ? 1 : 0) +
-        sysTailCount;
+    // 统一完整顺序（full_grid_order：分类 + 系统入口一条链），
+    // 分类页网格显示其过滤视图（激活分类 + 可见系统入口），
+    // 配置区与网格任一拖拽都会双向同步。
+    final fullOrder =
+        PreferencesService.resolveFullOrder(mediaProvider.categoryOrder);
+    final visibleOrder = _visibleOrderOf(fullOrder);
+    final itemCount = visibleOrder.length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1160,7 +1200,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          if (activeList.isEmpty)
+          if (visibleOrder.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -1177,9 +1217,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               onPointerMove: _isDragging
                   ? (event) => _updateDrag(event.position)
                   : null,
-              onPointerUp: _isDragging
-                  ? (event) => _endDrag(mediaProvider, allCategoriesMap)
-                  : null,
+              onPointerUp: _isDragging ? (event) => _endDrag() : null,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: LayoutBuilder(
@@ -1218,45 +1256,17 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   ),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
-                    // 尾部系统入口（传输/设置）卡片
-                    if (index >= sysTailStart) {
-                      final tailIdx = index - sysTailStart;
-                      if (hasTransfersEntry && tailIdx == 0) {
-                        return _buildSystemEntryCard(
-                          theme,
-                          iconSize,
-                          icon: Broken.send_2,
-                          label:
-                              PreferencesService.getTransfersEntryLabel() ??
-                              L10n.of(context).ui_transfers,
-                          onTap: () => widget.onNavigateTab?.call(2),
-                        );
-                      }
-                      if (hasSettingsEntry &&
-                          tailIdx == (hasTransfersEntry ? 1 : 0)) {
-                        return _buildSystemEntryCard(
-                          theme,
-                          iconSize,
-                          icon: Broken.setting_2,
-                          label:
-                              PreferencesService.getSettingsEntryLabel() ??
-                              L10n.of(context).cat_settings,
-                          onTap: () => widget.onNavigateTab?.call(3),
-                        );
-                      }
-                      return const SizedBox.shrink(
-                        key: ValueKey('empty3'),
-                      );
+                    final key = visibleOrder[index];
+                    // 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
+                    // 支持长按菜单（重命名/显示开关）与长按拖拽排序。
+                    if (PreferencesService.isSysEntryKey(key)) {
+                      return _buildSysEntryCard(theme, iconSize, key);
                     }
-                    if (hasCustomEntry && index == customGridIndex) {
-                      return _buildCustomEntryCard(theme, iconSize);
-                    }
-                    final catIndex = index > customGridIndex ? index - 1 : index;
-                    if (catIndex >= activeList.length) {
+                    final cat = allCategoriesMap[key];
+                    if (cat == null) {
                       return const SizedBox.shrink(key: ValueKey('empty2'));
                     }
-                    final cat = activeList[catIndex];
-                    final labelKey = activeLabels[catIndex];
+                    final labelKey = key;
                     final label = cat['label'] as String;
                     final icon = cat['icon'] as IconData;
                     final color = cat['color'] as Color;
@@ -1304,7 +1314,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                         if (distance > 10.0) {
                           _closeMenuOverlay();
                           _startDrag(
-                            _getCategoryIndex(labelKey),
+                            index,
                             details.globalPosition,
                             Icon(
                               _getCategoryIcon(labelKey),
@@ -1317,13 +1327,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       },
                       onLongPressEnd: (_) {
                         if (_isDragging) {
-                          final allCatMap =
-                              QuickCategoriesGrid.getAllCategoriesMap(
-                                context,
-                                Theme.of(context).brightness == Brightness.dark,
-                                widget.onNavigateTab,
-                              );
-                          _endDrag(context.read<MediaProvider>(), allCatMap);
+                          _endDrag();
                         }
                         fm.setCategoryReorderInteracting(false);
                         _longPressOrigin = null;
@@ -1441,17 +1445,40 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   }
 
   /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
-  Widget _buildCustomEntryCard(ThemeData theme, double iconSize) {
+  /// 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
+  /// 支持长按菜单（重命名/显示开关，自定义额外含自定义快捷方式）与长按拖拽排序。
+  Widget _buildSysEntryCard(ThemeData theme, double iconSize, String key) {
     final fm = context.read<FileManagerProvider>();
     final color = theme.colorScheme.primary;
-    // 与分类卡片一致：长按弹菜单（重命名/显示开关/自定义快捷方式），移动超阈值进入拖拽排序
+    final IconData icon;
+    final String label;
+    final VoidCallback onTap;
+    if (key == PreferencesService.sysCustomKey) {
+      icon = Broken.edit_2;
+      label = PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).msgf1d4ff50;
+      onTap = () => QuickCategoriesGrid.showCustomizeDialog(
+        context,
+        widget.onNavigateTab,
+      );
+    } else if (key == PreferencesService.sysTransfersKey) {
+      icon = Broken.send_2;
+      label = PreferencesService.getTransfersEntryLabel() ??
+          L10n.of(context).ui_transfers;
+      onTap = () => widget.onNavigateTab.call(2);
+    } else {
+      icon = Broken.setting_2;
+      label = PreferencesService.getSettingsEntryLabel() ??
+          L10n.of(context).cat_settings;
+      onTap = () => widget.onNavigateTab.call(3);
+    }
     return GestureDetector(
       onLongPressStart: (details) {
         fm.setCategoryReorderInteracting(true);
         _longPressOrigin = details.globalPosition;
         _showSystemEntryMenu(
           position: details.globalPosition,
-          entryKey: 'custom_entry',
+          entryKey: key,
           color: color,
         );
       },
@@ -1468,22 +1495,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           _startDrag(
             -1,
             details.globalPosition,
-            Icon(Broken.edit_2, color: color, size: 28),
+            Icon(icon, color: color, size: 28),
             color,
-            isCustomEntry: true,
           );
         }
       },
       onLongPressEnd: (_) {
         if (_isDragging) {
-          _endDrag(
-            context.read<MediaProvider>(),
-            QuickCategoriesGrid.getAllCategoriesMap(
-              context,
-              Theme.of(context).brightness == Brightness.dark,
-              widget.onNavigateTab,
-            ),
-          );
+          _endDrag();
         }
         fm.setCategoryReorderInteracting(false);
         _longPressOrigin = null;
@@ -1509,24 +1528,16 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
-            onTap: () => QuickCategoriesGrid.showCustomizeDialog(
-              context,
-              widget.onNavigateTab,
-            ),
+            onTap: onTap,
             splashColor: theme.colorScheme.primary.withOpacity(0.25),
             highlightColor: theme.colorScheme.primary.withOpacity(0.15),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Broken.edit_2,
-                  color: theme.colorScheme.primary,
-                  size: iconSize,
-                ),
+                Icon(icon, color: theme.colorScheme.primary, size: iconSize),
                 const SizedBox(height: 4),
                 Text(
-                  PreferencesService.getCustomEntryLabel() ??
-                      L10n.of(context).msgf1d4ff50,
+                  label,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
@@ -1536,59 +1547,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 网格末尾的系统入口卡片（传输/设置）：图标 + 显示名 + 点击切页。
-  Widget _buildSystemEntryCard(
-    ThemeData theme,
-    double iconSize, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.22),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          splashColor: theme.colorScheme.primary.withOpacity(0.25),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: theme.colorScheme.primary, size: iconSize),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
           ),
         ),
       ),
@@ -1618,6 +1576,8 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
   final VoidCallback onDismiss;
   final void Function(String action) onMenuAction;
   final Widget Function(IconData icon, String label, Color color, VoidCallback onTap) buildMenuItem;
+  /// 是否显示「自定义快捷方式」菜单项（仅自定义入口显示）
+  final bool showCustomizeItem;
 
   const _CategoryMenuOverlayWidget({
     required this.menuLeft,
@@ -1635,6 +1595,7 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
     required this.onDismiss,
     required this.onMenuAction,
     required this.buildMenuItem,
+    this.showCustomizeItem = true,
   });
 
   @override
@@ -1724,13 +1685,15 @@ child: IntrinsicWidth(
                         widget.color,
                         () => widget.onMenuAction('toggle'),
                       ),
-                      const Divider(height: 1),
-                      widget.buildMenuItem(
-                        Icons.shortcut,
-                        widget.l10n.msge7d18d73,
-                        widget.color,
-                        () => widget.onMenuAction('customize'),
-                      ),
+                      if (widget.showCustomizeItem) ...[
+                        const Divider(height: 1),
+                        widget.buildMenuItem(
+                          Icons.shortcut,
+                          widget.l10n.msge7d18d73,
+                          widget.color,
+                          () => widget.onMenuAction('customize'),
+                        ),
+                      ],
                     ],
                   ),
                   ),
@@ -1900,24 +1863,35 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
   }
 
   /// 系统入口开关行（传输/设置）：与分类项样式一致，可开关、可重命名。
-  Widget _buildSystemEntryToggleRow(
+  /// 配置区列表项：系统入口（自定义/传输/设置），与分类项样式一致，
+  /// 可开关、可重命名，作为 ReorderableListView 的一项参与拖动排序。
+  Widget _buildSysEntryListItem(
     BuildContext context,
-    String entryKey,
+    String key,
     StateSetter setModalState,
   ) {
     final theme = Theme.of(context);
-    final isTransfers = entryKey == 'transfers';
-    final visible = isTransfers
-        ? PreferencesService.getTransfersEntryVisible()
-        : PreferencesService.getSettingsEntryVisible();
-    final label = isTransfers
-        ? (PreferencesService.getTransfersEntryLabel() ??
-            L10n.of(context).ui_transfers)
-        : (PreferencesService.getSettingsEntryLabel() ??
-            L10n.of(context).cat_settings);
-    final icon = isTransfers ? Broken.send_2 : Broken.setting_2;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
+    final IconData icon;
+    final String label;
+    final bool visible;
+    if (key == PreferencesService.sysCustomKey) {
+      icon = Broken.edit_2;
+      label = PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).ui_show_custom_entry;
+      visible = PreferencesService.getCustomEntryVisible();
+    } else if (key == PreferencesService.sysTransfersKey) {
+      icon = Broken.send_2;
+      label = PreferencesService.getTransfersEntryLabel() ??
+          L10n.of(context).ui_transfers;
+      visible = PreferencesService.getTransfersEntryVisible();
+    } else {
+      icon = Broken.setting_2;
+      label = PreferencesService.getSettingsEntryLabel() ??
+          L10n.of(context).cat_settings;
+      visible = PreferencesService.getSettingsEntryVisible();
+    }
+    return Container(
+      key: ValueKey(key),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1951,7 +1925,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                   tooltip: L10n.of(context).msgc8ce4b36,
                   onPressed: () => _showSystemEntryRenameDialog(
                     context,
-                    entryKey,
+                    key,
                     setModalState,
                   ),
                 ),
@@ -1960,7 +1934,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                   value: visible,
                   activeColor: theme.colorScheme.primary,
                   onChanged: (v) {
-                    if (isTransfers) {
+                    if (key == PreferencesService.sysCustomKey) {
+                      PreferencesService.saveCustomEntryVisible(v);
+                    } else if (key == PreferencesService.sysTransfersKey) {
                       PreferencesService.saveTransfersEntryVisible(v);
                     } else {
                       PreferencesService.saveSettingsEntryVisible(v);
@@ -1986,11 +1962,11 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     final theme = Theme.of(context);
     final String initial;
     final String fallback;
-    if (entryKey == 'custom_entry') {
+    if (entryKey == PreferencesService.sysCustomKey) {
       fallback = L10n.of(context).ui_show_custom_entry;
       initial =
           PreferencesService.getCustomEntryLabel() ?? fallback;
-    } else if (entryKey == 'transfers') {
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
       fallback = L10n.of(context).ui_transfers;
       initial = PreferencesService.getTransfersEntryLabel() ?? fallback;
     } else {
@@ -2032,9 +2008,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               onPressed: () {
                 final newLabel = controller.text.trim();
                 if (newLabel.isNotEmpty) {
-                  if (entryKey == 'custom_entry') {
+                  if (entryKey == PreferencesService.sysCustomKey) {
                     PreferencesService.saveCustomEntryLabel(newLabel);
-                  } else if (entryKey == 'transfers') {
+                  } else if (entryKey ==
+                      PreferencesService.sysTransfersKey) {
                     PreferencesService.saveTransfersEntryLabel(newLabel);
                   } else {
                     PreferencesService.saveSettingsEntryLabel(newLabel);
@@ -2186,14 +2163,16 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               maxChildSize: 0.95,
               expand: false,
               builder: (context, scrollController) {
+                // 统一完整顺序：配置区列表与分类页网格共用一条链，
+                // 任一侧拖动都会写回 full_grid_order 并同步 categoryOrder。
+                final fullOrder = PreferencesService.resolveFullOrder(
+                  provider.categoryOrder,
+                );
                 // 在首次渲染完成后触发滚动
                 if (!_hasScrolledToTarget &&
                     widget.initialExpandLabelKey != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToTargetItem(
-                      scrollController,
-                      provider.categoryOrder,
-                    );
+                    _scrollToTargetItem(scrollController, fullOrder);
                   });
                 }
 
@@ -2201,7 +2180,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                   builder: (context, setModalState) {
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
-                    final order = provider.categoryOrder;
                     final categoriesMap =
                         QuickCategoriesGrid.getAllCategoriesMap(
                           context,
@@ -2246,149 +2224,52 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                             onReorder: (oldIndex, newIndex) {
                               if (newIndex > oldIndex) newIndex -= 1;
-                              final customPosRaw =
-                                  PreferencesService.getCustomEntryPosition();
-                              // 未设置（-1）按末尾处理，并在拖动时写入持久化
-                              final customPos = customPosRaw < 0
-                                  ? order.length
-                                  : customPosRaw;
-                              if (oldIndex == customPos) {
-                                // 拖动的是「自定义」入口：仅更新插入位置
-                                PreferencesService.saveCustomEntryPosition(
-                                  newIndex.clamp(0, order.length),
-                                );
+                              final fullOrder = PreferencesService
+                                  .resolveFullOrder(provider.categoryOrder);
+                              if (oldIndex < 0 ||
+                                  oldIndex >= fullOrder.length) {
                                 setModalState(() {});
                                 return;
                               }
-                              // 拖动的是分类：映射到分类索引，并修正 custom entry 插入点
-                              final oldCat =
-                                  oldIndex > customPos ? oldIndex - 1 : oldIndex;
-                              var newCat =
-                                  newIndex > customPos ? newIndex - 1 : newIndex;
-                              var newCustomPos = customPos;
-                              if (oldCat < customPos && newCat >= customPos) {
-                                newCustomPos -= 1;
-                              } else if (oldCat >= customPos &&
-                                  newCat < customPos) {
-                                newCustomPos += 1;
-                              }
-                              if (oldCat != newCat) {
-                                provider.reorderCategory(oldCat, newCat);
-                              }
-                              PreferencesService.saveCustomEntryPosition(
-                                newCustomPos.clamp(0, order.length),
+                              final item = fullOrder.removeAt(oldIndex);
+                              fullOrder.insert(
+                                newIndex.clamp(0, fullOrder.length),
+                                item,
                               );
+                              PreferencesService.saveFullGridOrder(fullOrder);
+                              // 同步分类顺序（分类部分写回 provider）
+                              final newCatOrder = fullOrder
+                                  .where((e) =>
+                                      !PreferencesService.isSysEntryKey(e))
+                                  .toList();
+                              provider.setCategoryOrder(newCatOrder);
                               setModalState(() {});
                             },
-                            itemCount: order.length + 1,
+                            itemCount: fullOrder.length,
                             itemBuilder: (context, index) {
-                              // 渲染顺序与持久化插入点一致（拖动后即时刷新）
-                              final customPosRaw =
-                                  PreferencesService.getCustomEntryPosition();
-                              final customPos = customPosRaw < 0
-                                  ? order.length
-                                  : customPosRaw;
-                              if (index == customPos) {
-                                // 「自定义」入口行：与分类项样式一致（图标容器+标题+
-                                // 重命名铅笔+开关），可开关、可拖动排序
-                                return Container(
-                                  key: const ValueKey('__custom_entry__'),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      ListTile(
-                                        leading: Container(
-                                          width: 42,
-                                          height: 42,
-                                          decoration: BoxDecoration(
-                                            color: theme
-                                                .colorScheme
-                                                .primary
-                                                .withOpacity(0.15),
-                                            shape: BoxShape.rectangle,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          child: Icon(
-                                            Broken.edit_2,
-                                            color: theme.colorScheme.primary,
-                                            size: 22,
-                                          ),
-                                        ),
-                                        title: Text(
-                                          PreferencesService
-                                                  .getCustomEntryLabel() ??
-                                              L10n.of(context)
-                                                  .ui_show_custom_entry,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.edit,
-                                                color: Colors.grey,
-                                                size: 20,
-                                              ),
-                                              tooltip: L10n.of(
-                                                context,
-                                              ).msgc8ce4b36,
-                                              onPressed: () =>
-                                                  _showSystemEntryRenameDialog(
-                                                context,
-                                                'custom_entry',
-                                                setModalState,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Switch(
-                                              value: PreferencesService
-                                                  .getCustomEntryVisible(),
-                                              activeColor: theme
-                                                  .colorScheme
-                                                  .primary,
-                                              onChanged: (v) {
-                                                PreferencesService
-                                                    .saveCustomEntryVisible(v);
-                                                setModalState(() {});
-                                              },
-                                            ),
-                                            const SizedBox(width: 12),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              final key = fullOrder[index];
+                              // 系统入口行（自定义/传输/设置）：与分类项同构，
+                              // 可开关、可重命名、可拖动排序（拖拽即双向同步）
+                              if (PreferencesService.isSysEntryKey(key)) {
+                                return _buildSysEntryListItem(
+                                  context,
+                                  key,
+                                  setModalState,
                                 );
                               }
-                              final catIndex =
-                                  index > customPos ? index - 1 : index;
-                              if (catIndex < 0 || catIndex >= order.length) {
-                                return const SizedBox.shrink(
-                                  key: ValueKey('empty'),
-                                );
-                              }
-                              final label = order[catIndex];
-                              final cat = categoriesMap[label];
+                              final cat = categoriesMap[key];
                               if (cat == null)
                                 return const SizedBox.shrink(
                                   key: ValueKey('empty'),
                                 );
 
-                              final isEnabled = activeCats.contains(label);
+                              final isEnabled = activeCats.contains(key);
 
                               return Container(
-                                key: _getItemKey(label),
+                                key: _getItemKey(key),
                                 child: CategoryItemWidget(
-                                  key: ValueKey(label),
-                                  label: label,
+                                  key: ValueKey(key),
+                                  label: key,
                                   cat: cat,
                                   isEnabled: isEnabled,
                                   provider: provider,
@@ -2545,17 +2426,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        _buildSystemEntryToggleRow(
-                          context,
-                          'transfers',
-                          setModalState,
-                        ),
-                        _buildSystemEntryToggleRow(
-                          context,
-                          'settings',
-                          setModalState,
                         ),
                         const SizedBox(height: 8),
                         Padding(

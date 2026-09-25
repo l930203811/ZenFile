@@ -1905,6 +1905,42 @@ class PreferencesService {
   static Future<void> saveSettingsEntryLabel(String label) async {
     await _prefs?.setString(_keySettingsEntryLabel, label);
   }
+
+  // --- 统一顺序（full_grid_order）：分类 label + 系统入口标记的完整序列，
+  //     配置区列表与分类页网格共用，任一侧拖动都会双向同步 ---
+  static const String _keyFullGridOrder = 'full_grid_order';
+
+  /// 系统入口标记
+  static const String sysCustomKey = '__sys_custom__';
+  static const String sysTransfersKey = '__sys_transfers__';
+  static const String sysSettingsKey = '__sys_settings__';
+
+  static bool isSysEntryKey(String key) =>
+      key == sysCustomKey ||
+      key == sysTransfersKey ||
+      key == sysSettingsKey;
+
+  static List<String>? getFullGridOrder() {
+    final v = _prefs?.getStringList(_keyFullGridOrder);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveFullGridOrder(List<String> order) async {
+    await _prefs?.setStringList(_keyFullGridOrder, order);
+  }
+
+  /// 解析统一顺序：未设置时按 categoryOrder + custom_entry_position 生成默认
+  /// （自定义按历史插入点，传输/设置末尾）。
+  static List<String> resolveFullOrder(List<String> base) {
+    final saved = getFullGridOrder();
+    if (saved != null && saved.isNotEmpty) return saved;
+    final customPos = getCustomEntryPosition();
+    final order = [...base];
+    final pos = customPos < 0 ? order.length : customPos.clamp(0, order.length);
+    order.insert(pos, sysCustomKey);
+    order.addAll([sysTransfersKey, sysSettingsKey]);
+    return order;
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 

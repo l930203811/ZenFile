@@ -1644,6 +1644,16 @@ class MediaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 直接替换完整分类顺序（统一顺序 full_grid_order 拖动后同步写回）。
+  void setCategoryOrder(List<String> order) {
+    _categoryOrder
+      ..clear()
+      ..addAll(order);
+    PreferencesService.saveCategoryOrder(_categoryOrder);
+    _saveCache();
+    notifyListeners();
+  }
+
   /// 重命名类别显示标签
   /// oldLabel: 当前显示的标签（可能是原始标签或已自定义的标签）
   /// newLabel: 新的显示标签
