@@ -1784,12 +1784,27 @@ class PreferencesService {
   // 配置格式 JSON：{"type":"builtin","key":"tab_transfers"|"tab_settings"}
   //               {"type":"category","key":"<分类 labelKey>"}
   //               {"type":"shortcut","key":"<自定义快捷方式 id>"}
+  static const String _keyBottomTabSlot0 = 'bottom_tab_slot0';
+  static const String _keyBottomTabSlot1 = 'bottom_tab_slot1';
   static const String _keyBottomTabSlot2 = 'bottom_tab_slot2';
   static const String _keyBottomTabSlot3 = 'bottom_tab_slot3';
 
+  static String _bottomTabSlotKey(int slot) {
+    switch (slot) {
+      case 0:
+        return _keyBottomTabSlot0;
+      case 1:
+        return _keyBottomTabSlot1;
+      case 3:
+        return _keyBottomTabSlot3;
+      default:
+        return _keyBottomTabSlot2;
+    }
+  }
+
   /// 读取底部导航槽位配置；未配置或损坏返回 null（即默认内置页）。
   static Map<String, String>? getBottomTabSlotConfig(int slot) {
-    final key = slot == 3 ? _keyBottomTabSlot3 : _keyBottomTabSlot2;
+    final key = _bottomTabSlotKey(slot);
     final str = _prefs?.getString(key);
     if (str == null || str.isEmpty) return null;
     try {
@@ -1808,7 +1823,7 @@ class PreferencesService {
     int slot,
     Map<String, String>? config,
   ) async {
-    final key = slot == 3 ? _keyBottomTabSlot3 : _keyBottomTabSlot2;
+    final key = _bottomTabSlotKey(slot);
     if (config == null) {
       await _prefs?.remove(key);
     } else {
