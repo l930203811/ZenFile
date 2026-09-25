@@ -59,6 +59,13 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     private static final String SHARED_PREFERENCES_NAME = "audio_service_preferences";
 
+    /**
+     * 兜底渠道名：只在「全新安装首次启动、Dart 配置还没写进 prefs」那一瞬间用得上，
+     * 配置到位后 createChannel() 会把真实名称回正（见 createChannel()）。
+     * 用品牌名而非中文语义名，避免非中文用户在系统通知设置里看到中文。
+     */
+    private static final String FALLBACK_CHANNEL_NAME = "ZenFile";
+
     private static final int NOTIFICATION_ID = 1124;
     private static final int REQUEST_CONTENT_INTENT = 1000;
     public static final String NOTIFICATION_CLICK_ACTION = "com.ryanheise.audioservice.NOTIFICATION_CLICK";
@@ -279,6 +286,21 @@ public class AudioService extends MediaBrowserServiceCompat {
     private MediaMetadataCompat mediaMetadata;
     private Bitmap artBitmap;
     private String notificationChannelId;
+    /**
+     * 实际用于建渠道的名称，**保证非空**（见 configure() 里的兜底）。
+     *
+     * 为什么必须有兜底：本类会在 Service.onCreate() 里 configure(new AudioServiceConfig(...))，
+     * 而 AudioServiceConfig 的全部字段取自 SharedPreferences("audio_service_preferences")，
+     * 缺省为 null。**全新安装（或清除数据）时该 prefs 为空**，且此刻 Dart 侧的
+     * AudioService.init()/config.save() 还没跑（服务由 Activity 基类 onCreate 里
+     * AudioServicePlugin.getFlutterEngine() → onAttachedToEngine → connect() → bindService
+     * 触发，全程早于 Dart 入口；save() 还是 .apply() 异步写）⇒ 渠道名为 null。
+     * 而 Android 10+ 的 NotificationManagerService 会
+     * Preconditions.checkArgument(!TextUtils.isEmpty(channel.getName()))，抛出**不带 message**
+     * 的 IllegalArgumentException；它从 Service.onCreate() 抛出去会直接**杀死进程**，
+     * 且崩过一次后 prefs 永远写不进去 ⇒ 之后每次启动都崩（用户所见：全新安装后打不开）。
+     */
+    private String notificationChannelName = FALLBACK_CHANNEL_NAME;
     private LruCache<String, Bitmap> artBitmapCache;
     private boolean playing = false;
     private AudioProcessingState processingState = AudioProcessingState.idle;
@@ -426,6 +448,13 @@ public class AudioService extends MediaBrowserServiceCompat {
         String newChannelId = (config.androidNotificationChannelId != null)
             ? config.androidNotificationChannelId
             : getApplication().getPackageName() + ".channel";
+        // ⚠️ 渠道名绝不能为空（否则系统会抛 IllegalArgumentException 直接杀死进程，
+        //    详见 notificationChannelName 字段上的注释）。id 早就有 packageName 兜底，
+        //    名称此前却直接透传 null —— 这就是「全新安装首启必崩」的根因，别再改回去。
+        notificationChannelName = (config.androidNotificationChannelName != null
+                && config.androidNotificationChannelName.trim().length() > 0)
+            ? config.androidNotificationChannelName
+            : FALLBACK_CHANNEL_NAME;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && notificationChannelId != null
                 && !notificationChannelId.equals(newChannelId)) {
@@ -433,6 +462,7 @@ public class AudioService extends MediaBrowserServiceCompat {
         }
         notificationChannelId = newChannelId;
         System.out.println("[ZenFileAudio] configure channelId=" + notificationChannelId
+                + " channelName=" + notificationChannelName
                 + " SDK=" + Build.VERSION.SDK_INT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel();
@@ -773,7 +803,11 @@ public class AudioService extends MediaBrowserServiceCompat {
         notificationManager.deleteNotificationChannel("com.sequl.zenfile.audio");
         NotificationChannel channel = notificationManager.getNotificationChannel(notificationChannelId);
         if (channel == null) {
-            channel = new NotificationChannel(notificationChannelId, config.androidNotificationChannelName, NotificationManager.IMPORTANCE_DEFAULT);
+            // ⚠️ 第二个参数必须用 notificationChannelName（已保证非空），
+            //    直接透传 config.androidNotificationChannelName 会在全新安装首启时传入 null
+            //    ⇒ 系统 Preconditions.checkArgument 抛无 message 的 IllegalArgumentException
+            //    ⇒ Service.onCreate 抛出即杀进程，且之后每次启动都崩。详见字段注释。
+            channel = new NotificationChannel(notificationChannelId, notificationChannelName, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setShowBadge(config.androidShowNotificationBadge);
             // 禁用声音和振动，避免每次开始播放都打扰用户（IMPORTANCE_DEFAULT 默认有声音）
             channel.setSound(null, null);
@@ -781,6 +815,16 @@ public class AudioService extends MediaBrowserServiceCompat {
             if (config.androidNotificationChannelDescription != null)
                 channel.setDescription(config.androidNotificationChannelDescription);
             notificationManager.createNotificationChannel(channel);
+        } else {
+            // 渠道已存在但名称还是兜底名（全新安装首启那一刻建的，或用户升级后改了名称）
+            // ⇒ 用当前配置回正。Android 允许应用改写自己渠道的名称/描述（仅在用户锁定该字段时被忽略）。
+            CharSequence existingName = channel.getName();
+            if (existingName == null || !notificationChannelName.contentEquals(existingName)) {
+                channel.setName(notificationChannelName);
+                if (config.androidNotificationChannelDescription != null)
+                    channel.setDescription(config.androidNotificationChannelDescription);
+                notificationManager.createNotificationChannel(channel);
+            }
         }
     }
 

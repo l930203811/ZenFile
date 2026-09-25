@@ -1743,6 +1743,45 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
+                        // 以下全部内容（列数 / 底部导航栏开关 / 槽位配置 / 显示自定义入口 /
+                        // 添加按钮 / 分类列表）统一放进 ReorderableListView 的 header 里
+                        // 随列表一起滚动。绝不能把它们当成 Column 的固定子项：固定子项会把
+                        // Expanded 列表的视口挤到 0，导致下方开关既看不到也拉不上来。
+                        Expanded(
+                          child: ReorderableListView.builder(
+                            scrollController: scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.only(
+                              bottom:
+                                  MediaQuery.of(context).padding.bottom + 16,
+                            ),
+                            onReorder: (oldIndex, newIndex) =>
+                                provider.reorderCategory(oldIndex, newIndex),
+                            itemCount: order.length,
+                            itemBuilder: (context, index) {
+                              final label = order[index];
+                              final cat = categoriesMap[label];
+                              if (cat == null)
+                                return const SizedBox.shrink(
+                                  key: ValueKey('empty'),
+                                );
+
+                              final isEnabled = activeCats.contains(label);
+
+                              return Container(
+                                key: _getItemKey(label),
+                                child: CategoryItemWidget(
+                                  key: ValueKey(label),
+                                  label: label,
+                                  cat: cat,
+                                  isEnabled: isEnabled,
+                                  provider: provider,
+                                  index: index,
+                                ),
+                              );
+                            },
+                            header: Column(
+                              children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -1950,39 +1989,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                         ),
                         const SizedBox(height: 8),
                         const Divider(),
-                        Expanded(
-                          child: ReorderableListView.builder(
-                            scrollController: scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  MediaQuery.of(context).padding.bottom + 16,
+                              ],
                             ),
-                            onReorder: (oldIndex, newIndex) =>
-                                provider.reorderCategory(oldIndex, newIndex),
-                            itemCount: order.length,
-                            itemBuilder: (context, index) {
-                              final label = order[index];
-                              final cat = categoriesMap[label];
-                              if (cat == null)
-                                return const SizedBox.shrink(
-                                  key: ValueKey('empty'),
-                                );
-
-                              final isEnabled = activeCats.contains(label);
-
-                              return Container(
-                                key: _getItemKey(label),
-                                child: CategoryItemWidget(
-                                  key: ValueKey(label),
-                                  label: label,
-                                  cat: cat,
-                                  isEnabled: isEnabled,
-                                  provider: provider,
-                                  index: index,
-                                ),
-                              );
-                            },
                           ),
                         ),
                       ],

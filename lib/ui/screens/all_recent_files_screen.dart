@@ -33,6 +33,16 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
   List<FileItemModel> _recentFiles = [];
   bool _isLoading = true;
 
+  /// 缓存的 Provider 引用（监听注册成功后才赋值）。
+  ///
+  /// ⚠️ `dispose()` 里**绝不能**走 `context.read<...>()`：此时 Element 已
+  /// defunct（`_widget == null`），provider 找不到祖先会去求值
+  /// `context.widget.runtimeType` 抛 `ProviderNotFoundException`，而该求值本身
+  /// 先炸成「Null check operator used on a null value」（provider 6.1.5
+  /// `provider.dart:377`）。本页原先用 try/catch 把这个异常吞掉了，所以没留取证
+  /// 报告，但注销行为实际上一直是**没生效**的（监听器泄漏）。
+  FileManagerProvider? _fileManagerProvider;
+
   bool get _isSelectionMode {
     try {
       return context.read<FileManagerProvider>().selectedPaths.isNotEmpty;
@@ -54,14 +64,16 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     super.initState();
     // 清除可能残留的全局选择状态
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        try {
-          final provider = context.read<FileManagerProvider>();
-          provider.clearSelection();
-          // 监听选择状态变化，当选择被清除（操作完成）后刷新列表
-          provider.addListener(_onProviderChanged);
-        } catch (_) {}
-      }
+      // dispose 有可能先于本回调执行（进页面立刻返回）→ 必须先判 mounted，
+      // 否则会在已销毁的 State 上注册监听：既泄漏监听器，之后也注销不掉。
+      if (!mounted) return;
+      try {
+        final provider = context.read<FileManagerProvider>();
+        _fileManagerProvider = provider;
+        provider.clearSelection();
+        // 监听选择状态变化，当选择被清除（操作完成）后刷新列表
+        provider.addListener(_onProviderChanged);
+      } catch (_) {}
     });
     _loadRecentFiles();
   }
@@ -70,7 +82,8 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
 
   void _onProviderChanged() {
     if (!mounted) return;
-    final provider = context.read<FileManagerProvider>();
+    final provider = _fileManagerProvider;
+    if (provider == null) return;
     final isSelection = provider.selectedPaths.isNotEmpty;
     // 当从选择模式退出时（操作完成），刷新最近文件列表
     if (_wasSelectionMode && !isSelection) {
@@ -81,9 +94,9 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
 
   @override
   void dispose() {
-    try {
-      context.read<FileManagerProvider>().removeListener(_onProviderChanged);
-    } catch (_) {}
+    // 用缓存引用注销（dispose 时 context 已失效，context.read 会抛 NPE）。
+    // 未注册成功时为 null，removeListener 自然跳过。
+    _fileManagerProvider?.removeListener(_onProviderChanged);
     super.dispose();
   }
 

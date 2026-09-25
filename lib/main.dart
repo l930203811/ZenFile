@@ -80,6 +80,9 @@ void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
+    // 图片解码缓存上限（纯同步内存参数，无 await，不影响启动时序）。
+    _configureImageCache();
+
     // 捕获 Flutter 框架错误，防止 release 模式闪退
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
@@ -210,11 +213,36 @@ void main() {
     // 崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
     // 与指纹哨兵同理，**只能**放在 `runApp()` 之后（要 await 原生通道）。
     unawaited(_checkCrashForensics());
+
+    // 让之后写下的每份 dart_error 报告自带「版本 + 机型」。同样只能在
+    // `runApp()` 之后，理由见 [_primeCrashEnvironment]。
+    unawaited(_primeCrashEnvironment());
   }, (error, stackTrace) {
     // 捕获所有未处理的异步错误，防止 release 模式闪退
     debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
     CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
   });
+}
+
+/// 收紧 Flutter 图片解码缓存（`ImageCache`）上限。
+///
+/// Flutter 默认 **100 MB / 1000 张**，对文件管理器偏宽松：本应用所有缩略图都
+/// 显式给了 `cacheWidth`/`cacheHeight`（列表/网格 160 px、分类页 300 px、双窗口
+/// 80 px），单张解码后约 0.1–0.4 MB，所以**字节上限才是内存的实际闸门**，条数
+/// 上限只作「海量小图」的兜底；原图/大图只出现在查看器里，同样被字节上限挡住。
+///
+/// 取 64 MB / 500 张（默认值的 2/3 内存、1/2 条数），把 RAM 让给核心功能。条数
+/// 没有压到 300 是为了避免 160 px 小图被过早淘汰 —— 回滚列表时反复重新解码，
+/// 省下的是内存，赔掉的是流畅度。
+///
+/// 要再省或再松只改下面两行；真机上可在「开发者选项 → 内存」里观察
+/// Graphics/Images 一项的前后变化。注意这是**进程内**的解码缓存，与磁盘缩略图
+/// 缓存（`CacheCleanService` 管的那些文件）互不影响：清磁盘缓存不会释放这里的
+/// 内存配额，反之亦然。
+void _configureImageCache() {
+  final cache = PaintingBinding.instance.imageCache;
+  cache.maximumSizeBytes = 64 << 20; // 64 MiB（默认 100 MiB）
+  cache.maximumSize = 500; // 500 张（默认 1000）
 }
 
 /// 启动指纹哨兵：记下「本机跑的到底是哪个包」+ 当前 AO 档位 / 日志开关状态。
@@ -239,6 +267,46 @@ Future<void> _logBootFingerprint() async {
   } catch (e) {
     // 诊断绝不能有阻断启动的能力
     debugPrint('[ZenFile] boot fingerprint failed: $e');
+  }
+}
+
+/// 崩溃取证的「环境指纹」：让每份 `dart_error_*.txt` 抬头自带版本与机型。
+///
+/// ## 为什么必须补（2026-09-25 真实踩到）
+/// `dart_error_*` 原本只写「设备/版本见同目录 exit_*.txt」，**自身没有版本号**。
+/// 于是手上拿到 13 份报告，却说不清它们来自正式版还是某个自建诊断包 —— 只能靠
+/// 同目录 `exit_*` 的安装时间去推，那次判断恰好就卡在这里。
+///
+/// ## 为什么这样取
+///  * 版本 / 安装时间：`MpvAudioOutputService.buildStamp()` 已有「版本名 @ lastUpdateTime」；
+///  * 机型 / 系统：pubspec 已依赖 `device_info_plus`；
+/// 组装成一个字符串**注入**给 `CrashForensicsService.setEnvironmentLine`，让那个类
+/// 保持零新依赖 —— 它会被单测直接跑在宿主上，一旦自己 `import` 播放器服务，
+/// 整个单测就被拖进 `media_kit`。
+///
+/// ⚠️ **只能在 `runApp()` 之后调用**：两个来源都要 `await`（原生通道 / 插件），
+/// `runApp()` 之前任何等待都可能让应用起不来。整个函数包在 try/catch 里，
+/// 缺任何一项都不影响启动 —— 拿不到就让报告如实写「(未知)」。
+Future<void> _primeCrashEnvironment() async {
+  try {
+    final parts = <String>[];
+    try {
+      parts.add('apk=${await MpvAudioOutputService.buildStamp()}');
+    } catch (_) {
+      // 少一项就少一项，绝不影响启动
+    }
+    try {
+      final info = await DeviceInfoPlugin().androidInfo;
+      parts.add('${info.manufacturer} ${info.model} · '
+          'Android ${info.version.release} (SDK ${info.version.sdkInt})');
+    } catch (_) {
+      // 非 Android / 插件不可用时只留版本那一项
+    }
+    CrashForensicsService.setEnvironmentLine(
+      parts.isEmpty ? null : parts.join('  |  '),
+    );
+  } catch (e) {
+    debugPrint('[ZenFile] crash env prime failed: $e');
   }
 }
 

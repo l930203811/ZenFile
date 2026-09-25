@@ -24,6 +24,9 @@ void main() {
 
   setUp(() {
     nativeCalls = <MethodCall>[];
+    // ⚠️ 节流状态是**静态**的（进程级）。不清的话，「同一错误只落一份」这条规则
+    //    会跨用例生效，后面的用例会因为「被前一个用例抑制了」而莫名失败。
+    CrashForensicsService.resetThrottle();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
       nativeCalls.add(call);
@@ -33,6 +36,8 @@ void main() {
 
   tearDown(() {
     CrashForensicsService.publicDirOverride = null;
+    CrashForensicsService.environmentLineOverride = null;
+    CrashForensicsService.resetThrottle();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, null);
   });
@@ -142,6 +147,53 @@ void main() {
       expect(body, contains('原始长度 5000'));
       expect(body.contains('A' * 200), isFalse, reason: '确实截断了');
     });
+
+    test('抬头写入「版本 + 机型」，不再让读者去别的文件里找', () {
+      final body = CrashForensicsService.buildDartErrorReport(
+        kind: 'FlutterError',
+        error: 'x',
+        stack: null,
+        now: DateTime(2026, 9, 25),
+        environmentLine:
+            'apk=3.0.0@09-25 15:20  |  vivo V2054A · Android 11 (SDK 30)',
+      );
+      expect(body, contains('apk=3.0.0@09-25 15:20'));
+      expect(body, contains('vivo V2054A'));
+      expect(
+        body.contains('见同目录下的 exit_*.txt'),
+        isFalse,
+        reason: '报告能自证版本后，不该再让读者去别的文件里找（2026-09-25 的歧义根因）',
+      );
+    });
+
+    test('拿不到环境行时如实写「未知」，不留空也不抛', () {
+      final body = CrashForensicsService.buildDartErrorReport(
+        kind: 'zone',
+        error: 'x',
+        stack: null,
+        now: DateTime(2026, 9, 25),
+      );
+      expect(body, contains('(未知'));
+    });
+
+    test('suppressedCount > 0 写明抑制次数；为 0 时整行不出现', () {
+      final withSuppress = CrashForensicsService.buildDartErrorReport(
+        kind: 'zone',
+        error: 'x',
+        stack: null,
+        now: DateTime(2026, 9, 25),
+        suppressedCount: 7,
+      );
+      expect(withSuppress, contains('已抑制 7 次'));
+
+      final plain = CrashForensicsService.buildDartErrorReport(
+        kind: 'zone',
+        error: 'x',
+        stack: null,
+        now: DateTime(2026, 9, 25),
+      );
+      expect(plain.contains('重复      :'), isFalse);
+    });
   });
 
   group('truncate', () {
@@ -234,6 +286,50 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 20));
       expect(nativeCalls.any((c) => c.method == 'recordDartError'), isFalse);
     });
+
+    test('同一错误连续刷 12 次 → 只落 1 份（2026-09-25 实测场景）', () {
+      final stack = StackTrace.fromString('#0 A\n#1 B\n#2 C');
+      for (var i = 0; i < 12; i++) {
+        CrashForensicsService.recordError('FlutterError', 'null check', stack);
+      }
+      final files = tmp
+          .listSync()
+          .whereType<File>()
+          .where((f) => p.basename(f.path).startsWith('dart_error_'))
+          .toList();
+      expect(files, hasLength(1),
+          reason: '同步写盘不能被同一个错误刷爆（实测 4 分钟刷了 12 份）');
+    });
+
+    test('不同错误各落一份（降噪不能吞掉别的 bug）', () {
+      CrashForensicsService.recordError(
+          'FlutterError', 'e1', StackTrace.fromString('#0 A'));
+      CrashForensicsService.recordError(
+          'FlutterError', 'e2', StackTrace.fromString('#0 B'));
+      CrashForensicsService.recordError(
+          'runZonedGuarded', 'e1', StackTrace.fromString('#0 A'));
+      final files = tmp
+          .listSync()
+          .whereType<File>()
+          .where((f) => p.basename(f.path).startsWith('dart_error_'))
+          .toList();
+      expect(files, hasLength(3));
+    });
+
+    test('被抑制时不写盘、也不打扰原生', () async {
+      CrashForensicsService.recordError('zone', 'e', null);
+      nativeCalls.clear();
+      CrashForensicsService.recordError('zone', 'e', null); // 窗口内重复
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(
+        tmp
+            .listSync()
+            .whereType<File>()
+            .where((f) => p.basename(f.path).startsWith('dart_error_')),
+        hasLength(1),
+      );
+      expect(nativeCalls, isEmpty, reason: '抑制就是彻底不落盘，不该退到原生兜底');
+    });
   });
 
   group('checkPreviousExit', () {
@@ -318,6 +414,148 @@ void main() {
       CrashForensicsService.publicDirOverride = blocker.path; // 指向文件而非目录
       expect(() => CrashForensicsService.listExitReports(), returnsNormally);
       expect(CrashForensicsService.listExitReports(), isEmpty);
+    });
+  });
+
+  /// 错误签名 —— 「同一个 bug 反复触发」要被合并，「两个不同的 bug」不能被合并。
+  group('signatureOf', () {
+    test('同一 bug 反复触发 → 签名逐字相同（才能被节流合并）', () {
+      final stack = StackTrace.fromString('#0 A\n#1 B\n#2 C');
+      expect(
+        CrashForensicsService.signatureOf('FlutterError', 'null check', stack),
+        CrashForensicsService.signatureOf('FlutterError', 'null check', stack),
+      );
+    });
+
+    test('错误文本不同 → 签名不同（不能把两个 bug 并成一个）', () {
+      final stack = StackTrace.fromString('#0 A');
+      expect(
+        CrashForensicsService.signatureOf('FlutterError', 'e1', stack),
+        isNot(CrashForensicsService.signatureOf('FlutterError', 'e2', stack)),
+      );
+    });
+
+    test('栈位置不同 → 签名不同（kind 相同但落点不同）', () {
+      expect(
+        CrashForensicsService.signatureOf(
+            'FlutterError', 'e', StackTrace.fromString('#0 A\n#1 B')),
+        isNot(CrashForensicsService.signatureOf(
+            'FlutterError', 'e', StackTrace.fromString('#0 A\n#1 Z'))),
+      );
+    });
+
+    test('无 stack 时不抛（`recordError(..., null)` 是真实调用方式）', () {
+      expect(
+        () => CrashForensicsService.signatureOf('zone', 'e', null),
+        returnsNormally,
+      );
+    });
+  });
+
+  /// 降噪闸门 —— 防止同一错误刷爆报告目录（同步写盘会拖住 UI 线程）。
+  group('CrashErrorThrottle.admit', () {
+    test('窗口内只放行首份，其余抑制；窗口过后放行并带出抑制次数', () {
+      final t = CrashErrorThrottle(
+        sameSignatureWindow: const Duration(minutes: 5),
+      );
+      final t0 = DateTime(2026, 9, 25, 15, 58);
+      expect(t.admit('sig', t0), 0, reason: '首份必须放行');
+
+      for (var i = 1; i <= 11; i++) {
+        expect(
+          t.admit('sig', t0.add(Duration(seconds: i * 10))),
+          isNull,
+          reason: '窗口内第 $i 次重复应被抑制（实测 12 份就是这么来的）',
+        );
+      }
+
+      expect(
+        t.admit('sig', t0.add(const Duration(minutes: 5))),
+        11,
+        reason: '「降噪但不丢信息」：抑制次数要能写进下一份报告',
+      );
+      // 放行后窗口重新计时，抑制计数归零
+      expect(t.admit('sig', t0.add(const Duration(minutes: 5, seconds: 1))), isNull);
+    });
+
+    test('不同签名互不影响（一个 bug 不能压掉另一个）', () {
+      final t = CrashErrorThrottle();
+      final t0 = DateTime(2026, 9, 25);
+      expect(t.admit('a', t0), 0);
+      expect(t.admit('b', t0), 0);
+      expect(t.admit('a', t0.add(const Duration(seconds: 1))), isNull);
+      expect(t.admit('b', t0.add(const Duration(seconds: 1))), isNull);
+    });
+  });
+
+  /// 总量裁剪 —— 目录无限膨胀的最后一道保险。
+  group('CrashErrorThrottle.trim', () {
+    test('超过上限只删最旧的 dart_error_*，绝不碰 exit_*/java_crash_*/其它文件', () {
+      final dir = Directory.systemTemp.createTempSync('zf_crash_trim_');
+      try {
+        for (var i = 1; i <= 50; i++) {
+          File(p.join(dir.path, 'dart_error_${1000 + i}.txt'))
+              .writeAsStringSync('x');
+        }
+        for (final keep in [
+          'exit_1_4.txt',
+          'java_crash_1.txt',
+          'user_note.txt',
+          'unsupported_sdk29.txt',
+        ]) {
+          File(p.join(dir.path, keep)).writeAsStringSync('keep me');
+        }
+
+        final t = CrashErrorThrottle(maxReports: 40, keepReports: 20);
+        expect(t.trim(dir.path), 30);
+
+        final left = dir.listSync().map((e) => p.basename(e.path)).toList();
+        final dartLeft =
+            left.where((n) => n.startsWith('dart_error_')).toList()..sort();
+        expect(dartLeft, hasLength(20));
+        expect(dartLeft.first, 'dart_error_1031.txt',
+            reason: '按文件名时间戳删最旧、留最新');
+        expect(dartLeft.last, 'dart_error_1050.txt');
+
+        for (final keep in [
+          'exit_1_4.txt',
+          'java_crash_1.txt',
+          'user_note.txt',
+          'unsupported_sdk29.txt',
+        ]) {
+          expect(left, contains(keep), reason: '$keep 是权威证据/用户文件，绝不能被裁掉');
+        }
+      } finally {
+        dir.deleteSync(recursive: true);
+      }
+    });
+
+    test('份数未超上限时不动任何文件', () {
+      final dir = Directory.systemTemp.createTempSync('zf_crash_trim2_');
+      try {
+        for (var i = 1; i <= 5; i++) {
+          File(p.join(dir.path, 'dart_error_$i.txt')).writeAsStringSync('x');
+        }
+        final t = CrashErrorThrottle(maxReports: 40, keepReports: 20);
+        expect(t.trim(dir.path), 0);
+        expect(dir.listSync(), hasLength(5));
+      } finally {
+        dir.deleteSync(recursive: true);
+      }
+    });
+
+    test('目录不存在 / 路径非法时返回 0 而不抛', () {
+      final t = CrashErrorThrottle();
+      expect(
+        t.trim(p.join(Directory.systemTemp.path, 'zf_no_such_dir_xyz')),
+        0,
+      );
+      // 指向「文件」而非目录
+      final blocker = File(
+        p.join(Directory.systemTemp.createTempSync('zf_crash_trim3_').path, 'f'),
+      )..writeAsStringSync('x');
+      expect(() => t.trim(blocker.path), returnsNormally);
+      expect(t.trim(blocker.path), 0);
     });
   });
 }
