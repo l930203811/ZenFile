@@ -2768,7 +2768,8 @@ class L10nDe extends L10n {
   String get ui_paste_and_clear => 'Einfügen und leeren';
 
   @override
-  String get ui_cut_paste_hint => 'Ausschneiden = Verschieben; danach wird geleert';
+  String get ui_cut_paste_hint =>
+      'Ausschneiden = Verschieben; danach wird geleert';
 
   @override
   String get ui_search_in_settings => 'In den Einstellungen suchen';
@@ -8049,4 +8050,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_image_fit_mode => 'Anzeigemodus';
+
+  @override
+  String get ui_text_editor_import => 'Textdatei importieren';
 }

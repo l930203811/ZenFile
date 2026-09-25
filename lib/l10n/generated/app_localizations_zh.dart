@@ -7550,6 +7550,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_image_fit_mode => '显示模式';
+
+  @override
+  String get ui_text_editor_import => '导入文本文件';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15068,4 +15071,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_image_fit_mode => '顯示模式';
+
+  @override
+  String get ui_text_editor_import => '匯入文字檔';
 }

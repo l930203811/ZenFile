@@ -8021,5 +8021,9 @@
   "ui_image_fit_mode": "Modo de visualización",
   "@ui_image_fit_mode": {
     "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "Importar archivo de texto",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
 }

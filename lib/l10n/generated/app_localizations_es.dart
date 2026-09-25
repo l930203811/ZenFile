@@ -8062,4 +8062,7 @@ class L10nEs extends L10n {
 
   @override
   String get ui_image_fit_mode => 'Modo de visualización';
+
+  @override
+  String get ui_text_editor_import => 'Importar archivo de texto';
 }

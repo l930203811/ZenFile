@@ -8021,5 +8021,9 @@
   "ui_image_fit_mode": "وضع العرض",
   "@ui_image_fit_mode": {
     "description": "media settings: ui_image_fit_mode"
+  },
+  "ui_text_editor_import": "استيراد ملف نصي",
+  "@ui_text_editor_import": {
+    "description": "text editor: import text file"
   }
 }

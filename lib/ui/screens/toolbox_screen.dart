@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers/file_manager_provider.dart';
 import 'vault_lock_screen.dart';
 import 'wake_on_lan_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'decibel_meter_screen.dart';
-import 'internal_file_picker_screen.dart';
 import 'text_editor_screen.dart';
 
 /// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 扫码 / 分贝仪」入口，
@@ -50,19 +47,12 @@ class ToolboxScreen extends StatelessWidget {
         icon: Broken.document_text,
         title: l10n.toolbox_text_editor,
         color: Colors.blue,
-        onTap: () async {
-          final paths = await InternalFilePickerScreen.show(
+        onTap: () {
+          // 直接打开空文本编辑器；需要打开已有文件时用编辑器右上角「导入文本文件」
+          Navigator.push(
             context,
-            rootPath: context.read<FileManagerProvider>().rootPath,
+            MaterialPageRoute(builder: (_) => const TextEditorScreen()),
           );
-          if (paths != null && paths.isNotEmpty && context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => TextEditorScreen(filePath: paths.first),
-              ),
-            );
-          }
         },
       ),
     ];

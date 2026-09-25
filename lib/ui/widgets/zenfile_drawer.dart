@@ -24,7 +24,6 @@ import '../screens/recycle_bin_screen.dart';
 import '../screens/quick_transfer_screen.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/decibel_meter_screen.dart';
-import '../screens/internal_file_picker_screen.dart';
 import '../screens/text_editor_screen.dart';
 import '../../services/preferences_service.dart';
 
@@ -311,27 +310,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                           context,
                           icon: Broken.document_text,
                           title: L10n.of(context).toolbox_text_editor,
-                          onTap: () async {
+                          onTap: () {
+                            // 直接打开空文本编辑器；需要打开已有文件时用编辑器右上角「导入文本文件」
                             final navigator = Navigator.of(context);
                             navigator.pop();
-                            final paths = await navigator.push<List<String>>(
+                            navigator.push(
                               MaterialPageRoute(
-                                builder: (_) => InternalFilePickerScreen(
-                                  rootPath: fileManager.rootPath,
-                                ),
+                                builder: (_) => const TextEditorScreen(),
                               ),
                             );
-                            if (paths != null &&
-                                paths.isNotEmpty &&
-                                navigator.mounted) {
-                              navigator.push(
-                                MaterialPageRoute(
-                                  builder: (_) => TextEditorScreen(
-                                    filePath: paths.first,
-                                  ),
-                                ),
-                              );
-                            }
                           },
                         ),
                       ],

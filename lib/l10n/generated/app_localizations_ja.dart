@@ -7719,4 +7719,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_image_fit_mode => '表示モード';
+
+  @override
+  String get ui_text_editor_import => 'テキストファイルを読み込む';
 }

@@ -2774,7 +2774,8 @@ class L10nRu extends L10n {
   String get ui_paste_and_clear => 'Вставить и очистить';
 
   @override
-  String get ui_cut_paste_hint => 'Вырезание = перемещение; после вставки очищается';
+  String get ui_cut_paste_hint =>
+      'Вырезание = перемещение; после вставки очищается';
 
   @override
   String get ui_search_in_settings => 'Поиск в настройках';
@@ -8035,4 +8036,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_image_fit_mode => 'Режим отображения';
+
+  @override
+  String get ui_text_editor_import => 'Импортировать текстовый файл';
 }

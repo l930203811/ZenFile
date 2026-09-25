@@ -7723,4 +7723,7 @@ class L10nKo extends L10n {
 
   @override
   String get ui_image_fit_mode => '표시 모드';
+
+  @override
+  String get ui_text_editor_import => '텍스트 파일 가져오기';
 }

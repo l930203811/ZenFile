@@ -14157,6 +14157,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'显示模式'**
   String get ui_image_fit_mode;
+
+  /// text editor: import text file
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文本文件'**
+  String get ui_text_editor_import;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
