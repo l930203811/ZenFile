@@ -1895,9 +1895,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 与分类项（CategoryItemWidget）完全同构的布局：
+          // 不设 dense / 不覆盖 contentPadding，保证标题与开关间距一致
           ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
             leading: Container(
               width: 42,
               height: 42,
