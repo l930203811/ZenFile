@@ -8027,4 +8027,20 @@ class L10nDe extends L10n {
 
   @override
   String get toolbox_text_editor => 'Texteditor';
+
+  @override
+  String get ui_video_progress_always_show =>
+      'Fortschrittsbalken immer anzeigen';
+
+  @override
+  String get ui_image_fit_width => 'An Breite anpassen';
+
+  @override
+  String get ui_image_fit_height => 'An Höhe anpassen';
+
+  @override
+  String get ui_image_fit_original => 'Originalgröße';
+
+  @override
+  String get ui_image_fit_mode => 'Anzeigemodus';
 }

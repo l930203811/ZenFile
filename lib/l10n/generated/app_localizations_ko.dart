@@ -7702,4 +7702,19 @@ class L10nKo extends L10n {
 
   @override
   String get toolbox_text_editor => '텍스트 편집기';
+
+  @override
+  String get ui_video_progress_always_show => '진행 바 항상 표시';
+
+  @override
+  String get ui_image_fit_width => '너비에 맞추기';
+
+  @override
+  String get ui_image_fit_height => '높이에 맞추기';
+
+  @override
+  String get ui_image_fit_original => '원본 크기';
+
+  @override
+  String get ui_image_fit_mode => '표시 모드';
 }

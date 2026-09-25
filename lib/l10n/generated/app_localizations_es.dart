@@ -8040,4 +8040,20 @@ class L10nEs extends L10n {
 
   @override
   String get toolbox_text_editor => 'Editor de texto';
+
+  @override
+  String get ui_video_progress_always_show =>
+      'Mostrar siempre la barra de progreso';
+
+  @override
+  String get ui_image_fit_width => 'Ajustar al ancho';
+
+  @override
+  String get ui_image_fit_height => 'Ajustar a la altura';
+
+  @override
+  String get ui_image_fit_original => 'Tamaño original';
+
+  @override
+  String get ui_image_fit_mode => 'Modo de visualización';
 }

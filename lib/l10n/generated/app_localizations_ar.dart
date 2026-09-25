@@ -7909,4 +7909,19 @@ class L10nAr extends L10n {
 
   @override
   String get toolbox_text_editor => 'محرر النصوص';
+
+  @override
+  String get ui_video_progress_always_show => 'إظهار شريط التقدم دائمًا';
+
+  @override
+  String get ui_image_fit_width => 'ملاءمة العرض';
+
+  @override
+  String get ui_image_fit_height => 'ملاءمة الارتفاع';
+
+  @override
+  String get ui_image_fit_original => 'الحجم الأصلي';
+
+  @override
+  String get ui_image_fit_mode => 'وضع العرض';
 }

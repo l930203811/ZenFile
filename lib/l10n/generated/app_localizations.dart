@@ -14115,6 +14115,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'文本编辑器'**
   String get toolbox_text_editor;
+
+  /// media settings: ui_video_progress_always_show
+  ///
+  /// In zh, this message translates to:
+  /// **'进度条常驻'**
+  String get ui_video_progress_always_show;
+
+  /// media settings: ui_image_fit_width
+  ///
+  /// In zh, this message translates to:
+  /// **'适应宽度'**
+  String get ui_image_fit_width;
+
+  /// media settings: ui_image_fit_height
+  ///
+  /// In zh, this message translates to:
+  /// **'适应高度'**
+  String get ui_image_fit_height;
+
+  /// media settings: ui_image_fit_original
+  ///
+  /// In zh, this message translates to:
+  /// **'原始大小'**
+  String get ui_image_fit_original;
+
+  /// media settings: ui_image_fit_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'显示模式'**
+  String get ui_image_fit_mode;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

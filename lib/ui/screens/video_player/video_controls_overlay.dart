@@ -47,6 +47,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onInteract;
   final bool useHardwareDecode; // true=硬解, false=软解
   final VoidCallback onToggleHwdec;
+  final bool progressAlwaysShow; // 进度条常驻开关状态
+  final VoidCallback? onToggleProgressAlwaysShow;
 
   const VideoControlsOverlay({
     super.key,
@@ -94,6 +96,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onInteract,
     required this.useHardwareDecode,
     required this.onToggleHwdec,
+    this.progressAlwaysShow = false,
+    this.onToggleProgressAlwaysShow,
   });
 
   String _formatDuration(Duration d) {
@@ -258,6 +262,8 @@ class VideoControlsOverlay extends StatelessWidget {
                         onBackground();
                       } else if (value == 'sleep_timer') {
                         onSleepTimer();
+                      } else if (value == 'progress_always') {
+                        onToggleProgressAlwaysShow?.call();
                       }
                     },
                     itemBuilder: (_) => [
@@ -335,6 +341,26 @@ class VideoControlsOverlay extends StatelessWidget {
                               L10n.of(context).msg_subtitle_menu,
                               style: const TextStyle(
                                 color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'progress_always',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.timeline_rounded,
+                              size: 20,
+                              color: progressAlwaysShow ? accentColor : Colors.white,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).ui_video_progress_always_show,
+                              style: TextStyle(
+                                color: progressAlwaysShow ? accentColor : Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

@@ -7529,6 +7529,21 @@ class L10nZh extends L10n {
 
   @override
   String get toolbox_text_editor => '文本编辑器';
+
+  @override
+  String get ui_video_progress_always_show => '进度条常驻';
+
+  @override
+  String get ui_image_fit_width => '适应宽度';
+
+  @override
+  String get ui_image_fit_height => '适应高度';
+
+  @override
+  String get ui_image_fit_original => '原始大小';
+
+  @override
+  String get ui_image_fit_mode => '显示模式';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15026,4 +15041,19 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get toolbox_text_editor => '文字編輯器';
+
+  @override
+  String get ui_video_progress_always_show => '進度條常駐';
+
+  @override
+  String get ui_image_fit_width => '適應寬度';
+
+  @override
+  String get ui_image_fit_height => '適應高度';
+
+  @override
+  String get ui_image_fit_original => '原始大小';
+
+  @override
+  String get ui_image_fit_mode => '顯示模式';
 }

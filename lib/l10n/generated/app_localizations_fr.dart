@@ -8061,4 +8061,20 @@ class L10nFr extends L10n {
 
   @override
   String get toolbox_text_editor => 'Éditeur de texte';
+
+  @override
+  String get ui_video_progress_always_show =>
+      'Toujours afficher la barre de progression';
+
+  @override
+  String get ui_image_fit_width => 'Ajuster à la largeur';
+
+  @override
+  String get ui_image_fit_height => 'Ajuster à la hauteur';
+
+  @override
+  String get ui_image_fit_original => 'Taille originale';
+
+  @override
+  String get ui_image_fit_mode => 'Mode d\'affichage';
 }

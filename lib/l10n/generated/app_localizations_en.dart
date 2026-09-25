@@ -7937,4 +7937,19 @@ class L10nEn extends L10n {
 
   @override
   String get toolbox_text_editor => 'Text Editor';
+
+  @override
+  String get ui_video_progress_always_show => 'Always show progress bar';
+
+  @override
+  String get ui_image_fit_width => 'Fit width';
+
+  @override
+  String get ui_image_fit_height => 'Fit height';
+
+  @override
+  String get ui_image_fit_original => 'Original size';
+
+  @override
+  String get ui_image_fit_mode => 'Fit mode';
 }

@@ -8014,4 +8014,19 @@ class L10nRu extends L10n {
 
   @override
   String get toolbox_text_editor => 'Текстовый редактор';
+
+  @override
+  String get ui_video_progress_always_show => 'Всегда показывать прогресс';
+
+  @override
+  String get ui_image_fit_width => 'По ширине';
+
+  @override
+  String get ui_image_fit_height => 'По высоте';
+
+  @override
+  String get ui_image_fit_original => 'Оригинальный размер';
+
+  @override
+  String get ui_image_fit_mode => 'Режим отображения';
 }

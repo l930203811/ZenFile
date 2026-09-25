@@ -59,6 +59,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   String? _currentFilePath;
 
   bool _controlsVisible = true;
+  // 进度条常驻：控制条隐藏时底部保留细进度条（播放器更多菜单可切换，持久化）
+  bool _alwaysShowProgress = false;
   bool _isPlaying = false;
   bool _isSeeking = false;
   Duration _position = Duration.zero;
@@ -210,6 +212,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _subtitlePosition = PreferencesService.getSubtitlePosition();
     _subtitleNoBackground = PreferencesService.getSubtitleNoBackground();
     _useHardwareDecode = PreferencesService.getUseHardwareDecode();
+    _alwaysShowProgress = PreferencesService.getVideoProgressAlwaysShow();
+    _playbackSpeed = PreferencesService.getVideoPlaybackSpeed();
+    _volume = PreferencesService.getVideoVolume();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
@@ -246,6 +251,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
     // 播放器内部音量固定最大，由系统音量统一控制（与切换解码路径保持一致）
     player.setVolume(100.0);
+    // 恢复上次播放记忆的音量（无感恢复，轮询随后会与系统音量对齐）
+    _setSystemVolume(_volume);
 
     // 排查远程（WebDAV/OpenList 302、本地代理）播放失败：记录 libmpv 的错误事件。
     // 与 webdav_debug.log 同源，release 包同样可查；排查完毕后随 WebdavDebugLog
@@ -2418,6 +2425,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (isLeft) {
       final newVolume = (_volume + delta).clamp(0.0, 1.0);
       _setSystemVolume(newVolume);
+      PreferencesService.saveVideoVolume(newVolume);
       setState(() {
         _volume = newVolume;
         _isMuted = newVolume == 0;
@@ -3426,6 +3434,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     onSelectSpeed: (v) {
                       setState(() => _playbackSpeed = v);
                       player.setRate(v);
+                      PreferencesService.saveVideoPlaybackSpeed(v);
                       _showControls();
                     },
                     onToggleLock: () {
@@ -3441,6 +3450,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       if (_isMuted) {
                         final target = _volumeBeforeMute > 0 ? _volumeBeforeMute : 0.5;
                         _setSystemVolume(target);
+                        PreferencesService.saveVideoVolume(target);
                         setState(() {
                           _volume = target;
                           _isMuted = false;
@@ -3478,6 +3488,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     onInteract: _showControls,
                     useHardwareDecode: _useHardwareDecode,
                     onToggleHwdec: () => _switchHwdec(!_useHardwareDecode),
+                    progressAlwaysShow: _alwaysShowProgress,
+                    onToggleProgressAlwaysShow: () {
+                      setState(() => _alwaysShowProgress = !_alwaysShowProgress);
+                      PreferencesService.saveVideoProgressAlwaysShow(_alwaysShowProgress);
+                    },
                   ),
                 ],
               ),
@@ -3485,6 +3500,94 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           ),
         ),
       ),
+
+          // 常驻细进度条：开启"进度条常驻"且未锁定时，控制条隐藏时底部保留一条可拖动细进度条
+          if (_alwaysShowProgress && !_isLocked)
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              opacity: _controlsVisible ? 0.0 : 1.0,
+              child: IgnorePointer(
+                ignoring: _controlsVisible,
+                child: Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black54, Colors.transparent],
+                      ),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      bottom: !_isFullScreen,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _formatDuration(_position),
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  _formatDuration(_duration),
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              trackHeight: 3.0,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                              activeTrackColor: Theme.of(context).colorScheme.primary,
+                              inactiveTrackColor: Colors.white.withOpacity(0.25),
+                              thumbColor: Theme.of(context).colorScheme.primary,
+                              overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                            ),
+                            child: Slider(
+                              value: _duration.inMilliseconds > 0
+                                  ? _sliderValue.clamp(0.0, _duration.inMilliseconds.toDouble())
+                                  : 0.0,
+                              max: _duration.inMilliseconds > 0
+                                  ? _duration.inMilliseconds.toDouble()
+                                  : 1.0,
+                              onChangeStart: (_) {
+                                _isSeeking = true;
+                                _hideTimer?.cancel();
+                              },
+                              onChanged: (v) => setState(() => _sliderValue = v),
+                              onChangeEnd: (v) {
+                                _isSeeking = false;
+                                player.seek(Duration(milliseconds: v.toInt()));
+                                _startHideTimer();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // 锁定按钮 - 左侧中间位置
           // 完全跟随控制条显隐：锁定后控制条隐藏时按钮同步隐藏，进入沉浸式播放

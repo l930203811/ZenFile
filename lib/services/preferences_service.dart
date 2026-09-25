@@ -1478,6 +1478,10 @@ class PreferencesService {
   static const String _keySubtitlePosition = 'video_subtitle_position';
   static const String _keySubtitleNoBackground = 'video_subtitle_no_background';
   static const String _keyVideoHwdec = 'video_hwdec'; // true=硬解(auto-safe), false=软解(no)
+  static const String _keyVideoProgressAlwaysShow = 'video_progress_always_show';
+  static const String _keyVideoPlaybackSpeed = 'video_playback_speed';
+  static const String _keyVideoVolume = 'video_volume';
+  static const String _keyImageFitMode = 'image_fit_mode'; // 0=适应宽度(contained) 1=适应高度 2=原始大小
 
   /// 获取视频解码方式：true=硬解, false=软解，默认 true（硬解）
   static bool getUseHardwareDecode({bool defaultValue = true}) {
@@ -1621,6 +1625,46 @@ class PreferencesService {
     }
     map[videoPath] = subtitlePath;
     await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
+  }
+
+  /// 获取视频进度条常驻开关，默认 false（控制条隐藏时进度条一并隐藏）
+  static bool getVideoProgressAlwaysShow() {
+    return _prefs?.getBool(_keyVideoProgressAlwaysShow) ?? false;
+  }
+
+  /// 保存视频进度条常驻开关
+  static Future<void> saveVideoProgressAlwaysShow(bool value) async {
+    await _prefs?.setBool(_keyVideoProgressAlwaysShow, value);
+  }
+
+  /// 获取视频默认播放倍速，默认 1.0
+  static double getVideoPlaybackSpeed() {
+    return _prefs?.getDouble(_keyVideoPlaybackSpeed) ?? 1.0;
+  }
+
+  /// 保存视频默认播放倍速
+  static Future<void> saveVideoPlaybackSpeed(double value) async {
+    await _prefs?.setDouble(_keyVideoPlaybackSpeed, value);
+  }
+
+  /// 获取视频音量（0-1），默认 1.0
+  static double getVideoVolume() {
+    return _prefs?.getDouble(_keyVideoVolume) ?? 1.0;
+  }
+
+  /// 保存视频音量（0-1）
+  static Future<void> saveVideoVolume(double value) async {
+    await _prefs?.setDouble(_keyVideoVolume, value);
+  }
+
+  /// 获取图片显示模式：0=适应宽度(contained) 1=适应高度 2=原始大小，默认 0
+  static int getImageFitMode() {
+    return _prefs?.getInt(_keyImageFitMode) ?? 0;
+  }
+
+  /// 保存图片显示模式
+  static Future<void> saveImageFitMode(int value) async {
+    await _prefs?.setInt(_keyImageFitMode, value);
   }
 
   /// 移除某视频的手手动字幕映射。

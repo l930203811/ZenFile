@@ -7999,5 +7999,25 @@
   "toolbox_text_editor": "محرر النصوص",
   "@toolbox_text_editor": {
     "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "إظهار شريط التقدم دائمًا",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "ملاءمة العرض",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "ملاءمة الارتفاع",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "الحجم الأصلي",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "وضع العرض",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
   }
 }

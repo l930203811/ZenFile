@@ -7999,5 +7999,25 @@
   "toolbox_text_editor": "텍스트 편집기",
   "@toolbox_text_editor": {
     "description": "toolbox: text editor entry"
+  },
+  "ui_video_progress_always_show": "진행 바 항상 표시",
+  "@ui_video_progress_always_show": {
+    "description": "media settings: ui_video_progress_always_show"
+  },
+  "ui_image_fit_width": "너비에 맞추기",
+  "@ui_image_fit_width": {
+    "description": "media settings: ui_image_fit_width"
+  },
+  "ui_image_fit_height": "높이에 맞추기",
+  "@ui_image_fit_height": {
+    "description": "media settings: ui_image_fit_height"
+  },
+  "ui_image_fit_original": "원본 크기",
+  "@ui_image_fit_original": {
+    "description": "media settings: ui_image_fit_original"
+  },
+  "ui_image_fit_mode": "표시 모드",
+  "@ui_image_fit_mode": {
+    "description": "media settings: ui_image_fit_mode"
   }
 }

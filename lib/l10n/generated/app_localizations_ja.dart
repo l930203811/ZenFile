@@ -7698,4 +7698,19 @@ class L10nJa extends L10n {
 
   @override
   String get toolbox_text_editor => 'テキストエディタ';
+
+  @override
+  String get ui_video_progress_always_show => 'プログレスバー常時表示';
+
+  @override
+  String get ui_image_fit_width => '幅に合わせる';
+
+  @override
+  String get ui_image_fit_height => '高さに合わせる';
+
+  @override
+  String get ui_image_fit_original => '原寸大';
+
+  @override
+  String get ui_image_fit_mode => '表示モード';
 }
