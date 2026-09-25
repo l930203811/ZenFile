@@ -2113,6 +2113,31 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     if (!showMediaPreviews) {
+      // 与单窗口 _noThumbIcon 保持一致：安装包/视频/音频均有类型图标，避免远程等常见格式显示为未知
+      if (FileUtils.isInstallPackage(_displayPath)) {
+        return FileTypeIcon(
+          icon: Icons.android_rounded,
+          label: FileUtils.getInstallPackageTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
+      if (isVid) {
+        return FileTypeIcon(
+          icon: Broken.video,
+          label: FileUtils.getVideoTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
+      if (isAud) {
+        return FileTypeIcon(
+          icon: Broken.music,
+          label: FileUtils.getAudioTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,
@@ -2129,6 +2154,30 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         !widget.file.isRemote ||
         PreferencesService.getRemoteMediaThumbnailPreview();
     if (!showRemoteThumb) {
+      if (FileUtils.isInstallPackage(_displayPath)) {
+        return FileTypeIcon(
+          icon: Icons.android_rounded,
+          label: FileUtils.getInstallPackageTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
+      if (isVid) {
+        return FileTypeIcon(
+          icon: Broken.video,
+          label: FileUtils.getVideoTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
+      if (isAud) {
+        return FileTypeIcon(
+          icon: Broken.music,
+          label: FileUtils.getAudioTypeLabel(_displayPath),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,
@@ -2167,17 +2216,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             cacheHeight: 80,
             errorBuilder: (context, error, stackTrace) => UnknownFileIcon(size: 18),
           ),
-          if (isVid)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Broken.play, color: Colors.white, size: 10),
-              ),
-            ),
         ],
       );
     }
@@ -2225,16 +2263,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             cacheHeight: 80,
             errorBuilder: (context, error, stackTrace) =>
                 Icon(Broken.video, color: widget.iconColor, size: 18),
-          ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Broken.video, color: Colors.white, size: 10),
-            ),
           ),
         ],
       );
