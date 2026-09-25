@@ -405,7 +405,9 @@ class QuickCategoriesGrid extends StatefulWidget {
           {
             'type': 'custom_entry',
             'key': 'custom_entry',
-            'label': l10n.ui_show_custom_entry,
+            'label':
+                PreferencesService.getCustomEntryLabel() ??
+                l10n.ui_show_custom_entry,
             'icon': Broken.edit_2,
           },
           ...allMap.entries.map((e) => {
@@ -921,8 +923,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
     final hasCustomEntry = PreferencesService.getCustomEntryVisible();
     // 自定义入口在完整分类 order 中的插入位置（0..分类数），支持拖动排序。
+    // 未设置（-1，新装用户）默认末尾，避免跑到最前。
     final customPosRaw = PreferencesService.getCustomEntryPosition();
-    final customPos = customPosRaw.clamp(0, mediaProvider.categoryOrder.length);
+    final customPos = (customPosRaw < 0
+            ? mediaProvider.categoryOrder.length
+            : customPosRaw)
+        .clamp(0, mediaProvider.categoryOrder.length);
     // 网格中自定义入口的显示位置 = activeLabels 里 order 索引 < customPos 的数量。
     final customGridIndex = hasCustomEntry
         ? activeLabels
@@ -1271,7 +1277,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               ),
               const SizedBox(height: 4),
               Text(
-                L10n.of(context).msgf1d4ff50,
+                PreferencesService.getCustomEntryLabel() ??
+                    L10n.of(context).msgf1d4ff50,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -1590,6 +1597,69 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     }
   }
 
+  /// 「自定义」入口重命名弹窗：显示名存入 prefs（空 = 恢复 l10n 默认）。
+  Future<void> _showCustomEntryRenameDialog(
+    BuildContext context,
+    StateSetter setModalState,
+  ) async {
+    final theme = Theme.of(context);
+    final controller = TextEditingController(
+      text: PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).ui_show_custom_entry,
+    );
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(
+            L10n.of(dialogContext).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(dialogContext).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
+              ),
+            ),
+            onSubmitted: (_) => Navigator.of(dialogContext).pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(L10n.of(dialogContext).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  PreferencesService.saveCustomEntryLabel(newLabel);
+                }
+                Navigator.of(dialogContext).pop();
+                setModalState(() {});
+              },
+              child: Text(
+                L10n.of(dialogContext).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// 底部导航槽位 2/3 配置行：显示当前入口，点击弹出选择器。
   Widget _buildBottomSlotRow(
     BuildContext context,
@@ -1691,7 +1761,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
       }
     }
     if (cfg['type'] == 'custom_entry') {
-      return l10n.ui_show_custom_entry;
+      return PreferencesService.getCustomEntryLabel() ??
+          l10n.ui_show_custom_entry;
     }
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,
@@ -1778,8 +1849,12 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                             onReorder: (oldIndex, newIndex) {
                               if (newIndex > oldIndex) newIndex -= 1;
-                              final customPos =
+                              final customPosRaw =
                                   PreferencesService.getCustomEntryPosition();
+                              // 未设置（-1）按末尾处理，并在拖动时写入持久化
+                              final customPos = customPosRaw < 0
+                                  ? order.length
+                                  : customPosRaw;
                               if (oldIndex == customPos) {
                                 // 拖动的是「自定义」入口：仅更新插入位置
                                 PreferencesService.saveCustomEntryPosition(
@@ -1810,36 +1885,99 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             },
                             itemCount: order.length + 1,
                             itemBuilder: (context, index) {
-                              if (index == order.length) {
-                                // 「自定义」入口行：与分类项同级，可开关、可拖动排序
+                              // 渲染顺序与持久化插入点一致（拖动后即时刷新）
+                              final customPosRaw =
+                                  PreferencesService.getCustomEntryPosition();
+                              final customPos = customPosRaw < 0
+                                  ? order.length
+                                  : customPosRaw;
+                              if (index == customPos) {
+                                // 「自定义」入口行：与分类项样式一致（图标容器+标题+
+                                // 重命名铅笔+开关），可开关、可拖动排序
                                 return Container(
                                   key: const ValueKey('__custom_entry__'),
-                                  child: ListTile(
-                                    dense: true,
-                                    leading: Icon(
-                                      Broken.edit_2,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    title: Text(
-                                      L10n.of(context).ui_show_custom_entry,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ListTile(
+                                        leading: Container(
+                                          width: 42,
+                                          height: 42,
+                                          decoration: BoxDecoration(
+                                            color: theme
+                                                .colorScheme
+                                                .primary
+                                                .withOpacity(0.15),
+                                            shape: BoxShape.rectangle,
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: Icon(
+                                            Broken.edit_2,
+                                            color: theme.colorScheme.primary,
+                                            size: 22,
+                                          ),
+                                        ),
+                                        title: Text(
+                                          PreferencesService
+                                                  .getCustomEntryLabel() ??
+                                              L10n.of(context)
+                                                  .ui_show_custom_entry,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: Colors.grey,
+                                                size: 20,
+                                              ),
+                                              tooltip: L10n.of(
+                                                context,
+                                              ).msgc8ce4b36,
+                                              onPressed: () =>
+                                                  _showCustomEntryRenameDialog(
+                                                context,
+                                                setModalState,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Switch(
+                                              value: PreferencesService
+                                                  .getCustomEntryVisible(),
+                                              activeColor: theme
+                                                  .colorScheme
+                                                  .primary,
+                                              onChanged: (v) {
+                                                PreferencesService
+                                                    .saveCustomEntryVisible(v);
+                                                setModalState(() {});
+                                              },
+                                            ),
+                                            const SizedBox(width: 12),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    trailing: Switch(
-                                      value: PreferencesService
-                                          .getCustomEntryVisible(),
-                                      onChanged: (v) {
-                                        PreferencesService
-                                            .saveCustomEntryVisible(v);
-                                        setModalState(() {});
-                                      },
-                                    ),
+                                    ],
                                   ),
                                 );
                               }
-                              final label = order[index];
+                              final catIndex =
+                                  index > customPos ? index - 1 : index;
+                              if (catIndex < 0 || catIndex >= order.length) {
+                                return const SizedBox.shrink(
+                                  key: ValueKey('empty'),
+                                );
+                              }
+                              final label = order[catIndex];
                               final cat = categoriesMap[label];
                               if (cat == null)
                                 return const SizedBox.shrink(

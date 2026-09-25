@@ -792,13 +792,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
       }
     }
-    // custom_entry：打开自定义快捷方式弹窗
+    // custom_entry：打开自定义快捷方式弹窗（isCustomEntry=true → 点击走 _openBottomTabEntry）
     if (type == 'custom_entry') {
       return [
         Broken.edit_2,
-        L10n.of(context).ui_show_custom_entry,
+        PreferencesService.getCustomEntryLabel() ??
+            L10n.of(context).ui_show_custom_entry,
         -1,
-        false,
+        true,
         slot,
       ];
     }

@@ -1843,14 +1843,27 @@ class PreferencesService {
   }
 
   /// 自定义入口（「自定义」开关）在分类列表中的插入位置（0..分类数，等于分类数=末尾）。
+  /// 默认 -1 = 未设置（使用处按分类数末尾处理），避免新装用户自定义卡片跑到最前。
   static const String _keyCustomEntryPosition = 'custom_entry_position';
 
-  static int getCustomEntryPosition({int defaultValue = 0}) {
+  static int getCustomEntryPosition({int defaultValue = -1}) {
     return _prefs?.getInt(_keyCustomEntryPosition) ?? defaultValue;
   }
 
   static Future<void> saveCustomEntryPosition(int position) async {
     await _prefs?.setInt(_keyCustomEntryPosition, position);
+  }
+
+  /// 自定义入口的重命名显示名（空 = 使用 l10n「自定义」）。
+  static const String _keyCustomEntryLabel = 'custom_entry_label';
+
+  static String? getCustomEntryLabel() {
+    final v = _prefs?.getString(_keyCustomEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveCustomEntryLabel(String label) async {
+    await _prefs?.setString(_keyCustomEntryLabel, label);
   }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
