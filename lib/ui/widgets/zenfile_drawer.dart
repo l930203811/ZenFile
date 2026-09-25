@@ -5,7 +5,6 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
 import '../screens/wake_on_lan_screen.dart';
-import '../screens/more_settings_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
@@ -324,17 +323,6 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       ],
                     ),
 
-                    // ===== 设置 =====
-                    _buildDrawerTile(
-                      context,
-                      icon: Broken.setting_2,
-                      title: L10n.of(context).ui_personalize_settings,
-                      isPrimary: true,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
-                      },
-                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                       child: Divider(color: theme.colorScheme.onSurface.withOpacity(0.08), height: 1),
