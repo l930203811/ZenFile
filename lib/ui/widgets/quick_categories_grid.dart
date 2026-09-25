@@ -523,6 +523,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   bool _isDragging = false;
   int _draggingIndex = -1;
   int _targetIndex = -1;
+  // 拖拽的是「自定义」入口卡片（网格插入点语义，区别于分类 order 索引）
+  bool _draggingIsCustom = false;
   Offset _dragOffset = Offset.zero;
   OverlayEntry? _overlayEntry;
   OverlayEntry? _menuOverlayEntry;
@@ -584,10 +586,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     int index,
     Offset localPosition,
     Widget dragWidget,
-    Color color,
-  ) {
+    Color color, {
+    bool isCustomEntry = false,
+  }) {
     _isDragging = true;
     _draggingIndex = index;
+    _draggingIsCustom = isCustomEntry;
     _targetIndex = index;
     _dragOffset = localPosition;
 
@@ -648,7 +652,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     );
 
     if (newIndex >= 0 && newIndex != _targetIndex) {
-      _targetIndex = newIndex.clamp(0, activeLabels.length - 1);
+      // 自定义入口卡片：目标可为网格末尾（activeLabels.length）；
+      // 分类卡片：只能在分类区（0..len-1）内排序。
+      _targetIndex = _draggingIsCustom
+          ? newIndex.clamp(0, activeLabels.length)
+          : newIndex.clamp(0, activeLabels.length - 1);
       setState(() {});
     }
   }
@@ -663,29 +671,48 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
     if (_isDragging &&
         _draggingIndex != _targetIndex &&
-        _draggingIndex >= 0 &&
         _targetIndex >= 0) {
       final activeLabels = _getActiveCategoryLabels(
         mediaProvider,
         allCategoriesMap,
       );
 
-      // 计算在完整 categoryOrder 中的位置
-      final draggingLabel = activeLabels[_draggingIndex];
-      final targetLabel = activeLabels[_targetIndex];
+      if (_draggingIsCustom) {
+        // 自定义入口：网格插入点 → 完整 order 插入点
+        final fullOrder = mediaProvider.categoryOrder;
+        int customPos;
+        if (_targetIndex >= activeLabels.length) {
+          customPos = fullOrder.length;
+        } else if (_targetIndex > 0) {
+          customPos =
+              fullOrder.indexOf(activeLabels[_targetIndex - 1]) + 1;
+        } else {
+          customPos = 0;
+        }
+        PreferencesService.saveCustomEntryPosition(
+          customPos.clamp(0, fullOrder.length),
+        );
+      } else if (_draggingIndex >= 0) {
+        // 计算在完整 categoryOrder 中的位置
+        final draggingLabel = activeLabels[_draggingIndex];
+        final targetLabel = activeLabels[_targetIndex];
 
-      final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(
-        draggingLabel,
-      );
-      final fullTargetIndex = mediaProvider.categoryOrder.indexOf(targetLabel);
+        final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(
+          draggingLabel,
+        );
+        final fullTargetIndex = mediaProvider.categoryOrder.indexOf(
+          targetLabel,
+        );
 
-      if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
-        // 执行 reorder
-        mediaProvider.reorderCategory(fullDraggingIndex, fullTargetIndex);
+        if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
+          // 执行 reorder
+          mediaProvider.reorderCategory(fullDraggingIndex, fullTargetIndex);
+        }
       }
     }
 
     _isDragging = false;
+    _draggingIsCustom = false;
     _draggingIndex = -1;
     _targetIndex = -1;
     setState(() {});
@@ -760,6 +787,142 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   void _closeMenuOverlay() {
     _menuOverlayEntry?.remove();
     _menuOverlayEntry = null;
+  }
+
+  /// 「自定义」入口卡片长按菜单（复用分类卡片的 Overlay 菜单结构）。
+  void _showSystemEntryMenu({
+    required Offset position,
+    required String entryKey,
+    required Color color,
+  }) {
+    _closeMenuOverlay();
+    final isEnabled = PreferencesService.getCustomEntryVisible();
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    const menuMinWidth = 180.0;
+    const edgeMargin = 16.0;
+    final menuLeft =
+        (position.dx - 32).clamp(edgeMargin, screenWidth - menuMinWidth - edgeMargin);
+
+    _menuOverlayEntry = OverlayEntry(
+      builder: (overlayCtx) {
+        return _CategoryMenuOverlayWidget(
+          menuLeft: menuLeft,
+          menuTop: position.dy,
+          labelKey: '__custom_entry__',
+          color: color,
+          isEnabled: isEnabled,
+          theme: theme,
+          l10n: l10n,
+          getCategoryIndex: () => -1,
+          getCategoryIcon: () => Broken.edit_2,
+          onDragStart: (dragPos) {
+            _startDrag(
+              -1,
+              dragPos,
+              Icon(Broken.edit_2, color: color, size: 28),
+              color,
+              isCustomEntry: true,
+            );
+          },
+          onDragUpdate: (pos) => _updateDrag(pos),
+          onDragEnd: () {
+            _endDrag(
+              context.read<MediaProvider>(),
+              QuickCategoriesGrid.getAllCategoriesMap(
+                context,
+                Theme.of(context).brightness == Brightness.dark,
+                widget.onNavigateTab,
+              ),
+            );
+            _closeMenuOverlay();
+          },
+          onDismiss: _closeMenuOverlay,
+          onMenuAction: (action) {
+            _closeMenuOverlay();
+            switch (action) {
+              case 'rename':
+                _showRenameDialogForCustomEntry(context);
+              case 'toggle':
+                PreferencesService.saveCustomEntryVisible(
+                  !PreferencesService.getCustomEntryVisible(),
+                );
+              case 'customize':
+                QuickCategoriesGrid.showCustomizeDialog(
+                  context,
+                  widget.onNavigateTab,
+                );
+            }
+            setState(() {});
+          },
+          buildMenuItem: (icon, label, colorParam, onTap) =>
+              _buildMenuItem(icon: icon, label: label, color: colorParam, onTap: onTap),
+        );
+      },
+    );
+    Overlay.of(context).insert(_menuOverlayEntry!);
+  }
+
+  /// 网格内重命名「自定义」入口显示名（与配置区弹窗同构）。
+  Future<void> _showRenameDialogForCustomEntry(BuildContext context) async {
+    final theme = Theme.of(context);
+    final controller = TextEditingController(
+      text: PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).ui_show_custom_entry,
+    );
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(
+            L10n.of(dialogContext).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(dialogContext).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
+              ),
+            ),
+            onSubmitted: (_) => Navigator.of(dialogContext).pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(L10n.of(dialogContext).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  PreferencesService.saveCustomEntryLabel(newLabel);
+                }
+                Navigator.of(dialogContext).pop();
+                if (mounted) setState(() {});
+              },
+              child: Text(
+                L10n.of(dialogContext).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   int _getCategoryIndex(String labelKey) {
@@ -935,7 +1098,16 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             .where((l) => mediaProvider.categoryOrder.indexOf(l) < customPos)
             .length
         : activeList.length;
-    final itemCount = activeList.length + (hasCustomEntry ? 1 : 0);
+    // 网格末尾的系统入口（传输/设置），各自受开关控制，顺序固定：自定义→传输→设置
+    final hasTransfersEntry = PreferencesService.getTransfersEntryVisible();
+    final hasSettingsEntry = PreferencesService.getSettingsEntryVisible();
+    final sysTailCount =
+        (hasTransfersEntry ? 1 : 0) + (hasSettingsEntry ? 1 : 0);
+    final sysTailStart =
+        activeList.length + (hasCustomEntry ? 1 : 0);
+    final itemCount = activeList.length +
+        (hasCustomEntry ? 1 : 0) +
+        sysTailCount;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1046,6 +1218,36 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   ),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
+                    // 尾部系统入口（传输/设置）卡片
+                    if (index >= sysTailStart) {
+                      final tailIdx = index - sysTailStart;
+                      if (hasTransfersEntry && tailIdx == 0) {
+                        return _buildSystemEntryCard(
+                          theme,
+                          iconSize,
+                          icon: Broken.send_2,
+                          label:
+                              PreferencesService.getTransfersEntryLabel() ??
+                              L10n.of(context).ui_transfers,
+                          onTap: () => widget.onNavigateTab?.call(2),
+                        );
+                      }
+                      if (hasSettingsEntry &&
+                          tailIdx == (hasTransfersEntry ? 1 : 0)) {
+                        return _buildSystemEntryCard(
+                          theme,
+                          iconSize,
+                          icon: Broken.setting_2,
+                          label:
+                              PreferencesService.getSettingsEntryLabel() ??
+                              L10n.of(context).cat_settings,
+                          onTap: () => widget.onNavigateTab?.call(3),
+                        );
+                      }
+                      return const SizedBox.shrink(
+                        key: ValueKey('empty3'),
+                      );
+                    }
                     if (hasCustomEntry && index == customGridIndex) {
                       return _buildCustomEntryCard(theme, iconSize);
                     }
@@ -1054,7 +1256,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       return const SizedBox.shrink(key: ValueKey('empty2'));
                     }
                     final cat = activeList[catIndex];
-                    final labelKey = activeLabels[index];
+                    final labelKey = activeLabels[catIndex];
                     final label = cat['label'] as String;
                     final icon = cat['icon'] as IconData;
                     final color = cat['color'] as Color;
@@ -1240,6 +1442,114 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
   /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
   Widget _buildCustomEntryCard(ThemeData theme, double iconSize) {
+    final fm = context.read<FileManagerProvider>();
+    final color = theme.colorScheme.primary;
+    // 与分类卡片一致：长按弹菜单（重命名/显示开关/自定义快捷方式），移动超阈值进入拖拽排序
+    return GestureDetector(
+      onLongPressStart: (details) {
+        fm.setCategoryReorderInteracting(true);
+        _longPressOrigin = details.globalPosition;
+        _showSystemEntryMenu(
+          position: details.globalPosition,
+          entryKey: 'custom_entry',
+          color: color,
+        );
+      },
+      onLongPressMoveUpdate: (details) {
+        if (_isDragging) {
+          _updateDrag(details.globalPosition);
+          return;
+        }
+        if (_menuOverlayEntry == null) return;
+        final origin = _longPressOrigin;
+        if (origin == null) return;
+        if ((details.globalPosition - origin).distance > 10.0) {
+          _closeMenuOverlay();
+          _startDrag(
+            -1,
+            details.globalPosition,
+            Icon(Broken.edit_2, color: color, size: 28),
+            color,
+            isCustomEntry: true,
+          );
+        }
+      },
+      onLongPressEnd: (_) {
+        if (_isDragging) {
+          _endDrag(
+            context.read<MediaProvider>(),
+            QuickCategoriesGrid.getAllCategoriesMap(
+              context,
+              Theme.of(context).brightness == Brightness.dark,
+              widget.onNavigateTab,
+            ),
+          );
+        }
+        fm.setCategoryReorderInteracting(false);
+        _longPressOrigin = null;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.22),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => QuickCategoriesGrid.showCustomizeDialog(
+              context,
+              widget.onNavigateTab,
+            ),
+            splashColor: theme.colorScheme.primary.withOpacity(0.25),
+            highlightColor: theme.colorScheme.primary.withOpacity(0.15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Broken.edit_2,
+                  color: theme.colorScheme.primary,
+                  size: iconSize,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  PreferencesService.getCustomEntryLabel() ??
+                      L10n.of(context).msgf1d4ff50,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 网格末尾的系统入口卡片（传输/设置）：图标 + 显示名 + 点击切页。
+  Widget _buildSystemEntryCard(
+    ThemeData theme,
+    double iconSize, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       decoration: BoxDecoration(
@@ -1261,24 +1571,16 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: () => QuickCategoriesGrid.showCustomizeDialog(
-            context,
-            widget.onNavigateTab,
-          ),
+          onTap: onTap,
           splashColor: theme.colorScheme.primary.withOpacity(0.25),
           highlightColor: theme.colorScheme.primary.withOpacity(0.15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Broken.edit_2,
-                color: theme.colorScheme.primary,
-                size: iconSize,
-              ),
+              Icon(icon, color: theme.colorScheme.primary, size: iconSize),
               const SizedBox(height: 4),
               Text(
-                PreferencesService.getCustomEntryLabel() ??
-                    L10n.of(context).msgf1d4ff50,
+                label,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -1597,16 +1899,105 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     }
   }
 
-  /// 「自定义」入口重命名弹窗：显示名存入 prefs（空 = 恢复 l10n 默认）。
-  Future<void> _showCustomEntryRenameDialog(
+  /// 系统入口开关行（传输/设置）：与分类项样式一致，可开关、可重命名。
+  Widget _buildSystemEntryToggleRow(
     BuildContext context,
+    String entryKey,
+    StateSetter setModalState,
+  ) {
+    final theme = Theme.of(context);
+    final isTransfers = entryKey == 'transfers';
+    final visible = isTransfers
+        ? PreferencesService.getTransfersEntryVisible()
+        : PreferencesService.getSettingsEntryVisible();
+    final label = isTransfers
+        ? (PreferencesService.getTransfersEntryLabel() ??
+            L10n.of(context).ui_transfers)
+        : (PreferencesService.getSettingsEntryLabel() ??
+            L10n.of(context).cat_settings);
+    final icon = isTransfers ? Broken.send_2 : Broken.setting_2;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.15),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(icon, color: theme.colorScheme.primary, size: 22),
+            ),
+            title: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.grey, size: 20),
+                  tooltip: L10n.of(context).msgc8ce4b36,
+                  onPressed: () => _showSystemEntryRenameDialog(
+                    context,
+                    entryKey,
+                    setModalState,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Switch(
+                  value: visible,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (v) {
+                    if (isTransfers) {
+                      PreferencesService.saveTransfersEntryVisible(v);
+                    } else {
+                      PreferencesService.saveSettingsEntryVisible(v);
+                    }
+                    setModalState(() {});
+                  },
+                ),
+                const SizedBox(width: 12),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 系统入口重命名弹窗：显示名存入 prefs（空 = 恢复 l10n 默认）。
+  Future<void> _showSystemEntryRenameDialog(
+    BuildContext context,
+    String entryKey,
     StateSetter setModalState,
   ) async {
     final theme = Theme.of(context);
-    final controller = TextEditingController(
-      text: PreferencesService.getCustomEntryLabel() ??
-          L10n.of(context).ui_show_custom_entry,
-    );
+    final String initial;
+    final String fallback;
+    if (entryKey == 'custom_entry') {
+      fallback = L10n.of(context).ui_show_custom_entry;
+      initial =
+          PreferencesService.getCustomEntryLabel() ?? fallback;
+    } else if (entryKey == 'transfers') {
+      fallback = L10n.of(context).ui_transfers;
+      initial = PreferencesService.getTransfersEntryLabel() ?? fallback;
+    } else {
+      fallback = L10n.of(context).cat_settings;
+      initial = PreferencesService.getSettingsEntryLabel() ?? fallback;
+    }
+    final controller = TextEditingController(text: initial);
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -1641,7 +2032,13 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               onPressed: () {
                 final newLabel = controller.text.trim();
                 if (newLabel.isNotEmpty) {
-                  PreferencesService.saveCustomEntryLabel(newLabel);
+                  if (entryKey == 'custom_entry') {
+                    PreferencesService.saveCustomEntryLabel(newLabel);
+                  } else if (entryKey == 'transfers') {
+                    PreferencesService.saveTransfersEntryLabel(newLabel);
+                  } else {
+                    PreferencesService.saveSettingsEntryLabel(newLabel);
+                  }
                 }
                 Navigator.of(dialogContext).pop();
                 setModalState(() {});
@@ -1944,8 +2341,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                                 context,
                                               ).msgc8ce4b36,
                                               onPressed: () =>
-                                                  _showCustomEntryRenameDialog(
+                                                  _showSystemEntryRenameDialog(
                                                 context,
+                                                'custom_entry',
                                                 setModalState,
                                               ),
                                             ),
@@ -2147,6 +2545,17 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               ),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildSystemEntryToggleRow(
+                          context,
+                          'transfers',
+                          setModalState,
+                        ),
+                        _buildSystemEntryToggleRow(
+                          context,
+                          'settings',
+                          setModalState,
                         ),
                         const SizedBox(height: 8),
                         Padding(

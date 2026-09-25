@@ -251,6 +251,26 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab);
                           },
                         ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.send_2,
+                          title: PreferencesService.getTransfersEntryLabel() ??
+                              L10n.of(context).ui_transfers,
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onNavigateTab?.call(2);
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.setting_2,
+                          title: PreferencesService.getSettingsEntryLabel() ??
+                              L10n.of(context).cat_settings,
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onNavigateTab?.call(3);
+                          },
+                        ),
                       ],
                     ),
 
@@ -377,7 +397,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v3.0.0',
+                'ZenFile v3.1.0',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

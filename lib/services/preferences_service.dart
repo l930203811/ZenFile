@@ -1865,6 +1865,46 @@ class PreferencesService {
   static Future<void> saveCustomEntryLabel(String label) async {
     await _prefs?.setString(_keyCustomEntryLabel, label);
   }
+
+  // --- 系统入口（传输/设置）：分类页卡片显示开关 + 重命名显示名 ---
+  static const String _keyTransfersEntryVisible = 'transfers_entry_visible';
+  static const String _keySettingsEntryVisible = 'settings_entry_visible';
+  static const String _keyTransfersEntryLabel = 'transfers_entry_label';
+  static const String _keySettingsEntryLabel = 'settings_entry_label';
+
+  static bool getTransfersEntryVisible() {
+    return _prefs?.getBool(_keyTransfersEntryVisible) ?? true;
+  }
+
+  static Future<void> saveTransfersEntryVisible(bool v) async {
+    await _prefs?.setBool(_keyTransfersEntryVisible, v);
+  }
+
+  static bool getSettingsEntryVisible() {
+    return _prefs?.getBool(_keySettingsEntryVisible) ?? true;
+  }
+
+  static Future<void> saveSettingsEntryVisible(bool v) async {
+    await _prefs?.setBool(_keySettingsEntryVisible, v);
+  }
+
+  static String? getTransfersEntryLabel() {
+    final v = _prefs?.getString(_keyTransfersEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveTransfersEntryLabel(String label) async {
+    await _prefs?.setString(_keyTransfersEntryLabel, label);
+  }
+
+  static String? getSettingsEntryLabel() {
+    final v = _prefs?.getString(_keySettingsEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveSettingsEntryLabel(String label) async {
+    await _prefs?.setString(_keySettingsEntryLabel, label);
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 
