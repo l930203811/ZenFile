@@ -215,6 +215,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _alwaysShowProgress = PreferencesService.getVideoProgressAlwaysShow();
     _playbackSpeed = PreferencesService.getVideoPlaybackSpeed();
     _volume = PreferencesService.getVideoVolume();
+    _isBackgroundMode = PreferencesService.getVideoBackgroundMode();
+    if (_isBackgroundMode) {
+      // 记住的后台播放偏好：首帧后若当前视频未在后台播放，自动进入后台；
+      // 若已在后台播放（用户从通知栏返回界面），保持界面显示，不重复 attach/不自动退出。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final path = _currentStreamUrl ?? widget.videoPath;
+        if (path.isNotEmpty && !getAudioHandler().isPlayingPath(path)) {
+          _startBackgroundMode();
+        }
+      });
+    }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
@@ -2865,11 +2877,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     final currentPath = _currentStreamUrl ?? widget.videoPath;
     if (currentPath.isEmpty) return;
 
-    // 确保视频正在播放（后台模式要求音频流持续）
-    if (!player.state.playing) {
-      await player.play();
-    }
-
+    // 后台播放保持当前播放状态：视频暂停着就暂停着进后台，播放中就继续播放，
+    // 不再强制 player.play()（避免点击后台播放导致暂停中的视频被重新拉起）。
     handler.attach(
       player: player,
       queue: [
@@ -2887,6 +2896,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (!mounted) return;
 
     setState(() => _isBackgroundMode = true);
+    PreferencesService.saveVideoBackgroundMode(true);
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -3493,6 +3503,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       setState(() => _alwaysShowProgress = !_alwaysShowProgress);
                       PreferencesService.saveVideoProgressAlwaysShow(_alwaysShowProgress);
                     },
+                    isBackgroundActive: _isBackgroundMode,
                   ),
                 ],
               ),

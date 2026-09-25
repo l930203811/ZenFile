@@ -49,6 +49,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onToggleHwdec;
   final bool progressAlwaysShow; // 进度条常驻开关状态
   final VoidCallback? onToggleProgressAlwaysShow;
+  final bool isBackgroundActive; // 后台播放是否已激活（菜单项高亮）
 
   const VideoControlsOverlay({
     super.key,
@@ -98,6 +99,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onToggleHwdec,
     this.progressAlwaysShow = false,
     this.onToggleProgressAlwaysShow,
+    this.isBackgroundActive = false,
   });
 
   String _formatDuration(Duration d) {
@@ -303,12 +305,16 @@ class VideoControlsOverlay extends StatelessWidget {
                         value: 'background',
                         child: Row(
                           children: [
-                            Icon(Icons.headphones_rounded, size: 20, color: Colors.white),
+                            Icon(
+                              Icons.headphones_rounded,
+                              size: 20,
+                              color: isBackgroundActive ? accentColor : Colors.white,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               L10n.of(context).msg_background_play,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: isBackgroundActive ? accentColor : Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

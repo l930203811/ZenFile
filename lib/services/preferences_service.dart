@@ -1482,6 +1482,7 @@ class PreferencesService {
   static const String _keyVideoPlaybackSpeed = 'video_playback_speed';
   static const String _keyVideoVolume = 'video_volume';
   static const String _keyImageFitMode = 'image_fit_mode'; // 0=适应宽度(contained) 1=适应高度 2=原始大小
+  static const String _keyVideoBackgroundMode = 'video_background_mode';
 
   /// 获取视频解码方式：true=硬解, false=软解，默认 true（硬解）
   static bool getUseHardwareDecode({bool defaultValue = true}) {
@@ -1665,6 +1666,16 @@ class PreferencesService {
   /// 保存图片显示模式
   static Future<void> saveImageFitMode(int value) async {
     await _prefs?.setInt(_keyImageFitMode, value);
+  }
+
+  /// 获取视频后台播放偏好（记住上次选择），默认 false
+  static bool getVideoBackgroundMode() {
+    return _prefs?.getBool(_keyVideoBackgroundMode) ?? false;
+  }
+
+  /// 保存视频后台播放偏好
+  static Future<void> saveVideoBackgroundMode(bool value) async {
+    await _prefs?.setBool(_keyVideoBackgroundMode, value);
   }
 
   /// 移除某视频的手手动字幕映射。
