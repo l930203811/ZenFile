@@ -7608,6 +7608,23 @@ class L10nZh extends L10n {
 
   @override
   String get ui_text_editor_import => '导入文本文件';
+
+  @override
+  String get ui_bottom_tab_bar => '底部导航栏';
+
+  @override
+  String get ui_pick_bottom_tab => '选择底部入口';
+
+  @override
+  String get ui_long_press_switch => '长按可替换';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return '位置 $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint => '底部入口可替换为任意快捷方式';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15184,4 +15201,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_text_editor_import => '匯入文字檔';
+
+  @override
+  String get ui_bottom_tab_bar => '底部導覽列';
+
+  @override
+  String get ui_pick_bottom_tab => '選擇底部入口';
+
+  @override
+  String get ui_long_press_switch => '長按可替換';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return '位置 $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint => '底部入口可替換為任何快捷方式';
 }

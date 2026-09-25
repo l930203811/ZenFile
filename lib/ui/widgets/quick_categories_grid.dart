@@ -356,6 +356,144 @@ class QuickCategoriesGrid extends StatefulWidget {
     );
   }
 
+  /// 底部导航槽位选择器（长按底部 tab 或自定义快捷方式页配置区调用）：
+  /// 候选 = 传输 / 设置（可恢复默认） + 分类页全部入口（内置 + 自定义快捷方式）。
+  /// 返回选中配置；null = 取消；{'type':'reset'} = 恢复默认内置页。
+  static Future<Map<String, String>?> showBottomTabPicker(
+    BuildContext context, {
+    required int slot,
+    Map<String, String>? current,
+  }) {
+    final theme = Theme.of(context);
+    return showModalBottomSheet<Map<String, String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final l10n = L10n.of(sheetContext);
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final allMap = getAllCategoriesMap(sheetContext, isDark, (index) {});
+        // 候选：内置传输/设置 + 分类页全部入口（内置 category / 自定义 shortcut）
+        final options = <Map<String, dynamic>>[
+          {
+            'type': 'builtin',
+            'key': 'tab_transfers',
+            'label': l10n.ui_transfers,
+            'icon': Broken.send_2,
+          },
+          {
+            'type': 'builtin',
+            'key': 'tab_settings',
+            'label': l10n.cat_settings,
+            'icon': Broken.setting_2,
+          },
+          ...allMap.entries.map((e) => {
+                'type': (e.value['isCustom'] == true) ? 'shortcut' : 'category',
+                'key': e.key,
+                'label': e.value['label'] as String,
+                'icon': e.value['icon'] as IconData,
+              }),
+        ];
+        final currentType = current?['type'];
+        final currentKey = current?['key'];
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.ui_pick_bottom_tab,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.ui_bottom_tab_slot(slot == 3 ? 3 : 2),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final opt in options)
+                      ListTile(
+                        dense: true,
+                        leading: Icon(
+                          opt['icon'] as IconData,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: Text(
+                          opt['label'] as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing:
+                            (currentType == opt['type'] &&
+                                    currentKey == opt['key'])
+                                ? Icon(
+                                    Broken.check,
+                                    size: 18,
+                                    color: theme.colorScheme.primary,
+                                  )
+                                : null,
+                        onTap: () => Navigator.pop(sheetContext, {
+                          'type': opt['type'] as String,
+                          'key': opt['key'] as String,
+                        }),
+                      ),
+                    if (current != null)
+                      ListTile(
+                        dense: true,
+                        leading: Icon(
+                          Broken.refresh,
+                          size: 20,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                        title: Text(
+                          l10n.ui_restore_default,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                        onTap: () => Navigator.pop(
+                          sheetContext,
+                          {'type': 'reset', 'key': ''},
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   State<QuickCategoriesGrid> createState() => _QuickCategoriesGridState();
 }
@@ -1422,6 +1560,100 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     }
   }
 
+  /// 底部导航槽位 2/3 配置行：显示当前入口，点击弹出选择器。
+  Widget _buildBottomSlotRow(
+    BuildContext context,
+    int slot,
+    StateSetter setModalState,
+  ) {
+    final theme = Theme.of(context);
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    final label = _bottomSlotLabel(context, slot, cfg);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
+      child: Material(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () async {
+            final picked = await QuickCategoriesGrid.showBottomTabPicker(
+              context,
+              slot: slot,
+              current: cfg,
+            );
+            if (picked == null) return;
+            if (picked['type'] == 'reset') {
+              await PreferencesService.saveBottomTabSlotConfig(slot, null);
+            } else {
+              await PreferencesService.saveBottomTabSlotConfig(slot, picked);
+            }
+            if (mounted) setModalState(() {});
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    L10n.of(context).ui_bottom_tab_slot(slot == 3 ? 3 : 2),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withOpacity(0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 槽位当前显示名：默认内置页 / 分类页入口 / 快捷方式名。
+  String _bottomSlotLabel(
+    BuildContext context,
+    int slot,
+    Map<String, String>? cfg,
+  ) {
+    final l10n = L10n.of(context);
+    if (cfg == null) {
+      return slot == 3 ? l10n.cat_settings : l10n.ui_transfers;
+    }
+    if (cfg['type'] == 'builtin') {
+      return cfg['key'] == 'tab_settings'
+          ? l10n.cat_settings
+          : l10n.ui_transfers;
+    }
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (index) {},
+    );
+    final entry = map[cfg['key']];
+    if (entry != null) return entry['label'] as String;
+    return slot == 3 ? l10n.cat_settings : l10n.ui_transfers;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -1545,6 +1777,51 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ],
                           ),
                         ),
+                        // ===== 底部导航栏 =====
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_bottom_tab_bar,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                L10n.of(context).ui_long_press_switch,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 2.0,
+                          ),
+                          child: Text(
+                            L10n.of(context).ui_bottom_tab_custom_hint,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: theme.colorScheme.onSurface
+                                  .withOpacity(0.6),
+                            ),
+                          ),
+                        ),
+                        _buildBottomSlotRow(context, 2, setModalState),
+                        _buildBottomSlotRow(context, 3, setModalState),
+                        const SizedBox(height: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,

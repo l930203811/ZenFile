@@ -8149,4 +8149,22 @@ class L10nFr extends L10n {
 
   @override
   String get ui_text_editor_import => 'Importer un fichier texte';
+
+  @override
+  String get ui_bottom_tab_bar => 'Barre de navigation inférieure';
+
+  @override
+  String get ui_pick_bottom_tab => 'Choisir une entrée en bas';
+
+  @override
+  String get ui_long_press_switch => 'Appui long pour changer';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'Emplacement $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint =>
+      'Les entrées inférieures peuvent être remplacées par n\'importe quel raccourci';
 }

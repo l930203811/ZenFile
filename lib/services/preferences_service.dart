@@ -1778,6 +1778,43 @@ class PreferencesService {
     await _prefs?.setInt(_keyCategoriesGridColumns, columns);
   }
 
+
+  // --- Bottom nav tab customization ---
+  // 底部导航第 2/3 槽位可被自定义快捷方式页中的任意入口替换（第 1/2 个「分类/浏览」为滑动轴心，固定）。
+  // 配置格式 JSON：{"type":"builtin","key":"tab_transfers"|"tab_settings"}
+  //               {"type":"category","key":"<分类 labelKey>"}
+  //               {"type":"shortcut","key":"<自定义快捷方式 id>"}
+  static const String _keyBottomTabSlot2 = 'bottom_tab_slot2';
+  static const String _keyBottomTabSlot3 = 'bottom_tab_slot3';
+
+  /// 读取底部导航槽位配置；未配置或损坏返回 null（即默认内置页）。
+  static Map<String, String>? getBottomTabSlotConfig(int slot) {
+    final key = slot == 3 ? _keyBottomTabSlot3 : _keyBottomTabSlot2;
+    final str = _prefs?.getString(key);
+    if (str == null || str.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(str) as Map<String, dynamic>;
+      final type = decoded['type'] as String?;
+      final k = decoded['key'] as String?;
+      if (type == null || k == null || k.isEmpty) return null;
+      return {'type': type, 'key': k};
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存底部导航槽位配置；传 null 恢复默认内置页。
+  static Future<void> saveBottomTabSlotConfig(
+    int slot,
+    Map<String, String>? config,
+  ) async {
+    final key = slot == 3 ? _keyBottomTabSlot3 : _keyBottomTabSlot2;
+    if (config == null) {
+      await _prefs?.remove(key);
+    } else {
+      await _prefs?.setString(key, jsonEncode(config));
+    }
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 

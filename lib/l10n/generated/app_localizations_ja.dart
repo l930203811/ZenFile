@@ -7778,4 +7778,21 @@ class L10nJa extends L10n {
 
   @override
   String get ui_text_editor_import => 'テキストファイルを読み込む';
+
+  @override
+  String get ui_bottom_tab_bar => '下部ナビゲーションバー';
+
+  @override
+  String get ui_pick_bottom_tab => '下部エントリを選択';
+
+  @override
+  String get ui_long_press_switch => '長押しで変更できます';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'スロット $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint => '下部エントリは任意のショートカットに置き換えられます';
 }

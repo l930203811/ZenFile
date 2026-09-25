@@ -8128,4 +8128,22 @@ class L10nEs extends L10n {
 
   @override
   String get ui_text_editor_import => 'Importar archivo de texto';
+
+  @override
+  String get ui_bottom_tab_bar => 'Barra de navegación inferior';
+
+  @override
+  String get ui_pick_bottom_tab => 'Elegir entrada inferior';
+
+  @override
+  String get ui_long_press_switch => 'Mantén pulsado para cambiar';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'Ranura $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint =>
+      'Las entradas inferiores pueden reemplazarse por cualquier acceso directo';
 }

@@ -7,6 +7,7 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import '../../services/preferences_service.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
@@ -26,6 +27,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  // 最近点击的自定义底部槽位（槽 2/3 被替换入口后用于高亮）；-1 = 无
+  int _activeBottomSlot = -1;
   DateTime? _lastBackPressTime;
   late AnimationController _refreshIconController;
   bool _isRefreshing = false;
@@ -68,9 +71,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   static const double _swipeLongDistance = 110.0;
   static const double _swipeMinVelocity = 260.0;
   static const double _swipeEdgeGuard = 36.0;
-  // 底部导航 = 4 个**页面**（分类 / 文件 / 传输 / 设置），滑动与点击都只切页：
-  // 左滑 分类→文件→传输→设置，到最后一页（设置）再左滑打开右侧抽屉；
-  // 右滑 回到上一页，在分类页（第一页）右滑打开左侧抽屉。首尾对称。
+  // 底部导航第 1/2 个（分类/浏览）固定为滑动轴心；第 2/3 槽位可被自定义快捷方式页中的
+  // 任意入口替换（长按槽位或该页配置区选择）。滑动切页仅保留 左抽屉→分类→浏览→右抽屉：
+  // 左滑 分类→浏览、浏览→右抽屉；右滑 浏览→分类、分类→左抽屉；自定义槽位点击进入
+  // （push 页面），不参与滑动。
   static const int _settingsTabIndex = 3;
 
   @override
@@ -138,6 +142,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (index == _settingsTabIndex) _settingsTabBuilt = true;
     if (_currentIndex == index) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // 切到内置页时清除自定义槽位高亮
+    _activeBottomSlot = -1;
     setState(() => _currentIndex = index);
   }
 
@@ -428,24 +434,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
-                      // 向左滑动：切到下一页（分类→文件→传输→设置）；
-                      // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
-                      if (_currentIndex < _settingsTabIndex) {
+                      // 向左滑动：分类→浏览；已在浏览页则打开右侧抽屉（滑动仅四态：
+                      // 左抽屉→分类→浏览→右抽屉，传输/设置等自定义槽位不参与滑动）
+                      if (_currentIndex < 1) {
                         _switchTab(_currentIndex + 1);
                       } else {
                         _scaffoldKey.currentState?.openEndDrawer();
                       }
                     } else if (deltaX > _dualFingerSwipeThreshold) {
-                      // 向右滑动：分类页开抽屉，其余切上一页
+                      // 向右滑动：分类页开左抽屉，浏览页切回分类
                       if (_currentIndex == 0) {
                         _scaffoldKey.currentState?.openDrawer();
                       } else {
                         if (!fileProvider.isSelectionMode) {
-                          final next = _currentIndex - 1;
-                          _switchTab(next);
-                          if (next == 0) {
-                            context.read<MediaProvider>().refreshMediaBackground();
-                          }
+                          _switchTab(0);
+                          context.read<MediaProvider>().refreshMediaBackground();
                         }
                       }
                     }
@@ -480,24 +483,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
                         if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
                           if (dx < 0) {
-                            // 向左滑动：切到下一页（分类→文件→传输→设置）；
-                            // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
-                            if (_currentIndex < _settingsTabIndex) {
+                            // 向左滑动：分类→浏览；已在浏览页则打开右侧抽屉（滑动仅四态：
+                            // 左抽屉→分类→浏览→右抽屉，传输/设置等自定义槽位不参与滑动）
+                            if (_currentIndex < 1) {
                               _switchTab(_currentIndex + 1);
                             } else {
                               _scaffoldKey.currentState?.openEndDrawer();
                             }
                           } else {
-                            // 向右滑动：分类页开抽屉，其余切上一页
+                            // 向右滑动：分类页开左抽屉，浏览页切回分类
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
                             } else {
                               if (!fileProvider.isSelectionMode) {
-                                final next = _currentIndex - 1;
-                                _switchTab(next);
-                                if (next == 0) {
-                                  context.read<MediaProvider>().refreshMediaBackground();
-                                }
+                                _switchTab(0);
+                                context.read<MediaProvider>().refreshMediaBackground();
                               }
                             }
                           }
@@ -702,19 +702,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部导航项：分类 / 文件 / 传输 / 设置 —— **四项都是页面**（`_currentIndex` 0..3）。
-  ///
-  /// v2.1.7 起「我的」页已下线：分类页卡片与自定义快捷方式面板里的「设置」同时移除，
-  /// 设置入口统一收敛到本项（第 4 页，`MoreSettingsScreen(embedded: true)` 内嵌渲染，
-  /// 不再 push 全屏路由）。滑动与点击都只是切页；左滑到底（设置页）再左滑打开右侧抽屉。
+  /// 底部导航项：分类 / 浏览 固定（滑动轴心，第 0/1 页）；第 2/3 槽位可被自定义快捷
+  /// 方式页中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口
+  /// （push 页面，不参与滑动）。滑动切页仅保留 左抽屉→分类→浏览→右抽屉 四态。
   Widget _buildBottomTabs() {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
+    final slot2 = _resolveTabSlot(
+      2,
+      defaultIcon: Broken.send_2,
+      defaultLabel: l10n.ui_transfers,
+      defaultIndex: 2,
+    );
+    final slot3 = _resolveTabSlot(
+      3,
+      defaultIcon: Broken.setting_2,
+      defaultLabel: l10n.cat_settings,
+      defaultIndex: _settingsTabIndex,
+    );
     final tabData = <List<Object>>[
-      [Broken.category, l10n.cat_quick_categories, 0],
-      [Broken.folder, l10n.ui_file, 1],
-      [Broken.send_2, l10n.ui_transfers, 2],
-      [Broken.setting_2, l10n.cat_settings, _settingsTabIndex],
+      [Broken.category, l10n.cat_quick_categories, 0, false, 0],
+      [Broken.folder, l10n.ui_file, 1, false, 1],
+      slot2,
+      slot3,
     ];
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
@@ -734,6 +744,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         tab[0] as IconData,
                         tab[1] as String,
                         tab[2] as int,
+                        isCustomEntry: tab[3] as bool,
+                        slot: tab[4] as int,
                       ),
                     ),
                 ],
@@ -745,11 +757,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  Widget _buildTabItem(IconData icon, String label, int index) {
+  /// 解析底部导航槽位 2/3 的显示与点击：未自定义返回默认内置页，自定义返回对应入口。
+  List<Object> _resolveTabSlot(
+    int slot, {
+    required IconData defaultIcon,
+    required String defaultLabel,
+    required int defaultIndex,
+  }) {
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    if (cfg == null) {
+      return [defaultIcon, defaultLabel, defaultIndex, false, slot];
+    }
+    final type = cfg['type'];
+    final key = cfg['key'];
+    if (type == 'builtin') {
+      if (key == 'tab_settings') {
+        return [Broken.setting_2, L10n.of(context).cat_settings, _settingsTabIndex, false, slot];
+      }
+      return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
+    }
+    // category / shortcut：从分类页全部入口重建显示与动作（与分类页网格同源）
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (i) => _switchTab(i),
+    );
+    final entry = map[key];
+    if (entry != null) {
+      return [entry['icon'] as IconData, entry['label'] as String, -1, true, slot];
+    }
+    // 配置失效（快捷方式被删除等）：回退默认内置页
+    return [defaultIcon, defaultLabel, defaultIndex, false, slot];
+  }
+
+  Widget _buildTabItem(
+    IconData icon,
+    String label,
+    int index, {
+    bool isCustomEntry = false,
+    int slot = -1,
+  }) {
     final theme = Theme.of(context);
-    final selected = _currentIndex == index;
+    // 自定义槽位：点击后保持高亮（_activeBottomSlot）；内置页按 _currentIndex 高亮
+    final selected = isCustomEntry
+        ? _activeBottomSlot == slot
+        : _currentIndex == index;
     return InkWell(
-      onTap: () => _switchTab(index),
+      onTap: () {
+        if (isCustomEntry) {
+          _openBottomTabEntry(slot);
+        } else {
+          _switchTab(index);
+        }
+      },
+      // 槽 2/3 长按：不进自定义快捷方式页即可替换入口
+      onLongPress: slot >= 2 ? () => _showBottomTabPicker(slot) : null,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -776,6 +838,50 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         ],
       ),
     );
+  }
+
+  /// 打开被自定义的底部槽位：内置页切 IndexedStack；快捷入口执行与分类页网格一致的 action。
+  void _openBottomTabEntry(int slot) {
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    if (cfg == null) return;
+    setState(() => _activeBottomSlot = slot);
+    final type = cfg['type'];
+    final key = cfg['key'];
+    if (type == 'builtin') {
+      if (key == 'tab_settings') {
+        _settingsTabBuilt = true;
+        _switchTab(_settingsTabIndex);
+      } else {
+        _switchTab(2);
+      }
+      return;
+    }
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (i) => _switchTab(i),
+    );
+    final entry = map[key];
+    if (entry == null) return;
+    final action = entry['action'] as VoidCallback?;
+    if (action != null) action();
+  }
+
+  /// 底部槽位长按选择器：不进自定义快捷方式页即可替换槽位 2/3。
+  Future<void> _showBottomTabPicker(int slot) async {
+    final current = PreferencesService.getBottomTabSlotConfig(slot);
+    final cfg = await QuickCategoriesGrid.showBottomTabPicker(
+      context,
+      slot: slot,
+      current: current,
+    );
+    if (cfg == null) return;
+    if (cfg['type'] == 'reset') {
+      await PreferencesService.saveBottomTabSlotConfig(slot, null);
+    } else {
+      await PreferencesService.saveBottomTabSlotConfig(slot, cfg);
+    }
+    if (mounted) setState(() {});
   }
 
   /// 分类页（快捷操作页）：分类网格 + 自定义快捷方式，顶部/底部由 HomeScreen 统一提供。

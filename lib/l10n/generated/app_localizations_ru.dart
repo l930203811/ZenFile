@@ -8100,4 +8100,22 @@ class L10nRu extends L10n {
 
   @override
   String get ui_text_editor_import => 'Импортировать текстовый файл';
+
+  @override
+  String get ui_bottom_tab_bar => 'Нижняя панель навигации';
+
+  @override
+  String get ui_pick_bottom_tab => 'Выберите элемент внизу';
+
+  @override
+  String get ui_long_press_switch => 'Долгое нажатие — замена';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'Слот $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint =>
+      'Элементы внизу можно заменить любым ярлыком';
 }
