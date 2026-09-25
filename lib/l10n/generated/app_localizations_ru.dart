@@ -2771,6 +2771,12 @@ class L10nRu extends L10n {
   String get ui_nav => 'Локальный';
 
   @override
+  String get ui_paste_and_clear => 'Вставить и очистить';
+
+  @override
+  String get ui_cut_paste_hint => 'Вырезание = перемещение; после вставки очищается';
+
+  @override
   String get ui_search_in_settings => 'Поиск в настройках';
 
   @override

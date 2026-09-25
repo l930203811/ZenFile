@@ -2725,6 +2725,12 @@ class L10nEn extends L10n {
   String get ui_nav => 'Local';
 
   @override
+  String get ui_paste_and_clear => 'Paste and clear';
+
+  @override
+  String get ui_cut_paste_hint => 'Cut = move; clipboard clears after paste';
+
+  @override
   String get ui_search_in_settings => 'Search in settings';
 
   @override

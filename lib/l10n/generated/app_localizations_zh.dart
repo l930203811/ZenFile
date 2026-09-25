@@ -2632,6 +2632,12 @@ class L10nZh extends L10n {
   String get ui_nav => '本地';
 
   @override
+  String get ui_paste_and_clear => '粘贴并清除';
+
+  @override
+  String get ui_cut_paste_hint => '剪切为移动，粘贴后自动清空';
+
+  @override
   String get ui_search_in_settings => '在设置中搜索';
 
   @override
@@ -10163,6 +10169,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_nav => '本地';
+
+  @override
+  String get ui_paste_and_clear => '貼上並清除';
+
+  @override
+  String get ui_cut_paste_hint => '剪下為移動，貼上後自動清空';
 
   @override
   String get ui_search_in_settings => '在設定中搜尋';

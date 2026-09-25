@@ -50,7 +50,19 @@ class TransfersScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      // 注意（勿删）：必须关掉 **Scaffold 自身的** primary —— 只给下面的 AppBar 设
+      // primary: false 是**无效**的。依据 scaffold.dart：
+      //   if (widget.appBar != null) {
+      //     final double topPadding = widget.primary ? MediaQuery.paddingOf(context).top : 0.0;
+      //     _appBarMaxHeight = AppBar.preferredHeightFor(...) + topPadding;
+      //   }
+      // 这里读的是 Scaffold.primary（默认 true）。本页位于 HomeScreen 的 IndexedStack 内，
+      // 状态栏安全区已由 HomeScreen 顶部栏消费；若此处再加一次，AppBar 的 Material 会把这段
+      // 状态栏高度铺成一条 surface 色背景条 —— 即「浏览页比分类页多出来的那一层」，
+      // 与标签页栏显隐、多标签开关均无关系。
+      primary: false,
       appBar: AppBar(
+        primary: false,
         automaticallyImplyLeading: false,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,

@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:intl/intl.dart';
 import 'package:audio_service/audio_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
@@ -121,6 +120,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   bool _showFoldersMode = false;
   List<AssetEntity> _albumAssets = [];
   bool _loadingAlbum = false;
+
+  /// 按月分组视图中被折叠的月份（组头文本为键，默认全部展开）
+  final Set<String> _collapsedMonthGroups = <String>{};
 
   // 当前类别的视图模式：true=网格视图, false=列表视图
   late bool _isGridView;
@@ -802,6 +804,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   void _selectAll(MediaProvider provider) {
     final filePaths = <String>{};
     final assetIds = <String>{};
+    // 候选条目的修改时间（供按月分组下「全选只选当前月份」使用）
+    final pathDates = <String, DateTime>{};
     final isLocal = _scopeFilter == _ScopeFilter.local;
 
     if (widget.mediaType == MediaType.images) {
@@ -816,7 +820,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               !_belongsToFolder(e.path, widget.folderPath!))
             continue;
           final isRemote = e.path.startsWith('remote://');
-          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+          if (isLocal ? !isRemote : isRemote) {
+            filePaths.add(e.path);
+            pathDates[e.path] = _getItemDateTime(e);
+          }
         }
       }
     } else if (widget.mediaType == MediaType.videos) {
@@ -826,7 +833,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               !_belongsToFolder(e.path, widget.folderPath!))
             continue;
           final isRemote = e.path.startsWith('remote://');
-          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+          if (isLocal ? !isRemote : isRemote) {
+            filePaths.add(e.path);
+            pathDates[e.path] = _getItemDateTime(e);
+          }
         }
       }
     } else if (widget.mediaType == MediaType.screenshots) {
@@ -836,7 +846,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               !_belongsToFolder(e.path, widget.folderPath!))
             continue;
           final isRemote = e.path.startsWith('remote://');
-          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+          if (isLocal ? !isRemote : isRemote) {
+            filePaths.add(e.path);
+            pathDates[e.path] = _getItemDateTime(e);
+          }
         }
       }
     } else if (widget.mediaType == MediaType.audios) {
@@ -847,6 +860,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             !_belongsToFolder(p, widget.folderPath!))
           continue;
         filePaths.add(p);
+        pathDates[p] = _getItemDateTime(e);
       }
     } else if (widget.mediaType == MediaType.archives) {
       for (final e in provider.archives) {
@@ -854,7 +868,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             !_belongsToFolder(e.path, widget.folderPath!))
           continue;
         final isRemote = e.path.startsWith('remote://');
-        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        if (isLocal ? !isRemote : isRemote) {
+          filePaths.add(e.path);
+          pathDates[e.path] = _getItemDateTime(e);
+        }
       }
     } else if (widget.mediaType == MediaType.downloads) {
       for (final e in provider.downloads) {
@@ -862,7 +879,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             !_belongsToFolder(e.path, widget.folderPath!))
           continue;
         final isRemote = e.path.startsWith('remote://');
-        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        if (isLocal ? !isRemote : isRemote) {
+          filePaths.add(e.path);
+          pathDates[e.path] = _getItemDateTime(e);
+        }
       }
     } else if (widget.mediaType == MediaType.apks) {
       for (final e in provider.apks) {
@@ -870,7 +890,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             !_belongsToFolder(e.path, widget.folderPath!))
           continue;
         final isRemote = e.path.startsWith('remote://');
-        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        if (isLocal ? !isRemote : isRemote) {
+          filePaths.add(e.path);
+          pathDates[e.path] = _getItemDateTime(e);
+        }
       }
     } else if (widget.mediaType == MediaType.documents) {
       for (final e in provider.documents) {
@@ -878,7 +901,42 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             !_belongsToFolder(e.path, widget.folderPath!))
           continue;
         final isRemote = e.path.startsWith('remote://');
-        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        if (isLocal ? !isRemote : isRemote) {
+          filePaths.add(e.path);
+          pathDates[e.path] = _getItemDateTime(e);
+        }
+      }
+    }
+
+    // 按月分组激活时，「全选」只选中当前已选条目所属月份的文件；
+    // 当前未选中、跨月选中或日期未知时保持全选。
+    final sortOrder = provider.getSortOrderForCategory(_categoryLabel);
+    final isGroupedSort = sortOrder == MediaSortOrder.newestGrouped ||
+        sortOrder == MediaSortOrder.oldestGrouped;
+    if (isGroupedSort && _selectedFilePaths.isNotEmpty) {
+      String? targetMonth;
+      var singleMonth = true;
+      for (final p in _selectedFilePaths) {
+        final d = pathDates[p];
+        if (d == null || d.millisecondsSinceEpoch <= 0) {
+          singleMonth = false;
+          break;
+        }
+        final k = _monthKeyOf(d);
+        if (targetMonth == null) {
+          targetMonth = k;
+        } else if (targetMonth != k) {
+          singleMonth = false;
+          break;
+        }
+      }
+      if (singleMonth && targetMonth != null) {
+        final m = targetMonth;
+        filePaths.removeWhere(
+          (p) =>
+              pathDates[p] == null ||
+              _monthKeyOf(pathDates[p]!) != m,
+        );
       }
     }
 
@@ -887,6 +945,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       _selectedAssetIds = assetIds;
     });
   }
+
+  /// 月份归组键（按月分组的「全选只选当前月份」用）
+  String _monthKeyOf(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}';
 
   void _clearSelection() {
     setState(() {
@@ -3328,7 +3390,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final groups = <String, List<T>>{};
     for (final item in items) {
       final date = getDate(item);
-      final monthKey = DateFormat('MMMM yyyy').format(date);
+      final monthKey =
+          L10n.of(context).ui_month_group_header(date.year, date.month);
       groups.putIfAbsent(monthKey, () => []).add(item);
     }
     return groups;
@@ -3350,7 +3413,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       physics: const BouncingScrollPhysics(),
       slivers: [
         for (final entry in entries) ...[
-          // Month Header
+          // Month Header（点击可折叠/展开该月）
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(
@@ -3359,45 +3422,70 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 top: 16,
                 bottom: 8,
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(
-                        0.35,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    final k = entry.key;
+                    if (_collapsedMonthGroups.contains(k)) {
+                      _collapsedMonthGroups.remove(k);
+                    } else {
+                      _collapsedMonthGroups.add(k);
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withOpacity(0.15),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer.withOpacity(
+                          0.35,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withOpacity(0.15),
+                        ),
+                      ),
+                      child: Text(
+                        entry.key,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      entry.key,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 6),
+                    AnimatedRotation(
+                      turns: _collapsedMonthGroups.contains(entry.key)
+                          ? -0.25
+                          : 0,
+                      duration: const Duration(milliseconds: 180),
+                      child: Icon(
+                        Broken.arrow_down_2,
+                        size: 16,
                         color: theme.colorScheme.primary,
-                        letterSpacing: 0.5,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Divider(
-                      color: theme.colorScheme.outlineVariant.withOpacity(0.3),
-                      thickness: 1,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Divider(
+                        color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+                        thickness: 1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          // Group Items (Grid or List)
-          if (isGrid)
+          // Group Items (Grid or List) —— 该月被折叠时不渲染
+          if (!_collapsedMonthGroups.contains(entry.key) && isGrid)
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 6),
               sliver: SliverGrid(
@@ -3412,7 +3500,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 }, childCount: entry.value.length),
               ),
             )
-          else
+          else if (!_collapsedMonthGroups.contains(entry.key))
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
                 final item = entry.value[index];

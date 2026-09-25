@@ -3217,6 +3217,8 @@
   },
   "cat_quick_categories": "分类",
   "ui_nav": "本地",
+  "ui_paste_and_clear": "粘贴并清除",
+  "ui_cut_paste_hint": "剪切为移动，粘贴后自动清空",
   "ui_search_in_settings": "在设置中搜索",
   "ui_search_group_nav": "导航",
   "ui_home": "主页",

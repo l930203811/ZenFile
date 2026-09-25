@@ -933,6 +933,48 @@ class FileManagerProvider extends ChangeNotifier {
     _navigateToBrowseTabNotifier.value = value;
   }
 
+  // ==================== 全局搜索 → 功能入口的通道 ====================
+  // 说明：全局搜索页是 push 出来的独立路由，它既改不了首页的 `_currentIndex`
+  // （设置是首页 IndexedStack 的第 4 页），也拿不到首页/浏览页里那些「依赖当前
+  // 页面状态」的回调（刷新 / 排序 / 主题切换 / 自定义快捷方式）。因此统一用
+  // ValueNotifier 通道把请求抛给 home_screen，由它复用自己已有的实现执行，
+  // 避免在搜索页里复制一份逻辑导致行为漂移。
+
+  /// 「在设置中搜索」请求的查询词（配合 [settingsSearchRequestNotifier] 使用）。
+  String? _pendingSettingsQuery;
+  String? get pendingSettingsQuery => _pendingSettingsQuery;
+
+  /// 设置页搜索请求计数器：**每请求一次自增**。
+  ///
+  /// 用计数器而不是直接比较查询词 —— 用户在设置页手动退出搜索后，再点同一条
+  /// 搜索结果（查询词相同）也必须能重新进入搜索态。
+  final ValueNotifier<int> _settingsSearchRequestNotifier = ValueNotifier<int>(0);
+  ValueNotifier<int> get settingsSearchRequestNotifier =>
+      _settingsSearchRequestNotifier;
+  int get settingsSearchRequestId => _settingsSearchRequestNotifier.value;
+
+  /// 请求首页切到「设置」页并把 [query] 交给设置页过滤。
+  void requestSettingsSearch(String query) {
+    _pendingSettingsQuery = query;
+    _settingsSearchRequestNotifier.value =
+        _settingsSearchRequestNotifier.value + 1;
+  }
+
+  /// 待执行的快捷操作名（`refresh` / `sort` / `customize` / `toggle_theme`）。
+  String? _pendingQuickAction;
+  String? get pendingQuickAction => _pendingQuickAction;
+
+  /// 快捷操作请求计数器（每请求一次自增，语义同 [settingsSearchRequestNotifier]）。
+  final ValueNotifier<int> _quickActionRequestNotifier = ValueNotifier<int>(0);
+  ValueNotifier<int> get quickActionRequestNotifier =>
+      _quickActionRequestNotifier;
+
+  /// 请求首页执行一个「依赖当前浏览页状态」的快捷操作。
+  void requestQuickAction(String action) {
+    _pendingQuickAction = action;
+    _quickActionRequestNotifier.value = _quickActionRequestNotifier.value + 1;
+  }
+
   // 解压后跳转到浏览页并高亮文件
   String? _pendingBrowsePath;
   String? get pendingBrowsePath => _pendingBrowsePath;
@@ -12298,6 +12340,8 @@ class FileManagerProvider extends ChangeNotifier {
   void dispose() {
     _remoteSourceChangedController.close();
     _navigateToBrowseTabNotifier.dispose();
+    _settingsSearchRequestNotifier.dispose();
+    _quickActionRequestNotifier.dispose();
     super.dispose();
   }
 

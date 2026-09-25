@@ -23,6 +23,18 @@ class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
   final bool showTitle;
 
+  /// ⚠️ 这个网格**自己不负责滚动，也不允许自己决定卡片行高以外的事**。
+  ///
+  /// 踩过的坑（v2.1.7）：网格的 build 顶层是 `Padding > Column`，`Column` 会给
+  /// 非 flex 子项 **无界高度**（maxHeight = ∞）。所以：
+  /// ① 在网格内部塞 `SingleChildScrollView`，它拿到的可视区高度会等于内容高度
+  ///    ⇒ **永远滚不动**，超出部分被 Column 裁掉（表现为「2 列/加更多快捷方式后
+  ///    底部卡片看不到、也拉不上来」）；
+  /// ② 想靠「把可用高度传进来反推行高」来消灭空白，会在列数变化时把行高算歪。
+  ///
+  /// 结论：滚动和「顶部呼吸位」一律交给**高度有界的外层**（见
+  /// `home_screen._buildHomeTab` 的 `SingleChildScrollView`），本组件只按列数
+  /// 输出固定比例的卡片行高。
   const QuickCategoriesGrid({
     super.key,
     required this.onNavigateTab,
@@ -750,6 +762,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         .toList();
 
     final columns = PreferencesService.getCategoriesGridColumns();
+    // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
+    final hasCustomEntry = PreferencesService.getCustomEntryVisible();
+    final itemCount = activeList.length + (hasCustomEntry ? 1 : 0);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -826,25 +841,39 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 duration: const Duration(milliseconds: 300),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
+                    const spacing = 2.0;
                     final gridItemW =
-                        (constraints.maxWidth - (columns - 1) * 2) / columns;
+                        (constraints.maxWidth - (columns - 1) * spacing) /
+                            columns;
                     final iconSize =
                         gridItemW *
                         (columns == 4 ? 0.46 : (columns == 3 ? 0.40 : 0.30));
-                    return GridView.builder(
+                    // 行高按列数固定（与设计一致），这里不做任何压缩/拉伸：
+                    // 卡片尺寸在任何列数下都可预期，放不下时由外层滚动视图负责。
+                    final ratio = columns == 4
+                        ? 0.78
+                        : (columns == 3 ? 1.0 : 1.30);
+                    final grid = GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  // ⚠️ 这里**必须显式给 padding（哪怕是 zero），绝不能省成默认的 null**：
+                  // `ScrollView`（GridView/ListView 同源）在 `padding == null` 时会自动
+                  // 把 `MediaQuery.padding` 的**纵向分量**（= 状态栏高度，本机 28dp）
+                  // 当作 SliverPadding 加到首尾 —— 见 flutter 源码
+                  // `widgets/scroll_view.dart:900-930`（"Automatically pad sliver with
+                  // padding from MediaQuery"）。现象：卡片与搜索栏之间凭空多出一大段
+                  // 空白（28dp），而且上拉能把它顶上去 —— 因为它是**内容里的空白**，
+                  // 不是布局偏移。顶部呼吸位统一由外层
+                  // `home_screen._buildHomeTab` 的 SingleChildScrollView 提供。
+                  padding: EdgeInsets.zero,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 2,
-                    mainAxisSpacing: 2,
-                    childAspectRatio: columns == 4
-                        ? 0.78
-                        : (columns == 3 ? 1.0 : 1.30),
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    childAspectRatio: ratio,
                   ),
-                  itemCount: activeList.length +
-                      (PreferencesService.getCustomEntryVisible() ? 1 : 0),
+                  itemCount: itemCount,
                   itemBuilder: (context, index) {
                     if (PreferencesService.getCustomEntryVisible() &&
                         index == activeList.length) {
@@ -1023,6 +1052,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     );
                   },
                     );
+                    // 直接返回：本组件不在内部滚动（见类顶部注释），
+                    // 否则可视区高度=内容高度 ⇒ 永远滚不动。
+                    return grid;
                   },
                 ),
               ),

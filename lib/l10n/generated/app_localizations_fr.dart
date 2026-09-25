@@ -2783,6 +2783,12 @@ class L10nFr extends L10n {
   String get ui_nav => 'Local';
 
   @override
+  String get ui_paste_and_clear => 'Coller et vider';
+
+  @override
+  String get ui_cut_paste_hint => 'Couper = déplacer ; vidé après le collage';
+
+  @override
   String get ui_search_in_settings => 'Rechercher dans les paramètres';
 
   @override

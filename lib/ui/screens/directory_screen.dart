@@ -33,6 +33,7 @@ import 'network_connection_wizard_screen.dart';
 import '../../core/theme.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../widgets/crypt_progress_dialog.dart';
+import '../widgets/clipboard_menu_sheet.dart';
 
 
 class DirectoryScreen extends StatefulWidget {
@@ -66,6 +67,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   bool _isEditingPath = false;
   // 浏览操作栏是否可见（列表滚动方向驱动自动折叠/展开）
   bool _browseBarVisible = true;
+  // 上一次构建时的「分屏」状态。单窗口↔双窗口切换时把操作栏重置为展开：
+  // 折叠状态只由单窗口那个 CustomScrollView 的滚动驱动，双窗口的列表在 PaneBrowser 内，
+  // 若切入双窗口时恰好停在折叠态，就会看起来「双窗口下操作栏不显示」。
+  bool? _lastSplitScreen;
+  // 折叠/展开判定的同方向累计位移（px）：抵消手指微动与弹性回弹造成的抖动切换。
+  double _browseBarDragAccum = 0;
 
   @override
   void initState() {
@@ -280,13 +287,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     if (!hasTabs && !hasAddressBar) {
       return const SizedBox.shrink();
     }
-    // 仅单个标签页时不显示标签页栏：避免顶部多出空白层，
-    // 使浏览页与分类页顶部高度保持一致；多标签时才显示以切换标签。
-    final showTabBarArea = hasTabs && provider.tabs.length > 1;
+    // 注意（勿删）：此处只能用 hasTabs 判断，不要再加「单标签时隐藏标签页栏」之类的条件。
+    // 原因：顶部多出的那一层背景与标签页栏无关（真根因是内层 Scaffold 的 AppBar primary
+    // 状态栏占位，见下方 Scaffold 处注释）；隐藏标签页栏只会连带隐藏 +/×/长按菜单等入口。
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (showTabBarArea)
+        if (hasTabs)
           DirectoryTabBar(provider: provider, scrollController: _tabScrollController),
         if (hasAddressBar)
           Padding(
@@ -373,7 +380,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   /// 可折叠的浏览操作栏：显示在底部 4-tab 导航上方，
-  /// 列表向下滚动时自动折叠、向上滚动/回到顶部时自动展开。
+  /// 列表向下滚动时自动折叠；向上滚动、回到顶部、或滚到列表底部时自动展开。
   Widget _buildCollapsibleBrowseActionBar(BuildContext context, FileManagerProvider provider) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -384,16 +391,31 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   /// 用户拖动文件列表时驱动浏览操作栏折叠/展开。
-  void _onBrowseListDrag(double delta, double offset) {
-    if (delta > 0 && _browseBarVisible) {
+  /// [maxExtent] 为该列表的 maxScrollExtent（双窗口下由各 pane 的滚动通知冒泡上来）。
+  void _onBrowseListDrag(double delta, double offset, double maxExtent) {
+    // 同方向累计位移（换方向即清零），避免手指微动/弹性回弹导致来回折叠。
+    final sameDir =
+        (delta > 0 && _browseBarDragAccum > 0) || (delta < 0 && _browseBarDragAccum < 0);
+    _browseBarDragAccum = sameDir ? _browseBarDragAccum + delta : delta;
+
+    // 顶/底两端一律展开。到底部也展开的原因：到底后不可能再向下滚，
+    // 若维持折叠会让人以为操作栏消失了（用户反馈：滚到最后一条还得回拉一下才出现）。
+    final atEdge = offset < 40 || (maxExtent > 0 && offset >= maxExtent - 40);
+    if (atEdge) {
+      _browseBarDragAccum = 0;
+      if (!_browseBarVisible) setState(() => _browseBarVisible = true);
+      return;
+    }
+
+    const double threshold = 10.0;
+    if (_browseBarDragAccum > threshold && _browseBarVisible) {
       // 向下滚动（内容上移）：折叠
       setState(() => _browseBarVisible = false);
-    } else if (delta < 0 && !_browseBarVisible) {
+      _browseBarDragAccum = 0;
+    } else if (_browseBarDragAccum < -threshold && !_browseBarVisible) {
       // 向上滚动（内容下移）：展开
       setState(() => _browseBarVisible = true);
-    } else if (offset < 40 && !_browseBarVisible) {
-      // 回到顶部附近：强制展开
-      setState(() => _browseBarVisible = true);
+      _browseBarDragAccum = 0;
     }
   }
 
@@ -490,156 +512,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     return paths.length > 1 ? '$prefix: $name +${paths.length - 1}' : '$prefix: $name';
   }
 
+  /// 打开剪贴板面板（单窗口）。
+  ///
+  /// UI、按钮语义（清除 / 粘贴 / 粘贴并清除）与条目图标全部统一在
+  /// [showClipboardMenuSheet] 里，这里只负责把「粘贴到当前页」这件事交出去，
+  /// 避免单窗口与双窗口两份实现再次漂移。
   void _showClipboardMenuSheet(BuildContext context, FileManagerProvider provider) {
-    final theme = Theme.of(context);
-    
-    final itemNames = <String>[];
-    if (provider.isRemoteClipboard) {
-      for (final item in provider.remoteClipboardItems) {
-        itemNames.add(p.basename(item.path));
-      }
-    } else {
-      for (final path in provider.clipboardPaths) {
-        itemNames.add(p.basename(path));
-      }
-    }
-    final prefix = provider.isCut ? L10n.of(context).ui_cut : L10n.of(context).ui_copy;
-    final maxItemHeight = 200.0;
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (sheetContext) => Stack(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(sheetContext),
-            child: Container(color: Colors.transparent),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 剪贴板内容列表
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Row(
-                children: [
-                  Icon(
-                    provider.isCut ? Broken.scissor : Broken.clipboard,
-                    size: 16,
-                    color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    L10n.of(context).ui_cut_copy_items(prefix, itemNames.length),
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxItemHeight),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  itemCount: itemNames.length,
-                  itemBuilder: (_, i) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.insert_drive_file_outlined,
-                          size: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.45),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            itemNames[i],
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            // 操作按钮
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  // 清除按钮（左侧，较小）
-                  Expanded(
-                    flex: 2,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(sheetContext);
-                        provider.clearClipboard();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
-                        side: BorderSide(color: theme.colorScheme.error.withOpacity(0.25)),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: Text(L10n.of(context).ui_clear, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // 粘贴按钮（右侧，较大）
-                  Expanded(
-                    flex: 5,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        Navigator.pop(sheetContext);
-                        await provider.pasteFile(context, clearAfterPaste: true);
-                      },
-                      icon: const Icon(Icons.content_paste, size: 16),
-                      label: Text(L10n.of(context).ui_paste, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-            ),
-          ],
-        ),
+    showClipboardMenuSheet(
+      context,
+      provider: provider,
+      onPaste: ({required bool clearAfterPaste}) =>
+          provider.pasteFile(context, clearAfterPaste: clearAfterPaste),
     );
   }
 
@@ -1438,6 +1321,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final isSelectionMode = provider.isSelectionMode;
         final showParentDirectory = !isSelectionMode && provider.canGoUp;
 
+        // 单窗口 ↔ 双窗口切换：重置操作栏为展开（理由见 _lastSplitScreen 字段注释）。
+        // 这里直接改字段、不调 setState —— 本帧随后就用新值渲染，不必多等一帧。
+        if (_lastSplitScreen != provider.enableSplitScreen) {
+          _lastSplitScreen = provider.enableSplitScreen;
+          _browseBarVisible = true;
+          _browseBarDragAccum = 0;
+        }
+
         if (provider.shouldScrollToHighlight) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
@@ -1492,8 +1383,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           },
           child: Scaffold(
             backgroundColor: AppTheme.getAmoledScaffoldBackground(theme),
+            // 注意（勿删）：必须关掉 **Scaffold 自身的** primary —— 只给下面的 AppBar 设
+            // primary: false 是**无效**的。依据 scaffold.dart：
+            //   if (widget.appBar != null) {
+            //     final double topPadding = widget.primary ? MediaQuery.paddingOf(context).top : 0.0;
+            //     _appBarMaxHeight = AppBar.preferredHeightFor(...) + topPadding;
+            //   }
+            // 这里读的是 Scaffold.primary（默认 true）。本页位于 HomeScreen 的 IndexedStack 内，
+            // 状态栏安全区已由 HomeScreen 顶部栏消费；若此处再加一次，AppBar 的 Material 会把这段
+            // 状态栏高度铺成一条 surface 色背景条 —— 即「浏览页比分类页多出来的那一层」，
+            // 与标签页栏显隐、多标签开关均无关系。
+            primary: false,
             appBar: isSelectionMode
                 ? AppBar(
+                    primary: false,
                     automaticallyImplyLeading: isSelectionMode,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
@@ -1505,6 +1408,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     actions: const [SizedBox.shrink()],
                   )
                 : AppBar(
+                    primary: false,
                     automaticallyImplyLeading: false,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
@@ -1550,11 +1454,22 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       return GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     child: provider.enableSplitScreen
-                      ? Row(
-                          children: [
-                            Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
-                            Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
-                          ],
+                      // 双窗口：两个 pane 各自的滚动通知会冒泡到这里，统一驱动操作栏折叠/展开，
+                      // 与单窗口行为一致。此前完全没有监听 → 双窗口滚动不改变折叠态，
+                      // 切入双窗口前若是折叠态，操作栏就永远不出现（高度被压成 0）。
+                      ? NotificationListener<ScrollNotification>(
+                          onNotification: (n) {
+                            if (n is ScrollUpdateNotification && n.dragDetails != null) {
+                              _onBrowseListDrag(n.scrollDelta ?? 0, n.metrics.pixels, n.metrics.maxScrollExtent);
+                            }
+                            return false; // 继续冒泡，不影响其他监听者
+                          },
+                          child: Row(
+                              children: [
+                                Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
+                                Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
+                              ],
+                          ),
                         )
                       : (provider.isLoading && provider.currentFiles.isEmpty && !provider.isPasting)
                           ? const Center(child: CircularProgressIndicator())
@@ -1735,7 +1650,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                       child: NotificationListener<ScrollNotification>(
                                         onNotification: (n) {
                                           if (n is ScrollUpdateNotification && n.dragDetails != null) {
-                                            _onBrowseListDrag(n.scrollDelta ?? 0, n.metrics.pixels);
+                                            _onBrowseListDrag(n.scrollDelta ?? 0, n.metrics.pixels, n.metrics.maxScrollExtent);
                                           }
                                           return false;
                                         },

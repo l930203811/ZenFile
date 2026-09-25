@@ -23,6 +23,7 @@ import 'folder_grid_item.dart';
 import 'drag_drop_handler.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
+import 'clipboard_menu_sheet.dart';
 import 'unknown_file_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'file_operation_progress_dialog.dart';
@@ -105,190 +106,20 @@ class _PaneBrowserState extends State<PaneBrowser> {
         : '$prefix: $name';
   }
 
-  void _showClipboardMenu(FileManagerProvider provider, ThemeData theme) {
+  /// 打开剪贴板面板（双窗口）。
+  ///
+  /// UI、按钮语义（清除 / 粘贴 / 粘贴并清除）与条目图标全部统一在
+  /// [showClipboardMenuSheet] 里，这里只负责把「粘贴到本 pane 所属 tab」这件事
+  /// 交出去，避免单窗口与双窗口两份实现再次漂移。
+  void _showClipboardMenu(FileManagerProvider provider) {
     _activatePane(provider);
-
-    final itemNames = <String>[];
-    if (provider.isRemoteClipboard) {
-      for (final item in provider.remoteClipboardItems) {
-        itemNames.add(p.basename(item.path));
-      }
-    } else {
-      for (final path in provider.clipboardPaths) {
-        itemNames.add(p.basename(path));
-      }
-    }
-    final l10n = L10n.of(context);
-    final prefix = provider.isCut ? l10n.ui_cut : l10n.ui_copy;
-    final maxItemHeight = 200.0;
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (sheetContext) => Stack(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(sheetContext),
-            child: Container(color: Colors.transparent),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 剪贴板内容列表
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          provider.isCut ? Broken.scissor : Broken.clipboard,
-                          size: 16,
-                          color: provider.isCut
-                              ? Colors.orange
-                              : theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.ui_cut_copy_items(prefix, itemNames.length),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: provider.isCut
-                                ? Colors.orange
-                                : theme.colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: maxItemHeight),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        itemCount: itemNames.length,
-                        itemBuilder: (_, i) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.insert_drive_file_outlined,
-                                size: 14,
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.45,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  itemNames[i],
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withOpacity(0.7),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // 操作按钮
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                    child: Row(
-                      children: [
-                        // 清除按钮（左侧，较小）
-                        Expanded(
-                          flex: 2,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              Navigator.pop(sheetContext);
-                              provider.clearClipboard();
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: theme.colorScheme.error,
-                              side: BorderSide(
-                                color: theme.colorScheme.error.withOpacity(
-                                  0.25,
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.ui_clear,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // 粘贴按钮（右侧，较大）— 粘贴到当前 pane 对应的 tab
-                        Expanded(
-                          flex: 5,
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
-                              Navigator.pop(sheetContext);
-                              await provider.pasteFileToTab(
-                                context,
-                                widget.tabIndex,
-                                clearAfterPaste: true,
-                              );
-                            },
-                            icon: const Icon(Icons.content_paste, size: 16),
-                            label: Text(
-                              l10n.ui_paste,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primary,
-                              foregroundColor: theme.colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    showClipboardMenuSheet(
+      context,
+      provider: provider,
+      onPaste: ({required bool clearAfterPaste}) => provider.pasteFileToTab(
+        context,
+        widget.tabIndex,
+        clearAfterPaste: clearAfterPaste,
       ),
     );
   }
@@ -978,7 +809,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                               alignment: Alignment.centerRight,
                               child: GestureDetector(
                                 onTap: () =>
-                                    _showClipboardMenu(provider, theme),
+                                    _showClipboardMenu(provider),
                                 child: Container(
                                   height: 22,
                                   margin: const EdgeInsets.only(left: 8),

@@ -2638,6 +2638,12 @@ class L10nKo extends L10n {
   String get ui_nav => '로컬';
 
   @override
+  String get ui_paste_and_clear => '붙여넣기 후 비우기';
+
+  @override
+  String get ui_cut_paste_hint => '잘라내기는 이동입니다. 붙여넣은 후 자동으로 비워집니다';
+
+  @override
   String get ui_search_in_settings => '설정에서 검색';
 
   @override

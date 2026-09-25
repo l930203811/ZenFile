@@ -53,3 +53,7 @@ gen_out.txt
 
 # 第三方插件 vendored 源码（本地依赖修复用，不入库）
 vendor/
+
+# AI 协作临时分析产物（录屏抽帧、量测脚本、analyze 输出），不入库
+.local/
+scripts/analyze_out.txt

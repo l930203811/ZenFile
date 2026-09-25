@@ -3119,6 +3119,8 @@
   "cat_vault_desc": "Sicherer Speicher",
   "cat_quick_categories": "Kategorien",
   "ui_nav": "Lokal",
+  "ui_paste_and_clear": "Einfügen und leeren",
+  "ui_cut_paste_hint": "Ausschneiden = Verschieben; danach wird geleert",
   "ui_search_in_settings": "In den Einstellungen suchen",
   "ui_search_group_nav": "Navigation",
   "ui_home": "Start",

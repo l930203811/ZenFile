@@ -2765,6 +2765,12 @@ class L10nDe extends L10n {
   String get ui_nav => 'Lokal';
 
   @override
+  String get ui_paste_and_clear => 'Einfügen und leeren';
+
+  @override
+  String get ui_cut_paste_hint => 'Ausschneiden = Verschieben; danach wird geleert';
+
+  @override
   String get ui_search_in_settings => 'In den Einstellungen suchen';
 
   @override

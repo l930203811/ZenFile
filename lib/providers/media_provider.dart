@@ -858,8 +858,11 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('应用');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('设置')) {
-        _categoryOrder.add('设置');
+      // v2.1.7：「设置」入口已从分类页/自定义快捷方式下线，改由底部「我的」页承载。
+      // 历史持久化数据里的 '设置' 必须清掉 —— getAllCategoriesMap 已无该定义，
+      // 否则自定义快捷方式面板会渲染出一个空行（containsKey 过滤后仍占一个 item）。
+      if (_categoryOrder.contains('设置')) {
+        _categoryOrder.remove('设置');
         orderUpdated = true;
       }
       if (!_categoryOrder.contains('网络')) {
@@ -921,8 +924,9 @@ class MediaProvider extends ChangeNotifier {
         orderUpdated = true;
       }
       if (!_categoryOrder.contains('备份/恢复')) {
-        final settingsIndex = _categoryOrder.indexOf('设置');
-        final insertIndex = settingsIndex >= 0 ? settingsIndex + 1 : _categoryOrder.length;
+        // 原锚点为「设置」（v2.1.7 已下线），改用「应用」，保持既有顺序。
+        final anchorIndex = _categoryOrder.indexOf('应用');
+        final insertIndex = anchorIndex >= 0 ? anchorIndex + 1 : _categoryOrder.length;
         _categoryOrder.insert(insertIndex, '备份/恢复');
         orderUpdated = true;
       }
@@ -998,13 +1002,24 @@ class MediaProvider extends ChangeNotifier {
           activeUpdated = true;
         }
         if (!_activeCategories.contains('备份/恢复')) {
-          final settingsIndex = _activeCategories.indexOf('设置');
-          final insertIndex = settingsIndex >= 0 ? settingsIndex + 1 : _activeCategories.length;
+          // 原锚点为「设置」（v2.1.7 已下线），改用「应用」。
+          final anchorIndex = _activeCategories.indexOf('应用');
+          final insertIndex = anchorIndex >= 0 ? anchorIndex + 1 : _activeCategories.length;
           _activeCategories.insert(insertIndex, '备份/恢复');
           activeUpdated = true;
         }
       }
       // 老用户升级时，「快传」与「保险箱」已并入「工具箱」，不再单独保留。
+      // v2.1.7：同 _categoryOrder，清除历史 active 列表里的「设置」。
+      // 极端情况（用户此前只留「设置」这一项）会清空列表，回落一组核心分类，
+      // 避免分类页变成空白页。
+      if (_activeCategories.contains('设置')) {
+        _activeCategories.remove('设置');
+        if (_activeCategories.isEmpty) {
+          _activeCategories.addAll(['系统', '存储', '空间', '下载']);
+        }
+        activeUpdated = true;
+      }
       if (_activeCategories.contains('快传')) {
         _activeCategories.remove('快传');
         activeUpdated = true;
@@ -1256,7 +1271,6 @@ class MediaProvider extends ChangeNotifier {
     '应用',
     '压缩包',
     '安装包',
-    '设置',
     '备份/恢复',
     '最近',
     '回收站',
@@ -1279,7 +1293,6 @@ class MediaProvider extends ChangeNotifier {
     '应用',
     '压缩包',
     '安装包',
-    '设置',
     '备份/恢复',
     '最近',
     '回收站',

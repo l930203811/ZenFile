@@ -3122,6 +3122,8 @@
   "cat_vault_desc": "안전 저장",
   "cat_quick_categories": "카테고리",
   "ui_nav": "로컬",
+  "ui_paste_and_clear": "붙여넣기 후 비우기",
+  "ui_cut_paste_hint": "잘라내기는 이동입니다. 붙여넣은 후 자동으로 비워집니다",
   "ui_search_in_settings": "설정에서 검색",
   "ui_search_group_nav": "탐색",
   "ui_home": "홈",

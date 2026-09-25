@@ -3122,6 +3122,8 @@
   "cat_vault_desc": "Безопасное хранение",
   "cat_quick_categories": "Категории",
   "ui_nav": "Локальный",
+  "ui_paste_and_clear": "Вставить и очистить",
+  "ui_cut_paste_hint": "Вырезание = перемещение; после вставки очищается",
   "ui_search_in_settings": "Поиск в настройках",
   "ui_search_group_nav": "Навигация",
   "ui_home": "Главная",

@@ -3122,6 +3122,8 @@
   "cat_vault_desc": "تخزين آمن",
   "cat_quick_categories": "الفئات",
   "ui_nav": "محلي",
+  "ui_paste_and_clear": "لصق ومسح",
+  "ui_cut_paste_hint": "القص = نقل؛ تُفرَّغ الحافظة بعد اللصق",
   "ui_search_in_settings": "البحث في الإعدادات",
   "ui_search_group_nav": "التنقل",
   "ui_home": "الرئيسية",

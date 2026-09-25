@@ -5026,6 +5026,18 @@ abstract class L10n {
   /// **'本地'**
   String get ui_nav;
 
+  /// No description provided for @ui_paste_and_clear.
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴并清除'**
+  String get ui_paste_and_clear;
+
+  /// No description provided for @ui_cut_paste_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切为移动，粘贴后自动清空'**
+  String get ui_cut_paste_hint;
+
   /// No description provided for @ui_search_in_settings.
   ///
   /// In zh, this message translates to:

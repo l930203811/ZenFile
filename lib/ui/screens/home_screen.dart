@@ -12,7 +12,7 @@ import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
 import 'directory_screen.dart';
 import 'transfers_screen.dart';
-import 'profile_placeholder_screen.dart';
+import 'more_settings_screen.dart';
 import 'global_search_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -46,14 +46,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   // 正常滑动永远不触发切页（浏览页绝大部分面积都被文件项覆盖）。改为只在拖拽
   // 真正开始后才抑制，既保留防误触又恢复灵敏度。
   bool _dragStartedDuringGesture = false;
+  // 内嵌设置页（第 4 页）是否处于搜索态。嵌套 PopScope 的 onPopInvoked 会被**全部**
+  // 调用，设置页在搜索中处理返回（退出搜索）的同时，本页也会被调用一次 —— 这里据此
+  // 让行，否则会在退出搜索时又弹出「再按一次退出」的提示。
+  bool _settingsSearching = false;
+  // 内嵌设置页是否已首次显示（惰性构建）。IndexedStack 会构建并布局**全部**子页，
+  // 而设置页有 75 个卡片、build 里还 watch 了 FileManagerProvider —— 若一进 App 就
+  // 建出来，分类页首帧和之后每次 provider 刷新都要白算一遍。首次切到第 4 页才创建。
+  bool _settingsTabBuilt = false;
+  // 全局搜索「在设置中搜索」注入的查询词与请求序号：序号变化即要求设置页重新进入
+  // 搜索态（用户可能在设置页手动退出过搜索，再点同一条结果也要能重新过滤）。
+  String? _settingsTabQuery;
+  int _settingsTabQueryId = 0;
+  // 功能入口请求监听是否已注册（didChangeDependencies 可能被多次调用）。
+  bool _featureRequestListenersAttached = false;
+  // provider 引用：dispose 时要用它移除监听（那时不宜再用 context.read）。
+  FileManagerProvider? _fmRef;
   static const double _dualFingerSwipeThreshold = 30.0;
   // 单指切页阈值：最小水平位移 / 免速度门槛的长位移 / 最小速度 / 边缘保护
   static const double _swipeMinDistance = 64.0;
   static const double _swipeLongDistance = 110.0;
   static const double _swipeMinVelocity = 260.0;
   static const double _swipeEdgeGuard = 36.0;
-  // 分类页默认上移量：对齐用户视频最后几秒的卡片位置（顶部空白收紧）。
-  final ScrollController _homeTabScroll = ScrollController(initialScrollOffset: 20);
+  // 底部导航 = 4 个**页面**（分类 / 文件 / 传输 / 设置），滑动与点击都只切页：
+  // 左滑 分类→文件→传输→设置，到最后一页（设置）再左滑打开右侧抽屉；
+  // 右滑 回到上一页，在分类页（第一页）右滑打开左侧抽屉。首尾对称。
+  static const int _settingsTabIndex = 3;
 
   @override
   void initState() {
@@ -81,8 +99,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 缓存屏幕宽度但不订阅 MediaQuery：build 内只用 _screenW，键盘 Insets 逐帧
     // 变化不会让本 widget 重建。旋转等真实尺寸变化会重新触发本方法更新。
     _screenW = MediaQuery.of(context).size.width;
-    // 检查是否需要从设置页面跳转到浏览标签
     final fileManager = context.read<FileManagerProvider>();
+    // 全局搜索功能入口请求（在设置中搜索 / 刷新 / 排序 / 主题 / 自定义快捷方式）：
+    // 注册一次即可，通过 provider 通道把请求转成首页已有的实现。
+    _fmRef = fileManager;
+    if (!_featureRequestListenersAttached) {
+      _featureRequestListenersAttached = true;
+      fileManager.settingsSearchRequestNotifier
+          .addListener(_onSettingsSearchRequested);
+      fileManager.quickActionRequestNotifier
+          .addListener(_onQuickActionRequested);
+    }
+    // 检查是否需要从设置页面跳转到浏览标签
     if (fileManager.navigateToBrowseTab) {
       fileManager.setNavigateToBrowseTab(false);
       if (_currentIndex != 1) {
@@ -94,15 +122,71 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void dispose() {
     _refreshIconController.dispose();
-    _homeTabScroll.dispose();
+    _fmRef?.settingsSearchRequestNotifier
+        .removeListener(_onSettingsSearchRequested);
+    _fmRef?.quickActionRequestNotifier
+        .removeListener(_onQuickActionRequested);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void _switchTab(int index) {
+    // 边界保护：IndexedStack 共 4 页（分类/文件/传输/设置），越界 index 直接忽略，
+    // 避免 IndexedStack index 越界崩溃。
+    if (index < 0 || index > _settingsTabIndex) return;
+    // 标记设置页已激活：让 IndexedStack 在该槽位换成真正的设置页（惰性构建）。
+    if (index == _settingsTabIndex) _settingsTabBuilt = true;
     if (_currentIndex == index) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     setState(() => _currentIndex = index);
+  }
+
+  /// 全局搜索「在设置中搜索」：切到设置页并把查询词交给它过滤显示。
+  void _onSettingsSearchRequested() {
+    if (!mounted) return;
+    final provider = context.read<FileManagerProvider>();
+    final query = provider.pendingSettingsQuery;
+    if (query == null || query.isEmpty) return;
+    setState(() {
+      _settingsTabQuery = query;
+      _settingsTabQueryId = provider.settingsSearchRequestId;
+    });
+    _switchTab(_settingsTabIndex);
+  }
+
+  /// 全局搜索命中「刷新 / 排序 / 深色模式 / 自定义快捷方式」这类依赖当前浏览页
+  /// 状态的入口时，复用本页已有实现执行（避免在搜索页里复制一份逻辑）。
+  void _onQuickActionRequested() {
+    if (!mounted) return;
+    final provider = _fmRef;
+    if (provider == null) return;
+    switch (provider.pendingQuickAction) {
+      case 'refresh':
+        _handleRefresh();
+        break;
+      case 'sort':
+        _switchTab(1);
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
+          SortModal.show(context, provider);
+        });
+        break;
+      case 'customize':
+        _switchTab(0);
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
+          QuickCategoriesGrid.showCustomizeDialog(
+            context,
+            (index) => _switchTab(index),
+          );
+        });
+        break;
+      case 'toggle_theme':
+        widget.toggleTheme();
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -197,6 +281,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _scaffoldKey.currentState?.closeEndDrawer();
           return;
         }
+        // 内嵌设置页搜索中：返回键只用于退出搜索（由设置页自己的 PopScope 处理），
+        // 本层必须让行，否则会同时弹出「再按一次退出」。
+        if (_currentIndex == _settingsTabIndex && _settingsSearching) return;
         // 浏览页路径栏处于编辑态时，返回键仅退出编辑并停留在浏览页（不切换标签页/不导航）
         if (_currentIndex == 1 && provider.isPathEditing) {
           provider.exitPathEditing();
@@ -245,7 +332,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               _scaffoldKey.currentState?.closeEndDrawer();
               _switchTab(0);
               Future.delayed(const Duration(milliseconds: 300), () {
-                QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
+                QuickCategoriesGrid.showCustomizeDialog(context, (index) {
+                  if (!mounted) return;
+                  _switchTab(index);
+                });
               });
             },
             onShowSortModal: () {
@@ -338,8 +428,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
-                      // 向左滑动：切到下一页（分类→文件→传输→我的）
-                      if (_currentIndex < 3) _switchTab(_currentIndex + 1);
+                      // 向左滑动：切到下一页（分类→文件→传输→设置）；
+                      // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
+                      if (_currentIndex < _settingsTabIndex) {
+                        _switchTab(_currentIndex + 1);
+                      } else {
+                        _scaffoldKey.currentState?.openEndDrawer();
+                      }
                     } else if (deltaX > _dualFingerSwipeThreshold) {
                       // 向右滑动：分类页开抽屉，其余切上一页
                       if (_currentIndex == 0) {
@@ -385,8 +480,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
                         if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
                           if (dx < 0) {
-                            // 向左滑动：切到下一页（分类→文件→传输→我的）
-                            if (_currentIndex < 3) _switchTab(_currentIndex + 1);
+                            // 向左滑动：切到下一页（分类→文件→传输→设置）；
+                            // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
+                            if (_currentIndex < _settingsTabIndex) {
+                              _switchTab(_currentIndex + 1);
+                            } else {
+                              _scaffoldKey.currentState?.openEndDrawer();
+                            }
                           } else {
                             // 向右滑动：分类页开抽屉，其余切上一页
                             if (_currentIndex == 0) {
@@ -476,13 +576,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         onEndDrawerCustomize: () {
                           _switchTab(0);
                           Future.delayed(const Duration(milliseconds: 300), () {
-                            QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
+                            QuickCategoriesGrid.showCustomizeDialog(context, (index) {
+                              if (!mounted) return;
+                              _switchTab(index);
+                            });
                           });
                         },
                         onRefresh: () => _handleRefresh(),
                       ),
                       TransfersScreen(onNavigateTab: (index) => _switchTab(index)),
-                      const ProfilePlaceholderScreen(),
+                      // 第 4 页「设置」：内嵌渲染（不再 push 全屏路由）。
+                      // embedded=true 才会隐藏返回箭头并关掉 Scaffold/AppBar 的 primary
+                      // 状态栏占位；onSearchActiveChanged 供返回键去重（见 _settingsSearching）。
+                      // 未首次进入时用占位：避免一启动就构建/布局这 75 个卡片（惰性构建）。
+                      if (!_settingsTabBuilt)
+                        const SizedBox.shrink()
+                      else
+                        MoreSettingsScreen(
+                          embedded: true,
+                          // 由全局搜索「在设置中搜索」注入的查询词与请求序号。
+                          initialQuery: _settingsTabQuery,
+                          searchRequestId: _settingsTabQueryId,
+                          onSearchActiveChanged: (v) => _settingsSearching = v,
+                        ),
                     ],
                   );
                 },
@@ -586,7 +702,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部 4-tab 导航：分类 / 文件 / 传输 / 我的。
+  /// 底部导航项：分类 / 文件 / 传输 / 设置 —— **四项都是页面**（`_currentIndex` 0..3）。
+  ///
+  /// v2.1.7 起「我的」页已下线：分类页卡片与自定义快捷方式面板里的「设置」同时移除，
+  /// 设置入口统一收敛到本项（第 4 页，`MoreSettingsScreen(embedded: true)` 内嵌渲染，
+  /// 不再 push 全屏路由）。滑动与点击都只是切页；左滑到底（设置页）再左滑打开右侧抽屉。
   Widget _buildBottomTabs() {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
@@ -594,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       [Broken.category, l10n.cat_quick_categories, 0],
       [Broken.folder, l10n.ui_file, 1],
       [Broken.send_2, l10n.ui_transfers, 2],
-      [Broken.user, l10n.ui_profile, 3],
+      [Broken.setting_2, l10n.cat_settings, _settingsTabIndex],
     ];
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
@@ -659,20 +779,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   }
 
   /// 分类页（快捷操作页）：分类网格 + 自定义快捷方式，顶部/底部由 HomeScreen 统一提供。
+  ///
+  /// ⚠️ 这里的 `SingleChildScrollView` 是分类页**唯一**的滚动层，而且必须放在
+  /// **高度有界**的位置（`LayoutBuilder` 的 `constraints.maxHeight`）。
+  /// 踩过的坑：`QuickCategoriesGrid` 顶层是 `Padding > Column`，若把滚动视图塞进
+  /// 它内部（Column 的普通子项），它会拿到 maxHeight=∞ ⇒ 可视区高度等于内容高度
+  /// ⇒ **永远滚不动**，超出部分被裁掉（表现为「每行 2 列 / 加了更多自定义快捷方式后
+  /// 底部卡片看不到、也拉不上来」）。所以滚动与「顶部呼吸位」都由本方法负责，
+  /// 网格只按列数输出固定比例的卡片行高。
+  ///
+  /// 三点约定：
+  /// ① 不用 `initialScrollOffset` 去「凑」位置——从 0 开始，顶部只留 4dp 呼吸位，
+  ///    卡片紧贴顶部栏（换列数/加减快捷方式都不会再跑偏）；
+  /// ② `ClampingScrollPhysics`：安卓原生手感，不回弹就不会把内容画到可视区之外；
+  /// ③ 内容不足一屏时没有任何可滚动区间 ⇒ 完全拖不动，不会把卡片拉下来。
   Widget _buildHomeTab() {
-    return SingleChildScrollView(
-      controller: _homeTabScroll,
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          QuickCategoriesGrid(
-            onNavigateTab: (index) => _switchTab(index),
-            showTitle: false,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final grid = QuickCategoriesGrid(
+          onNavigateTab: (index) => _switchTab(index),
+          showTitle: false,
+        );
+        // 高度无界（极端嵌套场景）时不套滚动，避免不必要的布局约束冲突。
+        if (!constraints.hasBoundedHeight) return grid;
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.only(top: 4, bottom: 4),
+            child: grid,
           ),
-          const SizedBox(height: 24),
-        ],
-      ),
+        );
+      },
     );
   }
 }

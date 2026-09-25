@@ -3193,6 +3193,8 @@
   "cat_vault_desc": "安全儲存",
   "cat_quick_categories": "分類",
   "ui_nav": "本地",
+  "ui_paste_and_clear": "貼上並清除",
+  "ui_cut_paste_hint": "剪下為移動，貼上後自動清空",
   "ui_search_in_settings": "在設定中搜尋",
   "ui_search_group_nav": "導覽",
   "ui_home": "主頁",

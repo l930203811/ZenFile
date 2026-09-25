@@ -436,10 +436,20 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _items.isEmpty
                 ? Center(child: Text(L10n.of(context).msg4614630a))
-                : ListView.builder(
+                : Builder(builder: (context) {
+                    // FAB 悬浮在 body 之上，会给列表末尾的条目留出可点区域，
+                    // 否则最底部的文件/文件夹会被「添加所选」按钮遮挡，无法选中。
+                    // pickDirectory 模式的 FAB 常驻；文件选择模式仅在有选中项时出现。
+                    final mediaQuery = MediaQuery.of(context);
+                    final hasFab =
+                        widget.pickDirectory || _selectedPaths.isNotEmpty;
+                    final bottomPadding = hasFab
+                        ? mediaQuery.padding.bottom + 88 // FAB 高 56 + 边距 16 + 缓冲
+                        : mediaQuery.padding.bottom + 8;
+                    return ListView.builder(
                     controller: _scrollController,
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
                     itemCount: _items.length,
                     itemBuilder: (context, index) {
                       final item = _items[index];
@@ -526,7 +536,8 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                         ),
                       );
                     },
-                  ),
+                    );
+                  }),
         floatingActionButton: widget.pickDirectory
             ? _selectedPaths.isNotEmpty
                 ? FloatingActionButton.extended(

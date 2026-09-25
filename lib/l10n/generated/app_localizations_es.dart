@@ -2782,6 +2782,12 @@ class L10nEs extends L10n {
   String get ui_nav => 'Local';
 
   @override
+  String get ui_paste_and_clear => 'Pegar y vaciar';
+
+  @override
+  String get ui_cut_paste_hint => 'Cortar = mover; se vacía tras pegar';
+
+  @override
   String get ui_search_in_settings => 'Buscar en los ajustes';
 
   @override

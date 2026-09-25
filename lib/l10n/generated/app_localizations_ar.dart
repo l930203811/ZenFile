@@ -2720,6 +2720,12 @@ class L10nAr extends L10n {
   String get ui_nav => 'محلي';
 
   @override
+  String get ui_paste_and_clear => 'لصق ومسح';
+
+  @override
+  String get ui_cut_paste_hint => 'القص = نقل؛ تُفرَّغ الحافظة بعد اللصق';
+
+  @override
   String get ui_search_in_settings => 'البحث في الإعدادات';
 
   @override

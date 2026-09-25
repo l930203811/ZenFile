@@ -3122,6 +3122,8 @@
   "cat_vault_desc": "Almacenamiento seguro",
   "cat_quick_categories": "Categorías",
   "ui_nav": "Local",
+  "ui_paste_and_clear": "Pegar y vaciar",
+  "ui_cut_paste_hint": "Cortar = mover; se vacía tras pegar",
   "ui_search_in_settings": "Buscar en los ajustes",
   "ui_search_group_nav": "Navegación",
   "ui_home": "Inicio",

@@ -3126,6 +3126,8 @@
   "cat_vault_desc": "安全な保存",
   "cat_quick_categories": "カテゴリ",
   "ui_nav": "ローカル",
+  "ui_paste_and_clear": "貼り付けて消去",
+  "ui_cut_paste_hint": "切り取りは移動です。貼り付け後に自動で消去",
   "ui_search_in_settings": "設定内を検索",
   "ui_search_group_nav": "ナビゲーション",
   "ui_home": "ホーム",

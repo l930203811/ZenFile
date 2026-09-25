@@ -3129,6 +3129,8 @@
   "cat_vault_desc": "Secure Storage",
   "cat_quick_categories": "Categories",
   "ui_nav": "Local",
+  "ui_paste_and_clear": "Paste and clear",
+  "ui_cut_paste_hint": "Cut = move; clipboard clears after paste",
   "ui_search_in_settings": "Search in settings",
   "ui_search_group_nav": "Navigation",
   "ui_home": "Home",

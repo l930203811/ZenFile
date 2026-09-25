@@ -2641,6 +2641,12 @@ class L10nJa extends L10n {
   String get ui_nav => 'ローカル';
 
   @override
+  String get ui_paste_and_clear => '貼り付けて消去';
+
+  @override
+  String get ui_cut_paste_hint => '切り取りは移動です。貼り付け後に自動で消去';
+
+  @override
   String get ui_search_in_settings => '設定内を検索';
 
   @override

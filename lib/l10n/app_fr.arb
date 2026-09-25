@@ -3122,6 +3122,8 @@
   "cat_vault_desc": "Stockage sécurisé",
   "cat_quick_categories": "Catégories",
   "ui_nav": "Local",
+  "ui_paste_and_clear": "Coller et vider",
+  "ui_cut_paste_hint": "Couper = déplacer ; vidé après le collage",
   "ui_search_in_settings": "Rechercher dans les paramètres",
   "ui_search_group_nav": "Navigation",
   "ui_home": "Accueil",
