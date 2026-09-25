@@ -1815,6 +1815,17 @@ class PreferencesService {
       await _prefs?.setString(key, jsonEncode(config));
     }
   }
+
+  /// 底部导航栏总开关（自定义快捷方式页配置）：关闭时底部 4-tab 折叠隐藏，默认开启。
+  static const String _keyBottomNavBarEnabled = 'bottom_nav_bar_enabled';
+
+  static bool getBottomNavBarEnabled({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyBottomNavBarEnabled) ?? defaultValue;
+  }
+
+  static Future<void> saveBottomNavBarEnabled(bool enabled) async {
+    await _prefs?.setBool(_keyBottomNavBarEnabled, enabled);
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 

@@ -623,6 +623,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   /// 底部栏：与顶部栏按「导航栏位置」设置互换。
   Widget _buildNavBottomBar(bool bottomTabs) {
+    // 底部导航栏总开关（自定义快捷方式页配置）：关闭时折叠隐藏（provider 监听实时生效）
+    if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
+      return const SizedBox.shrink();
+    }
     return bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
   }
 
@@ -702,12 +706,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部导航项：分类 / 浏览 固定（滑动轴心，第 0/1 页）；第 2/3 槽位可被自定义快捷
-  /// 方式页中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口
-  /// （push 页面，不参与滑动）。滑动切页仅保留 左抽屉→分类→浏览→右抽屉 四态。
+  /// 底部导航 4 个槽位全部可自定义（默认 分类/文件/传输/设置），可被自定义快捷方式页
+  /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
+  /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
+  /// 滑动链路固定为 左抽屉→分类页→浏览页→右抽屉，即使底部 tab 被替换也始终可达。
   Widget _buildBottomTabs() {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
+    final slot0 = _resolveTabSlot(
+      0,
+      defaultIcon: Broken.category,
+      defaultLabel: l10n.cat_quick_categories,
+      defaultIndex: 0,
+    );
+    final slot1 = _resolveTabSlot(
+      1,
+      defaultIcon: Broken.folder,
+      defaultLabel: l10n.ui_file,
+      defaultIndex: 1,
+    );
     final slot2 = _resolveTabSlot(
       2,
       defaultIcon: Broken.send_2,
@@ -720,12 +737,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       defaultLabel: l10n.cat_settings,
       defaultIndex: _settingsTabIndex,
     );
-    final tabData = <List<Object>>[
-      [Broken.category, l10n.cat_quick_categories, 0, false, 0],
-      [Broken.folder, l10n.ui_file, 1, false, 1],
-      slot2,
-      slot3,
-    ];
+    final tabData = <List<Object>>[slot0, slot1, slot2, slot3];
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
@@ -757,7 +769,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 解析底部导航槽位 2/3 的显示与点击：未自定义返回默认内置页，自定义返回对应入口。
+  /// 解析底部导航槽位 0-3 的显示与点击：未自定义返回默认内置页，自定义返回对应入口。
   List<Object> _resolveTabSlot(
     int slot, {
     required IconData defaultIcon,
@@ -771,10 +783,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final type = cfg['type'];
     final key = cfg['key'];
     if (type == 'builtin') {
-      if (key == 'tab_settings') {
-        return [Broken.setting_2, L10n.of(context).cat_settings, _settingsTabIndex, false, slot];
+      switch (key) {
+        case 'tab_categories':
+          return [Broken.category, L10n.of(context).cat_quick_categories, 0, false, slot];
+        case 'tab_files':
+          return [Broken.folder, L10n.of(context).ui_file, 1, false, slot];
+        case 'tab_settings':
+          return [Broken.setting_2, L10n.of(context).cat_settings, _settingsTabIndex, false, slot];
+        default:
+          return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
       }
-      return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
     }
     // category / shortcut：从分类页全部入口重建显示与动作（与分类页网格同源）
     final map = QuickCategoriesGrid.getAllCategoriesMap(
@@ -810,8 +828,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _switchTab(index);
         }
       },
-      // 槽 2/3 长按：不进自定义快捷方式页即可替换入口
-      onLongPress: slot >= 2 ? () => _showBottomTabPicker(slot) : null,
+      // 任意槽位长按：不进自定义快捷方式页即可替换入口
+      onLongPress: () => _showBottomTabPicker(slot),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -848,13 +866,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final type = cfg['type'];
     final key = cfg['key'];
     if (type == 'builtin') {
-      if (key == 'tab_settings') {
-        _settingsTabBuilt = true;
-        _switchTab(_settingsTabIndex);
-      } else {
-        _switchTab(2);
+      switch (key) {
+        case 'tab_categories':
+          _switchTab(0);
+          return;
+        case 'tab_files':
+          _switchTab(1);
+          return;
+        case 'tab_settings':
+          _settingsTabBuilt = true;
+          _switchTab(_settingsTabIndex);
+          return;
+        default:
+          _switchTab(2);
+          return;
       }
-      return;
     }
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,
@@ -867,7 +893,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (action != null) action();
   }
 
-  /// 底部槽位长按选择器：不进自定义快捷方式页即可替换槽位 2/3。
+  /// 底部槽位长按选择器：不进自定义快捷方式页即可替换任意槽位。
   Future<void> _showBottomTabPicker(int slot) async {
     final current = PreferencesService.getBottomTabSlotConfig(slot);
     final cfg = await QuickCategoriesGrid.showBottomTabPicker(

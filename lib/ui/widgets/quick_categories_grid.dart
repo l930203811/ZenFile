@@ -376,8 +376,20 @@ class QuickCategoriesGrid extends StatefulWidget {
         final l10n = L10n.of(sheetContext);
         final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
         final allMap = getAllCategoriesMap(sheetContext, isDark, (index) {});
-        // 候选：内置传输/设置 + 分类页全部入口（内置 category / 自定义 shortcut）
+        // 候选：内置 分类/文件/传输/设置 + 分类页全部入口（内置 category / 自定义 shortcut）
         final options = <Map<String, dynamic>>[
+          {
+            'type': 'builtin',
+            'key': 'tab_categories',
+            'label': l10n.cat_quick_categories,
+            'icon': Broken.category,
+          },
+          {
+            'type': 'builtin',
+            'key': 'tab_files',
+            'label': l10n.ui_file,
+            'icon': Broken.folder,
+          },
           {
             'type': 'builtin',
             'key': 'tab_transfers',
@@ -425,7 +437,7 @@ class QuickCategoriesGrid extends StatefulWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  l10n.ui_bottom_tab_slot(slot == 3 ? 3 : 2),
+                  l10n.ui_bottom_tab_slot(slot + 1),
                   style: TextStyle(
                     fontSize: 12,
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -1596,7 +1608,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    L10n.of(context).ui_bottom_tab_slot(slot == 3 ? 3 : 2),
+                    L10n.of(context).ui_bottom_tab_slot(slot + 1),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -1637,12 +1649,28 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
   ) {
     final l10n = L10n.of(context);
     if (cfg == null) {
-      return slot == 3 ? l10n.cat_settings : l10n.ui_transfers;
+      switch (slot) {
+        case 0:
+          return l10n.cat_quick_categories;
+        case 1:
+          return l10n.ui_file;
+        case 3:
+          return l10n.cat_settings;
+        default:
+          return l10n.ui_transfers;
+      }
     }
     if (cfg['type'] == 'builtin') {
-      return cfg['key'] == 'tab_settings'
-          ? l10n.cat_settings
-          : l10n.ui_transfers;
+      switch (cfg['key']) {
+        case 'tab_categories':
+          return l10n.cat_quick_categories;
+        case 'tab_files':
+          return l10n.ui_file;
+        case 'tab_settings':
+          return l10n.cat_settings;
+        default:
+          return l10n.ui_transfers;
+      }
     }
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,
@@ -1794,13 +1822,17 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                   ),
                                 ),
                               ),
-                              Text(
-                                L10n.of(context).ui_long_press_switch,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.5),
-                                ),
+                              // 总开关：关闭时底部 4-tab 折叠隐藏
+                              Switch(
+                                value: context
+                                    .watch<FileManagerProvider>()
+                                    .bottomNavBarEnabled,
+                                onChanged: (v) {
+                                  context
+                                      .read<FileManagerProvider>()
+                                      .setBottomNavBarEnabled(v);
+                                  setModalState(() {});
+                                },
                               ),
                             ],
                           ),
@@ -1819,6 +1851,22 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 2.0,
+                          ),
+                          child: Text(
+                            L10n.of(context).ui_long_press_switch,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.colorScheme.onSurface
+                                  .withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        _buildBottomSlotRow(context, 0, setModalState),
+                        _buildBottomSlotRow(context, 1, setModalState),
                         _buildBottomSlotRow(context, 2, setModalState),
                         _buildBottomSlotRow(context, 3, setModalState),
                         const SizedBox(height: 8),

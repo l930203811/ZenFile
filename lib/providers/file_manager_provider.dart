@@ -192,6 +192,7 @@ class FileManagerProvider extends ChangeNotifier {
     _swipeMode = PreferencesService.getSwipeMode();
     _showFolderFileCount = PreferencesService.getShowFolderFileCount();
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
+    _bottomNavBarEnabled = PreferencesService.getBottomNavBarEnabled();
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
     _showMediaPreviews = PreferencesService.getShowMediaPreviews();
     // 进度通知器在进度置空时清除最小化状态（字段初始化器无法访问实例方法，故在此赋值）。
@@ -1179,6 +1180,17 @@ class FileManagerProvider extends ChangeNotifier {
     if (_showBottomActionBar == value) return;
     _showBottomActionBar = value;
     PreferencesService.saveShowBottomActionBar(_showBottomActionBar);
+    notifyListeners();
+  }
+
+  // 底部导航栏总开关（自定义快捷方式页配置）：关闭时底部 4-tab 折叠隐藏
+  bool _bottomNavBarEnabled = true;
+  bool get bottomNavBarEnabled => _bottomNavBarEnabled;
+
+  void setBottomNavBarEnabled(bool value) {
+    if (_bottomNavBarEnabled == value) return;
+    _bottomNavBarEnabled = value;
+    PreferencesService.saveBottomNavBarEnabled(_bottomNavBarEnabled);
     notifyListeners();
   }
 
