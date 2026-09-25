@@ -26,13 +26,11 @@ class ZenFileEndDrawer extends StatefulWidget {
 }
 
 class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
-  late bool _isFavoritesExpanded;
   late Set<String> _collapsedGroups;
 
   @override
   void initState() {
     super.initState();
-    _isFavoritesExpanded = PreferencesService.getDrawerSectionExpanded('favorites');
     _collapsedGroups = PreferencesService.getFavoritesGroupCollapsed();
   }
 
@@ -46,19 +44,28 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
             child: Row(
               children: [
                 Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 28),
                 const SizedBox(width: 14),
-                Text(
-                  L10n.of(context).ui_favorites,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                Expanded(
+                  child: Text(
+                    L10n.of(context).ui_favorites,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 26),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: L10n.of(context).ui_new_favorite,
+                  onPressed: () => _showAddFavoriteDialog(context),
                 ),
               ],
             ),
@@ -71,50 +78,20 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.provider != null)
-                    ExpansionTile(
-                      initiallyExpanded: _isFavoritesExpanded,
-                      onExpansionChanged: (expanded) {
-                        setState(() => _isFavoritesExpanded = expanded);
-                        PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
-                      },
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              L10n.of(context).ui_favorites,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                              maxLines: 2,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 22),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            tooltip: L10n.of(context).ui_new_favorite,
-                            onPressed: () => _showAddFavoriteDialog(context),
-                          ),
-                        ],
-                      ),
-                      childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      children: widget.provider!.favorites.isEmpty
-                          ? [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Text(
-                                  L10n.of(context).msg551f98ba,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                ),
-                              ),
-                            ]
-                          : _buildGroupedFavorites(context),
-                    ),
+                  if (widget.provider != null) ...[
+                    if (widget.provider!.favorites.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          L10n.of(context).msg551f98ba,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        ),
+                      )
+                    else
+                      ..._buildGroupedFavorites(context),
+                  ],
 
                   const SizedBox(height: 24),
                 ],
