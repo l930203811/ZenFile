@@ -4555,7 +4555,7 @@ class L10nEn extends L10n {
   String get ui_4columns => '4 Columns';
 
   @override
-  String get ui_show_custom_entry => 'Show Custom Entry';
+  String get ui_show_custom_entry => 'Custom';
 
   @override
   String get msge8b8e9b3 => 'Common Features';
@@ -8024,7 +8024,7 @@ class L10nEn extends L10n {
   String get ui_text_editor_import => 'Import text file';
 
   @override
-  String get ui_bottom_tab_bar => 'Bottom navigation bar';
+  String get ui_bottom_tab_bar => 'Show Navigation Bar';
 
   @override
   String get ui_pick_bottom_tab => 'Choose bottom entry';

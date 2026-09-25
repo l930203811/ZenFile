@@ -402,6 +402,12 @@ class QuickCategoriesGrid extends StatefulWidget {
             'label': l10n.cat_settings,
             'icon': Broken.setting_2,
           },
+          {
+            'type': 'custom_entry',
+            'key': 'custom_entry',
+            'label': l10n.ui_show_custom_entry,
+            'icon': Broken.edit_2,
+          },
           ...allMap.entries.map((e) => {
                 'type': (e.value['isCustom'] == true) ? 'shortcut' : 'category',
                 'key': e.key,
@@ -914,6 +920,15 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final columns = PreferencesService.getCategoriesGridColumns();
     // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
     final hasCustomEntry = PreferencesService.getCustomEntryVisible();
+    // 自定义入口在完整分类 order 中的插入位置（0..分类数），支持拖动排序。
+    final customPosRaw = PreferencesService.getCustomEntryPosition();
+    final customPos = customPosRaw.clamp(0, mediaProvider.categoryOrder.length);
+    // 网格中自定义入口的显示位置 = activeLabels 里 order 索引 < customPos 的数量。
+    final customGridIndex = hasCustomEntry
+        ? activeLabels
+            .where((l) => mediaProvider.categoryOrder.indexOf(l) < customPos)
+            .length
+        : activeList.length;
     final itemCount = activeList.length + (hasCustomEntry ? 1 : 0);
 
     return Padding(
@@ -1025,11 +1040,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   ),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
-                    if (PreferencesService.getCustomEntryVisible() &&
-                        index == activeList.length) {
+                    if (hasCustomEntry && index == customGridIndex) {
                       return _buildCustomEntryCard(theme, iconSize);
                     }
-                    final cat = activeList[index];
+                    final catIndex = index > customGridIndex ? index - 1 : index;
+                    if (catIndex >= activeList.length) {
+                      return const SizedBox.shrink(key: ValueKey('empty2'));
+                    }
+                    final cat = activeList[catIndex];
                     final labelKey = activeLabels[index];
                     final label = cat['label'] as String;
                     final icon = cat['icon'] as IconData;
@@ -1672,6 +1690,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
           return l10n.ui_transfers;
       }
     }
+    if (cfg['type'] == 'custom_entry') {
+      return l10n.ui_show_custom_entry;
+    }
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,
       Theme.of(context).brightness == Brightness.dark,
@@ -1755,10 +1776,69 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               bottom:
                                   MediaQuery.of(context).padding.bottom + 16,
                             ),
-                            onReorder: (oldIndex, newIndex) =>
-                                provider.reorderCategory(oldIndex, newIndex),
-                            itemCount: order.length,
+                            onReorder: (oldIndex, newIndex) {
+                              if (newIndex > oldIndex) newIndex -= 1;
+                              final customPos =
+                                  PreferencesService.getCustomEntryPosition();
+                              if (oldIndex == customPos) {
+                                // 拖动的是「自定义」入口：仅更新插入位置
+                                PreferencesService.saveCustomEntryPosition(
+                                  newIndex.clamp(0, order.length),
+                                );
+                                setModalState(() {});
+                                return;
+                              }
+                              // 拖动的是分类：映射到分类索引，并修正 custom entry 插入点
+                              final oldCat =
+                                  oldIndex > customPos ? oldIndex - 1 : oldIndex;
+                              var newCat =
+                                  newIndex > customPos ? newIndex - 1 : newIndex;
+                              var newCustomPos = customPos;
+                              if (oldCat < customPos && newCat >= customPos) {
+                                newCustomPos -= 1;
+                              } else if (oldCat >= customPos &&
+                                  newCat < customPos) {
+                                newCustomPos += 1;
+                              }
+                              if (oldCat != newCat) {
+                                provider.reorderCategory(oldCat, newCat);
+                              }
+                              PreferencesService.saveCustomEntryPosition(
+                                newCustomPos.clamp(0, order.length),
+                              );
+                              setModalState(() {});
+                            },
+                            itemCount: order.length + 1,
                             itemBuilder: (context, index) {
+                              if (index == order.length) {
+                                // 「自定义」入口行：与分类项同级，可开关、可拖动排序
+                                return Container(
+                                  key: const ValueKey('__custom_entry__'),
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: Icon(
+                                      Broken.edit_2,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    title: Text(
+                                      L10n.of(context).ui_show_custom_entry,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    trailing: Switch(
+                                      value: PreferencesService
+                                          .getCustomEntryVisible(),
+                                      onChanged: (v) {
+                                        PreferencesService
+                                            .saveCustomEntryVisible(v);
+                                        setModalState(() {});
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
                               final label = order[index];
                               final cat = categoriesMap[label];
                               if (cat == null)
@@ -1890,51 +1970,28 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0,
-                            vertical: 2.0,
-                          ),
-                          child: Text(
-                            L10n.of(context).ui_long_press_switch,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: theme.colorScheme.onSurface
-                                  .withOpacity(0.5),
+                        // 槽位配置区：开关关闭时整体折叠隐藏
+                        if (PreferencesService.getBottomNavBarEnabled()) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 2.0,
+                            ),
+                            child: Text(
+                              L10n.of(context).ui_long_press_switch,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.5),
+                              ),
                             ),
                           ),
-                        ),
-                        _buildBottomSlotRow(context, 0, setModalState),
-                        _buildBottomSlotRow(context, 1, setModalState),
-                        _buildBottomSlotRow(context, 2, setModalState),
-                        _buildBottomSlotRow(context, 3, setModalState),
+                          _buildBottomSlotRow(context, 0, setModalState),
+                          _buildBottomSlotRow(context, 1, setModalState),
+                          _buildBottomSlotRow(context, 2, setModalState),
+                          _buildBottomSlotRow(context, 3, setModalState),
+                        ],
                         const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0,
-                            vertical: 4.0,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  L10n.of(context).ui_show_custom_entry,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                              Switch(
-                                value: PreferencesService.getCustomEntryVisible(),
-                                onChanged: (v) {
-                                  PreferencesService.saveCustomEntryVisible(v);
-                                  setModalState(() {});
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,

@@ -792,6 +792,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
       }
     }
+    // custom_entry：打开自定义快捷方式弹窗
+    if (type == 'custom_entry') {
+      return [
+        Broken.edit_2,
+        L10n.of(context).ui_show_custom_entry,
+        -1,
+        false,
+        slot,
+      ];
+    }
     // category / shortcut：从分类页全部入口重建显示与动作（与分类页网格同源）
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,
@@ -879,6 +889,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _switchTab(2);
           return;
       }
+    }
+    if (type == 'custom_entry') {
+      _switchTab(0);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        QuickCategoriesGrid.showCustomizeDialog(context, (index) {
+          if (!mounted) return;
+          _switchTab(index);
+        });
+      });
+      return;
     }
     final map = QuickCategoriesGrid.getAllCategoriesMap(
       context,

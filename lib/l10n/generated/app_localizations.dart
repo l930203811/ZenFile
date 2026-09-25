@@ -8245,7 +8245,7 @@ abstract class L10n {
   /// No description provided for @ui_show_custom_entry.
   ///
   /// In zh, this message translates to:
-  /// **'在分类页显示自定义入口'**
+  /// **'自定义'**
   String get ui_show_custom_entry;
 
   /// Right side menu header title
@@ -14263,7 +14263,7 @@ abstract class L10n {
   /// Bottom navigation bar
   ///
   /// In zh, this message translates to:
-  /// **'底部导航栏'**
+  /// **'显示导航栏'**
   String get ui_bottom_tab_bar;
 
   /// Choose bottom entry

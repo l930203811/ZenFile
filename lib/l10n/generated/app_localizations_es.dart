@@ -4620,7 +4620,7 @@ class L10nEs extends L10n {
   String get ui_4columns => '4 Columnas';
 
   @override
-  String get ui_show_custom_entry => 'Mostrar entrada personalizada';
+  String get ui_show_custom_entry => 'Personalizado';
 
   @override
   String get msge8b8e9b3 => 'Acciones rápidas';
@@ -8130,7 +8130,7 @@ class L10nEs extends L10n {
   String get ui_text_editor_import => 'Importar archivo de texto';
 
   @override
-  String get ui_bottom_tab_bar => 'Barra de navegación inferior';
+  String get ui_bottom_tab_bar => 'Mostrar barra de navegación';
 
   @override
   String get ui_pick_bottom_tab => 'Elegir entrada inferior';

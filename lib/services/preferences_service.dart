@@ -1841,6 +1841,17 @@ class PreferencesService {
   static Future<void> saveBottomNavBarEnabled(bool enabled) async {
     await _prefs?.setBool(_keyBottomNavBarEnabled, enabled);
   }
+
+  /// 自定义入口（「自定义」开关）在分类列表中的插入位置（0..分类数，等于分类数=末尾）。
+  static const String _keyCustomEntryPosition = 'custom_entry_position';
+
+  static int getCustomEntryPosition({int defaultValue = 0}) {
+    return _prefs?.getInt(_keyCustomEntryPosition) ?? defaultValue;
+  }
+
+  static Future<void> saveCustomEntryPosition(int position) async {
+    await _prefs?.setInt(_keyCustomEntryPosition, position);
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 

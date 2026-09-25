@@ -4386,7 +4386,7 @@
   "ui_2columns": "2열",
   "ui_3columns": "3열",
   "ui_4columns": "4열",
-  "ui_show_custom_entry": "사용자 정의 항목 표시",
+  "ui_show_custom_entry": "사용자 지정",
   "msge8b8e9b3": "빠른 작업",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
@@ -8052,7 +8052,7 @@
   "@ui_text_editor_import": {
     "description": "text editor: import text file"
   },
-  "ui_bottom_tab_bar": "하단 탐색 모음",
+  "ui_bottom_tab_bar": "탐색 모음 표시",
   "@ui_bottom_tab_bar": {"description": "Bottom navigation bar"},
   "ui_pick_bottom_tab": "하단 항목 선택",
   "@ui_pick_bottom_tab": {"description": "Choose bottom entry"},

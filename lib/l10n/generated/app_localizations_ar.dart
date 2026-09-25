@@ -4537,7 +4537,7 @@ class L10nAr extends L10n {
   String get ui_4columns => '4 أعمدة';
 
   @override
-  String get ui_show_custom_entry => 'إظهار الإدخال المخصص';
+  String get ui_show_custom_entry => 'مخصص';
 
   @override
   String get msge8b8e9b3 => 'إجراءات سريعة';
@@ -7996,7 +7996,7 @@ class L10nAr extends L10n {
   String get ui_text_editor_import => 'استيراد ملف نصي';
 
   @override
-  String get ui_bottom_tab_bar => 'شريط التنقل السفلي';
+  String get ui_bottom_tab_bar => 'إظهار شريط التنقل';
 
   @override
   String get ui_pick_bottom_tab => 'اختيار عنصر سفلي';

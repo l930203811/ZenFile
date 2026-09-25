@@ -4376,7 +4376,7 @@ class L10nZh extends L10n {
   String get ui_4columns => '4列';
 
   @override
-  String get ui_show_custom_entry => '在分类页显示自定义入口';
+  String get ui_show_custom_entry => '自定义';
 
   @override
   String get msge8b8e9b3 => '常用功能';
@@ -7610,7 +7610,7 @@ class L10nZh extends L10n {
   String get ui_text_editor_import => '导入文本文件';
 
   @override
-  String get ui_bottom_tab_bar => '底部导航栏';
+  String get ui_bottom_tab_bar => '显示导航栏';
 
   @override
   String get ui_pick_bottom_tab => '选择底部入口';
@@ -11951,7 +11951,7 @@ class L10nZhTw extends L10nZh {
   String get ui_4columns => '4列';
 
   @override
-  String get ui_show_custom_entry => '在分類頁顯示自定義入口';
+  String get ui_show_custom_entry => '自訂';
 
   @override
   String get msge8b8e9b3 => '常用功能';
@@ -15203,7 +15203,7 @@ class L10nZhTw extends L10nZh {
   String get ui_text_editor_import => '匯入文字檔';
 
   @override
-  String get ui_bottom_tab_bar => '底部導覽列';
+  String get ui_bottom_tab_bar => '顯示導覽列';
 
   @override
   String get ui_pick_bottom_tab => '選擇底部入口';

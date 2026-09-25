@@ -4598,7 +4598,7 @@ class L10nDe extends L10n {
   String get ui_4columns => '4 Spalten';
 
   @override
-  String get ui_show_custom_entry => 'Benutzerdefinierten Eintrag anzeigen';
+  String get ui_show_custom_entry => 'Benutzerdefiniert';
 
   @override
   String get msge8b8e9b3 => 'Schnellaktionen';
@@ -8116,7 +8116,7 @@ class L10nDe extends L10n {
   String get ui_text_editor_import => 'Textdatei importieren';
 
   @override
-  String get ui_bottom_tab_bar => 'Untere Navigationsleiste';
+  String get ui_bottom_tab_bar => 'Navigationsleiste anzeigen';
 
   @override
   String get ui_pick_bottom_tab => 'Untereintrag wählen';
