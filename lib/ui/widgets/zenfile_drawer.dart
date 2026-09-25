@@ -341,7 +341,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                     ),
                     _buildDrawerTile(
                       context,
-                      icon: Broken.refresh,
+                      icon: Broken.refresh_2,
                       title: L10n.of(context).ui_view_update,
                       isPrimary: true,
                       onTap: () {
