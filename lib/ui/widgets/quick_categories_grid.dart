@@ -2067,6 +2067,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               await PreferencesService.saveBottomTabSlotConfig(slot, picked);
             }
             if (mounted) setModalState(() {});
+            // 触发 HomeScreen 重建：底部 4-tab 即时刷新为新入口
+            // （HomeScreen watch FileManagerProvider，MediaProvider 不触发其重建）
+            context.read<FileManagerProvider>().notifyListeners();
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
