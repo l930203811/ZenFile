@@ -87,6 +87,8 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                       setState(() => _isQuickActionsExpanded = expanded);
                       PreferencesService.saveDrawerSectionExpanded('quick_actions', expanded);
                     },
+                    shape: const Border(),
+                    collapsedShape: const Border(),
                     leading: Icon(Broken.command, color: theme.colorScheme.primary, size: 24),
                     title: Text(
                       L10n.of(context).msge8b8e9b3,
@@ -164,6 +166,8 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         setState(() => _isFavoritesExpanded = expanded);
                         PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
                       },
+                      shape: const Border(),
+                      collapsedShape: const Border(),
                       leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
                       title: Row(
                         children: [
