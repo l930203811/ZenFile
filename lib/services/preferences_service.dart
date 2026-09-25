@@ -1778,6 +1778,169 @@ class PreferencesService {
     await _prefs?.setInt(_keyCategoriesGridColumns, columns);
   }
 
+
+  // --- Bottom nav tab customization ---
+  // 底部导航第 2/3 槽位可被自定义快捷方式页中的任意入口替换（第 1/2 个「分类/浏览」为滑动轴心，固定）。
+  // 配置格式 JSON：{"type":"builtin","key":"tab_transfers"|"tab_settings"}
+  //               {"type":"category","key":"<分类 labelKey>"}
+  //               {"type":"shortcut","key":"<自定义快捷方式 id>"}
+  static const String _keyBottomTabSlot0 = 'bottom_tab_slot0';
+  static const String _keyBottomTabSlot1 = 'bottom_tab_slot1';
+  static const String _keyBottomTabSlot2 = 'bottom_tab_slot2';
+  static const String _keyBottomTabSlot3 = 'bottom_tab_slot3';
+
+  static String _bottomTabSlotKey(int slot) {
+    switch (slot) {
+      case 0:
+        return _keyBottomTabSlot0;
+      case 1:
+        return _keyBottomTabSlot1;
+      case 3:
+        return _keyBottomTabSlot3;
+      default:
+        return _keyBottomTabSlot2;
+    }
+  }
+
+  /// 读取底部导航槽位配置；未配置或损坏返回 null（即默认内置页）。
+  static Map<String, String>? getBottomTabSlotConfig(int slot) {
+    final key = _bottomTabSlotKey(slot);
+    final str = _prefs?.getString(key);
+    if (str == null || str.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(str) as Map<String, dynamic>;
+      final type = decoded['type'] as String?;
+      final k = decoded['key'] as String?;
+      if (type == null || k == null || k.isEmpty) return null;
+      return {'type': type, 'key': k};
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存底部导航槽位配置；传 null 恢复默认内置页。
+  static Future<void> saveBottomTabSlotConfig(
+    int slot,
+    Map<String, String>? config,
+  ) async {
+    final key = _bottomTabSlotKey(slot);
+    if (config == null) {
+      await _prefs?.remove(key);
+    } else {
+      await _prefs?.setString(key, jsonEncode(config));
+    }
+  }
+
+  /// 底部导航栏总开关（自定义快捷方式页配置）：关闭时底部 4-tab 折叠隐藏，默认开启。
+  static const String _keyBottomNavBarEnabled = 'bottom_nav_bar_enabled';
+
+  static bool getBottomNavBarEnabled({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyBottomNavBarEnabled) ?? defaultValue;
+  }
+
+  static Future<void> saveBottomNavBarEnabled(bool enabled) async {
+    await _prefs?.setBool(_keyBottomNavBarEnabled, enabled);
+  }
+
+  /// 自定义入口（「自定义」开关）在分类列表中的插入位置（0..分类数，等于分类数=末尾）。
+  /// 默认 -1 = 未设置（使用处按分类数末尾处理），避免新装用户自定义卡片跑到最前。
+  static const String _keyCustomEntryPosition = 'custom_entry_position';
+
+  static int getCustomEntryPosition({int defaultValue = -1}) {
+    return _prefs?.getInt(_keyCustomEntryPosition) ?? defaultValue;
+  }
+
+  static Future<void> saveCustomEntryPosition(int position) async {
+    await _prefs?.setInt(_keyCustomEntryPosition, position);
+  }
+
+  /// 自定义入口的重命名显示名（空 = 使用 l10n「自定义」）。
+  static const String _keyCustomEntryLabel = 'custom_entry_label';
+
+  static String? getCustomEntryLabel() {
+    final v = _prefs?.getString(_keyCustomEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveCustomEntryLabel(String label) async {
+    await _prefs?.setString(_keyCustomEntryLabel, label);
+  }
+
+  // --- 系统入口（传输/设置）：分类页卡片显示开关 + 重命名显示名 ---
+  static const String _keyTransfersEntryVisible = 'transfers_entry_visible';
+  static const String _keySettingsEntryVisible = 'settings_entry_visible';
+  static const String _keyTransfersEntryLabel = 'transfers_entry_label';
+  static const String _keySettingsEntryLabel = 'settings_entry_label';
+
+  static bool getTransfersEntryVisible() {
+    return _prefs?.getBool(_keyTransfersEntryVisible) ?? true;
+  }
+
+  static Future<void> saveTransfersEntryVisible(bool v) async {
+    await _prefs?.setBool(_keyTransfersEntryVisible, v);
+  }
+
+  static bool getSettingsEntryVisible() {
+    return _prefs?.getBool(_keySettingsEntryVisible) ?? true;
+  }
+
+  static Future<void> saveSettingsEntryVisible(bool v) async {
+    await _prefs?.setBool(_keySettingsEntryVisible, v);
+  }
+
+  static String? getTransfersEntryLabel() {
+    final v = _prefs?.getString(_keyTransfersEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveTransfersEntryLabel(String label) async {
+    await _prefs?.setString(_keyTransfersEntryLabel, label);
+  }
+
+  static String? getSettingsEntryLabel() {
+    final v = _prefs?.getString(_keySettingsEntryLabel);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveSettingsEntryLabel(String label) async {
+    await _prefs?.setString(_keySettingsEntryLabel, label);
+  }
+
+  // --- 统一顺序（full_grid_order）：分类 label + 系统入口标记的完整序列，
+  //     配置区列表与分类页网格共用，任一侧拖动都会双向同步 ---
+  static const String _keyFullGridOrder = 'full_grid_order';
+
+  /// 系统入口标记
+  static const String sysCustomKey = '__sys_custom__';
+  static const String sysTransfersKey = '__sys_transfers__';
+  static const String sysSettingsKey = '__sys_settings__';
+
+  static bool isSysEntryKey(String key) =>
+      key == sysCustomKey ||
+      key == sysTransfersKey ||
+      key == sysSettingsKey;
+
+  static List<String>? getFullGridOrder() {
+    final v = _prefs?.getStringList(_keyFullGridOrder);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveFullGridOrder(List<String> order) async {
+    await _prefs?.setStringList(_keyFullGridOrder, order);
+  }
+
+  /// 解析统一顺序：未设置时按 categoryOrder + custom_entry_position 生成默认
+  /// （自定义按历史插入点，传输/设置末尾）。
+  static List<String> resolveFullOrder(List<String> base) {
+    final saved = getFullGridOrder();
+    if (saved != null && saved.isNotEmpty) return saved;
+    final customPos = getCustomEntryPosition();
+    final order = [...base];
+    final pos = customPos < 0 ? order.length : customPos.clamp(0, order.length);
+    order.insert(pos, sysCustomKey);
+    order.addAll([sysTransfersKey, sysSettingsKey]);
+    return order;
+  }
   // --- Favorites ---
   static const String _keyFavorites = 'favorites';
 

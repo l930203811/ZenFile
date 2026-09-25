@@ -38,6 +38,15 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   // 搜索防抖：避免在低端机上每输入一个字符就同步遍历整个媒体库，造成输入卡顿。
   Timer? _searchDebounceTimer;
 
+  /// 缓存的 Provider 引用（initState 里赋值）。
+  ///
+  /// ⚠️ `dispose()` 里**绝不能**再走 `context.read<...>()`：此时 Element 已
+  /// defunct（`_widget == null`），provider 找不到祖先会去求值
+  /// `context.widget.runtimeType` 抛 `ProviderNotFoundException`，而该求值本身
+  /// 先炸成「Null check operator used on a null value」（provider 6.1.5
+  /// `provider.dart:377`）—— 2026-09-25 用户取证报告连报 12 次的就是它。
+  late final FileManagerProvider _fileManager;
+
   final Set<String> _selectedPaths = {};
   bool get _isSelectionMode => _selectedPaths.isNotEmpty;
 
@@ -82,6 +91,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   void initState() {
     super.initState();
     final fileProvider = context.read<FileManagerProvider>();
+    _fileManager = fileProvider;
     // 默认从「当前所在文件夹」开始搜索（与 ES 一致：在隐私系统/子文件夹内打开搜索即搜该目录），
     // 仅在处于存储根目录时才退化为全设备全局搜索。
     // 修复：vivo 隐私系统文件夹从 /storage/emulated/0 全局递归搜不到（需从当前所在路径才能列目录）。
@@ -107,13 +117,14 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     _searchDebounceTimer?.cancel();
     _searchSubscription?.cancel();
     _searchController.dispose();
-    context.read<FileManagerProvider>().removeListener(_onFileManagerChanged);
+    // 用缓存的引用注销监听：此处 context 已失效，不能再 read（会抛 NPE）。
+    _fileManager.removeListener(_onFileManagerChanged);
     super.dispose();
   }
 
   void _onFileManagerChanged() {
     if (!mounted) return;
-    final fileProvider = context.read<FileManagerProvider>();
+    final fileProvider = _fileManager;
     final newPath = fileProvider.currentPath;
     if (newPath != _lastActivePath) {
       _lastActivePath = newPath;

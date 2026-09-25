@@ -4413,7 +4413,7 @@ class L10nKo extends L10n {
   String get ui_4columns => '4열';
 
   @override
-  String get ui_show_custom_entry => '사용자 정의 항목 표시';
+  String get ui_show_custom_entry => '사용자 지정';
 
   @override
   String get msge8b8e9b3 => '빠른 작업';
@@ -7784,4 +7784,21 @@ class L10nKo extends L10n {
 
   @override
   String get ui_text_editor_import => '텍스트 파일 가져오기';
+
+  @override
+  String get ui_bottom_tab_bar => '탐색 모음 표시';
+
+  @override
+  String get ui_pick_bottom_tab => '하단 항목 선택';
+
+  @override
+  String get ui_long_press_switch => '길게 누르면 변경할 수 있습니다';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return '슬롯 $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint => '하단 항목은 모든 바로가기로 바꿀 수 있습니다';
 }

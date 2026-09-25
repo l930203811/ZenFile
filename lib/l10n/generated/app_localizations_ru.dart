@@ -4603,7 +4603,7 @@ class L10nRu extends L10n {
   String get ui_4columns => '4 Колонки';
 
   @override
-  String get ui_show_custom_entry => 'Показывать пользовательский вход';
+  String get ui_show_custom_entry => 'Настраиваемый';
 
   @override
   String get msge8b8e9b3 => 'Быстрые действия';
@@ -8100,4 +8100,22 @@ class L10nRu extends L10n {
 
   @override
   String get ui_text_editor_import => 'Импортировать текстовый файл';
+
+  @override
+  String get ui_bottom_tab_bar => 'Показать панель навигации';
+
+  @override
+  String get ui_pick_bottom_tab => 'Выберите элемент внизу';
+
+  @override
+  String get ui_long_press_switch => 'Долгое нажатие — замена';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'Слот $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint =>
+      'Элементы внизу можно заменить любым ярлыком';
 }

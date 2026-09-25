@@ -10,20 +10,12 @@ import '../../services/network_connections_service.dart';
 
 /// 右侧弹出菜单组件
 class ZenFileEndDrawer extends StatefulWidget {
-  final VoidCallback toggleTheme;
-  final VoidCallback? onRefresh;
-  final VoidCallback? onCustomize;
-  final VoidCallback? onShowSortModal;
   final VoidCallback? onNavigateToBrowse;
   final String? searchFolderPath;
   final FileManagerProvider? provider;
 
   const ZenFileEndDrawer({
     super.key,
-    required this.toggleTheme,
-    this.onRefresh,
-    this.onCustomize,
-    this.onShowSortModal,
     this.onNavigateToBrowse,
     this.searchFolderPath,
     this.provider,
@@ -34,15 +26,11 @@ class ZenFileEndDrawer extends StatefulWidget {
 }
 
 class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
-  late bool _isQuickActionsExpanded;
-  late bool _isFavoritesExpanded;
   late Set<String> _collapsedGroups;
 
   @override
   void initState() {
     super.initState();
-    _isQuickActionsExpanded = PreferencesService.getDrawerSectionExpanded('quick_actions');
-    _isFavoritesExpanded = PreferencesService.getDrawerSectionExpanded('favorites');
     _collapsedGroups = PreferencesService.getFavoritesGroupCollapsed();
   }
 
@@ -56,19 +44,28 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
             child: Row(
               children: [
-                Icon(Broken.more_circle, color: theme.colorScheme.primary, size: 28),
+                Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 28),
                 const SizedBox(width: 14),
-                Text(
-                  L10n.of(context).msg_quick_actions,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                Expanded(
+                  child: Text(
+                    L10n.of(context).ui_favorites,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 26),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: L10n.of(context).ui_new_favorite,
+                  onPressed: () => _showAddFavoriteDialog(context),
                 ),
               ],
             ),
@@ -81,128 +78,20 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ExpansionTile(
-                    initiallyExpanded: _isQuickActionsExpanded,
-                    onExpansionChanged: (expanded) {
-                      setState(() => _isQuickActionsExpanded = expanded);
-                      PreferencesService.saveDrawerSectionExpanded('quick_actions', expanded);
-                    },
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    leading: Icon(Broken.command, color: theme.colorScheme.primary, size: 24),
-                    title: Text(
-                      L10n.of(context).msge8b8e9b3,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                      maxLines: 2,
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    children: [
-                      if (widget.onRefresh != null)
-                        _buildMenuItem(
-                          context,
-                          icon: Broken.refresh,
-                          title: L10n.of(context).msg354c1c9a,
-                          color: theme.colorScheme.primary,
-                          onTap: () {
-                            Navigator.pop(context);
-                            widget.onRefresh!();
-                          },
+                  if (widget.provider != null) ...[
+                    if (widget.provider!.favorites.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          L10n.of(context).msg551f98ba,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(0.5)),
                         ),
-                      if (widget.onCustomize != null)
-                        _buildMenuItem(
-                          context,
-                          icon: Broken.edit_2,
-                          title: L10n.of(context).msge7d18d73,
-                          color: theme.colorScheme.primary,
-                          onTap: () {
-                            Navigator.pop(context);
-                            widget.onCustomize!();
-                          },
-                        ),
-                      if (widget.onShowSortModal != null && widget.provider != null)
-                        _buildMenuItem(
-                          context,
-                          icon: Broken.filter_edit,
-                          title: L10n.of(context).msg97301f64,
-                          color: theme.colorScheme.primary,
-                          onTap: () {
-                            Navigator.pop(context);
-                            widget.onShowSortModal!();
-                          },
-                        ),
-                      _buildMenuItem(
-                        context,
-                        icon: isDark ? Broken.sun_1 : Broken.moon,
-                        title: isDark ? L10n.of(context).msg8755e992 : L10n.of(context).ui_dark_mode,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.toggleTheme();
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: fileManager.enableSplitScreen ? Broken.grid_1 : Broken.grid_2,
-                        title: fileManager.enableSplitScreen
-                            ? L10n.of(context).ui_single_window
-                            : L10n.of(context).ui_dual_window,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          fileManager.toggleSplitScreen();
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  if (widget.provider != null)
-                    ExpansionTile(
-                      initiallyExpanded: _isFavoritesExpanded,
-                      onExpansionChanged: (expanded) {
-                        setState(() => _isFavoritesExpanded = expanded);
-                        PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
-                      },
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              L10n.of(context).ui_favorites,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                              maxLines: 2,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 22),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            tooltip: L10n.of(context).ui_new_favorite,
-                            onPressed: () => _showAddFavoriteDialog(context),
-                          ),
-                        ],
-                      ),
-                      childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      children: widget.provider!.favorites.isEmpty
-                          ? [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Text(
-                                  L10n.of(context).msg551f98ba,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                ),
-                              ),
-                            ]
-                          : _buildGroupedFavorites(context),
-                    ),
+                      )
+                    else
+                      ..._buildGroupedFavorites(context),
+                  ],
 
                   const SizedBox(height: 24),
                 ],

@@ -89,10 +89,7 @@ class MediaCategoryScreen extends StatefulWidget {
   State<MediaCategoryScreen> createState() => _MediaCategoryScreenState();
 }
 
-class _MediaCategoryScreenState extends State<MediaCategoryScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _shimmerController;
-
+class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
   // Helper: check if artist string is effectively empty (null, empty, or "unknown" from plugin)
   static bool _isUnknownArtist(String? artist) =>
       FileUtils.isUnknownArtist(artist);
@@ -613,10 +610,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   @override
   void initState() {
     super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
+    // shimmer 占位动画的 ticker 改由 [_CategoryShimmerLoading] 自己持有：
+    // 随占位出现而创建、随占位消失（数据到达）而销毁。此处原先的页面级
+    // `..repeat()` 在加载完成后仍在空转，而分类页是首屏常驻 tab（IndexedStack
+    // 保活），等于让帧调度永不进入空闲，白耗 CPU 与电量。
 
     if (widget.album == null &&
         widget.folderPath == null &&
@@ -703,12 +700,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     } catch (_) {
       if (mounted) setState(() => _loadingAlbum = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    super.dispose();
   }
 
   String get _title {
@@ -2418,7 +2409,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       // 不能在加载中就把文件夹模式切回文件视图，否则数据到达后
                       // 仍停留在空文件列表（「音频点进去时灵时不灵」的表现之一）
                       if (!provider.isLoaded) {
-                        return _buildShimmerLoading(theme);
+                        return _buildShimmerLoading();
                       }
                       // 已加载完成却没有可分组文件夹 → 自动切回文件视图
                       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2484,7 +2475,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
                   if (widget.album != null) {
                     if (_loadingAlbum) {
-                      return _buildShimmerLoading(theme);
+                      return _buildShimmerLoading();
                     }
                     final displayAssets = List<AssetEntity>.from(_albumAssets);
                     if (provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newest ||
@@ -2715,7 +2706,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   // 数据为空时，根据加载状态决定显示 shimmer / 加载失败 / 空状态
                   if (!provider.isLoaded) {
                     if (provider.isLoading) {
-                      return _buildShimmerLoading(theme);
+                      return _buildShimmerLoading();
                     }
                     // 扫描失败或权限缺失（此前为无限 shimmer，表现为
                     // 「类别显示缓存数量但无法打开浏览」的静默失败）→ 显示失败原因与重试入口
@@ -2727,7 +2718,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   if (_isNonMediaScanType &&
                       !provider.nonMediaScanDone &&
                       _nonMediaListFor(provider).isEmpty) {
-                    return _buildShimmerLoading(theme);
+                    return _buildShimmerLoading();
                   }
 
                   // 数据为空且已完成加载 → 显示空状态提示（原逻辑会走到这里）
@@ -3216,107 +3207,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildShimmerLoading(ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark
-        ? const Color(0xFF1E1E2E)
-        : const Color(0xFFE0E0E0);
-    final highlightColor = isDark
-        ? const Color(0xFF2A2A3E)
-        : const Color(0xFFF5F5F5);
-
-    return AnimatedBuilder(
-      animation: _shimmerController,
-      builder: (context, child) {
-        // 列表视图：保持与实际列表一致的视觉占位，避免启动时闪烁网格背景
-        if (!_isGridView) {
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: 18,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  children: [
-                    // 缩略图占位（固定 40x40，与列表图标一致）
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: ShaderMask(
-                        shaderCallback: (rect) => LinearGradient(
-                          colors: [baseColor, highlightColor, baseColor],
-                          stops: [0.0, _shimmerController.value, 1.0],
-                        ).createShader(rect),
-                        child: const SizedBox(width: 40, height: 40),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // 标题 + 副标题占位
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: ShaderMask(
-                              shaderCallback: (rect) => LinearGradient(
-                                colors: [baseColor, highlightColor, baseColor],
-                                stops: [0.0, _shimmerController.value, 1.0],
-                              ).createShader(rect),
-                              child: const SizedBox(
-                                height: 12,
-                                width: double.infinity,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: ShaderMask(
-                              shaderCallback: (rect) => LinearGradient(
-                                colors: [baseColor, highlightColor, baseColor],
-                                stops: [0.0, _shimmerController.value, 1.0],
-                              ).createShader(rect),
-                              child: SizedBox(
-                                height: 10,
-                                width: MediaQuery.of(context).size.width * 0.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }
-        // 网格视图：3 列方块占位
-        return GridView.builder(
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 6,
-            mainAxisSpacing: 6,
-          ),
-          itemCount: 24,
-          itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: ShaderMask(
-                shaderCallback: (rect) => LinearGradient(
-                  colors: [baseColor, highlightColor, baseColor],
-                  stops: [0.0, _shimmerController.value, 1.0],
-                ).createShader(rect),
-                child: Container(color: baseColor),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  /// 加载占位（shimmer 骨架屏）。
+  ///
+  /// 这里只按当前视图模式构造占位体；动画控制器由 [_CategoryShimmerLoading]
+  /// 自己持有 —— 占位体在树上时才存在 ticker，数据到达、占位体被移除后立即
+  /// 销毁。原先的页面级 controller 在 `initState` 就 `..repeat()` 且**永不
+  /// stop**，数据加载完成后依然每帧唤醒渲染管线（分类页是首屏常驻 tab，
+  /// IndexedStack 保活 ⇒ 整机帧调度长期无法进入空闲，白耗 CPU/电量）。
+  Widget _buildShimmerLoading() =>
+      _CategoryShimmerLoading(isGridView: _isGridView);
 
   DateTime _getItemDateTime(dynamic item) {
     if (item is AssetEntity) {
@@ -6593,6 +6492,150 @@ class _RoundedRectProgressPainter extends CustomPainter {
         oldDelegate.radius != radius ||
         oldDelegate.color != color ||
         oldDelegate.backgroundColor != backgroundColor;
+  }
+}
+
+/// 类别页加载占位（骨架屏）的动画宿主。
+///
+/// **ticker 生命周期 == 占位体的生命期**：只有占位体真的挂在 widget 树上时
+/// 才会有 AnimationController 在跑；数据到达后占位体被移除 → `dispose()` →
+/// ticker 立即释放，页面里不残留任何持续动画。这是「加载完成后仍在每帧重绘」
+/// 这类隐性耗电问题的根治方式（不要把它改回页面级 controller + 常驻 repeat）。
+///
+/// `SingleTickerProviderStateMixin` 还会让 ticker 跟随 `TickerMode`：被
+/// Offstage/非当前路由遮挡时自动静音，不需要额外处理。
+class _CategoryShimmerLoading extends StatefulWidget {
+  /// 与当前列表/网格视图模式一致，避免加载完成的瞬间视觉跳变。
+  final bool isGridView;
+
+  const _CategoryShimmerLoading({required this.isGridView});
+
+  @override
+  State<_CategoryShimmerLoading> createState() =>
+      _CategoryShimmerLoadingState();
+}
+
+class _CategoryShimmerLoadingState extends State<_CategoryShimmerLoading>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final baseColor = isDark
+        ? const Color(0xFF1E1E2E)
+        : const Color(0xFFE0E0E0);
+    final highlightColor = isDark
+        ? const Color(0xFF2A2A3E)
+        : const Color(0xFFF5F5F5);
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        // 列表视图：保持与实际列表一致的视觉占位，避免启动时闪烁网格背景
+        if (!widget.isGridView) {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: 18,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    // 缩略图占位（固定 40x40，与列表图标一致）
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: ShaderMask(
+                        shaderCallback: (rect) => LinearGradient(
+                          colors: [baseColor, highlightColor, baseColor],
+                          stops: [0.0, _controller.value, 1.0],
+                        ).createShader(rect),
+                        child: const SizedBox(width: 40, height: 40),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 标题 + 副标题占位
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: ShaderMask(
+                              shaderCallback: (rect) => LinearGradient(
+                                colors: [baseColor, highlightColor, baseColor],
+                                stops: [0.0, _controller.value, 1.0],
+                              ).createShader(rect),
+                              child: const SizedBox(
+                                height: 12,
+                                width: double.infinity,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: ShaderMask(
+                              shaderCallback: (rect) => LinearGradient(
+                                colors: [baseColor, highlightColor, baseColor],
+                                stops: [0.0, _controller.value, 1.0],
+                              ).createShader(rect),
+                              child: SizedBox(
+                                height: 10,
+                                width: MediaQuery.of(context).size.width * 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+        // 网格视图：3 列方块占位
+        return GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 6,
+          ),
+          itemCount: 24,
+          itemBuilder: (context, index) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: ShaderMask(
+                shaderCallback: (rect) => LinearGradient(
+                  colors: [baseColor, highlightColor, baseColor],
+                  stops: [0.0, _controller.value, 1.0],
+                ).createShader(rect),
+                child: Container(color: baseColor),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
 

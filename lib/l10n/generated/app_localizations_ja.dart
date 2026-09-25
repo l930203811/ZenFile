@@ -4413,7 +4413,7 @@ class L10nJa extends L10n {
   String get ui_4columns => '4列';
 
   @override
-  String get ui_show_custom_entry => 'カスタム項目を表示';
+  String get ui_show_custom_entry => 'カスタム';
 
   @override
   String get msge8b8e9b3 => 'クイック操作';
@@ -7778,4 +7778,21 @@ class L10nJa extends L10n {
 
   @override
   String get ui_text_editor_import => 'テキストファイルを読み込む';
+
+  @override
+  String get ui_bottom_tab_bar => 'ナビゲーションバーを表示';
+
+  @override
+  String get ui_pick_bottom_tab => '下部エントリを選択';
+
+  @override
+  String get ui_long_press_switch => '長押しで変更できます';
+
+  @override
+  String ui_bottom_tab_slot(Object index) {
+    return 'スロット $index';
+  }
+
+  @override
+  String get ui_bottom_tab_custom_hint => '下部エントリは任意のショートカットに置き換えられます';
 }

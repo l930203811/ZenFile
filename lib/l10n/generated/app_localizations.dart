@@ -8245,7 +8245,7 @@ abstract class L10n {
   /// No description provided for @ui_show_custom_entry.
   ///
   /// In zh, this message translates to:
-  /// **'在分类页显示自定义入口'**
+  /// **'自定义'**
   String get ui_show_custom_entry;
 
   /// Right side menu header title
@@ -14259,6 +14259,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'导入文本文件'**
   String get ui_text_editor_import;
+
+  /// Bottom navigation bar
+  ///
+  /// In zh, this message translates to:
+  /// **'显示导航栏'**
+  String get ui_bottom_tab_bar;
+
+  /// Choose bottom entry
+  ///
+  /// In zh, this message translates to:
+  /// **'选择底部入口'**
+  String get ui_pick_bottom_tab;
+
+  /// Long press to change
+  ///
+  /// In zh, this message translates to:
+  /// **'长按可替换'**
+  String get ui_long_press_switch;
+
+  /// Slot {index}
+  ///
+  /// In zh, this message translates to:
+  /// **'位置 {index}'**
+  String ui_bottom_tab_slot(Object index);
+
+  /// Bottom entries can be replaced with any shortcut
+  ///
+  /// In zh, this message translates to:
+  /// **'底部入口可替换为任意快捷方式'**
+  String get ui_bottom_tab_custom_hint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -7,6 +7,8 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import 'all_recent_files_screen.dart';
+import '../../services/preferences_service.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
@@ -26,6 +28,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  // 最近点击的自定义底部槽位（槽 2/3 被替换入口后用于高亮）；-1 = 无
+  int _activeBottomSlot = -1;
   DateTime? _lastBackPressTime;
   late AnimationController _refreshIconController;
   bool _isRefreshing = false;
@@ -68,9 +72,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   static const double _swipeLongDistance = 110.0;
   static const double _swipeMinVelocity = 260.0;
   static const double _swipeEdgeGuard = 36.0;
-  // 底部导航 = 4 个**页面**（分类 / 文件 / 传输 / 设置），滑动与点击都只切页：
-  // 左滑 分类→文件→传输→设置，到最后一页（设置）再左滑打开右侧抽屉；
-  // 右滑 回到上一页，在分类页（第一页）右滑打开左侧抽屉。首尾对称。
+  // 底部导航第 1/2 个（分类/浏览）固定为滑动轴心；第 2/3 槽位可被自定义快捷方式页中的
+  // 任意入口替换（长按槽位或该页配置区选择）。滑动切页仅保留 左抽屉→分类→浏览→右抽屉：
+  // 左滑 分类→浏览、浏览→右抽屉；右滑 浏览→分类、分类→左抽屉；自定义槽位点击进入
+  // （push 页面），不参与滑动。
   static const int _settingsTabIndex = 3;
 
   @override
@@ -138,6 +143,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (index == _settingsTabIndex) _settingsTabBuilt = true;
     if (_currentIndex == index) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // 切到内置页时清除自定义槽位高亮
+    _activeBottomSlot = -1;
     setState(() => _currentIndex = index);
   }
 
@@ -322,30 +329,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
           ),
           child: ZenFileEndDrawer(
-            toggleTheme: widget.toggleTheme,
-            onRefresh: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(0);
-              _handleRefresh();
-            },
-            onCustomize: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(0);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                QuickCategoriesGrid.showCustomizeDialog(context, (index) {
-                  if (!mounted) return;
-                  _switchTab(index);
-                });
-              });
-            },
-            onShowSortModal: () {
-              _scaffoldKey.currentState?.closeEndDrawer();
-              _switchTab(1);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                final provider = context.read<FileManagerProvider>();
-                SortModal.show(context, provider);
-              });
-            },
             onNavigateToBrowse: () => _switchTab(1),
             // 不传 searchFolderPath：让 GlobalSearchScreen 在 initState 用
             // fileProvider.currentPath 作为搜索范围（与 ES 一致：在当前文件夹内
@@ -428,24 +411,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
-                      // 向左滑动：切到下一页（分类→文件→传输→设置）；
-                      // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
-                      if (_currentIndex < _settingsTabIndex) {
+                      // 向左滑动：分类→浏览；已在浏览页则打开右侧抽屉（滑动仅四态：
+                      // 左抽屉→分类→浏览→右抽屉，传输/设置等自定义槽位不参与滑动）
+                      if (_currentIndex < 1) {
                         _switchTab(_currentIndex + 1);
                       } else {
                         _scaffoldKey.currentState?.openEndDrawer();
                       }
                     } else if (deltaX > _dualFingerSwipeThreshold) {
-                      // 向右滑动：分类页开抽屉，其余切上一页
+                      // 向右滑动：分类页开左抽屉，浏览页切回分类
                       if (_currentIndex == 0) {
                         _scaffoldKey.currentState?.openDrawer();
                       } else {
                         if (!fileProvider.isSelectionMode) {
-                          final next = _currentIndex - 1;
-                          _switchTab(next);
-                          if (next == 0) {
-                            context.read<MediaProvider>().refreshMediaBackground();
-                          }
+                          _switchTab(0);
+                          context.read<MediaProvider>().refreshMediaBackground();
                         }
                       }
                     }
@@ -480,24 +460,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
                         if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
                           if (dx < 0) {
-                            // 向左滑动：切到下一页（分类→文件→传输→设置）；
-                            // 已在最后一页（设置）则打开右侧抽屉，与分类页右滑开左抽屉对称
-                            if (_currentIndex < _settingsTabIndex) {
+                            // 向左滑动：分类→浏览；已在浏览页则打开右侧抽屉（滑动仅四态：
+                            // 左抽屉→分类→浏览→右抽屉，传输/设置等自定义槽位不参与滑动）
+                            if (_currentIndex < 1) {
                               _switchTab(_currentIndex + 1);
                             } else {
                               _scaffoldKey.currentState?.openEndDrawer();
                             }
                           } else {
-                            // 向右滑动：分类页开抽屉，其余切上一页
+                            // 向右滑动：分类页开左抽屉，浏览页切回分类
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
                             } else {
                               if (!fileProvider.isSelectionMode) {
-                                final next = _currentIndex - 1;
-                                _switchTab(next);
-                                if (next == 0) {
-                                  context.read<MediaProvider>().refreshMediaBackground();
-                                }
+                                _switchTab(0);
+                                context.read<MediaProvider>().refreshMediaBackground();
                               }
                             }
                           }
@@ -623,12 +600,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   /// 底部栏：与顶部栏按「导航栏位置」设置互换。
   Widget _buildNavBottomBar(bool bottomTabs) {
+    // 底部导航栏总开关（自定义快捷方式页配置）：关闭时折叠隐藏（provider 监听实时生效）
+    if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
+      return const SizedBox.shrink();
+    }
     return bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
   }
 
-  /// 顶部 3 按钮行：左抽屉 / 中全局搜索 / 右快捷操作。
+  /// 顶部图标行：左抽屉 / 全局搜索 / 常用功能 5 项(刷新/自定义/排序/主题/单双窗口) / 收藏夹。
+  /// 全部只显示图标（紧凑按钮），文案以 tooltip 呈现。
   Widget _buildTopBarRow() {
     final theme = Theme.of(context);
+    final l10n = L10n.of(context);
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
@@ -636,25 +619,80 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-              // v2.1.7: 顶部栏行高由 kToolbarHeight(56) 收紧为 48，分类页卡片整体上移，
-              // 进一步贴紧顶部搜索栏背景（底部导航栏仍用 kToolbarHeight，不受影响）。
             SizedBox(
               height: 48,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                     icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: _buildGlobalSearchBar(theme),
-                    ),
-                  ),
+                  // 全局搜索：图标样式，点击进入全局搜索页
                   IconButton(
-                    icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).msge8b8e9b3,
+                    icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).ui_global_search_hint,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
+                      );
+                    },
+                  ),
+                  // 常用功能：刷新
+                  IconButton(
+                    icon: Icon(Broken.refresh, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msg354c1c9a,
+                    onPressed: () {
+                      _switchTab(0);
+                      _handleRefresh();
+                    },
+                  ),
+                  // 常用功能：排序
+                  IconButton(
+                    icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).msg97301f64,
+                    onPressed: () {
+                      _switchTab(1);
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        final provider = context.read<FileManagerProvider>();
+                        SortModal.show(context, provider);
+                      });
+                    },
+                  ),
+                  // 常用功能：切换主题
+                  IconButton(
+                    icon: Icon(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Broken.sun_1
+                          : Broken.moon,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: Theme.of(context).brightness == Brightness.dark
+                        ? L10n.of(context).msg8755e992
+                        : L10n.of(context).ui_dark_mode,
+                    onPressed: widget.toggleTheme,
+                  ),
+                  // 常用功能：单/双窗口
+                  IconButton(
+                    icon: Icon(
+                      context
+                              .read<FileManagerProvider>()
+                              .enableSplitScreen
+                          ? Broken.grid_1
+                          : Broken.grid_2,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: context.read<FileManagerProvider>().enableSplitScreen
+                        ? L10n.of(context).ui_single_window
+                        : L10n.of(context).ui_dual_window,
+                    onPressed: () =>
+                        context.read<FileManagerProvider>().toggleSplitScreen(),
+                  ),
+                  // 右抽屉：收藏夹入口
+                  IconButton(
+                    icon: Icon(Broken.folder_favorite, color: theme.colorScheme.primary),
+                    tooltip: L10n.of(context).ui_favorites,
                     onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                   ),
                 ],
@@ -667,55 +705,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 全局搜索框（圆角条）：点击进入全局搜索页。
-  Widget _buildGlobalSearchBar(ThemeData theme) {
-    return Material(
-      color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
-          );
-        },
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: [
-              Icon(Broken.search_normal, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  L10n.of(context).ui_global_search_hint,
-                  style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.45)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 底部导航项：分类 / 文件 / 传输 / 设置 —— **四项都是页面**（`_currentIndex` 0..3）。
-  ///
-  /// v2.1.7 起「我的」页已下线：分类页卡片与自定义快捷方式面板里的「设置」同时移除，
-  /// 设置入口统一收敛到本项（第 4 页，`MoreSettingsScreen(embedded: true)` 内嵌渲染，
-  /// 不再 push 全屏路由）。滑动与点击都只是切页；左滑到底（设置页）再左滑打开右侧抽屉。
+  /// 底部导航 4 个槽位全部可自定义（默认 分类/文件/传输/设置），可被自定义快捷方式页
+  /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
+  /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
+  /// 滑动链路固定为 左抽屉→分类页→浏览页→右抽屉，即使底部 tab 被替换也始终可达。
   Widget _buildBottomTabs() {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
-    final tabData = <List<Object>>[
-      [Broken.category, l10n.cat_quick_categories, 0],
-      [Broken.folder, l10n.ui_file, 1],
-      [Broken.send_2, l10n.ui_transfers, 2],
-      [Broken.setting_2, l10n.cat_settings, _settingsTabIndex],
-    ];
+    final slot0 = _resolveTabSlot(
+      0,
+      defaultIcon: Broken.category,
+      defaultLabel: l10n.cat_quick_categories,
+      defaultIndex: 0,
+    );
+    final slot1 = _resolveTabSlot(
+      1,
+      defaultIcon: Broken.folder,
+      defaultLabel: l10n.ui_file,
+      defaultIndex: 1,
+    );
+    final slot2 = _resolveTabSlot(
+      2,
+      defaultIcon: Broken.send_2,
+      defaultLabel: l10n.ui_transfers,
+      defaultIndex: 2,
+    );
+    final slot3 = _resolveTabSlot(
+      3,
+      defaultIcon: Broken.clock,
+      defaultLabel: l10n.cat_recent,
+      defaultIndex: -1,
+    );
+    final tabData = <List<Object>>[slot0, slot1, slot2, slot3];
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
@@ -734,6 +755,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         tab[0] as IconData,
                         tab[1] as String,
                         tab[2] as int,
+                        isCustomEntry: tab[3] as bool,
+                        slot: tab[4] as int,
                       ),
                     ),
                 ],
@@ -745,11 +768,82 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  Widget _buildTabItem(IconData icon, String label, int index) {
+  /// 解析底部导航槽位 0-3 的显示与点击：未自定义返回默认内置页，自定义返回对应入口。
+  List<Object> _resolveTabSlot(
+    int slot, {
+    required IconData defaultIcon,
+    required String defaultLabel,
+    required int defaultIndex,
+  }) {
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    if (cfg == null) {
+      // v3.4b2：默认第 4 个槽位由「设置」改为「最近」（isCustomEntry 走 _openBottomTabEntry）
+      if (slot == 3) {
+        return [Broken.clock, L10n.of(context).cat_recent, -1, true, slot];
+      }
+      return [defaultIcon, defaultLabel, defaultIndex, false, slot];
+    }
+    final type = cfg['type'];
+    final key = cfg['key'];
+    if (type == 'builtin') {
+      switch (key) {
+        case 'tab_categories':
+          return [Broken.category, L10n.of(context).cat_quick_categories, 0, false, slot];
+        case 'tab_files':
+          return [Broken.folder, L10n.of(context).ui_file, 1, false, slot];
+        case 'tab_settings':
+          return [Broken.setting_2, L10n.of(context).cat_settings, _settingsTabIndex, false, slot];
+        default:
+          return [Broken.send_2, L10n.of(context).ui_transfers, 2, false, slot];
+      }
+    }
+    // custom_entry：打开自定义快捷方式弹窗（isCustomEntry=true → 点击走 _openBottomTabEntry）
+    if (type == 'custom_entry') {
+      return [
+        Broken.edit_2,
+        PreferencesService.getCustomEntryLabel() ??
+            L10n.of(context).ui_show_custom_entry,
+        -1,
+        true,
+        slot,
+      ];
+    }
+    // category / shortcut：从分类页全部入口重建显示与动作（与分类页网格同源）
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (i) => _switchTab(i),
+    );
+    final entry = map[key];
+    if (entry != null) {
+      return [entry['icon'] as IconData, entry['label'] as String, -1, true, slot];
+    }
+    // 配置失效（快捷方式被删除等）：回退默认内置页
+    return [defaultIcon, defaultLabel, defaultIndex, false, slot];
+  }
+
+  Widget _buildTabItem(
+    IconData icon,
+    String label,
+    int index, {
+    bool isCustomEntry = false,
+    int slot = -1,
+  }) {
     final theme = Theme.of(context);
-    final selected = _currentIndex == index;
+    // 自定义槽位：点击后保持高亮（_activeBottomSlot）；内置页按 _currentIndex 高亮
+    final selected = isCustomEntry
+        ? _activeBottomSlot == slot
+        : _currentIndex == index;
     return InkWell(
-      onTap: () => _switchTab(index),
+      onTap: () {
+        if (isCustomEntry) {
+          _openBottomTabEntry(slot);
+        } else {
+          _switchTab(index);
+        }
+      },
+      // 任意槽位长按：不进自定义快捷方式页即可替换入口
+      onLongPress: () => _showBottomTabPicker(slot),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -776,6 +870,82 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         ],
       ),
     );
+  }
+
+  /// 打开被自定义的底部槽位：内置页切 IndexedStack；快捷入口执行与分类页网格一致的 action。
+  void _openBottomTabEntry(int slot) {
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    if (cfg == null) {
+      // 默认槽位：第 4 槽默认「最近」（v3.4b2 起替换设置）
+      if (slot == 3) {
+        setState(() => _activeBottomSlot = slot);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AllRecentFilesScreen(
+              onNavigateTab: (i) => _switchTab(i),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    setState(() => _activeBottomSlot = slot);
+    final type = cfg['type'];
+    final key = cfg['key'];
+    if (type == 'builtin') {
+      switch (key) {
+        case 'tab_categories':
+          _switchTab(0);
+          return;
+        case 'tab_files':
+          _switchTab(1);
+          return;
+        case 'tab_settings':
+          _settingsTabBuilt = true;
+          _switchTab(_settingsTabIndex);
+          return;
+        default:
+          _switchTab(2);
+          return;
+      }
+    }
+    if (type == 'custom_entry') {
+      _switchTab(0);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        QuickCategoriesGrid.showCustomizeDialog(context, (index) {
+          if (!mounted) return;
+          _switchTab(index);
+        });
+      });
+      return;
+    }
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (i) => _switchTab(i),
+    );
+    final entry = map[key];
+    if (entry == null) return;
+    final action = entry['action'] as VoidCallback?;
+    if (action != null) action();
+  }
+
+  /// 底部槽位长按选择器：不进自定义快捷方式页即可替换任意槽位。
+  Future<void> _showBottomTabPicker(int slot) async {
+    final current = PreferencesService.getBottomTabSlotConfig(slot);
+    final cfg = await QuickCategoriesGrid.showBottomTabPicker(
+      context,
+      slot: slot,
+      current: current,
+    );
+    if (cfg == null) return;
+    if (cfg['type'] == 'reset') {
+      await PreferencesService.saveBottomTabSlotConfig(slot, null);
+    } else {
+      await PreferencesService.saveBottomTabSlotConfig(slot, cfg);
+    }
+    if (mounted) setState(() {});
   }
 
   /// 分类页（快捷操作页）：分类网格 + 自定义快捷方式，顶部/底部由 HomeScreen 统一提供。

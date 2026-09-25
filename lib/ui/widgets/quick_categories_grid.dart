@@ -356,6 +356,164 @@ class QuickCategoriesGrid extends StatefulWidget {
     );
   }
 
+  /// 底部导航槽位选择器（长按底部 tab 或自定义快捷方式页配置区调用）：
+  /// 候选 = 传输 / 设置（可恢复默认） + 分类页全部入口（内置 + 自定义快捷方式）。
+  /// 返回选中配置；null = 取消；{'type':'reset'} = 恢复默认内置页。
+  static Future<Map<String, String>?> showBottomTabPicker(
+    BuildContext context, {
+    required int slot,
+    Map<String, String>? current,
+  }) {
+    final theme = Theme.of(context);
+    return showModalBottomSheet<Map<String, String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final l10n = L10n.of(sheetContext);
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final allMap = getAllCategoriesMap(sheetContext, isDark, (index) {});
+        // 候选：内置 分类/文件/传输/设置 + 分类页全部入口（内置 category / 自定义 shortcut）
+        final options = <Map<String, dynamic>>[
+          {
+            'type': 'builtin',
+            'key': 'tab_categories',
+            'label': l10n.cat_quick_categories,
+            'icon': Broken.category,
+          },
+          {
+            'type': 'builtin',
+            'key': 'tab_files',
+            'label': l10n.ui_file,
+            'icon': Broken.folder,
+          },
+          {
+            'type': 'builtin',
+            'key': 'tab_transfers',
+            'label': l10n.ui_transfers,
+            'icon': Broken.send_2,
+          },
+          {
+            'type': 'builtin',
+            'key': 'tab_settings',
+            'label': l10n.cat_settings,
+            'icon': Broken.setting_2,
+          },
+          {
+            'type': 'custom_entry',
+            'key': 'custom_entry',
+            'label':
+                PreferencesService.getCustomEntryLabel() ??
+                l10n.ui_show_custom_entry,
+            'icon': Broken.edit_2,
+          },
+          ...allMap.entries.map((e) => {
+                'type': (e.value['isCustom'] == true) ? 'shortcut' : 'category',
+                'key': e.key,
+                'label': e.value['label'] as String,
+                'icon': e.value['icon'] as IconData,
+              }),
+        ];
+        final currentType = current?['type'];
+        final currentKey = current?['key'];
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.ui_pick_bottom_tab,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.ui_bottom_tab_slot(slot + 1),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final opt in options)
+                      ListTile(
+                        dense: true,
+                        leading: Icon(
+                          opt['icon'] as IconData,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: Text(
+                          opt['label'] as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing:
+                            (currentType == opt['type'] &&
+                                    currentKey == opt['key'])
+                                ? Icon(
+                                    Broken.check,
+                                    size: 18,
+                                    color: theme.colorScheme.primary,
+                                  )
+                                : null,
+                        onTap: () => Navigator.pop(sheetContext, {
+                          'type': opt['type'] as String,
+                          'key': opt['key'] as String,
+                        }),
+                      ),
+                    if (current != null)
+                      ListTile(
+                        dense: true,
+                        leading: Icon(
+                          Broken.refresh,
+                          size: 20,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                        title: Text(
+                          l10n.ui_restore_default,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                        onTap: () => Navigator.pop(
+                          sheetContext,
+                          {'type': 'reset', 'key': ''},
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   State<QuickCategoriesGrid> createState() => _QuickCategoriesGridState();
 }
@@ -480,50 +638,47 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
     int newIndex = adjustedRow * columns + adjustedCol;
 
-    final activeLabels = _getActiveCategoryLabels(
-      context.read<MediaProvider>(),
-      QuickCategoriesGrid.getAllCategoriesMap(
-        context,
-        Theme.of(context).brightness == Brightness.dark,
-        widget.onNavigateTab,
+    final visible = _visibleOrderOf(
+      PreferencesService.resolveFullOrder(
+        context.read<MediaProvider>().categoryOrder,
       ),
     );
 
     if (newIndex >= 0 && newIndex != _targetIndex) {
-      _targetIndex = newIndex.clamp(0, activeLabels.length - 1);
+      // 统一模型：网格显示的是「分类 + 系统入口」的可见序列，
+      // 拖拽目标限制在可见序列内（0..len-1）。
+      _targetIndex = newIndex.clamp(0, visible.length - 1);
       setState(() {});
     }
   }
 
-  /// 结束拖拽排序
-  void _endDrag(
-    MediaProvider mediaProvider,
-    Map<String, Map<String, dynamic>> allCategoriesMap,
-  ) {
+  /// 结束拖拽排序：可见序列重排 → 合并回完整顺序 → 双写
+  /// （full_grid_order 权威，categoryOrder 同步分类部分）
+  void _endDrag() {
     _overlayEntry?.remove();
     _overlayEntry = null;
 
     if (_isDragging &&
         _draggingIndex != _targetIndex &&
-        _draggingIndex >= 0 &&
         _targetIndex >= 0) {
-      final activeLabels = _getActiveCategoryLabels(
-        mediaProvider,
-        allCategoriesMap,
-      );
-
-      // 计算在完整 categoryOrder 中的位置
-      final draggingLabel = activeLabels[_draggingIndex];
-      final targetLabel = activeLabels[_targetIndex];
-
-      final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(
-        draggingLabel,
-      );
-      final fullTargetIndex = mediaProvider.categoryOrder.indexOf(targetLabel);
-
-      if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
-        // 执行 reorder
-        mediaProvider.reorderCategory(fullDraggingIndex, fullTargetIndex);
+      final mediaProvider = context.read<MediaProvider>();
+      final fullOrder =
+          PreferencesService.resolveFullOrder(mediaProvider.categoryOrder);
+      final visible = _visibleOrderOf(fullOrder);
+      if (_draggingIndex >= 0 &&
+          _draggingIndex < visible.length &&
+          _targetIndex <= visible.length) {
+        final newVisible = [...visible];
+        final item = newVisible.removeAt(_draggingIndex);
+        newVisible.insert(_targetIndex.clamp(0, newVisible.length), item);
+        final merged = _mergeVisibleIntoFull(fullOrder, newVisible);
+        PreferencesService.saveFullGridOrder(merged);
+        final newCatOrder = merged
+            .where((e) => !PreferencesService.isSysEntryKey(e))
+            .toList();
+        if (!_sameList(newCatOrder, mediaProvider.categoryOrder)) {
+          mediaProvider.setCategoryOrder(newCatOrder);
+        }
       }
     }
 
@@ -531,6 +686,71 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     _draggingIndex = -1;
     _targetIndex = -1;
     setState(() {});
+  }
+
+  /// 从完整顺序解析分类页可见顺序（过滤未激活分类与隐藏系统入口）。
+  List<String> _visibleOrderOf(List<String> fullOrder) {
+    final mediaProvider = context.read<MediaProvider>();
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      widget.onNavigateTab,
+    );
+    return fullOrder
+        .where((k) {
+          if (k == PreferencesService.sysCustomKey) {
+            return PreferencesService.getCustomEntryVisible();
+          }
+          if (k == PreferencesService.sysTransfersKey) {
+            return PreferencesService.getTransfersEntryVisible();
+          }
+          if (k == PreferencesService.sysSettingsKey) {
+            return PreferencesService.getSettingsEntryVisible();
+          }
+          return mediaProvider.activeCategories.contains(k) &&
+              allCategoriesMap.containsKey(k);
+        })
+        .toList();
+  }
+
+  /// 可见序列重排后合并回完整顺序：隐藏项保持原相对位置，可见项按新顺序。
+  List<String> _mergeVisibleIntoFull(
+    List<String> fullOrder,
+    List<String> newVisible,
+  ) {
+    final visibleSet = newVisible.toSet();
+    final hidden =
+        fullOrder.where((e) => !visibleSet.contains(e)).toList();
+    final result = <String>[];
+    String? prev;
+    var hi = 0;
+    for (final v in newVisible) {
+      if (prev != null) {
+        final vIdx = fullOrder.indexOf(v);
+        final pIdx = fullOrder.indexOf(prev);
+        while (hi < hidden.length) {
+          final hIdx = fullOrder.indexOf(hidden[hi]);
+          if (hIdx > pIdx && hIdx < vIdx) {
+            result.add(hidden[hi]);
+            hi++;
+          } else {
+            break;
+          }
+        }
+      }
+      result.add(v);
+      prev = v;
+    }
+    result.addAll(hidden.sublist(hi));
+    return result;
+  }
+
+  bool _sameList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   /// 长按类别图标弹出上下文菜单（类似 Android 桌面图标长按效果）
@@ -579,10 +799,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           },
           onDragUpdate: (pos) => _updateDrag(pos),
           onDragEnd: () {
-            final allCatMap = QuickCategoriesGrid.getAllCategoriesMap(
-              context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab,
-            );
-            _endDrag(context.read<MediaProvider>(), allCatMap);
+            _endDrag();
             _closeMenuOverlay();
           },
           onDismiss: _closeMenuOverlay,
@@ -602,6 +819,177 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   void _closeMenuOverlay() {
     _menuOverlayEntry?.remove();
     _menuOverlayEntry = null;
+  }
+
+  /// 系统入口卡片长按菜单（自定义/传输/设置，复用分类卡片的 Overlay 菜单结构）。
+  void _showSystemEntryMenu({
+    required Offset position,
+    required String entryKey,
+    required Color color,
+  }) {
+    _closeMenuOverlay();
+    final bool isEnabled;
+    final IconData menuIcon;
+    if (entryKey == PreferencesService.sysCustomKey) {
+      isEnabled = PreferencesService.getCustomEntryVisible();
+      menuIcon = Broken.edit_2;
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
+      isEnabled = PreferencesService.getTransfersEntryVisible();
+      menuIcon = Broken.send_2;
+    } else {
+      isEnabled = PreferencesService.getSettingsEntryVisible();
+      menuIcon = Broken.setting_2;
+    }
+    // 仅自定义入口保留「自定义快捷方式」菜单项
+    final showCustomizeItem = entryKey == PreferencesService.sysCustomKey;
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    const menuMinWidth = 180.0;
+    const edgeMargin = 16.0;
+    final menuLeft =
+        (position.dx - 32).clamp(edgeMargin, screenWidth - menuMinWidth - edgeMargin);
+
+    _menuOverlayEntry = OverlayEntry(
+      builder: (overlayCtx) {
+        return _CategoryMenuOverlayWidget(
+          menuLeft: menuLeft,
+          menuTop: position.dy,
+          labelKey: entryKey,
+          color: color,
+          isEnabled: isEnabled,
+          theme: theme,
+          l10n: l10n,
+          showCustomizeItem: showCustomizeItem,
+          getCategoryIndex: () => -1,
+          getCategoryIcon: () => menuIcon,
+          onDragStart: (dragPos) {
+            _startDrag(
+              -1,
+              dragPos,
+              Icon(menuIcon, color: color, size: 28),
+              color,
+            );
+          },
+          onDragUpdate: (pos) => _updateDrag(pos),
+          onDragEnd: () {
+            _endDrag();
+            _closeMenuOverlay();
+          },
+          onDismiss: _closeMenuOverlay,
+          onMenuAction: (action) {
+            _closeMenuOverlay();
+            switch (action) {
+              case 'rename':
+                _showRenameDialogForSysEntry(context, entryKey);
+              case 'toggle':
+                if (entryKey == PreferencesService.sysCustomKey) {
+                  PreferencesService.saveCustomEntryVisible(
+                    !PreferencesService.getCustomEntryVisible(),
+                  );
+                } else if (entryKey == PreferencesService.sysTransfersKey) {
+                  PreferencesService.saveTransfersEntryVisible(
+                    !PreferencesService.getTransfersEntryVisible(),
+                  );
+                } else {
+                  PreferencesService.saveSettingsEntryVisible(
+                    !PreferencesService.getSettingsEntryVisible(),
+                  );
+                }
+              case 'customize':
+                QuickCategoriesGrid.showCustomizeDialog(
+                  context,
+                  widget.onNavigateTab,
+                );
+            }
+            setState(() {});
+          },
+          buildMenuItem: (icon, label, colorParam, onTap) =>
+              _buildMenuItem(icon: icon, label: label, color: colorParam, onTap: onTap),
+        );
+      },
+    );
+    Overlay.of(context).insert(_menuOverlayEntry!);
+  }
+
+  /// 网格内重命名系统入口显示名（与配置区弹窗同构）。
+  Future<void> _showRenameDialogForSysEntry(
+    BuildContext context,
+    String entryKey,
+  ) async {
+    final theme = Theme.of(context);
+    final String initial;
+    final String fallback;
+    if (entryKey == PreferencesService.sysCustomKey) {
+      fallback = L10n.of(context).ui_show_custom_entry;
+      initial = PreferencesService.getCustomEntryLabel() ?? fallback;
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
+      fallback = L10n.of(context).ui_transfers;
+      initial = PreferencesService.getTransfersEntryLabel() ?? fallback;
+    } else {
+      fallback = L10n.of(context).cat_settings;
+      initial = PreferencesService.getSettingsEntryLabel() ?? fallback;
+    }
+    final controller = TextEditingController(text: initial);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(
+            L10n.of(dialogContext).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(dialogContext).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
+              ),
+            ),
+            onSubmitted: (_) => Navigator.of(dialogContext).pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(L10n.of(dialogContext).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  if (entryKey == PreferencesService.sysCustomKey) {
+                    PreferencesService.saveCustomEntryLabel(newLabel);
+                  } else if (entryKey ==
+                      PreferencesService.sysTransfersKey) {
+                    PreferencesService.saveTransfersEntryLabel(newLabel);
+                  } else {
+                    PreferencesService.saveSettingsEntryLabel(newLabel);
+                  }
+                }
+                Navigator.of(dialogContext).pop();
+                if (mounted) setState(() {});
+              },
+              child: Text(
+                L10n.of(dialogContext).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   int _getCategoryIndex(String labelKey) {
@@ -745,26 +1133,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
-    final fileManagerProvider = context.watch<FileManagerProvider>();
 
     final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
       context,
       isDark,
       widget.onNavigateTab,
     );
-    final activeLabels = _getActiveCategoryLabels(
-      mediaProvider,
-      allCategoriesMap,
-    );
-
-    final activeList = activeLabels
-        .map((label) => allCategoriesMap[label]!)
-        .toList();
 
     final columns = PreferencesService.getCategoriesGridColumns();
-    // 「自定义」入口卡片是否显示（整屏铺满模式要靠它算出行数）。
-    final hasCustomEntry = PreferencesService.getCustomEntryVisible();
-    final itemCount = activeList.length + (hasCustomEntry ? 1 : 0);
+    // 统一完整顺序（full_grid_order：分类 + 系统入口一条链），
+    // 分类页网格显示其过滤视图（激活分类 + 可见系统入口），
+    // 配置区与网格任一拖拽都会双向同步。
+    final fullOrder =
+        PreferencesService.resolveFullOrder(mediaProvider.categoryOrder);
+    final visibleOrder = _visibleOrderOf(fullOrder);
+    final itemCount = visibleOrder.length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -817,7 +1200,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             )
           else
             const SizedBox.shrink(),
-          if (activeList.isEmpty)
+          if (visibleOrder.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -834,9 +1217,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               onPointerMove: _isDragging
                   ? (event) => _updateDrag(event.position)
                   : null,
-              onPointerUp: _isDragging
-                  ? (event) => _endDrag(mediaProvider, allCategoriesMap)
-                  : null,
+              onPointerUp: _isDragging ? (event) => _endDrag() : null,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: LayoutBuilder(
@@ -875,12 +1256,17 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                   ),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
-                    if (PreferencesService.getCustomEntryVisible() &&
-                        index == activeList.length) {
-                      return _buildCustomEntryCard(theme, iconSize);
+                    final key = visibleOrder[index];
+                    // 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
+                    // 支持长按菜单（重命名/显示开关）与长按拖拽排序。
+                    if (PreferencesService.isSysEntryKey(key)) {
+                      return _buildSysEntryCard(theme, iconSize, key);
                     }
-                    final cat = activeList[index];
-                    final labelKey = activeLabels[index];
+                    final cat = allCategoriesMap[key];
+                    if (cat == null) {
+                      return const SizedBox.shrink(key: ValueKey('empty2'));
+                    }
+                    final labelKey = key;
                     final label = cat['label'] as String;
                     final icon = cat['icon'] as IconData;
                     final color = cat['color'] as Color;
@@ -928,7 +1314,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                         if (distance > 10.0) {
                           _closeMenuOverlay();
                           _startDrag(
-                            _getCategoryIndex(labelKey),
+                            index,
                             details.globalPosition,
                             Icon(
                               _getCategoryIcon(labelKey),
@@ -941,13 +1327,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       },
                       onLongPressEnd: (_) {
                         if (_isDragging) {
-                          final allCatMap =
-                              QuickCategoriesGrid.getAllCategoriesMap(
-                                context,
-                                Theme.of(context).brightness == Brightness.dark,
-                                widget.onNavigateTab,
-                              );
-                          _endDrag(context.read<MediaProvider>(), allCatMap);
+                          _endDrag();
                         }
                         fm.setCategoryReorderInteracting(false);
                         _longPressOrigin = null;
@@ -1065,53 +1445,108 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   }
 
   /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
-  Widget _buildCustomEntryCard(ThemeData theme, double iconSize) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.22),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+  /// 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
+  /// 支持长按菜单（重命名/显示开关，自定义额外含自定义快捷方式）与长按拖拽排序。
+  Widget _buildSysEntryCard(ThemeData theme, double iconSize, String key) {
+    final fm = context.read<FileManagerProvider>();
+    final color = theme.colorScheme.primary;
+    final IconData icon;
+    final String label;
+    final VoidCallback onTap;
+    if (key == PreferencesService.sysCustomKey) {
+      icon = Broken.edit_2;
+      label = PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).msgf1d4ff50;
+      onTap = () => QuickCategoriesGrid.showCustomizeDialog(
+        context,
+        widget.onNavigateTab,
+      );
+    } else if (key == PreferencesService.sysTransfersKey) {
+      icon = Broken.send_2;
+      label = PreferencesService.getTransfersEntryLabel() ??
+          L10n.of(context).ui_transfers;
+      onTap = () => widget.onNavigateTab.call(2);
+    } else {
+      icon = Broken.setting_2;
+      label = PreferencesService.getSettingsEntryLabel() ??
+          L10n.of(context).cat_settings;
+      onTap = () => widget.onNavigateTab.call(3);
+    }
+    return GestureDetector(
+      onLongPressStart: (details) {
+        fm.setCategoryReorderInteracting(true);
+        _longPressOrigin = details.globalPosition;
+        _showSystemEntryMenu(
+          position: details.globalPosition,
+          entryKey: key,
+          color: color,
+        );
+      },
+      onLongPressMoveUpdate: (details) {
+        if (_isDragging) {
+          _updateDrag(details.globalPosition);
+          return;
+        }
+        if (_menuOverlayEntry == null) return;
+        final origin = _longPressOrigin;
+        if (origin == null) return;
+        if ((details.globalPosition - origin).distance > 10.0) {
+          _closeMenuOverlay();
+          _startDrag(
+            -1,
+            details.globalPosition,
+            Icon(icon, color: color, size: 28),
+            color,
+          );
+        }
+      },
+      onLongPressEnd: (_) {
+        if (_isDragging) {
+          _endDrag();
+        }
+        fm.setCategoryReorderInteracting(false);
+        _longPressOrigin = null;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withOpacity(0.05),
           borderRadius: BorderRadius.circular(8),
-          onTap: () => QuickCategoriesGrid.showCustomizeDialog(
-            context,
-            widget.onNavigateTab,
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.22),
+            width: 1,
           ),
-          splashColor: theme.colorScheme.primary.withOpacity(0.25),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Broken.edit_2,
-                color: theme.colorScheme.primary,
-                size: iconSize,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                L10n.of(context).msgf1d4ff50,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onTap,
+            splashColor: theme.colorScheme.primary.withOpacity(0.25),
+            highlightColor: theme.colorScheme.primary.withOpacity(0.15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: theme.colorScheme.primary, size: iconSize),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1141,6 +1576,8 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
   final VoidCallback onDismiss;
   final void Function(String action) onMenuAction;
   final Widget Function(IconData icon, String label, Color color, VoidCallback onTap) buildMenuItem;
+  /// 是否显示「自定义快捷方式」菜单项（仅自定义入口显示）
+  final bool showCustomizeItem;
 
   const _CategoryMenuOverlayWidget({
     required this.menuLeft,
@@ -1158,6 +1595,7 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
     required this.onDismiss,
     required this.onMenuAction,
     required this.buildMenuItem,
+    this.showCustomizeItem = true,
   });
 
   @override
@@ -1247,13 +1685,15 @@ child: IntrinsicWidth(
                         widget.color,
                         () => widget.onMenuAction('toggle'),
                       ),
-                      const Divider(height: 1),
-                      widget.buildMenuItem(
-                        Icons.shortcut,
-                        widget.l10n.msge7d18d73,
-                        widget.color,
-                        () => widget.onMenuAction('customize'),
-                      ),
+                      if (widget.showCustomizeItem) ...[
+                        const Divider(height: 1),
+                        widget.buildMenuItem(
+                          Icons.shortcut,
+                          widget.l10n.msge7d18d73,
+                          widget.color,
+                          () => widget.onMenuAction('customize'),
+                        ),
+                      ],
                     ],
                   ),
                   ),
@@ -1422,6 +1862,299 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     }
   }
 
+  /// 系统入口开关行（传输/设置）：与分类项样式一致，可开关、可重命名。
+  /// 配置区列表项：系统入口（自定义/传输/设置），与分类项样式一致，
+  /// 可开关、可重命名，作为 ReorderableListView 的一项参与拖动排序。
+  Widget _buildSysEntryListItem(
+    BuildContext context,
+    String key,
+    StateSetter setModalState,
+  ) {
+    final theme = Theme.of(context);
+    final IconData icon;
+    final String label;
+    final bool visible;
+    if (key == PreferencesService.sysCustomKey) {
+      icon = Broken.edit_2;
+      label = PreferencesService.getCustomEntryLabel() ??
+          L10n.of(context).ui_show_custom_entry;
+      visible = PreferencesService.getCustomEntryVisible();
+    } else if (key == PreferencesService.sysTransfersKey) {
+      icon = Broken.send_2;
+      label = PreferencesService.getTransfersEntryLabel() ??
+          L10n.of(context).ui_transfers;
+      visible = PreferencesService.getTransfersEntryVisible();
+    } else {
+      icon = Broken.setting_2;
+      label = PreferencesService.getSettingsEntryLabel() ??
+          L10n.of(context).cat_settings;
+      visible = PreferencesService.getSettingsEntryVisible();
+    }
+    return Container(
+      key: ValueKey(key),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 与分类项（CategoryItemWidget）完全同构的布局：
+          // 不设 dense / 不覆盖 contentPadding，保证标题与开关间距一致
+          ListTile(
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.15),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(icon, color: theme.colorScheme.primary, size: 22),
+            ),
+            title: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.grey, size: 20),
+                  tooltip: L10n.of(context).msgc8ce4b36,
+                  onPressed: () => _showSystemEntryRenameDialog(
+                    context,
+                    key,
+                    setModalState,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Switch(
+                  value: visible,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (v) {
+                    if (key == PreferencesService.sysCustomKey) {
+                      PreferencesService.saveCustomEntryVisible(v);
+                    } else if (key == PreferencesService.sysTransfersKey) {
+                      PreferencesService.saveTransfersEntryVisible(v);
+                    } else {
+                      PreferencesService.saveSettingsEntryVisible(v);
+                    }
+                    setModalState(() {});
+                    // 同步触发分类页网格重建：关闭后对应卡片即时从分类页隐藏
+                    context.read<MediaProvider>().notifyListeners();
+                  },
+                ),
+                const SizedBox(width: 12),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 系统入口重命名弹窗：显示名存入 prefs（空 = 恢复 l10n 默认）。
+  Future<void> _showSystemEntryRenameDialog(
+    BuildContext context,
+    String entryKey,
+    StateSetter setModalState,
+  ) async {
+    final theme = Theme.of(context);
+    final String initial;
+    final String fallback;
+    if (entryKey == PreferencesService.sysCustomKey) {
+      fallback = L10n.of(context).ui_show_custom_entry;
+      initial =
+          PreferencesService.getCustomEntryLabel() ?? fallback;
+    } else if (entryKey == PreferencesService.sysTransfersKey) {
+      fallback = L10n.of(context).ui_transfers;
+      initial = PreferencesService.getTransfersEntryLabel() ?? fallback;
+    } else {
+      fallback = L10n.of(context).cat_settings;
+      initial = PreferencesService.getSettingsEntryLabel() ?? fallback;
+    }
+    final controller = TextEditingController(text: initial);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(
+            L10n.of(dialogContext).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(dialogContext).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
+              ),
+            ),
+            onSubmitted: (_) => Navigator.of(dialogContext).pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(L10n.of(dialogContext).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  if (entryKey == PreferencesService.sysCustomKey) {
+                    PreferencesService.saveCustomEntryLabel(newLabel);
+                  } else if (entryKey ==
+                      PreferencesService.sysTransfersKey) {
+                    PreferencesService.saveTransfersEntryLabel(newLabel);
+                  } else {
+                    PreferencesService.saveSettingsEntryLabel(newLabel);
+                  }
+                }
+                Navigator.of(dialogContext).pop();
+                setModalState(() {});
+                // 分类页网格同步刷新显示名
+                context.read<MediaProvider>().notifyListeners();
+              },
+              child: Text(
+                L10n.of(dialogContext).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 底部导航槽位 2/3 配置行：显示当前入口，点击弹出选择器。
+  Widget _buildBottomSlotRow(
+    BuildContext context,
+    int slot,
+    StateSetter setModalState,
+  ) {
+    final theme = Theme.of(context);
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    final label = _bottomSlotLabel(context, slot, cfg);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
+      child: Material(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () async {
+            final picked = await QuickCategoriesGrid.showBottomTabPicker(
+              context,
+              slot: slot,
+              current: cfg,
+            );
+            if (picked == null) return;
+            if (picked['type'] == 'reset') {
+              await PreferencesService.saveBottomTabSlotConfig(slot, null);
+            } else {
+              await PreferencesService.saveBottomTabSlotConfig(slot, picked);
+            }
+            if (mounted) setModalState(() {});
+            // 触发 HomeScreen 重建：底部 4-tab 即时刷新为新入口
+            // （HomeScreen watch FileManagerProvider，MediaProvider 不触发其重建）
+            context.read<FileManagerProvider>().notifyListeners();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    L10n.of(context).ui_bottom_tab_slot(slot + 1),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withOpacity(0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 槽位当前显示名：默认内置页 / 分类页入口 / 快捷方式名。
+  String _bottomSlotLabel(
+    BuildContext context,
+    int slot,
+    Map<String, String>? cfg,
+  ) {
+    final l10n = L10n.of(context);
+    if (cfg == null) {
+      switch (slot) {
+        case 0:
+          return l10n.cat_quick_categories;
+        case 1:
+          return l10n.ui_file;
+        case 3:
+          return l10n.cat_settings;
+        default:
+          return l10n.ui_transfers;
+      }
+    }
+    if (cfg['type'] == 'builtin') {
+      switch (cfg['key']) {
+        case 'tab_categories':
+          return l10n.cat_quick_categories;
+        case 'tab_files':
+          return l10n.ui_file;
+        case 'tab_settings':
+          return l10n.cat_settings;
+        default:
+          return l10n.ui_transfers;
+      }
+    }
+    if (cfg['type'] == 'custom_entry') {
+      return PreferencesService.getCustomEntryLabel() ??
+          l10n.ui_show_custom_entry;
+    }
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (index) {},
+    );
+    final entry = map[cfg['key']];
+    if (entry != null) return entry['label'] as String;
+    return slot == 3 ? l10n.cat_settings : l10n.ui_transfers;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -1437,14 +2170,16 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               maxChildSize: 0.95,
               expand: false,
               builder: (context, scrollController) {
+                // 统一完整顺序：配置区列表与分类页网格共用一条链，
+                // 任一侧拖动都会写回 full_grid_order 并同步 categoryOrder。
+                final fullOrder = PreferencesService.resolveFullOrder(
+                  provider.categoryOrder,
+                );
                 // 在首次渲染完成后触发滚动
                 if (!_hasScrolledToTarget &&
                     widget.initialExpandLabelKey != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToTargetItem(
-                      scrollController,
-                      provider.categoryOrder,
-                    );
+                    _scrollToTargetItem(scrollController, fullOrder);
                   });
                 }
 
@@ -1452,7 +2187,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                   builder: (context, setModalState) {
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
-                    final order = provider.categoryOrder;
                     final categoriesMap =
                         QuickCategoriesGrid.getAllCategoriesMap(
                           context,
@@ -1483,6 +2217,75 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
+                        // 以下全部内容（列数 / 底部导航栏开关 / 槽位配置 / 显示自定义入口 /
+                        // 添加按钮 / 分类列表）统一放进 ReorderableListView 的 header 里
+                        // 随列表一起滚动。绝不能把它们当成 Column 的固定子项：固定子项会把
+                        // Expanded 列表的视口挤到 0，导致下方开关既看不到也拉不上来。
+                        Expanded(
+                          child: ReorderableListView.builder(
+                            scrollController: scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.only(
+                              bottom:
+                                  MediaQuery.of(context).padding.bottom + 16,
+                            ),
+                            onReorder: (oldIndex, newIndex) {
+                              if (newIndex > oldIndex) newIndex -= 1;
+                              final fullOrder = PreferencesService
+                                  .resolveFullOrder(provider.categoryOrder);
+                              if (oldIndex < 0 ||
+                                  oldIndex >= fullOrder.length) {
+                                setModalState(() {});
+                                return;
+                              }
+                              final item = fullOrder.removeAt(oldIndex);
+                              fullOrder.insert(
+                                newIndex.clamp(0, fullOrder.length),
+                                item,
+                              );
+                              PreferencesService.saveFullGridOrder(fullOrder);
+                              // 同步分类顺序（分类部分写回 provider）
+                              final newCatOrder = fullOrder
+                                  .where((e) =>
+                                      !PreferencesService.isSysEntryKey(e))
+                                  .toList();
+                              provider.setCategoryOrder(newCatOrder);
+                              setModalState(() {});
+                            },
+                            itemCount: fullOrder.length,
+                            itemBuilder: (context, index) {
+                              final key = fullOrder[index];
+                              // 系统入口行（自定义/传输/设置）：与分类项同构，
+                              // 可开关、可重命名、可拖动排序（拖拽即双向同步）
+                              if (PreferencesService.isSysEntryKey(key)) {
+                                return _buildSysEntryListItem(
+                                  context,
+                                  key,
+                                  setModalState,
+                                );
+                              }
+                              final cat = categoriesMap[key];
+                              if (cat == null)
+                                return const SizedBox.shrink(
+                                  key: ValueKey('empty'),
+                                );
+
+                              final isEnabled = activeCats.contains(key);
+
+                              return Container(
+                                key: _getItemKey(key),
+                                child: CategoryItemWidget(
+                                  key: ValueKey(key),
+                                  label: key,
+                                  cat: cat,
+                                  isEnabled: isEnabled,
+                                  provider: provider,
+                                  index: index,
+                                ),
+                              );
+                            },
+                            header: Column(
+                              children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -1545,6 +2348,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ],
                           ),
                         ),
+                        // ===== 底部导航栏 =====
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -1554,23 +2358,64 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  L10n.of(context).ui_show_custom_entry,
+                                  L10n.of(context).ui_bottom_tab_bar,
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
                                 ),
                               ),
+                              // 总开关：关闭时底部 4-tab 折叠隐藏
                               Switch(
-                                value: PreferencesService.getCustomEntryVisible(),
+                                value: context
+                                    .watch<FileManagerProvider>()
+                                    .bottomNavBarEnabled,
                                 onChanged: (v) {
-                                  PreferencesService.saveCustomEntryVisible(v);
+                                  context
+                                      .read<FileManagerProvider>()
+                                      .setBottomNavBarEnabled(v);
                                   setModalState(() {});
                                 },
                               ),
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 2.0,
+                          ),
+                          child: Text(
+                            L10n.of(context).ui_bottom_tab_custom_hint,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: theme.colorScheme.onSurface
+                                  .withOpacity(0.6),
+                            ),
+                          ),
+                        ),
+                        // 槽位配置区：开关关闭时整体折叠隐藏
+                        if (PreferencesService.getBottomNavBarEnabled()) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 2.0,
+                            ),
+                            child: Text(
+                              L10n.of(context).ui_long_press_switch,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.5),
+                              ),
+                            ),
+                          ),
+                          _buildBottomSlotRow(context, 0, setModalState),
+                          _buildBottomSlotRow(context, 1, setModalState),
+                          _buildBottomSlotRow(context, 2, setModalState),
+                          _buildBottomSlotRow(context, 3, setModalState),
+                        ],
+                        const SizedBox(height: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -1625,39 +2470,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                         ),
                         const SizedBox(height: 8),
                         const Divider(),
-                        Expanded(
-                          child: ReorderableListView.builder(
-                            scrollController: scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  MediaQuery.of(context).padding.bottom + 16,
+                              ],
                             ),
-                            onReorder: (oldIndex, newIndex) =>
-                                provider.reorderCategory(oldIndex, newIndex),
-                            itemCount: order.length,
-                            itemBuilder: (context, index) {
-                              final label = order[index];
-                              final cat = categoriesMap[label];
-                              if (cat == null)
-                                return const SizedBox.shrink(
-                                  key: ValueKey('empty'),
-                                );
-
-                              final isEnabled = activeCats.contains(label);
-
-                              return Container(
-                                key: _getItemKey(label),
-                                child: CategoryItemWidget(
-                                  key: ValueKey(label),
-                                  label: label,
-                                  cat: cat,
-                                  isEnabled: isEnabled,
-                                  provider: provider,
-                                  index: index,
-                                ),
-                              );
-                            },
                           ),
                         ),
                       ],

@@ -340,7 +340,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildV300Changelog(theme),
+          _buildV310Changelog(theme),
         ],
       ),
     );
@@ -683,7 +683,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
   // ── ③ 更新日志（自「关于」页迁移，硬编码中英双语，不走 l10n） ──────
 
-  Widget _buildV300Changelog(ThemeData theme) {
+  Widget _buildV310Changelog(ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final dividerColor = theme.colorScheme.onSurface.withOpacity(0.15);
 
@@ -733,7 +733,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v3.0.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v3.1.0', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
               Text('2026-09-25', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
@@ -743,78 +743,47 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
           // ══════════════ 中文 ══════════════
           section('\u2728 新功能'),
-          item('全新四标签导航（分类 / 文件 / 传输 / 设置），默认移到底部：原顶部标签栏与抽屉入口重新归位，升级后自动迁移导航偏好'),
-          item('「我的」页下线，设置收敛为底部导航第 4 项（内嵌渲染，不再 push 全屏路由），左抽屉不再重复提供入口'),
-          item('启动期崩溃取证：基于 ApplicationExitInfo 自动留证（用户零操作）；启动路径去掉 runApp() 前的原生通道等待，修复启动阶段闪退'),
-          item('版本更新页：GitHub 版本检测 + 应用内下载安装，「查看更新」由设置迁至左抽屉'),
-          item('文本编辑器：工具箱与左抽屉可直接打开空白编辑器，右上角菜单可导入已有文本文件'),
-          item('视频播放：进度条常驻开关、倍速与音量记忆、后台播放选择持久化'),
-          item('图片查看器三态适配：适应宽度 / 适应高度 / 原始尺寸'),
-          item('全局搜索支持直接跳转功能入口，搜索框移至顶部'),
-          item('分类页新增自定义入口卡片（可开关）与每行显示列数（新增 2 列）'),
-          item('剪贴板新增「粘贴并清除」'),
+          item('底部导航栏 4 个槽位可自由定制：分类 / 文件 / 传输 / 设置都能换成你常用的任何入口，长按槽位即可更换'),
+          item('自定义快捷方式支持拖动排序，拖到哪个位置就固定在哪个位置；配置区可折叠，界面更清爽'),
+          item('不需要底部导航栏时可在同一面板一键关闭，相关配置随开关一并收起'),
+          item('顶部栏改为紧凑图标布局：左抽屉 / 全局搜索 / 刷新 / 排序 / 主题切换 / 单双窗口 / 收藏夹，长按图标可查看名称'),
+          item('右抽屉改为收藏夹：常用功能前移到顶部栏，收藏夹一键展开'),
 
           divider(),
 
           section('\u{1f3a8} 界面与交互'),
-          item('分类页顶部间距清零、卡片圆角收紧（14→8）、3 列卡片改为正方形，整体更紧凑'),
-          item('顶部背景统一细边框；浏览操作栏移至底部并自动折叠展开'),
-          item('单标签时隐藏空的标签页栏'),
-          item('左抽屉移除「设置」入口；「查看更新」图标更换，与页内重试按钮区分'),
-          item('右抽屉「常用功能」与「收藏夹」同时展开时不再出现两条分割线'),
-          item('视频缩略图不再被中心播放图标覆盖，完整显示（列表/网格同步；音频封面图标保留）'),
-          item('全局搜索提示词更新为「搜索文件、应用和设置」'),
+          item('顶部栏与底部导航重新分工，整体更紧凑，常用操作一步可达'),
+          item('主页面支持左右滑动切换（限定在分类 / 文件 / 传输 / 设置四个主页面之间）'),
 
           divider(),
 
           section('\u{1f41b} 问题修复'),
-          item('修复自动清理缓存连诊断数据一并删除的问题：崩溃报告与调试日志被清空，导致每次启动重复提示「上次异常退出」且丢失事故现场；清理范围收窄为仅清缓存，固定保留 Backups / crash / Receive / 调试日志'),
-          item('崩溃提示判据改为「报告确实存在于公共目录且从未提示过」，同一次崩溃只提示一次；Dart 层非致命错误不再被误报为异常退出'),
-          item('修复版本检测读取响应体没有超时，导致永远停在「正在检查更新…」'),
-          item('修复拿不到本机版本号时谎报「已是最新」且并未联网的问题'),
-          item('检测失败不再静默：按网络不通 / 连接超时 / 请求频繁 / HTTP 错误 / 数据异常分类提示；「已是最新」同时显示远端版本与检查时间'),
-          item('修复版本检测不走系统代理（Dart 默认只读进程环境变量，Android 上恒为空）'),
-          item('官方 API 不可达时自动降级网页检测，并支持在页内填写自定义镜像源'),
-          item('修复传输页网络入口无法跳转远程目录'),
-          item('修复视频进度条常驻时半透明遮罩撑满全屏'),
-
+          item('修复全新安装后首次启动闪退的问题（v3.0.0 上所有全新安装用户均受影响，升级后不再复现）'),
+          item('修复部分页面关闭后仍被访问而引发的偶发崩溃'),
+          item('崩溃报告自动附带版本号与机型信息，重复的同类错误自动合并，反馈问题更容易定位'),
+          item('降低亮屏待机耗电与内存占用：修复列表加载占位动画在页面不可见时仍在运行的问题，并收紧图片缓存上限'),
           langDivider(),
 
           section('\u2728 New Features'),
-          item('Brand-new 4-tab navigation (Categories / Files / Transfers / Settings), now at the bottom by default: top tabs and drawer entries are reorganized, and navigation preference migrates automatically on upgrade'),
-          item('The "Me" page was retired; Settings is now the 4th tab, rendered inline instead of pushed as a full-screen route, and the left drawer no longer duplicates the entry'),
-          item('Startup crash forensics based on ApplicationExitInfo (zero user action); removed native channel awaits before runApp(), fixing startup-stage crashes'),
-          item('Version updates page: GitHub version detection with in-app download & install; the entry moved from Settings to the left drawer'),
-          item('Text editor: open a blank editor directly from the toolbox or drawer, with an import option in the overflow menu'),
-          item('Video playback: always-on progress bar switch, speed & volume memory, and persisted background-play preference'),
-          item('Image viewer: three fit modes (width / height / actual size)'),
-          item('Global search now jumps to feature entries directly; the search field moved to the top'),
-          item('Category page: optional custom entry card and a new 2-column layout option'),
-          item('Clipboard: new "paste and clear" action'),
+          item('All 4 bottom navigation slots are customizable: Categories / Files / Transfers / Settings can each be replaced with any entry you use often, just long-press a slot to change it'),
+          item('Custom shortcuts can be reordered by dragging, and wherever you drop an entry is where it stays; the configuration area can be collapsed for a cleaner page'),
+          item('Turn the bottom navigation bar off entirely from the same panel when you do not need it, and its settings fold away with the switch'),
+          item('The top bar is now a compact icon row: drawer / global search / refresh / sort / theme toggle / single-dual pane / favorites, long-press an icon to see its name'),
+          item('The right drawer is now Favorites: frequent features moved up to the top bar for one-tap access'),
 
           divider(),
 
           section('\u{1f3a8} UI & Interaction'),
-          item('Category page: top spacing reset, card radius tightened (14 to 8), square cards at 3 columns - denser and cleaner'),
-          item('Unified thin border on top backgrounds; browse action bar moved to the bottom with auto collapse/expand'),
-          item('Empty tab bar is hidden when only one tab is open'),
-          item('Left drawer: "Settings" entry removed; the update entry icon changed to avoid confusion with the in-page retry button'),
-          item('Right drawer: no more double dividers when "Frequent features" and "Favorites" are both expanded'),
-          item('Video thumbnails are no longer covered by the center play icon (list & grid; audio cover icons kept)'),
-          item('Global search hint updated to "Search files, apps and settings"'),
+          item('The top bar and bottom navigation now split their duties, making the UI denser with common actions one step away'),
+          item('Swipe left and right to move between the main pages (Categories / Files / Transfers / Settings)'),
 
           divider(),
 
           section('\u{1f41b} Bug Fixes'),
-          item('Fixed auto cache cleanup deleting diagnostic data along with cache - crash reports and debug logs were wiped, causing a repeated "abnormal exit" notice on every launch and losing the crash scene; cleanup now preserves Backups / crash / Receive / debug log'),
-          item('Crash notices now require that the report really exists and was never notified, so each crash is reported only once; non-fatal Dart errors are no longer misreported as abnormal exits'),
-          item('Fixed the version check hanging forever on "Checking for updates..." because reading the response body had no timeout'),
-          item('Fixed falsely reporting "up to date" without any network request when the local version could not be read'),
-          item('Version check failures are no longer silent: classified into network / timeout / rate limit / HTTP error / malformed data; "up to date" now also shows the remote version and check time'),
-          item('Fixed the version check ignoring the system proxy (Dart only reads process env vars, which are always empty on Android)'),
-          item('Falls back to web-based detection when the official API is unreachable, and supports a custom mirror URL'),
-          item('Fixed the network entry on the Transfers page not opening the remote directory'),
-          item('Fixed the always-on video progress bar causing a full-screen translucent overlay'),
+          item('Fixed a crash on the very first launch after a fresh install (affected every fresh install of v3.0.0 and is gone after upgrading)'),
+          item('Fixed occasional crashes caused by a page still being accessed after it was closed'),
+          item('Crash reports now include the app version and device model, and repeated errors are merged, making reports easier to diagnose'),
+          item('Lower idle power draw and memory usage: fixed loading placeholders that kept animating while off-screen, and tightened the image cache limit'),
         ],
       ),
     );
