@@ -3502,17 +3502,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       ),
 
           // 常驻细进度条：开启"进度条常驻"且未锁定时，控制条隐藏时底部保留一条可拖动细进度条
+          // 注意：Positioned 必须是 Stack 的直接子级才会参与定位；若嵌套在
+          // IgnorePointer/AnimatedOpacity 内会退化为普通子项，被 Stack(fit:expand)
+          // 撑满全屏，导致底部渐变蒙层拉伸成整屏半透明遮罩。
           if (_alwaysShowProgress && !_isLocked)
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              opacity: _controlsVisible ? 0.0 : 1.0,
-              child: IgnorePointer(
-                ignoring: _controlsVisible,
-                child: Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                opacity: _controlsVisible ? 0.0 : 1.0,
+                child: IgnorePointer(
+                  ignoring: _controlsVisible,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     decoration: const BoxDecoration(
