@@ -578,19 +578,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   Widget _buildNavBottomBar(bool bottomTabs) {
     // 底部导航栏总开关（自定义快捷方式页配置）：关闭时折叠隐藏（provider 监听实时生效）
     if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
-      return const SizedBox.shrink();
+      // 导航栏被关掉后不能直接返回空：整条上滑热区会跟着一起消失，收藏夹就只剩
+      // 左抽屉一个入口了。这里补一条**贴底的透明上滑热区**（系统手势条高度 + 12dp）：
+      // 视觉上什么都不显示，但保住「从底部上滑弹收藏夹」这条手势。
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onVerticalDragEnd: _handleSwipeUpForFavorites,
+        child: SizedBox(
+          height: 12 + MediaQuery.of(context).padding.bottom,
+          width: double.infinity,
+        ),
+      );
     }
     final bar = bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
     return GestureDetector(
       // translucent：不拦截子级命中测试，图标 / 标签仍可正常点按。
       behavior: HitTestBehavior.translucent,
-      // 只认「向上」的快速滑动：向下滑、慢速拖都不触发，避免和点按、横向切页抢手势。
-      onVerticalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity < -260) _openFavoritesSheet();
-      },
+      onVerticalDragEnd: _handleSwipeUpForFavorites,
       child: bar,
     );
+  }
+
+  /// 底部栏（含导航栏关闭时那条贴底热区）上滑唤起收藏夹：
+  /// 只认「向上」的快速滑动 —— 向下滑、慢速拖都不触发，避免和点按、横向切页抢手势。
+  void _handleSwipeUpForFavorites(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity < -260) _openFavoritesSheet();
   }
 
   /// 从左抽屉打开收藏夹：先收起抽屉，等关闭动画走完再弹面板，

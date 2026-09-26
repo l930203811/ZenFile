@@ -530,20 +530,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   // 长按菜单→拖拽切换用
   Offset? _longPressOrigin;
 
-  // 获取活跃分类的标签列表（用于拖拽排序更新）
-  List<String> _getActiveCategoryLabels(
-    MediaProvider mediaProvider,
-    Map<String, Map<String, dynamic>> allCategoriesMap,
-  ) {
-    return mediaProvider.categoryOrder
-        .where(
-          (label) =>
-              mediaProvider.activeCategories.contains(label) &&
-              allCategoriesMap.containsKey(label),
-        )
-        .toList();
-  }
-
   /// 从图标位置扩散进入目标页面
   void _navigateWithExpand({
     required GlobalKey iconKey,
@@ -787,11 +773,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           isEnabled: isEnabled,
           theme: theme,
           l10n: l10n,
-          getCategoryIndex: () => _getCategoryIndex(labelKey),
+          getCategoryIndex: () => _getVisibleIndex(labelKey),
           getCategoryIcon: () => _getCategoryIcon(labelKey),
           onDragStart: (dragPos) {
             _startDrag(
-              _getCategoryIndex(labelKey),
+              _getVisibleIndex(labelKey),
               dragPos,
               Icon(_getCategoryIcon(labelKey), color: color, size: 28),
               color,
@@ -840,8 +826,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       isEnabled = PreferencesService.getSettingsEntryVisible();
       menuIcon = Broken.setting_2;
     }
-    // 仅自定义入口保留「自定义快捷方式」菜单项
-    final showCustomizeItem = entryKey == PreferencesService.sysCustomKey;
+    // 三个系统入口卡片（自定义 / 传输 / 设置）都显示「自定义快捷方式」菜单项，
+    // 与分类卡片保持一致 —— 早期只有「自定义」入口有，传输 / 设置长按后菜单会少一项。
+    const showCustomizeItem = true;
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
 
@@ -862,11 +849,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           theme: theme,
           l10n: l10n,
           showCustomizeItem: showCustomizeItem,
-          getCategoryIndex: () => -1,
+          getCategoryIndex: () => _getVisibleIndex(entryKey),
           getCategoryIcon: () => menuIcon,
           onDragStart: (dragPos) {
             _startDrag(
-              -1,
+              _getVisibleIndex(entryKey),
               dragPos,
               Icon(menuIcon, color: color, size: 28),
               color,
@@ -992,15 +979,18 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     );
   }
 
-  int _getCategoryIndex(String labelKey) {
-    final provider = context.read<MediaProvider>();
-    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
-      context,
-      Theme.of(context).brightness == Brightness.dark,
-      widget.onNavigateTab,
-    );
-    final activeLabels = _getActiveCategoryLabels(provider, allCategoriesMap);
-    return activeLabels.indexOf(labelKey);
+  /// 取 key 在「可见序列」里的下标。
+  ///
+  /// 网格显示的就是「分类 + 系统入口（自定义 / 传输 / 设置）」这条可见序列，
+  /// 拖拽排序用的 index（`_startDrag` / `_draggingIndex` / `_targetIndex` /
+  /// `_mergeVisibleIntoFull`）**全部以它为坐标系**，所以取下标也必须走
+  /// `_visibleOrderOf`。早期这里用的是「只看分类」的列表，只要系统入口被拖到
+  /// 分类前面，下标就会整体错位。
+  int _getVisibleIndex(String key) {
+    final mediaProvider = context.read<MediaProvider>();
+    return _visibleOrderOf(
+      PreferencesService.resolveFullOrder(mediaProvider.categoryOrder),
+    ).indexOf(key);
   }
 
   IconData _getCategoryIcon(String labelKey) {
@@ -1260,7 +1250,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     // 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
                     // 支持长按菜单（重命名/显示开关）与长按拖拽排序。
                     if (PreferencesService.isSysEntryKey(key)) {
-                      return _buildSysEntryCard(theme, iconSize, key);
+                      return _buildSysEntryCard(theme, iconSize, key, index);
                     }
                     final cat = allCategoriesMap[key];
                     if (cat == null) {
@@ -1447,7 +1437,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   /// 分类页网格末尾的「自定义」入口卡片：点击打开自定义快捷方式对话框。
   /// 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
   /// 支持长按菜单（重命名/显示开关，自定义额外含自定义快捷方式）与长按拖拽排序。
-  Widget _buildSysEntryCard(ThemeData theme, double iconSize, String key) {
+  Widget _buildSysEntryCard(
+    ThemeData theme,
+    double iconSize,
+    String key,
+    int index,
+  ) {
     final fm = context.read<FileManagerProvider>();
     final color = theme.colorScheme.primary;
     final IconData icon;
@@ -1472,6 +1467,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           L10n.of(context).cat_settings;
       onTap = () => widget.onNavigateTab.call(3);
     }
+    // 与分类卡片一致：被拿起 / 命中目标位置时给半透明反馈。
+    final isBeingDragged = _isDragging && _draggingIndex == index;
+    final isTarget =
+        _isDragging && _targetIndex == index && _draggingIndex != index;
+
     return GestureDetector(
       onLongPressStart: (details) {
         fm.setCategoryReorderInteracting(true);
@@ -1493,7 +1493,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         if ((details.globalPosition - origin).distance > 10.0) {
           _closeMenuOverlay();
           _startDrag(
-            -1,
+            index,
             details.globalPosition,
             Icon(icon, color: color, size: 28),
             color,
@@ -1507,45 +1507,48 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         fm.setCategoryReorderInteracting(false);
         _longPressOrigin = null;
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.22),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+      child: Opacity(
+        opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
-            onTap: onTap,
-            splashColor: theme.colorScheme.primary.withOpacity(0.25),
-            highlightColor: theme.colorScheme.primary.withOpacity(0.15),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: theme.colorScheme.primary, size: iconSize),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.22),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: onTap,
+              splashColor: theme.colorScheme.primary.withOpacity(0.25),
+              highlightColor: theme.colorScheme.primary.withOpacity(0.15),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: theme.colorScheme.primary, size: iconSize),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
