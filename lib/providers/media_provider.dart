@@ -865,26 +865,26 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.remove('设置');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('网络')) {
-        _categoryOrder.add('网络');
+      // 网络/FTP共享/Web共享 已迁移到传输页（v3.x）：分类页不再显示，
+      // 历史持久化里的残留一律清除（无条件，不受迁移版本号限制）。
+      if (_categoryOrder.contains('网络')) {
+        _categoryOrder.remove('网络');
+        orderUpdated = true;
+      }
+      if (_categoryOrder.contains('FTP共享')) {
+        _categoryOrder.remove('FTP共享');
+        orderUpdated = true;
+      }
+      if (_categoryOrder.contains('Web共享')) {
+        _categoryOrder.remove('Web共享');
         orderUpdated = true;
       }
       if (!_categoryOrder.contains('最近')) {
         _categoryOrder.add('最近');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('FTP共享')) {
-        _categoryOrder.add('FTP共享');
-        orderUpdated = true;
-      }
-      if (!_categoryOrder.contains('Web共享')) {
-        _categoryOrder.add('Web共享');
-        orderUpdated = true;
-      }
       if (!_categoryOrder.contains('工具箱')) {
-        final webIndex = _categoryOrder.indexOf('Web共享');
-        final insertIndex = webIndex >= 0 ? webIndex + 1 : _categoryOrder.length;
-        _categoryOrder.insert(insertIndex, '工具箱');
+        _categoryOrder.add('工具箱');
         orderUpdated = true;
       }
       if (_categoryOrder.contains('快传')) {
@@ -958,21 +958,22 @@ class MediaProvider extends ChangeNotifier {
       }
       // 仅在迁移版本低于当前版本时，补全新分类到 active 列表。
       // 已迁移用户不再干预其 active 状态，避免用户主动关闭的分类在重启后被重新启用。
+      // 网络/FTP共享/Web共享 已迁移到传输页：active 残留一律清除（无条件）
+      if (_activeCategories.contains('网络')) {
+        _activeCategories.remove('网络');
+        activeUpdated = true;
+      }
+      if (_activeCategories.contains('FTP共享')) {
+        _activeCategories.remove('FTP共享');
+        activeUpdated = true;
+      }
+      if (_activeCategories.contains('Web共享')) {
+        _activeCategories.remove('Web共享');
+        activeUpdated = true;
+      }
       if (migratedVersion < PreferencesService.kCurrentCategoriesMigratedVersion) {
-        if (!_activeCategories.contains('网络')) {
-          _activeCategories.add('网络');
-          activeUpdated = true;
-        }
         if (!_activeCategories.contains('最近')) {
           _activeCategories.add('最近');
-          activeUpdated = true;
-        }
-        if (!_activeCategories.contains('FTP共享')) {
-          _activeCategories.add('FTP共享');
-          activeUpdated = true;
-        }
-        if (!_activeCategories.contains('Web共享')) {
-          _activeCategories.add('Web共享');
           activeUpdated = true;
         }
         if (!_activeCategories.contains('工具箱')) {
@@ -1264,14 +1265,11 @@ class MediaProvider extends ChangeNotifier {
     '音频',
     '文档',
     '截图',
-    '网络',
-    'FTP共享',
-    'Web共享',
     '工具箱',
-    '应用',
     '压缩包',
-    '安装包',
     '备份/恢复',
+    '应用',
+    '安装包',
     '最近',
     '回收站',
   ];
@@ -1286,14 +1284,11 @@ class MediaProvider extends ChangeNotifier {
     '音频',
     '文档',
     '截图',
-    '网络',
-    'FTP共享',
-    'Web共享',
     '工具箱',
-    '应用',
     '压缩包',
-    '安装包',
     '备份/恢复',
+    '应用',
+    '安装包',
     '最近',
     '回收站',
   ];

@@ -1881,7 +1881,8 @@ class PreferencesService {
   }
 
   static bool getSettingsEntryVisible() {
-    return _prefs?.getBool(_keySettingsEntryVisible) ?? true;
+    // 默认关闭：设置入口不在分类页卡片区显示（可从左抽屉/自定义快捷方式页进入）
+    return _prefs?.getBool(_keySettingsEntryVisible) ?? false;
   }
 
   static Future<void> saveSettingsEntryVisible(bool v) async {
@@ -1929,16 +1930,13 @@ class PreferencesService {
     await _prefs?.setStringList(_keyFullGridOrder, order);
   }
 
-  /// 解析统一顺序：未设置时按 categoryOrder + custom_entry_position 生成默认
-  /// （自定义按历史插入点，传输/设置末尾）。
+  /// 解析统一顺序：未设置时按 base（分类顺序）+ 系统入口生成默认。
+  /// 默认尾部顺序：传输 → 自定义 → 设置（设置默认关闭不显示；自定义在分类页最底部）。
   static List<String> resolveFullOrder(List<String> base) {
     final saved = getFullGridOrder();
     if (saved != null && saved.isNotEmpty) return saved;
-    final customPos = getCustomEntryPosition();
     final order = [...base];
-    final pos = customPos < 0 ? order.length : customPos.clamp(0, order.length);
-    order.insert(pos, sysCustomKey);
-    order.addAll([sysTransfersKey, sysSettingsKey]);
+    order.addAll([sysTransfersKey, sysCustomKey, sysSettingsKey]);
     return order;
   }
   // --- Favorites ---
