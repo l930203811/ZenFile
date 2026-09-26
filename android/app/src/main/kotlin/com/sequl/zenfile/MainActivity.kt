@@ -790,37 +790,49 @@ class MainActivity : AudioServiceFragmentActivity() {
                     val iconAlias = call.argument<String>("alias") ?: "com.sequl.zenfile.MainActivityDefault"
                     executor.execute {
                         try {
-                            // 预设备用图标别名（classic2/classic3/cyberpunk/glassmorphism/
-                            // m3_expressive/minimal_flat/neumorphism）；自定义图标走桌面快捷方式，
-                            // 不注册 activity-alias（Android 无法在 alias 的 android:icon 引用运行时文件）。
-                            val aliases = listOf(
-                                "com.sequl.zenfile.MainActivityDefault",
-                                "com.sequl.zenfile.MainActivityClassic2",
-                                "com.sequl.zenfile.MainActivityClassic3",
-                                "com.sequl.zenfile.MainActivityClassic4",
-                                "com.sequl.zenfile.MainActivityCyberpunk",
-                                "com.sequl.zenfile.MainActivityGlassmorphism",
-                                "com.sequl.zenfile.MainActivity3DGradient",
-                                "com.sequl.zenfile.MainActivityGlossyBlue",
-                                "com.sequl.zenfile.MainActivityM3Expressive",
-                                "com.sequl.zenfile.MainActivityMinimalFlat",
-                                "com.sequl.zenfile.MainActivityNeumorphism"
-                            )
+                            // 候选别名 = 硬编码兜底名单 ∪ 动态枚举到的本包 activity-alias。
+                            // ⚠️ 历史事故（2026-09-27）：新增 4 个备选图标时只改了 Dart 映射与
+                            //    AndroidManifest，漏了这份名单 ⇒ 切到新图标时循环里没有任何一项
+                            //    命中目标，于是**全部 alias 被 DISABLED**（含 MainActivityDefault）
+                            //    ⇒ 应用再无任何桌面入口，点图标只能进「应用详情」页，只能重装。
+                            //    动态枚举让 AndroidManifest 成为唯一真源，以后新增图标不必改这里。
+                            val candidates = LinkedHashSet<String>(legacyIconAliases())
+                            candidates.addAll(declaredLauncherAliases())
 
-                            for (alias in aliases) {
-                                val componentName = android.content.ComponentName(packageName, alias)
-                                val state = if (alias == iconAlias) {
-                                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                                } else {
-                                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                            // 目标 alias 未声明 ⇒ 直接失败，**绝不执行 disable**：
+                            // 宁可这一次切换无效，也不能把启动入口全关掉。
+                            if (!candidates.contains(iconAlias)) {
+                                runOnUiThread {
+                                    result.error(
+                                        "ICON_ERROR",
+                                        "alias not declared: $iconAlias",
+                                        null
+                                    )
                                 }
-                                packageManager.setComponentEnabledSetting(
-                                    componentName,
-                                    state,
-                                    PackageManager.DONT_KILL_APP
-                                )
+                                return@execute
                             }
-                            
+
+                            // 顺序：先把目标打开，再关掉其余的。这样即使中途异常或进程被杀，
+                            // 应用也一定还有可用的桌面入口。
+                            packageManager.setComponentEnabledSetting(
+                                ComponentName(packageName, iconAlias),
+                                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                PackageManager.DONT_KILL_APP
+                            )
+                            for (alias in candidates) {
+                                if (alias == iconAlias) continue
+                                try {
+                                    packageManager.setComponentEnabledSetting(
+                                        ComponentName(packageName, alias),
+                                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                        PackageManager.DONT_KILL_APP
+                                    )
+                                } catch (e: Exception) {
+                                    // 单个组件失败不影响其余，更不会影响已经打开的入口。
+                                    e.printStackTrace()
+                                }
+                            }
+
                             runOnUiThread { result.success(true) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("ICON_ERROR", e.message, null) }
@@ -2807,6 +2819,53 @@ class MainActivity : AudioServiceFragmentActivity() {
             null
         }
     }
+
+    /**
+     * 硬编码兜底别名（与 AndroidManifest.xml 的 activity-alias 一一对应）。
+     *
+     * 与 [declaredLauncherAliases] 取并集使用：动态枚举依赖 PackageManager 的返回，
+     * 极少数 ROM 有可能不列出「已禁用」的组件，两者合并才真正稳。
+     */
+    private fun legacyIconAliases(): List<String> = listOf(
+        "com.sequl.zenfile.MainActivityDefault",
+        "com.sequl.zenfile.MainActivityClassic2",
+        "com.sequl.zenfile.MainActivityClassic3",
+        "com.sequl.zenfile.MainActivityClassic4",
+        "com.sequl.zenfile.MainActivityCyberpunk",
+        "com.sequl.zenfile.MainActivityGlassmorphism",
+        "com.sequl.zenfile.MainActivity3DGradient",
+        "com.sequl.zenfile.MainActivityGlossyBlue",
+        "com.sequl.zenfile.MainActivityPaperGray",
+        "com.sequl.zenfile.MainActivityMetalFrost",
+        "com.sequl.zenfile.MainActivityBlueFolder",
+        "com.sequl.zenfile.MainActivityBlueGold",
+        "com.sequl.zenfile.MainActivityM3Expressive",
+        "com.sequl.zenfile.MainActivityMinimalFlat",
+        "com.sequl.zenfile.MainActivityNeumorphism"
+    )
+
+    /**
+     * 动态枚举本包在 AndroidManifest.xml 里声明的全部 activity-alias（桌面图标入口）。
+     *
+     * 只认 `targetActivity != null` 的组件：MainActivity **本体**的名字同样以
+     * `$packageName.MainActivity` 开头，但它不是 alias（targetActivity 为空），
+     * 且一旦把它禁用，所有 alias 都会失效 —— 必须排除。
+     */
+    @Suppress("DEPRECATION")
+    private fun declaredLauncherAliases(): List<String> {
+        return try {
+            val info = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+            info.activities
+                ?.filter {
+                    it.name.startsWith("$packageName.MainActivity") && it.targetActivity != null
+                }
+                ?.map { it.name }
+                ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
 
     private fun isUsageStatsPermissionGranted(): Boolean {
         return try {

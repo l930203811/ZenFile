@@ -3340,8 +3340,12 @@ Widget _buildIconOptionCard(
       ),
     ),
     child: InkWell(
-      onTap: () {
-        fileManager.setActiveAppIcon(id);
+      onTap: () async {
+        final ok = await fileManager.setActiveAppIcon(id);
+        if (!context.mounted) return;
+        // 切换失败（原生拒绝，如 alias 未在 AndroidManifest.xml 声明）时不弹提示：
+        // 选中态已由 provider 回滚，再弹「已切换」反而误导。
+        if (!ok) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(L10n.of(context).title(title)),

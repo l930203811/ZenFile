@@ -478,8 +478,11 @@ class FileManagerProvider extends ChangeNotifier {
   String _activeAppIcon = 'default';
   String get activeAppIcon => _activeAppIcon;
 
-  Future<void> setActiveAppIcon(String val) async {
-    if (_activeAppIcon == val) return;
+  Future<bool> setActiveAppIcon(String val) async {
+    // ⚠️ 刻意不做「同值直接 return」的早退：prefs 里记录的值可能与系统实际生效的
+    // alias 不一致（覆盖安装会把组件 enabled 状态重置回 manifest 声明值），此时用户
+    // 再点同一张卡片必须真正重新应用一次，否则表现为「点了没反应」。
+    final previous = _activeAppIcon;
     _activeAppIcon = val;
     await PreferencesService.saveActiveAppIcon(val);
 
@@ -488,7 +491,7 @@ class FileManagerProvider extends ChangeNotifier {
     // from an alias android:icon attribute.
     if (val == 'custom') {
       notifyListeners();
-      return;
+      return true;
     }
 
     // 预设备用图标 → 切换对应 activity-alias（桌面图标随 alias 启用状态变化）。
@@ -511,8 +514,15 @@ class FileManagerProvider extends ChangeNotifier {
       'neumorphism' => 'com.sequl.zenfile.MainActivityNeumorphism',
       _ => 'com.sequl.zenfile.MainActivityDefault',
     };
-    await AppManagerService.changeAppIcon(alias);
+    final ok = await AppManagerService.changeAppIcon(alias);
+    if (!ok) {
+      // 原生侧拒绝（例如 alias 未在 AndroidManifest.xml 声明）⇒ 回滚，
+      // 避免「设置页显示已切换、桌面图标其实没变」的不一致状态。
+      _activeAppIcon = previous;
+      await PreferencesService.saveActiveAppIcon(previous);
+    }
     notifyListeners();
+    return ok;
   }
 
   String _fontFamilyOption = 'default';
