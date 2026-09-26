@@ -1627,6 +1627,9 @@ class L10nZh extends L10n {
   String get androidnn => '这是 Android 选择和挂载目录所必需的。\\n\\n';
 
   @override
+  String get saf_enable_docs => '或启用它以使用 SAF 目录功能。';
+
+  @override
   String get msgb2af4e30 => '请检查\"文件\"或\"文档\"系统应用是否在设备设置中被禁用，';
 
   @override
@@ -9248,6 +9251,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get androidnn => '這是 Android 選擇和掛載目錄所必需的。\\n\\n';
+
+  @override
+  String get saf_enable_docs => '或啟用它以使用 SAF 目錄功能。';
 
   @override
   String get msgb2af4e30 => '請檢查\"檔案\"或\"檔案\"系統應用是否在裝置設定中被禁用，';

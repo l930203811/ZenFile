@@ -3187,6 +3187,12 @@ abstract class L10n {
   /// ui\screens\network_connection_wizard_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'或启用它以使用 SAF 目录功能。'**
+  String get saf_enable_docs;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'请检查\"文件\"或\"文档\"系统应用是否在设备设置中被禁用，'**
   String get msgb2af4e30;
 

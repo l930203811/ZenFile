@@ -2018,6 +2018,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "または有効にして SAF ディレクトリ機能を使用してください。",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "androidnn": "これはAndroidがディレクトリを選択してマウントするために必要です。\n\n",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

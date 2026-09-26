@@ -1742,6 +1742,10 @@ class L10nFr extends L10n {
       'Ceci est nécessaire pour qu\'Android puisse sélectionner et monter des répertoires.\n\n';
 
   @override
+  String get saf_enable_docs =>
+      'ou activez-le pour utiliser la fonctionnalité de dossier SAF.';
+
+  @override
   String get msgb2af4e30 =>
       'Veuillez vérifier si l\'application système \'Fichiers\' ou \'Documents\' est désactivée dans les paramètres de l\'appareil,';
 

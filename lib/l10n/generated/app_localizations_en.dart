@@ -1703,6 +1703,10 @@ class L10nEn extends L10n {
       'This is required for Android to select and mount directories.\n\n';
 
   @override
+  String get saf_enable_docs =>
+      'or enable it to use the SAF directory feature.';
+
+  @override
   String get msgb2af4e30 =>
       'Please check if the \'Files\' or \'Documents\' system app is disabled in device settings,';
 

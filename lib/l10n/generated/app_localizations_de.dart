@@ -1732,6 +1732,10 @@ class L10nDe extends L10n {
       'Dies ist erforderlich, damit Android Verzeichnisse auswählen und einbinden kann.\n\n';
 
   @override
+  String get saf_enable_docs =>
+      'oder aktivieren Sie es, um die SAF-Ordnerfunktion zu nutzen.';
+
+  @override
   String get msgb2af4e30 =>
       'Bitte prüfen Sie, ob die \'Dateien\' oder \'Dokumente\' System-App in den Geräteeinstellungen deaktiviert ist,';
 

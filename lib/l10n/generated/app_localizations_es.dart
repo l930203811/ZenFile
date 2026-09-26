@@ -1742,6 +1742,10 @@ class L10nEs extends L10n {
       'Esto es necesario para que Android seleccione y monte directorios.\n\n';
 
   @override
+  String get saf_enable_docs =>
+      'o actívala para usar la función de carpeta SAF.';
+
+  @override
   String get msgb2af4e30 =>
       'Por favor verifica si la app del sistema \'Archivos\' o \'Documentos\' está deshabilitada en la configuración del dispositivo,';
 

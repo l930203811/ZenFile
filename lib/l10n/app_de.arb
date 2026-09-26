@@ -2011,6 +2011,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "oder aktivieren Sie es, um die SAF-Ordnerfunktion zu nutzen.",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "androidnn": "Dies ist erforderlich, damit Android Verzeichnisse auswählen und einbinden kann.\n\n",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

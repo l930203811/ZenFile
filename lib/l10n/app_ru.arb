@@ -2014,6 +2014,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "или включите его, чтобы использовать функцию каталогов SAF.",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "androidnn": "Это необходимо для Android, чтобы выбирать и монтировать каталоги.\n\n",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

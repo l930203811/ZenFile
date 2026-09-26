@@ -207,7 +207,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '"$name" 添加成功！',
+                    L10n.of(context).name1(name),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -244,24 +244,30 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             context: context,
             builder: (ctx) => AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                  SizedBox(width: 8),
-                  Text('系统应用已禁用', style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                  const SizedBox(width: 8),
+                  Text(
+                    L10n.of(ctx).msgdf434415,
+                    style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
-              content: const Text(
-                '您的设备没有启用默认的系统文件/文档应用（DocumentsUI），'
-                '这是 Android 选择和挂载目录所必需的。\n\n'
-                '请检查"文件"或"文档"系统应用是否在设备设置中被禁用，'
-                '或启用它以使用 SAF 目录功能。',
-                style: TextStyle(fontSize: 14),
+              content: Text(
+                '${L10n.of(ctx).documentsui}'
+                '${L10n.of(ctx).androidnn}'
+                '${L10n.of(ctx).msgb2af4e30}'
+                '${L10n.of(ctx).saf_enable_docs}',
+                style: const TextStyle(fontSize: 14),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('确定', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    L10n.of(ctx).ui_confirm,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -269,7 +275,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('请求 SAF 文件夹失败：{e}'),
+              content: Text(L10n.of(context).safe(e)),
               backgroundColor: Colors.redAccent,
               behavior: SnackBarBehavior.floating,
             ),

@@ -2061,6 +2061,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "或启用它以使用 SAF 目录功能。",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "msgb2af4e30": "请检查\"文件\"或\"文档\"系统应用是否在设备设置中被禁用，",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

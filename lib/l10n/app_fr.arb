@@ -2014,6 +2014,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "ou activez-le pour utiliser la fonctionnalité de dossier SAF.",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "androidnn": "Ceci est nécessaire pour qu'Android puisse sélectionner et monter des répertoires.\n\n",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

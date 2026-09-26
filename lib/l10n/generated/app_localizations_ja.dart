@@ -1631,6 +1631,9 @@ class L10nJa extends L10n {
   String get androidnn => 'これはAndroidがディレクトリを選択してマウントするために必要です。\n\n';
 
   @override
+  String get saf_enable_docs => 'または有効にして SAF ディレクトリ機能を使用してください。';
+
+  @override
   String get msgb2af4e30 =>
       'デバイスの設定で「ファイル」または「ドキュメント」システムアプリが無効になっていないか確認してください。';
 

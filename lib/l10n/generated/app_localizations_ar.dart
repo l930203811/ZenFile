@@ -1695,6 +1695,9 @@ class L10nAr extends L10n {
   String get androidnn => 'هذا مطلوب لنظام Android لاختيار وتركيب الأدلة.\n\n';
 
   @override
+  String get saf_enable_docs => 'أو قم بتمكينه لاستخدام ميزة مجلد SAF.';
+
+  @override
   String get msgb2af4e30 =>
       'يرجى التحقق مما إذا كان تطبيق النظام \'الملفات\' أو \'المستندات\' معطلاً في إعدادات الجهاز،';
 

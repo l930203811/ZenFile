@@ -2014,6 +2014,10 @@
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "saf_enable_docs": "또는 활성화하여 SAF 디렉터리 기능을 사용하세요.",
+  "@saf_enable_docs": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
   "androidnn": "Android에서 디렉토리를 선택하고 마운트하려면 이 기능이 필요합니다.\n\n",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"

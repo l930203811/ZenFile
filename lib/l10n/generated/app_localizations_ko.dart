@@ -1629,6 +1629,9 @@ class L10nKo extends L10n {
   String get androidnn => 'Android에서 디렉토리를 선택하고 마운트하려면 이 기능이 필요합니다.\n\n';
 
   @override
+  String get saf_enable_docs => '또는 활성화하여 SAF 디렉터리 기능을 사용하세요.';
+
+  @override
   String get msgb2af4e30 => '기기 설정에서 \'파일\' 또는 \'문서\' 시스템 앱이 비활성화되어 있는지 확인하세요,';
 
   @override
