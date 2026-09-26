@@ -1571,6 +1571,18 @@ class L10nEn extends L10n {
   String get app_icon_glossy_blue => 'Glossy Blue';
 
   @override
+  String get app_icon_paper_gray => 'Paper Gray';
+
+  @override
+  String get app_icon_metal_frost => 'Frosted Metal';
+
+  @override
+  String get app_icon_blue_folder => 'Blue Folder';
+
+  @override
+  String get app_icon_blue_gold => 'Deep Blue Gold';
+
+  @override
   String title(Object title) {
     return 'App icon switched to $title';
   }

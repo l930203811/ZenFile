@@ -1601,6 +1601,18 @@ class L10nRu extends L10n {
   String get app_icon_glossy_blue => 'Глянцевый синий';
 
   @override
+  String get app_icon_paper_gray => 'Светло-серый';
+
+  @override
+  String get app_icon_metal_frost => 'Матовый металл';
+
+  @override
+  String get app_icon_blue_folder => 'Синяя папка';
+
+  @override
+  String get app_icon_blue_gold => 'Тёмно-синий с золотом';
+
+  @override
   String title(Object title) {
     return 'Значок приложения изменён на $title';
   }

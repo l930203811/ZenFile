@@ -264,6 +264,58 @@
             </intent-filter>
         </activity-alias>
 
+        <activity-alias
+            android:name=".MainActivityPaperGray"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_paper_gray"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityMetalFrost"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_metal_frost"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityBlueFolder"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_blue_folder"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityBlueGold"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_blue_gold"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Flutter plugin registration metadata -->
         <meta-data
             android:name="flutterEmbedding"

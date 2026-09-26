@@ -1500,6 +1500,18 @@ class L10nZh extends L10n {
   String get app_icon_glossy_blue => '光泽蓝';
 
   @override
+  String get app_icon_paper_gray => '浅灰纸纹';
+
+  @override
+  String get app_icon_metal_frost => '磨砂金属';
+
+  @override
+  String get app_icon_blue_folder => '蓝色文件夹';
+
+  @override
+  String get app_icon_blue_gold => '深蓝鎏金';
+
+  @override
   String title(Object title) {
     return '应用图标已切换为 $title';
   }
@@ -9124,6 +9136,18 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get app_icon_glossy_blue => '光澤藍';
+
+  @override
+  String get app_icon_paper_gray => '淺灰紙紋';
+
+  @override
+  String get app_icon_metal_frost => '磨砂金屬';
+
+  @override
+  String get app_icon_blue_folder => '藍色資料夾';
+
+  @override
+  String get app_icon_blue_gold => '深藍鎏金';
 
   @override
   String title(Object title) {

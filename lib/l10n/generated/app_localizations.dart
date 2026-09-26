@@ -2959,6 +2959,30 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'浅灰纸纹'**
+  String get app_icon_paper_gray;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'磨砂金属'**
+  String get app_icon_metal_frost;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'蓝色文件夹'**
+  String get app_icon_blue_folder;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'深蓝鎏金'**
+  String get app_icon_blue_gold;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'应用图标已切换为 {title}'**
   String title(Object title);
 

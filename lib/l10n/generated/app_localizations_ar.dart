@@ -1565,6 +1565,18 @@ class L10nAr extends L10n {
   String get app_icon_glossy_blue => 'أزرق لامع';
 
   @override
+  String get app_icon_paper_gray => 'رمادي فاتح';
+
+  @override
+  String get app_icon_metal_frost => 'معدن مصنفر';
+
+  @override
+  String get app_icon_blue_folder => 'مجلد أزرق';
+
+  @override
+  String get app_icon_blue_gold => 'أزرق داكن ذهبي';
+
+  @override
   String title(Object title) {
     return 'تم تغيير أيقونة التطبيق إلى $title';
   }

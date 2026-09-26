@@ -1597,6 +1597,18 @@ class L10nDe extends L10n {
   String get app_icon_glossy_blue => 'Glänzendes Blau';
 
   @override
+  String get app_icon_paper_gray => 'Hellgrau';
+
+  @override
+  String get app_icon_metal_frost => 'Mattiertes Metall';
+
+  @override
+  String get app_icon_blue_folder => 'Blauer Ordner';
+
+  @override
+  String get app_icon_blue_gold => 'Tiefblau Gold';
+
+  @override
   String title(Object title) {
     return 'App-Symbol gewechselt zu $title';
   }
