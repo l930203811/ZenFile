@@ -324,8 +324,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           // 左抽屉「收藏夹」一项：先收起抽屉，等关闭动画走完再弹底部面板。
           onOpenFavorites: _openFavoritesFromDrawer,
         ),
-        // 右侧抽屉（endDrawer）已下线：收藏夹改为底部半屏面板
-        // （LeftDrawer → 收藏夹一项 / 底部导航栏上滑），见 FavoritesSheet。
+        // 右侧抽屉（endDrawer）已下线：收藏夹改为底部半屏面板。入口为
+        // 左抽屉「收藏夹」一项 / 底部导航栏上滑（导航栏开启时）/
+        // 浏览页底部操作栏上滑，统一走 FavoritesSheet.show。
         bottomNavigationBar: _buildNavBottomBar(provider.showBottomActionBar),
         body: Consumer<FileManagerProvider>(
           builder: (context, provider, _) {
@@ -401,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     if (deltaX < -_dualFingerSwipeThreshold) {
                       // 向左滑动：分类→浏览（滑动仅三态：左抽屉→分类→浏览，传输/设置
                       // 等自定义槽位不参与滑动）。浏览页再左滑不动作 —— 右侧抽屉已下线，
-                      // 收藏夹改由底部栏上滑唤起。
+                      // 收藏夹改由「底部导航栏 / 浏览页底部操作栏」上滑唤起。
                       if (_currentIndex < 1) {
                         _switchTab(_currentIndex + 1);
                       }
@@ -574,21 +575,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   }
 
   /// 底部栏：与顶部栏按「导航栏位置」设置互换。
-  /// 整条底部栏还支持**上滑**唤起收藏夹面板（对齐 MT / NP 管理器书签的手势）。
+  /// 导航栏开启时，整条栏支持**上滑**唤起收藏夹面板（对齐 MT / NP 管理器书签的手势）。
+  ///
+  /// 导航栏关闭时**不再补那条「贴底透明上滑热区」**：它正好落在系统手势导航的底部
+  /// 边缘识别区里，上滑会被系统抢走（真机实测：收藏夹弹不出来，还会误触系统手势）。
+  /// 收藏夹入口因此改为：
+  ///   · 分类页 → 只保留左抽屉「收藏夹」一项；
+  ///   · 浏览页 → 底部操作栏上滑（见 DirectoryScreen._buildCollapsibleBrowseActionBar）。
+  /// 这里只留「系统手势条高度」的空白，避免浏览操作栏被系统手势条压住。
   Widget _buildNavBottomBar(bool bottomTabs) {
     // 底部导航栏总开关（自定义快捷方式页配置）：关闭时折叠隐藏（provider 监听实时生效）
     if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
-      // 导航栏被关掉后不能直接返回空：整条上滑热区会跟着一起消失，收藏夹就只剩
-      // 左抽屉一个入口了。这里补一条**贴底的透明上滑热区**（系统手势条高度 + 12dp）：
-      // 视觉上什么都不显示，但保住「从底部上滑弹收藏夹」这条手势。
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onVerticalDragEnd: _handleSwipeUpForFavorites,
-        child: SizedBox(
-          height: 12 + MediaQuery.of(context).padding.bottom,
-          width: double.infinity,
-        ),
-      );
+      return SizedBox(height: MediaQuery.of(context).padding.bottom);
     }
     final bar = bottomTabs ? _buildBottomTabs() : _buildTopBarRow();
     return GestureDetector(
@@ -599,7 +597,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部栏（含导航栏关闭时那条贴底热区）上滑唤起收藏夹：
+  /// 底部导航栏上滑唤起收藏夹：
   /// 只认「向上」的快速滑动 —— 向下滑、慢速拖都不触发，避免和点按、横向切页抢手势。
   void _handleSwipeUpForFavorites(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
@@ -616,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     });
   }
 
-  /// 弹出收藏夹面板（左抽屉「收藏夹」一项 / 底部栏上滑手势共用）。
+  /// 弹出收藏夹面板（左抽屉「收藏夹」一项 / 底部导航栏上滑手势共用）。
   void _openFavoritesSheet() {
     if (!mounted) return;
     FavoritesSheet.show(
@@ -708,7 +706,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         context.read<FileManagerProvider>().toggleSplitScreen(),
                   ),
                   // 设置：顶栏最右一格（原收藏夹的位置）。收藏夹已移出顶栏，
-                  // 改由左抽屉「收藏夹」一项 + 底部栏上滑手势唤起。
+                  // 改由左抽屉「收藏夹」一项 + 上滑手势唤起（导航栏开启时滑底栏，
+                  // 导航栏关闭时滑浏览页底部操作栏）。
                   IconButton(
                     icon: Icon(Broken.setting_2, color: theme.colorScheme.primary),
                     tooltip: L10n.of(context).ui_personalize_settings,

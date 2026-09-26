@@ -34,6 +34,7 @@ import '../../core/theme.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../widgets/crypt_progress_dialog.dart';
 import '../widgets/clipboard_menu_sheet.dart';
+import '../widgets/favorites_sheet.dart';
 
 
 class DirectoryScreen extends StatefulWidget {
@@ -377,12 +378,42 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   /// 可折叠的浏览操作栏：显示在底部 4-tab 导航上方，
   /// 列表向下滚动时自动折叠；向上滚动、回到顶部、或滚到列表底部时自动展开。
+  /// 上滑唤起收藏夹：手势**挂在浏览操作栏这一层**，不能挂到屏幕最底边。
+  ///
+  /// 最底边属于系统手势导航的边缘识别区，上滑会被系统抢走（导航栏关闭时用「贴底透明
+  /// 热区」实测：收藏夹弹不出来，还会误触系统手势）。这里让手势贴着 44dp 的操作栏，
+  /// 与 MT / NP 管理器在文件浏览页底部操作栏上滑弹书签的做法一致。
+  ///
+  /// 折叠态（高度 0）没有热区：列表往回拖一下操作栏会自动展开，属预期。
   Widget _buildCollapsibleBrowseActionBar(BuildContext context, FileManagerProvider provider) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeInOut,
-      height: _browseBarVisible ? 44 : 0,
-      child: ClipRect(child: _buildBrowseActionBar(context, provider)),
+    return GestureDetector(
+      // translucent：不拦截子级命中测试，栏内 5 个按钮仍可正常点按。
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragEnd: _handleSwipeUpForFavorites,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeInOut,
+        height: _browseBarVisible ? 44 : 0,
+        child: ClipRect(child: _buildBrowseActionBar(context, provider)),
+      ),
+    );
+  }
+
+  /// 操作栏上滑唤起收藏夹：只认「向上」的快速滑动；
+  /// 向下滑、慢速拖都不触发，避免和按钮点按、列表滚动抢手势。
+  void _handleSwipeUpForFavorites(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity < -260) _openFavoritesSheet();
+  }
+
+  /// 弹出收藏夹面板（浏览页底部操作栏上滑手势）。
+  /// 面板挂在 Navigator 之上，与调用所在页面无关；已在浏览页，这里保留
+  /// onNavigateToBrowse 只为沿用「点收藏统一走浏览页」的语义（含 pending 导航消费）。
+  void _openFavoritesSheet() {
+    FavoritesSheet.show(
+      context,
+      provider: context.read<FileManagerProvider>(),
+      onNavigateToBrowse: () => widget.onNavigateTab?.call(1),
     );
   }
 

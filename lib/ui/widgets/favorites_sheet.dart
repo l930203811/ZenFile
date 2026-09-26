@@ -11,9 +11,14 @@ import '../../services/network_connections_service.dart';
 /// 收藏夹底部面板。
 ///
 /// v3.1.x：原「右侧抽屉」整体下线，改为从**底部**弹出的半屏面板（对齐 MT / NP
-/// 管理器书签的交互）。两个唤起入口：
-///   1. 左抽屉「收藏夹」一项（原「设置」的位置）；
-///   2. 底部导航栏上滑手势（见 HomeScreen 的 `_buildNavBottomBar`）。
+/// 管理器书签的交互）。唤起入口：
+///   1. 左抽屉「收藏夹」一项（原「设置」的位置），见 HomeScreen._openFavoritesFromDrawer；
+///   2. 底部导航栏上滑手势，见 HomeScreen._buildNavBottomBar（**仅导航栏开启时**）；
+///   3. 浏览页底部操作栏上滑，见 DirectoryScreen._buildCollapsibleBrowseActionBar
+///      （导航栏关闭时唯一的底部手势入口）；
+///   4. 左抽屉全局搜索里的「收藏夹」条目，见 feature_search_index。
+/// ⚠️ 上滑热区**绝不能贴在屏幕最底边** —— 那里属于系统手势导航的边缘识别区，
+/// 上滑会被系统抢走（真机实测：面板弹不出来，还会误触系统手势）。
 ///
 /// 面板高度**内容自适应**：分组折叠得越多面板越矮，展开越多越高，最高约屏高
 /// 68%，超过之后面板内部列表滚动（`Flexible` + `SingleChildScrollView`）。
