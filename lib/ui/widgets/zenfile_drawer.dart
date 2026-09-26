@@ -15,7 +15,6 @@ import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
-import '../screens/more_settings_screen.dart';
 import '../screens/update_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
@@ -32,7 +31,16 @@ class ZenFileDrawer extends StatefulWidget {
   final Function(int)? onNavigateTab;
   final double? width;
 
-  const ZenFileDrawer({super.key, required this.toggleTheme, this.onNavigateTab, this.width});
+  /// 「收藏夹」一项：由 HomeScreen 实现（收起抽屉后弹出底部收藏夹面板）。
+  final VoidCallback? onOpenFavorites;
+
+  const ZenFileDrawer({
+    super.key,
+    required this.toggleTheme,
+    this.onNavigateTab,
+    this.width,
+    this.onOpenFavorites,
+  });
 
   @override
   State<ZenFileDrawer> createState() => _ZenFileDrawerState();
@@ -344,16 +352,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       ],
                     ),
 
-                    // ===== 设置 =====
+                    // ===== 收藏夹 =====
+                    // v3.1.x：与顶栏的「设置」图标互换 —— 设置移到顶栏，收藏夹落在这里
+                    // （原设置的位置）。点击后由 HomeScreen 收起抽屉并弹出底部收藏夹面板。
                     _buildDrawerTile(
                       context,
-                      icon: Broken.setting_2,
-                      title: L10n.of(context).ui_personalize_settings,
+                      icon: Broken.folder_favorite,
+                      title: L10n.of(context).ui_favorites,
                       isPrimary: true,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
-                      },
+                      onTap: () => widget.onOpenFavorites?.call(),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),

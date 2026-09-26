@@ -39,18 +39,14 @@ import '../widgets/clipboard_menu_sheet.dart';
 class DirectoryScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   final Function(int)? onNavigateTab;
-  final VoidCallback? onEndDrawerCustomize;
   final VoidCallback? onRefresh;
   final VoidCallback? onOpenDrawer;
-  final VoidCallback? onOpenEndDrawer;
   const DirectoryScreen({
     super.key,
     required this.toggleTheme,
     this.onNavigateTab,
-    this.onEndDrawerCustomize,
     this.onRefresh,
     this.onOpenDrawer,
-    this.onOpenEndDrawer,
   });
 
   @override
@@ -1403,8 +1399,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     titleSpacing: 0,
                     centerTitle: true,
                     title: const SizedBox.shrink(),
-                    // 显式占用 actions，避免 Scaffold 因存在 endDrawer
-                    // 自动在右上角补一个与“快捷操作”重复的菜单按钮。
+                    // 显式占用 actions：右侧抽屉（endDrawer）已下线（收藏夹改为底部
+                    // 面板），这里保留空占位，右上角不出现任何操作按钮。
                     actions: const [SizedBox.shrink()],
                   )
                 : AppBar(

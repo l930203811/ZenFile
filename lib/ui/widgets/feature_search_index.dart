@@ -16,6 +16,8 @@ import '../screens/vault_lock_screen.dart';
 import '../screens/wake_on_lan_screen.dart';
 import '../screens/web_sharing_screen.dart';
 
+import 'favorites_sheet.dart';
+
 /// 全局搜索「功能入口」的分组。分组标题复用现有 l10n（见 [FeatureSearchIndex.groupTitle]）。
 enum FeatureSearchGroup { quick, tools, nav }
 
@@ -118,7 +120,27 @@ class FeatureSearchIndex {
     }
 
     return <FeatureSearchEntry>[
-      // ================= 快捷操作（右侧抽屉） =================
+      // ============ 快捷操作（原右侧抽屉；收藏夹现为底部半屏面板） ============
+      FeatureSearchEntry(
+        group: FeatureSearchGroup.quick,
+        icon: Broken.folder_favorite,
+        title: l10n.ui_favorites,
+        subtitle: l10n.msg_quick_actions,
+        keywords: 'favorite bookmark favorites 收藏夹 书签 收藏 星标',
+        onOpen: (ctx, nav) {
+          // 先取出 provider（pop 之后搜索页 context 失效），再回首页弹底部面板；
+          // 面板点收藏后靠 provider 通道切到浏览页（与首页自己的实现一致）。
+          final provider = ctx.read<FileManagerProvider>();
+          nav.popUntil((route) => route.isFirst);
+          Future.delayed(const Duration(milliseconds: 220), () {
+            FavoritesSheet.show(
+              nav.context,
+              provider: provider,
+              onNavigateToBrowse: () => provider.setNavigateToBrowseTab(true),
+            );
+          });
+        },
+      ),
       FeatureSearchEntry(
         group: FeatureSearchGroup.quick,
         icon: Broken.refresh,

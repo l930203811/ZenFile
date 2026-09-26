@@ -8,24 +8,64 @@ import 'file_action_dialogs.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
 
-/// 右侧弹出菜单组件
-class ZenFileEndDrawer extends StatefulWidget {
+/// 收藏夹底部面板。
+///
+/// v3.1.x：原「右侧抽屉」整体下线，改为从**底部**弹出的半屏面板（对齐 MT / NP
+/// 管理器书签的交互）。两个唤起入口：
+///   1. 左抽屉「收藏夹」一项（原「设置」的位置）；
+///   2. 底部导航栏上滑手势（见 HomeScreen 的 `_buildNavBottomBar`）。
+///
+/// 面板高度**内容自适应**：分组折叠得越多面板越矮，展开越多越高，最高约屏高
+/// 68%，超过之后面板内部列表滚动（`Flexible` + `SingleChildScrollView`）。
+/// ⚠️ 因此这里**不能用 `Expanded`** —— 面板高度由内容决定，`Expanded` 只适合
+/// 父级高度已经确定的情形（旧抽屉是撑满整高的，所以能用）。
+class FavoritesSheet extends StatefulWidget {
+  /// 点击收藏后切到浏览页。
   final VoidCallback? onNavigateToBrowse;
-  final String? searchFolderPath;
-  final FileManagerProvider? provider;
 
-  const ZenFileEndDrawer({
+  /// 收藏数据源。由 [show] 传入，并同时以 [ChangeNotifierProvider] 挂到弹窗
+  /// 子树上，供面板内部 `context.watch` 订阅（收藏增删后面板自动重建 + 高度自适应）。
+  final FileManagerProvider provider;
+
+  const FavoritesSheet({
     super.key,
+    required this.provider,
     this.onNavigateToBrowse,
-    this.searchFolderPath,
-    this.provider,
   });
 
+  /// 从底部弹出收藏夹面板。
+  ///
+  /// 分类页 / 浏览页 / 传输页 / 设置页都可调用：弹窗挂在 Navigator 之上，
+  /// 与调用时所在页面无关。
+  static Future<void> show(
+    BuildContext context, {
+    required FileManagerProvider provider,
+    VoidCallback? onNavigateToBrowse,
+  }) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      // 显式注入 Provider：弹窗的 context 挂在 Navigator 下，拿不到调用处
+      // widget 树里的 Provider。
+      builder: (_) => ChangeNotifierProvider<FileManagerProvider>.value(
+        value: provider,
+        child: FavoritesSheet(
+          provider: provider,
+          onNavigateToBrowse: onNavigateToBrowse,
+        ),
+      ),
+    );
+  }
+
   @override
-  State<ZenFileEndDrawer> createState() => _ZenFileEndDrawerState();
+  State<FavoritesSheet> createState() => _FavoritesSheetState();
 }
 
-class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
+class _FavoritesSheetState extends State<FavoritesSheet> {
   late Set<String> _collapsedGroups;
 
   @override
@@ -36,54 +76,37 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    // 订阅 provider：收藏增删 / 改名后自动重建，面板高度也随之重新自适应。
+    context.watch<FileManagerProvider>();
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final fileManager = context.watch<FileManagerProvider>();
+    final l10n = L10n.of(context);
+    // 面板最高约屏高 68%；内容不足时按实际内容收矮（见下方 Flexible）。
+    final maxHeight = MediaQuery.of(context).size.height * 0.68;
 
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
-            child: Row(
-              children: [
-                Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 28),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    L10n.of(context).ui_favorites,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 26),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  tooltip: L10n.of(context).ui_new_favorite,
-                  onPressed: () => _showAddFavoriteDialog(context),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.provider != null) ...[
-                    if (widget.provider!.favorites.isEmpty)
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildDragHandle(theme),
+            _buildHeader(context, theme, l10n),
+            // Flexible（而非 Expanded）：内容矮 → 面板就矮；内容超高 → 吃满
+            // maxHeight 后由内部 SingleChildScrollView 滚动。
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (widget.provider.favorites.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          L10n.of(context).msg551f98ba,
+                          l10n.msg551f98ba,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: theme.colorScheme.onSurface.withOpacity(0.5)),
@@ -91,12 +114,59 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                       )
                     else
                       ..._buildGroupedFavorites(context),
-                  ],
 
-                  const SizedBox(height: 24),
-                ],
+                    // 底部留白含手势条高度，避免最后一项贴住系统导航栏。
+                    SizedBox(height: 12 + MediaQuery.of(context).padding.bottom),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 顶部小把手：提示这是一个可下滑关闭的底部面板。
+  Widget _buildDragHandle(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 4),
+      child: Container(
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.onSurface.withOpacity(0.22),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  /// 面板标题行：图标 + 「收藏夹」+ 新建收藏按钮。
+  Widget _buildHeader(BuildContext context, ThemeData theme, L10n l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 6, 12, 8),
+      child: Row(
+        children: [
+          Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 26),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              l10n.ui_favorites,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 26),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: l10n.ui_new_favorite,
+            onPressed: () => _showAddFavoriteDialog(context),
           ),
         ],
       ),
@@ -193,7 +263,6 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
   /// 无论哪种情况，完成后都切换到浏览页。
   void _openFavorite(Map<String, dynamic> fav, BuildContext context) {
     final provider = widget.provider;
-    if (provider == null) return;
     final path = fav['path'] as String;
     final isDirectory = fav['isDirectory'] as bool;
     final isRemote = fav['isRemote'] == true;
@@ -256,7 +325,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
   /// 无 group 字段的收藏会归入「默认分组」。
   List<Widget> _buildGroupedFavorites(BuildContext context) {
     final l10n = L10n.of(context);
-    final favorites = widget.provider!.favorites;
+    final favorites = widget.provider.favorites;
 
     final groups = <String, List<Map<String, dynamic>>>{};
     for (final fav in favorites) {
@@ -343,7 +412,6 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
   /// 编辑已有收藏：弹出对话框修改名称 / 路径 / 分组，再写回。
   Future<void> _editFavorite(Map<String, dynamic> fav) async {
     final provider = widget.provider;
-    if (provider == null) return;
     final initialGroup = (fav['group'] as String?)?.trim().isNotEmpty == true ? fav['group'] as String : null;
     final result = await FileActionDialogs.showFavoriteEditor(
       context,
@@ -433,7 +501,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       ),
     );
     if (newName == null || newName == oldGroup) return;
-    widget.provider?.renameFavoriteGroup(oldGroup, newName);
+    widget.provider.renameFavoriteGroup(oldGroup, newName);
   }
 
   /// 删除分组：二次确认后移除该分组下所有收藏。
@@ -457,7 +525,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       ),
     );
     if (confirmed == true) {
-      widget.provider?.deleteFavoriteGroup(group);
+      widget.provider.deleteFavoriteGroup(group);
     }
   }
 
@@ -483,7 +551,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
               title: Text(l10n.ui_delete),
               onTap: () {
                 Navigator.pop(ctx);
-                widget.provider!.removeFavorite(fav['path'] as String);
+                widget.provider.removeFavorite(fav['path'] as String);
               },
             ),
           ],
@@ -588,14 +656,14 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                     group = selectedGroup;
                   }
 
-                  if (widget.provider?.isFavorite(path) == true) {
+                  if (widget.provider.isFavorite(path)) {
                     ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(content: Text(l10n.msg_favorite_exists)),
                     );
                     return;
                   }
 
-                  widget.provider?.addFavorite(path, name, true, group: group);
+                  widget.provider.addFavorite(path, name, true, group: group);
                   Navigator.of(ctx).pop();
                 },
                 child: Text(l10n.ui_add),
@@ -609,55 +677,10 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
 
   List<String> _existingGroups() {
     final groups = <String>{};
-    for (final fav in widget.provider?.favorites ?? []) {
+    for (final fav in widget.provider.favorites) {
       final group = (fav['group'] as String?)?.trim();
       if (group?.isNotEmpty == true) groups.add(group!);
     }
     return groups.toList()..sort();
-  }
-
-  Widget _buildMenuItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-            child: Row(
-              children: [
-                Icon(icon, size: 24, color: color),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.9),
-                    ),
-                    maxLines: 2,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
