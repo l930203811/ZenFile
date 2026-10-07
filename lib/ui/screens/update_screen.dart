@@ -946,18 +946,38 @@ class _UpdateScreenState extends State<UpdateScreen> {
   /// ── 当前版本：v3.5.5 ────────────────────────────────────────────────
   static const _Changelog _v355 = _Changelog(
     version: 'v3.5.5',
-    date: '2026-10-07',
+    date: '2026-10-08',
     zh: [
+      _ChangeSection('✨ 新增功能', [
+        '文件属性新增「校验和」标签页：单个本地文件可即时计算 MD5 / SHA-1 / SHA-256（流式分块读取、显示进度），还能粘贴官方哈希自动比对（按长度识别算法，忽略大小写、空格与 - / : 分隔符），用来验证下载的大文件是否损坏或被篡改',
+      ]),
+      _ChangeSection('🎨 界面与交互', [
+        '文件属性页由弹窗改为全屏页（左右满铺，关闭按钮在左上角）；校验和的长哈希各占一行，底部的粘贴比对框与结论始终可见 —— 此前 SHA-256 会被窄列挤断换行，还把比对框顶出屏幕、必须上滑才能用',
+        '分类页长按文件进入的属性页与文件浏览页完全统一（此前分类页是另一套简化弹窗，缺 SHA-1 与粘贴比对）；并修复分类页里的远程媒体进属性页时大小显示为 0 的问题',
+      ]),
+      _ChangeSection('⚡ 性能优化', [
+        '大目录移入回收站不再退化成整份拷贝：删除 1.2GB 的 Telegram 文件夹此前要等约一分钟 —— 受限目录（其它应用的 Android/data、Android/obb）改用原子 mv、普通目录在 rename 失败后先试 mv，都只改元数据；同时目录体积改为移动完成后后台补算，不再在删除前遍历整棵目录树（几万个小文件时这一步本身就要几十秒）',
+        '打开图片更快：扫描同目录图片时不再逐个读取非图片文件（视频、压缩包等）的文件头，图片多、且同目录混有大量视频的文件夹改善尤其明显',
+      ]),
       _ChangeSection('🐛 问题修复', [
         '修复从文件浏览页打开图片时「先空白等一两秒才显示、并且左右滑动切不了图」的问题：图片计数器一直显示「1 of 1」；从分类页 / 相册打开同一张图不受影响（论坛反馈）',
-        '加快打开图片的速度：扫描同目录图片时不再逐个读取非图片文件（视频、压缩包等）的文件头，图片数量多、且同目录混有大量视频的文件夹改善尤其明显',
         '修复视频播放页每次进入都会把手机媒体音量顶回上次记忆值的问题：用户把音量调低或静音后再播放视频会被强制拉回原来的音量（默认为最大），并连带之后播放音频也变响（issue #41）',
       ]),
     ],
     en: [
+      _ChangeSection('✨ New Features', [
+        'Added a "Checksum" tab to file properties: compute MD5 / SHA-1 / SHA-256 for a single local file on the spot (streamed in chunks, with progress), and paste an official hash to compare against it (the algorithm is detected from the hash length; case, spaces and - / : separators are ignored) to verify that a downloaded large file is intact and untampered',
+      ]),
+      _ChangeSection('🎨 UI & Interaction', [
+        'File properties is now a full-screen page instead of a dialog (full width, with the close button at the top-left). In the Checksum tab each long hash value gets its own line and the paste-and-compare box at the bottom stays visible - previously SHA-256 was broken across a narrow column and pushed the compare box off screen, so it required scrolling',
+        'The properties page opened by long-pressing a file in a category now matches the file browser exactly (the category used to show a separate simplified dialog without SHA-1 or hash comparison); also fixed the size showing as 0 for remote media opened from a category',
+      ]),
+      _ChangeSection('⚡ Performance', [
+        'Moving a large folder to the recycle bin no longer degrades into a full copy: deleting a 1.2 GB Telegram folder used to take about a minute. Restricted folders (the Android/data and Android/obb of other apps) now use an atomic mv, and normal folders try mv before falling back to copy - both only touch metadata. The folder size is now computed in the background after the move instead of walking the whole tree before deleting (which alone costs tens of seconds on folders with tens of thousands of small files)',
+        'Faster image opening: the folder scan no longer reads the file header of every non-image file (videos, archives, ...). The gain is largest in folders with many images mixed with lots of videos',
+      ]),
       _ChangeSection('🐛 Bug Fixes', [
         'Fixed images opened from the file browser taking a second or two of blank screen and then refusing to swipe left / right, with the counter stuck on "1 of 1". The same image opened from a category or the gallery was unaffected (reported on the forum)',
-        'Faster image opening: the folder scan no longer reads the file header of every non-image file (videos, archives, ...). The gain is largest in folders with many images mixed with lots of videos',
         'Fixed the video player forcing the phone media volume back to the last remembered value on every launch: after the user lowered the volume or muted it, playing a video was pushed back up (to maximum by default) and audio playback became louder too (issue #41)',
       ]),
     ],
