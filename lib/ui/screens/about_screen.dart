@@ -184,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v3.5.4',
+                    'v3.5.5',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       fontSize: 13,

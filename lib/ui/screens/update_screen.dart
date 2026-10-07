@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.4';
+  static const String _latestChangelogVersion = 'v3.5.5';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v355,
     _v354,
     _v353,
     _v352,
@@ -942,7 +943,27 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.4 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.5.5 ────────────────────────────────────────────────
+  static const _Changelog _v355 = _Changelog(
+    version: 'v3.5.5',
+    date: '2026-10-07',
+    zh: [
+      _ChangeSection('🐛 问题修复', [
+        '修复从文件浏览页打开图片时「先空白等一两秒才显示、并且左右滑动切不了图」的问题：图片计数器一直显示「1 of 1」；从分类页 / 相册打开同一张图不受影响（论坛反馈）',
+        '加快打开图片的速度：扫描同目录图片时不再逐个读取非图片文件（视频、压缩包等）的文件头，图片数量多、且同目录混有大量视频的文件夹改善尤其明显',
+        '修复视频播放页每次进入都会把手机媒体音量顶回上次记忆值的问题：用户把音量调低或静音后再播放视频会被强制拉回原来的音量（默认为最大），并连带之后播放音频也变响（issue #41）',
+      ]),
+    ],
+    en: [
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed images opened from the file browser taking a second or two of blank screen and then refusing to swipe left / right, with the counter stuck on "1 of 1". The same image opened from a category or the gallery was unaffected (reported on the forum)',
+        'Faster image opening: the folder scan no longer reads the file header of every non-image file (videos, archives, ...). The gain is largest in folders with many images mixed with lots of videos',
+        'Fixed the video player forcing the phone media volume back to the last remembered value on every launch: after the user lowered the volume or muted it, playing a video was pushed back up (to maximum by default) and audio playback became louder too (issue #41)',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.4 ──────────────────────────────────────────────────────────
   static const _Changelog _v354 = _Changelog(
     version: 'v3.5.4',
     date: '2026-10-05',
