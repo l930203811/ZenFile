@@ -4871,6 +4871,30 @@ class L10nEn extends L10n {
   String get prop_hash_failed => 'Hash calculation failed';
 
   @override
+  String get prop_tab_checksum => 'Checksum';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'Hashes are computed locally on your device. Nothing is uploaded.';
+
+  @override
+  String get prop_verify_hint => 'Paste the official hash to compare';
+
+  @override
+  String get prop_verify_match => 'Match — the file is intact';
+
+  @override
+  String get prop_verify_mismatch =>
+      'No match — the file may be damaged or altered';
+
+  @override
+  String get prop_verify_unknown =>
+      'Unrecognized hash format (expected 32 / 40 / 64 hex characters)';
+
+  @override
   String get msg_add_subtitle => 'Add Subtitle';
 
   @override

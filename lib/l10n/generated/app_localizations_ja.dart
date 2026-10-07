@@ -4725,6 +4725,27 @@ class L10nJa extends L10n {
   String get prop_hash_failed => 'ハッシュ計算に失敗';
 
   @override
+  String get prop_tab_checksum => 'チェックサム';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note => 'ハッシュは端末上でオフライン計算され、何も送信されません。';
+
+  @override
+  String get prop_verify_hint => '公式のハッシュ値を貼り付けて照合';
+
+  @override
+  String get prop_verify_match => '一致 —— ファイルは完全です';
+
+  @override
+  String get prop_verify_mismatch => '不一致 —— ファイルが破損または改ざんされた可能性があります';
+
+  @override
+  String get prop_verify_unknown => '認識できないハッシュ形式（32 / 40 / 64 桁の16進数を想定）';
+
+  @override
   String get msg_add_subtitle => '字幕を追加';
 
   @override

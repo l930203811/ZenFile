@@ -5013,6 +5013,34 @@
   "@prop_hash_failed": {
     "description": "Hash computation failed"
   },
+  "prop_tab_checksum": "校验和",
+  "@prop_tab_checksum": {
+    "description": "Tab label for checksum/hash verification"
+  },
+  "prop_sha1": "SHA-1",
+  "@prop_sha1": {
+    "description": "SHA-1 hash label"
+  },
+  "prop_checksum_note": "哈希值在本机离线计算，不会上传任何内容。",
+  "@prop_checksum_note": {
+    "description": "Note that hashes are computed locally on device"
+  },
+  "prop_verify_hint": "粘贴官方哈希值自动比对",
+  "@prop_verify_hint": {
+    "description": "Hint for pasting an official hash to compare"
+  },
+  "prop_verify_match": "一致 —— 文件完整，未被修改",
+  "@prop_verify_match": {
+    "description": "Result when the pasted hash matches the computed hash"
+  },
+  "prop_verify_mismatch": "不一致 —— 文件可能已损坏或被篡改",
+  "@prop_verify_mismatch": {
+    "description": "Result when the pasted hash does not match the computed hash"
+  },
+  "prop_verify_unknown": "无法识别的哈希格式（应为 32 / 40 / 64 位十六进制）",
+  "@prop_verify_unknown": {
+    "description": "Result when the pasted text is not a recognized hash format"
+  },
   "msg_add_subtitle": "添加字幕",
   "@msg_add_subtitle": {
     "description": "Add subtitle option in video player more menu"

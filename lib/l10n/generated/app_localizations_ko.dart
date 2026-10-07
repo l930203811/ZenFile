@@ -4726,6 +4726,27 @@ class L10nKo extends L10n {
   String get prop_hash_failed => '해시 계산 실패';
 
   @override
+  String get prop_tab_checksum => '체크섬';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note => '해시는 기기에서 오프라인으로 계산되며 아무것도 전송되지 않습니다.';
+
+  @override
+  String get prop_verify_hint => '공식 해시 값을 붙여넣어 비교';
+
+  @override
+  String get prop_verify_match => '일치 — 파일이 온전합니다';
+
+  @override
+  String get prop_verify_mismatch => '불일치 — 파일이 손상되었거나 변조되었을 수 있습니다';
+
+  @override
+  String get prop_verify_unknown => '인식할 수 없는 해시 형식(32 / 40 / 64자리 16진수)';
+
+  @override
   String get msg_add_subtitle => '자막 추가';
 
   @override

@@ -4852,6 +4852,30 @@ class L10nAr extends L10n {
   String get prop_hash_failed => 'فشل حساب التجزئة';
 
   @override
+  String get prop_tab_checksum => 'المجموع الاختباري';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'يتم حساب البصمات محليًا على جهازك. لا يتم إرسال أي شيء.';
+
+  @override
+  String get prop_verify_hint => 'الصق البصمة الرسمية للمقارنة';
+
+  @override
+  String get prop_verify_match => 'مطابق — الملف سليم';
+
+  @override
+  String get prop_verify_mismatch =>
+      'غير مطابق — قد يكون الملف تالفًا أو معدَّلًا';
+
+  @override
+  String get prop_verify_unknown =>
+      'تنسيق بصمة غير معروف (المتوقع 32 / 40 / 64 حرفًا سادس عشريًا)';
+
+  @override
   String get msg_add_subtitle => 'إضافة ترجمة';
 
   @override

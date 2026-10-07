@@ -4944,6 +4944,30 @@ class L10nFr extends L10n {
   String get prop_hash_failed => 'Échec du calcul du hachage';
 
   @override
+  String get prop_tab_checksum => 'Somme de contrôle';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'Les empreintes sont calculées localement sur votre appareil. Rien n\'est envoyé.';
+
+  @override
+  String get prop_verify_hint => 'Collez l\'empreinte officielle pour comparer';
+
+  @override
+  String get prop_verify_match => 'Correspondance — le fichier est intact';
+
+  @override
+  String get prop_verify_mismatch =>
+      'Aucune correspondance — le fichier est peut-être endommagé ou altéré';
+
+  @override
+  String get prop_verify_unknown =>
+      'Format d\'empreinte non reconnu (32 / 40 / 64 caractères hexadécimaux attendus)';
+
+  @override
   String get msg_add_subtitle => 'Ajouter des sous-titres';
 
   @override

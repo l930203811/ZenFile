@@ -4862,6 +4862,34 @@
   "@prop_hash_failed": {
     "description": "Hash computation failed"
   },
+  "prop_tab_checksum": "校驗和",
+  "@prop_tab_checksum": {
+    "description": "Tab label for checksum/hash verification"
+  },
+  "prop_sha1": "SHA-1",
+  "@prop_sha1": {
+    "description": "SHA-1 hash label"
+  },
+  "prop_checksum_note": "雜湊值在本機離線計算，不會上傳任何內容。",
+  "@prop_checksum_note": {
+    "description": "Note that hashes are computed locally on device"
+  },
+  "prop_verify_hint": "貼上官方雜湊值自動比對",
+  "@prop_verify_hint": {
+    "description": "Hint for pasting an official hash to compare"
+  },
+  "prop_verify_match": "一致 —— 檔案完整，未被修改",
+  "@prop_verify_match": {
+    "description": "Result when the pasted hash matches the computed hash"
+  },
+  "prop_verify_mismatch": "不一致 —— 檔案可能已損壞或被竄改",
+  "@prop_verify_mismatch": {
+    "description": "Result when the pasted hash does not match the computed hash"
+  },
+  "prop_verify_unknown": "無法辨識的雜湊格式（應為 32 / 40 / 64 位十六進位）",
+  "@prop_verify_unknown": {
+    "description": "Result when the pasted text is not a recognized hash format"
+  },
   "msg_add_subtitle": "新增字幕",
   "@msg_add_subtitle": {
     "description": "Add subtitle option in video player more menu"

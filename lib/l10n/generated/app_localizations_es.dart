@@ -4942,6 +4942,30 @@ class L10nEs extends L10n {
   String get prop_hash_failed => 'Error al calcular el hash';
 
   @override
+  String get prop_tab_checksum => 'Suma de comprobación';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'Los hashes se calculan localmente en tu dispositivo. No se sube nada.';
+
+  @override
+  String get prop_verify_hint => 'Pega el hash oficial para comparar';
+
+  @override
+  String get prop_verify_match => 'Coincide — el archivo está intacto';
+
+  @override
+  String get prop_verify_mismatch =>
+      'No coincide — el archivo puede estar dañado o alterado';
+
+  @override
+  String get prop_verify_unknown =>
+      'Formato de hash no reconocido (se esperan 32 / 40 / 64 caracteres hexadecimales)';
+
+  @override
   String get msg_add_subtitle => 'Añadir subtítulos';
 
   @override

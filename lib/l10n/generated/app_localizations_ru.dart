@@ -4921,6 +4921,30 @@ class L10nRu extends L10n {
   String get prop_hash_failed => 'Ошибка вычисления хэша';
 
   @override
+  String get prop_tab_checksum => 'Контрольная сумма';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'Хеши вычисляются локально на устройстве. Ничего не отправляется.';
+
+  @override
+  String get prop_verify_hint => 'Вставьте официальный хеш для сравнения';
+
+  @override
+  String get prop_verify_match => 'Совпадает — файл не повреждён';
+
+  @override
+  String get prop_verify_mismatch =>
+      'Не совпадает — файл может быть повреждён или изменён';
+
+  @override
+  String get prop_verify_unknown =>
+      'Неизвестный формат хеша (ожидается 32 / 40 / 64 шестнадцатеричных символа)';
+
+  @override
   String get msg_add_subtitle => 'Добавить субтитры';
 
   @override

@@ -4687,6 +4687,27 @@ class L10nZh extends L10n {
   String get prop_hash_failed => '哈希计算失败';
 
   @override
+  String get prop_tab_checksum => '校验和';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note => '哈希值在本机离线计算，不会上传任何内容。';
+
+  @override
+  String get prop_verify_hint => '粘贴官方哈希值自动比对';
+
+  @override
+  String get prop_verify_match => '一致 —— 文件完整，未被修改';
+
+  @override
+  String get prop_verify_mismatch => '不一致 —— 文件可能已损坏或被篡改';
+
+  @override
+  String get prop_verify_unknown => '无法识别的哈希格式（应为 32 / 40 / 64 位十六进制）';
+
+  @override
   String get msg_add_subtitle => '添加字幕';
 
   @override
@@ -12670,6 +12691,27 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get prop_hash_failed => '雜湊計算失敗';
+
+  @override
+  String get prop_tab_checksum => '校驗和';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note => '雜湊值在本機離線計算，不會上傳任何內容。';
+
+  @override
+  String get prop_verify_hint => '貼上官方雜湊值自動比對';
+
+  @override
+  String get prop_verify_match => '一致 —— 檔案完整，未被修改';
+
+  @override
+  String get prop_verify_mismatch => '不一致 —— 檔案可能已損壞或被竄改';
+
+  @override
+  String get prop_verify_unknown => '無法辨識的雜湊格式（應為 32 / 40 / 64 位十六進位）';
 
   @override
   String get msg_add_subtitle => '新增字幕';

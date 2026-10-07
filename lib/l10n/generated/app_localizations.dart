@@ -8800,6 +8800,48 @@ abstract class L10n {
   /// **'哈希计算失败'**
   String get prop_hash_failed;
 
+  /// Tab label for checksum/hash verification
+  ///
+  /// In zh, this message translates to:
+  /// **'校验和'**
+  String get prop_tab_checksum;
+
+  /// SHA-1 hash label
+  ///
+  /// In zh, this message translates to:
+  /// **'SHA-1'**
+  String get prop_sha1;
+
+  /// Note that hashes are computed locally on device
+  ///
+  /// In zh, this message translates to:
+  /// **'哈希值在本机离线计算，不会上传任何内容。'**
+  String get prop_checksum_note;
+
+  /// Hint for pasting an official hash to compare
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴官方哈希值自动比对'**
+  String get prop_verify_hint;
+
+  /// Result when the pasted hash matches the computed hash
+  ///
+  /// In zh, this message translates to:
+  /// **'一致 —— 文件完整，未被修改'**
+  String get prop_verify_match;
+
+  /// Result when the pasted hash does not match the computed hash
+  ///
+  /// In zh, this message translates to:
+  /// **'不一致 —— 文件可能已损坏或被篡改'**
+  String get prop_verify_mismatch;
+
+  /// Result when the pasted text is not a recognized hash format
+  ///
+  /// In zh, this message translates to:
+  /// **'无法识别的哈希格式（应为 32 / 40 / 64 位十六进制）'**
+  String get prop_verify_unknown;
+
   /// Add subtitle option in video player more menu
   ///
   /// In zh, this message translates to:

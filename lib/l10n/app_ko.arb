@@ -4766,6 +4766,34 @@
   "@prop_hash_failed": {
     "description": "Hash computation failed"
   },
+  "prop_tab_checksum": "체크섬",
+  "@prop_tab_checksum": {
+    "description": "Tab label for checksum/hash verification"
+  },
+  "prop_sha1": "SHA-1",
+  "@prop_sha1": {
+    "description": "SHA-1 hash label"
+  },
+  "prop_checksum_note": "해시는 기기에서 오프라인으로 계산되며 아무것도 전송되지 않습니다.",
+  "@prop_checksum_note": {
+    "description": "Note that hashes are computed locally on device"
+  },
+  "prop_verify_hint": "공식 해시 값을 붙여넣어 비교",
+  "@prop_verify_hint": {
+    "description": "Hint for pasting an official hash to compare"
+  },
+  "prop_verify_match": "일치 — 파일이 온전합니다",
+  "@prop_verify_match": {
+    "description": "Result when the pasted hash matches the computed hash"
+  },
+  "prop_verify_mismatch": "불일치 — 파일이 손상되었거나 변조되었을 수 있습니다",
+  "@prop_verify_mismatch": {
+    "description": "Result when the pasted hash does not match the computed hash"
+  },
+  "prop_verify_unknown": "인식할 수 없는 해시 형식(32 / 40 / 64자리 16진수)",
+  "@prop_verify_unknown": {
+    "description": "Result when the pasted text is not a recognized hash format"
+  },
   "msg_add_subtitle": "자막 추가",
   "@msg_add_subtitle": {
     "description": "Add subtitle option in video player more menu"

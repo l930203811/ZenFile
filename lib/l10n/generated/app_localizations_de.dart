@@ -4916,6 +4916,31 @@ class L10nDe extends L10n {
   String get prop_hash_failed => 'Hash-Berechnung fehlgeschlagen';
 
   @override
+  String get prop_tab_checksum => 'Prüfsumme';
+
+  @override
+  String get prop_sha1 => 'SHA-1';
+
+  @override
+  String get prop_checksum_note =>
+      'Hashes werden lokal auf dem Gerät berechnet. Es wird nichts hochgeladen.';
+
+  @override
+  String get prop_verify_hint =>
+      'Offiziellen Hash-Wert zum Vergleichen einfügen';
+
+  @override
+  String get prop_verify_match => 'Übereinstimmung — die Datei ist unversehrt';
+
+  @override
+  String get prop_verify_mismatch =>
+      'Keine Übereinstimmung — die Datei ist möglicherweise beschädigt oder verändert';
+
+  @override
+  String get prop_verify_unknown =>
+      'Unbekanntes Hash-Format (32 / 40 / 64 Hex-Zeichen erwartet)';
+
+  @override
   String get msg_add_subtitle => 'Untertitel hinzufügen';
 
   @override

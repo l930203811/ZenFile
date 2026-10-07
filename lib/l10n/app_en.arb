@@ -4818,6 +4818,34 @@
   "@prop_hash_failed": {
     "description": "Hash computation failed"
   },
+  "prop_tab_checksum": "Checksum",
+  "@prop_tab_checksum": {
+    "description": "Tab label for checksum/hash verification"
+  },
+  "prop_sha1": "SHA-1",
+  "@prop_sha1": {
+    "description": "SHA-1 hash label"
+  },
+  "prop_checksum_note": "Hashes are computed locally on your device. Nothing is uploaded.",
+  "@prop_checksum_note": {
+    "description": "Note that hashes are computed locally on device"
+  },
+  "prop_verify_hint": "Paste the official hash to compare",
+  "@prop_verify_hint": {
+    "description": "Hint for pasting an official hash to compare"
+  },
+  "prop_verify_match": "Match — the file is intact",
+  "@prop_verify_match": {
+    "description": "Result when the pasted hash matches the computed hash"
+  },
+  "prop_verify_mismatch": "No match — the file may be damaged or altered",
+  "@prop_verify_mismatch": {
+    "description": "Result when the pasted hash does not match the computed hash"
+  },
+  "prop_verify_unknown": "Unrecognized hash format (expected 32 / 40 / 64 hex characters)",
+  "@prop_verify_unknown": {
+    "description": "Result when the pasted text is not a recognized hash format"
+  },
   "msg_add_subtitle": "Add Subtitle",
   "@msg_add_subtitle": {
     "description": "Add subtitle option in video player more menu"

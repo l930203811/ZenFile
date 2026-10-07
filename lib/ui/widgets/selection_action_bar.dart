@@ -679,14 +679,44 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
   String _permissions = '';
   String _mimeType = '';
   bool _isHashing = false;
+  double? _hashProgress;
   String? _hashMd5;
+  String? _hashSha1;
   String? _hashSha256;
   String? _hashError;
+
+  /// 是否显示「校验和」标签页：仅单个本地文件适用（文件夹 / 多选 / 远程不适用）。
+  bool _hashApplicable = false;
+  bool _hashStarted = false;
+  final TextEditingController _verifyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _hashApplicable = _isHashCandidate();
     _calculateProperties();
+  }
+
+  @override
+  void dispose() {
+    _verifyController.dispose();
+    super.dispose();
+  }
+
+  /// 能否计算哈希：单个、非远程、且是文件（受限路径回退当前列表条目判断）。
+  bool _isHashCandidate() {
+    if (widget.selectedPaths.length != 1) return false;
+    final path = widget.selectedPaths.first;
+    if (path.startsWith('remote://') || path.startsWith('cryptremote://')) {
+      return false;
+    }
+    final type = FileSystemEntity.typeSync(path);
+    if (type == FileSystemEntityType.directory) return false;
+    if (type == FileSystemEntityType.file) return true;
+    for (final f in widget.provider.currentFiles) {
+      if (f.path == path) return !f.isDirectory;
+    }
+    return false;
   }
 
   Future<void> _calculateProperties() async {
@@ -837,17 +867,38 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     );
   }
 
-  /// 用户主动点击「计算哈希」后调用：流式计算本地文件的 MD5 与 SHA-256。
-  /// 文件夹 / 远程路径不会显示该按钮，故此处无需额外判路径类型。
+  /// 用户切到「校验和」标签页时触发一次计算（重复切换不重算）。
+  void _ensureHashStarted() {
+    if (_hashStarted) return;
+    _hashStarted = true;
+    _computeHash();
+  }
+
+  /// 流式计算本地文件的 MD5 / SHA-1 / SHA-256，并上报进度。
+  /// 文件夹 / 远程路径不会进入该标签页，故此处无需额外判路径类型。
   Future<void> _computeHash() async {
     final path = widget.selectedPaths.first;
-    if (mounted) setState(() => _isHashing = true);
+    if (mounted) {
+      setState(() {
+        _isHashing = true;
+        _hashError = null;
+        _hashProgress = null;
+      });
+    }
     try {
-      final res = await FileHashService.compute(path);
+      final res = await FileHashService.compute(
+        path,
+        onProgress: (processed, total) {
+          if (!mounted || total <= 0) return;
+          setState(() => _hashProgress = processed / total);
+        },
+      );
       if (mounted) {
         setState(() {
           _hashMd5 = res.md5;
+          _hashSha1 = res.sha1;
           _hashSha256 = res.sha256;
+          _hashProgress = 1;
           _isHashing = false;
         });
       }
@@ -861,13 +912,90 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     }
   }
 
+  /// 从剪贴板粘贴待比对的官方哈希值。
+  Future<void> _pasteVerifyHash() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim();
+    if (text == null || text.isEmpty) return;
+    _verifyController.text = text;
+    _verifyController.selection = TextSelection.collapsed(offset: text.length);
+    if (mounted) setState(() {});
+  }
+
+  /// 自动识别粘贴内容的算法（按长度）并与本地结果比对，返回结论横幅。
+  /// 长度 32 → MD5，40 → SHA-1，64 → SHA-256；比对大小写不敏感、忽略空白与分隔符。
+  Widget? _buildVerifyResult(ThemeData theme, L10n l10n) {
+    if (_verifyController.text.trim().isEmpty) return null;
+    if (_hashError != null) return null;
+    if (_hashMd5 == null || _hashSha1 == null || _hashSha256 == null) return null;
+
+    final input = _verifyController.text
+        .replaceAll(RegExp(r'[\s\-:]'), '')
+        .toLowerCase();
+    String? expected;
+    if (input.length == 32) {
+      expected = _hashMd5;
+    } else if (input.length == 40) {
+      expected = _hashSha1;
+    } else if (input.length == 64) {
+      expected = _hashSha256;
+    }
+    if (expected == null) {
+      return _verifyBanner(
+        theme,
+        Broken.info_circle,
+        theme.colorScheme.outline,
+        l10n.prop_verify_unknown,
+      );
+    }
+    final ok = expected == input;
+    return _verifyBanner(
+      theme,
+      ok ? Broken.tick_circle : Broken.close_circle,
+      ok ? Colors.green : theme.colorScheme.error,
+      ok ? l10n.prop_verify_match : l10n.prop_verify_mismatch,
+    );
+  }
+
+  Widget _verifyBanner(
+    ThemeData theme,
+    IconData icon,
+    Color color,
+    String text,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
     final count = widget.selectedPaths.length;
     final isSingle = count == 1;
-    final isFolderType = _mimeType == l10n.prop_folder_directory;
     final nameDisplay = isSingle
         ? p.basename(widget.selectedPaths.first)
         : l10n.prop_items_selected(count);
@@ -879,7 +1007,7 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
           const SizedBox(width: 12),
           Text(
             L10n.of(context).ui_properties,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -894,160 +1022,39 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                   const SizedBox(height: 16),
                   Text(
                     L10n.of(context).msg3be9abab,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
             )
-          : SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (isSingle) ...[
-                    _CopyablePropertyRow(
-                      label: l10n.ui_name,
-                      value: nameDisplay,
-                    ),
-                    _CopyablePropertyRow(
-                      label: l10n.ui_path,
-                      value: widget.selectedPaths.first,
-                    ),
-                    _CopyablePropertyRow(
-                      label: l10n.ui_size,
-                      value:
-                          '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
-                    ),
-                    if (isFolderType)
-                      _CopyablePropertyRow(
-                        label: l10n.ui_contains,
-                        value: l10n.prop_contains_format(
-                          _folderCount - 1,
-                          _fileCount,
-                        ),
-                      ),
-                    if (_lastModified != null)
-                      _CopyablePropertyRow(
-                        label: l10n.msg1303e638,
-                        value: FileUtils.formatDate(_lastModified!),
-                      ),
-                    if (_creationTime != null)
-                      _CopyablePropertyRow(
-                        label: l10n.prop_created,
-                        value: FileUtils.formatDate(_creationTime!),
-                      ),
-                    if (_mimeType.isNotEmpty)
-                      _CopyablePropertyRow(
-                        label: l10n.ui_type,
-                        value: _mimeType,
-                      ),
-                if (_permissions.isNotEmpty)
-                  _CopyablePropertyRow(
-                    label: l10n.ui_permissions,
-                    value: _permissions,
-                  ),
-                if (isSingle &&
-                    !isFolderType &&
-                    !widget.selectedPaths.first.startsWith('remote://')) ...[
-                  if (_isHashing)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          SizedBox(width: 12),
-                          Text(l10n.prop_hashing),
+          : DefaultTabController(
+              length: _hashApplicable ? 2 : 1,
+              child: SizedBox(
+                width: double.maxFinite,
+                height: _contentHeight(context),
+                child: Column(
+                  children: [
+                    if (_hashApplicable)
+                      TabBar(
+                        // 切到「校验和」时才真正读盘计算，避免只看属性也扫一遍大文件。
+                        onTap: (index) {
+                          if (index == 1) _ensureHashStarted();
+                        },
+                        tabs: [
+                          Tab(text: l10n.ui_properties),
+                          Tab(text: l10n.prop_tab_checksum),
                         ],
                       ),
-                    )
-                  else if (_hashError != null)
-                    _CopyablePropertyRow(
-                      label: l10n.prop_sha256,
-                      value: '${l10n.prop_hash_failed}: $_hashError',
-                    )
-                  else if (_hashMd5 != null && _hashSha256 != null) ...[
-                    _CopyablePropertyRow(
-                      label: l10n.prop_md5,
-                      value: _hashMd5!,
-                    ),
-                    _CopyablePropertyRow(
-                      label: l10n.prop_sha256,
-                      value: _hashSha256!,
-                    ),
-                  ] else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: _computeHash,
-                          icon: const Icon(Broken.hashtag, size: 18),
-                          label: Text(l10n.prop_calc_hash),
-                        ),
-                      ),
-                    ),
-                ],
-              ] else ...[
-                    _CopyablePropertyRow(
-                      label: l10n.msg880a18f3,
-                      value: l10n.prop_items_summary(
-                        count,
-                        _folderCount,
-                        _fileCount,
-                      ),
-                    ),
-                    _CopyablePropertyRow(
-                      label: l10n.msgea9ecb93,
-                      value:
-                          '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.msg7704aa2c,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 180),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant.withValues(alpha: 
-                            0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: widget.selectedPaths
-                                .map(
-                                  (path) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 6.0),
-                                    child: SelectableText(
-                                      p.basename(path),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontFamily: 'monospace',
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildPropertiesTab(theme, l10n, isSingle, nameDisplay),
+                          if (_hashApplicable) _buildChecksumTab(theme, l10n),
+                        ],
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
             ),
       actions: [
@@ -1061,6 +1068,194 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
           child: Text(L10n.of(context).ui_done),
         ),
       ],
+    );
+  }
+
+  /// 内容区高度：随屏幕自适应，避免小屏溢出 / 大屏留白过多。
+  double _contentHeight(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+    return (h * 0.6).clamp(300.0, 460.0).toDouble();
+  }
+
+  /// 「属性」标签页：名称、路径、大小、时间、类型、权限；多选时改为汇总 + 文件清单。
+  Widget _buildPropertiesTab(
+    ThemeData theme,
+    L10n l10n,
+    bool isSingle,
+    String nameDisplay,
+  ) {
+    final count = widget.selectedPaths.length;
+    final isFolderType = _mimeType == l10n.prop_folder_directory;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isSingle) ...[
+            _CopyablePropertyRow(label: l10n.ui_name, value: nameDisplay),
+            _CopyablePropertyRow(
+              label: l10n.ui_path,
+              value: widget.selectedPaths.first,
+            ),
+            _CopyablePropertyRow(
+              label: l10n.ui_size,
+              value:
+                  '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
+            ),
+            if (isFolderType)
+              _CopyablePropertyRow(
+                label: l10n.ui_contains,
+                value: l10n.prop_contains_format(_folderCount - 1, _fileCount),
+              ),
+            if (_lastModified != null)
+              _CopyablePropertyRow(
+                label: l10n.msg1303e638,
+                value: FileUtils.formatDate(_lastModified!),
+              ),
+            if (_creationTime != null)
+              _CopyablePropertyRow(
+                label: l10n.prop_created,
+                value: FileUtils.formatDate(_creationTime!),
+              ),
+            if (_mimeType.isNotEmpty)
+              _CopyablePropertyRow(label: l10n.ui_type, value: _mimeType),
+            if (_permissions.isNotEmpty)
+              _CopyablePropertyRow(
+                label: l10n.ui_permissions,
+                value: _permissions,
+              ),
+          ] else ...[
+            _CopyablePropertyRow(
+              label: l10n.msg880a18f3,
+              value: l10n.prop_items_summary(count, _folderCount, _fileCount),
+            ),
+            _CopyablePropertyRow(
+              label: l10n.msgea9ecb93,
+              value:
+                  '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.msg7704aa2c,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 180),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: widget.selectedPaths
+                        .map(
+                          (path) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6.0),
+                            child: SelectableText(
+                              p.basename(path),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 「校验和」标签页：即时展示 MD5 / SHA-1 / SHA-256，并支持粘贴官方哈希自动比对。
+  Widget _buildChecksumTab(ThemeData theme, L10n l10n) {
+    final verifyResult = _buildVerifyResult(theme, l10n);
+    final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final hashesReady =
+        _hashMd5 != null && _hashSha1 != null && _hashSha256 != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.prop_checksum_note,
+            style: TextStyle(fontSize: 12, color: mutedColor),
+          ),
+          const SizedBox(height: 14),
+          if (_isHashing) ...[
+            Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: _hashProgress,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.prop_hashing,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                if (_hashProgress != null)
+                  Text(
+                    '${(_hashProgress! * 100).round()}%',
+                    style: TextStyle(fontSize: 12, color: mutedColor),
+                  ),
+              ],
+            ),
+          ] else if (_hashError != null)
+            _CopyablePropertyRow(
+              label: l10n.prop_hash_failed,
+              value: _hashError!,
+            )
+          else if (hashesReady) ...[
+            _CopyablePropertyRow(label: l10n.prop_md5, value: _hashMd5!),
+            _CopyablePropertyRow(label: l10n.prop_sha1, value: _hashSha1!),
+            _CopyablePropertyRow(label: l10n.prop_sha256, value: _hashSha256!),
+          ],
+          const Divider(height: 28),
+          TextField(
+            controller: _verifyController,
+            autocorrect: false,
+            enableSuggestions: false,
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: l10n.prop_verify_hint,
+              hintStyle: const TextStyle(fontSize: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              suffixIcon: IconButton(
+                tooltip: l10n.ui_paste,
+                icon: const Icon(Broken.document_copy, size: 18),
+                onPressed: _pasteVerifyHash,
+              ),
+            ),
+          ),
+          if (verifyResult != null) ...[
+            const SizedBox(height: 12),
+            verifyResult,
+          ],
+        ],
+      ),
     );
   }
 }
