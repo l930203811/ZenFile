@@ -21,7 +21,6 @@ import '../../core/utils.dart';
 import '../../core/navigator_key.dart';
 import '../../services/app_manager_service.dart';
 import '../../services/media_thumbnail_service.dart';
-import '../../services/file_birth_time_service.dart';
 import '../../services/folder_share_service.dart';
 import '../../models/media_type.dart';
 import 'image_viewer_screen.dart';
@@ -31,6 +30,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/action_bar_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/file_action_dialogs.dart';
+import '../widgets/selection_action_bar.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/create_archive_dialog.dart';
 import '../widgets/archive_type_icon.dart';
@@ -47,7 +47,6 @@ import '../widgets/progress_ring_shell.dart';
 import '../../services/crypt/crypt_operations.dart';
 import '../../services/crypt/vault_crypt_service.dart';
 import '../widgets/bulk_crypt_actions.dart';
-import '../../services/file_hash_service.dart';
 import '../screens/vault_session_unlock_dialog.dart';
 import '../screens/crypt_mount_edit_screen.dart';
 import '../widgets/crypt_progress_dialog.dart';
@@ -1329,368 +1328,42 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
   }
 
-  Widget _buildCopyableRow(String label, String value, BuildContext ctx) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(ctx);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: InkWell(
-        onTap: () {
-          Clipboard.setData(ClipboardData(text: value));
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text('Copied $label to clipboard'),
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(6.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 7,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        value,
-                        style: const TextStyle(fontSize: 13),
-                        softWrap: true,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Broken.document_copy,
-                      size: 14,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _showPropertiesDialog({
     String? singleFilePath,
     String? singleAssetId,
-    String? explicitName,
   }) async {
-    final filePaths = singleFilePath != null
-        ? [singleFilePath]
-        : _selectedFilePaths.toList();
+    final resolved = <String>[];
+    if (singleFilePath != null) {
+      resolved.add(singleFilePath);
+    } else {
+      resolved.addAll(_selectedFilePaths);
+    }
+
     final assetIds = singleAssetId != null
         ? [singleAssetId]
         : _selectedAssetIds.toList();
-
-    int totalBytes = 0;
-    int count = filePaths.length + assetIds.length;
-    DateTime? lastMod;
-    String nameDisplay = explicitName ?? '';
-    String fullPath = '';
-    String mimeType = '';
-    String dimensionsOrDuration = '';
-    String permissionsStr = '';
-    DateTime? creationTime;
-    int catFolderDirs = 0;
-    int catFolderFiles = 0;
-    int catFolderBytes = 0;
-    bool singleIsLocalDir = false;
-    bool singleIsLocalFile = false;
-    String? _hashMd5, _hashSha256, _hashErr;
-    bool _hashing = false;
-
     if (assetIds.isNotEmpty) {
-      final provider = context.read<MediaProvider>();
+      final mediaProvider = context.read<MediaProvider>();
       final allAssets = [
-        ...provider.images,
-        ...provider.videos,
-        ...provider.screenshots,
+        ...mediaProvider.images,
+        ...mediaProvider.videos,
+        ...mediaProvider.screenshots,
       ];
       for (final id in assetIds) {
         final match = allAssets.where((a) => a.id == id).firstOrNull;
-        if (match != null) {
-          final f = await match.file;
-          if (f != null) {
-            if (count == 1) fullPath = f.path;
-            if (count == 1 && nameDisplay.isEmpty)
-              nameDisplay = f.path.split('/').last;
-            try {
-              final FileStat st = f.statSync();
-              totalBytes += st.size;
-              if (count == 1) {
-                lastMod = st.modified;
-                permissionsStr =
-                    '${(st.mode & 0x100) != 0 ? "R" : ""}${(st.mode & 0x80) != 0 ? "/W" : ""}';
-              }
-            } catch (_) {}
-            if (count == 1) {
-              if (match.type == AssetType.image) {
-                dimensionsOrDuration = '${match.width} x ${match.height}';
-                mimeType =
-                    match.mimeType ??
-                    'image/${FileUtils.effectiveExtension(f.path)}';
-              } else if (match.type == AssetType.video) {
-                final d = Duration(seconds: match.duration);
-                dimensionsOrDuration =
-                    '${match.width} x ${match.height} • ${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, "0")}';
-                mimeType =
-                    match.mimeType ??
-                    'video/${FileUtils.effectiveExtension(f.path)}';
-              }
-            }
-          }
-        }
+        if (match == null) continue;
+        final f = await match.file;
+        if (f != null) resolved.add(f.path);
       }
     }
 
-    for (final p in filePaths) {
-      if (count == 1 && nameDisplay.isEmpty) nameDisplay = p.split('/').last;
-      if (count == 1) fullPath = p;
-      try {
-        int size = 0;
-        DateTime? modified;
-        String permissions = '';
-        if (MediaProvider.isRemotePath(p)) {
-          size = MediaProvider.getCachedRemoteFileSize(p);
-          modified = MediaProvider.getCachedRemoteFileModified(p);
-        } else {
-          final f = File(p);
-          if (f.existsSync()) {
-            final FileStat st = f.statSync();
-            size = st.size;
-            modified = st.modified;
-            permissions =
-                '${(st.mode & 0x100) != 0 ? "R" : ""}${(st.mode & 0x80) != 0 ? "/W" : ""}';
-          }
-        }
-        totalBytes += size;
-        if (count == 1) {
-          lastMod = modified;
-          permissionsStr = permissions;
-          final ext = FileUtils.effectiveExtensionWithDot(p);
-          if (widget.mediaType == MediaType.audios) {
-            mimeType = 'audio/$ext';
-          } else if (widget.mediaType == MediaType.apks) {
-            mimeType = 'application/vnd.android.package-archive';
-          } else if (widget.mediaType == MediaType.archives) {
-            mimeType = 'archive/$ext';
-          } else {
-            mimeType = 'file/$ext';
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 对单个本地项判定类型：文件夹则递归统计「包含 N 子文件夹 / M 文件」，
-    // 文件则标记可计算哈希；远程路径跳过（无法本地 stat）。
-    if (count == 1 &&
-        fullPath.isNotEmpty &&
-        !fullPath.startsWith('remote://')) {
-      try {
-        final type = FileSystemEntity.typeSync(fullPath);
-        singleIsLocalDir = type == FileSystemEntityType.directory;
-        singleIsLocalFile = type == FileSystemEntityType.file;
-        if (singleIsLocalDir) {
-          await for (final e in Directory(fullPath).list(
-            recursive: true,
-            followLinks: false,
-          )) {
-            if (e is Directory) {
-              catFolderDirs++;
-            } else if (e is File) {
-              catFolderFiles++;
-              catFolderBytes += await e.length();
-            }
-          }
-          totalBytes = catFolderBytes;
-        }
-      } catch (_) {}
-    }
-
-    // 创建时间：优先文件系统真实 birth time（libc statx，**文件夹同样可取得**），
-    // 取不到再回退原生 MediaStore DATE_ADDED（只索引文件，文件夹必然取不到）。
-    // 两路都拿不到时保持 null，下方不显示该行（详见 FileBirthTimeService）。
-    if (count == 1 && fullPath.isNotEmpty) {
-      creationTime = await FileBirthTimeService.resolve(
-        fullPath,
-        knownModified: lastMod,
-      );
-    }
-
-    if (!mounted) return;
-    final theme = Theme.of(context);
+    if (!mounted || resolved.isEmpty) return;
+    final fileProvider = context.read<FileManagerProvider>();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Broken.info_circle, color: theme.colorScheme.primary),
-            const SizedBox(width: 10),
-            Text(
-              L10n.of(context).ui_properties,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (count == 1) ...[
-                _buildCopyableRow(L10n.of(context).ui_name, nameDisplay, ctx),
-                _buildCopyableRow(L10n.of(context).ui_path, fullPath, ctx),
-                _buildCopyableRow(
-                  L10n.of(context).ui_size,
-                  '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)',
-                  ctx,
-                ),
-                if (singleIsLocalDir)
-                  _buildCopyableRow(
-                    L10n.of(context).ui_contains,
-                    L10n.of(context).prop_contains_format(
-                      catFolderDirs,
-                      catFolderFiles,
-                    ),
-                    ctx,
-                  ),
-                if (lastMod != null)
-                  _buildCopyableRow(
-                    L10n.of(context).msg1303e638,
-                    FileUtils.formatDate(lastMod),
-                    ctx,
-                  ),
-                if (mimeType.isNotEmpty && mimeType != 'file/')
-                  _buildCopyableRow(L10n.of(context).ui_type, mimeType, ctx),
-                if (dimensionsOrDuration.isNotEmpty)
-                  _buildCopyableRow(
-                    L10n.of(context).msg5bab3781,
-                    dimensionsOrDuration,
-                    ctx,
-                  ),
-                if (creationTime != null)
-                  _buildCopyableRow(
-                    L10n.of(context).prop_created,
-                    FileUtils.formatDate(creationTime!),
-                    ctx,
-                  ),
-                if (permissionsStr.isNotEmpty)
-                  _buildCopyableRow(
-                    L10n.of(context).ui_permissions,
-                    permissionsStr,
-                    ctx,
-                  ),
-                if (singleIsLocalFile)
-                  StatefulBuilder(
-                    builder: (ctx2, setSt) {
-                      if (_hashing) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(
-                            children: [
-                              const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(L10n.of(context).prop_hashing),
-                            ],
-                          ),
-                        );
-                      }
-                      if (_hashErr != null) {
-                        return _buildCopyableRow(
-                          L10n.of(context).prop_sha256,
-                          '${L10n.of(context).prop_hash_failed}: $_hashErr',
-                          ctx,
-                        );
-                      }
-                      if (_hashMd5 != null && _hashSha256 != null) {
-                        return Column(
-                          children: [
-                            _buildCopyableRow(
-                              L10n.of(context).prop_md5,
-                              _hashMd5!,
-                              ctx,
-                            ),
-                            _buildCopyableRow(
-                              L10n.of(context).prop_sha256,
-                              _hashSha256!,
-                              ctx,
-                            ),
-                          ],
-                        );
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: () async {
-                              setSt(() => _hashing = true);
-                              try {
-                                final res = await FileHashService.compute(fullPath);
-                                setSt(() {
-                                  _hashMd5 = res.md5;
-                                  _hashSha256 = res.sha256;
-                                  _hashing = false;
-                                });
-                              } catch (e) {
-                                setSt(() {
-                                  _hashErr = e.toString();
-                                  _hashing = false;
-                                });
-                              }
-                            },
-                            icon: const Icon(Broken.hashtag, size: 18),
-                            label: Text(L10n.of(context).prop_calc_hash),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-              ] else ...[
-                _buildCopyableRow(
-                  L10n.of(context).msg880a18f3,
-                  '$count ${L10n.of(context).items}',
-                  ctx,
-                ),
-                _buildCopyableRow(
-                  L10n.of(context).msgea9ecb93,
-                  '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)',
-                  ctx,
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(L10n.of(context).ui_done),
-          ),
-        ],
+      builder: (ctx) => PropertiesModalDialog(
+        selectedPaths: resolved,
+        provider: fileProvider,
       ),
     );
   }
@@ -2014,7 +1687,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
             _showPropertiesDialog(
               singleFilePath: filePath,
               singleAssetId: assetId,
-              explicitName: name,
             );
           },
         ),

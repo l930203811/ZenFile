@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import '../../core/navigator_key.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../services/pin_service.dart';
@@ -793,7 +794,8 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
               }
             }
           } else {
-            // Fallback if restricted/Shizuku
+            // Fallback：受限路径（Shizuku）走当前列表条目；远程路径改走 MediaProvider
+            // 的远程大小缓存，避免分类页进入属性页时远程文件大小显示为 0。
             final item = currentFilesMap[path];
             if (item != null) {
               if (item.isDirectory) {
@@ -801,6 +803,12 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
               } else {
                 files++;
                 bytes += item.size;
+              }
+            } else if (MediaProvider.isRemotePath(path)) {
+              files++;
+              bytes += MediaProvider.getCachedRemoteFileSize(path);
+              if (widget.selectedPaths.length == 1) {
+                _lastModified = MediaProvider.getCachedRemoteFileModified(path);
               }
             }
           }
@@ -1000,81 +1008,75 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
         ? p.basename(widget.selectedPaths.first)
         : l10n.prop_items_selected(count);
 
-    return AlertDialog(
-      title: Row(
-        children: [
-          Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 28),
-          const SizedBox(width: 12),
-          Text(
-            L10n.of(context).ui_properties,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+    if (_isLoading) {
+      return Scaffold(
+        appBar: _buildAppBar(theme, l10n),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.msg3be9abab, style: const TextStyle(color: Colors.grey)),
+            ],
           ),
-        ],
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      content: _isLoading
-          ? Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    L10n.of(context).msg3be9abab,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            )
-          : DefaultTabController(
-              length: _hashApplicable ? 2 : 1,
-              child: SizedBox(
-                width: double.maxFinite,
-                height: _contentHeight(context),
-                child: Column(
-                  children: [
-                    if (_hashApplicable)
-                      TabBar(
-                        // 切到「校验和」时才真正读盘计算，避免只看属性也扫一遍大文件。
-                        onTap: (index) {
-                          if (index == 1) _ensureHashStarted();
-                        },
-                        tabs: [
-                          Tab(text: l10n.ui_properties),
-                          Tab(text: l10n.prop_tab_checksum),
-                        ],
-                      ),
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          _buildPropertiesTab(theme, l10n, isSingle, nameDisplay),
-                          if (_hashApplicable) _buildChecksumTab(theme, l10n),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-      actions: [
-        FilledButton(
-          onPressed: () => Navigator.pop(context),
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(L10n.of(context).ui_done),
         ),
-      ],
+      );
+    }
+
+    final propertiesTab = _buildPropertiesTab(theme, l10n, isSingle, nameDisplay);
+
+    return DefaultTabController(
+      length: _hashApplicable ? 2 : 1,
+      child: Scaffold(
+        appBar: _buildAppBar(
+          theme,
+          l10n,
+          bottom: _hashApplicable
+              ? TabBar(
+                  // 切到「校验和」时才真正读盘计算，避免只看属性也扫一遍大文件。
+                  onTap: (index) {
+                    if (index == 1) _ensureHashStarted();
+                  },
+                  tabs: [
+                    Tab(text: l10n.ui_properties),
+                    Tab(text: l10n.prop_tab_checksum),
+                  ],
+                )
+              : null,
+        ),
+        body: _hashApplicable
+            ? TabBarView(
+                children: [propertiesTab, _buildChecksumTab(theme, l10n)],
+              )
+            : propertiesTab,
+      ),
     );
   }
 
-  /// 内容区高度：随屏幕自适应，避免小屏溢出 / 大屏留白过多。
-  double _contentHeight(BuildContext context) {
-    final h = MediaQuery.of(context).size.height;
-    return (h * 0.6).clamp(300.0, 460.0).toDouble();
+  /// 全屏属性页顶栏：左侧关闭按钮 + 标题，可选底部标签栏。
+  PreferredSizeWidget _buildAppBar(
+    ThemeData theme,
+    L10n l10n, {
+    PreferredSizeWidget? bottom,
+  }) {
+    return AppBar(
+      leading: IconButton(
+        icon: const Icon(Broken.close_circle),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Row(
+        children: [
+          Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 24),
+          const SizedBox(width: 10),
+          Text(
+            l10n.ui_properties,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+        ],
+      ),
+      bottom: bottom,
+    );
   }
 
   /// 「属性」标签页：名称、路径、大小、时间、类型、权限；多选时改为汇总 + 文件清单。
@@ -1087,7 +1089,7 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     final count = widget.selectedPaths.length;
     final isFolderType = _mimeType == l10n.prop_folder_directory;
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1178,82 +1180,159 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
   }
 
   /// 「校验和」标签页：即时展示 MD5 / SHA-1 / SHA-256，并支持粘贴官方哈希自动比对。
+  /// 上半部（哈希值）可滚动、下半部（粘贴比对）固定贴底，保证哈希再长也不会把
+  /// 粘贴框与比对结论挤出屏幕。
   Widget _buildChecksumTab(ThemeData theme, L10n l10n) {
     final verifyResult = _buildVerifyResult(theme, l10n);
     final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
     final hashesReady =
         _hashMd5 != null && _hashSha1 != null && _hashSha256 != null;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.prop_checksum_note,
+                  style: TextStyle(fontSize: 12, color: mutedColor),
+                ),
+                const SizedBox(height: 16),
+                if (_isHashing)
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: _hashProgress,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.prop_hashing,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                      if (_hashProgress != null)
+                        Text(
+                          '${(_hashProgress! * 100).round()}%',
+                          style: TextStyle(fontSize: 12, color: mutedColor),
+                        ),
+                    ],
+                  )
+                else if (_hashError != null)
+                  _CopyablePropertyRow(
+                    label: l10n.prop_hash_failed,
+                    value: _hashError!,
+                  )
+                else if (hashesReady) ...[
+                  _buildHashRow(theme, l10n, l10n.prop_md5, _hashMd5!),
+                  _buildHashRow(theme, l10n, l10n.prop_sha1, _hashSha1!),
+                  _buildHashRow(theme, l10n, l10n.prop_sha256, _hashSha256!),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _verifyController,
+                autocorrect: false,
+                enableSuggestions: false,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: l10n.prop_verify_hint,
+                  hintStyle: const TextStyle(fontSize: 13),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  suffixIcon: IconButton(
+                    tooltip: l10n.ui_paste,
+                    icon: const Icon(Broken.document_copy, size: 18),
+                    onPressed: _pasteVerifyHash,
+                  ),
+                ),
+              ),
+              if (verifyResult != null) ...[
+                const SizedBox(height: 12),
+                verifyResult,
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 单个哈希值展示块：算法名与复制按钮同一行，哈希值独占一行等宽字体，
+  /// 避免算法名被窄列挤压换行（此前 SHA-256 会被拆成「SHA-25 / 6」）。
+  Widget _buildHashRow(
+    ThemeData theme,
+    L10n l10n,
+    String label,
+    String value,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.prop_checksum_note,
-            style: TextStyle(fontSize: 12, color: mutedColor),
-          ),
-          const SizedBox(height: 14),
-          if (_isHashing) ...[
-            Row(
-              children: [
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    value: _hashProgress,
+          Row(
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: value));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.label1(label)),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Broken.document_copy,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.prop_hashing,
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ),
-                if (_hashProgress != null)
-                  Text(
-                    '${(_hashProgress! * 100).round()}%',
-                    style: TextStyle(fontSize: 12, color: mutedColor),
-                  ),
-              ],
-            ),
-          ] else if (_hashError != null)
-            _CopyablePropertyRow(
-              label: l10n.prop_hash_failed,
-              value: _hashError!,
-            )
-          else if (hashesReady) ...[
-            _CopyablePropertyRow(label: l10n.prop_md5, value: _hashMd5!),
-            _CopyablePropertyRow(label: l10n.prop_sha1, value: _hashSha1!),
-            _CopyablePropertyRow(label: l10n.prop_sha256, value: _hashSha256!),
-          ],
-          const Divider(height: 28),
-          TextField(
-            controller: _verifyController,
-            autocorrect: false,
-            enableSuggestions: false,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: l10n.prop_verify_hint,
-              hintStyle: const TextStyle(fontSize: 13),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
               ),
-              suffixIcon: IconButton(
-                tooltip: l10n.ui_paste,
-                icon: const Icon(Broken.document_copy, size: 18),
-                onPressed: _pasteVerifyHash,
-              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          SelectableText(
+            value,
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 12.5,
+              height: 1.4,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
             ),
           ),
-          if (verifyResult != null) ...[
-            const SizedBox(height: 12),
-            verifyResult,
-          ],
         ],
       ),
     );
