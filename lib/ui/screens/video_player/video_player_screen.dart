@@ -324,8 +324,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
     // 播放器内部音量固定最大，由系统音量统一控制（与切换解码路径保持一致）
     player.setVolume(100.0);
-    // 恢复上次播放记忆的音量（无感恢复，轮询随后会与系统音量对齐）
-    _setSystemVolume(_volume);
+    // ⚠️ 进入播放页**绝不回写系统音量**（issue #41）：旧逻辑在此把「上次记忆音量」
+    // 写回系统（默认 1.0=最大），于是用户把手机调低/静音后，一播放就被顶回满音量；
+    // 且 `setStreamVolume` 改的是**全局媒体音量**，连带之后播放音频也变满音量。
+    // 正确做法：只读系统音量作为初始值（下方 `_syncVolumeFromSystem` 完成），
+    // 仅在用户拖动应用内滑块/点静音时才写系统音量。
 
     // 排查远程（WebDAV/OpenList 302、本地代理）播放失败：记录 libmpv 的错误事件。
     // 与 webdav_debug.log 同源，release 包同样可查；排查完毕后随 WebdavDebugLog
@@ -420,8 +423,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _startPlayback();
       _resolvePlaylist();
     }();
-    // 以系统音量为单一来源，播放器内部音量固定最大，避免双重缩放
-    _syncVolumeFromSystem(setPlayerVolume: true);
+    // 以系统音量为单一来源，播放器内部音量固定最大，避免双重缩放。
+    // 进场首次对齐静默（不弹音量条），且不改写系统音量（issue #41）。
+    _syncVolumeFromSystem(setPlayerVolume: true, showIndicator: false);
     _startVolumePolling();
     _startHideTimer();
 
@@ -2932,21 +2936,28 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   /// 从系统读取当前媒体音量并同步到 UI。
   /// 将播放器内部音量固定为 100，让系统音量成为唯一控制层。
-  Future<void> _syncVolumeFromSystem({bool setPlayerVolume = false}) async {
+  Future<void> _syncVolumeFromSystem({
+    bool setPlayerVolume = false,
+    bool showIndicator = true,
+  }) async {
     try {
       final systemVolume = await _volumeChannel.invokeMethod<double>('getStreamVolume');
       if (systemVolume == null || !mounted) return;
       final changed = (_volume - systemVolume).abs() > 0.001;
       if (changed) {
+        // 进场首次对齐（showIndicator=false）只静默采纳系统音量，不弹滑块提示，
+        // 避免「一进播放页就闪一下音量条」；此后由轮询/外部按键触发的同步才提示。
         setState(() {
           _volume = systemVolume;
           _isMuted = systemVolume == 0;
-          _showVolumeSlider = true;
+          if (showIndicator) _showVolumeSlider = true;
         });
-        _sliderTimer?.cancel();
-        _sliderTimer = Timer(const Duration(milliseconds: 1200), () {
-          if (mounted) setState(() => _showVolumeSlider = false);
-        });
+        if (showIndicator) {
+          _sliderTimer?.cancel();
+          _sliderTimer = Timer(const Duration(milliseconds: 1200), () {
+            if (mounted) setState(() => _showVolumeSlider = false);
+          });
+        }
       }
       if (setPlayerVolume) {
         player.setVolume(100.0);
