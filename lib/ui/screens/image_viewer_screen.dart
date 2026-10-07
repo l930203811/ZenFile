@@ -197,58 +197,116 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       return;
     }
 
+    // 走到这里说明是「浏览页直接打开图片」——调用方没给兄弟列表，只能自己扫目录。
+    // ⚠️ 同步先占位成单张：`_imageList` 若在扫描期间保持为空 ⇒ `itemCount = 0`
+    //    ⇒ 什么都不渲染，用户看到的就是「等好几秒才出现图片」。
+    final currentPath = widget.imagePath;
+    _imageList = [currentPath];
+    _currentIndex = 0;
+
+    // 闭包**只能捕获局部量**：写成 `widget.imagePath` 会让闭包隐式捕获 `this`，
+    // 而 `this` → `State._element` → 整棵挂载中的 Element 树（含 `_CustomZone`
+    // 等不可发送对象），`Isolate.run` 会抛
+    // `ArgumentError: Illegal argument in isolate message: object is unsendable`，
+    // 旧版又用 `catch (_)` 把它吞成「1 of 1 且不能左右滑动」。
+    final dirPath = File(currentPath).parent.path;
+    List<String>? sorted;
     try {
-      final file = File(widget.imagePath);
-      final parent = file.parent;
       // 列目录 + 逐文件读魔数放入 isolate：DCIM 这类几千文件的目录在主
       // isolate 同步执行会形成 IO 风暴，打开图片时明显卡顿。
-      final sorted = await Isolate.run(() => _collectImageSiblings(parent.path, widget.imagePath));
+      sorted = await Isolate.run(() => _collectImageSiblings(dirPath, currentPath));
+    } catch (_) {
+      // isolate 不可用（沙盒/权限/平台差异）：交给主 isolate 兜底，
+      // 宁可慢一点，也绝不退化成「1 of 1」。
+      sorted = null;
+    }
+    sorted ??= await _collectImageSiblingsOnMain(dirPath, currentPath);
+
+    if (!mounted) return;
+    _imageList = sorted;
+    // 用归一化路径比较：`a/b` 与 `a\b` 指向同一文件，混用会让 indexOf 失配 ⇒
+    // 列表里出现重复项且当前页被错定到第 0 张（又一次退化成「1 of N」）。
+    final idx = sorted.indexWhere((e) => _normPath(e) == _normPath(currentPath));
+    if (idx == -1) {
+      _imageList = [currentPath];
+      _currentIndex = 0;
+    } else {
+      _currentIndex = idx;
+    }
+    setState(() {});
+    // ⚠️ 必须等**新列表这一帧 rebuild 之后**才能跳页：此刻 PageView 还只有占位
+    // 的那 1 页，直接 `jumpToPage(_currentIndex)` 会被 clamp 回第 0 页 ——
+    // 表现就是「明明扫到了 40 多张，却停在 1 of 42」。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _imageList = sorted;
-      _currentIndex = _imageList.indexOf(widget.imagePath);
-      if (_currentIndex == -1) {
-        _imageList.insert(0, widget.imagePath);
-        _currentIndex = 0;
-      }
-      setState(() {});
-      // initState 里 PageController 以 initialPage:0 创建（扫描尚未完成），
-      // 现在补跳到当前图片所在页。
       if (_pageController.hasClients) {
-        _pageController.jumpToPage(_currentIndex);
+        if (_currentIndex > 0) _pageController.jumpToPage(_currentIndex);
       } else if (_currentIndex > 0) {
+        // 列表先于首帧就绪：用带正确初始页的 controller 替换。
         final old = _pageController;
         _pageController = PageController(initialPage: _currentIndex);
         old.dispose();
       }
-    } catch (_) {
-      _imageList = [widget.imagePath];
-      _currentIndex = 0;
+    });
+  }
+
+  /// 归一化路径，仅用于「是否同一个文件」的比较（不用于读写）。
+  static String _normPath(String path) {
+    final n = p.normalize(path);
+    return Platform.isWindows ? n.toLowerCase() : n;
+  }
+
+  /// 去重（按归一化路径）并按归一化路径排序，保证同目录里同一文件只出现一次。
+  static List<String> _dedupeSorted(Iterable<String> paths) {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final path in paths) {
+      if (seen.add(_normPath(path))) out.add(path);
     }
+    out.sort((a, b) => _normPath(a).compareTo(_normPath(b)));
+    return out;
   }
 
   /// 纯函数（供 isolate 执行）：列出 [dirPath] 下的所有图片文件（按名排序），
   /// 并确保 [currentPath] 在结果中。
   static Future<List<String>> _collectImageSiblings(String dirPath, String currentPath) async {
-    final files = Directory(dirPath).listSync();
-    final images = <String>{};
-    for (final f in files) {
-      if (f is File) {
-        final mime = lookupMimeType(f.path);
-        if ((mime != null && mime.startsWith('image/')) ||
-            f.path.toLowerCase().endsWith('.avif') ||
-            _isImageByHeaderPath(f.path)) {
-          images.add(f.path);
-        }
+    final images = <String>[];
+    for (final f in Directory(dirPath).listSync()) {
+      if (f is File && _looksLikeImage(f.path)) images.add(f.path);
+    }
+    if (File(currentPath).existsSync()) images.add(currentPath);
+    return _dedupeSorted(images);
+  }
+
+  /// 主 isolate 兜底扫描（isolate 起不来时）：用异步 `list()` 逐条处理，
+  /// 每一条都会让出事件循环，不会像 `listSync()` 那样把 UI 顶死。
+  static Future<List<String>> _collectImageSiblingsOnMain(String dirPath, String currentPath) async {
+    final images = <String>[];
+    try {
+      await for (final f in Directory(dirPath).list(followLinks: false)) {
+        if (f is File && _looksLikeImage(f.path)) images.add(f.path);
       }
+    } catch (_) {
+      // 目录不可读（受限目录/已卸载）：保持空集，由调用方单张兜底
     }
     if (File(currentPath).existsSync()) {
       images.add(currentPath);
     }
-    return images.toList()..sort((a, b) => a.compareTo(b));
+    return _dedupeSorted(images);
   }
 
-  /// 通过文件魔数判断是否为常见图片格式（纯函数版本，供 isolate 执行）。
-  static bool _isImageByHeaderPath(String path) {
+  /// 是否为图片文件：**先看扩展名/MIME，只有判不出来时才去读文件头 12 字节**。
+  ///
+  /// 旧写法把 `_isImageByHeaderSync` 放在 `||` 末尾，而 `lookupMimeType` 对
+  /// 已知的非图片类型（`video/mp4`、`application/zip`…）返回的是**非 null 且
+  /// 不以 image/ 开头** ⇒ 第一个条件为 false ⇒ 继续求值到第三个条件，
+  /// 于是目录里**每一个非图片文件都会被 open/read/close 一次**（包括几百 MB
+  /// 的视频）。2000 张的目录累计起来就是肉眼可见的打开延迟。
+  static bool _looksLikeImage(String path) {
+    final mime = lookupMimeType(path);
+    if (mime != null) return mime.startsWith('image/');
+    // 扩展名判不出来（无扩展名 / 密文名）时才读魔数。
+    if (path.toLowerCase().endsWith('.avif')) return true;
     return _isImageByHeaderSync(path);
   }
 

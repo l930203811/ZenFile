@@ -2369,6 +2369,32 @@ class FileManagerProvider extends ChangeNotifier {
     return false;
   }
 
+  /// 收集「当前标签页目录」里的图片绝对路径，作为 ImageViewerScreen 的兄弟列表，
+  /// 让查看器一进来就拿到完整列表（可左右滑动），不必自己扫目录。
+  ///
+  /// 与视频分支的 `folderVideoItems` 同源（都用 `activeTab.currentFiles`）。
+  /// 返回 null 表示**无法可靠构造**，由查看器回退到自己的目录扫描：
+  /// - 远程标签页（`f.path` 是远程相对路径，与本地 `currentPath` 对不上）
+  /// - 列表里没有当前文件（从「最近 / 收藏 / 搜索结果」等非目录入口打开）
+  /// - 当前文件或目录条目是虚拟路径（需先下载/解密，不能直接当本地文件渲染）
+  List<String>? _siblingImagePathsInCurrentTab(String currentPath) {
+    if (activeTab.isRemote) return null;
+    final paths = <String>[];
+    var found = false;
+    for (final f in activeTab.currentFiles) {
+      if (f.isDirectory) continue;
+      // 只收「真实本地路径」：remote:// / cryptremote:// / content:// 等虚拟路径
+      // 交给查看器只会渲染失败（它们要先经下载或解密转换）。
+      if (f.path.contains('://')) continue;
+      // 类型判断用 displayPath（cryptremote 条目的 path 是密文名，扩展名不可用）。
+      if (!_isImage(f.displayPath)) continue;
+      paths.add(f.path);
+      if (f.path == currentPath) found = true;
+    }
+    if (!found) return null;
+    return paths;
+  }
+
   /// 获取加密文件临时解密目录路径
   ///
   /// 测试注入点 [cryptTempRootOverride] 非 null 时改用它下面的同名子目录，
@@ -10774,12 +10800,19 @@ class FileManagerProvider extends ChangeNotifier {
       if (!context.mounted) return true;
       // path 可能已是流式解密 URL（加密图片），直接交给查看器渲染
       final isStream = path.startsWith('http://127.0.0.1');
+      // 浏览页打开图片时把「同目录图片列表」一并交给查看器（视频分支一直这么做）。
+      // 只在路径**未被加密/流式改写**时传：改写过的路径与列表里的原始路径对不上，
+      // 传了反而会把当前页错定到第 0 张。其余情况传 null，由查看器自行扫目录。
+      final siblings = (isStream || path != originalPath)
+          ? null
+          : _siblingImagePathsInCurrentTab(path);
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ImageViewerScreen(
             imagePath: path,
             streamUrl: isStream ? path : null,
+            siblingPaths: siblings,
           ),
         ),
       );
@@ -11004,12 +11037,17 @@ class FileManagerProvider extends ChangeNotifier {
       case 'image':
         final decPath = await _decryptCryptFileIfNeeded(path);
         final isStream = decPath.startsWith('http://127.0.0.1');
+        // 同 _tryOpenBuiltInDirectly：路径被改写（加密/流式）时不传兄弟列表。
+        final siblings = (isStream || decPath != path)
+            ? null
+            : _siblingImagePathsInCurrentTab(decPath);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => ImageViewerScreen(
               imagePath: decPath,
               streamUrl: isStream ? decPath : null,
+              siblingPaths: siblings,
             ),
           ),
         );
