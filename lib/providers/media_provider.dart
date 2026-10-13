@@ -189,16 +189,76 @@ int _sumFileSizesInIsolate(List<String> paths) {
   return total;
 }
 
-/// 返回 paths 中「底层文件已不存在」的路径集合（isolate 内零主线程 IO）。
-/// 用于删除他处文件后，把分类页残留的空白图标条目移除。
-Set<String> _pruneNonExistentInIsolate(List<String> paths) {
-  final gone = <String>{};
-  for (final p in paths) {
+/// 非媒体类别（文档/压缩包/下载/安装包）一次 stat 的判定结果：
+/// - [gone]：底层文件已不存在（他应用/电脑删除、或已在别处移除）→ 应剔除。
+/// - [empty]：文件**仍存在但字节数为 0**——典型的「未下载完/被中断/被清空的
+///   占位文件」，系统索引仍收录它，于是列表里显示为 0 B，点「打开所在位置」
+///   跳过去却看不到有内容的文件，删除后刷新又会被索引/缓存带回来。
+///   仅登记（由分类 getter 按用户开关过滤），**不当作已删除**处理。
+/// - [sizes]：与传入 paths 一一对应的**真实字节数**，-1 表示本次读不到
+///   （存储繁忙/无权限），调用方不得据此覆盖索引值。用于纠正「索引报 0
+///   但文件实际有内容」的陈旧索引，避免把正常文件误过滤掉。
+class _NonMediaPruneResult {
+  final List<String> gone;
+  final List<String> empty;
+  final List<int> sizes;
+  const _NonMediaPruneResult(this.gone, this.empty, [this.sizes = const []]);
+}
+
+/// 在 isolate 内一次遍历同时完成「存在性」「0 字节」「真实字节数」判定
+/// （主线程零 IO）。用 `lengthSync()` 而非 `existsSync()`：一次调用即拿到
+/// 字节数，文件缺失时抛异常，再回退 `existsSync` 区分「确实不存在」与
+/// 「路径暂不可访问（存储卸载/作用域限制）」——后者与旧实现保持一致（判死），
+/// 由黑名单上限与刷新重扫兜底。
+@pragma('vm:entry-point')
+_NonMediaPruneResult _pruneNonMediaInIsolate(List<String> paths) {
+  final gone = <String>[];
+  final empty = <String>[];
+  final sizes = List<int>.filled(paths.length, -1);
+  for (var i = 0; i < paths.length; i++) {
+    final p = paths[i];
+    if (p.isEmpty) continue;
     try {
-      if (!File(p).existsSync()) gone.add(p);
-    } catch (_) {}
+      final len = File(p).lengthSync();
+      sizes[i] = len;
+      if (len <= 0) empty.add(p);
+    } catch (_) {
+      try {
+        if (!File(p).existsSync()) gone.add(p);
+      } catch (_) {}
+    }
   }
-  return gone;
+  return _NonMediaPruneResult(gone, empty, sizes);
+}
+
+/// 音频条目的裁剪判定（isolate 内零主线程 IO）：同时返回「已不存在」与
+/// 「0 字节空条目」。与 [_pruneNonMediaInIsolate] 的差别：MediaStore 的音频路径
+/// 在作用域存储 / 存储未挂载时可能整棵子树都不可 stat，此时 existsSync 一律返回
+/// false，会把「仍在磁盘上但路径不可直接访问」的音频误判死亡（历史「音频过一会
+/// 消失」根因）。故加父目录兜底：**仅当父目录本身可访问、而文件缺失**时才判定为
+/// 已删除；父目录都访问不到时保持保留，交由 MediaStore 自身索引过滤。
+///
+/// 0 字节判定用 `lengthSync()` 的真实字节数，而非 `SongModel.size`——后者在
+/// MediaStore 未提供 `_size` 时恒为 0（`int get size => _info["_size"] ?? 0`），
+/// 直接拿它过滤会把全部音频误删。
+@pragma('vm:entry-point')
+_NonMediaPruneResult _pruneAudiosInIsolate(List<String> paths) {
+  final gone = <String>[];
+  final empty = <String>[];
+  for (final p in paths) {
+    if (p.isEmpty) continue;
+    try {
+      if (File(p).lengthSync() <= 0) {
+        empty.add(p);
+      }
+    } catch (_) {
+      try {
+        final parent = File(p).parent;
+        if (parent.existsSync()) gone.add(p);
+      } catch (_) {}
+    }
+  }
+  return _NonMediaPruneResult(gone, empty);
 }
 
 /// 磁盘缓存恢复结果（isolate 内完成 decode + exists 过滤，主 isolate 零 IO）。
@@ -1134,6 +1194,15 @@ class MediaProvider extends ChangeNotifier {
   /// 黑名单上限，避免长时间运行无限增长（Set 保持插入序，超出后丢最旧的）。
   static const int _kDeletedMediaPathsCap = 4096;
 
+  /// 本会话「0 字节空音频」路径集合（规范化路径）。
+  ///
+  /// 与上面的删除黑名单不同：这些文件**确实存在**，只是字节数为 0——典型是
+  /// 未下载完/被中断/被清空的空文件，但 MediaStore 仍收录为一条音频，于是分类页
+  /// 「音频」里显示 0 B 的条目、点「打开所在位置」看不到内容、删掉刷新又出现。
+  /// 由 `pruneDeletedMedia` 在 isolate 内 stat 真实字节数后**整体替换**本集合
+  /// （非累加，保证文件被补全后即刻恢复显示），getter 据此过滤。
+  final Set<String> _emptyAudioPaths = <String>{};
+
   bool _isDeletedMediaPath(String path) {
     if (_deletedMediaPaths.isEmpty || path.isEmpty) return false;
     return _deletedMediaPaths.contains(_normalizeMediaPath(path));
@@ -1475,9 +1544,18 @@ class MediaProvider extends ChangeNotifier {
 
   List<SongModel> get audios {
     final excluded = <String>[...(_excludedDefaultPaths['音频'] ?? const <String>[]), ...(_excludedFolders['音频'] ?? const <String>[])];
-    final list = _audios.where((song) {
+    // 双保险：黑名单非空时先滤掉本会话已删除路径（_audios 各合并点本已过滤，
+    // 这里兜底防止未来新增合并路径漏过滤导致「删了又出现」）。
+    final list = _stripDeletedAudios(_audios).where((song) {
       final path = song.data;
       if (_isPathExcluded(path, excluded)) return false;
+      // 0 字节空音频兜底（后台 stat 判定，见 _emptyAudioPaths 与
+      // _pruneAudiosInIsolate）：不用 SongModel.size——MediaStore 未提供
+      // `_size` 时它恒为 0，据此过滤会误删全部音频。
+      if (_emptyAudioPaths.isNotEmpty &&
+          _emptyAudioPaths.contains(_normalizeMediaPath(path))) {
+        return false;
+      }
       return true;
     }).toList();
     return list;
@@ -1499,6 +1577,24 @@ class MediaProvider extends ChangeNotifier {
     return _audioIndex![path];
   }
 
+  /// 非媒体类别「0 字节占位文件」兜底过滤（文档/压缩包/下载/安装包通用）。
+  ///
+  /// 为什么需要 getter 兜底：0 字节条目有多条**绕过尺寸过滤**的入口——
+  /// MediaStore 索引查询、磁盘缓存恢复（`_restoreCacheInIsolate` 直接信任旧路径）、
+  /// 自定义路径扫描，且启动时的并集合并会把缓存里的旧条目原样保留。
+  /// 只在下药于各入口会不断漏；在 getter（分类页唯一数据出口）统一拦截最稳。
+  ///
+  /// 判定零成本：只读索引大小缓存 `_nonMediaSizes`（MediaStore 查询写入真实
+  /// 字节数，后台 stat 裁剪为无记录来源补登记 0），**不做同步 stat**，
+  /// 不会给列表滚动/分组带来 IO 卡顿。
+  /// 用户关闭该类「噪音过滤」开关时不做过滤（保留原始文件，与扫描层一致）。
+  bool _isNonMediaEmptyFiltered(String path, String category, int minBytes) {
+    if (!PreferencesService.getMediaNoiseFilter(category)) return false;
+    final size = _nonMediaSizes[path];
+    // size < 0 为「未知/不可读」占位（不参与判定），只过滤已知且过小的条目。
+    return size != null && size >= 0 && size < minBytes;
+  }
+
   List<FileSystemEntity> get documents {
     final excluded = <String>[...(_excludedDefaultPaths['文档'] ?? const <String>[]), ...(_excludedFolders['文档'] ?? const <String>[])];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
@@ -1507,6 +1603,7 @@ class MediaProvider extends ChangeNotifier {
       final isCustom = docPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
+      if (_isNonMediaEmptyFiltered(file.path, '文档', _kMinDocBytes)) return false;
       return true;
     }).toList();
     return list;
@@ -1520,6 +1617,7 @@ class MediaProvider extends ChangeNotifier {
       final isCustom = archPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
+      if (_isNonMediaEmptyFiltered(file.path, '压缩包', _kMinArchiveBytes)) return false;
       return true;
     }).toList();
     return list;
@@ -1529,6 +1627,7 @@ class MediaProvider extends ChangeNotifier {
     final excluded = <String>[...(_excludedDefaultPaths['下载'] ?? const <String>[]), ...(_excludedFolders['下载'] ?? const <String>[])];
     final list = _downloads.where((file) {
       if (_isPathExcluded(file.path, excluded)) return false;
+      if (_isNonMediaEmptyFiltered(file.path, '下载', _kMinDownloadBytes)) return false;
       return true;
     }).toList();
     return list;
@@ -1542,6 +1641,7 @@ class MediaProvider extends ChangeNotifier {
       final isCustom = apkPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
+      if (_isNonMediaEmptyFiltered(file.path, '安装包', _kMinApkBytes)) return false;
       return true;
     }).toList();
     return list;
@@ -1803,6 +1903,53 @@ class MediaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 已过滤条数缓存（分类卡片 / 快捷网格的数量显示）。
+  ///
+  /// 卡片数量必须与分类页列表**实际显示**的条数一致，否则会出现「卡片显示 12、
+  /// 点进去只有 8」的观感问题——0 字节占位文件、本会话已删除的条目都已经不再
+  /// 列出，计数也不应把它们算进去。但 `audios/documents/archives/downloads/apks`
+  /// 这些 getter 每次调用都要遍历列表并逐项判定排除路径与 0 字节，若在卡片
+  /// build 的热路径上逐帧调用会造成掉帧（本项目对 Android 15/16 卡顿敏感）。
+  /// 故：所有数据变更经 [notifyListeners] 置脏，UI 首次读取时惰性重算一次，
+  /// 其余读取退化为 O(1) map 查询。
+  final Map<String, int> _filteredCategoryCounts = <String, int>{};
+  bool _filteredCountsDirty = true;
+
+  @override
+  void notifyListeners() {
+    // 数据变更的唯一收敛点：只置脏（O(1)），重算延后到真正被读取时执行。
+    _filteredCountsDirty = true;
+    super.notifyListeners();
+  }
+
+  /// 惰性重算「过滤后条数」（仅在被读取且已置脏时执行一次）。
+  void _refreshFilteredCountsIfDirty() {
+    if (!_filteredCountsDirty) return;
+    _filteredCountsDirty = false;
+    _filteredCategoryCounts['音频'] = audios.length;
+    _filteredCategoryCounts['文档'] = documents.length;
+    _filteredCategoryCounts['压缩包'] = archives.length;
+    _filteredCategoryCounts['下载'] = downloads.length;
+    _filteredCategoryCounts['安装包'] = apks.length;
+  }
+
+  /// 非媒体四类 + 音频的「过滤后条数」（分类卡片显示用）。
+  /// 图片/视频/截图无需经过此处：其 getter 自带结果缓存（`_stampFor`），
+  /// 直接调用的成本已经很低。
+  int _displayCount(String category) {
+    _refreshFilteredCountsIfDirty();
+    return _filteredCategoryCounts[category] ?? 0;
+  }
+
+  /// 写入非媒体四类的**持久化**计数（供 `_isLoaded` 尚未就绪时回退读取）。
+  /// 同样采用过滤后条数，避免冷启动瞬间卡片数量与列表不一致。
+  void _saveNonMediaCategoryCounts() {
+    PreferencesService.saveCategoryCount('文档', documents.length);
+    PreferencesService.saveCategoryCount('压缩包', archives.length);
+    PreferencesService.saveCategoryCount('下载', downloads.length);
+    PreferencesService.saveCategoryCount('安装包', apks.length);
+  }
+
   int getCategoryItemCount(String category) {
     // 网络连接在独立存储（NetworkConnectionsService）中，不参与媒体扫描，
     // 其数量与 _isLoaded 无关，必须始终返回真实已保存的连接数，
@@ -1814,11 +1961,13 @@ class MediaProvider extends ChangeNotifier {
       switch (category) {
         case '图片': return images.length;
         case '视频': return videos.length;
-        case '音频': return _audios.length;
-        case '文档': return _documents.length;
-        case '压缩包': return _archives.length;
-        case '下载': return _downloads.length;
-        case '安装包': return _apks.length;
+        // 音频与非媒体四类改用「过滤后条数」：与分类页列表实际显示一致
+        // （0 字节占位、本会话已删除的条目不计入）。
+        case '音频': return _displayCount('音频');
+        case '文档': return _displayCount('文档');
+        case '压缩包': return _displayCount('压缩包');
+        case '下载': return _displayCount('下载');
+        case '安装包': return _displayCount('安装包');
         case '截图': return screenshots.length;
         case '应用': return 0;
         case '设置': return 0;
@@ -1832,11 +1981,11 @@ class MediaProvider extends ChangeNotifier {
     switch (category) {
       case '图片': return _images.length;
       case '视频': return _videos.length;
-      case '音频': return _audios.length;
-      case '文档': return _documents.length;
-      case '压缩包': return _archives.length;
-      case '下载': return _downloads.length;
-      case '安装包': return _apks.length;
+      case '音频': return _displayCount('音频');
+      case '文档': return _displayCount('文档');
+      case '压缩包': return _displayCount('压缩包');
+      case '下载': return _displayCount('下载');
+      case '安装包': return _displayCount('安装包');
       case '截图': return _screenshots.length;
       case '最近': return _recentFiles.length;
     }
@@ -1929,11 +2078,13 @@ class MediaProvider extends ChangeNotifier {
       case '图片': return images.length;
       case '视频': return videos.length;
       case '截图': return screenshots.length;
-      case '音频': return _audios.length;
-      case '文档': return _documents.length;
-      case '压缩包': return _archives.length;
-      case '安装包': return _apks.length;
-      case '下载': return _downloads.length;
+      // 与分类卡片同源：过滤后条数为 0 时（例如列表里只剩 0 字节占位文件），
+      // 应走「保留上次大小」分支，而不是按原始条数误判为「列表非空却大小为 0」。
+      case '音频': return _displayCount('音频');
+      case '文档': return _displayCount('文档');
+      case '压缩包': return _displayCount('压缩包');
+      case '安装包': return _displayCount('安装包');
+      case '下载': return _displayCount('下载');
       default: return 0;
     }
   }
@@ -2474,10 +2625,7 @@ class MediaProvider extends ChangeNotifier {
       await _applySort();
       _rebuildFolderGroups();
 
-      PreferencesService.saveCategoryCount('文档', _documents.length);
-      PreferencesService.saveCategoryCount('压缩包', _archives.length);
-      PreferencesService.saveCategoryCount('下载', _downloads.length);
-      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      _saveNonMediaCategoryCounts();
       _recalcCategorySizes();
 
       _nonMediaScanDone = true;
@@ -2630,11 +2778,8 @@ class MediaProvider extends ChangeNotifier {
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
-      PreferencesService.saveCategoryCount('音频', _audios.length);
-      PreferencesService.saveCategoryCount('文档', _documents.length);
-      PreferencesService.saveCategoryCount('压缩包', _archives.length);
-      PreferencesService.saveCategoryCount('下载', _downloads.length);
-      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      PreferencesService.saveCategoryCount('音频', audios.length);
+      _saveNonMediaCategoryCounts();
       PreferencesService.saveCategoryCount('截图', screenshots.length);
       _recalcCategorySizes();
 
@@ -3051,6 +3196,10 @@ class MediaProvider extends ChangeNotifier {
       if (!forceRefresh) {
         await _mergeSupplementaryMedia();
       }
+      // 索引/补充合并完成后按存在性裁剪（isolate 内 stat）：清掉他应用删除后
+      // MediaStore 仍返回的陈旧音频条目（分类页「空音频」删掉刷新又复活的根因），
+      // 同时兜底图片/视频/非媒体残留。放在大小统计前，避免幽灵条目计入分类体积。
+      await pruneDeletedMedia();
       await _computeMediaCategorySizes();
 
       // 用户主动刷新（右上角刷新按钮/仪表盘下拉刷新）：媒体系统索引就绪后，
@@ -3089,7 +3238,7 @@ class MediaProvider extends ChangeNotifier {
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
-      PreferencesService.saveCategoryCount('音频', _audios.length);
+      PreferencesService.saveCategoryCount('音频', audios.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
       _recalcCategorySizes();
 
@@ -4320,6 +4469,15 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     required List<String> filePaths,
     List<String>? assetIds,
   }) async {
+    // 登记本会话删除黑名单：MediaStore/系统索引有滞后，刷新（querySongs）会把
+    // 刚删掉的音频重新带回，导致「删了又出现」。与 pruneDeletedMediaPaths 同源
+    // 双保险——调用方漏调 prune 也不会复活。
+    for (final p in filePaths) {
+      if (p.isNotEmpty) _deletedMediaPaths.add(_normalizeMediaPath(p));
+    }
+    while (_deletedMediaPaths.length > _kDeletedMediaPathsCap) {
+      _deletedMediaPaths.remove(_deletedMediaPaths.first);
+    }
     for (final path in filePaths) {
       try {
         final f = File(path);
@@ -4349,11 +4507,8 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     // Update Counts and Cache
     PreferencesService.saveCategoryCount('图片', images.length);
     PreferencesService.saveCategoryCount('视频', videos.length);
-    PreferencesService.saveCategoryCount('音频', _audios.length);
-    PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
-    PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
+    PreferencesService.saveCategoryCount('音频', audios.length);
+    _saveNonMediaCategoryCounts();
     PreferencesService.saveCategoryCount('截图', screenshots.length);
     _recalcCategorySizes();
 
@@ -4415,12 +4570,9 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
       _recalcCategorySizes();
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
-      PreferencesService.saveCategoryCount('音频', _audios.length);
+      PreferencesService.saveCategoryCount('音频', audios.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
-      PreferencesService.saveCategoryCount('文档', _documents.length);
-      PreferencesService.saveCategoryCount('压缩包', _archives.length);
-      PreferencesService.saveCategoryCount('下载', _downloads.length);
-      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      _saveNonMediaCategoryCounts();
       notifyListeners();
     }
   }
@@ -4430,25 +4582,64 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   /// 同时覆盖非媒体四类（文档/压缩包/下载/安装包）。
   Future<void> pruneDeletedMedia() async {
     try {
-      // 注意：音频文件来自 MediaStore（on_audio_query），其路径在 Android 11+ 作用域存储
-      // 下可能无法通过 File.existsSync() 直接访问。MediaStore 自身会过滤已删除的音频条目，
-      // 故音频走 _loadAudios 的 querySongs 结果整表替换即可，不参与 existsSync 裁剪，
-      // 否则会误把「路径不可直接访问但 MediaStore 仍收录」的音频判死→「过一段时间音频消失」。
+      // 图片/视频/截图/非媒体四类：路径均来自本应用可见的文件系统枚举，
+      // existsSync 不可达即已删除，直接裁剪。
       final all = <String>{
         ..._images.map((e) => e.path),
         ..._videos.map((e) => e.path),
         ..._screenshots.map((e) => e.path),
-        // 音频路径不参与 existsSync 裁剪（MediaStore 路径在作用域存储下不可直接 stat）
-        // ..._audios.map((e) => e.data),
         ..._documents.map((e) => e.path),
         ..._archives.map((e) => e.path),
         ..._downloads.map((e) => e.path),
         ..._apks.map((e) => e.path),
       };
-      if (all.isEmpty) return;
-      final gone = await compute(_pruneNonExistentInIsolate, all.toList());
-      if (gone.isEmpty) return;
-      pruneDeletedMediaPaths(gone.toList());
+      if (all.isNotEmpty) {
+        // 一次 stat 同时判定「已不存在」「0 字节占位」「真实字节数」
+        // （见 _pruneNonMediaInIsolate），避免对同一批路径做多轮 isolate 遍历。
+        final paths = all.toList();
+        final res = await compute(_pruneNonMediaInIsolate, paths);
+        if (res.gone.isNotEmpty) pruneDeletedMediaPaths(res.gone);
+        // 用真实字节数回写索引大小缓存：既让分类 getter 能按 0 字节过滤掉未
+        // 下载完的占位文件，也顺带纠正「索引报 0 而文件实际有内容」的陈旧索引
+        // （否则会把正常文件误滤）。-1（本次读不到）不回写，保留索引原值。
+        if (res.sizes.length == paths.length) {
+          for (var i = 0; i < paths.length; i++) {
+            final len = res.sizes[i];
+            if (len >= 0) _nonMediaSizes[paths[i]] = len;
+          }
+        }
+        if (res.empty.isNotEmpty) {
+          debugPrint('[ZenFile] pruneDeletedMedia: 标记 0 字节占位文件 '
+              '${res.empty.length} 条（不存在的 ${res.gone.length} 条已剔除）');
+        }
+      }
+      // 音频：MediaStore/querySongs 在部分设备会把已删除文件（多被他应用/电脑删除、
+      // 媒体库未重扫）的陈旧条目一直带回来，表现为分类页「空音频」——打开所在目录
+      // 没有文件、在列表删掉后刷新又复活。此前因担心作用域存储下 existsSync 误判
+      // 而整类跳过裁剪；改为「父目录兜底」策略（父目录可访问而文件缺失才判死，
+      // 见 _pruneAudiosInIsolate），误判风险与其它分类一致。
+      final audioPaths = <String>{
+        for (final s in _audios)
+          if (s.data.isNotEmpty) s.data,
+      };
+      if (audioPaths.isNotEmpty) {
+        final audioRes = await compute(_pruneAudiosInIsolate, audioPaths.toList());
+        if (audioRes.gone.isNotEmpty) {
+          debugPrint('[ZenFile] pruneDeletedMedia: 裁剪不存在音频 '
+              '${audioRes.gone.length} 条（MediaStore 陈旧条目）');
+          pruneDeletedMediaPaths(audioRes.gone);
+        }
+        // 0 字节空音频（列表显示 0 B、点开无内容、删了刷新又出现）：本次判定
+        // 结果**整体替换**（而非累加）——文件被补全/换成有效音频后自动恢复显示，
+        // 不会因为一次误判被永久过滤。
+        _emptyAudioPaths
+          ..clear()
+          ..addAll(audioRes.empty);
+        if (audioRes.empty.isNotEmpty) {
+          debugPrint('[ZenFile] pruneDeletedMedia: 标记 0 字节空音频 '
+              '${audioRes.empty.length} 条');
+        }
+      }
     } catch (e) {
       debugPrint('[ZenFile] pruneDeletedMedia error: $e');
     }

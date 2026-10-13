@@ -452,7 +452,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                 SettingsTile(
                   icon: Broken.language_circle,
                   title: L10n.of(context).ui_language,
-                  subtitle: _getCurrentLocaleName(PreferencesService.getAppLocale()),
+                  subtitle: _getCurrentLocaleName(context, PreferencesService.getAppLocale()),
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                   onTap: () => _showLanguagePickerDialog(context),
                 ),
@@ -2608,9 +2608,9 @@ void _showDefaultHomeDialog(BuildContext context, FileManagerProvider fileManage
   );
 }
 
-String _getCurrentLocaleName(String locale) {
+String _getCurrentLocaleName(BuildContext context, String locale) {
   switch (locale) {
-    case 'system': return '自动（跟随系统）';
+    case 'system': return L10n.of(context).ui_follow_system;
     case 'en': return 'English';
     case 'zh_TW': return '繁體中文';
     case 'ja': return '日本語';
