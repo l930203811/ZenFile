@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.5';
+  static const String _latestChangelogVersion = 'v3.5.6';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v356,
     _v355,
     _v354,
     _v353,
@@ -943,7 +944,37 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.5 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.5.6 ────────────────────────────────────────────────
+  static const _Changelog _v356 = _Changelog(
+    version: 'v3.5.6',
+    date: '2026-10-13',
+    zh: [
+      _ChangeSection('🐛 问题修复', [
+        '修复分类页的「幽灵条目」：音频、下载、文档、压缩包、安装包里会列出 0 字节、或实际已经不存在的文件 —— 点「打开所在位置」跳过去却找不到该文件，在列表里删掉后一刷新它又回来了。根因是分类列表有 5 条数据入口绕过了「文件是否真实存在 / 是否为 0 字节」的校验（系统媒体索引读出了大小却没拿它过滤、磁盘缓存恢复完全信任旧路径、与旧列表合并时把空条目原样保留），现在统一在后台一次性核对并剔除，删掉的条目也不会再从缓存被带回来',
+        '修复分类卡片与快捷入口显示的数量多于列表实际条数（卡片上写着 12、点进去只有 8）的问题：数量的统计口径与列表统一为「过滤后的条数」',
+        '修复浏览页把 RMVB 显示成「未知格式」（同一个文件在分类页却能正常识别播放）：补齐浏览页的视频后缀（WMV / 3GP / M4V / RMVB / RM / ASF / F4V）、音频后缀（AMR / MID / MIDI）与图片后缀（ICO / RAW），与分类页对齐',
+      ]),
+      _ChangeSection('🎨 界面与交互', [
+        '设置—语言里的「自动（跟随系统）」改为跟随应用语言显示，此前在英文等界面下固定显示为中文',
+        '压缩 / 解压、复制 / 粘贴等进度弹窗的文案不再带黄色下划线（此前每行文字下方都有一条黄线）',
+        '进度弹窗的水平分隔线不再超出圆形进度环、也不再与进度环或「后台 / 取消」按钮重叠：分隔线宽度按圆环内缘重新对齐（圆周直径 300、内圈环内缘距圆边 17px，分隔线取 260px、两端各留 20px，贴住内缘但不压环）',
+      ]),
+    ],
+    en: [
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed the "ghost entries" in the category pages: Audio, Downloads, Documents, Archives and Packages used to list files that are 0 bytes or no longer exist on disk - tapping "Open containing folder" jumped to a folder that does not contain the file, and deleting such an entry brought it right back after a refresh. The category lists had five data paths that bypassed the "does the file really exist / is it 0 bytes" check (the system media index read the size but never filtered by it, the on-disk cache restore trusted the old paths as-is, and merging with the previous list kept the empty entries unchanged); they are now all verified once in the background and dropped, and deleted entries are no longer restored from the cache',
+        'Fixed category cards and shortcut tiles showing a higher count than the list actually contains (the card said 12 while only 8 were listed): the count now uses the same filtered result as the list',
+        'Fixed the file browser showing RMVB as "Unknown format" while the same file was recognised and played fine from the category pages: the browser now knows the video extensions (WMV / 3GP / M4V / RMVB / RM / ASF / F4V), audio extensions (AMR / MID / MIDI) and image extensions (ICO / RAW) that the categories already supported',
+      ]),
+      _ChangeSection('🎨 UI & Interaction', [
+        'The "Automatic (follow system)" entry under Settings - Language now follows the app language; it used to stay in Chinese even on an English UI',
+        'Text in the progress dialogs (compress / extract, copy / paste, ...) no longer carries a yellow underline under every line',
+        'The horizontal dividers in the progress dialogs no longer stick out of the circular progress ring or overlap the ring and the "Background / Cancel" buttons: the divider width is re-aligned to the inner edge of the ring (the circle is 300 px across and the inner ring edge sits 17 px from the border, so the divider is 260 px with 20 px on each side - flush with the inner edge without covering the ring)',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.5 ──────────────────────────────────────────────────────────
   static const _Changelog _v355 = _Changelog(
     version: 'v3.5.5',
     date: '2026-10-08',
