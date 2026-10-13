@@ -203,7 +203,9 @@ class FileUtils {
         lower.endsWith('.bmp') ||
         lower.endsWith('.avif') ||
         lower.endsWith('.heic') ||
-        lower.endsWith('.heif');
+        lower.endsWith('.heif') ||
+        lower.endsWith('.ico') ||
+        lower.endsWith('.raw');
   }
 
   /// 是否为 SVG。`isImage` 刻意把 SVG 排除在外，所以各处都需要单独判一次；
@@ -215,7 +217,23 @@ class FileUtils {
     final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('video/')) return true;
     final lower = normalized.toLowerCase();
-    return lower.endsWith('.mp4') || lower.endsWith('.ts') || lower.endsWith('.mts') || lower.endsWith('.mkv') || lower.endsWith('.webm') || lower.endsWith('.avi') || lower.endsWith('.mov') || lower.endsWith('.flv');
+    // 与分类页（media_provider._videoExtensions）保持一致，避免浏览页把
+    // rmvb/rm/wmv/3gp/m4v/asf/f4v 等误判为未知格式。
+    return lower.endsWith('.mp4') ||
+        lower.endsWith('.ts') ||
+        lower.endsWith('.mts') ||
+        lower.endsWith('.mkv') ||
+        lower.endsWith('.webm') ||
+        lower.endsWith('.avi') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.flv') ||
+        lower.endsWith('.wmv') ||
+        lower.endsWith('.3gp') ||
+        lower.endsWith('.m4v') ||
+        lower.endsWith('.rmvb') ||
+        lower.endsWith('.rm') ||
+        lower.endsWith('.asf') ||
+        lower.endsWith('.f4v');
   }
 
   static bool isAudio(String path) {
@@ -223,7 +241,18 @@ class FileUtils {
     final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('audio/')) return true;
     final lower = normalized.toLowerCase();
-    return lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.m4a') || lower.endsWith('.ogg') || lower.endsWith('.flac') || lower.endsWith('.aac') || lower.endsWith('.wma') || lower.endsWith('.opus');
+    // 与分类页（media_provider._audioExtensions）保持一致，补齐 amr/mid/midi。
+    return lower.endsWith('.mp3') ||
+        lower.endsWith('.wav') ||
+        lower.endsWith('.m4a') ||
+        lower.endsWith('.ogg') ||
+        lower.endsWith('.flac') ||
+        lower.endsWith('.aac') ||
+        lower.endsWith('.wma') ||
+        lower.endsWith('.opus') ||
+        lower.endsWith('.amr') ||
+        lower.endsWith('.mid') ||
+        lower.endsWith('.midi');
   }
 
   /// 判断是否为文档文件（非图片/视频/音频/压缩包/APK）
