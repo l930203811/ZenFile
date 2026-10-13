@@ -87,9 +87,10 @@ class FileOperationProgressDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              // 分隔线（限制宽度，避免在圆形边缘外延伸）
+              // 分隔线：宽度贴合内圈进度环内缘（两端距圆边 20px，内圈环内缘
+              // 17px），视觉贴边但不与进度环重叠。
               SizedBox(
-                width: 200,
+                width: 260,
                 child: Container(
                   height: 1,
                   color: theme.colorScheme.outline.withValues(alpha: 0.15),
@@ -178,9 +179,10 @@ class FileOperationProgressDialog extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              // 分隔线（限制宽度，避免在圆形边缘外延伸）
+              // 分隔线：宽度贴合内圈进度环内缘（两端距圆边 20px，内圈环内缘
+              // 17px），视觉贴边但不与进度环重叠。
               SizedBox(
-                width: 200,
+                width: 260,
                 child: Container(
                   height: 1,
                   color: theme.colorScheme.outline.withValues(alpha: 0.15),
