@@ -85,12 +85,15 @@ class FileOperationProgressDialog extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // 分隔线
-              Container(
-                height: 1,
-                color: theme.colorScheme.outline.withValues(alpha: 0.15),
+              // 分隔线（限制宽度，避免在圆形边缘外延伸）
+              SizedBox(
+                width: 200,
+                child: Container(
+                  height: 1,
+                  color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                ),
               ),
               const SizedBox(height: 14),
 
@@ -173,12 +176,15 @@ class FileOperationProgressDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
 
-              // 分隔线
-              Container(
-                height: 1,
-                color: theme.colorScheme.outline.withValues(alpha: 0.15),
+              // 分隔线（限制宽度，避免在圆形边缘外延伸）
+              SizedBox(
+                width: 200,
+                child: Container(
+                  height: 1,
+                  color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                ),
               ),
               const SizedBox(height: 12),
 

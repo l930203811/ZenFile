@@ -161,9 +161,13 @@ class ProgressRingShell extends StatelessWidget {
             // 内部内容区域
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 34),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: children,
+              child: DefaultTextStyle(
+                style: const TextStyle(decoration: TextDecoration.none),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: children,
+                ),
               ),
             ),
           ],
