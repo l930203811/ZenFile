@@ -17,6 +17,36 @@ import 'package:just_zstd/just_zstd.dart';
 /// 同时每块读写之间不会把整文件放进 RAM，从根源避免 OOM。
 const int _kArchiveChunkSize = 1024 * 1024;
 
+/// 压缩包需要密码但调用方没有提供。
+///
+/// 之所以要独立类型：archive 包在「无密码读加密条目」时只会以 `_password!`
+/// 非空断言崩溃或静默返回空内容（⇒ 解出 0 字节文件），错误信息既不可读也无法
+/// 与「其它失败」区分。解压链路据此把「缺密码」单独提示并重新索要密码。
+class ArchivePasswordRequiredException implements Exception {
+  const ArchivePasswordRequiredException();
+  @override
+  String toString() => 'Archive password required';
+}
+
+/// 提供了密码但校验不通过（AES 的 macs don't match / ZipCrypto 的 CRC 不符）。
+class ArchivePasswordInvalidException implements Exception {
+  const ArchivePasswordInvalidException(this.detail);
+  final Object? detail;
+  @override
+  String toString() => 'Archive password invalid: $detail';
+}
+
+/// 条目内容取不到（例如加密条目在无密码时解出 null）。
+///
+/// 解压链路不允许把这种情况当成「空文件」静默写盘：宁可整包报错，也不要
+/// 产出一堆 0 字节文件让用户误以为压缩包损坏。
+class ArchiveContentUnavailableException implements Exception {
+  const ArchiveContentUnavailableException(this.entryName);
+  final String entryName;
+  @override
+  String toString() => 'Archive content unavailable: $entryName';
+}
+
 /// 遍历源路径，收集所有「文件条目 + 空目录」供流式压缩使用。
 /// 返回结构：{ files: `List<MapEntry<String,String>>`: (fullPath -> relPath), emptyDirs: `List<String>` }
 Map<String, dynamic> _collectEntries(List<String> sourcePaths) {
@@ -479,7 +509,7 @@ class ArchiveService {
         final hasEncrypted = decoder.directory.fileHeaders
             .any((h) => (h.generalPurposeBitFlag & 0x1) != 0);
         if (hasEncrypted) {
-          throw Exception('Password required: archive contains encrypted entries');
+          throw const ArchivePasswordRequiredException();
         }
       }
       return archive;
@@ -501,7 +531,33 @@ class ArchiveService {
     // 所有候选都没通过 CRC：若某个候选至少能解出内容（CRC 字段不可信，如 WinZip
     // AES AE-2 不写 CRC），退回它，避免把正确密码误判为错误。
     if (unverified != null) return unverified;
-    throw Exception('Invalid zip password: $lastError');
+    throw ArchivePasswordInvalidException(lastError);
+  }
+
+  /// 是否为「需要密码的 ZIP」（仅 ZIP / ZIP.* 判定；其它格式、读取失败一律 false）。
+  ///
+  /// 只读中央目录里的 general purpose bit 0（加密标志），不解压任何数据，
+  /// 代价很小，可在弹「解压到…」对话框之前预检，从而：
+  /// 1) 加密包在用户没填密码时就明确要求密码，而不是解出一堆 0 字节文件；
+  /// 2) 非加密包不受影响（不会多问一次密码）。
+  static bool zipNeedsPassword(String archivePath) {
+    final lower = archivePath.toLowerCase();
+    if (!lower.endsWith('.zip') && !lower.contains('.zip.')) return false;
+    InputStreamBase? input;
+    try {
+      final file = File(archivePath);
+      if (!file.existsSync()) return false;
+      input = InputFileStream(archivePath);
+      final decoder = ZipDecoder();
+      decoder.decodeBuffer(input);
+      return decoder.directory.fileHeaders
+          .any((h) => (h.generalPurposeBitFlag & 0x1) != 0);
+    } catch (_) {
+      // 读取失败（损坏 / 非 ZIP）交给正常解压流程报错，这里不拦截。
+      return false;
+    } finally {
+      try { input?.closeSync(); } catch (_) {}
+    }
   }
 
   /// 校验密码是否匹配：挑一个「有内容」的条目触发解密并比对 CRC32。
@@ -527,6 +583,20 @@ class ArchiveService {
   }
 
   // ==================== .7z / .rar（koni_archive 纯 Dart 实现） ====================
+
+  /// 把解压/压缩过程中抛出的异常归类为稳定字符串码，供 isolate 上报给 UI 层
+  /// 决定「弹密码重试」还是「弹失败提示」。
+  /// 密码类问题必须单独识别：否则用户只能看到一句通用失败，误以为压缩包损坏。
+  static String classifyError(Object e) {
+    if (e is ArchivePasswordRequiredException) return 'password_required';
+    if (e is ArchivePasswordInvalidException) return 'password_invalid';
+    if (e is ArchiveContentUnavailableException) return 'content_unavailable';
+    // koni_archive（7z/rar）：InvalidPasswordException 是 EncryptedArchiveException
+    // 的子类，必须先判子类，否则「密码错误」会被误判成「需要密码」。
+    if (e is koni.InvalidPasswordException) return 'password_invalid';
+    if (e is koni.EncryptedArchiveException) return 'password_required';
+    return 'other';
+  }
 
   /// 是否属于由 koni_archive 解码的格式（.7z / .rar）。
   static bool isKoniArchivePath(String path) {

@@ -8527,4 +8527,22 @@ class L10nEn extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'A file or folder with the same name already exists at the destination; skipped';
+
+  @override
+  String get msg_archive_password_required =>
+      'This archive is encrypted. Please enter the password';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'Incorrect password. Please try again';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'Unable to read the archive contents. It may be corrupted or the password may be wrong';
+
+  @override
+  String get msg_archive_compress_failed => 'Compression failed';
+
+  @override
+  String get msg_archive_extract_failed => 'Extraction failed';
 }

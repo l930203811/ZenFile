@@ -8627,4 +8627,22 @@ class L10nDe extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'Eine Datei oder ein Ordner mit demselben Namen existiert bereits; übersprungen';
+
+  @override
+  String get msg_archive_password_required =>
+      'Dieses Archiv ist verschlüsselt. Bitte geben Sie das Passwort ein';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'Falsches Passwort. Bitte erneut eingeben';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'Der Archivinhalt kann nicht gelesen werden. Die Datei ist möglicherweise beschädigt oder das Passwort ist falsch';
+
+  @override
+  String get msg_archive_compress_failed => 'Komprimierung fehlgeschlagen';
+
+  @override
+  String get msg_archive_extract_failed => 'Entpacken fehlgeschlagen';
 }

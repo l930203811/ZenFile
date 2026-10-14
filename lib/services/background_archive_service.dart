@@ -109,6 +109,20 @@ Future<void> _streamWriteArchiveFile(dynamic content, File outFile,
           await Future<void>.delayed(Duration.zero);
         }
       }
+    } else if (content is InputStreamBase) {
+      // 旧实现只处理 List<int>，遇到「流式 content」（如 InputStreamBase 条目）
+      // 会一声不响地写出 0 字节文件 —— 与「解压出来全是 0 字节」的反馈同源，
+      // 这里补上分块读取写出。
+      int written = 0;
+      while (!content.isEOS) {
+        final bytes = content.readBytes(chunkSize).toUint8List();
+        if (bytes.isEmpty) break;
+        sink.add(bytes);
+        written += bytes.length;
+        onChunkWritten?.call(written);
+        await sink.flush();
+        await Future<void>.delayed(Duration.zero);
+      }
     }
     await sink.flush();
   } finally {
@@ -300,6 +314,24 @@ class _FileEntry {
   _FileEntry(this.fullPath, this.relPath);
 }
 
+/// 压缩/解压操作的最终结果。调用方（provider）据此决定后续动作：
+/// 密码类失败要重新弹窗索要密码，而不是只弹一句「失败」。
+enum ArchiveOpResult {
+  success,
+
+  /// 用户点了「取消」/ 从通知里取消。
+  cancelled,
+
+  /// 压缩包已加密但没提供密码。
+  passwordRequired,
+
+  /// 提供了密码但校验失败。
+  passwordInvalid,
+
+  /// 其它失败（已由服务层弹出错误提示）。
+  failed,
+}
+
 class BackgroundArchiveService {
   static final BackgroundArchiveService instance = BackgroundArchiveService._();
   BackgroundArchiveService._() {
@@ -368,8 +400,39 @@ class BackgroundArchiveService {
   FileManagerProvider? _refreshProvider;
   BuildContext? _savedContext;
 
+  /// 当前解压操作的结果槽（startExtraction 返回值）；非解压操作为 null。
+  Completer<ArchiveOpResult>? _extractResult;
+
   /// 捕获的 ScaffoldMessengerState：在显示 bottom sheet / dialog 之前尽早保存
   ScaffoldMessengerState? _scaffoldMessenger;
+
+  /// 清理「已被 kill 的 isolate 留下的」临时文件。
+  ///
+  /// 分块压缩（zenfile_zip_*.tmp）与 TAR.* 解压（zenfile_extract_*.tar）都会在
+  /// systemTemp 里落盘中间产物，正常结束由 finally 删除；但用户点「取消」时
+  /// isolate 被直接 kill，finally 不会执行 ⇒ 残留文件可能很大。
+  /// 这里只清 1 小时以上的旧文件，绝不会碰到正在运行的操作的临时文件。
+  static void cleanupStaleTempFiles() {
+    Future<void>(() async {
+      try {
+        final dir = Directory.systemTemp;
+        if (!dir.existsSync()) return;
+        final cutoff = DateTime.now().subtract(const Duration(hours: 1));
+        await for (final e in dir.list(followLinks: false)) {
+          if (e is! File) continue;
+          final name = p.basename(e.path);
+          if (!name.startsWith('zenfile_zip_') &&
+              !name.startsWith('zenfile_extract_') &&
+              !name.startsWith('zenfile_compress_')) {
+            continue;
+          }
+          try {
+            if (e.statSync().modified.isBefore(cutoff)) e.deleteSync();
+          } catch (_) {}
+        }
+      } catch (_) {}
+    });
+  }
 
   Future<void> startCompression({
     required BuildContext context,
@@ -399,6 +462,8 @@ class BackgroundArchiveService {
   }) async {
     final effectiveContext = context.mounted ? context : (navigatorKey.currentContext ?? context);
     final archiveName = p.basename(destinationPath);
+    // 顺手清理被 kill 的 isolate 留下的中间文件（不影响正在进行的操作）
+    cleanupStaleTempFiles();
     // 逐文件压缩：把每个源路径展开为一个独立任务（basename.format，同目录），
     // 与 ArchiveService.createArchive(separateArchives: true) 语义一致；
     // 单包模式只有一个任务。所有任务在同一个 isolate 内串行执行，进度跨包连续。
@@ -506,19 +571,26 @@ class BackgroundArchiveService {
           _onOperationComplete(effectiveContext, operation, L10n.of(effectiveContext).msga2292820);
         } else if (status == 'error') {
           final error = message['error'] as String;
-          _onOperationComplete(effectiveContext, operation, 'Compression failed: $error', isError: true);
+          _onOperationComplete(
+              effectiveContext, operation, error, isError: true);
         }
       }
     });
   }
 
-  Future<void> startExtraction({
+  /// 开始解压；返回的 Future 在本次解压真正结束时完成（成功 / 取消 / 各类失败），
+  /// 供调用方在「密码错误」时重新弹窗索要密码（真机反馈：旧实现密码问题完全静默，
+  /// 用户以为压缩包损坏）。
+  Future<ArchiveOpResult> startExtraction({
     required BuildContext context,
     required String archivePath,
     required String destinationDir,
     String? password,
+    FileManagerProvider? provider,
   }) async {
     final archiveName = p.basename(archivePath);
+    // 顺手清理被 kill 的 isolate 留下的中间文件（不影响正在进行的操作）
+    cleanupStaleTempFiles();
     final operation = BackgroundOperation(
       id: 'extract_${DateTime.now().millisecondsSinceEpoch}',
       title: L10n.of(context).msg0683ca6b,
@@ -529,9 +601,15 @@ class BackgroundArchiveService {
 
     activeOperation.value = operation;
     _scaffoldMessenger ??= ScaffoldMessenger.of(context);
+    // 记录 provider / context：完成后原地刷新结果目录（解压产物立刻可见）
+    _refreshProvider = provider;
+    _savedContext = context;
 
     _dialogCloseTimer?.cancel();
     _dialogCloseTimer = null;
+
+    // 本次解压的结果槽（下一次解压会覆盖；旧的 Completer 不再被等待）
+    final completer = _extractResult = Completer<ArchiveOpResult>();
 
     BackgroundOperationProgressDialog.show(context, this);
 
@@ -592,10 +670,24 @@ class BackgroundArchiveService {
           _onOperationComplete(context, operation, L10n.of(context).msg1f216eda);
         } else if (status == 'error') {
           final error = message['error'] as String;
-          _onOperationComplete(context, operation, 'Extraction failed: $error', isError: true);
+          final code = message['code'] as String? ?? 'other';
+          // 密码类失败不弹「失败」提示（信息对用户无意义且会盖住重试弹窗），
+          // 由调用方重新弹「输入密码」框。
+          final silent = code == 'password_required' || code == 'password_invalid';
+          _onOperationComplete(effectiveContextOf(context), operation, error,
+              isError: true, errorCode: code, silent: silent);
         }
       }
     });
+
+    return completer.future;
+  }
+
+  /// 消息回调里可能出现 context 已 unmount 的情况（弹窗被系统回收），
+  /// 这里统一退回全局 navigatorKey / 保存的 context，保证仍能提示与刷新。
+  BuildContext effectiveContextOf(BuildContext context) {
+    if (context.mounted) return context;
+    return navigatorKey.currentContext ?? _savedContext ?? context;
   }
 
   void cancelOperation() {
@@ -614,6 +706,8 @@ class BackgroundArchiveService {
       activeOperation.value = null;
     }
     _forceCloseDialog();
+    // 用户主动取消：让 startExtraction 的等待方收尾（否则 Future 永远悬着）
+    _finishPendingExtraction(ArchiveOpResult.cancelled);
   }
 
   void runInBackground() async {
@@ -664,7 +758,8 @@ class BackgroundArchiveService {
     } catch (_) {}
   }
 
-  void _onOperationComplete(BuildContext context, BackgroundOperation operation, String message, {bool isError = false}) async {
+  void _onOperationComplete(BuildContext context, BackgroundOperation operation, String message,
+      {bool isError = false, String errorCode = 'other', bool silent = false}) async {
     if (activeOperation.value == null) return;
 
     // 在 async gap 之前捕获所有需要的上下文引用
@@ -730,6 +825,27 @@ class BackgroundArchiveService {
       }
     }
 
+    // 失败提示。旧实现 isError 分支什么都不显示（message 参数根本没被用到），
+    // 用户看到的是「进度条消失、什么都没有」⇒ 以为压缩包损坏/操作成功但文件是空的。
+    // 密码类错误保持静默，由调用方重新弹「输入密码」框（避免两条提示打架）。
+    if (isError && !silent && context.mounted) {
+      final l10n = L10n.of(context);
+      final title = isCompress
+          ? l10n.msg_archive_compress_failed
+          : l10n.msg_archive_extract_failed;
+      final detail = errorCode == 'content_unavailable'
+          ? l10n.msg_archive_content_unavailable
+          : message;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('$title\n$detail'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
     if (!isError && destDir != null && context.mounted) {
       final nonNullDestDir = destDir;
       final l10n = L10n.of(context);
@@ -790,29 +906,31 @@ class BackgroundArchiveService {
       );
     }
 
-    if (!isError && isCompress && destDir != null) {
-      bool refreshed = false;
-
-      if (_refreshProvider != null) {
+    // 完成后自动刷新「结果所在目录」：压缩包 / 解压产物立刻出现在列表里，
+    // 不再需要用户手动下拉刷新（旧实现只有压缩会刷新，解压必须点弹窗里的
+    // 「确定 → 打开所在位置」才会刷新）。
+    // 只刷新用户当前正停留的目录：解压目标可能是别的目录（或用户已切到其它
+    // 页面/标签），无条件 loadDirectory(destDir) 会把用户从当前位置拽走。
+    if (!isError && destDir != null) {
+      FileManagerProvider? provider = _refreshProvider;
+      if (provider == null && _savedContext != null) {
         try {
-          await _refreshProvider!.loadDirectory(destDir, showLoading: false, clearCache: true);
-          refreshed = true;
+          provider =
+              Provider.of<FileManagerProvider>(_savedContext!, listen: false);
         } catch (e) {
-          debugPrint('Error refreshing via provider: $e');
+          debugPrint('Error resolving provider for refresh: $e');
         }
       }
-
-      if (!refreshed && _savedContext != null) {
-        try {
-          final provider = Provider.of<FileManagerProvider>(_savedContext!, listen: false);
-          await provider.loadDirectory(destDir, showLoading: false, clearCache: true);
-          refreshed = true;
-        } catch (e) {
-          debugPrint('Error refreshing via saved context: $e');
+      if (provider != null) {
+        if (provider.currentPath == destDir) {
+          try {
+            await provider.loadDirectory(destDir,
+                showLoading: false, clearCache: true);
+          } catch (e) {
+            debugPrint('Error refreshing via provider: $e');
+          }
         }
-      }
-
-      if (!refreshed && onComplete != null) {
+      } else if (onComplete != null) {
         try {
           await Future.delayed(Duration.zero, () {
             try {
@@ -821,20 +939,143 @@ class BackgroundArchiveService {
           });
         } catch (_) {}
       }
+    }
 
-      if (!refreshed) {
-        try {
-          scheduleMicrotask(() {
-            _refreshProvider?.loadDirectory(destDir, showLoading: false, clearCache: true);
-          });
-        } catch (_) {}
-      }
+    _finishPendingExtraction(
+        isError ? _resultForErrorCode(errorCode) : ArchiveOpResult.success);
+  }
+
+  /// 把失败码映射成调用方语义。
+  ArchiveOpResult _resultForErrorCode(String code) {
+    switch (code) {
+      case 'password_required':
+        return ArchiveOpResult.passwordRequired;
+      case 'password_invalid':
+        return ArchiveOpResult.passwordInvalid;
+      default:
+        return ArchiveOpResult.failed;
     }
   }
 
-  /// 压缩 isolate 入口：串行执行所有 job（逐文件模式下多个、单包模式一个），
-  /// 全部完成后才上报 completed。进度按 job 数分段折算，跨包连续。
-  static void _compressIsolateTask(Map<String, dynamic> args) async {
+  void _finishPendingExtraction(ArchiveOpResult result) {
+    final completer = _extractResult;
+    _extractResult = null;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(result);
+    }
+  }
+
+  /// 把一个文件以「逐块 deflate + 逐块上报进度」的方式加入 ZIP。
+  ///
+  /// 背景：package:archive 3.6.1 的 `ZipEncoder.addFile` 对需压缩条目会先
+  /// `content.toUint8List()` 整读、再 `Deflate(...).getBytes()` 同步压缩，中间
+  /// 没有任何回调 —— 于是「压缩一个大文件」期间进度条一动不动，用户以为卡死。
+  ///
+  /// 这里改为自己分块 deflate 到临时文件，再把「已压缩数据」交给 ZipEncoder 透传
+  /// （rawContent + DEFLATE + crc32）：输出与原生路径完全一致（central directory、
+  /// WinZip-AES 加密仍由 encoder 统一生成），但
+  /// 1) 每块之后都能上报真实字节进度（外圈 + 内圈）；
+  /// 2) 不再需要把整文件读进内存（原生路径是整读 + deflate 输出双份）。
+  ///
+  /// 返回 false 表示本条未加入（调用方回退到 `enc.addFile`），确保任何异常都不会
+  /// 让压缩失败。空文件也返回 false（走原生路径，代价可忽略）。
+  static bool _addZipEntryWithProgress({
+    required ZipFileEncoder enc,
+    required File src,
+    required String entryPath,
+    required int fileSize,
+    required int? level,
+    required _ProgressThrottler t,
+    required int processedBytesBefore,
+    required int totalBytes,
+    required int index,
+    required int totalFiles,
+  }) {
+    if (fileSize <= 0) return false;
+
+    File? tmp;
+    RandomAccessFile? raf;
+    OutputFileStream? out;
+    try {
+      tmp = File(p.join(Directory.systemTemp.path,
+          'zenfile_zip_${DateTime.now().microsecondsSinceEpoch}_$index.tmp'));
+      out = OutputFileStream(tmp.path);
+      raf = src.openSync();
+
+      final buf = Uint8List(_kChunkSize);
+      Deflate? defl;
+      int crc32 = 0;
+      int processed = 0;
+
+      while (true) {
+        final n = raf.readIntoSync(buf, 0, buf.length);
+        if (n <= 0) break;
+        // 用 InputStream 包住本块，读完后校验 isEOS：deflate 在窗口尚未腾出
+        // 空间时可能提前返回（zlib 的 need_more），残留数据必须继续喂给它，
+        // 否则会静默丢字节 ⇒ 压缩包损坏。确认吃干净才继续读下一块。
+        final inStream =
+            n == buf.length ? InputStream(buf) : InputStream(buf, length: n);
+        if (defl == null) {
+          defl = Deflate.buffer(inStream,
+              level: level, flush: Deflate.NO_FLUSH, output: out);
+        } else {
+          defl.addBuffer(inStream, flush: Deflate.NO_FLUSH);
+        }
+        if (!inStream.isEOS) {
+          // 极端情况下没能吃下整块：放弃分块路径，由调用方回退到
+          // archive 包原生单文件路径，保证输出正确性优先。
+          debugPrint('[ZenFile][Archive] deflate 未消费完整块，回退原生路径');
+          return false;
+        }
+        crc32 = getCrc32(n == buf.length ? buf : buf.sublist(0, n), crc32);
+        processed += n;
+        final denom = totalBytes <= 0 ? 1 : totalBytes;
+        t.send(
+          (0.10 + ((processedBytesBefore + processed) / denom) * 0.80)
+              .clamp(0.0, 0.90),
+          entryPath,
+          bytesProcessed: processedBytesBefore + processed,
+          totalBytes: totalBytes,
+          currentFileBytes: processed,
+          currentFileTotal: fileSize,
+          currentIndex: index,
+          totalFiles: totalFiles,
+        );
+      }
+
+      if (defl == null) return false; // 读不到内容（文件消失等）：交给原生路径
+      defl.addBytes(const <int>[], flush: Deflate.FINISH);
+      defl.finish();
+      out.closeSync();
+      out = null;
+      raf.closeSync();
+      raf = null;
+
+      // 用「已压缩数据」构造条目：ZipEncoder 会走 rawContent 透传分支，
+      // 不再重复压缩；crc32 由我们分块算出，避免它再整读一遍。
+      final afOut = ArchiveFile(
+          entryPath, fileSize, InputFileStream(tmp.path), ArchiveFile.DEFLATE);
+      afOut.crc32 = crc32;
+      afOut.lastModTime =
+          src.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+      afOut.mode = src.statSync().mode;
+      enc.addArchiveFile(afOut); // 内部 autoClose：关闭 InputFileStream
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile][Archive] 分块压缩回退原生路径: $e');
+      return false;
+    } finally {
+      try { raf?.closeSync(); } catch (_) {}
+      try { out?.closeSync(); } catch (_) {}
+      try {
+        if (tmp != null && tmp.existsSync()) tmp.deleteSync();
+      } catch (_) {}
+    }
+  }
+
+/// 压缩 isolate 入口：串行执行所有 job（逐文件模式下多个、单包模式一个），
+/// 全部完成后才上报 completed。进度按 job 数分段折算，跨包连续。
+static void _compressIsolateTask(Map<String, dynamic> args) async {
     final sendPort = args['sendPort'] as SendPort;
     final format = args['format'] as String;
     final level = args['level'] as int;
@@ -915,17 +1156,21 @@ class BackgroundArchiveService {
     final int totalBytes = plan.totalByteCount <= 0 ? 1 : plan.totalByteCount;
     int processedBytes = 0;
 
-    t.send(0.09, 'Starting compression…', force: true);
+    // 扫描结束：此时总字节数已知，带上字节让弹窗立刻显示 "0 B / 总量"，
+    // 而不是一直挂着 0 B / 0 B（看起来像没开始）。
+    t.send(0.09, 'Starting compression…', force: true,
+        bytesProcessed: 0, totalBytes: totalBytes);
     await Future<void>.delayed(Duration.zero);
 
     // ---- Phase 2：根据格式选压缩路径 ----
-    // ZIP：用 ZipFileEncoder 流式逐文件压缩（内部 InputFileStream + ArchiveFile.stream，
-    // 不整包读入内存；每个文件完成即上报进度），避免旧方案
-    // （readAsBytesSync 整读全部文件 + ZipEncoder.encode 一次性编码）在
-    // 大文件/多文件场景内存峰值过高、编码阶段进度冻结造成"卡住"观感。
-    // 带密码时 ZipFileEncoder 内部转交 ZipEncoder(password:) 逐条目 WinZip-AES
-    // 加密，仍是流式；密码经 zipEncodePassword 转 UTF-8 字节串，与 ArchiveService
-    // 编码路径及 decodeZip 的候选解密逻辑保持对称（第三方工具亦可正常解开）。
+    // ZIP：逐条目「分块 deflate 到临时文件 → 交给 ZipFileEncoder 透传」
+    // （_addZipEntryWithProgress）。package:archive 3.6.1 的 ZipFileEncoder.addFile
+    // 对每个条目会整读 content + 一次性同步 deflate，期间没有任何回调：大文件
+    // 压缩时进度条会从头到尾停着不动（真机反馈「以为卡死了」/「0 B / 0 B」），
+    // 内存峰值也是「整文件 + 压缩结果」双份。改为分块后既能逐块上报真实进度，
+    // 也不再需要整文件进内存；带密码时仍由 ZipEncoder 逐条目做 WinZip-AES 加密，
+    // 密码经 zipEncodePassword 转 UTF-8 字节串，与 ArchiveService 编码路径及
+    // decodeZip 的候选解密逻辑保持对称（第三方工具亦可正常解开）。
     if (format == 'zip') {
       final pw = password;
       final enc = ZipFileEncoder(
@@ -941,23 +1186,45 @@ class BackgroundArchiveService {
           final src = File(entry.fullPath);
           if (!src.existsSync()) continue;
           final fileSize = src.lengthSync();
-          final double prog = 0.10 + (compressedBytes / totalBytes) * 0.80;
-          t.send(prog, entry.relPath,
+          // 切到当前文件：先报一次 0 字节，让「当前文件」与内圈立刻跟随
+          t.send(0.10 + (compressedBytes / totalBytes) * 0.80, entry.relPath,
               bytesProcessed: compressedBytes,
               totalBytes: totalBytes,
               currentFileBytes: 0,
               currentFileTotal: fileSize,
               currentIndex: i + 1,
               totalFiles: plan.files.length);
-          await enc.addFile(src, entry.relPath);
+          // 分块 deflate + 逐块上报真实进度；失败则回退 archive 包原生单文件路径
+          // （原生路径整读整压、期间无进度，只作为兜底）。
+          final ok = _addZipEntryWithProgress(
+            enc: enc,
+            src: src,
+            entryPath: entry.relPath,
+            fileSize: fileSize,
+            level: level,
+            t: t,
+            processedBytesBefore: compressedBytes,
+            totalBytes: totalBytes,
+            index: i + 1,
+            totalFiles: plan.files.length,
+          );
+          if (!ok) {
+            await enc.addFile(src, entry.relPath);
+          }
           compressedBytes += fileSize;
-          t.send(prog, entry.relPath,
+          // 修：此前这里的 prog 是「本文件开始前」算出来的，导致整包进度永远
+          // 落后一个文件（多文件时最后一格不动）。现在按累加后的字节重算。
+          t.send(
+              (0.10 + (compressedBytes / totalBytes) * 0.80).clamp(0.0, 0.90),
+              entry.relPath,
               bytesProcessed: compressedBytes,
               totalBytes: totalBytes,
               currentFileBytes: fileSize,
               currentFileTotal: fileSize,
               currentIndex: i + 1,
               totalFiles: plan.files.length);
+          // 让出事件循环：进度消息经 SendPort 到达主 isolate 后能被及时处理
+          await Future<void>.delayed(Duration.zero);
         }
         for (final d in plan.emptyDirs) {
           final normalized = d.endsWith('/') ? d : '$d/';
@@ -965,7 +1232,10 @@ class BackgroundArchiveService {
           af.isFile = false;
           enc.addArchiveFile(af);
         }
-        t.send(0.95, 'Finalizing…', force: true,
+        // 加密包在 encoder 收尾时还要做一遍 AES（整包同步，无法细分进度），
+        // 文案上明确告知，避免用户以为停在 95% 卡死。
+        t.send(0.95, (pw != null && pw.isNotEmpty) ? 'Encrypting…' : 'Finalizing…',
+            force: true,
             bytesProcessed: compressedBytes, totalBytes: totalBytes);
         await enc.close();
       } catch (e) {
@@ -1420,14 +1690,19 @@ class BackgroundArchiveService {
       late Archive archive;
       // 需要保持引用以便在所有文件提取完成后才关闭
       InputFileStream? zipInputToClose;
-      String? tempTarPath;
+      // 注意：tempTarPath 在方法开头已声明（供 finally 清理），此处不得重新声明，
+      // 否则外层变量永远是 null ⇒ TAR.* 解压留下的临时文件再也不会被删除。
 
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
         final input = InputFileStream(archivePath);
         zipInputToClose = input;
+        // requirePasswordIfEncrypted：加密 ZIP 且没给密码时立刻抛
+        // ArchivePasswordRequiredException，而不是让 archive 包解出「空内容」——
+        // 后者会静默写出一堆 0 字节文件，用户误以为压缩包损坏（真机反馈）。
         archive = ArchiveService.decodeZip(
           input,
           (password != null && password.isNotEmpty) ? password : null,
+          requirePasswordIfEncrypted: true,
         );
       } else if (lowerPath.endsWith('.tar')) {
         final input = InputFileStream(archivePath);
@@ -1489,9 +1764,14 @@ class BackgroundArchiveService {
         for (int i = 0; i < totalFiles; i++) {
           final fileEntry = archive[i];
           final filename = _fixZipFilename(fileEntry.name);
-          final progress = 0.30 + (i / totalFiles) * 0.70;
           final fileTotal = fileEntry.isFile ? fileEntry.size : 0;
-          t.send(progress, filename,
+          // 进度按「已解出字节 / 总字节」折算：只按文件数会导致单个大文件期间
+          // 外圈进度完全不动（用户反馈「解压进度条没有转动」）。
+          double overallProgress(int bytes) {
+            if (totalExtractBytes <= 0) return 0.30 + (i / totalFiles) * 0.70;
+            return (0.30 + (bytes / totalExtractBytes) * 0.70).clamp(0.30, 0.99);
+          }
+          t.send(overallProgress(extractedBytes), filename,
               bytesProcessed: extractedBytes,
               totalBytes: totalExtractBytes,
               currentFileBytes: 0,
@@ -1504,9 +1784,14 @@ class BackgroundArchiveService {
             final outFile = File(outPath);
             outFile.createSync(recursive: true);
             final dynamic content = fileEntry.content;
+            // 内容取不到（加密条目缺密码、条目已损坏等）时宁可整包报错，
+            // 也不要静默产出 0 字节文件让用户以为是压缩包损坏。
+            if (content == null && fileEntry.size > 0) {
+              throw ArchiveContentUnavailableException(filename);
+            }
             await _streamWriteArchiveFile(content, outFile,
                 onChunkWritten: (written) {
-              t.send(progress, filename,
+              t.send(overallProgress(extractedBytes + written), filename,
                   bytesProcessed: extractedBytes + written,
                   totalBytes: totalExtractBytes,
                   currentFileBytes: written,
@@ -1535,7 +1820,9 @@ class BackgroundArchiveService {
     } catch (e, stackTrace) {
       final msg = 'Extraction failed: ${e.toString()}';
       debugPrint('$msg\n$stackTrace');
-      sendPort.send({'status': 'error', 'error': msg});
+      // 分类上报失败原因：密码类问题由调用方弹窗重试，不再只往日志里丢。
+      final code = ArchiveService.classifyError(e);
+      sendPort.send({'status': 'error', 'error': e.toString(), 'code': code});
     } finally {
       final tarTmp = tempTarPath;
       if (tarTmp != null && tarTmp.isNotEmpty) {

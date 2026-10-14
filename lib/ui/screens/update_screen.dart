@@ -955,7 +955,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
         '其他应用的 Android/data、Android/obb 目录支持直接浏览与读写（无需授权），包名目录下的文件数不再显示为 0',
       ]),
       _ChangeSection('🐛 问题修复', [
-        '修复压缩时设置了密码、解压时却不要求密码的问题：加密 ZIP 现在能被正确识别，无密码解压会提示需要密码（而不是解出错误内容或闪退）',
+        '修复压缩 / 解压进度条长时间不动、看着像卡死的问题：压缩改为逐块进行并实时上报进度，进度环、百分比、速度与剩余时间全程连续推进（此前一个大文件从头到尾进度都停在 0 B / 0 B）',
+        '修复压缩时设置了密码、解压时却不要求密码的问题：加密压缩包现在会先要求输入密码，密码错误会明确提示并可重新输入；此前无密码解压会「成功」产出 0 字节文件且没有任何提示，让人误以为压缩包损坏',
+        '修复压缩 / 解压完成后必须点弹窗里的「确定（打开所在位置）」才会刷新列表的问题：完成后自动刷新所在目录，新生成的压缩包 / 解压出的文件立刻出现在列表里，不再需要手动下拉刷新',
         '修复打开大 PDF 文件（约 20MB 以上）被系统判定「无响应」而闪退的问题：大文件自动改用原生渲染引擎在后台分页解析，界面全程可操作',
         '修复重命名文件时偶发自动创建同名文件夹、文件被放进文件夹里的问题：名称包含路径分隔符等非法字符时会直接提示「名称不合法」；批量重命名的查找 / 替换同样受到保护',
         '修复从远程服务器（SMB / FTP / WebDAV 等）复制文件到手机时偶发自动创建同名文件夹的问题：目标位置已有同名文件夹时会明确提示并跳过，不会再静默把文件嵌进去',
@@ -968,7 +970,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
         'The Android/data and Android/obb folders of other apps can now be browsed and edited directly (no permission required), and the item count under package folders no longer shows 0',
       ]),
       _ChangeSection('🐛 Bug Fixes', [
-        'Fixed archives created with a password not asking for it on extraction: encrypted ZIP files are now detected correctly, and extracting without the password reports that a password is required instead of producing wrong content or crashing',
+        'Fixed the compress / extract progress bar standing still for a long time and looking stuck: compression now runs block by block and reports progress continuously, so the ring, percentage, speed and remaining time keep moving (previously a single large file showed 0 B / 0 B from start to finish)',
+        'Fixed archives created with a password not asking for it on extraction: encrypted archives now ask for the password first, and a wrong password is reported clearly with a retry - previously extracting without the password "succeeded" and produced 0-byte files with no message at all, which looked like a corrupted archive',
+        'Fixed the file list only refreshing after tapping "Confirm (open location)" in the completion prompt: the folder is now refreshed automatically, so the new archive or the extracted files show up right away without a manual pull-to-refresh',
         'Fixed large PDF files (roughly 20 MB and up) being killed by the system as "not responding": files above the safe size now fall back to the native rendering engine, which parses pages in the background while the UI stays responsive',
         'Fixed renaming a file occasionally creating a folder with the same name and putting the file inside it: names containing path separators or other invalid characters are now rejected with an "invalid name" notice; the find / replace of batch rename is protected the same way',
         'Fixed copying files from a remote server (SMB / FTP / WebDAV, ...) to the phone occasionally creating a folder with the same name: when a folder with that name already exists at the destination, the copy is skipped with a clear notice instead of silently nesting the file inside',

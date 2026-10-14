@@ -20,11 +20,23 @@ class ExtractArchiveDialog extends StatefulWidget {
   /// 压缩包文件的完整路径（优先使用，可与 archiveDir 同时提供时以该路径的父目录为准）。
   final String? archivePath;
 
+  /// 已预检到压缩包加密：未填密码时不允许开始解压（否则会解出 0 字节文件）。
+  final bool passwordRequired;
+
+  /// 上一次解压因密码错误失败：直接给出红色错误提示并聚焦到密码框。
+  final bool passwordRejected;
+
+  /// 回填密码（例如让用户接着修改上一次输入）。
+  final String? initialPassword;
+
   const ExtractArchiveDialog({
     super.key,
     required this.archiveName,
     required this.archiveDir,
     this.archivePath,
+    this.passwordRequired = false,
+    this.passwordRejected = false,
+    this.initialPassword,
   });
 
   static Future<ExtractArchiveResult?> show(
@@ -32,6 +44,9 @@ class ExtractArchiveDialog extends StatefulWidget {
     required String archiveName,
     required String archiveDir,
     String? archivePath,
+    bool passwordRequired = false,
+    bool passwordRejected = false,
+    String? initialPassword,
   }) {
     return showDialog<ExtractArchiveResult>(
       context: context,
@@ -39,6 +54,9 @@ class ExtractArchiveDialog extends StatefulWidget {
         archiveName: archiveName,
         archiveDir: archiveDir,
         archivePath: archivePath,
+        passwordRequired: passwordRequired,
+        passwordRejected: passwordRejected,
+        initialPassword: initialPassword,
       ),
     );
   }
@@ -52,14 +70,21 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
   late String _destDir;
   bool _obscurePassword = true;
 
+  /// 密码相关的即时错误（红色提示），null 表示无错误。
+  String? _passwordError;
+
   @override
   void initState() {
     super.initState();
-    _passwordController = TextEditingController();
+    _passwordController =
+        TextEditingController(text: widget.initialPassword ?? '');
     // 默认解压目标 = 压缩包所在位置（archivePath 有值时优先取其父目录，否则用 archiveDir）
     _destDir = widget.archivePath != null && widget.archivePath!.isNotEmpty
         ? p.dirname(widget.archivePath!)
         : widget.archiveDir;
+    if (widget.passwordRejected) {
+      _obscurePassword = false;
+    }
   }
 
   @override
@@ -198,8 +223,18 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                autofocus: widget.passwordRequired || widget.passwordRejected,
                 decoration: InputDecoration(
                   labelText: msgHintPassword,
+                  errorText: _passwordError ??
+                      (widget.passwordRejected
+                          ? _safeL10n((l) => l.msg_archive_password_invalid,
+                              '密码错误，请重新输入')
+                          : null),
+                  helperText: widget.passwordRequired && !widget.passwordRejected
+                      ? _safeL10n((l) => l.msg_archive_password_required,
+                          '该压缩包已加密，请输入密码')
+                      : null,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.lock),
                   suffixIcon: IconButton(
@@ -222,12 +257,23 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                     onPressed: () {
                       final dest = _destDir.trim();
                       if (dest.isEmpty) return;
+                      final pw = _passwordController.text;
+                      // 已知加密包却没填密码：原地提示，不要带着空密码去解压
+                      // （那会解出一堆 0 字节文件，像压缩包损坏）。
+                      if (widget.passwordRequired && pw.isEmpty) {
+                        setState(() {
+                          _passwordError = _safeL10n(
+                              (l) => l.msg_archive_password_required,
+                              '该压缩包已加密，请输入密码');
+                        });
+                        return;
+                      }
 
                       Navigator.pop(
                         context,
                         ExtractArchiveResult(
                           destinationDir: dest,
-                          password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
+                          password: pw.isNotEmpty ? pw : null,
                         ),
                       );
                     },

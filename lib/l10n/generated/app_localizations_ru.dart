@@ -8609,4 +8609,22 @@ class L10nRu extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'Файл или папка с таким именем уже существует; пропущено';
+
+  @override
+  String get msg_archive_password_required =>
+      'Этот архив зашифрован. Введите пароль';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'Неверный пароль. Попробуйте снова';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'Не удалось прочитать содержимое архива. Возможно, файл повреждён или пароль неверен';
+
+  @override
+  String get msg_archive_compress_failed => 'Ошибка сжатия';
+
+  @override
+  String get msg_archive_extract_failed => 'Ошибка распаковки';
 }

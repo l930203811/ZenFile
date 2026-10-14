@@ -8647,5 +8647,15 @@
   "msg_transfer_target_conflict": "يوجد ملف أو مجلد بالاسم نفسه في الوجهة؛ تم التخطي",
   "@msg_transfer_target_conflict": {
     "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
-  }
+  },
+  "msg_archive_password_required": "هذا الملف المضغوط مشفّر. الرجاء إدخال كلمة المرور",
+  "@msg_archive_password_required": {"description": "Prompt shown when the archive is encrypted and no password was entered"},
+  "msg_archive_password_invalid": "كلمة المرور غير صحيحة. حاول مرة أخرى",
+  "@msg_archive_password_invalid": {"description": "Error shown when the archive password is wrong; the user is asked to retry"},
+  "msg_archive_content_unavailable": "تعذّر قراءة محتوى الملف المضغوط. قد يكون الملف تالفًا أو كلمة المرور غير صحيحة",
+  "@msg_archive_content_unavailable": {"description": "Error shown when archive entries cannot be read (corrupted archive or wrong password)"},
+  "msg_archive_compress_failed": "فشل الضغط",
+  "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
+  "msg_archive_extract_failed": "فشل الاستخراج",
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
 }

@@ -8795,5 +8795,15 @@
   "msg_transfer_target_conflict": "目標已存在同名的檔案/資料夾，已跳過",
   "@msg_transfer_target_conflict": {
     "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
-  }
+  },
+  "msg_archive_password_required": "此壓縮檔已加密，請輸入密碼",
+  "@msg_archive_password_required": {"description": "Prompt shown when the archive is encrypted and no password was entered"},
+  "msg_archive_password_invalid": "密碼錯誤，請重新輸入",
+  "@msg_archive_password_invalid": {"description": "Error shown when the archive password is wrong; the user is asked to retry"},
+  "msg_archive_content_unavailable": "無法讀取壓縮檔內容，檔案可能已損毀或密碼不正確",
+  "@msg_archive_content_unavailable": {"description": "Error shown when archive entries cannot be read (corrupted archive or wrong password)"},
+  "msg_archive_compress_failed": "壓縮失敗",
+  "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
+  "msg_archive_extract_failed": "解壓縮失敗",
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
 }

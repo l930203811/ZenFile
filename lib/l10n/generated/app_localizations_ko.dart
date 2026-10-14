@@ -8272,4 +8272,21 @@ class L10nKo extends L10n {
 
   @override
   String get msg_transfer_target_conflict => '같은 이름의 파일/폴더가 이미 존재하여 건너뛰었습니다';
+
+  @override
+  String get msg_archive_password_required =>
+      '이 압축 파일은 암호화되어 있습니다. 비밀번호를 입력하세요';
+
+  @override
+  String get msg_archive_password_invalid => '비밀번호가 올바르지 않습니다. 다시 입력하세요';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      '압축 파일 내용을 읽을 수 없습니다. 파일이 손상되었거나 비밀번호가 잘못되었을 수 있습니다';
+
+  @override
+  String get msg_archive_compress_failed => '압축 실패';
+
+  @override
+  String get msg_archive_extract_failed => '압축 해제 실패';
 }

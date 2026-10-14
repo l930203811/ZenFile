@@ -8088,6 +8088,21 @@ class L10nZh extends L10n {
 
   @override
   String get msg_transfer_target_conflict => '目标已存在同名的文件/文件夹，已跳过';
+
+  @override
+  String get msg_archive_password_required => '该压缩包已加密，请输入密码';
+
+  @override
+  String get msg_archive_password_invalid => '密码错误，请重新输入';
+
+  @override
+  String get msg_archive_content_unavailable => '无法读取压缩包内容，压缩包可能已损坏或密码不正确';
+
+  @override
+  String get msg_archive_compress_failed => '压缩失败';
+
+  @override
+  String get msg_archive_extract_failed => '解压失败';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -16144,4 +16159,19 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_transfer_target_conflict => '目標已存在同名的檔案/資料夾，已跳過';
+
+  @override
+  String get msg_archive_password_required => '此壓縮檔已加密，請輸入密碼';
+
+  @override
+  String get msg_archive_password_invalid => '密碼錯誤，請重新輸入';
+
+  @override
+  String get msg_archive_content_unavailable => '無法讀取壓縮檔內容，檔案可能已損毀或密碼不正確';
+
+  @override
+  String get msg_archive_compress_failed => '壓縮失敗';
+
+  @override
+  String get msg_archive_extract_failed => '解壓縮失敗';
 }

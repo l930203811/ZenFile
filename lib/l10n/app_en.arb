@@ -8713,5 +8713,15 @@
   "msg_transfer_target_conflict": "A file or folder with the same name already exists at the destination; skipped",
   "@msg_transfer_target_conflict": {
     "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
-  }
+  },
+  "msg_archive_password_required": "This archive is encrypted. Please enter the password",
+  "@msg_archive_password_required": {"description": "Prompt shown when the archive is encrypted and no password was entered"},
+  "msg_archive_password_invalid": "Incorrect password. Please try again",
+  "@msg_archive_password_invalid": {"description": "Error shown when the archive password is wrong; the user is asked to retry"},
+  "msg_archive_content_unavailable": "Unable to read the archive contents. It may be corrupted or the password may be wrong",
+  "@msg_archive_content_unavailable": {"description": "Error shown when archive entries cannot be read (corrupted archive or wrong password)"},
+  "msg_archive_compress_failed": "Compression failed",
+  "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
+  "msg_archive_extract_failed": "Extraction failed",
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
 }

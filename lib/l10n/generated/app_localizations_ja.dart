@@ -8263,4 +8263,21 @@ class L10nJa extends L10n {
 
   @override
   String get msg_transfer_target_conflict => '同じ名前のファイル/フォルダーが既に存在するためスキップしました';
+
+  @override
+  String get msg_archive_password_required =>
+      'この圧縮ファイルは暗号化されています。パスワードを入力してください';
+
+  @override
+  String get msg_archive_password_invalid => 'パスワードが正しくありません。もう一度入力してください';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      '圧縮ファイルの内容を読み取れません。ファイルが破損しているか、パスワードが正しくない可能性があります';
+
+  @override
+  String get msg_archive_compress_failed => '圧縮に失敗しました';
+
+  @override
+  String get msg_archive_extract_failed => '解凍に失敗しました';
 }

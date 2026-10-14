@@ -8651,5 +8651,15 @@
   "msg_transfer_target_conflict": "同じ名前のファイル/フォルダーが既に存在するためスキップしました",
   "@msg_transfer_target_conflict": {
     "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
-  }
+  },
+  "msg_archive_password_required": "この圧縮ファイルは暗号化されています。パスワードを入力してください",
+  "@msg_archive_password_required": {"description": "Prompt shown when the archive is encrypted and no password was entered"},
+  "msg_archive_password_invalid": "パスワードが正しくありません。もう一度入力してください",
+  "@msg_archive_password_invalid": {"description": "Error shown when the archive password is wrong; the user is asked to retry"},
+  "msg_archive_content_unavailable": "圧縮ファイルの内容を読み取れません。ファイルが破損しているか、パスワードが正しくない可能性があります",
+  "@msg_archive_content_unavailable": {"description": "Error shown when archive entries cannot be read (corrupted archive or wrong password)"},
+  "msg_archive_compress_failed": "圧縮に失敗しました",
+  "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
+  "msg_archive_extract_failed": "解凍に失敗しました",
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
 }

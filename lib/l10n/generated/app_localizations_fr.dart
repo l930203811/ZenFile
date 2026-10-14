@@ -8664,4 +8664,22 @@ class L10nFr extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'Un fichier ou dossier du même nom existe déjà à destination ; ignoré';
+
+  @override
+  String get msg_archive_password_required =>
+      'Cette archive est chiffrée. Veuillez saisir le mot de passe';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'Mot de passe incorrect. Veuillez réessayer';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'Impossible de lire le contenu de l\'archive. Le fichier est peut-être corrompu ou le mot de passe est incorrect';
+
+  @override
+  String get msg_archive_compress_failed => 'Échec de la compression';
+
+  @override
+  String get msg_archive_extract_failed => 'Échec de l\'extraction';
 }

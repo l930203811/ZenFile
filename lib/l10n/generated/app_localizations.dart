@@ -15141,6 +15141,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'目标已存在同名的文件/文件夹，已跳过'**
   String get msg_transfer_target_conflict;
+
+  /// Prompt shown when the archive is encrypted and no password was entered
+  ///
+  /// In zh, this message translates to:
+  /// **'该压缩包已加密，请输入密码'**
+  String get msg_archive_password_required;
+
+  /// Error shown when the archive password is wrong; the user is asked to retry
+  ///
+  /// In zh, this message translates to:
+  /// **'密码错误，请重新输入'**
+  String get msg_archive_password_invalid;
+
+  /// Error shown when archive entries cannot be read (corrupted archive or wrong password)
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取压缩包内容，压缩包可能已损坏或密码不正确'**
+  String get msg_archive_content_unavailable;
+
+  /// Snackbar title shown when creating an archive fails
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩失败'**
+  String get msg_archive_compress_failed;
+
+  /// Snackbar title shown when extracting an archive fails
+  ///
+  /// In zh, this message translates to:
+  /// **'解压失败'**
+  String get msg_archive_extract_failed;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

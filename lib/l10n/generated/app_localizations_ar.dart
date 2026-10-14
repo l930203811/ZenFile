@@ -8499,4 +8499,22 @@ class L10nAr extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'يوجد ملف أو مجلد بالاسم نفسه في الوجهة؛ تم التخطي';
+
+  @override
+  String get msg_archive_password_required =>
+      'هذا الملف المضغوط مشفّر. الرجاء إدخال كلمة المرور';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'كلمة المرور غير صحيحة. حاول مرة أخرى';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'تعذّر قراءة محتوى الملف المضغوط. قد يكون الملف تالفًا أو كلمة المرور غير صحيحة';
+
+  @override
+  String get msg_archive_compress_failed => 'فشل الضغط';
+
+  @override
+  String get msg_archive_extract_failed => 'فشل الاستخراج';
 }

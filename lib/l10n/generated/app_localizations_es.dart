@@ -8645,4 +8645,22 @@ class L10nEs extends L10n {
   @override
   String get msg_transfer_target_conflict =>
       'Ya existe un archivo o carpeta con el mismo nombre en el destino; omitido';
+
+  @override
+  String get msg_archive_password_required =>
+      'Este archivo está cifrado. Introduce la contraseña';
+
+  @override
+  String get msg_archive_password_invalid =>
+      'Contraseña incorrecta. Inténtalo de nuevo';
+
+  @override
+  String get msg_archive_content_unavailable =>
+      'No se puede leer el contenido del archivo. Puede estar dañado o la contraseña ser incorrecta';
+
+  @override
+  String get msg_archive_compress_failed => 'Error de compresión';
+
+  @override
+  String get msg_archive_extract_failed => 'Error de extracción';
 }

@@ -8647,5 +8647,15 @@
   "msg_transfer_target_conflict": "같은 이름의 파일/폴더가 이미 존재하여 건너뛰었습니다",
   "@msg_transfer_target_conflict": {
     "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
-  }
+  },
+  "msg_archive_password_required": "이 압축 파일은 암호화되어 있습니다. 비밀번호를 입력하세요",
+  "@msg_archive_password_required": {"description": "Prompt shown when the archive is encrypted and no password was entered"},
+  "msg_archive_password_invalid": "비밀번호가 올바르지 않습니다. 다시 입력하세요",
+  "@msg_archive_password_invalid": {"description": "Error shown when the archive password is wrong; the user is asked to retry"},
+  "msg_archive_content_unavailable": "압축 파일 내용을 읽을 수 없습니다. 파일이 손상되었거나 비밀번호가 잘못되었을 수 있습니다",
+  "@msg_archive_content_unavailable": {"description": "Error shown when archive entries cannot be read (corrupted archive or wrong password)"},
+  "msg_archive_compress_failed": "압축 실패",
+  "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
+  "msg_archive_extract_failed": "압축 해제 실패",
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
 }

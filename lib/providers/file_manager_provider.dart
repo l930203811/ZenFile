@@ -10857,19 +10857,47 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> extractArchiveDirectly(BuildContext context, String path) async {
     // 默认解压到压缩包所在位置（ExtractArchiveDialog 会根据 archivePath 自动取 dirname，此处兜底传入压缩包目录）
     final archiveDir = p.dirname(path);
-    final res = await ExtractArchiveDialog.show(
-      context,
-      archiveName: p.basename(path),
-      archiveDir: archiveDir,
-      archivePath: path,
-    );
-    if (res != null && context.mounted) {
-      await BackgroundArchiveService.instance.startExtraction(
+    // 预检：ZIP 是否加密。加密包必须在拿到密码后才开始解压——否则 archive 包会
+    // 「不报错地」解出一堆 0 字节文件，用户误以为是压缩包损坏（真机反馈）。
+    var needsPassword = ArchiveService.zipNeedsPassword(path);
+    String? password;
+    var passwordRejected = false;
+    while (context.mounted) {
+      final res = await ExtractArchiveDialog.show(
+        context,
+        archiveName: p.basename(path),
+        archiveDir: archiveDir,
+        archivePath: path,
+        passwordRequired: needsPassword,
+        initialPassword: password,
+        passwordRejected: passwordRejected,
+      );
+      if (res == null || !context.mounted) return;
+      password = res.password;
+      if (needsPassword && (password == null || password.isEmpty)) {
+        // 没填密码就不启动（对话框自身会以红色提示「该压缩包已加密」），
+        // 这里直接再问一次，避免拿空密码解出 0 字节文件。
+        passwordRejected = false;
+        continue;
+      }
+      final result = await BackgroundArchiveService.instance.startExtraction(
         context: context,
         archivePath: path,
         destinationDir: res.destinationDir,
-        password: res.password,
+        password: password,
+        provider: this,
       );
+      if (result == ArchiveOpResult.passwordRequired ||
+          result == ArchiveOpResult.passwordInvalid) {
+        // 密码问题：重新弹「输入密码」（对话框会显示红色「密码错误，请重新输入」），
+        // 而不是丢一句「解压失败」让用户以为压缩包损坏。
+        needsPassword = true;
+        passwordRejected = result == ArchiveOpResult.passwordInvalid;
+        password = null;
+        if (!context.mounted) return;
+        continue;
+      }
+      return;
     }
   }
 
