@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.6';
+  static const String _latestChangelogVersion = 'v3.5.7';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v357,
     _v356,
     _v355,
     _v354,
@@ -944,7 +945,39 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.6 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.5.7 ────────────────────────────────────────────────
+  static const _Changelog _v357 = _Changelog(
+    version: 'v3.5.7',
+    date: '2026-10-14',
+    zh: [
+      _ChangeSection('✨ 新增功能', [
+        '压缩新增「分卷压缩」与「逐文件压缩」：可把大目录压成 .001 / .002 … 分卷包，也可以让每个选中的文件 / 目录各自生成独立压缩包（此前这两个选项在主压缩路径下会静默失效）',
+        '其他应用的 Android/data、Android/obb 目录支持直接浏览与读写（无需授权），包名目录下的文件数不再显示为 0',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复压缩时设置了密码、解压时却不要求密码的问题：加密 ZIP 现在能被正确识别，无密码解压会提示需要密码（而不是解出错误内容或闪退）',
+        '修复打开大 PDF 文件（约 20MB 以上）被系统判定「无响应」而闪退的问题：大文件自动改用原生渲染引擎在后台分页解析，界面全程可操作',
+        '修复重命名文件时偶发自动创建同名文件夹、文件被放进文件夹里的问题：名称包含路径分隔符等非法字符时会直接提示「名称不合法」；批量重命名的查找 / 替换同样受到保护',
+        '修复从远程服务器（SMB / FTP / WebDAV 等）复制文件到手机时偶发自动创建同名文件夹的问题：目标位置已有同名文件夹时会明确提示并跳过，不会再静默把文件嵌进去',
+        '新建文件 / 文件夹时名称包含路径分隔符等非法字符同样会被拒绝',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'Archiving gained "Split into volumes" and "One archive per file": a large folder can now be compressed into .001 / .002 ... volumes, and every selected file / folder can get its own archive (both options used to be silently ignored on the main compression path)',
+        'The Android/data and Android/obb folders of other apps can now be browsed and edited directly (no permission required), and the item count under package folders no longer shows 0',
+      ]),
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed archives created with a password not asking for it on extraction: encrypted ZIP files are now detected correctly, and extracting without the password reports that a password is required instead of producing wrong content or crashing',
+        'Fixed large PDF files (roughly 20 MB and up) being killed by the system as "not responding": files above the safe size now fall back to the native rendering engine, which parses pages in the background while the UI stays responsive',
+        'Fixed renaming a file occasionally creating a folder with the same name and putting the file inside it: names containing path separators or other invalid characters are now rejected with an "invalid name" notice; the find / replace of batch rename is protected the same way',
+        'Fixed copying files from a remote server (SMB / FTP / WebDAV, ...) to the phone occasionally creating a folder with the same name: when a folder with that name already exists at the destination, the copy is skipped with a clear notice instead of silently nesting the file inside',
+        'Creating a new file / folder with a name that contains path separators or other invalid characters is rejected as well',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.6 ──────────────────────────────────────────────────────────
   static const _Changelog _v356 = _Changelog(
     version: 'v3.5.6',
     date: '2026-10-13',
