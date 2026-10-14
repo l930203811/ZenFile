@@ -9456,10 +9456,12 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
     if (selfItem != null) {
-      onFileStart?.call(selfItem.name);
-      onFileProgress?.call(selfItem.name, selfItem.size, 0.0);
-      await client.downloadFile(selfItem.path, localDirPath, (prog) {
-        onFileProgress?.call(selfItem.name, selfItem.size, prog);
+      // 提到闭包外：闭包捕获的变量不参与类型提升，闭包内 selfItem 仍是可空类型。
+      final self = selfItem;
+      onFileStart?.call(self.name);
+      onFileProgress?.call(self.name, self.size, 0.0);
+      await client.downloadFile(self.path, localDirPath, (prog) {
+        onFileProgress?.call(self.name, self.size, prog);
       });
       return;
     }
@@ -10306,7 +10308,7 @@ class FileManagerProvider extends ChangeNotifier {
               // 提示并放弃本次重命名，避免拼出嵌套路径。
               final customProblem = validateFileName(response.customName!);
               if (customProblem != null) {
-                if (context != null && context.mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(

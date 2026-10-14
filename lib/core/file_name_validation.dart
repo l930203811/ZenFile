@@ -56,7 +56,7 @@ String? sanitizeFileName(String name) {
 }
 
 /// 把 [problem] 映射为本地化文案（对话框警告 / SnackBar 共用）。
-String fileNameProblemText(AppLocalizations l10n, FileNameProblem problem) {
+String fileNameProblemText(L10n l10n, FileNameProblem problem) {
   switch (problem) {
     case FileNameProblem.empty:
       return l10n.msg_please_enter_name;
