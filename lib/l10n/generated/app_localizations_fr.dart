@@ -8682,4 +8682,7 @@ class L10nFr extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'Échec de l\'extraction';
+
+  @override
+  String get msg_extract_target_folder => 'Dossier de destination';
 }

@@ -8657,5 +8657,7 @@
   "msg_archive_compress_failed": "압축 실패",
   "@msg_archive_compress_failed": {"description": "Snackbar title shown when creating an archive fails"},
   "msg_archive_extract_failed": "압축 해제 실패",
-  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"}
+  "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
+  "msg_extract_target_folder": "압축 해제할 폴더",
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
 }

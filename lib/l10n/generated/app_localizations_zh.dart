@@ -8103,6 +8103,9 @@ class L10nZh extends L10n {
 
   @override
   String get msg_archive_extract_failed => '解压失败';
+
+  @override
+  String get msg_extract_target_folder => '解压到的文件夹';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -16174,4 +16177,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_archive_extract_failed => '解壓縮失敗';
+
+  @override
+  String get msg_extract_target_folder => '解壓縮到的資料夾';
 }

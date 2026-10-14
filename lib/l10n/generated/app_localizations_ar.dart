@@ -8517,4 +8517,7 @@ class L10nAr extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'فشل الاستخراج';
+
+  @override
+  String get msg_extract_target_folder => 'مجلد الوجهة';
 }

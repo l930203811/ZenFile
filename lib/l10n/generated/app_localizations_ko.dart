@@ -8289,4 +8289,7 @@ class L10nKo extends L10n {
 
   @override
   String get msg_archive_extract_failed => '압축 해제 실패';
+
+  @override
+  String get msg_extract_target_folder => '압축 해제할 폴더';
 }

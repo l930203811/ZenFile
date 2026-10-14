@@ -8280,4 +8280,7 @@ class L10nJa extends L10n {
 
   @override
   String get msg_archive_extract_failed => '解凍に失敗しました';
+
+  @override
+  String get msg_extract_target_folder => '展開先フォルダ';
 }

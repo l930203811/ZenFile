@@ -8545,4 +8545,7 @@ class L10nEn extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'Extraction failed';
+
+  @override
+  String get msg_extract_target_folder => 'Extract to folder';
 }

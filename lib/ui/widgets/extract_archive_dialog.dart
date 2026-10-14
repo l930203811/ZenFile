@@ -106,28 +106,19 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
     }
   }
 
-  /// 取本地化字符串；如未在 arb 中注册则 fallback 到中文，避免 l10n 缺失时崩溃。
-  /// 使用 dynamic 调用，绕开编译期 getter 检查（防止 L10n 具体类未注册 key 时直接报 undefined_getter）。
-  String _safeL10n(String Function(dynamic l) getter, String fallback) {
-    try {
-      final dynamic l = L10n.of(context);
-      final dynamic v = getter(l);
-      if (v == null || v.toString().isEmpty) return fallback;
-      return v.toString();
-    } catch (_) {
-      return fallback;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final msgExtractTo = _safeL10n((l) => l.msg_extract_to, '解压到…');
-    final msgExtractTargetFolder = _safeL10n((l) => l.msg_extract_target_folder, '解压到的文件夹');
-    final msgHintPassword = _safeL10n((l) => l.msgff69affd, '密码（如果已加密）');
-    final msgCancel = _safeL10n((l) => l.ui_cancel, '取消');
-    final msgExtract = _safeL10n((l) => l.ui_extract, '解压');
-    final msgBrowse = _safeL10n((l) => l.ui_browse, '浏览');
+    // 一律走强类型本地化 getter：此前这里用 dynamic 调用 + 中文 fallback 兜底，
+    // key 缺失时会静默降级成硬编码中文（界面其它文案是英文、只有某一行是中文），
+    // 编译期与运行期都无从察觉。改强类型后缺 key 会直接编译失败。
+    final l10n = L10n.of(context);
+    final msgExtractTo = l10n.msg_extract_to;
+    final msgExtractTargetFolder = l10n.msg_extract_target_folder;
+    final msgHintPassword = l10n.msgff69affd;
+    final msgCancel = l10n.ui_cancel;
+    final msgExtract = l10n.ui_extract;
+    final msgBrowse = l10n.ui_browse;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -228,12 +219,10 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                   labelText: msgHintPassword,
                   errorText: _passwordError ??
                       (widget.passwordRejected
-                          ? _safeL10n((l) => l.msg_archive_password_invalid,
-                              '密码错误，请重新输入')
+                          ? l10n.msg_archive_password_invalid
                           : null),
                   helperText: widget.passwordRequired && !widget.passwordRejected
-                      ? _safeL10n((l) => l.msg_archive_password_required,
-                          '该压缩包已加密，请输入密码')
+                      ? l10n.msg_archive_password_required
                       : null,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.lock),
@@ -262,9 +251,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                       // （那会解出一堆 0 字节文件，像压缩包损坏）。
                       if (widget.passwordRequired && pw.isEmpty) {
                         setState(() {
-                          _passwordError = _safeL10n(
-                              (l) => l.msg_archive_password_required,
-                              '该压缩包已加密，请输入密码');
+                          _passwordError = l10n.msg_archive_password_required;
                         });
                         return;
                       }

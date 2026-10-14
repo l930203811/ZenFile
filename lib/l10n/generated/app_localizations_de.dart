@@ -8645,4 +8645,7 @@ class L10nDe extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'Entpacken fehlgeschlagen';
+
+  @override
+  String get msg_extract_target_folder => 'Zielordner';
 }

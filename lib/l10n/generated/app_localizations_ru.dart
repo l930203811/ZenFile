@@ -8627,4 +8627,7 @@ class L10nRu extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'Ошибка распаковки';
+
+  @override
+  String get msg_extract_target_folder => 'Папка назначения';
 }

@@ -15171,6 +15171,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'解压失败'**
   String get msg_archive_extract_failed;
+
+  /// Label above the destination folder path in the extract archive dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'解压到的文件夹'**
+  String get msg_extract_target_folder;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -8663,4 +8663,7 @@ class L10nEs extends L10n {
 
   @override
   String get msg_archive_extract_failed => 'Error de extracción';
+
+  @override
+  String get msg_extract_target_folder => 'Carpeta de destino';
 }
