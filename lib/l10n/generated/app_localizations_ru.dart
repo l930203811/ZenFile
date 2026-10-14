@@ -5249,6 +5249,25 @@ class L10nRu extends L10n {
   String get msg_pdf_detail_tuning => 'Параметры детальной настройки';
 
   @override
+  String get msg_pdf_large_title => 'Этот PDF слишком большой';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'Размер файла — около $size. Встроенная программа просмотра анализирует весь документ и может перестать отвечать. Рекомендуется открыть в другом приложении.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline =>
+      'Всё равно открыть встроенным просмотрщиком';
+
+  @override
+  String get msg_pdf_large_render_failed =>
+      'Встроенная отрисовка недоступна, откройте в другом приложении';
+
+  @override
+  String get msg_pdf_large_empty => 'В этом PDF нет читаемых страниц';
+
+  @override
   String get msg_pdf_single_page_scroll =>
       'Одна страница (пролистывать по странице)';
 
@@ -8572,4 +8591,22 @@ class L10nRu extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return 'Защищено каталогов: $count; новые файлы будут шифроваться автоматически';
   }
+
+  @override
+  String get msg_name_invalid_title => 'Недопустимое имя';
+
+  @override
+  String get msg_name_invalid_separator =>
+      'Имя не может содержать разделители пути, такие как / или \\';
+
+  @override
+  String get msg_name_invalid_dot => 'Имя не может быть . или ..';
+
+  @override
+  String get msg_name_invalid_chars =>
+      'Имя содержит недопустимые символы (управляющие символы или заканчивается точкой)';
+
+  @override
+  String get msg_transfer_target_conflict =>
+      'Файл или папка с таким именем уже существует; пропущено';
 }

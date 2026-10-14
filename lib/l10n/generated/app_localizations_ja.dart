@@ -5042,6 +5042,23 @@ class L10nJa extends L10n {
   String get msg_pdf_detail_tuning => '詳細調整オプション';
 
   @override
+  String get msg_pdf_large_title => 'この PDF はサイズが大きいです';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'ファイルサイズは約 $size です。内蔵ビューアーは文書全体を解析するため、「応答なし」と判定される可能性があります。他のアプリでの表示を推奨します。';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => 'それでも内蔵ビューアーで開く';
+
+  @override
+  String get msg_pdf_large_render_failed => '内蔵ビューアーで表示できません。他のアプリで開いてください';
+
+  @override
+  String get msg_pdf_large_empty => 'この PDF には読み取れるページがありません';
+
+  @override
   String get msg_pdf_single_page_scroll => '単一ページ（ページごとにスワイプ）';
 
   @override
@@ -8231,4 +8248,19 @@ class L10nJa extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return '$count 個のディレクトリを保護中。新規ファイルは自動的に暗号化されます';
   }
+
+  @override
+  String get msg_name_invalid_title => '無効な名前';
+
+  @override
+  String get msg_name_invalid_separator => '名前に / や \\ などのパス区切り文字を含めることはできません';
+
+  @override
+  String get msg_name_invalid_dot => '名前に . や .. は使用できません';
+
+  @override
+  String get msg_name_invalid_chars => '名前に無効な文字が含まれています（制御文字、または末尾が . ）';
+
+  @override
+  String get msg_transfer_target_conflict => '同じ名前のファイル/フォルダーが既に存在するためスキップしました';
 }

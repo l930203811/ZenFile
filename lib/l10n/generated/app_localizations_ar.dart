@@ -5177,6 +5177,25 @@ class L10nAr extends L10n {
   String get msg_pdf_detail_tuning => 'خيارات الضبط التفصيلي';
 
   @override
+  String get msg_pdf_large_title => 'ملف PDF كبير الحجم';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'حجم الملف حوالي $size. يتعيّن على العارض المدمج تحليل المستند بالكامل وقد يُعتبر غير مستجيب. يُنصح بفتحه بتطبيق آخر.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => 'المحاولة بالعارض المدمج على أي حال';
+
+  @override
+  String get msg_pdf_large_render_failed =>
+      'التحميل المدمج غير متاح، افتح باستخدام تطبيق آخر';
+
+  @override
+  String get msg_pdf_large_empty =>
+      'لا يحتوي هذا الملف PDF على صفحات قابلة للقراءة';
+
+  @override
   String get msg_pdf_single_page_scroll => 'صفحة واحدة (تمرير صفحة بصفحة)';
 
   @override
@@ -8462,4 +8481,22 @@ class L10nAr extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return 'حماية $count مجلد(ات)؛ سيتم تشفير الملفات الجديدة تلقائيًا';
   }
+
+  @override
+  String get msg_name_invalid_title => 'اسم غير صالح';
+
+  @override
+  String get msg_name_invalid_separator =>
+      'لا يمكن أن يحتوي الاسم على فواصل مسار مثل / أو \\';
+
+  @override
+  String get msg_name_invalid_dot => 'لا يمكن أن يكون الاسم . أو ..';
+
+  @override
+  String get msg_name_invalid_chars =>
+      'يحتوي الاسم على أحرف غير صالحة (أحرف تحكم أو ينتهي بنقطة)';
+
+  @override
+  String get msg_transfer_target_conflict =>
+      'يوجد ملف أو مجلد بالاسم نفسه في الوجهة؛ تم التخطي';
 }

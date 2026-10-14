@@ -5383,6 +5383,25 @@
   "@msg_pdf_detail_tuning": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
+  "msg_pdf_large_title": "该 PDF 文件较大",
+  "@msg_pdf_large_title": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_body": "文件大小约 {size}。内置查看器需要解析整份文档，可能被系统判定「无响应」，建议改用其他应用打开。",
+  "@msg_pdf_large_body": {
+    "description": "ui\\screens\\document_viewer_screen.dart",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "msg_pdf_large_try_inline": "仍要尝试内置打开",
+  "msg_pdf_large_render_failed": "内置渲染不可用，请用其他应用打开",
+  "msg_pdf_large_empty": "该 PDF 没有可读页面",
+  "@msg_pdf_large_try_inline": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
   "msg_pdf_single_page_scroll": "单页（逐页滑动）",
   "@msg_pdf_single_page_scroll": {
     "description": "ui\\screens\\document_viewer_screen.dart"
@@ -8925,5 +8944,26 @@
   "crypt_auto_encrypt_watching": "正在保护 {count} 个目录，新文件将自动加密",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
+  }
+,
+  "msg_name_invalid_title": "名称不合法",
+  "@msg_name_invalid_title": {
+    "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
+  },
+  "msg_name_invalid_separator": "名称不能包含 / 或 \\ 等路径分隔符",
+  "@msg_name_invalid_separator": {
+    "description": "Warning shown when a name contains path separators such as / or backslash"
+  },
+  "msg_name_invalid_dot": "名称不能是 . 或 ..",
+  "@msg_name_invalid_dot": {
+    "description": "Warning shown when a name is . or .. (path traversal segment)"
+  },
+  "msg_name_invalid_chars": "名称包含无效字符（控制字符或以 . 结尾）",
+  "@msg_name_invalid_chars": {
+    "description": "Warning shown when a name contains control characters or ends with a dot"
+  },
+  "msg_transfer_target_conflict": "目标已存在同名的文件/文件夹，已跳过",
+  "@msg_transfer_target_conflict": {
+    "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
   }
 }

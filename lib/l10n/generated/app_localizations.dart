@@ -9391,6 +9391,36 @@ abstract class L10n {
   /// ui\screens\document_viewer_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'该 PDF 文件较大'**
+  String get msg_pdf_large_title;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小约 {size}。内置查看器需要解析整份文档，可能被系统判定「无响应」，建议改用其他应用打开。'**
+  String msg_pdf_large_body(String size);
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仍要尝试内置打开'**
+  String get msg_pdf_large_try_inline;
+
+  /// No description provided for @msg_pdf_large_render_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置渲染不可用，请用其他应用打开'**
+  String get msg_pdf_large_render_failed;
+
+  /// No description provided for @msg_pdf_large_empty.
+  ///
+  /// In zh, this message translates to:
+  /// **'该 PDF 没有可读页面'**
+  String get msg_pdf_large_empty;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'单页（逐页滑动）'**
   String get msg_pdf_single_page_scroll;
 
@@ -15081,6 +15111,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'正在保护 {count} 个目录，新文件将自动加密'**
   String crypt_auto_encrypt_watching(Object count);
+
+  /// Warning dialog title shown when a user-entered file/folder name is invalid
+  ///
+  /// In zh, this message translates to:
+  /// **'名称不合法'**
+  String get msg_name_invalid_title;
+
+  /// Warning shown when a name contains path separators such as / or backslash
+  ///
+  /// In zh, this message translates to:
+  /// **'名称不能包含 / 或 \\ 等路径分隔符'**
+  String get msg_name_invalid_separator;
+
+  /// Warning shown when a name is . or .. (path traversal segment)
+  ///
+  /// In zh, this message translates to:
+  /// **'名称不能是 . 或 ..'**
+  String get msg_name_invalid_dot;
+
+  /// Warning shown when a name contains control characters or ends with a dot
+  ///
+  /// In zh, this message translates to:
+  /// **'名称包含无效字符（控制字符或以 . 结尾）'**
+  String get msg_name_invalid_chars;
+
+  /// Notice shown when a download target collides with an existing file/folder and the item is skipped
+  ///
+  /// In zh, this message translates to:
+  /// **'目标已存在同名的文件/文件夹，已跳过'**
+  String get msg_transfer_target_conflict;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

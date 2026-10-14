@@ -5044,6 +5044,23 @@ class L10nKo extends L10n {
   String get msg_pdf_detail_tuning => '세부 조정 옵션';
 
   @override
+  String get msg_pdf_large_title => 'PDF 파일이 큽니다';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return '파일 크기는 약 $size입니다. 내장 뷰어는 문서 전체를 분석하므로 응답 없음으로 판정될 수 있습니다. 다른 앱으로 여는 것을 권장합니다.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => '그래도 내장 뷰어로 열기';
+
+  @override
+  String get msg_pdf_large_render_failed => '내장 뷰어로 열 수 없습니다. 다른 앱으로 여세요';
+
+  @override
+  String get msg_pdf_large_empty => '이 PDF에는 읽을 수 있는 페이지가 없습니다';
+
+  @override
   String get msg_pdf_single_page_scroll => '한 페이지씩 넘기기';
 
   @override
@@ -8239,4 +8256,20 @@ class L10nKo extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return '$count개의 디렉터리를 보호 중입니다. 새 파일은 자동으로 암호화됩니다';
   }
+
+  @override
+  String get msg_name_invalid_title => '잘못된 이름';
+
+  @override
+  String get msg_name_invalid_separator => '이름에 / 또는 \\ 같은 경로 구분자를 포함할 수 없습니다';
+
+  @override
+  String get msg_name_invalid_dot => '이름은 . 또는 .. 일 수 없습니다';
+
+  @override
+  String get msg_name_invalid_chars =>
+      '이름에 잘못된 문자가 포함되어 있습니다(제어 문자 또는 마침표로 끝남)';
+
+  @override
+  String get msg_transfer_target_conflict => '같은 이름의 파일/폴더가 이미 존재하여 건너뛰었습니다';
 }

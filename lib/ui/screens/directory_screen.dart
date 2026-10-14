@@ -22,6 +22,7 @@ import '../widgets/batch_rename_dialog.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/bulk_crypt_actions.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/file_name_validation.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
@@ -1051,6 +1052,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           actionText: L10n.of(context).ui_create,
         );
         if (fileName != null && fileName.isNotEmpty) {
+          // 名称合法性：含 '/' 等分隔符会拼出嵌套路径、建出中间目录。
+          final problem = validateFileName(fileName);
+          if (problem != null) {
+            await FileActionDialogs.showWarningDialog(
+              context,
+              title: L10n.of(context).msg_name_invalid_title,
+              content: fileNameProblemText(L10n.of(context), problem),
+            );
+            break;
+          }
           final createdName = await provider.createFile(fileName);
           if (createdName == null) {
             // 受限目录创建失败必须有反馈——过去返回 null 时界面毫无提示，
@@ -1074,6 +1085,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           actionText: L10n.of(context).ui_create,
         );
         if (folderName != null && folderName.isNotEmpty) {
+          // 名称合法性：含 '/' 等分隔符会拼出嵌套路径、建出中间目录。
+          final problem = validateFileName(folderName);
+          if (problem != null) {
+            await FileActionDialogs.showWarningDialog(
+              context,
+              title: L10n.of(context).msg_name_invalid_title,
+              content: fileNameProblemText(L10n.of(context), problem),
+            );
+            break;
+          }
           final createdName = await provider.createFolder(folderName);
           if (createdName == null) {
             _showCreateFailure(context, provider);

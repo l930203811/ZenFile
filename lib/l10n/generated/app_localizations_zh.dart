@@ -5002,6 +5002,23 @@ class L10nZh extends L10n {
   String get msg_pdf_detail_tuning => '详细调节选项';
 
   @override
+  String get msg_pdf_large_title => '该 PDF 文件较大';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return '文件大小约 $size。内置查看器需要解析整份文档，可能被系统判定「无响应」，建议改用其他应用打开。';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => '仍要尝试内置打开';
+
+  @override
+  String get msg_pdf_large_render_failed => '内置渲染不可用，请用其他应用打开';
+
+  @override
+  String get msg_pdf_large_empty => '该 PDF 没有可读页面';
+
+  @override
   String get msg_pdf_single_page_scroll => '单页（逐页滑动）';
 
   @override
@@ -8056,6 +8073,21 @@ class L10nZh extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return '正在保护 $count 个目录，新文件将自动加密';
   }
+
+  @override
+  String get msg_name_invalid_title => '名称不合法';
+
+  @override
+  String get msg_name_invalid_separator => '名称不能包含 / 或 \\ 等路径分隔符';
+
+  @override
+  String get msg_name_invalid_dot => '名称不能是 . 或 ..';
+
+  @override
+  String get msg_name_invalid_chars => '名称包含无效字符（控制字符或以 . 结尾）';
+
+  @override
+  String get msg_transfer_target_conflict => '目标已存在同名的文件/文件夹，已跳过';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -13008,6 +13040,23 @@ class L10nZhTw extends L10nZh {
   String get msg_pdf_detail_tuning => '詳細調節選項';
 
   @override
+  String get msg_pdf_large_title => '此 PDF 檔案較大';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return '檔案大小約 $size。內建檢視器需要解析整份文件，可能被系統判定為「無回應」，建議改用其他應用程式開啟。';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => '仍要嘗試內建開啟';
+
+  @override
+  String get msg_pdf_large_render_failed => '內建渲染不可用，請用其他應用程式開啟';
+
+  @override
+  String get msg_pdf_large_empty => '此 PDF 沒有可讀取的頁面';
+
+  @override
   String get msg_pdf_single_page_scroll => '單頁（逐頁滑動）';
 
   @override
@@ -16080,4 +16129,19 @@ class L10nZhTw extends L10nZh {
   String crypt_auto_encrypt_watching(Object count) {
     return '正在保護 $count 個目錄，新檔案將自動加密';
   }
+
+  @override
+  String get msg_name_invalid_title => '名稱不合法';
+
+  @override
+  String get msg_name_invalid_separator => '名稱不能包含 / 或 \\ 等路徑分隔符';
+
+  @override
+  String get msg_name_invalid_dot => '名稱不能是 . 或 ..';
+
+  @override
+  String get msg_name_invalid_chars => '名稱包含無效字元（控制字元或以 . 結尾）';
+
+  @override
+  String get msg_transfer_target_conflict => '目標已存在同名的檔案/資料夾，已跳過';
 }

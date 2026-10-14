@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/file_name_validation.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BatchRenameDialog extends StatefulWidget {
@@ -161,24 +162,30 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
     }
 
     // 4. Apply extension (only to files, directories don't have extensions)
+    late final String result;
     if (isDir) {
-      return newBaseName;
+      result = newBaseName;
     } else {
       final customExt = _extensionController.text.trim();
       if (customExt.isEmpty) {
         // If the pattern already contains extension placeholders, don't double-append
-        final hasPatternExt = pattern.contains('{de}') || 
-                              pattern.contains('{e}') || 
-                              pattern.contains('{N}');
+        final hasPatternExt = pattern.contains('{de}') ||
+                                pattern.contains('{e}') ||
+                                pattern.contains('{N}');
         if (hasPatternExt) {
-          return newBaseName;
+          result = newBaseName;
+        } else {
+          result = newBaseName + originalExt;
         }
-        return newBaseName + originalExt;
       } else {
         final finalExt = customExt.startsWith('.') ? customExt : '.$customExt';
-        return newBaseName + finalExt;
+        result = newBaseName + finalExt;
       }
     }
+    // 防注入：查找/替换文本、命名模式、扩展名都可能引入路径分隔符或控制
+    // 字符（曾导致批量重命名后嵌套路径，进而在兜底逻辑里建出同名文件夹、
+    // 文件藏在里面）。统一清洗为单段名后再交给 renameFile。
+    return sanitizeFileName(result) ?? result;
   }
 
   Future<void> _executeRename() async {

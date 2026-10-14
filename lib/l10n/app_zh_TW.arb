@@ -5232,6 +5232,20 @@
   "@msg_pdf_detail_tuning": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
+  "msg_pdf_large_title": "此 PDF 檔案較大",
+  "@msg_pdf_large_title": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_body": "檔案大小約 {size}。內建檢視器需要解析整份文件，可能被系統判定為「無回應」，建議改用其他應用程式開啟。",
+  "@msg_pdf_large_body": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_try_inline": "仍要嘗試內建開啟",
+  "msg_pdf_large_render_failed": "內建渲染不可用，請用其他應用程式開啟",
+  "msg_pdf_large_empty": "此 PDF 沒有可讀取的頁面",
+  "@msg_pdf_large_try_inline": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
   "msg_pdf_single_page_scroll": "單頁（逐頁滑動）",
   "@msg_pdf_single_page_scroll": {
     "description": "ui\\screens\\document_viewer_screen.dart"
@@ -8760,5 +8774,26 @@
   "crypt_auto_encrypt_watching": "正在保護 {count} 個目錄，新檔案將自動加密",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
+  }
+,
+  "msg_name_invalid_title": "名稱不合法",
+  "@msg_name_invalid_title": {
+    "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
+  },
+  "msg_name_invalid_separator": "名稱不能包含 / 或 \\ 等路徑分隔符",
+  "@msg_name_invalid_separator": {
+    "description": "Warning shown when a name contains path separators such as / or backslash"
+  },
+  "msg_name_invalid_dot": "名稱不能是 . 或 ..",
+  "@msg_name_invalid_dot": {
+    "description": "Warning shown when a name is . or .. (path traversal segment)"
+  },
+  "msg_name_invalid_chars": "名稱包含無效字元（控制字元或以 . 結尾）",
+  "@msg_name_invalid_chars": {
+    "description": "Warning shown when a name contains control characters or ends with a dot"
+  },
+  "msg_transfer_target_conflict": "目標已存在同名的檔案/資料夾，已跳過",
+  "@msg_transfer_target_conflict": {
+    "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
   }
 }

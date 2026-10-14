@@ -7,6 +7,7 @@ import '../../services/preferences_service.dart';
 import 'package:provider/provider.dart';
 import 'package:charset/charset.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/restricted_path_variant.dart';
 import '../../providers/file_manager_provider.dart';
 import 'html_viewer_screen.dart';
 import 'markdown_viewer_screen.dart';
@@ -324,7 +325,17 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           tempDir.createSync(recursive: true);
         }
         final tempFile = File(p.join(tempDir.path, 'temp_read_${DateTime.now().millisecondsSinceEpoch}.txt'));
-        await RootShizukuService.copyItem(_currentFilePath, tempFile.path, useRoot: provider.useRootMode);
+        var shellCopied = false;
+        try {
+          await RootShizukuService.copyItem(_currentFilePath, tempFile.path, useRoot: provider.useRootMode);
+          shellCopied = tempFile.existsSync();
+        } catch (e) {
+          debugPrint('Shell/SAF read failed for restricted file: $e');
+        }
+        // shell/SAF 通道不可用或失败时，回退零宽字符变体直拷（Dart IO）。
+        if (!shellCopied) {
+          await tryCopyViaRestrictedVariants(_currentFilePath, tempFile.path);
+        }
         content = _decodeBytesWithFallback(await tempFile.readAsBytes());
         try {
           await tempFile.delete();
@@ -383,7 +394,21 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         }
         final tempFile = File(p.join(tempDir.path, 'temp_save_${DateTime.now().millisecondsSinceEpoch}.txt'));
         await tempFile.writeAsString(_controller.text);
-        await RootShizukuService.copyItem(tempFile.path, _currentFilePath, useRoot: provider.useRootMode);
+        var saved = false;
+        try {
+          await RootShizukuService.copyItem(tempFile.path, _currentFilePath, useRoot: provider.useRootMode);
+          saved = true;
+        } catch (e) {
+          debugPrint('Shell/SAF write failed for restricted file: $e');
+        }
+        // shell/SAF 通道不可用或失败时，回退零宽字符变体直写（Dart IO）。
+        if (!saved) {
+          saved = await tryWriteViaRestrictedVariants(tempFile.path, _currentFilePath);
+        }
+        if (!saved) {
+          // 两条通道都失败：抛出由外层 catch 提示，不假装保存成功。
+          throw Exception('Failed to save restricted file: $_currentFilePath');
+        }
         try {
           await tempFile.delete();
         } catch (_) {}

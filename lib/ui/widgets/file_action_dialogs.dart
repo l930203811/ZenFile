@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/file_name_validation.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
@@ -186,6 +187,19 @@ class FileActionDialogs {
     );
     if (newName == null || newName.isEmpty || newName == currentName) {
       return newName;
+    }
+    // 名称合法性校验：拒绝含路径分隔符等的非法名称。历史上重命名对用户
+    // 输入零校验，名称带 '/' 会拼出嵌套路径（a.jpg → a.jpg/a.jpg），
+    // rename() 失败后的兜底逻辑会把同名文件夹真的建出来——表现为
+    // 「自动创建同名文件夹、文件躺在文件夹里」。
+    final problem = validateFileName(newName);
+    if (problem != null) {
+      await showWarningDialog(
+        context,
+        title: L10n.of(context).msg_name_invalid_title,
+        content: fileNameProblemText(L10n.of(context), problem),
+      );
+      return null;
     }
     // 检测后缀名是否变更（针对文件，非目录）
     final oldExt = _extractExtension(currentName);

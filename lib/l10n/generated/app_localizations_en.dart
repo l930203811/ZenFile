@@ -5195,6 +5195,24 @@ class L10nEn extends L10n {
   String get msg_pdf_detail_tuning => 'Detail Tuning Options';
 
   @override
+  String get msg_pdf_large_title => 'This PDF is large';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'The file is about $size. The built-in viewer has to parse the whole document and may be flagged as \"not responding\". Opening it with another app is recommended.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => 'Try the built-in viewer anyway';
+
+  @override
+  String get msg_pdf_large_render_failed =>
+      'Built-in rendering unavailable, open with another app';
+
+  @override
+  String get msg_pdf_large_empty => 'This PDF has no readable pages';
+
+  @override
   String get msg_pdf_single_page_scroll => 'Single page (swipe page by page)';
 
   @override
@@ -8491,4 +8509,22 @@ class L10nEn extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return 'Protecting $count directory(ies); new files will be encrypted automatically';
   }
+
+  @override
+  String get msg_name_invalid_title => 'Invalid name';
+
+  @override
+  String get msg_name_invalid_separator =>
+      'The name cannot contain path separators such as / or \\';
+
+  @override
+  String get msg_name_invalid_dot => 'The name cannot be . or ..';
+
+  @override
+  String get msg_name_invalid_chars =>
+      'The name contains invalid characters (control characters or a trailing dot)';
+
+  @override
+  String get msg_transfer_target_conflict =>
+      'A file or folder with the same name already exists at the destination; skipped';
 }

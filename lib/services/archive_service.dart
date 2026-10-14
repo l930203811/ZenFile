@@ -467,9 +467,22 @@ class ArchiveService {
   /// 存储）并不会抛异常，旧实现只「读一下内容」会把第一个候选误当正确密码返回——
   /// 中文密码有 utf8/gbk 多个候选，一旦第一个（utf8）被误判命中，真正的 gbk 候选
   /// 就永远不会被尝试，表现为「中文密码解压失败/解出乱码」。改用 CRC32 判定。
-  static Archive decodeZip(InputStreamBase input, String? password) {
+  static Archive decodeZip(InputStreamBase input, String? password,
+      {bool requirePasswordIfEncrypted = false}) {
     if (password == null || password.isEmpty) {
-      return ZipDecoder().decodeBuffer(input);
+      final decoder = ZipDecoder();
+      final archive = decoder.decodeBuffer(input);
+      if (requirePasswordIfEncrypted) {
+        // general purpose bit 0 = 文件加密标志。archive 包在无密码读取加密条目
+        // 内容时会以 `_password!` 非空断言崩溃（错误信息不可读），这里提前抛出
+        // 明确错误。仅用于「要读内容」的路径；纯列名预览不开启，保留文件名可见。
+        final hasEncrypted = decoder.directory.fileHeaders
+            .any((h) => (h.generalPurposeBitFlag & 0x1) != 0);
+        if (hasEncrypted) {
+          throw Exception('Password required: archive contains encrypted entries');
+        }
+      }
+      return archive;
     }
     final candidates = zipPasswordCandidates(password);
     Object? lastError;
@@ -877,7 +890,7 @@ class ArchiveService {
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
         final input = InputFileStream(archivePath);
         zipInputToClose = input;
-        archive = decodeZip(input, pwdStr);
+        archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
       } else if (lowerPath.endsWith('.tar')) {
         final input = InputFileStream(archivePath);
         archive = TarDecoder().decodeBuffer(input);
@@ -894,7 +907,7 @@ class ArchiveService {
           // fallback：走 InputFileStream + zip decoder
           final input = InputFileStream(archivePath);
           zipInputToClose = input;
-          archive = decodeZip(input, pwdStr);
+          archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
         }
       }
 
@@ -994,7 +1007,7 @@ class ArchiveService {
       }
       final input = InputFileStream(archivePath);
       try {
-        final archive = decodeZip(input, pwdStr);
+        final archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
         _fixArchiveFilenames(archive);
         for (final p in requested) {
           try {

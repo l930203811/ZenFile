@@ -31,13 +31,18 @@ class _CompressionPlan {
 /// 否则高频跨 isolate 回传会导致主 isolate 队列堆积卡死。
 class _ProgressThrottler {
   final SendPort sendPort;
+  /// 进度区间折算：多任务（逐文件压缩）时把单任务进度 [0,1] 线性映射到
+  /// [progBase, progBase + progSpan]，使总进度条跨任务连续推进。
+  /// 默认 0.0 / 1.0 即不平移，单包模式行为与原来完全一致。
+  final double progBase;
+  final double progSpan;
   int _lastSentMs = 0;
   double _lastProgress = -1;
   String _lastFile = '';
   int _lastIndex = -1;
   int _lastBytes = -1;
   int _lastFileBytes = -1;
-  _ProgressThrottler(this.sendPort);
+  _ProgressThrottler(this.sendPort, {this.progBase = 0.0, this.progSpan = 1.0});
 
   void send(double progress, String currentFile,
       {bool force = false,
@@ -47,23 +52,24 @@ class _ProgressThrottler {
       int currentFileTotal = 0,
       int currentIndex = 0,
       int totalFiles = 0}) {
+    final scaled = (progBase + progress * progSpan).clamp(0.0, 1.0);
     final now = DateTime.now().millisecondsSinceEpoch;
-    final bool changed = (progress - _lastProgress).abs() > 0.001 ||
+    final bool changed = (scaled - _lastProgress).abs() > 0.001 ||
         currentFile != _lastFile ||
         currentIndex != _lastIndex ||
         (bytesProcessed - _lastBytes).abs() > 1024 * 1024 ||
         (currentFileBytes - _lastFileBytes).abs() > 256 * 1024;
     if (!force && !changed) return;
-    if (!force && now - _lastSentMs < 100 && progress < 0.999) return;
+    if (!force && now - _lastSentMs < 100 && scaled < 0.999) return;
     _lastSentMs = now;
-    _lastProgress = progress;
+    _lastProgress = scaled;
     _lastFile = currentFile;
     _lastIndex = currentIndex;
     _lastBytes = bytesProcessed;
     _lastFileBytes = currentFileBytes;
     sendPort.send({
       'status': 'progress',
-      'progress': progress.clamp(0.0, 1.0),
+      'progress': scaled,
       'currentFile': currentFile,
       'bytesProcessed': bytesProcessed,
       'totalBytes': totalBytes,
@@ -375,6 +381,14 @@ class BackgroundArchiveService {
     String? targetRefreshDir,
     VoidCallback? onComplete,
     FileManagerProvider? provider,
+    /// ZIP 加密密码（仅 ZIP 格式生效；tar.* 无密码概念，非 ZIP 格式下忽略）。
+    String? password,
+    /// 分卷大小（MB）：压缩完成后按该大小把成品切成 .001/.002… 分卷。
+    /// null 或 <= 0 时不分卷。逐文件模式下每个包各自独立分卷。
+    int? splitSizeMB,
+    /// 逐文件压缩：每个源路径生成一个独立压缩包（basename.format，同目录），
+    /// 与 ArchiveService.createArchive 的 separateArchives 语义一致。
+    bool separateArchives = false,
     /// 实际写盘路径。受限目录（纯 Shizuku 无 root）下传临时文件，再经 SAF 上传。
     String? writeDestinationPath,
     /// SAF 上传信息：压缩完成的临时文件 -> 受限父目录下的目标文件名。
@@ -385,13 +399,36 @@ class BackgroundArchiveService {
   }) async {
     final effectiveContext = context.mounted ? context : (navigatorKey.currentContext ?? context);
     final archiveName = p.basename(destinationPath);
+    // 逐文件压缩：把每个源路径展开为一个独立任务（basename.format，同目录），
+    // 与 ArchiveService.createArchive(separateArchives: true) 语义一致；
+    // 单包模式只有一个任务。所有任务在同一个 isolate 内串行执行，进度跨包连续。
+    final jobs = <Map<String, dynamic>>[];
+    if (separateArchives) {
+      for (final src in sourcePaths) {
+        final name = p.basenameWithoutExtension(src);
+        jobs.add({
+          'sourcePaths': <String>[src],
+          'destinationPath': _uniqueArchivePath(
+              p.join(p.dirname(destinationPath), '$name.$format')),
+        });
+      }
+    } else {
+      jobs.add({
+        'sourcePaths': sourcePaths,
+        'destinationPath': writeDestinationPath ?? destinationPath,
+      });
+    }
+    // 逐文件模式下传入的 destinationPath（archiveName.format）并不会真实存在，
+    // 用第一个成品包作为完成 SnackBar「打开位置」的高亮目标。
+    final resultPath =
+        jobs.isNotEmpty ? jobs.first['destinationPath'] as String : destinationPath;
     final operation = BackgroundOperation(
       id: 'compress_${DateTime.now().millisecondsSinceEpoch}',
       title: L10n.of(effectiveContext).msg2f0138ad,
       archiveName: archiveName,
       isCompression: true,
       destinationDir: targetRefreshDir ?? p.dirname(destinationPath),
-      destinationPath: destinationPath,
+      destinationPath: resultPath,
       safLocalPath: safLocalPath,
       safParentDir: safParentDir,
       safFileName: safFileName,
@@ -415,11 +452,12 @@ class BackgroundArchiveService {
       _compressIsolateTask,
       {
         'sendPort': _receivePort!.sendPort,
-        'sourcePaths': sourcePaths,
-        'destinationPath': writeDestinationPath ?? destinationPath,
         'format': format,
         'level': level,
         'deleteSource': deleteSource,
+        'password': password,
+        'splitSizeMB': splitSizeMB,
+        'jobs': jobs,
       },
     );
 
@@ -794,83 +832,188 @@ class BackgroundArchiveService {
     }
   }
 
+  /// 压缩 isolate 入口：串行执行所有 job（逐文件模式下多个、单包模式一个），
+  /// 全部完成后才上报 completed。进度按 job 数分段折算，跨包连续。
   static void _compressIsolateTask(Map<String, dynamic> args) async {
     final sendPort = args['sendPort'] as SendPort;
-    final sourcePaths = args['sourcePaths'] as List<String>;
-    final destinationPath = args['destinationPath'] as String;
     final format = args['format'] as String;
     final level = args['level'] as int;
     final deleteSource = args['deleteSource'] as bool;
+    final password = args['password'] as String?;
+    final splitSizeMB = args['splitSizeMB'] as int?;
+    final jobs = (args['jobs'] as List<dynamic>)
+        .map((e) => e as Map<String, dynamic>)
+        .toList();
     final t = _ProgressThrottler(sendPort);
 
+    if (jobs.isEmpty) {
+      sendPort.send({'status': 'error', 'error': 'No files to compress'});
+      return;
+    }
+
     try {
-      t.send(0.0, 'Scanning files...', force: true);
-
-      // ---- Phase 1：扫描并构建 plan（8% 以内）----
-      final plan = _buildCompressionPlan(sourcePaths, t);
-      if (plan.files.isEmpty && plan.emptyDirs.isEmpty) {
-        sendPort.send({'status': 'error', 'error': 'No files to compress'});
-        return;
-      }
-      final normDest = destinationPath.toLowerCase();
-      plan.files.removeWhere((e) => e.fullPath.toLowerCase() == normDest);
-
-      final int totalBytes = plan.totalByteCount <= 0 ? 1 : plan.totalByteCount;
-      int processedBytes = 0;
-
-      t.send(0.09, 'Starting compression…', force: true);
-      await Future<void>.delayed(Duration.zero);
-
-      // ---- Phase 2：根据格式选压缩路径 ----
-      // ZIP：用 ZipFileEncoder 流式逐文件压缩（内部 InputFileStream + ArchiveFile.stream，
-      // 不整包读入内存；每个文件完成即上报进度），避免旧方案
-      // （readAsBytesSync 整读全部文件 + ZipEncoder.encode 一次性编码）在
-      // 大文件/多文件场景内存峰值过高、编码阶段进度冻结造成"卡住"观感。
-      if (format == 'zip') {
-        final enc = ZipFileEncoder();
-        enc.create(destinationPath, level: level);
-        int compressedBytes = 0;
-        try {
-          for (int i = 0; i < plan.files.length; i++) {
-            final entry = plan.files[i];
-            final src = File(entry.fullPath);
-            if (!src.existsSync()) continue;
-            final fileSize = src.lengthSync();
-            final double prog = 0.10 + (compressedBytes / totalBytes) * 0.80;
-            t.send(prog, entry.relPath,
-                bytesProcessed: compressedBytes,
-                totalBytes: totalBytes,
-                currentFileBytes: 0,
-                currentFileTotal: fileSize,
-                currentIndex: i + 1,
-                totalFiles: plan.files.length);
-            await enc.addFile(src, entry.relPath);
-            compressedBytes += fileSize;
-            t.send(prog, entry.relPath,
-                bytesProcessed: compressedBytes,
-                totalBytes: totalBytes,
-                currentFileBytes: fileSize,
-                currentFileTotal: fileSize,
-                currentIndex: i + 1,
-                totalFiles: plan.files.length);
-          }
-          for (final d in plan.emptyDirs) {
-            final normalized = d.endsWith('/') ? d : '$d/';
-            final af = ArchiveFile(normalized, 0, null);
-            af.isFile = false;
-            enc.addArchiveFile(af);
-          }
-          t.send(0.95, 'Finalizing…', force: true,
-              bytesProcessed: compressedBytes, totalBytes: totalBytes);
-          await enc.close();
-        } catch (e) {
-          try { enc.closeSync(); } catch (_) {}
-          rethrow;
+      for (int j = 0; j < jobs.length; j++) {
+        final job = jobs[j];
+        final base = j / jobs.length;
+        final span = 1.0 / jobs.length;
+        if (jobs.length > 1) {
+          // 多包模式：每个包开始时强制刷新一次当前包名，让用户看到逐包进度
+          t.send(base + 0.001, p.basename(job['destinationPath'] as String),
+              force: true);
         }
-      } else if (format == 'tar') {
-        // TarEncoder.add → TarFile.write → output.writeInputStream(InputStreamBase) 是真流式，
-        // 不会整包 toUint8List，可以继续用。
-        final output = OutputFileStream(destinationPath);
+        await _compressOneJob(
+          sourcePaths: (job['sourcePaths'] as List<dynamic>).cast<String>(),
+          destinationPath: job['destinationPath'] as String,
+          format: format,
+          level: level,
+          deleteSource: deleteSource,
+          password: password,
+          splitSizeMB: splitSizeMB,
+          sendPort: sendPort,
+          progBase: base,
+          progSpan: span,
+        );
+      }
+      t.send(1.0, 'Archive created successfully', force: true);
+      await Future.delayed(const Duration(milliseconds: 200));
+      sendPort.send({'status': 'completed'});
+    } catch (e, stackTrace) {
+      final msg = 'Compression failed: ${e.toString()}';
+      debugPrint('$msg\n$stackTrace');
+      sendPort.send({'status': 'error', 'error': msg});
+    }
+  }
+
+  /// 单个压缩任务的完整流程：扫描 → 编码 → 分卷切割 → 删除源文件。
+  /// [progBase]/[progSpan] 把本任务 [0,1] 的进度折算到总进度的对应区间，
+  /// 使逐文件压缩（多 job）时总进度条连续推进；单包时默认 0/1 不平移。
+  static Future<void> _compressOneJob({
+    required List<String> sourcePaths,
+    required String destinationPath,
+    required String format,
+    required int level,
+    required bool deleteSource,
+    required String? password,
+    required int? splitSizeMB,
+    required SendPort sendPort,
+    double progBase = 0.0,
+    double progSpan = 1.0,
+  }) async {
+    final t =
+        _ProgressThrottler(sendPort, progBase: progBase, progSpan: progSpan);
+
+    t.send(0.0, 'Scanning files...', force: true);
+
+    // ---- Phase 1：扫描并构建 plan（8% 以内）----
+    final plan = _buildCompressionPlan(sourcePaths, t);
+    if (plan.files.isEmpty && plan.emptyDirs.isEmpty) {
+      throw Exception('No files to compress');
+    }
+    final normDest = destinationPath.toLowerCase();
+    plan.files.removeWhere((e) => e.fullPath.toLowerCase() == normDest);
+
+    final int totalBytes = plan.totalByteCount <= 0 ? 1 : plan.totalByteCount;
+    int processedBytes = 0;
+
+    t.send(0.09, 'Starting compression…', force: true);
+    await Future<void>.delayed(Duration.zero);
+
+    // ---- Phase 2：根据格式选压缩路径 ----
+    // ZIP：用 ZipFileEncoder 流式逐文件压缩（内部 InputFileStream + ArchiveFile.stream，
+    // 不整包读入内存；每个文件完成即上报进度），避免旧方案
+    // （readAsBytesSync 整读全部文件 + ZipEncoder.encode 一次性编码）在
+    // 大文件/多文件场景内存峰值过高、编码阶段进度冻结造成"卡住"观感。
+    // 带密码时 ZipFileEncoder 内部转交 ZipEncoder(password:) 逐条目 WinZip-AES
+    // 加密，仍是流式；密码经 zipEncodePassword 转 UTF-8 字节串，与 ArchiveService
+    // 编码路径及 decodeZip 的候选解密逻辑保持对称（第三方工具亦可正常解开）。
+    if (format == 'zip') {
+      final pw = password;
+      final enc = ZipFileEncoder(
+        password: (pw != null && pw.isNotEmpty)
+            ? ArchiveService.zipEncodePassword(pw)
+            : null,
+      );
+      enc.create(destinationPath, level: level);
+      int compressedBytes = 0;
+      try {
+        for (int i = 0; i < plan.files.length; i++) {
+          final entry = plan.files[i];
+          final src = File(entry.fullPath);
+          if (!src.existsSync()) continue;
+          final fileSize = src.lengthSync();
+          final double prog = 0.10 + (compressedBytes / totalBytes) * 0.80;
+          t.send(prog, entry.relPath,
+              bytesProcessed: compressedBytes,
+              totalBytes: totalBytes,
+              currentFileBytes: 0,
+              currentFileTotal: fileSize,
+              currentIndex: i + 1,
+              totalFiles: plan.files.length);
+          await enc.addFile(src, entry.relPath);
+          compressedBytes += fileSize;
+          t.send(prog, entry.relPath,
+              bytesProcessed: compressedBytes,
+              totalBytes: totalBytes,
+              currentFileBytes: fileSize,
+              currentFileTotal: fileSize,
+              currentIndex: i + 1,
+              totalFiles: plan.files.length);
+        }
+        for (final d in plan.emptyDirs) {
+          final normalized = d.endsWith('/') ? d : '$d/';
+          final af = ArchiveFile(normalized, 0, null);
+          af.isFile = false;
+          enc.addArchiveFile(af);
+        }
+        t.send(0.95, 'Finalizing…', force: true,
+            bytesProcessed: compressedBytes, totalBytes: totalBytes);
+        await enc.close();
+      } catch (e) {
+        try { enc.closeSync(); } catch (_) {}
+        rethrow;
+      }
+    } else if (format == 'tar') {
+      // TarEncoder.add → TarFile.write → output.writeInputStream(InputStreamBase) 是真流式，
+      // 不会整包 toUint8List，可以继续用。
+      final output = OutputFileStream(destinationPath);
+      final enc = TarEncoder();
+      enc.start(output);
+      for (int i = 0; i < plan.files.length; i++) {
+        final entry = plan.files[i];
+        final src = File(entry.fullPath);
+        if (!src.existsSync()) continue;
+        final size = src.lengthSync();
+        t.send(0.10 + (processedBytes / totalBytes) * 0.88, entry.relPath,
+            currentFileBytes: 0, currentFileTotal: size,
+            currentIndex: i + 1, totalFiles: plan.files.length);
+        final fileStream = InputFileStream(src.path);
+        final af = ArchiveFile.stream(entry.relPath, size, fileStream);
+        af.lastModTime = src.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+        af.mode = src.statSync().mode;
+        enc.add(af);
+        fileStream.closeSync();
+        processedBytes += size;
+        t.send(0.10 + (processedBytes / totalBytes) * 0.88, entry.relPath,
+            currentFileBytes: size, currentFileTotal: size,
+            currentIndex: i + 1, totalFiles: plan.files.length);
+        await Future<void>.delayed(Duration.zero);
+      }
+      for (final d in plan.emptyDirs) {
+        final normalized = d.endsWith('/') ? d : '$d/';
+        final af = ArchiveFile(normalized, 0, null);
+        af.isFile = false;
+        enc.add(af);
+      }
+      enc.finish();
+      output.closeSync();
+    } else {
+      // tar.gz / tar.bz2 / tar.lz4 / tar.zst：先生成 TAR 临时文件，再流式编码外层。
+      // TAR 临时文件：TarEncoder 是真流式；tar.gz 用 GZipEncoder（Deflate.buffer）。
+      final tmpDir = Directory.systemTemp;
+      final tarTmp = File(p.join(tmpDir.path, 'zenfile_compress_${DateTime.now().millisecondsSinceEpoch}.tar'));
+      try {
+        // Step 2a：流式写出 TAR（0.10 → 0.55 用 bytes 推进）
+        final output = OutputFileStream(tarTmp.path);
         final enc = TarEncoder();
         enc.start(output);
         for (int i = 0; i < plan.files.length; i++) {
@@ -878,7 +1021,7 @@ class BackgroundArchiveService {
           final src = File(entry.fullPath);
           if (!src.existsSync()) continue;
           final size = src.lengthSync();
-          t.send(0.10 + (processedBytes / totalBytes) * 0.88, entry.relPath,
+          t.send(0.10 + (processedBytes / totalBytes) * 0.45, entry.relPath,
               currentFileBytes: 0, currentFileTotal: size,
               currentIndex: i + 1, totalFiles: plan.files.length);
           final fileStream = InputFileStream(src.path);
@@ -888,7 +1031,7 @@ class BackgroundArchiveService {
           enc.add(af);
           fileStream.closeSync();
           processedBytes += size;
-          t.send(0.10 + (processedBytes / totalBytes) * 0.88, entry.relPath,
+          t.send(0.10 + (processedBytes / totalBytes) * 0.45, entry.relPath,
               currentFileBytes: size, currentFileTotal: size,
               currentIndex: i + 1, totalFiles: plan.files.length);
           await Future<void>.delayed(Duration.zero);
@@ -901,79 +1044,97 @@ class BackgroundArchiveService {
         }
         enc.finish();
         output.closeSync();
-      } else {
-        // tar.gz / tar.bz2 / tar.lz4 / tar.zst：先生成 TAR 临时文件，再流式编码外层。
-        // TAR 临时文件：TarEncoder 是真流式；tar.gz 用 GZipEncoder（Deflate.buffer）。
-        final tmpDir = Directory.systemTemp;
-        final tarTmp = File(p.join(tmpDir.path, 'zenfile_compress_${DateTime.now().millisecondsSinceEpoch}.tar'));
-        try {
-          // Step 2a：流式写出 TAR（0.10 → 0.55 用 bytes 推进）
-          final output = OutputFileStream(tarTmp.path);
-          final enc = TarEncoder();
-          enc.start(output);
-          for (int i = 0; i < plan.files.length; i++) {
-            final entry = plan.files[i];
-            final src = File(entry.fullPath);
-            if (!src.existsSync()) continue;
-            final size = src.lengthSync();
-            t.send(0.10 + (processedBytes / totalBytes) * 0.45, entry.relPath,
-                currentFileBytes: 0, currentFileTotal: size,
-                currentIndex: i + 1, totalFiles: plan.files.length);
-            final fileStream = InputFileStream(src.path);
-            final af = ArchiveFile.stream(entry.relPath, size, fileStream);
-            af.lastModTime = src.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
-            af.mode = src.statSync().mode;
-            enc.add(af);
-            fileStream.closeSync();
-            processedBytes += size;
-            t.send(0.10 + (processedBytes / totalBytes) * 0.45, entry.relPath,
-                currentFileBytes: size, currentFileTotal: size,
-                currentIndex: i + 1, totalFiles: plan.files.length);
-            await Future<void>.delayed(Duration.zero);
-          }
-          for (final d in plan.emptyDirs) {
-            final normalized = d.endsWith('/') ? d : '$d/';
-            final af = ArchiveFile(normalized, 0, null);
-            af.isFile = false;
-            enc.add(af);
-          }
-          enc.finish();
-          output.closeSync();
 
-          // Step 2b：把 TAR 流式编码到目标压缩格式（按字节推进 0.55 → 0.98）
-          t.send(0.56, 'Encoding $format archive…', force: true);
-          await _encodeTarToCompressedFormat(tarTmp, destinationPath, format, level, t);
-        } finally {
-          if (tarTmp.existsSync()) {
-            try { tarTmp.deleteSync(); } catch (_) {}
-          }
+        // Step 2b：把 TAR 流式编码到目标压缩格式（按字节推进 0.55 → 0.98）
+        t.send(0.56, 'Encoding $format archive…', force: true);
+        await _encodeTarToCompressedFormat(tarTmp, destinationPath, format, level, t);
+      } finally {
+        if (tarTmp.existsSync()) {
+          try { tarTmp.deleteSync(); } catch (_) {}
         }
       }
-
-      t.send(0.985, 'Finalizing…', force: true);
-
-      // ---- Phase 3：删除源文件 ----
-      if (deleteSource) {
-        for (final path in sourcePaths) {
-          try {
-            final type = FileSystemEntity.typeSync(path);
-            if (type == FileSystemEntityType.directory) {
-              Directory(path).deleteSync(recursive: true);
-            } else if (type == FileSystemEntityType.file) {
-              File(path).deleteSync();
-            }
-          } catch (_) {}
-        }
-      }
-
-      t.send(1.0, 'Archive created successfully', force: true);
-      await Future.delayed(const Duration(milliseconds: 200));
-      sendPort.send({'status': 'completed'});
-    } catch (e, stackTrace) {
-      final msg = 'Compression failed: ${e.toString()}';
-      debugPrint('$msg\n$stackTrace');
-      sendPort.send({'status': 'error', 'error': msg});
     }
+
+    t.send(0.985, 'Finalizing…', force: true);
+
+    // ---- Phase 2.5：分卷切割（如果需要）----
+    // 与 ArchiveService._splitArchiveIntoParts 同策略：按 chunkSize 分块 IO，
+    // 不把整个压缩包读入 RAM；产出 dest.001 / dest.002 …，并删除未分卷的整包。
+    // 逐文件模式下每个 job 各自独立分卷。
+    if (splitSizeMB != null && splitSizeMB > 0) {
+      final chunkSize = splitSizeMB * 1024 * 1024;
+      final srcFile = File(destinationPath);
+      if (srcFile.existsSync()) {
+        final total = srcFile.lengthSync();
+        if (total > chunkSize) {
+          _splitFileIntoParts(srcFile, destinationPath, chunkSize);
+          srcFile.deleteSync();
+        }
+      }
+    }
+
+    // ---- Phase 3：删除源文件 ----
+    if (deleteSource) {
+      for (final path in sourcePaths) {
+        try {
+          final type = FileSystemEntity.typeSync(path);
+          if (type == FileSystemEntityType.directory) {
+            Directory(path).deleteSync(recursive: true);
+          } else if (type == FileSystemEntityType.file) {
+            File(path).deleteSync();
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
+  /// 把已生成的压缩包按 chunkSize 切成 .001/.002… 分卷（分块 IO，不整包读入内存）。
+  /// 与 ArchiveService._splitArchiveIntoParts 行为一致：调用方负责删除原整包。
+  static void _splitFileIntoParts(File srcFile, String destBase, int chunkSize) {
+    final raf = srcFile.openSync();
+    try {
+      final total = raf.lengthSync();
+      final buf = Uint8List(chunkSize);
+      int remaining = total;
+      int partNum = 1;
+      while (remaining > 0) {
+        final toRead = remaining > chunkSize ? chunkSize : remaining;
+        final read = raf.readIntoSync(buf, 0, toRead);
+        if (read <= 0) break;
+        final partExt = partNum.toString().padLeft(3, '0');
+        final partFile = File('$destBase.$partExt');
+        final partRaf = partFile.openSync(mode: FileMode.write);
+        try {
+          if (read == chunkSize) {
+            partRaf.writeFromSync(buf);
+          } else {
+            partRaf.writeFromSync(Uint8List.fromList(buf.sublist(0, read)));
+          }
+        } finally {
+          partRaf.closeSync();
+        }
+        remaining -= read;
+        partNum++;
+      }
+    } finally {
+      raf.closeSync();
+    }
+  }
+
+  /// 生成不冲突的压缩包路径：目标已存在时按 name(1).ext / name(2).ext 递增，
+  /// 与普通单包路径的自动重命名行为一致，避免逐文件模式静默覆盖已有文件。
+  static String _uniqueArchivePath(String dest) {
+    if (!File(dest).existsSync()) return dest;
+    final dir = p.dirname(dest);
+    final base = p.basenameWithoutExtension(dest);
+    final ext = p.extension(dest);
+    int counter = 1;
+    String candidate;
+    do {
+      candidate = p.join(dir, '$base($counter)$ext');
+      counter++;
+    } while (File(candidate).existsSync());
+    return candidate;
   }
 
   /// 把已生成的 TAR 文件根据格式编码成对应压缩格式，流式读写，不把整包一次性读入内存。

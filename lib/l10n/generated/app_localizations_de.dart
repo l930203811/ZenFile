@@ -5243,6 +5243,25 @@ class L10nDe extends L10n {
   String get msg_pdf_detail_tuning => 'Detaillierte Einstellungen';
 
   @override
+  String get msg_pdf_large_title => 'Diese PDF ist groß';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'Die Datei ist ca. $size groß. Der integrierte Viewer muss das gesamte Dokument analysieren und kann als „reagiert nicht“ eingestuft werden. Empfohlen: mit einer anderen App öffnen.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline =>
+      'Trotzdem integrierten Viewer verwenden';
+
+  @override
+  String get msg_pdf_large_render_failed =>
+      'Eingebaute Anzeige nicht verfügbar, mit anderer App öffnen';
+
+  @override
+  String get msg_pdf_large_empty => 'Dieses PDF hat keine lesbaren Seiten';
+
+  @override
   String get msg_pdf_single_page_scroll =>
       'Einzelseite (Seite für Seite wischen)';
 
@@ -8590,4 +8609,22 @@ class L10nDe extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return '$count Verzeichnis(se) werden geschützt; neue Dateien werden automatisch verschlüsselt';
   }
+
+  @override
+  String get msg_name_invalid_title => 'Ungültiger Name';
+
+  @override
+  String get msg_name_invalid_separator =>
+      'Der Name darf keine Pfadtrennzeichen wie / oder \\ enthalten';
+
+  @override
+  String get msg_name_invalid_dot => 'Der Name darf nicht . oder .. sein';
+
+  @override
+  String get msg_name_invalid_chars =>
+      'Der Name enthält ungültige Zeichen (Steuerzeichen oder endet mit .)';
+
+  @override
+  String get msg_transfer_target_conflict =>
+      'Eine Datei oder ein Ordner mit demselben Namen existiert bereits; übersprungen';
 }

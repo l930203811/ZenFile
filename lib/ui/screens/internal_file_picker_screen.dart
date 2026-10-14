@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import '../../core/file_name_validation.dart';
 import '../../models/file_item_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/file_manager_provider.dart';
@@ -193,6 +194,21 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
       actionText: L10n.of(context).ui_create,
     );
     if (newFolderName != null && newFolderName.isNotEmpty) {
+      // 名称合法性：含 '/' 等分隔符时 p.join 会拼出嵌套路径，
+      // Directory.create() 会把中间目录一并建出。
+      final problem = validateFileName(newFolderName);
+      if (problem != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(fileNameProblemText(L10n.of(context), problem)),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
       setState(() => _isLoading = true);
       try {
         final provider = context.read<FileManagerProvider>();

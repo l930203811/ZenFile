@@ -5084,6 +5084,20 @@
   "@msg_pdf_detail_tuning": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
+  "msg_pdf_large_title": "Este PDF es grande",
+  "@msg_pdf_large_title": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_body": "El archivo ocupa unos {size}. El visor integrado debe analizar todo el documento y puede aparecer como «no responde». Se recomienda abrirlo con otra aplicación.",
+  "@msg_pdf_large_body": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_try_inline": "Intentar con el visor integrado",
+  "msg_pdf_large_render_failed": "La vista integrada no está disponible; ábrelo con otra app",
+  "msg_pdf_large_empty": "Este PDF no tiene páginas legibles",
+  "@msg_pdf_large_try_inline": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
   "msg_pdf_single_page_scroll": "Página única (deslizar página por página)",
   "@msg_pdf_single_page_scroll": {
     "description": "ui\\screens\\document_viewer_screen.dart"
@@ -8612,5 +8626,26 @@
   "crypt_auto_encrypt_watching": "Protegiendo {count} directorio(s); los archivos nuevos se cifrarán automáticamente",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
+  }
+,
+  "msg_name_invalid_title": "Nombre no válido",
+  "@msg_name_invalid_title": {
+    "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
+  },
+  "msg_name_invalid_separator": "El nombre no puede contener separadores de ruta como / o \\",
+  "@msg_name_invalid_separator": {
+    "description": "Warning shown when a name contains path separators such as / or backslash"
+  },
+  "msg_name_invalid_dot": "El nombre no puede ser . o ..",
+  "@msg_name_invalid_dot": {
+    "description": "Warning shown when a name is . or .. (path traversal segment)"
+  },
+  "msg_name_invalid_chars": "El nombre contiene caracteres no válidos (caracteres de control o termina en .)",
+  "@msg_name_invalid_chars": {
+    "description": "Warning shown when a name contains control characters or ends with a dot"
+  },
+  "msg_transfer_target_conflict": "Ya existe un archivo o carpeta con el mismo nombre en el destino; omitido",
+  "@msg_transfer_target_conflict": {
+    "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
   }
 }

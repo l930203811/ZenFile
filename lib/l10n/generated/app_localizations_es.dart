@@ -5268,6 +5268,24 @@ class L10nEs extends L10n {
   String get msg_pdf_detail_tuning => 'Opciones de ajuste detallado';
 
   @override
+  String get msg_pdf_large_title => 'Este PDF es grande';
+
+  @override
+  String msg_pdf_large_body(String size) {
+    return 'El archivo ocupa unos $size. El visor integrado debe analizar todo el documento y puede aparecer como «no responde». Se recomienda abrirlo con otra aplicación.';
+  }
+
+  @override
+  String get msg_pdf_large_try_inline => 'Intentar con el visor integrado';
+
+  @override
+  String get msg_pdf_large_render_failed =>
+      'La vista integrada no está disponible; ábrelo con otra app';
+
+  @override
+  String get msg_pdf_large_empty => 'Este PDF no tiene páginas legibles';
+
+  @override
   String get msg_pdf_single_page_scroll =>
       'Página única (deslizar página por página)';
 
@@ -8609,4 +8627,22 @@ class L10nEs extends L10n {
   String crypt_auto_encrypt_watching(Object count) {
     return 'Protegiendo $count directorio(s); los archivos nuevos se cifrarán automáticamente';
   }
+
+  @override
+  String get msg_name_invalid_title => 'Nombre no válido';
+
+  @override
+  String get msg_name_invalid_separator =>
+      'El nombre no puede contener separadores de ruta como / o \\';
+
+  @override
+  String get msg_name_invalid_dot => 'El nombre no puede ser . o ..';
+
+  @override
+  String get msg_name_invalid_chars =>
+      'El nombre contiene caracteres no válidos (caracteres de control o termina en .)';
+
+  @override
+  String get msg_transfer_target_conflict =>
+      'Ya existe un archivo o carpeta con el mismo nombre en el destino; omitido';
 }

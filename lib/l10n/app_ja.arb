@@ -5088,6 +5088,20 @@
   "@msg_pdf_detail_tuning": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
+  "msg_pdf_large_title": "この PDF はサイズが大きいです",
+  "@msg_pdf_large_title": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_body": "ファイルサイズは約 {size} です。内蔵ビューアーは文書全体を解析するため、「応答なし」と判定される可能性があります。他のアプリでの表示を推奨します。",
+  "@msg_pdf_large_body": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_large_try_inline": "それでも内蔵ビューアーで開く",
+  "msg_pdf_large_render_failed": "内蔵ビューアーで表示できません。他のアプリで開いてください",
+  "msg_pdf_large_empty": "この PDF には読み取れるページがありません",
+  "@msg_pdf_large_try_inline": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
   "msg_pdf_single_page_scroll": "単一ページ（ページごとにスワイプ）",
   "@msg_pdf_single_page_scroll": {
     "description": "ui\\screens\\document_viewer_screen.dart"
@@ -8616,5 +8630,26 @@
   "crypt_auto_encrypt_watching": "{count} 個のディレクトリを保護中。新規ファイルは自動的に暗号化されます",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
+  }
+,
+  "msg_name_invalid_title": "無効な名前",
+  "@msg_name_invalid_title": {
+    "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
+  },
+  "msg_name_invalid_separator": "名前に / や \\ などのパス区切り文字を含めることはできません",
+  "@msg_name_invalid_separator": {
+    "description": "Warning shown when a name contains path separators such as / or backslash"
+  },
+  "msg_name_invalid_dot": "名前に . や .. は使用できません",
+  "@msg_name_invalid_dot": {
+    "description": "Warning shown when a name is . or .. (path traversal segment)"
+  },
+  "msg_name_invalid_chars": "名前に無効な文字が含まれています（制御文字、または末尾が . ）",
+  "@msg_name_invalid_chars": {
+    "description": "Warning shown when a name contains control characters or ends with a dot"
+  },
+  "msg_transfer_target_conflict": "同じ名前のファイル/フォルダーが既に存在するためスキップしました",
+  "@msg_transfer_target_conflict": {
+    "description": "Notice shown when a download target collides with an existing file/folder and the item is skipped"
   }
 }

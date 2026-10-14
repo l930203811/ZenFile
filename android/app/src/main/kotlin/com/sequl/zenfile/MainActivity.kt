@@ -46,6 +46,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.pdf.PdfRenderer
+import android.graphics.Color
+import android.os.ParcelFileDescriptor
 import android.app.usage.StorageStatsManager
 import android.app.AppOpsManager
 import android.os.storage.StorageManager
@@ -79,6 +82,22 @@ class MainActivity : AudioServiceFragmentActivity() {
 
     private val ACTION_CANCEL_OPERATION = "com.sequl.zenfile.ACTION_CANCEL_OPERATION"
     private var notificationsChannel: MethodChannel? = null
+
+    // 原生 PDF 分页渲染（android.graphics.pdf.PdfRenderer）：大 PDF 若用 Syncfusion 在 UI
+    // isolate 同步解析会占死主线程 → ANR 闪退。改用原生 PdfRenderer 在后台线程（executor）
+    // 分页渲染成图片，Flutter 侧只负责展示，主线程始终空闲 → 不再 ANR。
+    private val PDF_RENDERER_CHANNEL = "com.sequl.zenfile/pdf_renderer"
+    private var pdfRendererChannel: MethodChannel? = null
+
+    private fun openPdfDescriptor(path: String): ParcelFileDescriptor {
+        return if (path.startsWith("content://")) {
+            val uri = Uri.parse(path)
+            contentResolver.openFileDescriptor(uri, "r")
+                ?: throw Exception("cannot open content uri: $path")
+        } else {
+            ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
+        }
+    }
 
     private val cancelReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -373,6 +392,81 @@ class MainActivity : AudioServiceFragmentActivity() {
         super.configureFlutterEngine(flutterEngine)
         storageEventChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
         SystemFilePickerBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
+        pdfRendererChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PDF_RENDERER_CHANNEL)
+        pdfRendererChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "pageCount" -> {
+                    val path = call.argument<String>("path")
+                    if (path.isNullOrEmpty()) { result.success(0); return@setMethodCallHandler }
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { result.success(0); return@setMethodCallHandler }
+                    executor.execute {
+                        var renderer: PdfRenderer? = null
+                        try {
+                            val pfd = openPdfDescriptor(path)
+                            renderer = PdfRenderer(pfd)
+                            val count = renderer.pageCount
+                            runOnUiThread { result.success(count) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.success(0) }
+                        } finally {
+                            try { renderer?.close() } catch (_: Exception) {}
+                        }
+                    }
+                }
+                "renderPage" -> {
+                    val path = call.argument<String>("path")
+                    val index = call.argument<Int>("index") ?: 0
+                    val widthPx = call.argument<Int>("width") ?: 1080
+                    if (path.isNullOrEmpty()) { result.error("bad_args", "path empty", null); return@setMethodCallHandler }
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { result.error("unsupported", "PdfRenderer requires API 21+", null); return@setMethodCallHandler }
+                    executor.execute {
+                        var renderer: PdfRenderer? = null
+                        try {
+                            val pfd = openPdfDescriptor(path)
+                            renderer = PdfRenderer(pfd)
+                            val pageCount = renderer.pageCount
+                            if (index < 0 || index >= pageCount) {
+                                runOnUiThread { result.error("bad_index", "index $index out of range [0,$pageCount)", null) }
+                                return@execute
+                            }
+                            val page = renderer.openPage(index)
+                            try {
+                                val maxW = 2000
+                                val maxH = 4000
+                                var bw = if (widthPx > 0) widthPx else 1080
+                                if (bw > maxW) bw = maxW
+                                var scale = bw.toFloat() / page.width.toFloat()
+                                var h = (page.height * scale).toInt()
+                                if (h > maxH) {
+                                    h = maxH
+                                    scale = h.toFloat() / page.height.toFloat()
+                                    bw = (page.width * scale).toInt()
+                                }
+                                if (bw < 1) bw = 1
+                                if (h < 1) h = 1
+                                val bitmap = Bitmap.createBitmap(bw, h, Bitmap.Config.ARGB_8888)
+                                bitmap.eraseColor(Color.WHITE)
+                                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                                val outDir = File(cacheDir, "zenfile_pdf")
+                                if (!outDir.exists()) outDir.mkdirs()
+                                val safeName = (path.hashCode().toString()) + "_" + index + ".png"
+                                val outFile = File(outDir, safeName)
+                                FileOutputStream(outFile).use { fos -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos) }
+                                bitmap.recycle()
+                                runOnUiThread { result.success(outFile.absolutePath) }
+                            } finally {
+                                page.close()
+                            }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("render_failed", e.message ?: e.toString(), null) }
+                        } finally {
+                            try { renderer?.close() } catch (_: Exception) {}
+                        }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "checkStatus" -> {

@@ -29,6 +29,8 @@ import '../services/apk_installer_service.dart';
 import '../services/crypt_auto_encrypt_service.dart';
 import '../ui/widgets/extract_archive_dialog.dart';
 import '../core/utils.dart';
+import '../core/restricted_path_variant.dart';
+import '../core/file_name_validation.dart';
 import '../services/preferences_service.dart';
 import '../services/app_manager_service.dart';
 import '../services/category_sync_service.dart';
@@ -1189,7 +1191,8 @@ class FileManagerProvider extends ChangeNotifier {
         // 标准 Directory.list() 会抛异常而返回 0 项。且 app 进程内的
         // listRawPath（Java File API）对「其它应用」的 Android/data 无权限
         // （File.list() 返回 null → 空列表），会误报 0 项。因此受限路径优先
-        // 走 Root/Shizuku shell（find+stat 双路径），与浏览层一致。
+        // 走 Root/Shizuku shell（find+stat 双路径），与浏览层一致；shell 不
+        // 可用时再走路径变体（'/./' 与零宽字符注入）直列，最后才标准路径。
         if (isRestrictedPath(folderPath)) {
           final status = await RootShizukuService.checkStatus();
           final rootOk = status.isRootAvailable;
@@ -1213,6 +1216,30 @@ class FileManagerProvider extends ChangeNotifier {
           if (rawItems != null && rawItems.isNotEmpty) {
             _folderItemCounts[cacheKey] = rawItems.length;
             return rawItems.length;
+          }
+          // 再兜底：路径变体（'/./' 与零宽字符注入）直列——与浏览层
+          // （loadDirectory 的 1b/1c 级）同一套绕过通道。root/Shizuku 均
+          // 不可用时，部分设备上标准 API 经变体路径仍可列出真实子项，
+          // 避免误报 0 项。逐个候选探测，全部失败则安静落到下方标准路径。
+          final variantPaths = <String?>[
+            _androidDotVariantPath(folderPath),
+            ...androidRestrictedVariants(folderPath),
+          ];
+          for (final variant in variantPaths) {
+            if (variant == null || variant.isEmpty) continue;
+            try {
+              // 流式计数，避免大目录一次性物化全部实体。
+              var variantCount = 0;
+              await for (final entity in Directory(variant).list()) {
+                final name = p.basename(entity.path);
+                if (!_showHiddenFiles && name.startsWith('.')) continue;
+                variantCount++;
+              }
+              if (variantCount > 0) {
+                _folderItemCounts[cacheKey] = variantCount;
+                return variantCount;
+              }
+            } catch (_) {}
           }
         }
         final dir = Directory(folderPath);
@@ -6516,6 +6543,26 @@ class FileManagerProvider extends ChangeNotifier {
               .toList();
         }
       }
+      // 1c. 零宽字符变体路径：向 /Android/{data,obb} 组件注入零宽字符
+      //     （U+200B）。内核 case-fold 未修补的设备上，访问控制的串匹配
+      //     失配而解析仍折叠回真实目录，标准 API 可直接列目录。多种注入
+      //     位置依次尝试；成功后将条目路径归一化回标准路径。
+      if (stdItems == null) {
+        for (final variant in androidRestrictedVariants(path)) {
+          final variantItems = await tryStandardApi(variant);
+          if (variantItems == null) continue;
+          debugPrint('[ZenFile] Zero-width variant path worked: $variant');
+          stdItems = variantItems
+              .map((it) => FileItemModel.fromCustom(
+                    path: normalizeVariantChildPath(it.path, variant, path),
+                    isDirectory: it.isDirectory,
+                    size: it.size,
+                    modified: it.modified,
+                  ))
+              .toList();
+          break;
+        }
+      }
       if (stdItems != null) {
         final folders = stdItems.where((e) => e.isDirectory).toList();
         final files = stdItems.where((e) => !e.isDirectory).toList();
@@ -8035,10 +8082,13 @@ class FileManagerProvider extends ChangeNotifier {
         );
       case ConflictResult.rename:
         final customName = response?.customName;
+        final desired =
+            (customName == null || customName.isEmpty) ? fileName : customName;
+        // 防注入：冲突对话框里用户可能输入含 '/' 的名称，直接 join 会拼出
+        // 嵌套路径、下载时把中间目录建出来。清洗为单段名后再参与唯一化。
+        final safeDesired = sanitizeFileName(desired) ?? fileName;
         return (
-          destPath: uniquePathFor(
-            (customName == null || customName.isEmpty) ? fileName : customName,
-          ),
+          destPath: uniquePathFor(safeDesired),
           shouldProcess: true,
           resolution: resolution,
         );
@@ -8207,6 +8257,28 @@ class FileManagerProvider extends ChangeNotifier {
         if (decision == null) throw Exception('Cancelled');
         if (!decision.shouldProcess) continue;
         final destPath = decision.destPath;
+
+        // 防嵌套闸门：目标位置已存在同名文件夹时，绝不能把文件下载进去
+        // （会形成「X/X」嵌套——远程复制偶发自动创建同名文件夹、文件
+        // 藏在里面的历史 Bug）。冲突对话框的「保留两者」在已存在项是
+        // 目录时也不会换名（_getUniquePath 只查 File），这里做最终守卫：
+        // 跳过该条目并明确提示，绝不静默嵌套。
+        final bool targetTypeConflict = remoteItem.isDirectory
+            ? File(destPath).existsSync()
+            : Directory(destPath).existsSync();
+        if (targetTypeConflict) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    '${L10n.of(context).msg_transfer_target_conflict}: ${remoteItem.name}'),
+                backgroundColor: Colors.orangeAccent,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          continue;
+        }
 
         if (remoteItem.isDirectory) {
           // For folders, track progress per-file inside the directory
@@ -9370,18 +9442,49 @@ class FileManagerProvider extends ChangeNotifier {
     void Function(String fileName)? onFileStart,
     void Function(String fileName, int fileSize, double progress)? onFileProgress,
   }) async {
+    final List<RemoteFileItem> remoteItems = await client.listDirectory(remoteDirPath);
+    // 自指检测：个别 SMB 服务器对「文件路径」执行 list 会返回该文件自身
+    // （父路径不可能是子路径，故条目路径与所查路径相等即自指）。此时
+    // remoteDirPath 实际是文件而非目录——若按目录处理会先建出同名文件夹
+    // 再把文件拷进去，形成「X/X」嵌套（远程复制偶发自动创建同名文件夹、
+    // 文件藏在里面的历史 Bug）。检测到自指条目时按文件直接落盘。
+    RemoteFileItem? selfItem;
+    for (final it in remoteItems) {
+      if (!it.isDirectory && _sameRemotePath(it.path, remoteDirPath)) {
+        selfItem = it;
+        break;
+      }
+    }
+    if (selfItem != null) {
+      onFileStart?.call(selfItem.name);
+      onFileProgress?.call(selfItem.name, selfItem.size, 0.0);
+      await client.downloadFile(selfItem.path, localDirPath, (prog) {
+        onFileProgress?.call(selfItem.name, selfItem.size, prog);
+      });
+      return;
+    }
     final localDir = Directory(localDirPath);
     if (!localDir.existsSync()) {
       localDir.createSync(recursive: true);
     }
-    final List<RemoteFileItem> remoteItems = await client.listDirectory(remoteDirPath);
     for (final item in remoteItems) {
       if (_isOperationCancelled) throw Exception('Cancelled');
       final destPath = p.join(localDirPath, item.name);
       if (item.isDirectory) {
+        // 防嵌套闸门：本地已存在同名文件时，不能把目录建/拷到文件路径上。
+        if (File(destPath).existsSync()) {
+          debugPrint('跳过远程目录下载：目标已存在同名文件 $destPath');
+          continue;
+        }
         await _downloadRemoteDirectory(client, item.path, destPath,
             onFileStart: onFileStart, onFileProgress: onFileProgress);
       } else {
+        // 防嵌套闸门：本地已存在同名文件夹时，不能把文件下载进去
+        // （「X/X」嵌套）。直接跳过该文件。
+        if (Directory(destPath).existsSync()) {
+          debugPrint('跳过远程文件下载：目标已存在同名文件夹 $destPath');
+          continue;
+        }
         onFileStart?.call(item.name);
         onFileProgress?.call(item.name, item.size, 0.0);
         await client.downloadFile(item.path, destPath, (prog) {
@@ -9389,6 +9492,20 @@ class FileManagerProvider extends ChangeNotifier {
         });
       }
     }
+  }
+
+  /// 远程路径比较（忽略首尾空白与末尾斜杠）。父路径不可能是子路径，
+  /// 故「条目路径 == 所查目录路径」即 list 返回了自身（该路径实为文件）。
+  static bool _sameRemotePath(String a, String b) {
+    String norm(String s) {
+      var out = s.trim();
+      while (out.length > 1 && out.endsWith('/')) {
+        out = out.substring(0, out.length - 1);
+      }
+      return out;
+    }
+
+    return norm(a) == norm(b);
   }
 
   // ===================== 分类同步（文件级 · 本地 ↔ 远程） =====================
@@ -10072,6 +10189,25 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> renameFile(String oldPath, String newName, [BuildContext? context]) async {
+    // 单段名校验（所有分支的统一入口）：名称含 '/' 等路径分隔符时
+    // p.join(dirname, name) 会拼出嵌套路径（a.jpg → a.jpg/a.jpg），
+    // rename() 因父目录不存在而失败，随后 _renameWithFallback 兜底会把
+    // 父目录真的建出来并 copy 进去——表现为「自动创建同名文件夹、文件
+    // 躺在文件夹里」。非法名称在此直接拒绝，不进入任何文件系统操作。
+    final nameProblem = validateFileName(newName);
+    if (nameProblem != null) {
+      debugPrint('[ZenFile] 重命名被拒绝（$nameProblem）：$newName');
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(fileNameProblemText(L10n.of(context), nameProblem)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
     try {
       // 加密目录内重命名：物理名需按配置重加密。重命名不暴露内容（纯密文名
       // 操作），不设保险箱会话闸门。仅拦截「真实加密实体」；
@@ -10166,6 +10302,22 @@ class FileManagerProvider extends ChangeNotifier {
             } else if (response.result == ConflictResult.rename &&
                 response.customName != null &&
                 response.customName!.isNotEmpty) {
+              // 冲突对话框里用户又输入了非法名称（含路径分隔符等）：
+              // 提示并放弃本次重命名，避免拼出嵌套路径。
+              final customProblem = validateFileName(response.customName!);
+              if (customProblem != null) {
+                if (context != null && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          fileNameProblemText(L10n.of(context), customProblem)),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+                return;
+              }
               finalNewPath = p.join(p.dirname(oldPath), response.customName!);
             }
             // ConflictResult.overwrite：保持 finalNewPath = newPath，直接覆盖
@@ -10262,6 +10414,12 @@ class FileManagerProvider extends ChangeNotifier {
       // 回退到复制 + 删除
       if (entity is File) {
         final srcFile = entity;
+        // 防嵌套闸门：目标路径已存在同名目录时，绝不能把文件 copy 进去
+        // （那会形成「文件夹/同名文件」）。正常流程上游已校验名称为
+        // 单段，这里是最后防线——直接报错让用户看到失败。
+        if (Directory(newPath).existsSync()) {
+          throw Exception('目标已存在同名文件夹：${p.basename(newPath)}');
+        }
         final parentDir = Directory(p.dirname(newPath));
         if (!parentDir.existsSync()) {
           await parentDir.create(recursive: true);
@@ -10274,6 +10432,10 @@ class FileManagerProvider extends ChangeNotifier {
         }
       } else if (entity is Directory) {
         final srcDir = entity;
+        // 防嵌套闸门：目标路径已存在同名文件时，不能把目录内容拷进去。
+        if (File(newPath).existsSync()) {
+          throw Exception('目标已存在同名文件：${p.basename(newPath)}');
+        }
         final destDir = Directory(newPath);
         if (!destDir.existsSync()) {
           await destDir.create(recursive: true);
@@ -10305,6 +10467,14 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<String?> createFolder(String name) async {
     _lastCreateError = null;
+    // 单段名校验：名称含 '/' 时 p.join 会拼出嵌套路径，Directory.create()
+    // 会把中间目录一并建出（a/b → 建出文件夹 a、里面放 b），与重命名
+    // 链路同源。入口直接拒绝。
+    final nameProblem = validateFileName(name);
+    if (nameProblem != null) {
+      _lastCreateError = '名称不合法：不能包含 / 或 \\ 等路径分隔符';
+      return null;
+    }
     try {
       // 远程加密新建文件夹（cryptremote://）：目录名需用密码加密为密文
       if (activeTab.isCryptRemote && activeTab.remoteClient != null) {
@@ -10378,6 +10548,12 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<String?> createFile(String name) async {
     _lastCreateError = null;
+    // 单段名校验：同 createFolder，防止嵌套路径建出中间目录。
+    final nameProblem = validateFileName(name);
+    if (nameProblem != null) {
+      _lastCreateError = '名称不合法：不能包含 / 或 \\ 等路径分隔符';
+      return null;
+    }
     try {
       String finalName = name;
       final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
@@ -10561,6 +10737,9 @@ class FileManagerProvider extends ChangeNotifier {
           format: format,
           level: compressionLevel,
           deleteSource: deleteSource,
+          password: password,
+          splitSizeMB: splitSizeMB,
+          separateArchives: separateArchives,
           targetRefreshDir: currentPath,
           writeDestinationPath: tempPath,
           safLocalPath: tempPath,
@@ -10618,6 +10797,9 @@ class FileManagerProvider extends ChangeNotifier {
         format: format,
         level: compressionLevel,
         deleteSource: deleteSource,
+        password: password,
+        splitSizeMB: splitSizeMB,
+        separateArchives: separateArchives,
         targetRefreshDir: targetDir,
         onComplete: () {
           loadDirectory(targetDir, showLoading: false, clearCache: true);
@@ -12522,7 +12704,17 @@ class FileManagerProvider extends ChangeNotifier {
           tempDir.createSync(recursive: true);
         }
         final tempPath = p.join(tempDir.path, 'temp_restricted_${DateTime.now().millisecondsSinceEpoch}_${p.basename(path)}');
-        await RootShizukuService.copyItem(path, tempPath, useRoot: activeTab.useRootMode);
+        var shellCopied = false;
+        try {
+          await RootShizukuService.copyItem(path, tempPath, useRoot: activeTab.useRootMode);
+          shellCopied = File(tempPath).existsSync();
+        } catch (e) {
+          debugPrint('Shell/SAF copy failed for restricted file: $e');
+        }
+        // shell/SAF 通道不可用或失败时，回退零宽字符变体直拷（Dart IO）。
+        if (!shellCopied) {
+          await tryCopyViaRestrictedVariants(path, tempPath);
+        }
         if (File(tempPath).existsSync()) {
           targetPath = tempPath;
         }

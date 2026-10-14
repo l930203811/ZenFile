@@ -11,7 +11,9 @@ import 'package:open_filex/open_filex.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:xml/xml.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/utils.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:zenfile/ui/widgets/native_pdf_viewer.dart';
 
 class DocumentViewerScreen extends StatefulWidget {
   final String filePath;
@@ -61,11 +63,40 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
   int _pdfViewerVersion = 0;
 
+  /// 内置 PDF 查看器（Syncfusion）**在主 isolate 上同步解析整份文档**，并且会把
+  /// 整个文件一次性读进内存：
+  /// * 字节源走 `getBytes()`（整文件读成 `Uint8List`）；
+  /// * 解析是纯 Dart 的 `PdfDocument(inputBytes: ...)`，**没有**放进 isolate
+  ///   （该包只为「解密 / 文本搜索」建 isolate，解析与页面渲染都在 UI 线程）。
+  ///
+  /// 于是文件越大，主线程被占死越久 —— 一旦超过输入分发超时（约 5s），系统就判定
+  /// ANR，用户看到「无响应」后关掉应用，表现为「打开大 PDF 就闪退」。崩溃取证里
+  /// 类型正是 ANR（原因码 6），main 线程 state=R 在 Dart 代码里持续烧 CPU。
+  /// 体积再大还会因整份字节常驻堆内存（本机堆上限仅 256MB）而 OOM。
+  ///
+  /// 因此超过此体积时**不再用 Syncfusion 直接渲染**（否则必 ANR），而是直接走
+  /// 原生 PdfRenderer 兜底查看器（后台线程分页渲染，不卡 UI，见 NativePdfViewer）。
+  /// 不再弹「用其他应用打开 / 仍要尝试」的提示选择框，大文件打开即进兜底查看器。
+  static const int _kPdfInlineSafeBytes = 20 * 1024 * 1024;
+
+  /// PDF 体积（探测失败时为 null）。
+  int? _pdfFileBytes;
+
+  /// 体积探测是否完成 —— 完成前不构建查看器，避免「探测还没回来就先开解析」。
+  bool _pdfProbeDone = false;
+
+  /// 超过安全体积时，内置 Syncfusion 查看器会因同步解析占死主线程 → ANR。
+  /// 这类文件一律走原生 PdfRenderer 兜底查看器（后台线程分页渲染，不卡 UI）。
+  bool get _shouldUseNativePdf =>
+      _isPdf && _pdfProbeDone && (_pdfFileBytes ?? 0) > _kPdfInlineSafeBytes;
+
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    if (_isText) {
+    if (_isPdf) {
+      _probePdfSize();
+    } else if (_isText) {
       _loadTextFile();
     } else if (_isWord) {
       _loadWordFile();
@@ -83,6 +114,22 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     _textController.dispose();
     _textFieldFocusNode.dispose();
     super.dispose();
+  }
+
+  /// 打开前先取 PDF 体积（`File.length()` 是异步 IO，不占主线程），
+  /// 用它决定要不要直接构建内置查看器（见 [_kPdfInlineSafeBytes]）。
+  Future<void> _probePdfSize() async {
+    int? size;
+    try {
+      final file = File(widget.filePath);
+      if (await file.exists()) size = await file.length();
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _pdfFileBytes = size;
+      _pdfProbeDone = true;
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadTextFile() async {
@@ -716,7 +763,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                 tooltip: L10n.of(context).msgd28847a2,
               ),
           ],
-          if (_isPdf)
+          // 原生兜底查看器（大文件）与提示页都没有「显示设置」的意义，一并隐去。
+          if (_isPdf && !_shouldUseNativePdf)
             IconButton(
               icon: const Icon(Icons.tune_rounded),
               onPressed: _showPdfSettings,
@@ -780,6 +828,19 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   }
 
   Widget _buildPdfViewer(ThemeData theme, bool isDark) {
+    // 体积还没探测出来就先转圈：不能让「探测结果未知」的文档先进解析器。
+    if (!_pdfProbeDone) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    // 大文件（>20MB）：直接走原生 PdfRenderer 兜底查看器（后台线程分页渲染），
+    // 不再用 Syncfusion 在 UI isolate 同步解析，避免主线程被占死 → ANR。
+    // 此处不再弹提示选择框，大文件打开即进兜底查看器。
+    if (_shouldUseNativePdf) {
+      return NativePdfViewer(
+        filePath: widget.filePath,
+        onOpenExternal: _openExternal,
+      );
+    }
     return Container(
       color: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
       child: SfPdfViewer.file(
