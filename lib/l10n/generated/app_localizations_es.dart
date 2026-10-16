@@ -4879,6 +4879,15 @@ class L10nEs extends L10n {
   String get ui_columns_per_row => 'Columnas por fila';
 
   @override
+  String get ui_category_card_style => 'Estilo de las tarjetas';
+
+  @override
+  String get ui_category_card_style_filled => 'Borde';
+
+  @override
+  String get ui_category_card_style_minimal => 'Minimal';
+
+  @override
   String get ui_2columns => '2 Columnas';
 
   @override

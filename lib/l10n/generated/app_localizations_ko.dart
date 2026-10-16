@@ -4663,6 +4663,15 @@ class L10nKo extends L10n {
   String get ui_columns_per_row => '행당 열 수';
 
   @override
+  String get ui_category_card_style => '카드 표시 스타일';
+
+  @override
+  String get ui_category_card_style_filled => '테두리';
+
+  @override
+  String get ui_category_card_style_minimal => '심플';
+
+  @override
   String get ui_2columns => '2열';
 
   @override

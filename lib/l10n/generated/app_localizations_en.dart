@@ -4808,6 +4808,15 @@ class L10nEn extends L10n {
   String get ui_columns_per_row => 'Columns per row';
 
   @override
+  String get ui_category_card_style => 'Category card style';
+
+  @override
+  String get ui_category_card_style_filled => 'Border';
+
+  @override
+  String get ui_category_card_style_minimal => 'Minimal';
+
+  @override
   String get ui_2columns => '2 Columns';
 
   @override

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as p;
+import '../core/restricted_path_variant.dart';
 import 'root_shizuku_service.dart';
 
 class RecycleBinItem {
@@ -95,43 +96,95 @@ class RecycleBinService {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     final trashPath = p.join(trashDirectoryPath, id);
 
-    final fileExists = File(path).existsSync();
-    final dirExists = Directory(path).existsSync();
-    final isDirectory = dirExists;
+    // ⚠️ 受限路径（其它应用的 Android/{data,obb}）**绝不能**先用 Dart IO 探测类型：
+    //    app 进程的 stat 会被 FUSE 拒绝并抛 `PathAccessException: Exists failed
+    //    (errno 13)`，后面的 shell / 变体绕过分支根本没机会执行 —— 这正是
+    //    「进入 Android/data 后删除必失败」的直接原因（真机反馈）。
+    //    类型判定改走 shell → 零宽变体通道；也**不做**「不存在则抛」的前置校验
+    //    （受限路径本来就 stat 不到，失败由下方移动结果统一暴露）。
+    final isRestricted = _isRestrictedStoragePath(path);
 
-    if (!fileExists && !dirExists) {
-      throw Exception("Source file/folder does not exist: $path");
-    }
-
-    // 体积仅用于回收站列表展示（recycle_bin_screen.dart:394/691）。
-    // ⚠️ 目录体积**不能**在移动前同步遍历：Telegram 缓存动辄数万小文件，
-    //    一次 dir.list(recursive:true) + 每文件 lengthSync() 会把整个删除动作
-    //    阻塞住（可吃掉数十秒）；且受限目录（其它应用的 Android/data）Dart IO
-    //    根本读不到内容，遍历出来恒为 0。目录一律改为移动完成后后台补算。
+    bool isDirectory = false;
     int size = 0;
-    if (!isDirectory) {
-      try {
-        size = File(path).lengthSync();
-      } catch (_) {}
+    if (isRestricted) {
+      isDirectory = await _restrictedIsDirectory(path, useRoot: useRoot);
+      size = await _restrictedSize(path, useRoot: useRoot, isDirectory: isDirectory);
+    } else {
+      final fileExists = File(path).existsSync();
+      final dirExists = Directory(path).existsSync();
+      isDirectory = dirExists;
+      if (!fileExists && !dirExists) {
+        throw Exception("Source file/folder does not exist: $path");
+      }
+      // 体积仅用于回收站列表展示（recycle_bin_screen.dart:394/691）。
+      // ⚠️ 目录体积**不能**在移动前同步遍历：Telegram 缓存动辄数万小文件，
+      //    一次 dir.list(recursive:true) + 每文件 lengthSync() 会把整个删除动作
+      //    阻塞住（可吃掉数十秒）；且受限目录（其它应用的 Android/data）Dart IO
+      //    根本读不到内容，遍历出来恒为 0。目录一律改为移动完成后后台补算。
+      if (!isDirectory) {
+        try {
+          size = File(path).lengthSync();
+        } catch (_) {}
+      }
     }
 
     // Move to trash using standard rename/move or Shizuku/root move-copy-delete
-    final isRestricted = path.toLowerCase().contains('/android/data') || path.toLowerCase().contains('/android/obb');
     if (isRestricted) {
       // ⚠️ 必须是**移动**，不能是 copy + delete（与 file_manager_provider.pasteFile
       //    7650-7668 的既定约定一致）：同文件系统内 `mv` 只改元数据，1.2GB 也是
       //    毫秒级；而 `cp -r` 会实打实读 1.2GB + 写 1.2GB（≈2.4GB I/O ⇒ 约 1 分钟）。
       //    旧实现用的就是 copy + delete —— 这正是「删 Telegram 文件夹要 1 分钟」的根因。
+      //
+      // 通道依次尝试（覆盖各类 ROM / 权限模式）：
+      //   ① shell `mv` —— 有 root/Shizuku 时对底层路径与 FUSE 路径均有权限；
+      //   ② 标准路径 rename(2) —— 部分 ROM 的 FUSE 只拦 stat 却放行 rename，
+      //      同卷仍是纯元数据操作（File.rename 对目录同样有效，都是 rename(2)）；
+      //   ③ 零宽变体路径 rename —— 「无需授权直访」模式（无 root/Shizuku）下，
+      //      app 进程经变体路径绕过 FUSE 的路径串匹配；
+      //   ④ shell copy+delete → 变体复制 + 变体删除（末级回退）。
       bool moved = false;
       try {
         await RootShizukuService.moveItem(path, trashPath, useRoot: useRoot);
         moved = true;
       } catch (e) {
-        debugPrint('[RecycleBin] 受限路径 moveItem 失败，回退 copy+delete: $e');
+        debugPrint('[RecycleBin] 受限路径 moveItem 失败，试标准 rename: $e');
       }
       if (!moved) {
-        await RootShizukuService.copyItem(path, trashPath, useRoot: useRoot);
-        await RootShizukuService.deleteItem(path, useRoot: useRoot);
+        try {
+          await File(path).rename(trashPath);
+          moved = true;
+          debugPrint('[RecycleBin] 受限路径经标准 rename 移入回收站成功');
+        } catch (e) {
+          debugPrint('[RecycleBin] 受限路径标准 rename 失败，试变体 rename: $e');
+        }
+      }
+      if (!moved) {
+        moved = await tryRenameViaRestrictedVariants(path, trashPath);
+        if (moved) debugPrint('[RecycleBin] 受限路径经变体 rename 移入回收站成功');
+      }
+      if (!moved) {
+        try {
+          await RootShizukuService.copyItem(path, trashPath, useRoot: useRoot);
+          await RootShizukuService.deleteItem(path, useRoot: useRoot);
+          moved = true;
+        } catch (e) {
+          debugPrint('[RecycleBin] 受限路径 shell copy+delete 失败，试变体复制: $e');
+        }
+      }
+      if (!moved) {
+        final copied = await tryCopyTreeViaRestrictedVariants(path, trashPath);
+        if (copied) {
+          if (await tryDeleteViaRestrictedVariants(path)) {
+            moved = true;
+          } else {
+            // 副本已落盘但源删不掉：撤走副本，避免「回收站有一份、原处还在」
+            // 造成的假删除与空间翻倍。撤不掉也不登记条目（宁可报错）。
+            await _removeTrashEntry(trashPath);
+          }
+        }
+      }
+      if (!moved) {
+        throw Exception('Move to trash failed (restricted path): $path');
       }
     } else {
       try {
@@ -184,13 +237,19 @@ class RecycleBinService {
     final trashPath = p.join(trashDirectoryPath, item.id);
     final destPath = item.originalPath;
 
+    final isRestricted = _isRestrictedStoragePath(destPath);
+
     // Ensure parent directory exists
-    final parentDir = Directory(p.dirname(destPath));
-    if (!parentDir.existsSync()) {
-      parentDir.createSync(recursive: true);
+    // ⚠️ 受限路径的父目录同样 stat 不到（app 进程 stat 被 FUSE 拒绝 →
+    //    PathAccessException），必须跳过 Dart IO 的存在性检查，直接交给下方的
+    //    shell / 变体通道；父目录本来就在（条目当初就是从那里移走的）。
+    if (!isRestricted) {
+      final parentDir = Directory(p.dirname(destPath));
+      if (!parentDir.existsSync()) {
+        parentDir.createSync(recursive: true);
+      }
     }
 
-    final isRestricted = destPath.toLowerCase().contains('/android/data') || destPath.toLowerCase().contains('/android/obb');
     if (isRestricted) {
       // 与 moveToTrash 同理：优先原子 `mv`（同卷只改元数据），失败才回退 copy + delete。
       bool moved = false;
@@ -198,11 +257,34 @@ class RecycleBinService {
         await RootShizukuService.moveItem(trashPath, destPath, useRoot: useRoot);
         moved = true;
       } catch (e) {
-        debugPrint('[RecycleBin] 受限路径恢复 moveItem 失败，回退 copy+delete: $e');
+        debugPrint('[RecycleBin] 受限路径恢复 moveItem 失败，试标准 rename: $e');
       }
       if (!moved) {
-        await RootShizukuService.copyItem(trashPath, destPath, useRoot: useRoot);
-        await RootShizukuService.deleteItem(trashPath, useRoot: useRoot);
+        // 部分 ROM 只拦 stat、放行 rename(2)：标准路径直接改名即可回原处。
+        try {
+          await File(trashPath).rename(destPath);
+          moved = true;
+          debugPrint('[RecycleBin] 受限路径恢复经标准 rename 成功');
+        } catch (e) {
+          debugPrint('[RecycleBin] 受限路径恢复标准 rename 失败，试变体: $e');
+        }
+      }
+      if (!moved) {
+        // 直访模式（无 root/Shizuku）：变体施加在**目标侧**（源是回收站普通路径）。
+        moved = await tryRenameToRestrictedVariant(trashPath, destPath);
+        if (moved) debugPrint('[RecycleBin] 受限路径恢复经变体 rename 成功');
+      }
+      if (!moved) {
+        try {
+          await RootShizukuService.copyItem(trashPath, destPath, useRoot: useRoot);
+          await RootShizukuService.deleteItem(trashPath, useRoot: useRoot);
+          moved = true;
+        } catch (e) {
+          debugPrint('[RecycleBin] 受限路径恢复 shell copy+delete 失败: $e');
+        }
+      }
+      if (!moved) {
+        throw Exception('Restore failed (restricted path): $destPath');
       }
     } else {
       try {
@@ -284,6 +366,65 @@ class RecycleBinService {
   }
 
   // --- Internals & Helpers ---
+
+  /// 是否位于「其它应用的 Android/{data,obb}」FUSE 受限区。
+  ///
+  /// 判定前先剥离零宽字符 / `/./` 变体标记：变体路径在界面上不可见（零宽字符
+  /// 不渲染），直接做子串匹配会漏判（`/Android/​data` 被断开），进而把受限路径
+  /// 交给 Dart IO —— app 进程的 stat 被 FUSE 拒绝，必抛 `Exists failed`。
+  /// 自身包名目录 app 本身可读写，不算受限。
+  static bool _isRestrictedStoragePath(String path) {
+    final normalized =
+        stripRestrictedVariantMarkers(path).replaceAll(RegExp(r'/+'), '/');
+    const marker = '/storage/emulated/0/Android/';
+    if (!normalized.startsWith(marker)) return false;
+    final sub =
+        normalized.substring(marker.length).replaceAll(RegExp(r'/+$'), '');
+    if (sub != 'data' &&
+        !sub.startsWith('data/') &&
+        sub != 'obb' &&
+        !sub.startsWith('obb/')) {
+      return false;
+    }
+    return !sub.startsWith('data/com.sequl.zenfile2') &&
+        !sub.startsWith('obb/com.sequl.zenfile2');
+  }
+
+  /// 受限路径上判定条目是否为目录：shell stat → 零宽变体探测
+  /// （两条通道都不触碰干净路径的 Dart IO）。均不可用时按「非目录」返回，
+  /// 由后续移动通道的实际结果兜底报错。
+  static Future<bool> _restrictedIsDirectory(String path,
+      {required bool useRoot}) async {
+    try {
+      final st = await RootShizukuService.statItem(path, useRoot: useRoot);
+      if (st != null) return st.isDirectory;
+    } catch (_) {}
+    return (await typeViaRestrictedVariants(path)) ==
+        FileSystemEntityType.directory;
+  }
+
+  /// 受限路径上取文件体积（仅用于回收站列表展示；取不到按 0。
+  /// 目录不做预遍历，移动完成后由 _backfillDirectorySize 后台补算）。
+  static Future<int> _restrictedSize(String path,
+      {required bool useRoot, required bool isDirectory}) async {
+    if (isDirectory) return 0;
+    try {
+      final st = await RootShizukuService.statItem(path, useRoot: useRoot);
+      if (st != null) return st.size;
+    } catch (_) {}
+    return 0;
+  }
+
+  /// 撤走回收站条目（复制成功但源未能删除时的清理，避免假删除与空间翻倍）。
+  static Future<void> _removeTrashEntry(String trashPath) async {
+    try {
+      if (FileSystemEntity.typeSync(trashPath) == FileSystemEntityType.directory) {
+        await Directory(trashPath).delete(recursive: true);
+      } else {
+        await File(trashPath).delete();
+      }
+    } catch (_) {}
+  }
 
   static Future<void> _saveToPrefs() async {
     final list = _trashItems.map((item) => jsonEncode(item.toJson())).toList();

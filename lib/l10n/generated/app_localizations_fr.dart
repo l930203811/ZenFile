@@ -4881,6 +4881,15 @@ class L10nFr extends L10n {
   String get ui_columns_per_row => 'Colonnes par ligne';
 
   @override
+  String get ui_category_card_style => 'Style des cartes';
+
+  @override
+  String get ui_category_card_style_filled => 'Bordure';
+
+  @override
+  String get ui_category_card_style_minimal => 'Minimal';
+
+  @override
   String get ui_2columns => '2 Colonnes';
 
   @override

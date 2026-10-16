@@ -6,7 +6,6 @@ import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
-import '../../services/root_shizuku_service.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
@@ -292,38 +291,32 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
     Future<void> searchDirectory(String dirPath) async {
       try {
-        // 检查是否为受限路径，如果是则使用 Shizuku/Root 访问
+        // 受限路径（其它应用的 Android/data、Android/obb）不能走 Dart IO 直列，
+        // 统一交给 provider 的多通道枚举（shell → 标准路径 → 变形路径 → 底层路径）。
         final fileProvider = context.read<FileManagerProvider>();
-        List<FileSystemEntity> entities;
-        
+        List<(String path, bool isDir, FileItemModel? prebuilt)> entries;
+
         if (fileProvider.isRestrictedPath(dirPath)) {
-          final status = await RootShizukuService.checkStatus();
-          if (!status.isRootAvailable && !status.isShizukuAvailable) {
-            debugPrint('搜索: 跳过无权限目录 $dirPath (Shizuku/Root 不可用)');
-            return;
-          }
-          
-          final useRoot = status.isRootAvailable && !status.isShizukuAvailable;
-          final items = await RootShizukuService.listFiles(
-            dirPath, 
-            useRoot: useRoot, 
-            showHiddenFiles: fileProvider.showHiddenFiles,
+          // 受限目录（其它应用的 Android/{data,obb}）：走 provider 的多通道枚举。
+          // 旧实现要求 root/Shizuku 可用，否则**整个目录直接跳过** ——
+          // 「无需授权直访」模式下全局搜索在 Android/data 里恒为空结果（真机反馈）。
+          final items = await fileProvider.listRestrictedChildItems(
+            dirPath,
+            showHidden: fileProvider.showHiddenFiles,
           );
-          // 将 FileItemModel 转换为 FileSystemEntity 兼容格式
-          entities = items.map((item) => item.isDirectory ? Directory(item.path) : File(item.path)).toList();
+          entries = [for (final it in items) (it.path, it.isDirectory, it)];
         } else {
           final dir = Directory(dirPath);
           if (!await dir.exists()) return;
-          entities = await dir.list(followLinks: false).toList();
+          final entities = await dir.list(followLinks: false).toList();
+          entries = [for (final e in entities) (e.path, e is Directory, null)];
         }
 
-        for (final entity in entities) {
-          final name = p.basename(entity.path);
+        for (final (path, isDir, prebuilt) in entries) {
+          final name = p.basename(path);
 
           // 检查文件名是否匹配搜索词
           if (name.toLowerCase().contains(qLower)) {
-            final isDir = entity is Directory;
-
             bool matchFilter = false;
             if (_selectedFilter == L10n.of(context).ui_all) {
               matchFilter = true;
@@ -339,23 +332,28 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               matchFilter = true;
             }
 
-            if (matchFilter && !seenPaths.contains(entity.path)) {
-              seenPaths.add(entity.path);
+            if (matchFilter && !seenPaths.contains(path)) {
+              seenPaths.add(path);
               try {
-                final item = await FileItemModel.fromEntityAsync(entity);
+                // 受限条目在枚举阶段已构造好（不能再用 Dart IO stat）；
+                // 普通条目保持惰性 stat，只在命中搜索词时才解析元数据。
+                final item = prebuilt ??
+                    await FileItemModel.fromEntityAsync(
+                      isDir ? Directory(path) : File(path),
+                    );
                 if (!isCancelled) {
                   onResult(item);
                 }
               } catch (e) {
-                debugPrint('解析文件 ${entity.path} 时出错: $e');
+                debugPrint('解析文件 $path 时出错: $e');
               }
             }
           }
 
           // 如果是目录，递归搜索（跳过符号链接和特殊目录）
-          if (entity is Directory && !isCancelled) {
+          if (isDir && !isCancelled) {
             activeTasks++;
-            searchDirectory(entity.path).then((_) {
+            searchDirectory(path).then((_) {
               activeTasks--;
               if (activeTasks == 0 && !isCancelled) {
             controller.close();

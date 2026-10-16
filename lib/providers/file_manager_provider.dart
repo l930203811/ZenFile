@@ -281,6 +281,7 @@ class FileManagerProvider extends ChangeNotifier {
     _trailingInfoType = PreferencesService.getTrailingInfoType();
     _categoryIconShape = PreferencesService.getCategoryIconShape();
     _categoriesGridColumns = PreferencesService.getCategoriesGridColumns();
+    _categoryCardStyle = PreferencesService.getCategoryCardStyle();
     _favorites = PreferencesService.getFavorites();
 
     // One-time migration: reset PDF (and other documents) default open action to 'native' if it was set to 'external'
@@ -1162,6 +1163,9 @@ class FileManagerProvider extends ChangeNotifier {
   /// 计算文件夹的直接子项数量。
   /// 本地目录使用 dart:io 枚举；远程目录使用当前 tab 的 [RemoteClient.listDirectory]
   /// 统计，避免在远程路径上误用本地 [Directory] 导致始终返回 0。
+  /// 同一路径「正在枚举中」的请求，用于并发合流（见 [getFolderItemCount]）。
+  final Map<String, Future<int>> _folderItemCountInFlight = {};
+
   Future<int> getFolderItemCount(String folderPath, {bool isRemote = false}) async {
     final cacheKey = isRemote && activeTab.remoteConnection != null
         ? '${activeTab.remoteConnection!.id}::$folderPath'
@@ -1171,6 +1175,33 @@ class FileManagerProvider extends ChangeNotifier {
       return _folderItemCounts[cacheKey]!;
     }
 
+    // 并发合流：同一个「尚未缓存」的路径被多个磁贴 / 多次 rebuild 同时请求时，
+    // 只真正枚举一次，其余复用同一个 Future。
+    //
+    // 为什么必须做：远程客户端（SFTP / FTP）内部用单队列 `_serialize()` 串行化
+    // 所有依赖目录列举的操作 —— 重复请求不会并行，而是**排队串行执行**，
+    // N 次重复就是 N 倍等待，直接表现为「进入目录偶发卡一两秒」。
+    final pending = _folderItemCountInFlight[cacheKey];
+    if (pending != null) return pending;
+
+    final future = _computeFolderItemCount(
+      cacheKey,
+      folderPath,
+      isRemote: isRemote,
+    );
+    _folderItemCountInFlight[cacheKey] = future;
+    try {
+      return await future;
+    } finally {
+      _folderItemCountInFlight.remove(cacheKey);
+    }
+  }
+
+  Future<int> _computeFolderItemCount(
+    String cacheKey,
+    String folderPath, {
+    required bool isRemote,
+  }) async {
     int count = 0;
 
     if (isRemote && activeTab.remoteClient != null) {
@@ -1263,7 +1294,13 @@ class FileManagerProvider extends ChangeNotifier {
 
   final Map<String, int> _folderSizes = {};
 
-  Future<int> getFolderSize(String folderPath) async {
+  Future<int> getFolderSize(String folderPath, {bool isRemote = false}) async {
+    // 远程条目的 folderPath 是**服务端路径**，本地递归扫描扫不到任何东西，
+    // 必然返回 0 B —— 既显示错误，又每次白 spawn 一个 isolate。远程文件夹的
+    // 真实大小需要逐层递归列目录才能得到，代价远高于收益。
+    // 因此这里直接短路返回 -1，由调用方把该项隐藏（调用方约定 -1 = 不可用）。
+    if (isRemote) return -1;
+
     if (_folderSizes.containsKey(folderPath)) {
       return _folderSizes[folderPath]!;
     }
@@ -1514,6 +1551,17 @@ class FileManagerProvider extends ChangeNotifier {
     if (_categoriesGridColumns == columns) return;
     _categoriesGridColumns = columns;
     PreferencesService.saveCategoriesGridColumns(columns);
+    notifyListeners();
+  }
+
+  /// 分类卡片样式：1 = 极简（默认），0 = 仅保留边框。
+  int _categoryCardStyle = 1;
+  int get categoryCardStyle => _categoryCardStyle;
+
+  void setCategoryCardStyle(int style) {
+    if (_categoryCardStyle == style) return;
+    _categoryCardStyle = style;
+    PreferencesService.saveCategoryCardStyle(style);
     notifyListeners();
   }
 
@@ -6045,6 +6093,12 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   bool isRestrictedPath(String path) {
+    // 先剥离「绕过变体」标记（零宽字符 / '/./' 组件）再判定。
+    // 变体路径在界面上不可见（零宽字符不渲染），直接做子串匹配会漏判
+    // （`/Android/` + ZWSP + `data` 把 '/android/data' 断开 ⇒ 返回 false），
+    // 受限路径被当成普通路径交给 Dart IO，app 进程的 stat 被 FUSE 拒绝后
+    // 抛 `PathAccessException: Exists failed (errno 13)`（真机反馈）。
+    path = stripRestrictedVariantMarkers(path);
     // Collapse double slashes to prevent bypasses, e.g. //data -> /data
     String normalized = path.replaceAll(RegExp(r'/+'), '/');
     if (path.startsWith('/') && !normalized.startsWith('/')) {
@@ -6083,6 +6137,148 @@ class FileManagerProvider extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  /// 删除受限路径（其它应用的 Android/{data,obb}）条目。
+  ///
+  /// 通道依次尝试：
+  ///   ① shell `rm -rf`（root / Shizuku）—— 权限最全，与直访与否无关；
+  ///   ② 标准路径 Dart IO **直删**——**不做任何 stat 前置**。部分 ROM 的 FUSE
+  ///      只拦 stat（`Exists failed`）却放行 unlink/opendir，这类设备上标准
+  ///      路径反而可用；先 File 后 Directory（前者对目录会以 EISDIR 失败，
+  ///      不会误删）；
+  ///   ③ 零宽变体路径 Dart IO 删除 —— 「无需授权直访」模式下唯一可用通道：
+  ///      变体路径被内核 case-fold 折叠回真实路径、绕过 FUSE 的路径串匹配。
+  /// 全部失败时**抛错**（不静默返回），由上层提示用户。
+  Future<void> _deleteRestrictedItem(String path) async {
+    try {
+      await RootShizukuService.deleteItem(path, useRoot: useRootMode);
+      return;
+    } catch (e) {
+      debugPrint('[ZenFile] 受限路径 shell 删除失败，试标准路径直删: $e');
+    }
+    try {
+      await File(path).delete();
+      return;
+    } catch (e) {
+      debugPrint('[ZenFile] 受限路径标准 File.delete 失败: $e');
+    }
+    try {
+      await Directory(path).delete(recursive: true);
+      return;
+    } catch (e) {
+      debugPrint('[ZenFile] 受限路径标准 Directory.delete 失败，试变体通道: $e');
+    }
+    if (await tryDeleteViaRestrictedVariants(path)) return;
+    throw Exception('Delete failed (restricted path): $path');
+  }
+
+  /// 枚举受限目录（其它应用的 Android/{data,obb}）的子项，供全局搜索等
+  /// 「只读遍历」链路使用（不改动任何 tab 状态）。
+  ///
+  /// 通道与浏览层 [loadDirectory] 的多级策略一致：
+  ///   ① shell（root / Shizuku）—— 权限最全；
+  ///   ② 标准路径 Dart IO —— 部分 ROM 只拦 stat 却放行 opendir；
+  ///   ③ '/./' 变体路径 —— vivo 等按路径串做拦截的 ROM；
+  ///   ④ 零宽字符变体路径 —— 「无需授权直访」通道；
+  ///   ⑤ Kotlin Java File API 的底层路径（/data/media/0）。
+  /// 全部不可用时返回空列表（调用方按空目录处理）。
+  /// ⚠️ 返回条目路径已归一化回标准路径，可直接用于后续打开/操作。
+  Future<List<FileItemModel>> listRestrictedChildItems(
+    String dirPath, {
+    bool? showHidden,
+  }) async {
+    final hidden = showHidden ?? _showHiddenFiles;
+    // ① shell
+    try {
+      final status = await RootShizukuService.checkStatus();
+      final rootOk = status.isRootAvailable;
+      final shizukuOk = status.isShizukuAvailable && status.shizukuPermissionGranted;
+      if (rootOk || shizukuOk) {
+        final items = await RootShizukuService.listFiles(
+          dirPath,
+          useRoot: rootOk,
+          showHiddenFiles: hidden,
+        );
+        if (items.isNotEmpty) return items;
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 枚举受限目录 shell 失败: $e');
+    }
+    // ② 标准路径
+    final std = await _listViaDartIo(dirPath, hidden);
+    if (std != null) return std;
+    // ③ '/./' 变体
+    final dotVariant = _androidDotVariantPath(dirPath);
+    if (dotVariant != null) {
+      final items = await _listViaDartIo(dotVariant, hidden);
+      if (items != null) {
+        return items
+            .map((it) => FileItemModel.fromCustom(
+                  path: it.path.replaceAll('/Android/./', '/Android/'),
+                  isDirectory: it.isDirectory,
+                  size: it.size,
+                  modified: it.modified,
+                ))
+            .toList();
+      }
+    }
+    // ④ 零宽字符变体
+    for (final variant in androidRestrictedVariants(dirPath)) {
+      final items = await _listViaDartIo(variant, hidden);
+      if (items == null) continue;
+      return items
+          .map((it) => FileItemModel.fromCustom(
+                path: normalizeVariantChildPath(it.path, variant, dirPath),
+                isDirectory: it.isDirectory,
+                size: it.size,
+                modified: it.modified,
+              ))
+          .toList();
+    }
+    // ⑤ 底层路径
+    try {
+      final raw = await RootShizukuService.listRawPath(dirPath, showHiddenFiles: hidden);
+      if (raw != null) return raw;
+    } catch (e) {
+      debugPrint('[ZenFile] 枚举受限目录底层路径失败: $e');
+    }
+    return const [];
+  }
+
+  /// 用 Dart IO 直列目录并转成条目；返回 null 表示**该通道不可用**，
+  /// 返回空列表表示**目录确实为空**（两者语义必须区分，否则空目录会被
+  /// 误当成「读不到」而继续回退到更弱的通道）。
+  /// 受限条目 stat 会失败（FUSE 拒绝），此时 size/modified 退化为默认值，
+  /// 不影响按名称搜索与递归遍历。
+  Future<List<FileItemModel>?> _listViaDartIo(String target, bool showHidden) async {
+    try {
+      final entities = await Directory(target).list(followLinks: false).toList();
+      final items = <FileItemModel>[];
+      for (final e in entities) {
+        final name = p.basename(e.path);
+        if (!showHidden && name.startsWith('.')) continue;
+        final isDir = e is Directory;
+        var size = 0;
+        var modified = DateTime.fromMillisecondsSinceEpoch(0);
+        try {
+          final st = await e.stat();
+          size = st.size;
+          modified = st.modified;
+        } catch (_) {
+          // 受限条目拿不到元数据：保留默认值，不阻断遍历
+        }
+        items.add(FileItemModel.fromCustom(
+          path: e.path,
+          isDirectory: isDir,
+          size: size,
+          modified: modified,
+        ));
+      }
+      return items;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> enableRootMode() async {
@@ -6409,11 +6605,11 @@ class FileManagerProvider extends ChangeNotifier {
             rethrow;
           }
         }
-        remoteItems.sort((a, b) {
-          if (a.isDirectory && !b.isDirectory) return -1;
-          if (!a.isDirectory && b.isDirectory) return 1;
-          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-        });
+        // ⚠️ 这里**不要**再排一次序：下方 `_sortList` 会按用户设置的排序规则
+        // （名称/时间/大小/类型）完整重排，而 `[...remoteFolders, ...remoteFiles]`
+        // 已经保证「目录在前」。此前这里还有一次 `remoteItems.sort`（按 name
+        // toLowerCase 比较），对同一份列表等于白排一遍 —— 大目录（数千条）时
+        // 纯属白白增加一次 O(n log n) 比较开销，徒增进入目录的延迟。
         activeTab.currentFiles = remoteItems
             .map((r) => FileItemModel.fromRemoteFileItem(r))
             .toList();
@@ -6484,6 +6680,13 @@ class FileManagerProvider extends ChangeNotifier {
 
     activeTab.isRestrictedMode = isRestrictedPath(path);
 
+    // 「通道可用但枚举为空」标记：用于区分「目录真的是空的」与「读不到」。
+    // 旧实现把「list 成功但返回 0 项」与「list 抛异常」一律当失败，于是空目录会
+    // 一路掉到下方权限分支、被误报成「需要授权」——用户在受限目录里删掉最后一个
+    // 条目后必然撞上。这里留一个旁证：只要某个通道的 opendir 被放行（哪怕 0 项），
+    // 就说明目录真实存在。声明在此处是为了让后面的受限权限分支也能读到。
+    var emptyButUsable = false;
+
     // ── Android/data 路径的特殊处理（问题：部分 ROM 的 FUSE 层拦截 Shizuku shell
     // 但允许标准 Java File API 访问）─────────────────────────────────────────────
     // 策略：先尝试标准 Directory.list()（不走受限模式），成功则直接返回；
@@ -6502,11 +6705,16 @@ class FileManagerProvider extends ChangeNotifier {
       // 4. SAF 系统授权兜底。
       debugPrint('[ZenFile] Trying Android/data access for: $path');
 
+      // 1a 探测：opendir 被放行但返回 0 项时置 emptyButUsable（见上方声明处注释），
+      // 供受限权限分支区分「目录真空」与「读不到」。
       Future<List<FileItemModel>?> tryStandardApi(String target) async {
         try {
           final entities = await Directory(target).list().toList();
           debugPrint('[ZenFile] Standard API ($target) returned ${entities.length} items');
-          if (entities.isEmpty) return null;
+          if (entities.isEmpty) {
+            emptyButUsable = true; // opendir 被放行 ⇒ 目录存在且为空
+            return null;
+          }
           final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
           final folders = <FileItemModel>[];
           final files = <FileItemModel>[];
@@ -6635,6 +6843,24 @@ class FileManagerProvider extends ChangeNotifier {
             notifyListeners();
             return;
           }
+        }
+        // ⚠️ 判定「读不到」之前先排除「目录真的是空的」：若 1a/1b/1c 中任一
+        // 通道的 opendir 被放行（只是 0 项），说明目录存在且为空，直接按空目录
+        // 展示，不要弹「需要授权」——否则用户在受限目录里删掉最后一个条目后，
+        // 刷新会把空目录误报成权限问题，看着像「删除把目录搞坏了」。
+        // 例外：Android/{data,obb} 根层几乎不可能为空（至少含各应用包名目录），
+        // 那里的「空」是 ROM 拦截的假象，仍按权限处理（保留原有根治逻辑）。
+        if (emptyButUsable && !_isAndroidDataObbRoot(path)) {
+          debugPrint('[ZenFile] Restricted dir confirmed empty (opendir ok): $path');
+          activeTab.currentPath = path;
+          activeTab.currentFiles = [];
+          activeTab.isLoading = false;
+          activeTab.needsPermission = false;
+          activeTab.useRootMode = false;
+          activeTab.useShizukuMode = false;
+          _persistTabs();
+          notifyListeners();
+          return;
         }
         activeTab.needsPermission = true;
         activeTab.currentPath = path;
@@ -7149,7 +7375,7 @@ class FileManagerProvider extends ChangeNotifier {
       } else {
         for (final path in selectedPaths) {
           if (isRestrictedPath(path)) {
-            await RootShizukuService.deleteItem(path, useRoot: useRootMode);
+            await _deleteRestrictedItem(path);
           } else {
             final type = FileSystemEntity.typeSync(path);
             if (type == FileSystemEntityType.directory) {
@@ -9947,6 +10173,9 @@ class FileManagerProvider extends ChangeNotifier {
   /// 是否位于 FUSE 受限区（其它应用的 Android/data、Android/obb 文件）。
   /// 自身包名目录 app 本身可读写，无需绕过。
   bool _isRestrictedAndroidPath(String path) {
+    // 与 isRestrictedPath 同理：先剥离绕过变体标记再判定，避免变体路径
+    // （界面上不可见）漏判成普通路径、被交给 Dart IO 触发 EACCES。
+    path = stripRestrictedVariantMarkers(path);
     if (!path.startsWith('/storage/emulated/0/Android/')) return false;
     final sub = path.substring('/storage/emulated/0/Android/'.length).replaceAll(RegExp(r'/+$'), '');
     // 匹配 data 或 data/... 以及 obb 或 obb/...
@@ -10005,9 +10234,20 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 受限路径且 Dart IO 不可见（需要走 shell 绕过）。
-  bool _needsBypass(String path) =>
-      _isRestrictedAndroidPath(path) &&
-      FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound;
+  ///
+  /// ⚠️ 部分 ROM（FUSE 以 EACCES 而非 ENOENT 拒绝）上 `typeSync` 不是返回
+  /// `notFound`，而是**直接抛** `PathAccessException: Exists failed (errno 13)`。
+  /// 这里必须捕获：否则复制/粘贴/上传的旁路判定自身就会崩，且异常会被上层
+  /// 当成普通失败吞掉（表现为「受限目录里复制文件没反应」）。stat 被拒本身
+  /// 就等价于「app 进程读不到内容」⇒ 判定为需要旁路。
+  bool _needsBypass(String path) {
+    if (!_isRestrictedAndroidPath(path)) return false;
+    try {
+      return FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound;
+    } catch (_) {
+      return true;
+    }
+  }
 
   /// Android/{data,obb} 受限源在「FUSE 元数据可见、内容读取被拦」的 ROM 上，
   /// Dart IO 复制会产生 0 字节目标文件且不报错（lengthSync 返回元数据大小、
@@ -10171,7 +10411,7 @@ class FileManagerProvider extends ChangeNotifier {
         await RecycleBinService.moveToTrash(path, useRoot: useRootMode);
       } else {
         if (isRestrictedPath(path)) {
-          await RootShizukuService.deleteItem(path, useRoot: useRootMode);
+          await _deleteRestrictedItem(path);
         } else {
           final type = FileSystemEntity.typeSync(path);
           if (type == FileSystemEntityType.directory) {
@@ -11671,6 +11911,21 @@ class FileManagerProvider extends ChangeNotifier {
         bool isEncrypted,
         bool isDirectory,
       })> _analyzeCryptSource(String path) async {
+    // 受限路径（其它应用的 Android/{data,obb}）短路：app 进程的 Dart IO 连
+    // stat 都会被 FUSE 拒绝（`PathAccessException: Exists failed`），下面每一步
+    // 加密判定都跑不动 —— 而本函数在删除/重命名链路上**位于 try 之外**，
+    // 一抛就直接冒泡成「操作失败」。且加密挂载点只可能建在用户可控目录，
+    // 不会落在受限区，直接按「明文、无挂载点」返回即可（真实读写由上游的
+    // 受限旁路通道负责）。isDirectory 用受限通道探测，取不到按文件处理。
+    if (_isRestrictedAndroidPath(path)) {
+      return (
+        mount: null,
+        physical: path,
+        isEncrypted: false,
+        isDirectory: await typeViaRestrictedVariants(path) ==
+            FileSystemEntityType.directory,
+      );
+    }
     await _ensureCryptMountsLoaded();
     CryptMountPoint? mount = _findCryptMountForBrowse(path);
     // 普通明文文件（不在任何加密挂载点内、且确实非加密）：无需加密处理。
@@ -11730,6 +11985,13 @@ class FileManagerProvider extends ChangeNotifier {
   Future<({CryptMountPoint? mount, String physicalDir})> _analyzeCryptDestDir(
     String folder,
   ) async {
+    // 受限目标目录短路（同 _analyzeCryptSource）：Dart IO stat 会被 FUSE 拒绝
+    // 抛 EACCES，且 _ephemeralMountForDir 还要扫目录内容，在受限区必然失败。
+    // 加密挂载点不会落在受限区 ⇒ 直接按明文目标返回，真实写入由上游的受限
+    // 旁路通道负责。
+    if (_isRestrictedAndroidPath(folder)) {
+      return (mount: null, physicalDir: folder);
+    }
     await _ensureCryptMountsLoaded();
     CryptMountPoint? mount = _findCryptMountForBrowse(folder);
     mount ??= await _ephemeralMountForDir(folder);

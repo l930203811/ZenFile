@@ -8686,6 +8686,24 @@ abstract class L10n {
   /// **'每行显示'**
   String get ui_columns_per_row;
 
+  /// No description provided for @ui_category_card_style.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类卡片样式'**
+  String get ui_category_card_style;
+
+  /// No description provided for @ui_category_card_style_filled.
+  ///
+  /// In zh, this message translates to:
+  /// **'边框'**
+  String get ui_category_card_style_filled;
+
+  /// No description provided for @ui_category_card_style_minimal.
+  ///
+  /// In zh, this message translates to:
+  /// **'极简'**
+  String get ui_category_card_style_minimal;
+
   /// No description provided for @ui_2columns.
   ///
   /// In zh, this message translates to:

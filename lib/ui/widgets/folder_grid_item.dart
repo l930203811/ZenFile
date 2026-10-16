@@ -266,7 +266,10 @@ class FolderGridItem extends StatelessWidget {
                                       )
                                     : Future.value(-1),
                                 provider.showFolderSizes
-                                    ? provider.getFolderSize(folder.path)
+                                    ? provider.getFolderSize(
+                                        folder.path,
+                                        isRemote: folder.isRemote,
+                                      )
                                     : Future.value(-1),
                               ]),
                               builder: (context, snapshot) {

@@ -152,13 +152,17 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
   }
 }
 
-/// 「导航栏位置」分段选择器（顶部 | 底部），供「自定义快捷方式」页行内使用。
+/// 「导航栏位置」下拉选择器（顶部 | 底部），供「自定义快捷方式」页行内使用。
+///
+/// 样式刻意与同页「每行显示」等行**完全一致**（同样的圆角 8 容器 + 背景 +
+/// 描边 + 下拉箭头），使整个设置列表的控件风格统一；此前用的是分段按钮，
+/// 与相邻行的下拉框外观不一致。
 ///
 /// 与 [NavBarSettingsSheet] 读写同一份 provider 状态，所以它、上面的「导航栏」
 /// 开关、以及设置页那边的面板三者永远一致（双向同步）；这里用 `context.watch`
 /// 订阅，切换后本控件自身就会刷新。
-class NavBarPositionSegments extends StatelessWidget {
-  const NavBarPositionSegments({super.key});
+class NavBarPositionDropdown extends StatelessWidget {
+  const NavBarPositionDropdown({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -167,60 +171,38 @@ class NavBarPositionSegments extends StatelessWidget {
     final fileManager = context.watch<FileManagerProvider>();
     final isBottom = fileManager.showBottomActionBar;
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSegment(
-            theme,
-            l10n.msge34c23ff,
-            selected: !isBottom,
-            onTap: () => fileManager.setBottomActionBar(false),
+      child: DropdownButton<bool>(
+        value: isBottom,
+        isDense: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down),
+        borderRadius: BorderRadius.circular(8),
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+        ),
+        items: [
+          DropdownMenuItem(
+            value: false,
+            child: Text(l10n.msge34c23ff),
           ),
-          _buildSegment(
-            theme,
-            l10n.msg8c414b06,
-            selected: isBottom,
-            onTap: () => fileManager.setBottomActionBar(true),
+          DropdownMenuItem(
+            value: true,
+            child: Text(l10n.msg8c414b06),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSegment(
-    ThemeData theme,
-    String label, {
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? theme.colorScheme.primary.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-            color: selected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
+        onChanged: (val) {
+          if (val != null) fileManager.setBottomActionBar(val);
+        },
       ),
     );
   }

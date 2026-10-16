@@ -68,6 +68,132 @@ Future<bool> tryCopyViaRestrictedVariants(String srcPath, String destPath) async
   return false;
 }
 
+/// 剥离「绕过变体」标记（零宽字符、'/./' 组件），还原标准路径。
+///
+/// 变体路径在界面上不可见（零宽字符不显示），**若调用方拿它做受限目录判定
+/// 会漏判**（`/Android/​data` 被零宽字符断开，`contains('/android/data')`
+/// 为假），进而把受限路径交给 Dart IO —— app 进程的 stat 会被 FUSE 拒绝并
+/// 抛 `PathAccessException: Exists failed (errno 13)`。判定前一律先剥离。
+String stripRestrictedVariantMarkers(String path) {
+  var s = path.replaceAll(kZeroWidthSpace, '');
+  while (s.contains('/./')) {
+    s = s.replaceAll('/./', '/');
+  }
+  return s;
+}
+
+/// 经变体路径探测受限条目类型（不触碰干净路径的 Dart IO）。
+/// 返回 null 表示所有候选变体都不可访问。
+Future<FileSystemEntityType?> typeViaRestrictedVariants(String path) async {
+  for (final variant in androidRestrictedVariants(path)) {
+    try {
+      final t = await FileSystemEntity.type(variant);
+      if (t != FileSystemEntityType.notFound) return t;
+    } catch (_) {}
+  }
+  return null;
+}
+
+/// 经变体路径删除受限条目（文件 unlink / 目录递归删除）。
+/// 任一变体成功即返回 true；全部失败返回 false，由调用方回退其它通道。
+///
+/// 注意：删除前**不要求**调用方先做 stat —— 受限路径下 stat 正是被拦截的
+/// 那一步（`Exists failed`），通道可用性由本函数自行探测。
+Future<bool> tryDeleteViaRestrictedVariants(String path) async {
+  for (final variant in androidRestrictedVariants(path)) {
+    try {
+      final t = await FileSystemEntity.type(variant);
+      if (t == FileSystemEntityType.notFound) continue;
+      if (t == FileSystemEntityType.directory) {
+        await Directory(variant).delete(recursive: true);
+      } else {
+        await File(variant).delete();
+      }
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+/// 经变体路径把受限条目移动到普通路径（同卷 rename 只改元数据，不搬字节）。
+/// 用于「回收站」这类「移动到 app 可写目录」的场景；失败返回 false。
+Future<bool> tryRenameViaRestrictedVariants(
+    String srcPath, String destPath) async {
+  for (final variant in androidRestrictedVariants(srcPath)) {
+    try {
+      final t = await FileSystemEntity.type(variant);
+      if (t == FileSystemEntityType.notFound) continue;
+      if (t == FileSystemEntityType.directory) {
+        await Directory(variant).rename(destPath);
+      } else {
+        await File(variant).rename(destPath);
+      }
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+/// 把普通路径的条目 rename **进**受限路径（变体施加在目标侧）。
+/// 用于「回收站还原到 Android/data」这类源可读、目标受限的场景。
+Future<bool> tryRenameToRestrictedVariant(
+    String srcPath, String destPath) async {
+  FileSystemEntityType srcType;
+  try {
+    srcType = await FileSystemEntity.type(srcPath);
+  } catch (_) {
+    return false;
+  }
+  if (srcType == FileSystemEntityType.notFound) return false;
+  for (final variant in androidRestrictedVariants(destPath)) {
+    try {
+      if (srcType == FileSystemEntityType.directory) {
+        await Directory(srcPath).rename(variant);
+      } else {
+        await File(srcPath).rename(variant);
+      }
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+/// 经变体路径把受限文件/目录复制到普通路径（rename 不可用时的末级回退）。
+/// 目录递归复制；失败返回 false。
+Future<bool> tryCopyTreeViaRestrictedVariants(
+    String srcPath, String destPath) async {
+  for (final variant in androidRestrictedVariants(srcPath)) {
+    try {
+      final t = await FileSystemEntity.type(variant);
+      if (t == FileSystemEntityType.notFound) continue;
+      if (t == FileSystemEntityType.directory) {
+        await _copyDirViaVariant(Directory(variant), Directory(destPath));
+      } else {
+        await File(variant).copy(destPath);
+      }
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+/// 变体路径下的目录递归复制：list() 返回的子路径自带变体前缀，
+/// 递归延续同一通道（不再触碰干净路径的 Dart IO）。
+Future<void> _copyDirViaVariant(Directory src, Directory dest) async {
+  if (!dest.existsSync()) {
+    dest.createSync(recursive: true);
+  }
+  await for (final entity in src.list()) {
+    final name = entity.path.split('/').last;
+    final target = '${dest.path}/$name';
+    if (entity is Directory) {
+      await _copyDirViaVariant(entity, Directory(target));
+    } else if (entity is File) {
+      await entity.copy(target);
+    }
+  }
+}
+
 /// 尝试以零宽字符变体用 Dart IO 直接写入受限文件（整文件读后写出）。
 /// 任一变异路径写入成功即返回 true；全部失败返回 false。
 Future<bool> tryWriteViaRestrictedVariants(

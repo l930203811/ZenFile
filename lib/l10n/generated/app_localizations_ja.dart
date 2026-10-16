@@ -4662,6 +4662,15 @@ class L10nJa extends L10n {
   String get ui_columns_per_row => '1行あたりの列数';
 
   @override
+  String get ui_category_card_style => 'カードの表示スタイル';
+
+  @override
+  String get ui_category_card_style_filled => '枠線';
+
+  @override
+  String get ui_category_card_style_minimal => 'シンプル';
+
+  @override
   String get ui_2columns => '2列';
 
   @override

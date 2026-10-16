@@ -4853,6 +4853,15 @@ class L10nDe extends L10n {
   String get ui_columns_per_row => 'Spalten pro Zeile';
 
   @override
+  String get ui_category_card_style => 'Kartenstil';
+
+  @override
+  String get ui_category_card_style_filled => 'Rahmen';
+
+  @override
+  String get ui_category_card_style_minimal => 'Minimal';
+
+  @override
   String get ui_2columns => '2 Spalten';
 
   @override

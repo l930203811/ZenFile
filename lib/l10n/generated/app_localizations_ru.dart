@@ -4858,6 +4858,15 @@ class L10nRu extends L10n {
   String get ui_columns_per_row => 'Колонки в строке';
 
   @override
+  String get ui_category_card_style => 'Стиль карточек';
+
+  @override
+  String get ui_category_card_style_filled => 'Рамка';
+
+  @override
+  String get ui_category_card_style_minimal => 'Минимальный';
+
+  @override
   String get ui_2columns => '2 Колонки';
 
   @override

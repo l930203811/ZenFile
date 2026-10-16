@@ -2014,6 +2014,20 @@ class PreferencesService {
     await _prefs?.setInt(_keyCategoriesGridColumns, columns);
   }
 
+  /// 分类卡片样式：1 = 极简（默认），0 = 仅保留边框。
+  ///
+  /// 只影响网格卡片的装饰层（底色 / 边框 / 阴影），图标、标题、计数与说明
+  /// 一律保留 —— 供用户对比「有卡片框」与「纯图标文字」哪种更清晰。
+  static const String _keyCategoryCardStyle = 'category_card_style';
+
+  static int getCategoryCardStyle({int defaultValue = 1}) {
+    return _prefs?.getInt(_keyCategoryCardStyle) ?? defaultValue;
+  }
+
+  static Future<void> saveCategoryCardStyle(int style) async {
+    await _prefs?.setInt(_keyCategoryCardStyle, style);
+  }
+
 
   // --- Bottom nav tab customization ---
   // 底部导航第 2/3 槽位可被自定义快捷方式页中的任意入口替换（第 1/2 个「分类/浏览」为滑动轴心，固定）。

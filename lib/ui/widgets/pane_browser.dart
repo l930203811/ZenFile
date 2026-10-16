@@ -1425,7 +1425,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                           )
                                         : Future.value(-1),
                                     showSize
-                                        ? provider.getFolderSize(folder.path)
+                                        ? provider.getFolderSize(
+                                            folder.path,
+                                            isRemote: folder.isRemote,
+                                          )
                                         : Future.value(-1),
                                   ]),
                                   builder: (context, snapshot) {

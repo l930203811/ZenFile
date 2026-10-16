@@ -4624,6 +4624,15 @@ class L10nZh extends L10n {
   String get ui_columns_per_row => '每行显示';
 
   @override
+  String get ui_category_card_style => '分类卡片样式';
+
+  @override
+  String get ui_category_card_style_filled => '边框';
+
+  @override
+  String get ui_category_card_style_minimal => '极简';
+
+  @override
   String get ui_2columns => '2列';
 
   @override
@@ -12678,6 +12687,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_columns_per_row => '每行顯示';
+
+  @override
+  String get ui_category_card_style => '分類卡片樣式';
+
+  @override
+  String get ui_category_card_style_filled => '邊框';
+
+  @override
+  String get ui_category_card_style_minimal => '極簡';
 
   @override
   String get ui_2columns => '2列';

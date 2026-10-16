@@ -21,6 +21,39 @@ import '../screens/recycle_bin_screen.dart';
 import '../screens/backup_settings_screen.dart';
 import '../../services/recycle_bin_service.dart';
 
+/// 分类网格的卡片间距（上下左右同值；与优化前一致，不要再单独调大）。
+const double _kCategoryGridSpacing = 2.0;
+
+/// 分类网格几何：由**网格可用宽度**（= GridView 的 RenderBox 宽度，即已扣除外层
+/// 左右 Padding 之后的宽度）与列数推导出卡片宽度与行高。
+///
+/// 放在**顶层**而非某个类里：使用它的两处（`_QuickCategoriesGridState.build` 与
+/// `_QuickCategoriesGridState._updateDrag`）都在 State 类中，而 State 并非
+/// `QuickCategoriesGrid` 的子类，无法直接取用其静态成员；顶层私有成员在本
+/// library 内任意位置都能直接调用。
+///
+/// ⚠️ `build`（生成 gridDelegate）与 `_updateDrag`（拖拽命中计算）**必须共用**它：
+/// 两处公式一旦不同步，拖拽排序的行列命中就会错位。
+///
+/// 行高刻意**锚定到「优化前」的基准**（外层左右 Padding 原为 16、现为 8，相差
+/// 16dp ⇒ 反算时扣掉这 16.0）：边距收窄后卡片会随之变宽，若行高再跟着宽度走
+/// （childAspectRatio），3 列行高会由 108dp 涨到 113dp，6 行累计多出 30+dp，
+/// 最后一行就被挤出屏幕、需要下拉才能看到。锚定之后，「左右留白变少」只体现在
+/// 卡片宽度上，纵向占用与优化前完全相同。
+({double itemWidth, double rowHeight}) _gridMetrics(
+  double gridWidth,
+  int columns,
+) {
+  final itemWidth =
+      (gridWidth - (columns - 1) * _kCategoryGridSpacing) / columns;
+  final legacyItemWidth =
+      (gridWidth - 16.0 - (columns - 1) * _kCategoryGridSpacing) / columns;
+  final baseRatio = columns == 4
+      ? 0.78
+      : (columns == 3 ? 1.0 : 1.30);
+  return (itemWidth: itemWidth, rowHeight: legacyItemWidth / baseRatio);
+}
+
 class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
   final bool showTitle;
@@ -660,14 +693,17 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
     final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
-    final itemWidth = (screenWidth - (columns - 1) * 2) / columns;
-    final childAspectRatio = columns == 4
-        ? 0.78
-        : (columns == 3 ? 1.0 : 1.30);
-    final itemHeight = itemWidth / childAspectRatio;
+    // 与 build 共用同一套几何（含「行高锚定优化前基准」的逻辑）：左右边距收窄后
+    // 卡片会变宽，若这里仍按旧的 childAspectRatio 推行高，行命中步长会被算大，
+    // 拖拽排序就会错行。
+    final metrics = _gridMetrics(screenWidth, columns);
+    final itemWidth = metrics.itemWidth;
+    final itemHeight = metrics.rowHeight;
 
-    double colFraction = localPosition.dx / (itemWidth + 2);
-    double rowFraction = localPosition.dy / (itemHeight + 2);
+    double colFraction =
+        localPosition.dx / (itemWidth + _kCategoryGridSpacing);
+    double rowFraction =
+        localPosition.dy / (itemHeight + _kCategoryGridSpacing);
 
     int adjustedCol = colFraction.round();
     int adjustedRow = rowFraction.round();
@@ -1173,6 +1209,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
+    // 卡片样式（0=底框+边框 / 1=极简）。用 select 只订阅这一个字段，
+    // 避免 FileManagerProvider 的高频 notify（目录刷新等）连带重建整个网格。
+    final cardStyle = context.select<FileManagerProvider, int>(
+      (p) => p.categoryCardStyle,
+    );
 
     final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
       context,
@@ -1189,8 +1230,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final visibleOrder = _visibleOrderOf(fullOrder);
     final itemCount = visibleOrder.length;
 
+    // 左右边距 8（原 16）：原外侧 16 使 2 列时屏幕两侧各空出近半张卡片的宽度，
+    // 观感「中间挤、两边散」，故收窄到 8，让网格整体外扩、卡片随之变宽。
+    // ⚠️ 注意配套约束：卡片间距保持 2（与优化前一致），且行高被**锚定到优化前的
+    // 设计值**（见下方 legacyItemW / rowHeight）⇒ 边距收窄只影响宽度、不增加纵向
+    // 占用，一屏能显示的行数与优化前完全相同（否则 3 列时最后一行会被挤出屏幕）。
+    // 标题行同在这个 Padding 内，故「快捷分类 / 自定义」仍与网格左边缘对齐。
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1262,18 +1309,16 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 duration: const Duration(milliseconds: 300),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    const spacing = 2.0;
-                    final gridItemW =
-                        (constraints.maxWidth - (columns - 1) * spacing) /
-                            columns;
+                    // 间距与几何统一由 _gridMetrics 推导（与 _updateDrag 同源，
+                    // 避免两处公式漂移导致拖拽错行）。
+                    const spacing = _kCategoryGridSpacing;
+                    final metrics = _gridMetrics(constraints.maxWidth, columns);
+                    final rowHeight = metrics.rowHeight;
+                    // 图标按卡片宽度等比缩放：图标与卡片的比例与优化前保持一致，
+                    // 卡片变宽时图标同步微增，不会在卡片里显得空。
                     final iconSize =
-                        gridItemW *
+                        metrics.itemWidth *
                         (columns == 4 ? 0.46 : (columns == 3 ? 0.40 : 0.30));
-                    // 行高按列数固定（与设计一致），这里不做任何压缩/拉伸：
-                    // 卡片尺寸在任何列数下都可预期，放不下时由外层滚动视图负责。
-                    final ratio = columns == 4
-                        ? 0.78
-                        : (columns == 3 ? 1.0 : 1.30);
                     final grid = GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
@@ -1292,7 +1337,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     crossAxisCount: columns,
                     crossAxisSpacing: spacing,
                     mainAxisSpacing: spacing,
-                    childAspectRatio: ratio,
+                    // 行高用 mainAxisExtent 定死（取代 childAspectRatio）：宽度随边距
+                    // 收窄而增长，高度锚定优化前设计值，二者解耦。
+                    mainAxisExtent: rowHeight,
                   ),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
@@ -1300,7 +1347,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     // 系统入口卡片（自定义/传输/设置）：与分类卡片一致，
                     // 支持长按菜单（重命名/显示开关）与长按拖拽排序。
                     if (PreferencesService.isSysEntryKey(key)) {
-                      return _buildSysEntryCard(theme, iconSize, key, index);
+                      return _buildSysEntryCard(
+                        theme,
+                        iconSize,
+                        key,
+                        index,
+                        cardStyle,
+                      );
                     }
                     final cat = allCategoriesMap[key];
                     if (cat == null) {
@@ -1381,19 +1434,29 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                            // 极简模式（cardStyle==1）只去掉装饰层：底色 / 边框 /
+                            // 阴影全部隐形。但保留 1px **透明**边框 ——
+                            // BoxDecoration 的 border 会参与内容内边距计算，直接
+                            // 置 null 会让两种模式下的图标与文字位置发生偏移。
+                            color: cardStyle == 0
+                                ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.22),
+                              color: cardStyle == 0
+                                  ? theme.colorScheme.primary.withValues(alpha: 0.22)
+                                  : Colors.transparent,
                               width: 1,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            boxShadow: cardStyle == 0
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.06),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : const [],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1492,6 +1555,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     double iconSize,
     String key,
     int index,
+    int cardStyle,
   ) {
     final fm = context.read<FileManagerProvider>();
     final color = theme.colorScheme.primary;
@@ -1562,19 +1626,27 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.05),
+            // 与分类卡片一致地受「分类卡片样式」控制（透明边框保留占位，
+            // 避免两模式间内容位移）。
+            color: cardStyle == 0
+                ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: theme.colorScheme.primary.withValues(alpha: 0.22),
+              color: cardStyle == 0
+                  ? theme.colorScheme.primary.withValues(alpha: 0.22)
+                  : Colors.transparent,
               width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: cardStyle == 0
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : const [],
           ),
           child: Material(
             color: Colors.transparent,
@@ -2242,6 +2314,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                 return StatefulBuilder(
                   builder: (context, setModalState) {
                     final gridColumns = fileManager.categoriesGridColumns;
+                    final cardStyle = fileManager.categoryCardStyle;
                     final activeCats = provider.activeCategories;
                     final categoriesMap =
                         QuickCategoriesGrid.getAllCategoriesMap(
@@ -2404,6 +2477,68 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ],
                           ),
                         ),
+                        // ===== 分类卡片样式（底框 + 边框 / 极简）=====
+                        // 只切换分类页网格卡片的**装饰层**（底色 / 边框 / 阴影），
+                        // 图标、标题、计数与说明一律保留 —— 供用户对比「有卡片框」
+                        // 与「纯图标文字」哪种更清爽。行样式与「每行显示」保持一致。
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_category_card_style,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: DropdownButton<int>(
+                                  value: cardStyle,
+                                  isDense: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  borderRadius: BorderRadius.circular(8),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 0,
+                                      child: Text(L10n.of(context).ui_category_card_style_filled),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 1,
+                                      child: Text(L10n.of(context).ui_category_card_style_minimal),
+                                    ),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      context.read<FileManagerProvider>().setCategoryCardStyle(val);
+                                      setModalState(() {});
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         // ===== 底部导航栏 =====
                         Padding(
                           padding: const EdgeInsets.symmetric(
@@ -2488,7 +2623,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                   ),
                                 ),
                               ),
-                              const NavBarPositionSegments(),
+                              const NavBarPositionDropdown(),
                             ],
                           ),
                         ),

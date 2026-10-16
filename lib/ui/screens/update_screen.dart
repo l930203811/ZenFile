@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.7';
+  static const String _latestChangelogVersion = 'v3.5.8';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v358,
     _v357,
     _v356,
     _v355,
@@ -945,7 +946,45 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.7 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.5.8 ────────────────────────────────────────────────
+  static const _Changelog _v358 = _Changelog(
+    version: 'v3.5.8',
+    date: '2026-10-16',
+    zh: [
+      _ChangeSection('✨ 新增功能', [
+        '「自定义快捷方式」页新增「分类卡片样式」：分类页的卡片可在「极简」（只保留图标、名称与数量/说明，默认）与「边框」之间切换，用来按自己的喜好调整视觉密度',
+        '「导航栏显示位置」改用与「每行显示」一致的下拉框样式，整个设置列表的控件风格统一',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复在其它应用的 Android/data、Android/obb 目录里删除文件或文件夹失败、提示「权限不足（errno = 13）」的问题',
+        '修复受限目录里的条目被删空之后，列表误判为「需要授权」并弹出授权提示的问题',
+        '修复把搜索范围选到 Android/data 时永远搜不到文件或文件夹（一直显示「未找到结果」）的问题',
+        '修复受限目录内的复制、粘贴、重命名、移入回收站与从回收站还原在部分通道下失败或写入不完整的问题',
+      ]),
+      _ChangeSection('⚡ 性能优化', [
+        '修复远程服务器（SFTP / SMB / FTP / WebDAV）进入目录偶发卡顿一两秒的问题：去掉了一次多余的列表排序、同一个文件夹的条目数改为只查询一次（此前重复请求会排队串行执行）、远程文件夹不再做无意义的本地扫描、WebDAV 不再把整份目录响应打进日志并补上了读取超时、SMB 回到前台时的连接体检不再强制重跑一遍共享枚举',
+        '分类页左右留白收窄，卡片排列更舒展；上下间距与原来保持一致，一屏能显示的类别数量不变',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'New "Category card style" option under Custom shortcuts: the cards on the categories page can switch between "Minimal" (icon, name and count only - now the default) and "Border", so you can tune the visual density to taste',
+        'The "Navigation bar position" option now uses the same dropdown style as "Items per row", unifying the controls across the settings list',
+      ]),
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed deleting files or folders inside another app\'s Android/data or Android/obb directory failing with a "permission denied (errno = 13)" error',
+        'Fixed a restricted folder being wrongly reported as "permission required" once everything inside it had been deleted',
+        'Fixed searching with the scope set to Android/data never finding any file or folder (it always showed "No results")',
+        'Fixed copy, paste, rename, move-to-recycle-bin and restore-from-recycle-bin failing or writing incomplete data for items inside restricted directories on some of the fallback channels',
+      ]),
+      _ChangeSection('⚡ Performance', [
+        'Fixed occasional one-to-two second stalls when opening folders on remote servers (SFTP / SMB / FTP / WebDAV): one redundant list sort was removed, a folder\'s item count is now queried only once (repeated requests used to queue up and run serially), remote folders no longer trigger a pointless local scan, WebDAV no longer dumps the whole directory response into the log and now has a read timeout, and the SMB health check on returning to the foreground no longer forces a full share enumeration',
+        'The categories page now uses narrower side margins so the cards sit more comfortably; vertical spacing is unchanged, so the number of rows visible on one screen stays the same',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.7 ──────────────────────────────────────────────────────────
   static const _Changelog _v357 = _Changelog(
     version: 'v3.5.7',
     date: '2026-10-14',

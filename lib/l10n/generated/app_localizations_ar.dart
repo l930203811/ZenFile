@@ -4789,6 +4789,15 @@ class L10nAr extends L10n {
   String get ui_columns_per_row => 'الأعمدة لكل صف';
 
   @override
+  String get ui_category_card_style => 'نمط البطاقات';
+
+  @override
+  String get ui_category_card_style_filled => 'إطار';
+
+  @override
+  String get ui_category_card_style_minimal => 'بسيط';
+
+  @override
   String get ui_2columns => '2 أعمدة';
 
   @override

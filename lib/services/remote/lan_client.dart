@@ -548,8 +548,14 @@ class LanClient extends RemoteClient {
       return false;
     }
     // 真实 IO 探测：失败（含超时）一律判为不可用。约定不抛异常。
+    //
+    // ⚠️ 这里**不能**传 `forceRefresh: true`：强制刷新会绕过 shares 枚举的 TTL
+    // 缓存，每次回前台体检都重跑一遍原生侧的 3 级降级枚举（DCE/RPC → 手写 RPC
+    // → 暴力端口探测），实测可耗 1~2 秒；更糟的是它会与用户紧接着的「进入目录」
+    // 抢同一个原生会话，把等待叠加到用户操作上。探测的目的是判断连接是否还活着，
+    // 命中缓存同样能证明这一点。
     try {
-      await listDirectory('/', forceRefresh: true)
+      await listDirectory('/')
           .timeout(const Duration(seconds: 8));
       WebdavDebugLog.log('[smb] checkAlive: ALIVE (probe ok) session ${id.substring(0, 8)}');
       return true;

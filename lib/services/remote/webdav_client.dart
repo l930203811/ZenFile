@@ -164,23 +164,33 @@ class WebDavRemoteClient extends RemoteClient {
     }
 
     final url = Uri.parse(_baseUrl + Uri.encodeFull(normalizedPath));
-    print('[WebDAV DEBUG] PROPFIND URL: $url');
+    WebdavDebugLog.log('[webdav] PROPFIND $url');
     final request = await _httpClient.openUrl('PROPFIND', url);
     request.headers.set('Depth', '1');
     final auth = _authHeader();
     if (auth.isNotEmpty) {
       request.headers.set('Authorization', auth);
     }
-    
-    final response = await request.close();
-    print('[WebDAV DEBUG] Response status: ${response.statusCode}');
+
+    // ⚠️ 响应读必须带超时：`HttpClient.connectionTimeout` 只覆盖「建立连接」，
+    // 服务端接受连接后一直不回包时这里会**无限挂起** —— 表现为 loadDirectory
+    // 永不返回、页面卡在加载中（详见 loadDirectory 里关于「WebDAV 无超时一直
+    // 挂起」的说明）。超时后抛 TimeoutException，会被上游判定为连接类错误并
+    // 重建+重试一次，用户能拿到明确反馈而不是傻等。
+    final response = await request.close().timeout(const Duration(seconds: 20));
+    WebdavDebugLog.log('[webdav] PROPFIND status ${response.statusCode}');
     if (response.statusCode >= 400) {
       throw Exception('WebDAV list error: ${response.statusCode}');
     }
 
-    final body = await response.transform(utf8.decoder).join();
-    print('[WebDAV DEBUG] Response body length: ${body.length}');
-    print('[WebDAV DEBUG] Response body: $body');
+    final body = await response
+        .transform(utf8.decoder)
+        .join()
+        .timeout(const Duration(seconds: 20));
+    // ⚠️ 这里**绝不能**无条件 print 响应体：大目录的 PROPFIND XML 可达数百 KB，
+    // 逐行刷进 logcat 是同步阻塞调用，足以把「进入大目录」额外拖慢 1~2 秒。
+    // 只记录长度，需要正文时走 WebdavDebugLog 受控开关。
+    WebdavDebugLog.log('[webdav] PROPFIND body ${body.length} bytes');
     final document = xml.XmlDocument.parse(body);
     
     // Find response tags under any namespace prefix case-insensitively
