@@ -7,6 +7,8 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import '../widgets/liquid_bottom_bar.dart';
+import '../widgets/liquid_pressable.dart';
 import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
 import '../widgets/zenfile_drawer.dart';
@@ -357,7 +359,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         //  2) childImmersive     —— 视频控制条 / 图片操作按钮被隐藏的沉浸态，
         //     整条收起把屏幕让给内容，控制条唤出时再显示。
         bottomNavigationBar: ListenableBuilder(
-          listenable: ShellNavigator.navBarHidden,
+          // 除「该不该收起」外，还要盯住浏览操作栏的折叠状态：它决定底栏顶角
+          // 是方角（与操作栏拼成整块）还是圆角（操作栏已折叠，独立悬浮）。
+          listenable: Listenable.merge([
+            ShellNavigator.navBarHidden,
+            DirectoryScreen.browseBarExpanded,
+          ]),
           builder: (_, __) =>
               _buildNavBottomBar(provider.showBottomActionBar),
         ),
@@ -673,11 +680,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (!navEnabled) {
       return SizedBox(height: MediaQuery.of(context).padding.bottom);
     }
+    // 浏览页的操作栏与 4-tab 拼成一整块「底部控制台」：两者都留 16dp 左右边距、
+    // 上下零间距，操作栏只圆上角、底栏只圆下角，拼起来轮廓连续。
+    // 判定与浏览页自身显示操作栏的条件保持一致（同一开关 + 当前就是文件页 +
+    // 没有壳内页面盖在上面）。
+    final attachedTop = _currentIndex == 1 &&
+        !ShellNavigator.hasPages &&
+        // 操作栏被列表滚动折叠后，它上方已经没有东西可以拼了 —— 此时必须回到
+        // 「顶角圆 + 6dp 悬浮间距」，否则底栏会变成一只平顶胶囊贴在列表下沿。
+        DirectoryScreen.browseBarExpanded.value &&
+        context.select<FileManagerProvider, bool>(
+          (p) => p.showFloatingAddButton,
+        );
+    final tabBar = _buildBottomTabs(attachedTop: attachedTop);
+    // 这里**不再**给 4-tab 槽位铺任何底色。
+    //
+    // 曾经为了消掉「胶囊左右多出一块更亮的底板」，在浏览页把槽位涂成纯黑去迁就
+    // DirectoryScreen；代价是浏览页的 4-tab 比其他 tab 页更黑（深色模式下一眼可见），
+    // 反而更像两套底栏。根因在背景色本身，不在槽位：DirectoryScreen 曾按
+    // `brightness == dark` 无条件取纯黑，而外层 Scaffold 用的是
+    // `theme.scaffoldBackgroundColor`（未开 AMOLED 时是深灰）。
+    // 现在浏览页背景改回 `scaffoldBackgroundColor`（AMOLED 开关打开时它本身就是
+    // 纯黑，见 AppTheme.getAmoledScaffoldBackground），内外层同色：
+    //   · 4-tab 在**任何** tab 页都落在同一个底色上；
+    //   · 操作栏的玻璃层底下也是它，两块半透明玻璃叠同一个底色 → 结果完全一致。
     return GestureDetector(
       // translucent：不拦截子级命中测试，图标 / 标签仍可正常点按。
       behavior: HitTestBehavior.translucent,
       onVerticalDragEnd: _handleSwipeUpForFavorites,
-      child: _buildBottomTabs(),
+      child: tabBar,
     );
   }
 
@@ -801,7 +832,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     tooltip: L10n.of(context).ui_personalize_settings,
                     onPressed: () => _switchTab(_settingsTabIndex),
                   ),
-                ],
+                  // 顶栏图标统一套一层「液态按压」：按住轻微鼓包、松开回弹，
+                  // 与底部 4-tab 用同一套弹簧参数，避免这里成为全页唯一“死”的按钮组。
+                ].map((w) => LiquidPressable(pressScale: 1.12, child: w)).toList(),
               ),
             ),
             Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withValues(alpha: 0.08)),
@@ -815,8 +848,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
   /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
   /// 滑动链路固定为 左抽屉→分类页→浏览页，即使底部 tab 被替换也始终可达。
-  Widget _buildBottomTabs() {
-    final theme = Theme.of(context);
+  Widget _buildBottomTabs({bool attachedTop = false}) {
     final l10n = L10n.of(context);
     final slot0 = _resolveTabSlot(
       0,
@@ -843,32 +875,60 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       defaultIndex: -1,
     );
     final tabData = <List<Object>>[slot0, slot1, slot2, slot3];
-    return Material(
-      color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      elevation: 0,
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withValues(alpha: 0.08)),
-            SizedBox(
-              height: kToolbarHeight,
-              child: Row(
-                children: [
-                  for (final tab in tabData)
-                    Expanded(
-                      child: _buildTabItem(
-                        tab[0] as IconData,
-                        tab[1] as String,
-                        tab[2] as int,
-                        isCustomEntry: tab[3] as bool,
-                        slot: tab[4] as int,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+
+    // ── 液态玻璃底栏 ──────────────────────────────────────────────────
+    //
+    // 样式与动效参考 Kyant0/AndroidLiquidGlass 的 LiquidBottomTabs
+    // （Ghost Downloader v4.4.0 的 assets/licenses/liquid-bottom-bar.txt 标注了
+    //  该来源为 2.0.0 catalog，经 BiliTools ui/liquidtabs/ 二次适配）。
+    //
+    // 与上一版「每个 tab 各自一块底色」的本质区别：**全程只有一块胶囊指示器**，
+    // 它在 4 个槽位之间弹簧滑移、按压鼓包、被移动速度横向拉长 / 纵向压扁；
+    // 外面再套一层玻璃容器（背景模糊 + 半透明 + 细描边 + 顶部微高光）。
+    // 具体参数与本文件的分工说明见 lib/ui/widgets/liquid_bottom_bar.dart。
+    //
+    // 命中区仍是 4 个等分的**静止**区域（不随指示器移动），避免「胶囊滑到哪才能点哪」。
+    // 上滑唤起收藏夹的 GestureDetector 在外层，命中范围不受影响。
+    int selectedSlot = -1;
+    for (var i = 0; i < tabData.length; i++) {
+      final tab = tabData[i];
+      final isSelected = (tab[3] as bool)
+          ? _activeBottomSlot == (tab[4] as int)
+          : _activeBottomSlot == -1 && _currentIndex == (tab[2] as int);
+      if (isSelected) {
+        selectedSlot = i;
+        break;
+      }
+    }
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        // attachedTop：与浏览页操作栏拼接，顶部不再留空隙（6dp → 0）；
+        // 其余页面仍保留 6dp，让胶囊像浮在内容之上。
+        padding: EdgeInsets.fromLTRB(16, attachedTop ? 0 : 6, 16, 10),
+        child: LiquidBottomBar(
+          itemCount: tabData.length,
+          selectedIndex: selectedSlot,
+          attachedTop: attachedTop,
+          onSelect: (i) {
+            final tab = tabData[i];
+            if (tab[3] as bool) {
+              _openBottomTabEntry(tab[4] as int);
+            } else {
+              _switchTab(tab[2] as int);
+            }
+          },
+          // 任意槽位长按：不进自定义快捷方式页即可替换入口。
+          onLongPressItem: (i) => _showBottomTabPicker(tabData[i][4] as int),
+          itemBuilder: (context, i, selected) {
+            final tab = tabData[i];
+            return _buildTabItem(
+              tab[0] as IconData,
+              tab[1] as String,
+              selected: selected,
+            );
+          },
         ),
       ),
     );
@@ -931,55 +991,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     return [defaultIcon, defaultLabel, defaultIndex, false, slot];
   }
 
-  Widget _buildTabItem(
-    IconData icon,
-    String label,
-    int index, {
-    bool isCustomEntry = false,
-    int slot = -1,
-  }) {
+  /// 仅渲染底部槽位的**内容**（图标 + 文字）。
+  ///
+  /// 点击 / 长按由 [LiquidBottomBar] 统一接管，选中态的「底」由那块滑动的胶囊
+  /// 指示器负责，因此这里不再画自己的底色，也不再包 InkWell —— 否则会出现
+  /// 「胶囊滑到 A、A 自己又冒出一块底」的双底。
+  Widget _buildTabItem(IconData icon, String label, {required bool selected}) {
     final theme = Theme.of(context);
-    // 自定义槽位：打开其页面时保持高亮（_activeBottomSlot）；内置页按 _currentIndex 高亮。
-    // 两者互斥：只要有自定义槽位的页面处于打开状态（_activeBottomSlot != -1），内置 tab
-    // 一律不高亮，避免「进入一个 tab 页面后再点别的高亮」变成多个 tab 同时高亮。
-    final selected = isCustomEntry
-        ? _activeBottomSlot == slot
-        : _activeBottomSlot == -1 && _currentIndex == index;
-    return InkWell(
-      onTap: () {
-        if (isCustomEntry) {
-          _openBottomTabEntry(slot);
-        } else {
-          _switchTab(index);
-        }
-      },
-      // 任意槽位长按：不进自定义快捷方式页即可替换入口
-      onLongPress: () => _showBottomTabPicker(slot),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 22,
-            color: selected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withValues(alpha: 0.45),
+    final idleColor = theme.colorScheme.onSurface.withValues(alpha: 0.55);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 21,
+          color: selected ? theme.colorScheme.primary : idleColor,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10.5,
+            height: 1.05,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? theme.colorScheme.primary : idleColor,
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.55),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 

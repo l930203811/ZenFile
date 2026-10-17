@@ -37,6 +37,7 @@ import '../widgets/crypt_progress_dialog.dart';
 import '../widgets/clipboard_menu_sheet.dart';
 import '../widgets/cut_destination_sheet.dart';
 import '../widgets/favorites_sheet.dart';
+import '../widgets/liquid_glass_panel.dart';
 
 
 class DirectoryScreen extends StatefulWidget {
@@ -67,6 +68,13 @@ class DirectoryScreen extends StatefulWidget {
     this.isActive = true,
   });
 
+  /// 浏览操作栏当前是否展开（被列表滚动折叠时为 false）。
+  ///
+  /// 4-tab 底栏不在本页的 widget 树里（它属于 HomeScreen 外层 Scaffold 的
+  /// `bottomNavigationBar`），拿不到本页的 `setState`，只能通过这个静态通道同步：
+  /// 操作栏折叠后若底栏顶角仍是方角，就会露出一只「平顶胶囊」悬在列表下方。
+  static final ValueNotifier<bool> browseBarExpanded = ValueNotifier<bool>(true);
+
   @override
   State<DirectoryScreen> createState() => _DirectoryScreenState();
 }
@@ -91,6 +99,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   @override
   void initState() {
     super.initState();
+    // 本页可能是重建出来的（旧实例已销毁），而静态 notifier 会保留上一状态。
+    // 进来先对齐一次，避免底栏顶角与本页操作栏形状不一致。
+    DirectoryScreen.browseBarExpanded.value = _browseBarVisible;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FileManagerProvider>().init();
     });
@@ -439,6 +450,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
+  /// 统一的折叠/展开入口：本页 setState + 同步给 HomeScreen 的底栏形状。
+  ///
+  /// 不用裸 setState：底栏顶角是否方角依赖这个状态，漏同步会让底栏与操作栏
+  /// 在折叠瞬间「错形」。
+  void _setBrowseBarVisible(bool value) {
+    if (_browseBarVisible == value) return;
+    DirectoryScreen.browseBarExpanded.value = value;
+    setState(() => _browseBarVisible = value);
+  }
+
   /// 用户拖动文件列表时驱动浏览操作栏折叠/展开。
   /// [maxExtent] 为该列表的 maxScrollExtent（双窗口下由各 pane 的滚动通知冒泡上来）。
   void _onBrowseListDrag(double delta, double offset, double maxExtent) {
@@ -452,18 +473,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     final atEdge = offset < 40 || (maxExtent > 0 && offset >= maxExtent - 40);
     if (atEdge) {
       _browseBarDragAccum = 0;
-      if (!_browseBarVisible) setState(() => _browseBarVisible = true);
+      _setBrowseBarVisible(true);
       return;
     }
 
     const double threshold = 10.0;
     if (_browseBarDragAccum > threshold && _browseBarVisible) {
       // 向下滚动（内容上移）：折叠
-      setState(() => _browseBarVisible = false);
+      _setBrowseBarVisible(false);
       _browseBarDragAccum = 0;
     } else if (_browseBarDragAccum < -threshold && !_browseBarVisible) {
       // 向上滚动（内容下移）：展开
-      setState(() => _browseBarVisible = true);
+      _setBrowseBarVisible(true);
       _browseBarDragAccum = 0;
     }
   }
@@ -472,77 +493,84 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   ///
   /// 位置规则：显示在底部 4-tab 导航上方（bottomNavigationBar 区域），
   /// 由 [_buildCollapsibleBrowseActionBar] 包裹，随列表滚动自动折叠/展开。
+  ///
+  /// 形状：左右各让出 16dp、只圆上角，与下方 4-tab 的左上/右上**方角**拼接成一整块
+  /// 「底部控制台」。两侧留白与 4-tab 完全一致，因此两条栏的宽度、左右边缘都对齐。
   Widget _buildBrowseActionBar(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: AppTheme.getAmoledSurface(theme),
-        border: Border(
-          top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08), width: 0.5),
-          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08), width: 0.5),
+    return Padding(
+      // 必须与 HomeScreen 里 4-tab 的 horizontal 16 保持一致，否则两条栏会错开。
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // 玻璃层与 4-tab 同源（LiquidGlassPanel）：同一套半透明底 + 模糊 + 描边，
+      // 两块拼起来才是同一个颜色（以 4-tab 为准）。底边**不画**描边 —— 接缝
+      // 那一侧若也画，会与 4-tab 的顶边合成一条约 1.2px 的亮线，仍旧像两块。
+      child: LiquidGlassPanel(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        bottomBorderOpacity: 0,
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // 后退
+              IconButton(
+                icon: Icon(
+                  Broken.arrow_left_2,
+                  color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                tooltip: L10n.of(context).ui_nav_back,
+                onPressed: provider.canGoBack ? () => _goBack(provider) : null,
+              ),
+              // 前进
+              IconButton(
+                icon: Icon(
+                  Broken.arrow_right_3,
+                  color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                tooltip: L10n.of(context).ui_nav_forward,
+                onPressed: provider.canGoForward ? () => _goForward(provider) : null,
+              ),
+              // 新建（复刻 AppBar 右上角的 PopupMenuButton）
+              PopupMenuButton<String>(
+                icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+                tooltip: L10n.of(context).ui_new,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                position: PopupMenuPosition.under,
+                elevation: 8,
+                onSelected: (val) => _handleMenuAction(context, val, provider),
+                // 远程加密目录：只暴露该场景支持的操作（加密上传 / 新建文件夹）。
+                // 「新建文件」「压缩包」「新建收藏」依赖本地写入或本地路径解析，
+                // 在 cryptremote:// 虚拟路径下不可用，故隐藏。
+                itemBuilder: (context) => provider.activeTab.isCryptRemote
+                    ? [
+                        PopupMenuItem(value: 'encrypt_upload', child: Row(children: [Icon(Icons.upload_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).crypt_remote_upload, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                      ]
+                    : [
+                        PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
+                      ],
+              ),
+              // 复制标签页
+              IconButton(
+                icon: Icon(Broken.copy, color: theme.colorScheme.primary),
+                tooltip: L10n.of(context).msg4e9c344a,
+                onPressed: () => provider.duplicateActiveTab(),
+              ),
+              // 向上（进入父目录，记录到历史栈）
+              IconButton(
+                icon: Icon(
+                  Broken.arrow_up_1,
+                  color: provider.canGoUp ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                tooltip: L10n.of(context).ui_go_up,
+                onPressed: provider.canGoUp ? () => _goUp(provider) : null,
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // 后退
-          IconButton(
-            icon: Icon(
-              Broken.arrow_left_2,
-              color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
-            ),
-            tooltip: L10n.of(context).ui_nav_back,
-            onPressed: provider.canGoBack ? () => _goBack(provider) : null,
-          ),
-          // 前进
-          IconButton(
-            icon: Icon(
-              Broken.arrow_right_3,
-              color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
-            ),
-            tooltip: L10n.of(context).ui_nav_forward,
-            onPressed: provider.canGoForward ? () => _goForward(provider) : null,
-          ),
-          // 新建（复刻 AppBar 右上角的 PopupMenuButton）
-          PopupMenuButton<String>(
-            icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-            tooltip: L10n.of(context).ui_new,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            position: PopupMenuPosition.under,
-            elevation: 8,
-            onSelected: (val) => _handleMenuAction(context, val, provider),
-            // 远程加密目录：只暴露该场景支持的操作（加密上传 / 新建文件夹）。
-            // 「新建文件」「压缩包」「新建收藏」依赖本地写入或本地路径解析，
-            // 在 cryptremote:// 虚拟路径下不可用，故隐藏。
-            itemBuilder: (context) => provider.activeTab.isCryptRemote
-                ? [
-                    PopupMenuItem(value: 'encrypt_upload', child: Row(children: [Icon(Icons.upload_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).crypt_remote_upload, style: TextStyle(fontWeight: FontWeight.w600))])),
-                    PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                  ]
-                : [
-                    PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                    PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                    PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-                    PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
-                  ],
-          ),
-          // 复制标签页
-          IconButton(
-            icon: Icon(Broken.copy, color: theme.colorScheme.primary),
-            tooltip: L10n.of(context).msg4e9c344a,
-            onPressed: () => provider.duplicateActiveTab(),
-          ),
-          // 向上（进入父目录，记录到历史栈）
-          IconButton(
-            icon: Icon(
-              Broken.arrow_up_1,
-              color: provider.canGoUp ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
-            ),
-            tooltip: L10n.of(context).ui_go_up,
-            onPressed: provider.canGoUp ? () => _goUp(provider) : null,
-          ),
-        ],
       ),
     );
   }
@@ -1417,6 +1445,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         if (_lastSplitScreen != provider.enableSplitScreen) {
           _lastSplitScreen = provider.enableSplitScreen;
           _browseBarVisible = true;
+          // 这里刻意不调 setState（本帧随后就用新值渲染），但必须同步给底栏，
+          // 否则切回单窗口后底栏仍是折叠态的圆角顶。
+          DirectoryScreen.browseBarExpanded.value = true;
           _browseBarDragAccum = 0;
         }
 
@@ -1478,6 +1509,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             }
           },
           child: Scaffold(
+            // 必须与外层 HomeScreen 的 Scaffold 同色（同一个 theme.scaffoldBackgroundColor）：
+            // 本页的 bottomNavigationBar 槽位就是操作栏那一条，它左右 16dp 的留白、
+            // 以及玻璃层下方透出的底色全都取这里。只要和 4-tab 槽位差一档，
+            // 底部控制台（操作栏 + 4-tab）就会露一圈色差，看起来像贴了块底板。
+            // AMOLED 开关打开时该值本身即纯黑，无需再单独判断 brightness。
             backgroundColor: AppTheme.getAmoledScaffoldBackground(theme),
             // 注意（勿删）：必须关掉 **Scaffold 自身的** primary —— 只给下面的 AppBar 设
             // primary: false 是**无效**的。依据 scaffold.dart：

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'network_category_screen.dart';
+import '../widgets/liquid_pressable.dart';
 import 'ftp_server_screen.dart';
 import 'web_sharing_screen.dart';
 import 'quick_transfer_screen.dart';
@@ -92,7 +93,11 @@ class TransfersScreen extends StatelessWidget {
                 final item = items[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
+                  // 按下轻微鼓起（与底栏同一套弹簧），松手回弹；
+                  // 包在卡片本身而不是 Padding 外，缩放中心才落在视觉中心。
+                  child: LiquidPressable(
+                    pressScale: 1.02,
+                    child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
@@ -122,6 +127,7 @@ class TransfersScreen extends StatelessWidget {
                         );
                       },
                     ),
+                  ),
                   ),
                 );
               },

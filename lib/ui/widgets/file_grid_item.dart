@@ -24,6 +24,7 @@ import 'file_type_icon.dart';
 import 'unknown_file_icon.dart';
 import 'remote_cloud_badge.dart';
 import 'install_status_badge.dart';
+import 'liquid_pressable.dart';
 
 class FileGridItem extends StatelessWidget {
   final FileItemModel file;
@@ -288,7 +289,7 @@ class FileGridItem extends StatelessWidget {
       ),
     );
 
-    return Stack(
+    return LiquidPressable(pressScale: 1.02, child: Stack(
       children: [
         child,
         Positioned.fill(
@@ -311,7 +312,7 @@ class FileGridItem extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ));
   }
 }
 

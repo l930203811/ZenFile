@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.8';
+  static const String _latestChangelogVersion = 'v3.5.9';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v359,
     _v358,
     _v357,
     _v356,
@@ -946,7 +947,49 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.8 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.5.9 ────────────────────────────────────────────────
+  static const _Changelog _v359 = _Changelog(
+    version: 'v3.5.9',
+    date: '2026-10-18',
+    zh: [
+      _ChangeSection('✨ 界面焕新', [
+        '底部导航栏改为「液态玻璃」样式：选中项是一整块会在四个入口之间弹簧滑动的胶囊，按下时会轻微鼓包、被滑动速度横向拉长，图标随之放大；外层是半透明玻璃，带背景模糊、细描边与顶部高光',
+        '底部导航栏支持左右拖动直接切换页面；任意入口长按都可以替换成自己常用的功能',
+        '文件浏览页的底部操作栏与导航栏拼成一整块「底部控制台」：左右留白一致、上下零间距、同一套玻璃配色，只在最上沿受光一次；操作栏随列表滚动折叠与展开时，导航栏顶角在方角与圆角之间平滑过渡',
+        '分类卡片、文件与文件夹条目、抽屉条目、传输卡片、标签页与面包屑按钮、顶栏图标都加入了同源的按压回弹：按下去略缩、松手弹回，点按更有手感',
+        '修正底部导航栏在浏览页偏黑的问题：浏览页背景此前在深色模式下被强制压成纯黑，与分类 / 传输 / 设置页差一档，底部胶囊看起来像贴在一块更黑的底板上。现在全应用背景同色，开启「AMOLED 纯黑模式」时仍然保持纯黑',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复后台播放音乐时在列表里点另一首，播放器仍停留在上一首的问题：现在会立即切歌，并以新列表重建后台播放会话，通知栏的歌曲信息同步更新',
+        '修复打开设置等不属于底部导航的页面后，导航栏里「文件」入口仍显示为选中、胶囊停留在原处的问题：不在四个入口对应的页面时，胶囊会淡出并整体隐藏',
+      ]),
+      _ChangeSection('⚙️ 默认值调整', [
+        '「记住上次打开的文件夹」默认改为开启',
+        '「导航栏常驻其他页面」默认改为关闭',
+        '以上仅调整新安装的默认值，已手动改过设置的用户不受影响',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Interface', [
+        'The bottom navigation bar now uses a "liquid glass" style: the selected item is a single capsule that springs between the four entries, bulges slightly while pressed, stretches horizontally with the swipe velocity, and scales its icon up; the whole bar is translucent glass with background blur, a hairline border and a top highlight',
+        'The bottom navigation bar can be dragged left and right to switch pages, and any entry can be long-pressed to be replaced with your own shortcut',
+        'On the file browser, the bottom action bar and the navigation bar are now joined into one "bottom console": same side margins, zero gap, one shared glass palette and a single highlight along the top edge; when the action bar collapses or expands with scrolling, the top corners of the navigation bar ease between square and rounded',
+        'Category cards, file and folder rows, drawer entries, transfer cards, tab chips, breadcrumb buttons and top bar icons now share the same press feedback: a slight shrink while held and a spring back on release',
+        'Fixed the bottom navigation bar looking darker on the file browser: the browser background used to be forced to pure black in dark mode, one step darker than the categories, transfers and settings pages, so the capsule looked like it sat on a darker plate. The background is now identical across the app, and still pure black with "AMOLED black mode" enabled',
+      ]),
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed tapping another song in the list while music was playing in the background leaving the player on the previous track: playback now switches immediately and rebuilds the background session with the new queue, keeping the notification in sync',
+        'Fixed the "Files" entry still appearing selected (and the capsule staying in place) after opening a page outside the bottom navigation, such as Settings: the capsule now fades out and hides on such pages',
+      ]),
+      _ChangeSection('⚙️ Defaults', [
+        '"Remember the last opened folder" now defaults to on',
+        '"Keep the navigation bar on other pages" now defaults to off',
+        'Only the defaults for fresh installs changed; existing preferences are untouched',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.8 ──────────────────────────────────────────────────────────
   static const _Changelog _v358 = _Changelog(
     version: 'v3.5.8',
     date: '2026-10-16',

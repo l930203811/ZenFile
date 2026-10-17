@@ -11,6 +11,7 @@ import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../../models/media_type.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'nav_bar_settings_sheet.dart';
+import 'liquid_pressable.dart';
 import '../navigation/shell_navigator.dart';
 import '../../core/utils.dart';
 
@@ -1384,7 +1385,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     // 避免长按拖动排序被误判为切换分类页/快捷操作页。注意：仅在「长按」开始时置位，
                     // 普通快速横滑（未触发长按）仍可正常切页。
                     final fm = context.read<FileManagerProvider>();
-                    return GestureDetector(
+                    // 按下时轻微鼓起（与底栏同一套弹簧物理），松手回弹。
+                    // 长按拖动排序时指针位移 >12dp，LiquidPressable 会自动取消按压，
+                    // 不会和「原卡片淡出 + ghost 跟手」的拖拽反馈打架。
+                    return LiquidPressable(
+                      pressScale: 1.035,
+                      child: GestureDetector(
                       onLongPressStart: (details) {
                         fm.setCategoryReorderInteracting(true);
                         _longPressOrigin = details.globalPosition;
@@ -1532,6 +1538,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                         ),
                         ),
                       ),
+                      ),
                     );
                   },
                     );
@@ -1586,7 +1593,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final isTarget =
         _isDragging && _targetIndex == index && _draggingIndex != index;
 
-    return GestureDetector(
+    return LiquidPressable(
+      pressScale: 1.035,
+      child: GestureDetector(
       onLongPressStart: (details) {
         fm.setCategoryReorderInteracting(true);
         _longPressOrigin = details.globalPosition;
@@ -1674,6 +1683,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

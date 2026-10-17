@@ -19,6 +19,7 @@ import '../screens/update_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
 import 'quick_categories_grid.dart';
+import 'liquid_pressable.dart';
 import '../screens/recycle_bin_screen.dart';
 import '../screens/quick_transfer_screen.dart';
 import '../screens/qr_scanner_screen.dart';
@@ -406,7 +407,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v3.5.8',
+                'ZenFile v3.5.9',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -629,7 +630,9 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
       );
     }
 
-    return Padding(
+    return LiquidPressable(
+      pressScale: 1.03,
+      child: Padding(
       padding: const EdgeInsets.only(left: 12.0, right: 4.0, top: 2.0, bottom: 2.0),
       child: Material(
         color: Colors.transparent,
@@ -696,6 +699,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -719,7 +723,11 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
     final color = isSelected
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurface.withValues(alpha: isPrimary ? 0.95 : 0.9);
-    return Padding(
+    return LiquidPressable(
+      // 与底栏 / 面包屑同一套弹簧：按下轻微鼓起、松手回弹。
+      // 抽屉条目数量少、无拖拽，直接包最外层即可。
+      pressScale: 1.03,
+      child: Padding(
       key: key,
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
       child: Material(
@@ -750,6 +758,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

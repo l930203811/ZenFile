@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'dart:typed_data';
 import 'file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'liquid_pressable.dart';
 
 class FolderGridItem extends StatelessWidget {
   final FileItemModel folder;
@@ -392,7 +393,7 @@ class FolderGridItem extends StatelessWidget {
       ),
     );
 
-    return Stack(
+    return LiquidPressable(pressScale: 1.02, child: Stack(
       children: [
         child,
         Positioned.fill(
@@ -415,6 +416,6 @@ class FolderGridItem extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ));
   }
 }

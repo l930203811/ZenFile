@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'file_action_dialogs.dart';
 import 'remote_cloud_badge.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'liquid_pressable.dart';
 
 class FolderItem extends StatelessWidget {
   final FileItemModel folder;
@@ -372,7 +373,7 @@ class FolderItem extends StatelessWidget {
       ),
     );
 
-    return Stack(
+    return LiquidPressable(pressScale: 1.02, child: Stack(
       children: [
         child,
         Positioned.fill(
@@ -395,6 +396,6 @@ class FolderItem extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ));
   }
 }

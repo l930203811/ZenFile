@@ -8,6 +8,7 @@ import '../../models/drag_payload.dart';
 import '../../services/root_shizuku_service.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'drag_drop_action_dialog.dart';
+import 'liquid_pressable.dart';
 import 'package:flutter/services.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -512,6 +513,16 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                                           ),
                                         ),
                                       ),
+                                    );
+
+                                    // 与底部 4-tab 同源的按压弹簧：按住微鼓、
+                                    // 松开回弹；切到新目录时新的末尾段弹一下。
+                                    // 只加缩放，胶囊/描边样式完全不变。
+                                    segmentWidget = LiquidPressable(
+                                      selected: isLast,
+                                      pressScale: 1.07,
+                                      popScale: 1.10,
+                                      child: segmentWidget,
                                     );
 
                                     if (provider.enableDragDrop) {

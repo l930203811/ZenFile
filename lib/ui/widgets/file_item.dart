@@ -24,6 +24,7 @@ import 'file_type_icon.dart';
 import 'unknown_file_icon.dart';
 import 'remote_cloud_badge.dart';
 import 'install_status_badge.dart';
+import 'liquid_pressable.dart';
 
 // SVG 缩略图缓存
 class FileItem extends StatelessWidget {
@@ -298,7 +299,7 @@ class FileItem extends StatelessWidget {
       ),
     );
 
-    return Stack(
+    return LiquidPressable(pressScale: 1.02, child: Stack(
       children: [
         child,
         Positioned.fill(
@@ -321,7 +322,7 @@ class FileItem extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ));
   }
 }
 

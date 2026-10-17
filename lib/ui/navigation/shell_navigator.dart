@@ -53,8 +53,14 @@ class ShellNavigator {
   ///
   /// 用 `Listenable.merge` 而非 `ValueListenableBuilder<bool>`：后者只能订阅单个
   /// `ValueNotifier`，而这里有两个来源都要能触发 `_buildNav*` 重建。
-  static final Listenable navBarHidden =
-      Listenable.merge([childSelectionMode, childImmersive]);
+  ///
+  /// 也并入 [depth]：底栏要按「壳内是否有页面」决定顶角是否与页面操作栏拼接，
+  /// 壳内页面推入 / 退出时必须重算一次形状。
+  static final Listenable navBarHidden = Listenable.merge([
+    childSelectionMode,
+    childImmersive,
+    depth,
+  ]);
 
   /// 退出动画时长（略大于默认 300ms），用于延迟卸载。
   static const Duration _exitAnimation = Duration(milliseconds: 340);

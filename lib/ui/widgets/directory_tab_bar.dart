@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'liquid_pressable.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class DirectoryTabBar extends StatefulWidget implements PreferredSizeWidget {
@@ -94,64 +95,71 @@ class _DirectoryTabBarState extends State<DirectoryTabBar> {
 
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
-                  child: Material(
-                    color: isActiveTab
-                        ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
-                        : theme.colorScheme.surfaceVariant.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(10),
-                    child: InkWell(
-                      onTap: () => widget.provider.setActiveTab(index),
-                      onDoubleTap: () {
-                        if (tabs.length > 1 && !tab.isPinned) {
-                          widget.provider.closeTab(index);
-                        }
-                      },
-                      onLongPress: () => _showCloseTabSheet(context, widget.provider, index),
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        constraints: const BoxConstraints(minWidth: 60, maxWidth: 120),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
+                  // 与底部 4-tab 同源的按压弹簧：按住微鼓、松开回弹；
+                  // 被选中的标签额外弹一下。样式（底色 / 描边 / 圆角）保持原样。
+                  child: LiquidPressable(
+                    selected: isActiveTab,
+                    pressScale: 1.06,
+                    popScale: 1.10,
+                    child: Material(
+                        color: isActiveTab
+                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
+                            : theme.colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(10),
+                        child: InkWell(
+                          onTap: () => widget.provider.setActiveTab(index),
+                          onDoubleTap: () {
+                            if (tabs.length > 1 && !tab.isPinned) {
+                              widget.provider.closeTab(index);
+                            }
+                          },
+                          onLongPress: () => _showCloseTabSheet(context, widget.provider, index),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isActiveTab
-                                ? theme.colorScheme.primary.withValues(alpha: 0.4)
-                                : (inOtherPane
-                                    ? theme.colorScheme.secondary.withValues(alpha: 0.6)
-                                    : theme.dividerColor.withValues(alpha: 0.05)),
-                            width: inOtherPane ? 1.6 : 1.2,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildTabIcon(
-                              context: context,
-                              isRemote: tab.isRemote,
-                              isPinned: tab.isPinned,
-                              isRoot: isRoot,
-                              isSelected: isSelected,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                title.isEmpty ? '/' : title,
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                    color: isSelected
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurface.withValues(alpha: 0.8)),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                          child: Container(
+                            constraints: const BoxConstraints(minWidth: 60, maxWidth: 120),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isActiveTab
+                                    ? theme.colorScheme.primary.withValues(alpha: 0.4)
+                                    : (inOtherPane
+                                        ? theme.colorScheme.secondary.withValues(alpha: 0.6)
+                                        : theme.dividerColor.withValues(alpha: 0.05)),
+                                width: inOtherPane ? 1.6 : 1.2,
                               ),
                             ),
-                          ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildTabIcon(
+                                  context: context,
+                                  isRemote: tab.isRemote,
+                                  isPinned: tab.isPinned,
+                                  isRoot: isRoot,
+                                  isSelected: isSelected,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    title.isEmpty ? '/' : title,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                        color: isSelected
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 );
               },
             ),

@@ -199,15 +199,16 @@ class AppTheme {
   static ThemeData get lightTheme => getAppTheme(light: true);
   static ThemeData get darkTheme => getAppTheme(light: false);
 
-  /// AMOLED 纯黑模式：返回纯黑背景色。
-  /// 在深色主题 + AMOLED 开启时，文件管理页面使用此颜色作为 Scaffold 背景，
-  /// 使背景完全黑化而非深灰，配合红色主题实现纯黑 AMOLED 效果。
-  static Color getAmoledScaffoldBackground(ThemeData theme) {
-    if (theme.brightness == Brightness.dark) {
-      return Colors.black;
-    }
-    return theme.scaffoldBackgroundColor;
-  }
+  /// 页面级 Scaffold 背景色（含 AMOLED 纯黑模式）。
+  ///
+  /// **不要再按 `brightness == dark` 自己返回纯黑**：AMOLED 是独立开关
+  /// （`FileManagerProvider.amoledMode` → `getAppTheme(pitchBlack: ...)`），
+  /// 只有开关打开时 `scaffoldBackgroundColor` 才是纯黑；关掉时深色主题的
+  /// 背景是深灰。过去这里无条件返回纯黑，浏览页因此比分类 / 传输 / 设置页
+  /// 更黑，两层 Scaffold 隔着底栏接缝露出一圈色差。
+  /// 开关状态已经写进 theme，这里直接返回它 —— 内外层、任意页面同源。
+  static Color getAmoledScaffoldBackground(ThemeData theme) =>
+      theme.scaffoldBackgroundColor;
 
   /// AMOLED 纯黑模式下的卡片/容器背景（纯黑背景上的微层次）。
   static Color getAmoledSurface(ThemeData theme) {
