@@ -99,7 +99,7 @@ class PreferencesService {
   }
 
   static bool getRememberLastFolder() {
-    return _prefs?.getBool(_keyRememberLastFolder) ?? false;
+    return _prefs?.getBool(_keyRememberLastFolder) ?? true;
   }
 
   static Future<void> saveRememberLastFolder(bool val) async {
@@ -2092,11 +2092,11 @@ class PreferencesService {
     await _prefs?.setBool(_keyBottomNavBarEnabled, enabled);
   }
 
-  /// 「导航栏常驻」：是否让底部 4-tab 在其他（壳内）页面也保持显示，默认开启。
+  /// 「导航栏常驻」：是否让底部 4-tab 在其他（壳内）页面也保持显示，默认关闭。
   /// 关闭后，从分类页 / 抽屉等进入的页面恢复为整页全屏（旧行为）。
   static const String _keyPersistentTabBar = 'persistent_tab_bar';
 
-  static bool getPersistentTabBar({bool defaultValue = true}) {
+  static bool getPersistentTabBar({bool defaultValue = false}) {
     return _prefs?.getBool(_keyPersistentTabBar) ?? defaultValue;
   }
 

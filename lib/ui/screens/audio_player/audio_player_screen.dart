@@ -230,28 +230,55 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         // ⚠️ 排除视频后台会话：handler 里挂的是视频的 player，拿它播音频会让
         // UI 与播放状态完全错位（用户反馈 2026-09-27 的同源问题）。
         !getAudioHandler().videoSession) {
+      // 先快照「调用方请求播放的曲目路径」：下方 _adoptBackgroundQueue() 会用后台
+      // 旧会话的队列与下标覆盖 _songs/_currentIndex，使 _currentPath 指向后台正在播
+      // 的旧歌 A —— 「点的是否为新歌」的比较将恒为相等，新歌永远开播不了（用户反馈：
+      // 开启后台播放后回文件列表点其他音频，播放器仍播旧歌）。
+      // _buildMediaItem 的 id 与 SongModel.data / widget.audioPath 同源，可直接判等。
+      final String requestedPath =
+          (widget.allSongs != null && widget.allSongs!.isNotEmpty)
+              ? widget
+                    .allSongs![_safeIndex(
+                      widget.initialIndex,
+                      widget.allSongs!.length,
+                    )]
+                    .data
+              : widget.audioPath;
+      final bool switchToRequested =
+          getAudioHandler().currentPath != requestedPath;
+
       // 后台播放中从通知栏返回：复用 handler 的 player，避免新建导致 UI 与播放状态脱节
       player = getAudioHandler().currentPlayer!;
-      // ⚠️ 从通知栏进来时调用方**不传 allSongs**，必须用 handler 的快照补齐队列，
-      // 否则播放列表是空的，切歌/下一首全乱（issue #34）。同样要早于随机序生成。
-      _adoptBackgroundQueue();
+      if (switchToRequested) {
+        // 用户点的是另一首：队列以调用方传入的为准（未传则单曲页），
+        // 让 _currentSong/_currentPath 指向新歌 —— 不能沿用后台旧队列，
+        // 否则 _openTrack 解析到的仍是旧歌。
+        _songs = widget.allSongs ?? const <SongModel>[];
+        _currentIndex = _safeIndex(widget.initialIndex, _songs.length);
+      } else {
+        // ⚠️ 从通知栏进来时调用方**不传 allSongs**，必须用 handler 的快照补齐队列，
+        // 否则播放列表是空的，切歌/下一首全乱（issue #34）。同样要早于随机序生成。
+        _adoptBackgroundQueue();
+      }
       _shuffleQueue = List.generate(_allSongs.length, (i) => i);
       _initListeners();
       setState(() {
         isPlaying = player.state.playing;
-        position = player.state.position;
-        duration = player.state.duration;
+        // 切歌时清掉旧歌的瞬时进度，避免新歌 open 前界面闪现旧进度
+        position = switchToRequested ? Duration.zero : player.state.position;
+        duration = switchToRequested ? Duration.zero : player.state.duration;
       });
       _hasSeekedToSavedPosition = true;
-      _loadLyrics();
       // 重新建立 skip 回调（dispose 时清除了），确保通知栏切歌仍能同步 UI
       getAudioHandler().setSkipCallback(_onBackgroundSkip);
-      // 修复 bug：后台仍在播 A 时，从类别页点开 B/C，需立即切换并播放当前选中的文件。
-      // 若请求的路径与当前后台播放的路径不同，则打开新曲目；相同则保持原进度不重启。
-      if (getAudioHandler().currentPath != _currentPath) {
+      if (switchToRequested) {
+        // 打开用户点的新歌（内部会加载歌词、写 lastPlayedAudio 并 open 播放）
         _openTrack();
-        _updateBackgroundItem();
+        // 以新队列重建后台会话：通知栏上一首/下一首才会按新队列切歌。
+        // attach 对同一 player 重复调用是安全的（见 handler attach 注释）。
+        _startBackgroundMode();
       } else {
+        _loadLyrics();
         _updateBackgroundItem();
       }
       // 同上：后台 player 复用路径也必须补一次档位应用。

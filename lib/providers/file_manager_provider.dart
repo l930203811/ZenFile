@@ -1079,7 +1079,7 @@ class FileManagerProvider extends ChangeNotifier {
     _navigateToBrowseTabNotifier.value = false;
   }
 
-  bool _rememberLastFolder = false;
+  bool _rememberLastFolder = true;
   bool get rememberLastFolder => _rememberLastFolder;
 
   void toggleRememberLastFolder() {
@@ -1365,7 +1365,7 @@ class FileManagerProvider extends ChangeNotifier {
 
   // 「导航栏常驻」总开关：开启时底部 4-tab 在其他（壳内）页面也保持显示
   // （分类页 / 抽屉等进入的页面只占 body 区域，底栏不动）；关闭时恢复整页全屏。
-  bool _persistentTabBar = true;
+  bool _persistentTabBar = false;
   bool get persistentTabBar => _persistentTabBar;
 
   void setPersistentTabBar(bool value) {
