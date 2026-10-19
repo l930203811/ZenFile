@@ -631,7 +631,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       iconPos.dy + iconSize.height / 2,
     );
 
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.sizeOf(context);
     final dx = max(center.dx, screenSize.width - center.dx);
     final dy = max(center.dy, screenSize.height - center.dy);
     final radius = sqrt(dx * dx + dy * dy);
@@ -843,7 +843,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final theme = Theme.of(context);
 
     // 菜单定位：靠左对齐，基于图标位置不容许溢出
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     const menuMinWidth = 180.0;
     const edgeMargin = 16.0;
     // 菜单左边缘与图标左边缘对齐（图标宽64，中心 ~32）
@@ -919,7 +919,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     const menuMinWidth = 180.0;
     const edgeMargin = 16.0;
     final menuLeft =
@@ -2366,7 +2366,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             physics: const BouncingScrollPhysics(),
                             padding: EdgeInsets.only(
                               bottom:
-                                  MediaQuery.of(context).padding.bottom + 16,
+                                  MediaQuery.paddingOf(context).bottom + 16,
                             ),
                             onReorder: (oldIndex, newIndex) {
                               if (newIndex > oldIndex) newIndex -= 1;

@@ -159,7 +159,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
   bool _showFindReplace = false;
   bool _wordWrap = PreferencesService.getEditorWordWrap();
-  bool _readOnly = PreferencesService.getEditorReadOnly();
+  /// 打开文档**永远是查看（只读）模式**。
+  ///
+  /// 曾经把上次会话的编辑/阅读模式持久化到 `editor_read_only`，结果用户只想
+  /// 扫一眼文档，打开就是可编辑状态，随手一划就改了内容（还有还原不回去的风险）。
+  /// 现在固定从只读进入，要改必须**主动**点右上角锁按钮切到编辑模式。
+  bool _readOnly = true;
   bool _showLineNumbers = PreferencesService.getEditorShowLineNumbers();
   String _selectedLanguage = 'auto'; // auto, plain, html, xml, json, dart, java, js, python, cpp, css, smali, markdown
   int _currentLineCount = 1;
@@ -312,8 +317,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
   Future<void> _loadFile() async {
     if (_currentFilePath.isEmpty) {
-      // 空编辑器：无文件可读，直接结束加载状态
-      if (mounted) setState(() => _isLoading = false);
+      // 空编辑器（「新建文本」入口）：没有文件可读，本来就是要写东西，
+      // 因此不受「打开文档一律只读」的约束。
+      // 这里在首帧之前调用，直接改字段即可（setState 在 initState 阶段无意义）。
+      _isLoading = false;
+      _readOnly = false;
       return;
     }
     try {
@@ -483,9 +491,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           _history.clear();
           _redoHistory.clear();
           _history.add('');
+          // 新建空文件是「要开始写」，直接进入编辑模式；显示偏好（换行 / 行号）
+          // 保持用户既有设置，不因新建文件被重置。
           _readOnly = false;
-          _wordWrap = false;
-          _showLineNumbers = true;
           _selectedLanguage = 'plain';
           _controller.language = 'plain';
         });
@@ -771,15 +779,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             icon: Icon(_readOnly ? Broken.edit : Broken.lock_1),
             tooltip: _readOnly ? L10n.of(context).msg349ab61d : L10n.of(context).msg96f0ad7d,
             onPressed: () {
-              setState(() {
-                _readOnly = !_readOnly;
-                // 阅读模式：开启自动换行、隐藏行号；编辑模式：关闭自动换行、显示行号
-                _wordWrap = _readOnly;
-                _showLineNumbers = !_readOnly;
-              });
-              PreferencesService.saveEditorReadOnly(_readOnly);
-              PreferencesService.saveEditorWordWrap(_wordWrap);
-              PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
+              // ⚠️ 只切换模式本身：
+              // - 不再把模式写回偏好（下次打开一律只读）；
+              // - 不再连带改「自动换行 / 显示行号」—— 这两项是用户自己的显示
+              //   偏好（默认换行开、行号关），只在三点菜单里显式切换时才落盘，
+              //   否则切一次模式就把用户的设置冲掉了。
+              setState(() => _readOnly = !_readOnly);
             },
           ),
           IconButton(

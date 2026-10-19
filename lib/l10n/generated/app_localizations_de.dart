@@ -3534,6 +3534,9 @@ class L10nDe extends L10n {
   String get ui_close_tab => 'Tab schließen';
 
   @override
+  String get ui_close_tab_hint => 'Doppeltippen schließt diesen Tab';
+
+  @override
   String get ui_close_all_tabs => 'Alle Tabs schließen';
 
   @override

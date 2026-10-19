@@ -71,7 +71,7 @@ class _SandboxCryptBrowserScreenState extends State<SandboxCryptBrowserScreen> {
     }
   }
 
-  void _open(CryptFileEntry entry) {
+  Future<void> _open(CryptFileEntry entry) async {
     if (entry.isDirectory) {
       Navigator.push(
         context,
@@ -87,7 +87,22 @@ class _SandboxCryptBrowserScreenState extends State<SandboxCryptBrowserScreen> {
     }
     // 统一打开链路：临时解密（扩展名用解密后的真实名）→ 内置查看器/播放器/
     // 内置安装器 → 操作结束后自动清理临时文件。
-    context.read<FileManagerProvider>().openFile(context, entry.virtualPath);
+    //
+    // 图片额外带上「同目录其它图片」：加密条目在磁盘上是密文虚拟路径，查看器
+    // 自己渲染不了，必须逐个换成流式解密 URL（[collectCryptImageSiblings] 已处理）
+    // ⇒ 否则打开后只有 1 张、不能左右滑动。
+    //
+    // ⚠️ 必须在 await **之前**取 provider：await 之后再用 context 可能已 unmounted。
+    final provider = context.read<FileManagerProvider>();
+    final imageSiblings =
+        await collectCryptImageSiblings(_entries, entry, mount: widget.mount);
+    if (!mounted) return;
+    provider.openFile(
+      context,
+      entry.virtualPath,
+      siblingPaths: imageSiblings?.paths,
+      siblingNames: imageSiblings?.names,
+    );
   }
 
   String _formatSize(int size) {

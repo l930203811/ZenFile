@@ -426,6 +426,12 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
           ],
         ),
         body: SafeArea(
+          // 内嵌在第 4 个 tab 里时**不吃底部安全区**：HomeScreen 开了 extendBody，
+          // 这里拿到的是「底栏总高」（约 80dp）。若默认把它吃掉，列表会在 4-tab
+          // 上沿一刀切断，卡片边框紧贴着胶囊画成半个方框 —— 用户看到的就是
+          // 「导航栏多层嵌套」。改为让列表穿到底栏后面，底部留白统一由
+          // ListView 的 padding（paddingOf.bottom + 16）负责，与浏览页一致。
+          bottom: !widget.embedded,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -446,7 +452,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
               Expanded(
                 child: ListView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(top: (widget.embedded && !_isSearching) ? 8 : 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+            padding: EdgeInsets.only(top: (widget.embedded && !_isSearching) ? 8 : 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
+            // ↑ paddingOf（按 aspect 订阅）：整取 MediaQuery.of 会订阅整份 MediaQueryData，
+            // 键盘 Insets 动画期间本页（IndexedStack 常驻 tab）会每帧重建全部设置卡片。
             children: [
               if (_searchQuery.isEmpty) ...[
                 SettingsTile(
@@ -1504,7 +1512,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.folder_favorite,
@@ -1607,7 +1615,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.colorfilter,
@@ -1685,7 +1693,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.edit,
@@ -1857,7 +1865,7 @@ class LayoutSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.document_text_1,
@@ -2353,7 +2361,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.image,
@@ -2438,7 +2446,7 @@ class ActionsSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.setting_3,

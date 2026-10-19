@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -36,6 +37,17 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   StreamSubscription<void>? _searchSubscription;
   // 搜索防抖：避免在低端机上每输入一个字符就同步遍历整个媒体库，造成输入卡顿。
   Timer? _searchDebounceTimer;
+
+  /// 搜索结果分片缓冲（见 [_queueResult]）：逐条 setState 会让结果列表在
+  /// 一次全盘搜索里被重建上千次，是「文件越多越卡」的主因之一。
+  final List<FileItemModel> _pendingResults = <FileItemModel>[];
+  Timer? _resultFlushTimer;
+
+  /// 搜索代次：每次新搜索自增，旧搜索的分片解析凭代次自我了断。
+  int _searchGeneration = 0;
+
+  /// 媒体索引的「小写文件名」快照（见 [_ensureMediaNameIndex]）。
+  List<({String path, String lowerName})>? _mediaNameIndex;
 
   /// 缓存的 Provider 引用（initState 里赋值）。
   ///
@@ -114,6 +126,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
+    _resultFlushTimer?.cancel();
     _searchSubscription?.cancel();
     _searchController.dispose();
     // 用缓存的引用注销监听：此处 context 已失效，不能再 read（会抛 NPE）。
@@ -149,7 +162,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     });
     // 防抖：用户连续输入时只在停顿后才真正执行搜索，避免每个字符都遍历整个媒体库导致输入卡顿。
     _searchDebounceTimer?.cancel();
-    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), _executeSearch);
+    // 280ms：键盘弹出动画本身约 250ms，防抖若短于它，全盘扫描会在动画
+    // 中途启动，直接把输入法的帧挤掉（用户反馈的「一弹键盘就卡」）。
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 280), _executeSearch);
   }
 
   void _onFilterChanged(String filter) {
@@ -162,7 +177,11 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   void _executeSearch() {
     _searchDebounceTimer?.cancel();
     _searchSubscription?.cancel();
+    _cancelResultFlush();
     _clearSelection();
+    // 代次：每次新搜索自增。旧搜索里正在分片解析的结果凭代次丢弃，
+    // 否则「先输 a 再输 ab」时 a 的结果会在 ab 的列表里冒出来。
+    final gen = ++_searchGeneration;
     if (_query.isEmpty) {
       setState(() {
         _results = [];
@@ -182,54 +201,61 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final fileProvider = context.read<FileManagerProvider>();
 
     final qLower = _query.toLowerCase();
-    
-    // Resolve search scope
+    final l10n = L10n.of(context);
+    final allFilter = _selectedFilter == l10n.ui_all;
+    final docFilter = _selectedFilter == l10n.ui_documents;
+
     final isGlobal = _searchFolderPath == null ||
-                     _searchFolderPath == '/storage/emulated/0' ||
-                     _searchFolderPath == '/';
+        _searchFolderPath == '/storage/emulated/0' ||
+        _searchFolderPath == '/';
 
     final rootPath = isGlobal
         ? (Platform.isAndroid ? '/storage/emulated/0' : fileProvider.currentPath)
         : _searchFolderPath!;
-    
-    // 1. Instant check from MediaProvider indexes if matching filter
-    if (_selectedFilter == L10n.of(context).ui_all || _selectedFilter == L10n.of(context).ui_documents) {
-      final matchingDocs = <FileSystemEntity>[];
-      for (final doc in mediaProvider.documents) {
-        if (!isGlobal && !doc.path.startsWith(rootPath)) continue;
-        final name = p.basename(doc.path);
-        if (name.toLowerCase().contains(qLower) && !seenPaths.contains(doc.path)) {
-          seenPaths.add(doc.path);
-          matchingDocs.add(doc);
-        }
+
+    // 1) 媒体索引（纯内存）匹配。
+    //
+    // ⚠️ 这里是「打字卡顿」的第一处热点：旧实现对整份索引逐个
+    // `p.basename()`（内部 split 出整条路径分段）+ `toLowerCase()`，大存储
+    // 设备上索引可达数万条，每敲一个字都要重算一遍。改为在一份**缓存好的
+    // 小写文件名快照**上做纯 contains，索引本身变化时（长度变化）才重建。
+    if (allFilter || docFilter) {
+      // ⚠️ 只取一次：`documents` 是**每次访问都重新过滤 + 新建列表**的 getter
+      // （噪音过滤 / 排除目录 / 自定义目录逐条判断）。写在循环条件里会变成
+      // O(n²) —— 几万条索引时一次搜索就能把界面按住好几秒。
+      final docs = mediaProvider.documents;
+      final nameIndex = _ensureMediaNameIndex(docs);
+      final matchedDocs = <FileSystemEntity>[];
+      for (var i = 0; i < nameIndex.length; i++) {
+        final e = nameIndex[i];
+        if (!e.lowerName.contains(qLower)) continue;
+        if (!isGlobal && !e.path.startsWith(rootPath)) continue;
+        if (!seenPaths.add(e.path)) continue;
+        matchedDocs.add(docs[i]);
       }
-      if (matchingDocs.isNotEmpty) {
-        Future.wait(matchingDocs.map((doc) => FileItemModel.fromEntityAsync(doc))).then((resolvedDocs) {
-          if (mounted) {
-            setState(() {
-              _results.addAll(resolvedDocs);
-            });
-          }
-        });
+      // 命中项**分片**解析（每片 40 个，片间让出事件循环）。
+      // 旧实现用 `Future.wait` 一次性给所有命中项 stat：输一个「a」可能同时
+      // 抛出上万个 stat，IO 与主 isolate 一起饱和 —— 键盘动画自然掉帧。
+      if (matchedDocs.isNotEmpty) {
+        unawaited(_resolveDocsInChunks(matchedDocs, gen));
       }
     }
 
-    if (_selectedFilter == L10n.of(context).ui_all || _selectedFilter == L10n.of(context).ui_audio) {
+    if (allFilter || _selectedFilter == l10n.ui_audio) {
       for (final song in mediaProvider.audios) {
         final path = song.data;
         if (!isGlobal && !path.startsWith(rootPath)) continue;
         final name = p.basename(path);
-        if (name.toLowerCase().contains(qLower) && !seenPaths.contains(path)) {
-          seenPaths.add(path);
-          currentBatch.add(FileItemModel(
-            entity: File(path),
-            name: song.title,
-            path: path,
-            isDirectory: false,
-            size: song.size,
-            modified: DateTime.fromMillisecondsSinceEpoch((song.dateModified ?? 0) * 1000),
-          ));
-        }
+        if (!seenPaths.add(path)) continue;
+        if (!name.toLowerCase().contains(qLower)) continue;
+        currentBatch.add(FileItemModel(
+          entity: File(path),
+          name: song.title,
+          path: path,
+          isDirectory: false,
+          size: song.size,
+          modified: DateTime.fromMillisecondsSinceEpoch((song.dateModified ?? 0) * 1000),
+        ));
       }
     }
 
@@ -247,15 +273,11 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       isGlobal: isGlobal,
       rootPathFilter: rootPath,
       seenPaths: seenPaths,
-      onResult: (item) {
-        if (mounted) {
-          setState(() {
-            _results.add(item);
-          });
-        }
-      },
+      onResult: _queueResult,
       onDone: () {
         if (mounted) {
+          // 收尾时立刻把缓冲区里剩下的结果刷出去，不必等 90ms 的节流窗口。
+          _flushResults();
           setState(() {
             _isSearching = false;
           });
@@ -267,7 +289,91 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     );
   }
 
+  /// 媒体索引的「小写文件名」快照，避免每次按键都对整份索引做 basename/小写。
+  ///
+  /// 失效判据只看长度：媒体列表的变化（刷新 / 后台扫到新文件）几乎必然伴随
+  /// 数量变化；即便某次数量恰好不变，最坏也只是少显示几条索引结果，
+  /// 递归搜索仍会补齐 —— 用完整内容比对换这点精度不值得（那是 O(n) 且要分配）。
+  List<({String path, String lowerName})> _ensureMediaNameIndex(
+    List<FileSystemEntity> docs,
+  ) {
+    final cached = _mediaNameIndex;
+    if (cached != null && cached.length == docs.length) return cached;
+    final built = List<({String path, String lowerName})>.generate(
+      docs.length,
+      (i) {
+        final path = docs[i].path;
+        // 只取最后一段，避免 p.basename 内部的整条路径 split。
+        final slash = path.lastIndexOf('/');
+        final name = slash < 0 ? path : path.substring(slash + 1);
+        return (path: path, lowerName: name.toLowerCase());
+      },
+      growable: false,
+    );
+    _mediaNameIndex = built;
+    return built;
+  }
+
+  /// 分片解析媒体索引命中项（每片 40 个，片间让出一拍）。
+  ///
+  /// 上限 400：命中成千上万时继续 stat 只是把 IO 打满，用户根本翻不到那么远，
+  /// 后面的结果交给递归搜索按需补齐。
+  Future<void> _resolveDocsInChunks(List<FileSystemEntity> docs, int gen) async {
+    const int chunkSize = 40;
+    const int maxResolve = 400;
+    final total = math.min(docs.length, maxResolve);
+    for (var start = 0; start < total; start += chunkSize) {
+      if (!mounted || gen != _searchGeneration) return;
+      final end = math.min(start + chunkSize, total);
+      for (var i = start; i < end; i++) {
+        try {
+          final item = await FileItemModel.fromEntityAsync(docs[i]);
+          if (!mounted || gen != _searchGeneration) return;
+          _queueResult(item);
+        } catch (_) {}
+      }
+      await Future<void>.delayed(Duration.zero);
+    }
+  }
+
+  /// 结果批量回填。
+  ///
+  /// 旧实现每命中一条就 `setState` 一次：一次全盘搜索动辄上千条命中 ⇒ 结果
+  /// 列表被重建上千次，每一次都要重跑整个 `build`（含 AppBar 的
+  /// `DirectoryTabBar`、筛选条、空状态判断）。这就是「文件越多越卡」的第二处
+  /// 热点。改成先进缓冲区，最多每 90ms 刷一次。
+  void _queueResult(FileItemModel item) {
+    _pendingResults.add(item);
+    _resultFlushTimer ??= Timer(
+      const Duration(milliseconds: 90),
+      _flushResults,
+    );
+  }
+
+  void _flushResults() {
+    // 只清计时器，不能顺手清缓冲区 —— 下面正要把缓冲区刷进列表。
+    _resultFlushTimer?.cancel();
+    _resultFlushTimer = null;
+    if (!mounted || _pendingResults.isEmpty) return;
+    final batch = List<FileItemModel>.of(_pendingResults);
+    _pendingResults.clear();
+    setState(() {
+      _results.addAll(batch);
+    });
+  }
+
+  void _cancelResultFlush() {
+    _resultFlushTimer?.cancel();
+    _resultFlushTimer = null;
+    _pendingResults.clear();
+  }
+
   /// 自定义递归搜索，跳过无权限目录继续搜索其他目录
+  ///
+  /// 并发上限 [maxConcurrentDirs]：旧实现完全没有节流 —— 每进一个目录就
+  /// `activeTasks++` 并立刻再发 6 个，全盘搜索会瞬间拉起成百上千个
+  /// `dir.list()`，IO 队列与主 isolate 一起饱和。表现就是「一边输入一边卡、
+  /// 键盘收起也卡」，文件越多越严重。
   StreamSubscription<void> _recursiveSearch({
     required String rootPath,
     required String qLower,
@@ -278,22 +384,39 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     required VoidCallback onDone,
     required void Function(dynamic) onError,
   }) {
-    final controller = StreamController<void>();
-    var activeTasks = 0;
     var isCancelled = false;
+    var running = 0;
+    var closed = false;
+    const int maxConcurrentDirs = 6;
+    final pendingDirs = <String>[];
 
-    void handleError(dynamic e) {
-      if (!isCancelled) {
-        debugPrint('搜索目录 $rootPath 时出错: $e');
-        onError(e);
+    // ⚠️ 取消必须落到递归本身。旧实现没有 `onCancel`：搜索词一变只是把订阅
+    // 丢掉，旧的递归仍在跑、仍在 setState 把旧结果塞进列表 ⇒ 每按一次键就多
+    // 一条全盘遍历，越输越卡，结果还会串。
+    final controller = StreamController<void>(
+      onCancel: () {
+        isCancelled = true;
+        pendingDirs.clear();
+      },
+    );
+
+    void closeIfIdle() {
+      if (closed || isCancelled) return;
+      if (running == 0 && pendingDirs.isEmpty) {
+        closed = true;
+        controller.close();
       }
     }
 
-    Future<void> searchDirectory(String dirPath) async {
+    Future<void> scanDirectory(String dirPath) async {
+      // 先把依赖 context 的对象取出来：下面一进 enumerate 就跨过异步边界，
+      // 之后再碰 context 会触发 use_build_context_synchronously（且真有失效风险）。
+      final fileProvider = context.read<FileManagerProvider>();
+      final l10n = L10n.of(context);
+      final currentFilter = _selectedFilter;
       try {
         // 受限路径（其它应用的 Android/data、Android/obb）不能走 Dart IO 直列，
         // 统一交给 provider 的多通道枚举（shell → 标准路径 → 变形路径 → 底层路径）。
-        final fileProvider = context.read<FileManagerProvider>();
         List<(String path, bool isDir, FileItemModel? prebuilt)> entries;
 
         if (fileProvider.isRestrictedPath(dirPath)) {
@@ -311,24 +434,26 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           final entities = await dir.list(followLinks: false).toList();
           entries = [for (final e in entities) (e.path, e is Directory, null)];
         }
+        if (isCancelled) return;
 
         for (final (path, isDir, prebuilt) in entries) {
+          if (isCancelled) return;
           final name = p.basename(path);
 
           // 检查文件名是否匹配搜索词
           if (name.toLowerCase().contains(qLower)) {
             bool matchFilter = false;
-            if (_selectedFilter == L10n.of(context).ui_all) {
+            if (currentFilter == l10n.ui_all) {
               matchFilter = true;
-            } else if (_selectedFilter == L10n.of(context).ui_folders && isDir) {
+            } else if (currentFilter == l10n.ui_folders && isDir) {
               matchFilter = true;
-            } else if (_selectedFilter == L10n.of(context).ui_images && !isDir && _isImage(name)) {
+            } else if (currentFilter == l10n.ui_images && !isDir && _isImage(name)) {
               matchFilter = true;
-            } else if (_selectedFilter == L10n.of(context).ui_videos && !isDir && _isVideo(name)) {
+            } else if (currentFilter == l10n.ui_videos && !isDir && _isVideo(name)) {
               matchFilter = true;
-            } else if (_selectedFilter == L10n.of(context).ui_audio && !isDir && _isAudio(name)) {
+            } else if (currentFilter == l10n.ui_audio && !isDir && _isAudio(name)) {
               matchFilter = true;
-            } else if (_selectedFilter == L10n.of(context).ui_documents && !isDir && _isDoc(name)) {
+            } else if (currentFilter == l10n.ui_documents && !isDir && _isDoc(name)) {
               matchFilter = true;
             }
 
@@ -350,41 +475,41 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             }
           }
 
-          // 如果是目录，递归搜索（跳过符号链接和特殊目录）
-          if (isDir && !isCancelled) {
-            activeTasks++;
-            searchDirectory(path).then((_) {
-              activeTasks--;
-              if (activeTasks == 0 && !isCancelled) {
-            controller.close();
-              }
-            }).catchError((e) {
-              activeTasks--;
-              handleError(e);
-              if (activeTasks == 0 && !isCancelled) {
-                controller.close();
-              }
-            });
-          }
+          // 目录入队，由 [pump] 按并发上限逐个展开（不在这里直接递归）。
+          if (isDir) pendingDirs.add(path);
         }
       } catch (e) {
-        handleError(e);
+        if (!isCancelled) {
+          debugPrint('搜索目录 $dirPath 时出错: $e');
+          onError(e);
+        }
       }
     }
 
-    activeTasks++;
-    searchDirectory(rootPath).then((_) {
-      activeTasks--;
-      if (activeTasks == 0 && !isCancelled) {
-        controller.close();
+    void pump() {
+      if (isCancelled) return;
+      while (running < maxConcurrentDirs && pendingDirs.isNotEmpty) {
+        final dirPath = pendingDirs.removeAt(0);
+        running++;
+        // 用 try/finally 保证 running 一定回收：漏减一次就再也不会 close，
+        // 界面会永远停在「搜索中」。
+        unawaited(() async {
+          try {
+            await scanDirectory(dirPath);
+          } catch (_) {
+          } finally {
+            running--;
+          }
+          if (isCancelled) return;
+          pump();
+          closeIfIdle();
+        }());
       }
-    }).catchError((e) {
-      activeTasks--;
-      handleError(e);
-      if (activeTasks == 0 && !isCancelled) {
-        controller.close();
-      }
-    });
+      closeIfIdle();
+    }
+
+    pendingDirs.add(rootPath);
+    pump();
 
     return controller.stream.listen(
       (_) {},

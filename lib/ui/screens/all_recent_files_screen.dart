@@ -621,7 +621,11 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
             )
           : ListView.builder(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              // 壳内页面：extendBody 后 4-tab 悬浮在内容上，底部留白 = 底栏总高。
+              padding: EdgeInsets.only(
+                top: 8,
+                bottom: MediaQuery.paddingOf(context).bottom + 24,
+              ),
               itemCount: _recentFiles.length,
               itemBuilder: (context, index) {
                 final item = _recentFiles[index];

@@ -108,6 +108,13 @@ class ImageViewerScreen extends StatefulWidget {
   /// 非空时直接以 NetworkImage 渲染，跳过本地文件扫描/元信息读取（无本地文件）。
   final String? streamUrl;
 
+  /// 与 [siblingPaths] **等长并行**的显示名列表。
+  ///
+  /// 加密条目的路径是密文（如 `p8k3m9x…`），直接取 basename 会把一串无意义
+  /// 字符顶到标题栏；传这里就能显示解密后的真实文件名。
+  /// 为空或长度不匹配时回退到从路径取名字。
+  final List<String>? siblingNames;
+
   const ImageViewerScreen({
     super.key,
     required this.imagePath,
@@ -116,6 +123,7 @@ class ImageViewerScreen extends StatefulWidget {
     this.siblingItems,
     this.initialAssetId,
     this.streamUrl,
+    this.siblingNames,
   });
 
   @override
@@ -165,10 +173,26 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   Future<void> _findSiblings() async {
-    // 流式解密 URL（加密文件）没有本地目录，直接作为单张图片展示
     if (widget.streamUrl != null) {
-      _imageList = [widget.imagePath];
-      _currentIndex = 0;
+      final provided = widget.siblingPaths;
+      if (provided == null || provided.isEmpty) {
+        // 调用方没给兄弟列表：加密文件没有本地目录可扫，只能单张展示。
+        _imageList = [widget.imagePath];
+        _currentIndex = 0;
+        return;
+      }
+      // 加密目录：调用方已把每个加密条目换成流式解密 URL（见 provider 的
+      // `_siblingImagePathsInCurrentTab`），这里只需按 imagePath 定好页码。
+      _imageList = List<String>.of(provided);
+      // ⚠️ 流式 URL 不能过 `p.normalize`（会把 `http://` 压成 `http:/`，还会
+      // 对 query 里的 `%2F` 做无意义处理）；URL 一律按**原文**比较即可 ——
+      // 同一虚拟路径经 getStreamUrl 生成的 URL 是确定性的。
+      final idx = _imageList.indexWhere(
+        (e) => e.startsWith('http')
+            ? e == widget.imagePath
+            : _normPath(e) == _normPath(widget.imagePath),
+      );
+      _currentIndex = idx == -1 ? 0 : idx;
       return;
     }
 
@@ -222,6 +246,17 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     }
     sorted ??= await _collectImageSiblingsOnMain(dirPath, currentPath);
 
+    await _applyResolvedList(sorted, currentPath);
+  }
+
+  /// 用 [sorted] 整体替换列表，并定位到 [currentPath] 对应的那一页。
+  ///
+  /// ⚠️ 定位失败说明这份列表与当前文件不是同源（比如从「最近 / 收藏 / 搜索结果」
+  /// 打开），此时退化成单张 —— 显示错误目录下的图片比不能左右滑更糟。
+  Future<void> _applyResolvedList(
+    List<String> sorted,
+    String currentPath,
+  ) async {
     if (!mounted) return;
     _imageList = sorted;
     // 用归一化路径比较：`a/b` 与 `a\b` 指向同一文件，混用会让 indexOf 失配 ⇒
@@ -237,17 +272,19 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     // ⚠️ 必须等**新列表这一帧 rebuild 之后**才能跳页：此刻 PageView 还只有占位
     // 的那 1 页，直接 `jumpToPage(_currentIndex)` 会被 clamp 回第 0 页 ——
     // 表现就是「明明扫到了 40 多张，却停在 1 of 42」。
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_pageController.hasClients) {
-        if (_currentIndex > 0) _pageController.jumpToPage(_currentIndex);
-      } else if (_currentIndex > 0) {
-        // 列表先于首帧就绪：用带正确初始页的 controller 替换。
-        final old = _pageController;
-        _pageController = PageController(initialPage: _currentIndex);
-        old.dispose();
-      }
-    });
+    if (_currentIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_currentIndex);
+        } else {
+          // 列表先于首帧就绪：用带正确初始页的 controller 替换。
+          final old = _pageController;
+          _pageController = PageController(initialPage: _currentIndex);
+          old.dispose();
+        }
+      });
+    }
   }
 
   /// 归一化路径，仅用于「是否同一个文件」的比较（不用于读写）。
@@ -377,6 +414,28 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     return null;
   }
 
+  /// 第 [index] 页的标题。
+  ///
+  /// 优先取调用方给的显示名（加密条目为**解密后**的真实文件名）；没有则回退到
+  /// 路径 basename，并先把流式 URL 还原成原始虚拟路径 —— 否则标题栏会顶出一整
+  /// 串 `decrypt.jpg?path=…`。
+  String _titleOf(int index) {
+    final names = widget.siblingNames;
+    if (names != null && index >= 0 && index < names.length) {
+      final n = names[index];
+      if (n.isNotEmpty) return n;
+    }
+    final p = _pathAtIndex(index);
+    if (p == null) return L10n.of(context).image_fallback_title;
+    var raw = p;
+    if (raw.startsWith('http://')) {
+      try {
+        raw = Uri.parse(raw).queryParameters['path'] ?? raw;
+      } catch (_) {}
+    }
+    return raw.split('/').last.split('\\').last;
+  }
+
   /// 远程图片按需下载到本地缓存，完成后刷新显示。
   Future<void> _loadRemoteFile(int index) async {
     final path = _pathAtIndex(index);
@@ -451,8 +510,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 获取当前图片的 File 对象
   File? _getCurrentFile() {
-    // 流式解密 URL 没有本地文件，所有依赖本地文件的操作应安全降级为 no-op
-    if (widget.streamUrl != null) return null;
+    // 加密/流式场景：**逐页**判断 —— 当前页是流地址（http://）时没有本地文件，
+    // 依赖本地文件的操作安全降级为 no-op；但同目录里混有的**明文**图片仍要正常返回
+    // File，否则翻到明文页时详情 / 分享 / 删除会全部失效。
+    if (widget.streamUrl != null) {
+      final p = _pathAtIndex(_currentIndex);
+      if (p == null || p.contains('://')) return null;
+      return File(p);
+    }
 
     if (widget.siblingItems != null &&
         _currentIndex < widget.siblingItems!.length) {
@@ -1089,7 +1154,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         _currentIndex < widget.siblingAssets!.length) {
       currentTitle = widget.siblingAssets![_currentIndex].title ?? L10n.of(context).image_fallback_title;
     } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
-      currentTitle = _imageList[_currentIndex].split('/').last.split('\\').last;
+      currentTitle = _titleOf(_currentIndex);
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -1252,13 +1317,16 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     Uint8List? thumbData;
                     String tagKey = 'img_$index';
 
-                    // 加密图片：直接以 NetworkImage 渲染流式解密 URL
-                    if (widget.streamUrl != null) {
+                    // 加密图片：按**页索引**取各自的流式解密 URL 渲染。
+                    // ⚠️ 不能整段统一用 widget.streamUrl：那样 N 页会渲染同一张，
+                    //    左右滑过去画面纹丝不动（看着像翻页其实没翻）。
+                    final cryptPath = _pathAtIndex(index);
+                    if (cryptPath != null && cryptPath.startsWith('http://')) {
                       return PhotoViewGalleryPageOptions.customChild(
                         child: Transform.rotate(
                           angle: _rotation,
                           child: Image(
-                            image: NetworkImage(widget.streamUrl!),
+                            image: NetworkImage(cryptPath),
                             fit: BoxFit.contain,
                             loadingBuilder: (ctx, child, loading) {
                               if (loading == null) return child;
@@ -1273,7 +1341,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                         initialScale: PhotoViewComputedScale.contained,
                         minScale: PhotoViewComputedScale.contained,
                         maxScale: PhotoViewComputedScale.covered * 4,
-                        heroAttributes: const PhotoViewHeroAttributes(tag: 'crypt_stream'),
+                        // hero tag 必须逐页唯一：固定值会让所有页共用同一个 tag。
+                        heroAttributes: PhotoViewHeroAttributes(tag: cryptPath),
                         onTapUp: (context, details, controllerValue) {
                           _toggleShellUI();
                         },

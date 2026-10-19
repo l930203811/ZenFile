@@ -2325,7 +2325,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                             .compareTo(path_helper.basename(b.key));
                       });
                       return GridView.builder(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.fromLTRB(
+                          12, 12, 12, 12 + MediaQuery.paddingOf(context).bottom,
+                        ),
                         physics: const BouncingScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -3311,7 +3313,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
           // Spacing / line after month of files
           SliverToBoxAdapter(
             child: entry.key == entries.last.key
-                ? const SizedBox(height: 16)
+                ? SizedBox(height: 16 + MediaQuery.paddingOf(context).bottom)
                 : Column(
                     children: [
                       const SizedBox(height: 12),
@@ -3646,7 +3648,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
     if (isGridView) {
       return GridView.builder(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.fromLTRB(
+          6, 6, 6, 6 + MediaQuery.paddingOf(context).bottom,
+        ),
         physics: const BouncingScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -4131,7 +4135,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
     if (isGridView) {
       return GridView.builder(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.fromLTRB(
+          6, 6, 6, 6 + MediaQuery.paddingOf(context).bottom,
+        ),
         physics: const BouncingScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -4585,7 +4591,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
     if (isGridView) {
       return GridView.builder(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.fromLTRB(
+          6, 6, 6, 6 + MediaQuery.paddingOf(context).bottom,
+        ),
         physics: const BouncingScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -4966,7 +4974,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
     if (isGridView) {
       return GridView.builder(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.fromLTRB(
+          6, 6, 6, 6 + MediaQuery.paddingOf(context).bottom,
+        ),
         physics: const BouncingScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -5351,7 +5361,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
     if (isGridView) {
       return GridView.builder(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.fromLTRB(
+          6, 6, 6, 6 + MediaQuery.paddingOf(context).bottom,
+        ),
         physics: const BouncingScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,

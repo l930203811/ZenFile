@@ -37,7 +37,9 @@ import '../widgets/crypt_progress_dialog.dart';
 import '../widgets/clipboard_menu_sheet.dart';
 import '../widgets/cut_destination_sheet.dart';
 import '../widgets/favorites_sheet.dart';
-import '../widgets/liquid_glass_panel.dart';
+import '../widgets/liquid_glass_panel.dart' show kLiquidGlassBlurSigma;
+import '../widgets/liquid_bottom_bar.dart'
+    show kLiquidNavTopGap, LiquidBarSurface;
 
 
 class DirectoryScreen extends StatefulWidget {
@@ -59,6 +61,15 @@ class DirectoryScreen extends StatefulWidget {
   /// 非当前显示页一律让行，返回交由 home_screen 统一处理。
   final bool isActive;
 
+  /// 底部 4-tab 此刻是否与浏览操作栏「拼成一整块」。
+  ///
+  /// 由 HomeScreen 统一判定后传进来（它同时决定 4-tab 的顶角形状），保证两条栏
+  /// 对「拼 / 不拼」的认知**永远一致** —— 各自算一遍迟早会差一帧，接缝处就会
+  /// 露出直角 + 圆角并存的缺口。
+  ///
+  /// 为 true 时本页操作栏只圆上角、不画底边描边，与下方 4-tab 连成一体。
+  final bool navBarAttached;
+
   const DirectoryScreen({
     super.key,
     required this.toggleTheme,
@@ -66,6 +77,7 @@ class DirectoryScreen extends StatefulWidget {
     this.onRefresh,
     this.onOpenDrawer,
     this.isActive = true,
+    this.navBarAttached = false,
   });
 
   /// 浏览操作栏当前是否展开（被列表滚动折叠时为 false）。
@@ -102,9 +114,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     // 本页可能是重建出来的（旧实例已销毁），而静态 notifier 会保留上一状态。
     // 进来先对齐一次，避免底栏顶角与本页操作栏形状不一致。
     DirectoryScreen.browseBarExpanded.value = _browseBarVisible;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FileManagerProvider>().init();
-    });
+    // 应用级初始化（`FileManagerProvider.init()`）已上移到 HomeScreen：
+    // 本页现在是惰性构建的，未必会在解锁那一帧被创建，而 init 只有那一个
+    // 调用点。这里只剩「对齐一次静态状态」。
   }
 
   @override
@@ -494,19 +506,27 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   /// 位置规则：显示在底部 4-tab 导航上方（bottomNavigationBar 区域），
   /// 由 [_buildCollapsibleBrowseActionBar] 包裹，随列表滚动自动折叠/展开。
   ///
-  /// 形状：左右各让出 16dp、只圆上角，与下方 4-tab 的左上/右上**方角**拼接成一整块
-  /// 「底部控制台」。两侧留白与 4-tab 完全一致，因此两条栏的宽度、左右边缘都对齐。
+  /// 形状：左右各让出 16dp；与 4-tab 拼成一整块时**只圆上角**（下沿贴着 4-tab，
+  /// 圆角会在两侧各露一个三角形缺口，反而更零碎），单独悬浮时是完整胶囊。
+  ///
+  /// 底色走 [LiquidBarSurface] —— 与 4-tab 共用同一份配方（深色纯黑、浅色主题色
+  /// 混白），拼接处两段颜色逐位相同，深色模式下不会出现「上面一块灰玻璃」。
   Widget _buildBrowseActionBar(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
+    final attached = widget.navBarAttached;
     return Padding(
       // 必须与 HomeScreen 里 4-tab 的 horizontal 16 保持一致，否则两条栏会错开。
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      // 玻璃层与 4-tab 同源（LiquidGlassPanel）：同一套半透明底 + 模糊 + 描边，
-      // 两块拼起来才是同一个颜色（以 4-tab 为准）。底边**不画**描边 —— 接缝
-      // 那一侧若也画，会与 4-tab 的顶边合成一条约 1.2px 的亮线，仍旧像两块。
-      child: LiquidGlassPanel(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-        bottomBorderOpacity: 0,
+      child: LiquidBarSurface(
+        borderRadius: attached
+            ? const BorderRadius.vertical(top: Radius.circular(22))
+            : BorderRadius.circular(22),
+        // 拼成整块时不画底边描边：接缝处下方 4-tab 也没有顶边描边，两侧都不画
+        // 才不会合成一道 1.2px 的亮线。
+        bottomBorderOpacity: attached ? 0 : 1,
+        // 本栏正压在文件列表上（外层 extendBody），底色只有 42% 黑：
+        // 不模糊的话深色模式下列表里的白字会以灰影透出来。
+        blurSigma: kLiquidGlassBlurSigma,
         child: SizedBox(
           height: 44,
           child: Row(
@@ -1461,7 +1481,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               if (firstHighlightedIndex != -1) {
                 double targetOffset = 0.0;
                 if (provider.isGridView) {
-                  final crossAxisCount = (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 10);
+                  final crossAxisCount = (MediaQuery.sizeOf(context).width / (110 * provider.iconScale)).floor().clamp(2, 10);
                   final row = firstHighlightedIndex ~/ crossAxisCount;
                   final itemHeight = (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(100.0, 300.0);
                   // 网格：定位到目标文件所在行的中央
@@ -1526,6 +1546,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             // 状态栏高度铺成一条 surface 色背景条 —— 即「浏览页比分类页多出来的那一层」，
             // 与标签页栏显隐、多标签开关均无关系。
             primary: false,
+            // 内容延伸到底部操作栏 / 外层 4-tab 之后：列表从两块玻璃底下穿过，
+            // 不再出现「栏位上下各留一条空带」的底板观感（与 HomeScreen 的
+            // extendBody 配套）。body 的 padding.bottom 会被抬升为
+            // 「外层底栏 + 本页操作栏」的总高，列表按它留白即可。
+            extendBody: true,
             // 多选/普通模式 appBar 均置空高度：避免多选时 appBar 占高导致列表整体下移错位。
             // 退出多选由系统返回键（home_screen PopScope）与点选已选文件取消承担。
             appBar: AppBar(
@@ -1826,7 +1851,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       else
                         SliverPadding(
                           padding: EdgeInsets.only(
-                            bottom: 80,
+                            // extendBody 后 4-tab/操作栏悬浮在列表上：
+                            // 底部留白 = 底栏总高（padding.bottom 已被 Scaffold
+                            // 抬升），再加一点余量。
+                            bottom: MediaQuery.paddingOf(context).bottom + 8,
                             left: provider.isGridView ? 16 : 0,
                             right: provider.isGridView ? 16 : 0,
                             top: 8,
@@ -1834,7 +1862,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           sliver: provider.isGridView
                               ? SliverGrid(
                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 10),
+                                    crossAxisCount: (MediaQuery.sizeOf(context).width / (110 * provider.iconScale)).floor().clamp(2, 10),
                                     mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                     crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                     childAspectRatio: 0.75,
@@ -1993,11 +2021,32 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             // 底部 4-tab 导航由 HomeScreen 统一提供；选择模式使用选择操作栏。
             // 非选择模式下浏览操作栏显示在 4-tab 上方（showFloatingAddButton 控制显隐），
             // 随列表滚动自动折叠/展开。
-            bottomNavigationBar: isSelectionMode
-                ? SelectionActionBar(provider: provider)
-                : (provider.showFloatingAddButton
-                    ? _buildCollapsibleBrowseActionBar(context, provider)
-                    : null),
+            //
+            // ⚠️ 必须用 Column 在操作栏下面垫一段「外层底栏高度」的空白：
+            // HomeScreen 的 Scaffold 开了 extendBody，body 一直延伸到底栏后面，
+            // 而**本页自己的** bottomNavigationBar 仍然贴在 body 的最底部 ——
+            // 不垫这段空白，操作栏会被 4-tab 整个盖住（用户反馈：前进/后退/新建
+            // 全看不见）。`paddingOf(context).bottom` 在这里正好等于外层底栏总高
+            // （选择模式 / 关闭导航栏时自动退化为仅手势条高度），减掉 4-tab 的
+            // 顶部留白就能让两条胶囊零间距紧贴。
+            bottomNavigationBar: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelectionMode)
+                  SelectionActionBar(provider: provider)
+                else if (provider.showFloatingAddButton)
+                  _buildCollapsibleBrowseActionBar(context, provider),
+                SizedBox(
+                  // 选择模式下外层底栏已整条让位（只剩手势条高度），且
+                  // SelectionActionBar 自带 SafeArea —— 这里不能再垫，否则会
+                  // 被顶高一截。
+                  height: isSelectionMode
+                      ? 0.0
+                      : (MediaQuery.paddingOf(context).bottom - kLiquidNavTopGap)
+                          .clamp(0.0, double.infinity),
+                ),
+              ],
+            ),
           ),
         );
       },

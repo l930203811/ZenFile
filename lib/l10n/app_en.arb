@@ -3821,6 +3821,10 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_tab_hint": "Double-tap to close this tab",
+  "@ui_close_tab_hint": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs": "Close All Tabs",
   "@ui_close_all_tabs": {
     "description": "ui widgets"

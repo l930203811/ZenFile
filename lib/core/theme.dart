@@ -134,7 +134,7 @@ class AppTheme {
       fontFamily: effectiveFontFamily,
       textTheme: textTheme,
       fontFamilyFallback: const ['sans-serif', 'Roboto'],
-      scaffoldBackgroundColor: pitchBlackColor ?? (light ? Color.alphaBlend(effectivePrimary.withAlpha(10), Colors.white) : null),
+      scaffoldBackgroundColor: pitchBlackColor ?? (light ? lightPageBackground(colorScheme) : null),
       splashColor: Colors.transparent,
       highlightColor: light ? Colors.black.withAlpha(20) : Colors.white.withAlpha(pitchBlackColor == null ? 10 : 25),
       disabledColor: light ? const Color.fromARGB(200, 160, 160, 160) : const Color.fromARGB(200, 60, 60, 60),
@@ -143,7 +143,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        backgroundColor: pitchBlackColor ?? (light ? Color.alphaBlend(effectivePrimary.withAlpha(25), Colors.white) : null),
+        backgroundColor: pitchBlackColor ?? (light ? lightBarBackground(colorScheme) : null),
         actionsIconTheme: IconThemeData(
           color: light ? const Color.fromARGB(200, 40, 40, 40) : const Color.fromARGB(200, 233, 233, 233),
         ),
@@ -198,6 +198,24 @@ class AppTheme {
 
   static ThemeData get lightTheme => getAppTheme(light: true);
   static ThemeData get darkTheme => getAppTheme(light: false);
+
+  /// 浅色模式的「**栏位**」底色：顶部栏、底部 4-tab 导航、浏览页底部操作栏共用。
+  ///
+  /// 主题色 12% 混白。抽成公开方法是为了让玻璃层（`liquid_glass_panel.dart`）
+  /// 能拿到**与顶部栏逐位相同**的颜色 —— 4-tab 此前用的是纯白，纯白叠纯白
+  /// 既不跟随主题色，也比页面更亮，三条带子（顶栏 / 页面 / 底栏）的层次就糊了。
+  ///
+  /// 仅浅色模式有意义；深色 / AMOLED 走 `scaffoldBackgroundColor` 分支。
+  static Color lightBarBackground(ColorScheme scheme) =>
+      Color.alphaBlend(scheme.primary.withAlpha(30), Colors.white);
+
+  /// 浅色模式的「**页面**」底色（scaffoldBackgroundColor）：主题色 4% 混白。
+  ///
+  /// 必须比 [lightBarBackground] **淡一档**：页面更浅、栏位更深，导航栏与顶栏
+  /// 才能从页面里「浮」出来，而不是和页面浑融为一体（用户要求：分类页 / 浏览页
+  /// 跟随主题色，但要浅一点）。
+  static Color lightPageBackground(ColorScheme scheme) =>
+      Color.alphaBlend(scheme.primary.withAlpha(10), Colors.white);
 
   /// 页面级 Scaffold 背景色（含 AMOLED 纯黑模式）。
   ///

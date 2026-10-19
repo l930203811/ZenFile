@@ -63,7 +63,7 @@ class _RemoteCryptExplorerScreenState extends State<RemoteCryptExplorerScreen> {
     }
   }
 
-  void _open(CryptFileEntry entry) {
+  Future<void> _open(CryptFileEntry entry) async {
     if (entry.isDirectory) {
       Navigator.push(
         context,
@@ -76,8 +76,20 @@ class _RemoteCryptExplorerScreenState extends State<RemoteCryptExplorerScreen> {
       );
       return;
     }
-    // 文件：交给 provider 的 cryptremote 分支流式解密播放/查看
-    context.read<FileManagerProvider>().openFile(context, entry.virtualPath);
+    // 文件：交给 provider 的 cryptremote 分支流式解密播放/查看。
+    //
+    // 图片额外带上「同目录其它图片」：加密条目在磁盘上是密文虚拟路径，查看器
+    // 自己渲染不了，必须逐个换成流式解密 URL（[collectCryptImageSiblings] 已处理）
+    // ⇒ 否则打开后只有 1 张、不能左右滑动。
+    final provider = context.read<FileManagerProvider>();
+    final imageSiblings = await collectCryptImageSiblings(_entries, entry);
+    if (!mounted) return;
+    provider.openFile(
+      context,
+      entry.virtualPath,
+      siblingPaths: imageSiblings?.paths,
+      siblingNames: imageSiblings?.names,
+    );
   }
 
   String _formatSize(int size) {

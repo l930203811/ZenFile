@@ -3370,6 +3370,9 @@ class L10nZh extends L10n {
   String get ui_close_tab => '关闭标签页';
 
   @override
+  String get ui_close_tab_hint => '双击可关闭当前标签页';
+
+  @override
   String get ui_close_all_tabs => '关闭所有标签';
 
   @override
@@ -11472,6 +11475,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_close_tab => '關閉標籤頁';
+
+  @override
+  String get ui_close_tab_hint => '雙擊可關閉目前標籤頁';
 
   @override
   String get ui_close_all_tabs => '關閉所有標籤';

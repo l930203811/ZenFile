@@ -24,6 +24,7 @@ import 'core/navigator_key.dart';
 import 'providers/file_manager_provider.dart';
 import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
+import 'services/startup_gate.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
@@ -546,7 +547,11 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       if (visible) {
         if (PreferencesService.getHideNavigationBar()) {
           await Future.delayed(const Duration(milliseconds: 1500));
-          if (PreferencesService.getHideNavigationBar()) {
+          // ⚠️ 输入法正在显示时**不能**改系统栏可见性：MIUI / HyperOS 上
+          // 输入法本身也会触发这个回调，1.5s 后正赶上键盘弹出/收回的动画尾巴，
+          // 此时再改一次 decorView 的 systemUiVisibility 会让输入法做一次额外
+          // 的 insets 重新分发 ⇒ 动画「顿一下」。等键盘收完（下次回调）再补。
+          if (PreferencesService.getHideNavigationBar() && !_isImeVisible()) {
             SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
           }
         }
@@ -624,6 +629,20 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     }
   }
 
+  /// 输入法是否正在显示。
+  ///
+  /// 直接读 [PlatformDispatcher] 的实时 insets：这里处在平台回调里，
+  /// 既拿不到可靠的 BuildContext，也绝不能为了一次判断去订阅 MediaQuery
+  /// （那会让整棵树跟着键盘逐帧重建）。
+  bool _isImeVisible() {
+    try {
+      for (final view in WidgetsBinding.instance.platformDispatcher.views) {
+        if (view.viewInsets.bottom > 0) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   /// 读取「启动应用保护」开关，决定是否在冷启动时显示 PIN 闸门
   Future<void> _initAppLock() async {
     final enabled = await RemoteGuardService.isAppLockEnabled();
@@ -634,12 +653,20 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       _appUnlocked = !enabled || RemoteGuardService.isAppUnlocked;
       _appLockChecked = true;
     });
+    // 权限检查可能比这里更早完成（那时还不知道要不要显示闸门，已把媒体加载
+    // 暂缓）；现在闸门状态明确了，未上锁就立刻补上。
+    _flushPendingMediaLoad();
   }
 
   /// 启动应用保护闸门验证通过后的回调：切换到主界面
   void _onAppUnlocked() {
     RemoteGuardService.unlockApp();
+    // 从这一帧起进入主 isolate 静默期：输入法正在收起（各 ROM 250~400ms，
+    // 小米/红米上更久），期间任何全量扫描或目录穷举都会把收起动画挤掉。
+    // 媒体加载与目录初始化都会先 `await StartupGate.waitIfSettling()`。
+    StartupGate.instance.armAfterUnlock();
     if (mounted) setState(() => _appUnlocked = true);
+    _flushPendingMediaLoad();
   }
 
   @override
@@ -915,14 +942,47 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     await _checkStoragePermission();
   }
 
+  /// 媒体加载是否因为「启动应用保护」闸门未通过而暂缓。
+  bool _mediaLoadPending = false;
+
   /// 在获得完整权限后加载媒体数据。
+  ///
+  /// ⚠️ 启动应用保护开启且本次尚未解锁时**不启动**媒体加载：
+  /// 全量媒体索引（MediaStore 拉取 + 磁盘缓存反序列化 + 排序，大存储设备上万条）
+  /// 全部落在主 isolate 上，而此刻用户正在输解锁密码 —— 输入法弹出 / 收回的
+  /// 动画只有 250~350ms，正好被这批工作挤掉，就是「一弹键盘就卡」的根因。
+  /// 闸门通过后由 [_flushPendingMediaLoad] 补一次，体感上反而更快（首页要等解锁后
+  /// 才构建，提前扫完的缓存此刻也用不上）。
   void _loadMediaAfterPermission() {
+    if (!_appLockChecked || (_appLockEnabled && !_appUnlocked)) {
+      _mediaLoadPending = true;
+      return;
+    }
+    _startMediaLoad();
+  }
+
+  void _startMediaLoad() {
     try {
       final context = navigatorKey.currentContext;
       if (context != null && context.mounted) {
         context.read<MediaProvider>().loadMedia();
       }
     } catch (_) {}
+  }
+
+  /// 解锁 / 初始化完成后补上被暂缓的媒体加载。
+  ///
+  /// 这里**不再**用固定 400ms 猜 IME 收起时长（实测小米上比 400ms 更久，
+  /// 固定值要么不够、要么白等）：真正的等待交给 [StartupGate]，它按真实的
+  /// `viewInsets.bottom` 归零 + 最小等待放行，各 ROM 都能自适应。
+  /// 此处只排到下一帧，避免在解锁那次 `setState` 的同一帧里启动全量扫描。
+  /// `HomeScreen.initState` 也会调一次 `loadMedia`（两个入口都会被闸门拦住，
+  /// provider 内部还有并发守卫，先进先出）。
+  void _flushPendingMediaLoad() {
+    if (!_mediaLoadPending) return;
+    if (!_appLockChecked || (_appLockEnabled && !_appUnlocked)) return;
+    _mediaLoadPending = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startMediaLoad());
   }
 
   Widget _buildLanguageOption(BuildContext ctx, String locale, String label, String subtitle, bool isSelected, ValueChanged<String> onTap) {
@@ -1617,8 +1677,11 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 }
 
                 final disableLeftBack = fileManager.disableLeftBackGesture;
-                final size = MediaQuery.of(context).size;
-                final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+                // 按aspect取值：整取 MediaQuery.of 会订阅整份 MediaQueryData，
+                // 键盘 Insets 动画期间这个 builder 每帧重跑一遍（虽然 child 是同一
+                // 实例、Navigator 不会跟着重建，但没必要付这笔钱）。
+                final size = MediaQuery.sizeOf(context);
+                final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
                 // 手势排他区域仅在开关或屏幕尺寸变化时改变，键盘 Insets 动画期间完全不变；
                 // 仅在其变化时调度平台通道调用，避免每帧 setSystemGestureExclusionRects。
                 final gestureKey = '$disableLeftBack|${size.height}|$devicePixelRatio';

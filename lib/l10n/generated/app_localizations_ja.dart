@@ -3383,6 +3383,9 @@ class L10nJa extends L10n {
   String get ui_close_tab => 'タブを閉じる';
 
   @override
+  String get ui_close_tab_hint => 'ダブルタップでこのタブを閉じます';
+
+  @override
   String get ui_close_all_tabs => 'すべてのタブを閉じる';
 
   @override

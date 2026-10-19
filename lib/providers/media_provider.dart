@@ -13,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../services/preferences_service.dart';
+import '../services/startup_gate.dart';
 import '../services/network_connections_service.dart';
 import '../services/media_thumbnail_service.dart';
 import '../models/custom_shortcut_model.dart';
@@ -3124,6 +3125,13 @@ class MediaProvider extends ChangeNotifier {
   Future<void> loadMedia({bool forceRefresh = false}) async {
     try {
       // 防并发：已有扫描在跑时直接返回，避免重复全量扫描叠加导致主线程卡死。
+      if (_isLoading) return;
+
+      // 冷启动「解锁瞬间」先让输入法收完再扫（见 [StartupGate]）。
+      // 全量索引（MediaStore 拉取 + 缓存反序列化 + 排序）都落在主 isolate 上，
+      // 和 IME 收起动画抢帧的结果就是「键盘慢慢缩回去」。
+      // 过闸后再查一次 _isLoading：等待期间可能有别的调用先开了扫描。
+      await StartupGate.instance.waitIfSettling();
       if (_isLoading) return;
 
       if (_isLoaded && !forceRefresh) {

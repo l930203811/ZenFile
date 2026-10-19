@@ -235,7 +235,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
     _overlayEntry = OverlayEntry(
       builder: (context) {
         final theme = Theme.of(context);
-        final size = MediaQuery.of(context).size;
+        final size = MediaQuery.sizeOf(context);
         
         return Positioned(
           width: _layerLink.leaderSize?.width ?? size.width - 32,

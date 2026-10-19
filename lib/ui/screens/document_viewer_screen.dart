@@ -12,6 +12,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:xml/xml.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/ui/widgets/native_pdf_viewer.dart';
 
@@ -51,8 +52,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isEditing = false;
-  bool _wordWrap = true;
-  bool _showLineNumbers = false;
+  /// 「自动换行 / 显示行号」是**用户显示偏好**，与编辑/阅读模式无关：
+  /// 默认换行开、行号关，且持久化（与文本编辑器共用同两个偏好键）。
+  bool _wordWrap = PreferencesService.getEditorWordWrap();
+  bool _showLineNumbers = PreferencesService.getEditorShowLineNumbers();
   late TextEditingController _textController;
   final FocusNode _textFieldFocusNode = FocusNode();
   final List<String> _undoStack = [];
@@ -780,8 +783,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               onSelected: (value) {
                 if (value == 'wrap') {
                   setState(() => _wordWrap = !_wordWrap);
+                  PreferencesService.saveEditorWordWrap(_wordWrap);
                 } else if (value == 'line_numbers') {
                   setState(() => _showLineNumbers = !_showLineNumbers);
+                  PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
                 }
               },
               itemBuilder: (context) => [

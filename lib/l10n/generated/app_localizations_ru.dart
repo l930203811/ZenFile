@@ -3537,6 +3537,9 @@ class L10nRu extends L10n {
   String get ui_close_tab => 'Закрыть Вкладку';
 
   @override
+  String get ui_close_tab_hint => 'Двойной тап закрывает эту вкладку';
+
+  @override
   String get ui_close_all_tabs => 'Закрыть все вкладки';
 
   @override

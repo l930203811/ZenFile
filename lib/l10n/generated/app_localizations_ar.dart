@@ -3478,6 +3478,9 @@ class L10nAr extends L10n {
   String get ui_close_tab => 'إغلاق علامة التبويب';
 
   @override
+  String get ui_close_tab_hint => 'انقر نقرًا مزدوجًا لإغلاق علامة التبويب هذه';
+
+  @override
   String get ui_close_all_tabs => 'إغلاق جميع التبويبات';
 
   @override

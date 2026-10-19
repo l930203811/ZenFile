@@ -3483,6 +3483,9 @@ class L10nEn extends L10n {
   String get ui_close_tab => 'Close Tab';
 
   @override
+  String get ui_close_tab_hint => 'Double-tap to close this tab';
+
+  @override
   String get ui_close_all_tabs => 'Close All Tabs';
 
   @override

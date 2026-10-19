@@ -60,7 +60,7 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustNothing"
             android:enabled="true">
             <!-- Boot theme while Flutter initializes -->
             <meta-data
@@ -429,10 +429,17 @@
              回退 Skia 可消除该设备相关卡顿。如后续 Impeller 稳定可改回 true。
              注意：视频黑屏根因与 Impeller 无关（1.1.42 起的 spline36 着色器所致，
              已于 2026-09-15 修复为 bilinear），勿因黑屏误改本开关。
-             windowSoftInputMode 必须使用 adjustResize（不可用 adjustPan），
-             adjustPan 整页平移会与 HyperOS 安卓16 窗口动画冲突，导致键盘弹出
-             像幻灯片逐帧掉帧；adjustResize 让 Flutter 用 MediaQuery.viewInsets
-             只重布局当前 Scaffold/Dialog，避免整页合成。 -->
+             windowSoftInputMode 用 adjustNothing（adjustPan / adjustResize 都不要用）：
+             · adjustPan 整页平移会与 HyperOS 安卓16 窗口动画冲突；
+             · adjustResize 会让 Android 真的去 resize 窗口 ⇒ FlutterView 高度
+               逐帧变化 ⇒ 整棵 widget 树在软键盘 Insets 动画的每一帧全量重排
+               （RenderParagraph 在约束变化时会重做文本排版），大存储多文件的
+               设备上就表现为「像幻灯片一样」、将近一秒才弹完。
+             改 adjustNothing 后窗口尺寸恒定，键盘高度只通过
+             WindowInsets.Type.ime() 上报给 Flutter（该值与 windowSoftInputMode
+             无关，见 engine 的 FlutterView.onApplyWindowInsets），于是：
+             · 弹窗(AlertDialog)自带的 AnimatedPadding 照常按 viewInsets 上移；
+             · 常驻页面由 ShellMetricsStable 冻结指标，一帧都不用重排。 -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
             android:value="false" />

@@ -3818,6 +3818,10 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_tab_hint": "ダブルタップでこのタブを閉じます",
+  "@ui_close_tab_hint": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs": "すべてのタブを閉じる",
   "@ui_close_all_tabs": {
     "description": "ui widgets"

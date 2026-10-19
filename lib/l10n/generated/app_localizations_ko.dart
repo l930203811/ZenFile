@@ -3383,6 +3383,9 @@ class L10nKo extends L10n {
   String get ui_close_tab => '탭 닫기';
 
   @override
+  String get ui_close_tab_hint => '두 번 탭하면 이 탭이 닫힙니다';
+
+  @override
   String get ui_close_all_tabs => '모든 탭 닫기';
 
   @override

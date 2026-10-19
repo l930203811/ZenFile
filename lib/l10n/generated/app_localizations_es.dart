@@ -3556,6 +3556,9 @@ class L10nEs extends L10n {
   String get ui_close_tab => 'Cerrar Pestaña';
 
   @override
+  String get ui_close_tab_hint => 'Doble toque para cerrar esta pestaña';
+
+  @override
   String get ui_close_all_tabs => 'Cerrar todas las pestañas';
 
   @override

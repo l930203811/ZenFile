@@ -589,7 +589,9 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
   Widget _buildLocalShareView(ThemeData theme, bool isDark, String shareDir) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.fromLTRB(
+        20, 20, 20, 20 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Text(
           L10n.of(context).ui_http_local_share_server,
@@ -885,7 +887,9 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
   Widget _buildInternetShareView(ThemeData theme, bool isDark) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.fromLTRB(
+        20, 20, 20, 20 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Text(
           L10n.of(context).msg2c146598,

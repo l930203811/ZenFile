@@ -9,8 +9,10 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../widgets/liquid_bottom_bar.dart';
 import '../widgets/liquid_pressable.dart';
+import '../widgets/shell_metrics_stable.dart';
 import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
+import '../../services/startup_gate.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/favorites_sheet.dart';
 import '../widgets/sort_modal.dart';
@@ -66,6 +68,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   // 而设置页有 75 个卡片、build 里还 watch 了 FileManagerProvider —— 若一进 App 就
   // 建出来，分类页首帧和之后每次 provider 刷新都要白算一遍。首次切到第 4 页才创建。
   bool _settingsTabBuilt = false;
+  // 浏览页（第 2 页）是否已首次显示（惰性构建）。IndexedStack 会构建并布局
+  // **全部**子页，而浏览页是整棵树里最重的一页（标签栏 + 地址栏 + 文件列表
+  // + 操作栏 + 多选栏）。解锁那一刻把它一起建出来，等于让 IME 收起动画和
+  // 上千个 widget 的 build/layout 抢同一批帧 —— 实测就是「键盘慢慢缩回去」。
+  bool _browseTabBuilt = false;
+  static const int _browseTabIndex = 1;
   // 全局搜索「在设置中搜索」注入的查询词与请求序号：序号变化即要求设置页重新进入
   // 搜索态（用户可能在设置页手动退出过搜索，再点同一条结果也要能重新过滤）。
   String? _settingsTabQuery;
@@ -95,13 +103,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       duration: const Duration(seconds: 1),
     );
     _currentIndex = context.read<FileManagerProvider>().defaultToBrowseScreen ? 1 : 0;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 默认停在浏览页时（设置里的开关）必须当帧就构建，否则首帧是空白。
+    _browseTabBuilt = _currentIndex == _browseTabIndex;
+    // 浏览操作栏折叠/展开时，4-tab 的顶角要在「方角（与操作栏拼成整块）」和
+    // 「圆角（胶囊独立悬浮）」之间切换，同时本页要把它透传给 DirectoryScreen
+    // 决定操作栏自己的下沿圆角 —— 两处必须同一帧改，所以监听放在这里。
+    DirectoryScreen.browseBarExpanded.addListener(_onBrowseBarExpandedChanged);
+    // 应用级一次性初始化（恢复标签页 / 探测存储卷 / 载入首个目录）原先挂在
+    // DirectoryScreen.initState 里。浏览页改成惰性构建后它未必会被创建，而
+    // `FileManagerProvider.init()` 全项目只有那一个调用点，所以上移到这里。
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
-          if (hasFullPermission) {
-            context.read<MediaProvider>().loadMedia();
-          }
-        });
+        // 先取 provider：下面要跨 await，之后不能再碰 context。
+        final fileManager = context.read<FileManagerProvider>();
+        final mediaProvider = context.read<MediaProvider>();
+        final hasFullPermission =
+            await Permission.manageExternalStorage.isGranted;
+        // 冷启动解锁瞬间先让输入法收完（详见 [StartupGate]）：init() 末尾会
+        // 穷举首个目录、loadMedia() 会扫全量索引，与 IME 收起动画抢帧就是
+        // 「密码输完进分类页，键盘慢慢缩回去」。
+        await StartupGate.instance.waitIfSettling();
+        if (!mounted) return;
+        fileManager.init();
+        if (hasFullPermission) mediaProvider.loadMedia();
       } catch (_) {}
     });
   }
@@ -109,9 +133,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 缓存屏幕宽度但不订阅 MediaQuery：build 内只用 _screenW，键盘 Insets 逐帧
-    // 变化不会让本 widget 重建。旋转等真实尺寸变化会重新触发本方法更新。
-    _screenW = MediaQuery.of(context).size.width;
+    // 缓存屏幕宽度。必须用**按 aspect 订阅**的 MediaQuery.sizeOf：
+    // 旧的 MediaQuery.of(context) 会订阅整份 MediaQueryData —— 键盘 Insets
+    // 动画期间每一帧都触发 didChangeDependencies + build，整个首页
+    // （IndexedStack 里全部 tab + 底栏）跟着每帧重建；大存储多文件的设备上
+    // 每帧重建要上百毫秒，软键盘就表现为「像幻灯片一样慢慢弹出」。
+    // sizeOf 只在窗口尺寸真正变化（旋转 / 分屏）时才重新触发。
+    _screenW = MediaQuery.sizeOf(context).width;
     final fileManager = context.read<FileManagerProvider>();
     // 全局搜索功能入口请求（在设置中搜索 / 刷新 / 排序 / 主题 / 自定义快捷方式）：
     // 注册一次即可，通过 provider 通道把请求转成首页已有的实现。
@@ -134,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   @override
   void dispose() {
+    DirectoryScreen.browseBarExpanded.removeListener(_onBrowseBarExpandedChanged);
     _refreshIconController.dispose();
     _fmRef?.settingsSearchRequestNotifier
         .removeListener(_onSettingsSearchRequested);
@@ -142,6 +171,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+  /// 浏览操作栏折叠态变化：只影响 4-tab / 操作栏的**形状**，重建一次首页即可
+  /// （滚动方向翻转时才触发，不是逐帧），由 [_navBarAttached] 统一判定。
+  void _onBrowseBarExpandedChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// 浏览操作栏与 4-tab 此刻是否「拼成一整块」（形状 / 描边 / 间距的唯一判定）。
+  ///
+  /// 必须与「4-tab 到底有没有落在底部、操作栏到底显不显示」严格对齐：
+  /// 壳内页盖在上面、导航栏关掉、导航栏放在顶部、操作栏开关关闭、操作栏被
+  /// 列表滚到折叠 —— 这些情况都不能拼，否则会剩一只「平顶胶囊」或两侧缺口。
+  bool _navBarAttached(FileManagerProvider provider) =>
+      _currentIndex == 1 &&
+      !ShellNavigator.hasPages &&
+      DirectoryScreen.browseBarExpanded.value &&
+      provider.showFloatingAddButton &&
+      provider.bottomNavBarEnabled &&
+      provider.showBottomActionBar;
 
   void _switchTab(int index) {
     // 壳内有页面（媒体分类页 / 最近页等）时，先收起它们再切页，
@@ -152,6 +200,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (index < 0 || index > _settingsTabIndex) return;
     // 标记设置页已激活：让 IndexedStack 在该槽位换成真正的设置页（惰性构建）。
     if (index == _settingsTabIndex) _settingsTabBuilt = true;
+    // 浏览页同理（惰性构建）：第一次切过去时才真正创建，避免解锁那一帧
+    // 把整页 build/layout 一起做完，和 IME 收起动画抢帧。
+    if (index == _browseTabIndex) _browseTabBuilt = true;
     if (_currentIndex == index) {
       // 同一内置页：仍要清掉「自定义槽位页面」的残留高亮（壳内页面已在上方 popAll 收起），
       // 否则会出现内置 tab 与自定义槽位同时高亮。
@@ -290,6 +341,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FileManagerProvider>();
+    // 「底部控制台是否拼成整块」的唯一判定：4-tab 的顶角与本页操作栏的下沿
+    // 圆角/描边都从这里取值，保证同帧一致（各算一遍必然错一帧）。
+    final navAttached = _navBarAttached(provider);
     // 浏览页内的返回（返回上一级 / 远程根→本地根）由内部 directory_screen /
     // pane_browser 的 PopScope 与 provider.goBack 处理；home 层绝不在此弹出
     // 路由，否则会直接跳到分类页。分类页等非浏览 tab 的返回仍走下方 onPopInvoked。
@@ -337,12 +391,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _handleBackPress(context);
         }
       },
-      child: Scaffold(
+      child: ShellMetricsStable(
+        child: Scaffold(
         key: _scaffoldKey,
         // 键盘弹起时不再逐帧重排背后的重界面（文件列表/抽屉），避免"幻灯片式"
         // 慢弹与输入延迟。对话框(AlertDialog)自带 AnimatedPadding+viewInsets 会上移，
         // 底部弹窗同理，交互不受影响。
         resizeToAvoidBottomInset: false,
+        // 内容延伸到底栏（4-tab / 浏览操作栏）后面：底栏不再是一条无内容的
+        // 「空带」，列表从胶囊底下穿过、在两侧留白处可见 —— 消除「底板」观感。
+        // Scaffold 会把 body 的 MediaQuery.padding.bottom 抬升到底栏总高，
+        // 各页面按 paddingOf(context).bottom 留白即可不被永久遮挡。
+        extendBody: true,
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => _switchTab(index),
@@ -359,14 +419,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         //  2) childImmersive     —— 视频控制条 / 图片操作按钮被隐藏的沉浸态，
         //     整条收起把屏幕让给内容，控制条唤出时再显示。
         bottomNavigationBar: ListenableBuilder(
-          // 除「该不该收起」外，还要盯住浏览操作栏的折叠状态：它决定底栏顶角
-          // 是方角（与操作栏拼成整块）还是圆角（操作栏已折叠，独立悬浮）。
-          listenable: Listenable.merge([
-            ShellNavigator.navBarHidden,
-            DirectoryScreen.browseBarExpanded,
-          ]),
-          builder: (_, __) =>
-              _buildNavBottomBar(provider.showBottomActionBar),
+          listenable: ShellNavigator.navBarHidden,
+          builder: (_, __) => _buildNavBottomBar(
+            provider.showBottomActionBar,
+            navAttached,
+          ),
         ),
         body: ShellBody(
           child: Consumer<FileManagerProvider>(
@@ -468,7 +525,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     _singleFingerStart = null;
                     _singleFingerLast = null;
                   } else if (fileProvider.enableSingleFingerSwipe) {
-                    final screenWidth = MediaQuery.of(context).size.width;
+                    // 用缓存的 _screenW：在事件回调里调 MediaQuery.of 同样会注册
+                    // 整份依赖（didChangeDependencies 所在的 element），后果同上。
+                    final screenWidth = _screenW;
                     final startX = _singleFingerStart!.dx;
                     // 屏幕边缘留给系统返回手势，不处理
                     if (startX >= _swipeEdgeGuard && startX <= screenWidth - _swipeEdgeGuard) {
@@ -576,18 +635,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     index: _currentIndex,
                     children: [
                       _buildHomeTab(),
-                      DirectoryScreen(
-                        toggleTheme: widget.toggleTheme,
-                        onNavigateTab: (index) => _switchTab(index),
-                        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-                        onRefresh: () => _handleRefresh(),
-                        // IndexedStack 会构建全部子页，浏览页的 PopScope 也会注册到
-                        // 本页同一个 route 上并被返回键触发；必须告诉它「现在是不是
-                        // 当前显示页」，否则在分类页按返回时它会把壳内页面的返回当作
-                        // 浏览页后退，走到 _switchTab(0) → ShellNavigator.popAll()，
-                        // 直接清空壳内栈（从查看器返回却跳回分类页）。
-                        isActive: _currentIndex == 1,
-                      ),
+                      if (!_browseTabBuilt)
+                        const SizedBox.shrink()
+                      else
+                        DirectoryScreen(
+                          toggleTheme: widget.toggleTheme,
+                          onNavigateTab: (index) => _switchTab(index),
+                          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+                          onRefresh: () => _handleRefresh(),
+                          // IndexedStack 会构建全部子页，浏览页的 PopScope 也会注册到
+                          // 本页同一个 route 上并被返回键触发；必须告诉它「现在是不是
+                          // 当前显示页」，否则在分类页按返回时它会把壳内页面的返回当作
+                          // 浏览页后退，走到 _switchTab(0) → ShellNavigator.popAll()，
+                          // 直接清空壳内栈（从查看器返回却跳回分类页）。
+                          isActive: _currentIndex == 1,
+                          // 与 4-tab 拼成整块时，本页操作栏只圆上角、不画底边描边。
+                          navBarAttached: navAttached,
+                        ),
                       TransfersScreen(onNavigateTab: (index) => _switchTab(index)),
                       // 第 4 页「设置」：内嵌渲染（不再 push 全屏路由）。
                       // embedded=true 才会隐藏返回箭头并关掉 Scaffold/AppBar 的 primary
@@ -616,7 +680,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       },
     ),
       ),
-  ),
+        ),
+      ),
     );
   }
 
@@ -627,20 +692,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 搜索 / 刷新等操作的唯一入口。原实现只按底栏判开关，于是「位置=顶部 + 关闭
   /// 导航栏」会把底栏的工具按钮行藏掉、4-tab 反而留在顶部。
   Widget _buildNavTopBar(bool bottomTabs) {
-    if (bottomTabs) return _buildTopBarRow();
+    // atTop：本栏落在顶栏槽位 —— 不能吃底部安全区（body 在 extendBody 下的
+    // padding.bottom 等于底栏总高，吃掉会在栏底多铺一条同色空带）。
+    if (bottomTabs) return _buildTopBarRow(atTop: true);
     // 多选操作栏覆盖 4-tab：选择模式（长按多选）时隐藏顶栏 4-tab，
     // 与底栏行为保持一致；壳内页面（媒体分类页等）的局部多选态同理。
     if (ShellNavigator.childSelectionMode.value ||
         ShellNavigator.childImmersive.value ||
         context.select<FileManagerProvider, bool>((p) => p.isSelectionMode)) {
-      return SizedBox(height: MediaQuery.of(context).padding.top);
+      return SizedBox(height: MediaQuery.paddingOf(context).top);
     }
     // 4-tab 在顶栏：关闭时整条收起，只留状态栏高度的空白，
     // 免得下面的内容被状态栏压住。
     if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
-      return SizedBox(height: MediaQuery.of(context).padding.top);
+      return SizedBox(height: MediaQuery.paddingOf(context).top);
     }
-    return _buildBottomTabs();
+    return _buildBottomTabs(atTop: true);
   }
 
   /// 底栏：与顶部栏按「导航栏位置」设置互换。
@@ -653,7 +720,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   ///   · 分类页 → 只保留左抽屉「收藏夹」一项；
   ///   · 浏览页 → 底部操作栏上滑（见 DirectoryScreen._buildCollapsibleBrowseActionBar）。
   /// 这里只留「系统手势条高度」的空白，避免浏览操作栏被系统手势条压住。
-  Widget _buildNavBottomBar(bool bottomTabs) {
+  Widget _buildNavBottomBar(bool bottomTabs, bool attachedTop) {
     final navEnabled =
         context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled);
     // 多选操作栏覆盖 4-tab：任一页面进入选择模式（长按多选）时隐藏整条底栏
@@ -664,12 +731,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (selecting ||
         ShellNavigator.childSelectionMode.value ||
         ShellNavigator.childImmersive.value) {
-      return SizedBox(height: MediaQuery.of(context).padding.bottom);
+      return SizedBox(height: MediaQuery.paddingOf(context).bottom);
     }
     // 位置=顶部：4-tab 在顶栏，底栏固定是工具按钮行。它不受总开关影响，
     // 否则「关掉导航栏」会把工具按钮行一起藏掉（它没有第二入口）。
     if (!bottomTabs) {
-      final bar = _buildTopBarRow();
+      final bar = _buildTopBarRow(atTop: false);
       if (!navEnabled) return bar;
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -678,20 +745,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       );
     }
     if (!navEnabled) {
-      return SizedBox(height: MediaQuery.of(context).padding.bottom);
+      return SizedBox(height: MediaQuery.paddingOf(context).bottom);
     }
-    // 浏览页的操作栏与 4-tab 拼成一整块「底部控制台」：两者都留 16dp 左右边距、
-    // 上下零间距，操作栏只圆上角、底栏只圆下角，拼起来轮廓连续。
-    // 判定与浏览页自身显示操作栏的条件保持一致（同一开关 + 当前就是文件页 +
-    // 没有壳内页面盖在上面）。
-    final attachedTop = _currentIndex == 1 &&
-        !ShellNavigator.hasPages &&
-        // 操作栏被列表滚动折叠后，它上方已经没有东西可以拼了 —— 此时必须回到
-        // 「顶角圆 + 6dp 悬浮间距」，否则底栏会变成一只平顶胶囊贴在列表下沿。
-        DirectoryScreen.browseBarExpanded.value &&
-        context.select<FileManagerProvider, bool>(
-          (p) => p.showFloatingAddButton,
-        );
+    // 浏览页的操作栏与 4-tab 拼成一整块「底部控制台」：操作栏由 DirectoryScreen
+    // 在自己的 bottomNavigationBar 里垫一段「本栏总高 − kLiquidNavTopGap」，顶到
+    // 胶囊正上方**零间距**；两边在同帧切换圆角（本栏顶角收方、操作栏下沿收直）
+    // 与描边，视觉上是一条从底部弹出来的整体。
     final tabBar = _buildBottomTabs(attachedTop: attachedTop);
     // 这里**不再**给 4-tab 槽位铺任何底色。
     //
@@ -741,12 +800,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   /// 顶部图标行：左抽屉 / 全局搜索 / 常用功能 5 项(刷新/排序/主题/单双窗口) / 设置。
   /// 全部只显示图标（紧凑按钮），文案以 tooltip 呈现。
-  Widget _buildTopBarRow() {
+  ///
+  /// [atTop] 标明本栏当前挂在顶栏还是底栏槽位（导航栏位置可切换）：
+  /// · 顶栏 → 只吃状态栏高度；底栏高度由各页自己留白；
+  /// · 底栏 → 只吃手势条高度，不吃状态栏高度。
+  Widget _buildTopBarRow({bool atTop = true}) {
     final theme = Theme.of(context);
     return Material(
       color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
+      // ⚠️ 顶栏必须 `bottom: false`：本栏位于外层 Scaffold 的 body 里，而 body
+      // 在 `extendBody: true` 下的 `MediaQuery.padding.bottom` 已被抬升为底栏
+      // 总高（约 80dp）。SafeArea 默认连 bottom 一起吃，于是顶栏 Material 会在
+      // 图标行下方多铺一条 80dp 的同色空带 —— 就是「顶部背景多出一层」。
+      // 反过来，挂到底栏槽位时要吃的是底部手势条高度。
       child: SafeArea(
+        top: atTop,
+        bottom: !atTop,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -848,7 +918,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
   /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
   /// 滑动链路固定为 左抽屉→分类页→浏览页，即使底部 tab 被替换也始终可达。
-  Widget _buildBottomTabs({bool attachedTop = false}) {
+  Widget _buildBottomTabs({bool atTop = false, bool attachedTop = false}) {
     final l10n = L10n.of(context);
     final slot0 = _resolveTabSlot(
       0,
@@ -883,8 +953,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     //  该来源为 2.0.0 catalog，经 BiliTools ui/liquidtabs/ 二次适配）。
     //
     // 与上一版「每个 tab 各自一块底色」的本质区别：**全程只有一块胶囊指示器**，
-    // 它在 4 个槽位之间弹簧滑移、按压鼓包、被移动速度横向拉长 / 纵向压扁；
-    // 外面再套一层玻璃容器（背景模糊 + 半透明 + 细描边 + 顶部微高光）。
+    // 它在 4 个槽位之间弹簧滑移、按压鼓包、被移动速度横向拉长 / 纵向压扁。
+    // 外层的玻璃底板（半透明底 + 模糊 + 描边）已按用户要求去掉（showGlassPlate:
+    // false）—— 只留胶囊浮在页面背景上；浏览页操作栏仍是独立玻璃胶囊。
     // 具体参数与本文件的分工说明见 lib/ui/widgets/liquid_bottom_bar.dart。
     //
     // 命中区仍是 4 个等分的**静止**区域（不随指示器移动），避免「胶囊滑到哪才能点哪」。
@@ -902,15 +973,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     }
 
     return SafeArea(
-      top: false,
+      // 只在**真正落在底栏**时吃底部手势条高度；挂到顶栏槽位时改吃状态栏高度。
+      // 反过来（挂顶栏却吃 bottom）会踩 extendBody 的坑：body 的 padding.bottom
+      // 已被抬升为底栏总高，SafeArea 会把这段高度白垫在胶囊下面 —— 顶部多一条
+      // 同色空带（用户反馈的「背景多出一层」）。
+      top: atTop,
+      bottom: !atTop,
       child: Padding(
-        // attachedTop：与浏览页操作栏拼接，顶部不再留空隙（6dp → 0）；
-        // 其余页面仍保留 6dp，让胶囊像浮在内容之上。
-        padding: EdgeInsets.fromLTRB(16, attachedTop ? 0 : 6, 16, 10),
+        // 顶部 kLiquidNavTopGap 悬浮间距：胶囊像浮在内容之上。
+        // 浏览页的操作栏要把这段间距扣掉才能与胶囊「紧贴」（见 DirectoryScreen）。
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          kLiquidNavTopGap,
+          16,
+          kLiquidNavBottomGap,
+        ),
         child: LiquidBottomBar(
           itemCount: tabData.length,
           selectedIndex: selectedSlot,
+          // 与上方浏览操作栏拼成整块时，顶角收成方角（两块留白一致、上下紧贴，
+          // 拼起来是一个连续容器；仍倒圆会在两侧各露一个三角形缺口）。
           attachedTop: attachedTop,
+          // 去掉外层玻璃底板：只保留滑动的胶囊指示器与 tab 内容，
+          // 观感是「一枚胶囊在 4 个槽位间滑动」，不再有承载它的那块板。
+          showGlassPlate: false,
           onSelect: (i) {
             final tab = tabData[i];
             if (tab[3] as bool) {
@@ -1161,7 +1247,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           height: constraints.maxHeight,
           child: SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.only(top: 4, bottom: 4),
+            // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高，
+            // 否则最后一行分类会被胶囊永久盖住。
+            padding: EdgeInsets.only(
+              top: 4,
+              bottom: MediaQuery.paddingOf(context).bottom + 4,
+            ),
             child: grid,
           ),
         );

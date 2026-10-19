@@ -3556,6 +3556,9 @@ class L10nFr extends L10n {
   String get ui_close_tab => 'Fermer l\'onglet';
 
   @override
+  String get ui_close_tab_hint => 'Double-tap pour fermer cet onglet';
+
+  @override
   String get ui_close_all_tabs => 'Fermer tous les onglets';
 
   @override

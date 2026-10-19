@@ -3814,6 +3814,10 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_tab_hint": "انقر نقرًا مزدوجًا لإغلاق علامة التبويب هذه",
+  "@ui_close_tab_hint": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs": "إغلاق جميع التبويبات",
   "@ui_close_all_tabs": {
     "description": "ui widgets"

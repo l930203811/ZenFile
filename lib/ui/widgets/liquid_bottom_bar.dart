@@ -1,9 +1,11 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../core/theme.dart';
 import 'liquid_glass_panel.dart';
 
 /// ── 液态玻璃底栏（Liquid Glass Bottom Bar）─────────────────────────────
@@ -27,6 +29,15 @@ import 'liquid_glass_panel.dart';
 /// 底栏总高（上游 64dp）。
 const double kLiquidBarHeight = 64;
 
+/// 4-tab 槽位的**顶部留白**：胶囊与小屏底部安全区之间，只留这条缝。
+///
+/// 全项目只此一份定义 —— 浏览页要把操作栏顶到 4-tab 上方「紧贴」（零间距），
+/// 就得把这段留白从操作栏的底部占位里扣掉；两边各写一个 6 迟早会对不齐。
+const double kLiquidNavTopGap = 6;
+
+/// 4-tab 槽位的**底部留白**（胶囊与系统手势条之间）。
+const double kLiquidNavBottomGap = 10;
+
 /// 胶囊内容行高：64 − 上下各 4dp。
 const double kLiquidInnerHeight = 56;
 
@@ -45,8 +56,12 @@ const double kLiquidEdgeDrift = 4;
 /// 单个弹簧通道。Compose 的 `spring(dampingRatio, stiffness)` 与 Flutter 的
 /// [SpringDescription] 换算关系（mass 恒为 1）：
 ///   damping = 2 * dampingRatio * sqrt(stiffness)
-class _LiquidSpring {
-  _LiquidSpring({
+///
+/// 公开而非私有：标签页栏（`directory_tab_bar.dart`）的滑动胶囊复用它 ——
+/// 两处动效必须是同一套物理参数，否则「切换标签页」和「切换 4-tab」的手感
+/// 对不上，用户一眼就能看出是两套动画。
+class LiquidSpring {
+  LiquidSpring({
     required this.stiffness,
     required this.dampingRatio,
     required double initial,
@@ -109,6 +124,86 @@ class _LiquidSpring {
   }
 }
 
+/// 栏位「实底」表面 —— 4-tab 胶囊与浏览页底部操作栏**共用同一份实现**。
+///
+/// 两条栏在浏览页上下紧贴、左右等宽，是**一个整体**：底色只要差一档，接缝处
+/// 就会露馅（深色模式下尤其明显 —— 玻璃层带 6% 白雾，比实底亮一档，看起来像
+/// 「一条黑栏上面浮着一块灰玻璃」）。所以配色收敛到这一处：
+/// 深色 `black@42%`（与顶栏同源的实心黑）、浅色 `AppTheme.lightBarBackground@90%`
+/// （主题色 12% 混白），**无高光**。
+///
+/// [blurSigma] > 0 时额外加背景模糊：浏览操作栏正压在文件列表上（extendBody），
+/// 不模糊的话深色模式下白字会以 58% 灰透出来；4-tab 那一段底下没有内容，传 0。
+///
+/// [topBorderOpacity] / [bottomBorderOpacity] 用于拼接态：接缝那一侧不画描边
+/// （两条 0.6px 相邻会合成约 1.2px 的亮线，像一道裂缝）。
+class LiquidBarSurface extends StatelessWidget {
+  const LiquidBarSurface({
+    super.key,
+    required this.borderRadius,
+    this.topBorderOpacity = 1,
+    this.bottomBorderOpacity = 1,
+    this.blurSigma = 0,
+    this.child,
+  });
+
+  /// 面板外形。拼成整块时用「只圆上角」，独立时用完整胶囊。
+  final BorderRadius borderRadius;
+
+  final double topBorderOpacity;
+  final double bottomBorderOpacity;
+
+  /// 背景模糊半径（dp）。0 = 不模糊（4-tab 走这一档）。
+  final double blurSigma;
+
+  /// 面板内容。省略时面板填满父级约束（用作纯背景层）。
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = scheme.brightness == Brightness.dark;
+
+    BorderSide side(double opacity) {
+      if (opacity <= 0.001) return BorderSide.none;
+      return BorderSide(
+        color: scheme.onSurface.withValues(alpha: 0.08 * opacity),
+        width: kLiquidGlassBorderWidth,
+      );
+    }
+
+    final surface = DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.42)
+            : AppTheme.lightBarBackground(scheme).withValues(alpha: 0.9),
+        borderRadius: borderRadius,
+        border: Border(
+          top: side(topBorderOpacity),
+          bottom: side(bottomBorderOpacity),
+          left: side(1),
+          right: side(1),
+        ),
+      ),
+      child: child ?? const SizedBox.expand(),
+    );
+
+    if (blurSigma <= 0) return surface;
+    // 模糊只能作用在自己背后：先裁形状再 BackdropFilter，否则圆角外会带出一圈毛边。
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(
+          sigmaX: blurSigma,
+          sigmaY: blurSigma,
+          tileMode: TileMode.mirror,
+        ),
+        child: surface,
+      ),
+    );
+  }
+}
+
 /// 液态玻璃底栏。内容由 [itemBuilder] 提供，本组件只负责容器、指示器与动效。
 class LiquidBottomBar extends StatefulWidget {
   const LiquidBottomBar({
@@ -120,6 +215,7 @@ class LiquidBottomBar extends StatefulWidget {
     this.onLongPressItem,
     this.height = kLiquidBarHeight,
     this.attachedTop = false,
+    this.showGlassPlate = true,
   }) : assert(itemCount > 0);
 
   final int itemCount;
@@ -139,6 +235,13 @@ class LiquidBottomBar extends StatefulWidget {
   /// 连续的容器 —— 若顶角仍然倒圆，会在两侧各露出一个三角形缺口，反而更零碎。
   final bool attachedTop;
 
+  /// 是否绘制外层玻璃底板（半透明底 + 背景模糊 + 顶部高光）。
+  ///
+  /// false 时画「实底胶囊」：主题色底 + 描边，**无模糊、无高光**（首页 4-tab
+  /// 现走这一形态 —— 背景色跟随主题、与顶部栏一致，但少了模糊层）。
+  /// 浏览页操作栏仍是独立玻璃胶囊（含模糊），与本组件各自成型。
+  final bool showGlassPlate;
+
   @override
   State<LiquidBottomBar> createState() => _LiquidBottomBarState();
 }
@@ -146,16 +249,16 @@ class LiquidBottomBar extends StatefulWidget {
 class _LiquidBottomBarState extends State<LiquidBottomBar>
     with SingleTickerProviderStateMixin {
   /// 位置：以「第几个 tab」为单位，0..itemCount-1。
-  late _LiquidSpring _position;
-  late _LiquidSpring _press;
-  late _LiquidSpring _drift;
+  late LiquidSpring _position;
+  late LiquidSpring _press;
+  late LiquidSpring _drift;
 
   /// 指示器的显隐（0 = 完全隐藏，1 = 完全显示）。
   ///
   /// [selectedIndex] 为 -1 表示「当前页面不属于底栏任何一个 tab」（设置页 / 全局
   /// 搜索页 / 各类壳内页面）。此时必须把胶囊整体淡出：只把位置停在原处会让它变成
   /// 一块没有文字的「幽灵阴影」，看起来像是某个 tab 仍然选中。
-  late _LiquidSpring _presence;
+  late LiquidSpring _presence;
 
   late final Ticker _ticker = createTicker(_onTick);
   Duration? _lastTick;
@@ -168,14 +271,14 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
   void initState() {
     super.initState();
     final maxIndex = math.max(0, widget.itemCount - 1);
-    _position = _LiquidSpring(
+    _position = LiquidSpring(
       stiffness: 1000,
       dampingRatio: 1,
       initial: widget.selectedIndex.clamp(0, maxIndex).toDouble(),
     );
-    _press = _LiquidSpring(stiffness: 1000, dampingRatio: 1, initial: 0);
-    _drift = _LiquidSpring(stiffness: 300, dampingRatio: 0.5, initial: 0);
-    _presence = _LiquidSpring(
+    _press = LiquidSpring(stiffness: 1000, dampingRatio: 1, initial: 0);
+    _drift = LiquidSpring(stiffness: 300, dampingRatio: 0.5, initial: 0);
+    _presence = LiquidSpring(
       stiffness: 700,
       dampingRatio: 1,
       initial: widget.selectedIndex >= 0 ? 1 : 0,
@@ -374,7 +477,10 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
     );
   }
 
-  /// 玻璃底座：与浏览页操作栏共用 [LiquidGlassPanel]。
+  /// 玻璃底板：与浏览页操作栏共用 [LiquidGlassPanel]。
+  ///
+  /// [LiquidBottomBar.showGlassPlate] 为 false 时改走 [_buildCapsuleOutline]
+  /// （实底胶囊，无模糊无高光）；为 true 时是完整玻璃面板。
   ///
   /// 抽成公共组件的直接原因：这两条栏在浏览页上下紧贴、左右等宽，是**一个整体**。
   /// 只要两边各写一份配色，接缝处就会出现色差（曾出现操作栏 `getAmoledSurface`
@@ -383,10 +489,22 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
   /// `attached`（0..1）控制顶边描边与顶部高光：与操作栏拼接时接缝处不该有第二条
   /// 描边（两条 0.6px 会合成约 1.2px 亮线），整块面板也只该在操作栏顶部受一次光。
   Widget _buildGlassContainer(BorderRadius shape, double attached) {
+    if (!widget.showGlassPlate) return _buildCapsuleOutline(shape, attached);
     return LiquidGlassPanel(
       borderRadius: shape,
       topBorderOpacity: 1 - attached,
       highlightOpacity: 1 - attached,
+    );
+  }
+
+  /// 胶囊底色 + 描边（**无模糊、无顶部高光**），配方见 [LiquidBarSurface]。
+  ///
+  /// 与浏览页操作栏共用同一个组件，拼成「底部控制台」时两段底色逐位相同；
+  /// 拼接态（[attached] → 1）收掉顶边描边，避免接缝处合成亮线。
+  Widget _buildCapsuleOutline(BorderRadius shape, double attached) {
+    return LiquidBarSurface(
+      borderRadius: shape,
+      topBorderOpacity: 1 - attached,
     );
   }
 

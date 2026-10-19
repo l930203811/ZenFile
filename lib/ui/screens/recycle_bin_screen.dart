@@ -303,7 +303,14 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                             Expanded(
                               child: ListView.builder(
                                 physics: const BouncingScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                // 壳内打开时底栏悬浮在内容上：底部留白 = 底栏总高
+                                // （全屏推入时 padding.bottom 只是手势条高度，同样适用）。
+                                padding: EdgeInsets.fromLTRB(
+                                  16,
+                                  8,
+                                  16,
+                                  8 + MediaQuery.paddingOf(context).bottom,
+                                ),
                                 itemCount: _filteredItems.length,
                                 itemBuilder: (context, index) {
                                   final item = _filteredItems[index];

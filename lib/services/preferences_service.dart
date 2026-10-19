@@ -1610,6 +1610,12 @@ class PreferencesService {
     await _prefs?.setBool(_keyEditorShowLineNumbers, val);
   }
 
+  /// 「打开文档时是否只读」的**历史**偏好键。
+  ///
+  /// ⚠️ 已**不再被读取**：产品口径改为「每次打开文档都从查看（只读）模式进入，
+  /// 要编辑必须主动点锁按钮切换」（见 `text_editor_screen.dart` 的 `_readOnly`）。
+  /// 保留读写接口只为兼容既有安装里残留的值，避免升级时出现「读了旧值又不生效」的
+  /// 隐性不一致；新代码不要再依赖它来判断打开模式。
   static bool getEditorReadOnly() {
     return _prefs?.getBool(_keyEditorReadOnly) ?? true;
   }

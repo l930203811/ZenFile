@@ -6,7 +6,9 @@ library;
 
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import '../../core/utils.dart';
 import 'crypt_batch_runner.dart';
+import 'crypt_stream_server.dart';
 import 'crypt_config.dart';
 import 'crypt_mount.dart';
 import 'crypt_mount_service.dart';
@@ -61,6 +63,75 @@ class CryptFileEntry {
 
   /// 文件扩展名（解密后的）
   String get extension => p.extension(name);
+}
+
+/// 加密目录里一组图片兄弟：可直接渲染的地址 + 显示名（两者等长并行）。
+class CryptImageSiblings {
+  /// 可直接交给图片查看器渲染的地址：明文为本地路径，加密条目为流式解密 URL。
+  final List<String> paths;
+
+  /// 与 [paths] 等长的显示名（加密条目为**解密后**的真实文件名）。
+  final List<String> names;
+
+  const CryptImageSiblings(this.paths, this.names);
+}
+
+/// 收集与 [current] 同目录的图片兄弟，供图片查看器左右滑动切换上一张 / 下一张。
+///
+/// 加密条目在磁盘上是密文（或 `cryptremote://` 虚拟路径），查看器自己渲染不了，
+/// 必须先换成流式解密 URL —— 未运行流服务器时加密项无从渲染，直接返回 null 退回
+/// 单张展示，也不往列表里塞无法渲染的项（那会让滑动过程中出现空白页）。
+///
+/// ⚠️ **必须异步**：函数开头要 `await CryptStreamServer.instance.ensureInitialized()`。
+/// 流式解密服务器只在 provider 的 `_ensureCryptMountsLoaded()` 末尾启动，而保险箱
+/// （沙盒）与「远程加密」浏览页走的是 `CryptMountService` + `CryptDirectoryLister`，
+/// 全程不碰 provider 的挂载点缓存 ⇒ 用户第一次点开加密图片时服务器**还没启动**。
+/// 旧实现同步读 `isRunning` 得到 false，直接返回 null ⇒ 查看器只拿到 1 张
+/// ⇒ 「原地加密能左右滑、沙盒加密不能左右滑」（用户 2026-10-19 反馈的差异）。
+Future<CryptImageSiblings?> collectCryptImageSiblings(
+  List<CryptFileEntry> entries,
+  CryptFileEntry current, {
+  /// 条目所属挂载点（保险箱沙盒 / 原地加密目录）。给了就顺手注册到流式服务器：
+  /// 沙盒目录可能还没被 provider 的挂载点缓存覆盖，不注册的话流请求会 404
+  /// （图片显示成一直转圈 / 空白）。
+  CryptMountPoint? mount,
+}) async {
+  if (!FileUtils.isImage(current.name)) return null;
+  try {
+    await CryptStreamServer.instance.ensureInitialized();
+    if (mount != null) {
+      if (mount.isRemote) {
+        CryptStreamServer.instance.registerRemoteMount(mount);
+      } else {
+        CryptStreamServer.instance.registerMount(mount);
+      }
+    }
+  } catch (_) {}
+  final streamReady = CryptStreamServer.instance.isRunning;
+  final paths = <String>[];
+  final names = <String>[];
+  for (final e in entries) {
+    if (e.isDirectory || !FileUtils.isImage(e.name)) continue;
+    if (e.isEncrypted) {
+      // 名字解密成功 ⇒ 磁盘上一定是密文，只能走流式解密。
+      if (!streamReady) return null;
+      paths.add(CryptStreamServer.instance.getStreamUrl(e.virtualPath));
+    } else if (e.virtualPath.startsWith('cryptremote://')) {
+      // 远程加密目录里的**明文**条目：`cryptremote://` 虚拟路径既不能直接渲染，
+      // 也不适合塞进流式解密链路（那不是密文）。跳过，避免出现空白页。
+      continue;
+    } else if (await File(e.virtualPath).exists()) {
+      // 真正存在于磁盘上的明文（未加密的普通文件）→ 直接渲染。
+      paths.add(e.virtualPath);
+    } else {
+      // 「名字没解开」但磁盘上也没有这个明文路径 ⇒ 其实就是密文（沙盒里
+      // 目录名不加密时 decryptFileName 会退化成恒等函数，isEncrypted 可能为 false）。
+      if (!streamReady) return null;
+      paths.add(CryptStreamServer.instance.getStreamUrl(e.virtualPath));
+    }
+    names.add(e.name);
+  }
+  return paths.isEmpty ? null : CryptImageSiblings(paths, names);
 }
 
 /// 加密目录枚举器

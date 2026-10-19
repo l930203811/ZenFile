@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.5.9';
+  static const String _latestChangelogVersion = 'v3.6.0';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v360,
     _v359,
     _v358,
     _v357,
@@ -947,7 +948,53 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.5.9 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.0 ────────────────────────────────────────────────
+  static const _Changelog _v360 = _Changelog(
+    version: 'v3.6.0',
+    date: '2026-10-19',
+    zh: [
+      _ChangeSection('✨ 界面焕新', [
+        '浏览页底部操作栏与导航栏真正拼成一体：左右留白一致、上下零间距、同一套底色，接缝只描一次边；操作栏随列表滚动折叠与展开时，导航栏顶角在方角与圆角之间平滑过渡',
+        '浅色模式改为三档层次：顶栏、底部导航栏、浏览操作栏共用同一底色（主题色 12% 混白），页面底色再浅一档（4% 混白），栏位从页面里「浮」出来而不再糊成一片',
+        '标签页栏的点击与切换改用与底部导航栏同一套弹簧动效：指示器在标签之间滑动，按下时轻微鼓包、被滑动速度横向拉长，不再生硬跳变',
+        '长按标签页的关闭菜单改为从标签栏正下方弹出，并贴合被长按的那个标签；菜单内新增「双击可关闭当前标签页」提示，已支持全部 10 种界面语言',
+        '双窗口模式下标签高亮分三档：焦点窗口保持主题色高亮，已显示在副窗口的标签降为中性灰底与淡描边，未参与双窗口的标签维持原样，一眼就能分清主次',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复加密图片打开后无法左右滑动的问题，覆盖原地加密、保险箱沙盒与远程加密三种入口：现在打开即可在整组加密图片之间连续翻页',
+        '修复长按标签页没有反应、不弹出关闭按钮的问题：此前定位方式取到了错误的渲染对象，导致长按回调直接中断',
+        '修复打开文档后会停留在上次的编辑模式：现在每次打开都从查看（只读）模式进入，需要编辑时主动切换；「自动换行 / 显示行号」改为独立的显示偏好，不再与编辑模式绑定',
+        '修复重启后切到「记住上次打开文件夹」恢复出来的标签页是一片空白、必须手动下拉才出内容的问题：切换过去时会自动补一次目录加载',
+        '修复副窗口的标签高亮反而比焦点窗口更抢眼的问题：副窗口不再使用主题色与加粗描边',
+      ]),
+      _ChangeSection('⚡ 性能优化', [
+        '大幅优化软键盘弹出与收起的卡顿（文件越多越明显）：窗口不再随键盘逐帧改变尺寸，常驻页面在键盘动画期间完全不重排；解锁进入首页后先等键盘彻底收起，再开始扫描目录与加载媒体库；浏览页改为切入时才构建，解锁那一帧不再整页初始化',
+        '优化全局搜索：输入新关键词会真正取消上一轮扫描、限制同时扫描的目录数量、结果分批刷新界面，大存储设备上输入时基本不再卡顿',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Interface', [
+        'The browser action bar and the navigation bar are now genuinely joined into one piece: same side margins, zero gap, one shared background color, and a single hairline along the seam; when the action bar collapses or expands with scrolling, the navigation bar top corners ease between square and rounded',
+        'Light mode now uses three background tiers: the top bar, the bottom navigation bar and the browser action bar share one color (12% primary over white), while pages sit one step lighter (4% primary over white), so the bars lift off the page instead of blending in',
+        'Tab bar taps and switches now use the same spring as the bottom navigation bar: the indicator slides between tabs, bulges slightly while pressed and stretches with the swipe velocity instead of jumping',
+        'Long-pressing a tab now drops the close menu from directly below the tab bar, aligned to the tab you pressed, and adds a "double-tap to close the current tab" hint localized into all 10 UI languages',
+        'In dual-window mode tab highlights now have three levels: the focused window keeps the primary highlight, tabs already shown in the secondary window drop to a neutral fill with a faint border, and tabs outside both windows stay unchanged',
+      ]),
+      _ChangeSection('🐛 Bug Fixes', [
+        'Fixed encrypted images not swiping left and right, across in-place encryption, vault sandbox and remote encryption: an opened image can now page through the whole encrypted set',
+        'Fixed long-pressing a tab doing nothing and never showing the close button: the old code resolved the wrong render object, which aborted the long-press callback',
+        'Fixed documents reopening in the last editing mode: every document now opens in view-only mode and must be unlocked to edit, while "word wrap / line numbers" became independent display preferences no longer tied to the mode',
+        'Fixed tabs restored by "remember the last opened folder" showing a blank list after a restart until a manual pull-to-refresh: switching to such a tab now loads its directory automatically',
+        'Fixed the secondary window highlight looking stronger than the focused one: the secondary window no longer uses the primary color or a heavier border',
+      ]),
+      _ChangeSection('⚡ Performance', [
+        'Greatly reduced keyboard open and close jank, which was worse with more files: the window no longer resizes frame by frame with the keyboard and resident pages skip relayout entirely during the animation; after unlocking, directory scanning and media loading wait until the keyboard has fully retracted; the browser page is now built on first visit instead of on the unlock frame',
+        'Improved global search: a new keyword now truly cancels the previous scan, the number of concurrently scanned directories is capped, and results refresh in batches, so typing stays smooth on devices with large storage',
+      ]),
+    ],
+  );
+
+  /// ── v3.5.9 ──────────────────────────────────────────────────────────
   static const _Changelog _v359 = _Changelog(
     version: 'v3.5.9',
     date: '2026-10-18',

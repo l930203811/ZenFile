@@ -87,7 +87,13 @@ class TransfersScreen extends StatelessWidget {
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高。
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                MediaQuery.paddingOf(context).bottom + 16,
+              ),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];

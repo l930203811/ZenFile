@@ -1700,6 +1700,8 @@ class FileManagerProvider extends ChangeNotifier {
     }
     _persistTabs();
     notifyListeners();
+    // 该窗口对应的标签页可能是恢复出来的（从未列举），补一次。
+    ensureTabContentLoaded(target);
   }
 
   /// 将标签页收敛到 [keep] 个：优先保留当前激活的标签页，其余从尾部丢弃。
@@ -1847,6 +1849,29 @@ class FileManagerProvider extends ChangeNotifier {
   // --- Tab Management ---
   List<FolderTab> _tabs = [];
   int _activeTabIndex = 0;
+
+  /// 标签页内容按需补加载。
+  ///
+  /// 背景：开启「记住上次打开文件夹」后，标签页是从 SharedPreferences 恢复出来的，
+  /// 而 [init] 只列举第一个标签页 —— 其余标签页的 `currentFiles` 全是空，
+  /// 切过去就是一片空白，必须手动下拉刷新才有内容（用户实测，v3.5.9）。
+  ///
+  /// 这里在「标签页变为可见」的各个入口补一次列举：
+  ///   · [setActiveTab] / [setActivePane] —— 单击标签页、点击某个窗口；
+  ///   · 双窗口恢复后的右侧窗口由 [init] 直接加载（它一开机就可见，不能等切换）。
+  ///
+  /// 已加载过或正在加载的标签页直接跳过；加载失败也算「已尝试」，
+  /// 让错误状态显示出来，用户仍可手动刷新。
+  void ensureTabContentLoaded(int index, {bool showLoading = true}) {
+    if (index < 0 || index >= _tabs.length) return;
+    final tab = _tabs[index];
+    if (tab.hasLoaded || tab.isLoading) return;
+    unawaited(loadDirectoryForTab(
+      index,
+      tab.currentPath,
+      showLoading: showLoading,
+    ).catchError((_) {}));
+  }
   // loadDirectoryForTab 会临时切换全局 _activeTabIndex，若两个 pane 并发刷新
   // （如同时下拉刷新或后台轮询与手动刷新重叠），_activeTabIndex 会被覆盖，
   // 导致刷新目标错乱。用简单 Future 锁串行化。
@@ -2431,6 +2456,21 @@ class FileManagerProvider extends ChangeNotifier {
     return false;
   }
 
+  /// 把 [paths] 中等于 [currentPath] 的那一项替换成 [currentDisplayPath]。
+  ///
+  /// 兄弟列表里存的是**原始路径**，而查看器拿到的 imagePath 已是被解密链路改写
+  /// 过的流地址 ⇒ 不替换就会 `indexOf` 失配、当前页错定到第 0 张。
+  static List<String> _withCurrentReplaced(
+    List<String> paths,
+    String currentPath,
+    String currentDisplayPath,
+  ) {
+    final out = List<String>.of(paths);
+    final i = out.indexOf(currentPath);
+    if (i != -1) out[i] = currentDisplayPath;
+    return out;
+  }
+
   /// 判断文件是否为图片（用于「加密图片走流式解密 URL」分支）
   bool _isImage(String path) {
     final lower = path.toLowerCase();
@@ -2451,23 +2491,48 @@ class FileManagerProvider extends ChangeNotifier {
   /// 返回 null 表示**无法可靠构造**，由查看器回退到自己的目录扫描：
   /// - 远程标签页（`f.path` 是远程相对路径，与本地 `currentPath` 对不上）
   /// - 列表里没有当前文件（从「最近 / 收藏 / 搜索结果」等非目录入口打开）
-  /// - 当前文件或目录条目是虚拟路径（需先下载/解密，不能直接当本地文件渲染）
-  List<String>? _siblingImagePathsInCurrentTab(String currentPath) {
+  /// - 存在加密条目但流服务器尚未就绪（getStreamUrl 会退化成密文路径）
+  ///
+  /// [currentPath] 必须是**未被解密改写的原始路径**，用于在列表里定位当前项；
+  /// [currentDisplayPath] 是最终交给查看器的可渲染地址，定位成功后会替换进去。
+  CryptImageSiblings? _siblingImagePathsInCurrentTab(
+    String currentPath, {
+    String? currentDisplayPath,
+  }) {
     if (activeTab.isRemote) return null;
     final paths = <String>[];
+    final names = <String>[];
     var found = false;
     for (final f in activeTab.currentFiles) {
       if (f.isDirectory) continue;
-      // 只收「真实本地路径」：remote:// / cryptremote:// / content:// 等虚拟路径
-      // 交给查看器只会渲染失败（它们要先经下载或解密转换）。
-      if (f.path.contains('://')) continue;
       // 类型判断用 displayPath（cryptremote 条目的 path 是密文名，扩展名不可用）。
       if (!_isImage(f.displayPath)) continue;
-      paths.add(f.path);
+      // ⚠️ 加密条目（含 `cryptremote://` 虚拟路径）**必须留下**并转成流式
+      // 解密 URL：旧的「含 :// 一律跳过」会把加密图片整个滤掉 ⇒ 退化成
+      //「1 of 1」、不能左右滑；而不转 URL 又会让查看器拿着密文路径解码失败。
+      final isCrypt = f.isEncrypted || f.path.startsWith('cryptremote://');
+      // 其余虚拟路径（remote:// / content:// …）要先下载才能渲染 ⇒ 跳过。
+      if (!isCrypt && f.path.contains('://')) continue;
+      if (isCrypt) {
+        // ⚠️ 只在流服务器就绪时才收：端口为空时 getStreamUrl 会原样返回密文
+        //    路径，列表里混进无法渲染的项反而更糟 —— 宁可不收，退回单张。
+        if (!CryptStreamServer.instance.isRunning) continue;
+        paths.add(CryptStreamServer.instance.getStreamUrl(f.path));
+      } else {
+        paths.add(f.path);
+      }
+      names.add(f.name);
       if (f.path == currentPath) found = true;
     }
     if (!found) return null;
-    return paths;
+    // 当前项换成已知的**可渲染地址**，否则查看器 `indexOf(imagePath)` 失配、
+    // 当前页错定到第 0 张（原因见 [_withCurrentReplaced]）。
+    return CryptImageSiblings(
+      currentDisplayPath == null
+          ? paths
+          : _withCurrentReplaced(paths, currentPath, currentDisplayPath),
+      names,
+    );
   }
 
   /// 获取加密文件临时解密目录路径
@@ -3054,7 +3119,12 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 打开远程加密文件：按解密后的真实文件名判断类型，路由到内置查看器/播放器。
-  Future<void> _openRemoteCryptFile(BuildContext context, String virtualPath) async {
+  Future<void> _openRemoteCryptFile(
+    BuildContext context,
+    String virtualPath, {
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
     final streamUrl = await _resolveRemoteCryptStreamUrl(virtualPath);
     if (streamUrl == null) {
       if (context.mounted) {
@@ -3071,10 +3141,27 @@ class FileManagerProvider extends ChangeNotifier {
     if (!context.mounted) return;
 
     if (mime.startsWith('image/')) {
+      // 兄弟列表：优先用调用方传进来的（加密目录浏览器知道自己的条目）；
+      // 没传就回到「当前标签页目录」兜底 —— 浏览页直接打开远程加密文件时走这里。
+      final siblings =
+          (siblingPaths != null && siblingPaths.isNotEmpty)
+              ? CryptImageSiblings(
+                  _withCurrentReplaced(siblingPaths, virtualPath, streamUrl),
+                  siblingNames ?? const [],
+                )
+              : _siblingImagePathsInCurrentTab(
+                  virtualPath,
+                  currentDisplayPath: streamUrl,
+                );
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ImageViewerScreen(imagePath: streamUrl, streamUrl: streamUrl),
+          builder: (_) => ImageViewerScreen(
+            imagePath: streamUrl,
+            streamUrl: streamUrl,
+            siblingPaths: siblings?.paths,
+            siblingNames: siblings?.names,
+          ),
         ),
       );
       return;
@@ -4823,6 +4910,9 @@ class FileManagerProvider extends ChangeNotifier {
       }
       _persistTabs();
       notifyListeners();
+      // 切过去的标签页可能是恢复出来的（从未列举过内容），补一次列举，
+      // 否则双窗口下该窗口是一片空白。
+      ensureTabContentLoaded(_activeTabIndex);
       return;
     }
     if (index != _activeTabIndex) {
@@ -4831,6 +4921,9 @@ class FileManagerProvider extends ChangeNotifier {
     _activeTabIndex = index;
     _persistTabs();
     notifyListeners();
+    // 恢复出来的标签页（记住上次打开文件夹）只有第一个在 init 里列举过，
+    // 其余切过去时补列举，避免「不显示内容、要手动下拉刷新」。
+    ensureTabContentLoaded(_activeTabIndex);
   }
 
   /// 关闭标签页后修正 pane → 标签页的映射：
@@ -6435,6 +6528,14 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true, bool forceRefresh = false}) async {
+    // 标记「本标签页已尝试列举过」。恢复出来的标签页（开启「记住上次打开文件夹」
+    // 后从 SharedPreferences 还原）currentFiles 是空常量列表，但目录从未被列举 ——
+    // 这与「这本来就是个空目录」必须区分开：前者要补一次列举，后者不必。
+    // 放在方法最前面：无论走哪个分支、成功与否，都视为已尝试过，
+    // 避免每次切换都对一个打不开的目录自动重试。详见
+    // [FolderTab.hasLoaded] 与 [ensureTabContentLoaded]。
+    activeTab.hasLoaded = true;
+
     // ── Remote → Local transition guard ──
     // 当当前 tab 处于远程模式，但请求的路径明显是本地存储路径时（例如从共
     // 享的历史栈退回到本地根目录），自动退出远程模式，避免远程客户端用本地
@@ -11162,8 +11263,19 @@ class FileManagerProvider extends ChangeNotifier {
     return true;
   }
 
-  Future<void> openFileNatively(BuildContext context, String path, {bool showTypePickerForUnknown = false}) async {
-    final opened = await _tryOpenBuiltInDirectly(context, path);
+  Future<void> openFileNatively(
+    BuildContext context,
+    String path, {
+    bool showTypePickerForUnknown = false,
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
+    final opened = await _tryOpenBuiltInDirectly(
+      context,
+      path,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
     if (opened) return;
 
     if (showTypePickerForUnknown) {
@@ -11206,7 +11318,12 @@ class FileManagerProvider extends ChangeNotifier {
 
   /// 尝试按文件实际类型直接用内置查看器/播放器打开。
   /// 返回是否成功打开（true = 已处理；false = 未知格式，需要让用户选择类型）。
-  Future<bool> _tryOpenBuiltInDirectly(BuildContext context, String path) async {
+  Future<bool> _tryOpenBuiltInDirectly(
+    BuildContext context,
+    String path, {
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
     // 保存原始路径（用于播放列表索引查找），然后对加密文件进行解密/流式处理
     final originalPath = path;
     path = await _decryptCryptFileIfNeeded(path);
@@ -11253,18 +11370,26 @@ class FileManagerProvider extends ChangeNotifier {
       // path 可能已是流式解密 URL（加密图片），直接交给查看器渲染
       final isStream = path.startsWith('http://127.0.0.1');
       // 浏览页打开图片时把「同目录图片列表」一并交给查看器（视频分支一直这么做）。
-      // 只在路径**未被加密/流式改写**时传：改写过的路径与列表里的原始路径对不上，
-      // 传了反而会把当前页错定到第 0 张。其余情况传 null，由查看器自行扫目录。
-      final siblings = (isStream || path != originalPath)
-          ? null
-          : _siblingImagePathsInCurrentTab(path);
+      // ⚠️ 加密目录同样要传：列表按**原始路径**收集，其中加密条目会被逐个换成
+      //    流式解密 URL（否则查看器拿密文路径解码失败，退化成「1 of 1」不能滑动）。
+      final siblingImages =
+          (siblingPaths != null && siblingPaths.isNotEmpty)
+              ? CryptImageSiblings(
+                  _withCurrentReplaced(siblingPaths, originalPath, path),
+                  siblingNames ?? const [],
+                )
+              : _siblingImagePathsInCurrentTab(
+                  originalPath,
+                  currentDisplayPath: path,
+                );
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ImageViewerScreen(
             imagePath: path,
             streamUrl: isStream ? path : null,
-            siblingPaths: siblings,
+            siblingPaths: siblingImages?.paths,
+            siblingNames: siblingImages?.names,
           ),
         ),
       );
@@ -11472,7 +11597,16 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 按指定内置类型（text/audio/video/image）以应用内查看器/播放器打开文件
-  Future<void> _openBuiltInByType(BuildContext context, String path, String type) async {
+  Future<void> _openBuiltInByType(
+    BuildContext context,
+    String path,
+    String type, {
+    /// 调用方已知的同目录图片列表（加密目录 / 保险箱沙盒 / 远程加密目录）。
+    /// ⚠️ 必须透传：`_siblingImagePathsInCurrentTab` 只认 `activeTab.currentFiles`，
+    /// 而加密浏览页的条目根本不在浏览页标签的列表里 ⇒ 丢弃它等于「打开后只有 1 张」。
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
     // 「是否按远程占位文件交给播放器」：只有**远程标签页下的远程路径**才需要播放器等缓存落盘。
     // ⚠️ 不能单看 `activeTab.isRemote`：用户停在远程标签页时，「最近」页 / 分类页 / 收藏夹 /
     // 全局搜索等入口传进来的仍是**本地绝对路径**；误标 isRemote 会让播放器进入
@@ -11489,17 +11623,29 @@ class FileManagerProvider extends ChangeNotifier {
       case 'image':
         final decPath = await _decryptCryptFileIfNeeded(path);
         final isStream = decPath.startsWith('http://127.0.0.1');
-        // 同 _tryOpenBuiltInDirectly：路径被改写（加密/流式）时不传兄弟列表。
-        final siblings = (isStream || decPath != path)
-            ? null
-            : _siblingImagePathsInCurrentTab(decPath);
+        // 同 _tryOpenBuiltInDirectly：列表按**原始路径**收集，加密条目再由
+        // displayPathResolver 在查看器里逐张解密。
+        // 调用方（加密目录浏览页）已给出列表时优先用它：这类条目不在
+        // `activeTab.currentFiles` 里，自己收集必然拿到 null ⇒ 退化成单张、
+        // 不能左右滑（沙盒加密图片的历史症状）。
+        final provided = siblingPaths != null && siblingPaths.isNotEmpty;
+        final siblingImages = provided
+            ? CryptImageSiblings(
+                _withCurrentReplaced(siblingPaths, path, decPath),
+                siblingNames ?? const [],
+              )
+            : _siblingImagePathsInCurrentTab(
+                path,
+                currentDisplayPath: decPath,
+              );
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => ImageViewerScreen(
               imagePath: decPath,
               streamUrl: isStream ? decPath : null,
-              siblingPaths: siblings,
+              siblingPaths: siblingImages?.paths,
+              siblingNames: siblingImages?.names,
             ),
           ),
         );
@@ -12534,7 +12680,17 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> openFile(BuildContext context, String path, {bool forceNative = false, bool isRemoteStream = false}) async {
+  Future<void> openFile(
+    BuildContext context,
+    String path, {
+    bool forceNative = false,
+    bool isRemoteStream = false,
+    /// 同目录图片列表（原始路径/虚拟路径均可）。用于加密目录：查看器会经
+    /// `displayPathResolver` 逐张解密后渲染，从而支持左右滑动切换。
+    List<String>? siblingPaths,
+    /// 与 [siblingPaths] 等长的显示名（加密条目传解密后的真实文件名）。
+    List<String>? siblingNames,
+  }) async {
     _highlightedPaths.clear();
     _highlightedPaths.add(path);
     notifyListeners();
@@ -12566,7 +12722,12 @@ class FileManagerProvider extends ChangeNotifier {
         await openFile(context, _asPlainRemotePath(path), forceNative: forceNative);
         return;
       }
-      await _openRemoteCryptFile(context, path);
+      await _openRemoteCryptFile(
+        context,
+        path,
+        siblingPaths: siblingPaths,
+        siblingNames: siblingNames,
+      );
       return;
     }
 
@@ -12584,7 +12745,12 @@ class FileManagerProvider extends ChangeNotifier {
       } else if (streamMime.startsWith('audio/')) {
         Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: path, title: p.basenameWithoutExtension(path), isRemote: true)));
       } else {
-        await openFileNatively(context, targetPath);
+        await openFileNatively(
+          context,
+          targetPath,
+          siblingPaths: siblingPaths,
+          siblingNames: siblingNames,
+        );
       }
       return;
     }
@@ -12719,7 +12885,13 @@ class FileManagerProvider extends ChangeNotifier {
                 mimeType: lookupMimeType(fileExt) ?? '*/*',
               );
             } else {
-              await openFileNatively(context, targetPath, showTypePickerForUnknown: true);
+              await openFileNatively(
+                context,
+                targetPath,
+                showTypePickerForUnknown: true,
+                siblingPaths: siblingPaths,
+                siblingNames: siblingNames,
+              );
             }
             return;
           } catch (e) {
@@ -13058,7 +13230,13 @@ class FileManagerProvider extends ChangeNotifier {
 
     // forceNative：来自「打开方式...」选择「本应用打开」，强制用内置查看器打开
     if (forceNative) {
-      await openFileNatively(context, targetPath, showTypePickerForUnknown: true);
+      await openFileNatively(
+        context,
+        targetPath,
+        showTypePickerForUnknown: true,
+        siblingPaths: siblingPaths,
+        siblingNames: siblingNames,
+      );
       return;
     }
 
@@ -13066,20 +13244,38 @@ class FileManagerProvider extends ChangeNotifier {
     if (hasNativeViewer(targetPath)) {
       final defaultAction = PreferencesService.getDefaultOpenAction(ext);
       if (defaultAction == 'native') {
-        await openFileNatively(context, targetPath);
+        await openFileNatively(
+          context,
+          targetPath,
+          siblingPaths: siblingPaths,
+          siblingNames: siblingNames,
+        );
         return;
       } else if (defaultAction == 'external') {
         await openWithSystemChooser(targetPath);
         return;
       } else if (const ['text', 'audio', 'video', 'image'].contains(defaultAction)) {
         // 已保存的具体内置类型：直接以该类型用应用内查看器打开
-        await _openBuiltInByType(context, targetPath, defaultAction!);
+        // ⚠️ 必须继续透传 siblingPaths：用户若把图片默认打开方式存成 image，
+        // 这条分支就是唯一入口，丢掉列表 = 加密图片又变成「1 of 1」。
+        await _openBuiltInByType(
+          context,
+          targetPath,
+          defaultAction!,
+          siblingPaths: siblingPaths,
+          siblingNames: siblingNames,
+        );
         return;
       }
     }
 
     // 默认：使用内置查看器打开
-    await openFileNatively(context, targetPath);
+    await openFileNatively(
+      context,
+      targetPath,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
   }
 
   Future<void> moveItem(BuildContext context, String sourcePath, String destFolderPath, {bool showToast = true}) async {

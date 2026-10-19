@@ -3814,6 +3814,10 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_tab_hint": "Double-tap pour fermer cet onglet",
+  "@ui_close_tab_hint": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs": "Fermer tous les onglets",
   "@ui_close_all_tabs": {
     "description": "ui widgets"
