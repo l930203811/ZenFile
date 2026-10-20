@@ -4150,6 +4150,27 @@ class L10nKo extends L10n {
   String get ui_select_lyrics_file => '로컬 가사 가져오기';
 
   @override
+  String get lyric_animation_style => '가사 애니메이션 스타일';
+
+  @override
+  String get lyric_style_classic => '클래식 스윕';
+
+  @override
+  String get lyric_style_classic_desc => '글자별 스윕, 거리에 따라 인접 줄 페이드';
+
+  @override
+  String get lyric_style_glow => '글로우 스윕';
+
+  @override
+  String get lyric_style_glow_desc => '네온 글로우를 더한 스윕';
+
+  @override
+  String get lyric_style_immersive => '몰입 스테이지';
+
+  @override
+  String get lyric_style_immersive_desc => '초대형 타이포그래피와 시네마틱 글로우';
+
+  @override
   String get ui_no_lyrics_found => '가사를 찾을 수 없습니다';
 
   @override
@@ -8129,6 +8150,24 @@ class L10nKo extends L10n {
   String get ui_bottom_tab_bar => '탐색 모음';
 
   @override
+  String get ui_nav_bar_settings => '탐색 모음 설정';
+
+  @override
+  String get ui_show_nav_bar => '탐색 모음 표시';
+
+  @override
+  String get ui_nav_bar_opacity => '탐색 모음 불투명도';
+
+  @override
+  String get ui_nav_bar_opacity_hint => '낮을수록 투명, 최대는 완전 불투명';
+
+  @override
+  String get ui_nav_bar_opacity_reset => '기본값으로 복원';
+
+  @override
+  String get ui_category_settings => '카테고리 페이지 설정';
+
+  @override
   String get ui_persistent_tab_bar => '다른 페이지에서도 내비게이션 바 유지';
 
   @override
@@ -8304,4 +8343,34 @@ class L10nKo extends L10n {
 
   @override
   String get msg_extract_target_folder => '압축 해제할 폴더';
+
+  @override
+  String get lyric_display => '가사 표시';
+
+  @override
+  String get lyric_mode_off => '끄기';
+
+  @override
+  String get lyric_mode_single => '한 줄 표시';
+
+  @override
+  String get lyric_mode_half => '반화면 표시';
+
+  @override
+  String get lyric_mode_full => '전체화면';
+
+  @override
+  String get lyric_settings => '가사 설정';
+
+  @override
+  String get lyric_style_pv => '텍스트 PV';
+
+  @override
+  String get lyric_style_pv_desc => '한 줄 거대 글자, 글자가 날아와 흩어지며 빛 궤적과 반짝임';
+
+  @override
+  String get lyric_style_echo => '메아리 파편';
+
+  @override
+  String get lyric_style_echo_desc => '채워지는 동안 불렀던 글자가 속이 빈 파편이 되어 떠다님';
 }

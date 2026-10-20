@@ -4161,6 +4161,13 @@
   "ui_lyrics_load_failed": "Impossible d'analyser ce fichier de paroles",
   "ui_select_lyrics_file": "Importer des paroles locales",
   "ui_search_lyrics_online": "Rechercher des paroles en ligne",
+  "lyric_animation_style": "Style d'animation des paroles",
+  "lyric_style_classic": "Balayage classique",
+  "lyric_style_classic_desc": "Balayage mot à mot, les lignes voisines s'estompent avec la distance",
+  "lyric_style_glow": "Balayage lumineux",
+  "lyric_style_glow_desc": "Balayage avec lueur néon",
+  "lyric_style_immersive": "Scène immersive",
+  "lyric_style_immersive_desc": "Typographie surdimensionnée avec lueur cinématographique",
   "ui_no_lyrics_found": "Aucune parole trouvée",
   "ui_lyrics_auto_load_hint": "Placez le fichier .lrc dans le même dossier que l'audio\n(avec le même nom de fichier) pour le charger automatiquement",
   "ui_lyrics_panel": "Panneau des paroles",
@@ -8458,6 +8465,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "Paramètres de la barre de navigation",
+  "ui_show_nav_bar": "Afficher la barre de navigation",
+  "ui_nav_bar_opacity": "Opacité de la barre de navigation",
+  "ui_nav_bar_opacity_hint": "Plus bas = plus transparent, maximum = totalement opaque",
+  "ui_nav_bar_opacity_reset": "Rétablir la valeur par défaut",
+  "ui_category_settings": "Paramètres de la page des catégories",
   "ui_persistent_tab_bar": "Conserver la barre de navigation sur les autres pages",
   "ui_pick_bottom_tab": "Personnaliser les entrées",
   "@ui_pick_bottom_tab": {
@@ -8666,5 +8679,15 @@
   "msg_archive_extract_failed": "Échec de l'extraction",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "Dossier de destination",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "Paroles",
+  "lyric_mode_off": "Désactivé",
+  "lyric_mode_single": "Une ligne",
+  "lyric_mode_half": "Demi-écran",
+  "lyric_mode_full": "Plein écran",
+  "lyric_settings": "Réglages des paroles",
+  "lyric_style_pv": "PV textuel",
+  "lyric_style_pv_desc": "Ligne géante : lettres volantes, traînées de particules et étincelles",
+  "lyric_style_echo": "Fragments d'écho",
+  "lyric_style_echo_desc": "Les mots chantés éclatent en fragments creux qui dérivent lentement"
 }

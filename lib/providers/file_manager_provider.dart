@@ -229,6 +229,7 @@ class FileManagerProvider extends ChangeNotifier {
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
     _bottomNavBarEnabled = PreferencesService.getBottomNavBarEnabled();
     _persistentTabBar = PreferencesService.getPersistentTabBar();
+    _navBarOpacity = PreferencesService.getNavBarOpacity();
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
     _showMediaPreviews = PreferencesService.getShowMediaPreviews();
     // 进度通知器在进度置空时清除最小化状态（字段初始化器无法访问实例方法，故在此赋值）。
@@ -1372,6 +1373,46 @@ class FileManagerProvider extends ChangeNotifier {
     if (_persistentTabBar == value) return;
     _persistentTabBar = value;
     PreferencesService.savePersistentTabBar(_persistentTabBar);
+    notifyListeners();
+  }
+
+  // 「导航栏不透明度」（issue #42）：null = 未自定义，按主题默认值渲染。
+  // 「设置 → 常规与行为 → 导航栏设置」面板与「自定义快捷方式」页共用这一份字段，
+  // 所以两处滑杆天然双向同步（与导航栏开关 / 位置的做法一致）。
+  double? _navBarOpacity;
+
+  /// 用户自定义的底栏不透明度；`null` 表示尚未自定义（用主题默认）。
+  double? get navBarOpacity => _navBarOpacity;
+
+  /// 实际用于渲染的不透明度：未自定义时回退到主题默认值。
+  ///
+  /// 深色 0.42 / 浅色 0.90，与 v3.5.9 起的玻璃配方逐位一致 ——
+  /// 新增滑杆不会改变老用户的默认观感。
+  double navBarOpacityFor(Brightness brightness) =>
+      _navBarOpacity ??
+      (brightness == Brightness.dark
+          ? PreferencesService.kNavBarDefaultOpacityDark
+          : PreferencesService.kNavBarDefaultOpacityLight);
+
+  /// 是否处于「完全实底」（不透明 = 1.0）。
+  ///
+  /// 实底时底栏不需要背景模糊，使用处据此跳过 BackdropFilter。
+  bool navBarOpacityIsOpaque(Brightness brightness) =>
+      navBarOpacityFor(brightness) >= 0.999;
+
+  void setNavBarOpacity(double value) {
+    final clamped = value.clamp(PreferencesService.kNavBarMinOpacity, 1.0);
+    if (_navBarOpacity == clamped) return;
+    _navBarOpacity = clamped;
+    PreferencesService.saveNavBarOpacity(clamped);
+    notifyListeners();
+  }
+
+  /// 恢复「跟随主题默认」：清掉已存值并回到预设不透明度。
+  void resetNavBarOpacity() {
+    if (_navBarOpacity == null) return;
+    _navBarOpacity = null;
+    PreferencesService.clearNavBarOpacity();
     notifyListeners();
   }
 

@@ -1,8 +1,11 @@
+import 'dart:ui' show FontFeature;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 统一的「导航栏」设置面板：设置页与「自定义快捷方式」页共用同一份实现。
@@ -16,6 +19,9 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 ///
 /// 面板内用 [Consumer] 订阅 provider，所以开关与位置会随外部改动实时刷新
 /// （例如用户在自定义页改完再回到这里，打开就是最新值）。
+///
+/// issue #42 起新增「导航栏不透明度」滑杆：与「自定义快捷方式」页的滑杆共用
+/// [FileManagerProvider.navBarOpacity] 这一份字段，两处双向同步。
 class NavBarSettingsSheet {
   const NavBarSettingsSheet._();
 
@@ -63,17 +69,29 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // 标题 + 总开关同一行：标题即 [ui_bottom_tab_bar]（「导航栏」），
-                  // 开关与「自定义快捷方式」页的开关是同一个状态。
+                  // 标题 + 总开关同一行。标题用 [ui_nav_bar_settings]（「导航栏设置」，
+                  // 与设置页那一项的标题一致）；开关文案用 [ui_show_nav_bar]
+                  // （「显示导航栏」，issue #42 要求的措辞），
+                  // 与「自定义快捷方式」页的同名开关是同一个状态。
+                  Text(
+                    l10n.ui_nav_bar_settings,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'LexendDeca',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: Text(
-                          l10n.ui_bottom_tab_bar,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'LexendDeca',
+                          l10n.ui_show_nav_bar,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                theme.colorScheme.onSurface.withValues(alpha: 0.75),
                           ),
                         ),
                       ),
@@ -91,7 +109,11 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
+                  // ===== 导航栏不透明度（issue #42）=====
+                  // 与「自定义快捷方式」页的滑杆共用同一份 provider 状态，
+                  // 两处双向同步。滑杆只改底色透明度，不影响开关 / 位置。
+                  NavBarOpacitySlider(provider: fileManager),
                   // 「导航栏常驻」：开启时从分类页 / 抽屉进入的页面也保留底部
                   // 4-tab（只占 body 区域）；关闭则恢复整页全屏。
                   // 与「自定义快捷方式」页里的同名开关共用同一份 provider 状态。
@@ -299,6 +321,111 @@ class _NavBarPositionTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 「导航栏不透明度」滑杆（issue #42）。
+///
+/// 设置页的 [NavBarSettingsSheet] 与「自定义快捷方式」页共用本组件 ——
+/// 两处只读写 [FileManagerProvider.navBarOpacity] 同一份状态，天然双向同步，
+/// 不会出现「一处改了另一处还是旧值」。
+///
+/// 取值语义：左端 [PreferencesService.kNavBarMinOpacity]（最透明）→ 右端 1.0
+/// （**纯实底**，此时底栏跳过背景模糊，见 [LiquidGlassPanel.surfaceOpacity]）。
+/// 未自定义时（provider 为 null）按主题默认值渲染，因此老用户升级后观感不变。
+///
+/// 「恢复默认」按钮只在用户真的拖动过之后才出现：没改过时显示它反而让人以为
+/// 当前值是错的。
+class NavBarOpacitySlider extends StatelessWidget {
+  const NavBarOpacitySlider({
+    super.key,
+    required this.provider,
+    this.onChanged,
+  });
+
+  final FileManagerProvider provider;
+
+  /// 拖动后的额外回调（「自定义快捷方式」页用它触发底部面板重建）。
+  final VoidCallback? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = L10n.of(context);
+    final brightness = theme.brightness;
+    final value = provider.navBarOpacityFor(brightness);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.ui_nav_bar_opacity,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                ),
+              ),
+            ),
+            // 百分比让「调到多少」一眼可读；滑杆本身在小屏上不易看出差别。
+            Text(
+              '${(value * 100).round()}%',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            if (provider.navBarOpacity != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: TextButton(
+                  onPressed: () {
+                    provider.resetNavBarOpacity();
+                    onChanged?.call();
+                  },
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    l10n.ui_nav_bar_opacity_reset,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 3,
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+          ),
+          child: Slider(
+            value: value.clamp(PreferencesService.kNavBarMinOpacity, 1.0),
+            min: PreferencesService.kNavBarMinOpacity,
+            max: 1.0,
+            activeColor: theme.colorScheme.primary,
+            onChanged: (v) {
+              provider.setNavBarOpacity(v);
+              onChanged?.call();
+            },
+          ),
+        ),
+        Text(
+          l10n.ui_nav_bar_opacity_hint,
+          style: TextStyle(
+            fontSize: 11.5,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -4334,6 +4334,29 @@ class L10nDe extends L10n {
   String get ui_select_lyrics_file => 'Lokale Liedtexte importieren';
 
   @override
+  String get lyric_animation_style => 'Stil der Liedtext-Animation';
+
+  @override
+  String get lyric_style_classic => 'Klassisches Wischen';
+
+  @override
+  String get lyric_style_classic_desc =>
+      'Wortweises Wischen, Nachbarzeilen blenden nach Entfernung ab';
+
+  @override
+  String get lyric_style_glow => 'Leuchtendes Wischen';
+
+  @override
+  String get lyric_style_glow_desc => 'Wischen mit Neon-Leuchten';
+
+  @override
+  String get lyric_style_immersive => 'Immersive Bühne';
+
+  @override
+  String get lyric_style_immersive_desc =>
+      'Übergroße Typografie mit filmischem Leuchten';
+
+  @override
   String get ui_no_lyrics_found => 'Kein Liedtext gefunden';
 
   @override
@@ -8472,6 +8495,25 @@ class L10nDe extends L10n {
   String get ui_bottom_tab_bar => 'Navigationsleiste';
 
   @override
+  String get ui_nav_bar_settings => 'Navigationsleisten-Einstellungen';
+
+  @override
+  String get ui_show_nav_bar => 'Navigationsleiste anzeigen';
+
+  @override
+  String get ui_nav_bar_opacity => 'Deckkraft der Navigationsleiste';
+
+  @override
+  String get ui_nav_bar_opacity_hint =>
+      'Niedriger = transparenter, höchster Wert = voll deckend';
+
+  @override
+  String get ui_nav_bar_opacity_reset => 'Auf Standard zurücksetzen';
+
+  @override
+  String get ui_category_settings => 'Kategorieseiten-Einstellungen';
+
+  @override
   String get ui_persistent_tab_bar =>
       'Navigationsleiste auf anderen Seiten beibehalten';
 
@@ -8660,4 +8702,36 @@ class L10nDe extends L10n {
 
   @override
   String get msg_extract_target_folder => 'Zielordner';
+
+  @override
+  String get lyric_display => 'Songtext';
+
+  @override
+  String get lyric_mode_off => 'Aus';
+
+  @override
+  String get lyric_mode_single => 'Einzeilig';
+
+  @override
+  String get lyric_mode_half => 'Halber Bildschirm';
+
+  @override
+  String get lyric_mode_full => 'Vollbild';
+
+  @override
+  String get lyric_settings => 'Songtext-Einstellungen';
+
+  @override
+  String get lyric_style_pv => 'Text-PV';
+
+  @override
+  String get lyric_style_pv_desc =>
+      'Riesige Zeile: fliegende Buchstaben, Partikelspuren und Funken';
+
+  @override
+  String get lyric_style_echo => 'Echo-Fragmente';
+
+  @override
+  String get lyric_style_echo_desc =>
+      'Gesungene Wörter zerfallen in hohle Fragmente, die davontreiben';
 }

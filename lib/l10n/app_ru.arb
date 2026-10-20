@@ -4161,6 +4161,13 @@
   "ui_lyrics_load_failed": "Не удалось разобрать файл текста",
   "ui_select_lyrics_file": "Импорт локального текста",
   "ui_search_lyrics_online": "Искать текст онлайн",
+  "lyric_animation_style": "Стиль анимации текста",
+  "lyric_style_classic": "Классическое заполнение",
+  "lyric_style_classic_desc": "Покадровое заполнение, соседние строки гаснут по расстоянию",
+  "lyric_style_glow": "Свечение",
+  "lyric_style_glow_desc": "Заполнение с неоновым свечением",
+  "lyric_style_immersive": "Иммерсивная сцена",
+  "lyric_style_immersive_desc": "Крупный шрифт с кинематографичным свечением",
   "ui_no_lyrics_found": "Текст песни не найден",
   "ui_lyrics_auto_load_hint": "Поместите файл .lrc в ту же папку, что и аудио\n(с тем же именем файла), чтобы автоматически загрузить",
   "ui_lyrics_panel": "Панель текста",
@@ -8458,6 +8465,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "Настройки панели навигации",
+  "ui_show_nav_bar": "Показывать панель навигации",
+  "ui_nav_bar_opacity": "Непрозрачность панели навигации",
+  "ui_nav_bar_opacity_hint": "Ниже — прозрачнее, максимум — полностью непрозрачный",
+  "ui_nav_bar_opacity_reset": "Сбросить по умолчанию",
+  "ui_category_settings": "Настройки страницы категорий",
   "ui_persistent_tab_bar": "Сохранять панель навигации на других страницах",
   "ui_pick_bottom_tab": "Настроить элементы",
   "@ui_pick_bottom_tab": {
@@ -8666,5 +8679,15 @@
   "msg_archive_extract_failed": "Ошибка распаковки",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "Папка назначения",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "Текст песни",
+  "lyric_mode_off": "Выкл.",
+  "lyric_mode_single": "Одна строка",
+  "lyric_mode_half": "Полэкрана",
+  "lyric_mode_full": "Полный экран",
+  "lyric_settings": "Настройки текста",
+  "lyric_style_pv": "Текстовый PV",
+  "lyric_style_pv_desc": "Огромная строка: буквы влетают и разлетаются, со световыми треками и искрами",
+  "lyric_style_echo": "Осколки эха",
+  "lyric_style_echo_desc": "Закрашенные слова разлетаются полыми осколками, медленно уплывающими"
 }

@@ -4338,6 +4338,29 @@ class L10nRu extends L10n {
   String get ui_select_lyrics_file => 'Импорт локального текста';
 
   @override
+  String get lyric_animation_style => 'Стиль анимации текста';
+
+  @override
+  String get lyric_style_classic => 'Классическое заполнение';
+
+  @override
+  String get lyric_style_classic_desc =>
+      'Покадровое заполнение, соседние строки гаснут по расстоянию';
+
+  @override
+  String get lyric_style_glow => 'Свечение';
+
+  @override
+  String get lyric_style_glow_desc => 'Заполнение с неоновым свечением';
+
+  @override
+  String get lyric_style_immersive => 'Иммерсивная сцена';
+
+  @override
+  String get lyric_style_immersive_desc =>
+      'Крупный шрифт с кинематографичным свечением';
+
+  @override
   String get ui_no_lyrics_found => 'Текст песни не найден';
 
   @override
@@ -8456,6 +8479,25 @@ class L10nRu extends L10n {
   String get ui_bottom_tab_bar => 'Панель навигации';
 
   @override
+  String get ui_nav_bar_settings => 'Настройки панели навигации';
+
+  @override
+  String get ui_show_nav_bar => 'Показывать панель навигации';
+
+  @override
+  String get ui_nav_bar_opacity => 'Непрозрачность панели навигации';
+
+  @override
+  String get ui_nav_bar_opacity_hint =>
+      'Ниже — прозрачнее, максимум — полностью непрозрачный';
+
+  @override
+  String get ui_nav_bar_opacity_reset => 'Сбросить по умолчанию';
+
+  @override
+  String get ui_category_settings => 'Настройки страницы категорий';
+
+  @override
   String get ui_persistent_tab_bar =>
       'Сохранять панель навигации на других страницах';
 
@@ -8642,4 +8684,36 @@ class L10nRu extends L10n {
 
   @override
   String get msg_extract_target_folder => 'Папка назначения';
+
+  @override
+  String get lyric_display => 'Текст песни';
+
+  @override
+  String get lyric_mode_off => 'Выкл.';
+
+  @override
+  String get lyric_mode_single => 'Одна строка';
+
+  @override
+  String get lyric_mode_half => 'Полэкрана';
+
+  @override
+  String get lyric_mode_full => 'Полный экран';
+
+  @override
+  String get lyric_settings => 'Настройки текста';
+
+  @override
+  String get lyric_style_pv => 'Текстовый PV';
+
+  @override
+  String get lyric_style_pv_desc =>
+      'Огромная строка: буквы влетают и разлетаются, со световыми треками и искрами';
+
+  @override
+  String get lyric_style_echo => 'Осколки эха';
+
+  @override
+  String get lyric_style_echo_desc =>
+      'Закрашенные слова разлетаются полыми осколками, медленно уплывающими';
 }

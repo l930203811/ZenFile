@@ -274,7 +274,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final hideTimeDateVis = _shouldShow(L10n.of(context).msg25ee6612, L10n.of(context).msg337359a6);
     final folderContentsVis = _shouldShow(L10n.of(context).ui_show_folder_contents_count, L10n.of(context).msga517863e);
     final folderSizesVis = _shouldShow(L10n.of(context).ui_show_folder_size, L10n.of(context).msg59a24fcb);
-    final navBarVis = _shouldShow(L10n.of(context).ui_bottom_tab_bar, L10n.of(context).msg309e2a28);
+    // 入口标题已改为「导航栏设置」（issue #42），过滤用的标题必须同步，
+    // 否则在设置里搜索「导航栏」会匹配不到这一项。
+    final navBarVis = _shouldShow(L10n.of(context).ui_nav_bar_settings, L10n.of(context).msg309e2a28);
     final hideActionTextVis = _shouldShow(L10n.of(context).ui_hide_action_text, L10n.of(context).msg9b7639ac);
     final highlightFolderVis = _shouldShow(L10n.of(context).msgd33e3082, L10n.of(context).msgdd69671b);
     final autoOpenCreatedVis = _shouldShow(L10n.of(context).auto_open_created_folder, L10n.of(context).auto_open_created_folder_desc);
@@ -592,7 +594,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (navBarVis)
                       SettingsTile(
                         icon: Broken.menu,
-                        title: L10n.of(context).ui_bottom_tab_bar,
+                        // issue #42：入口标题由「导航栏」改为「导航栏设置」，
+                        // 副标题仍同时表达「开 / 关」与「位置」。
+                        title: L10n.of(context).ui_nav_bar_settings,
                         // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
                         // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
                         subtitle: !fileManager.bottomNavBarEnabled
@@ -1530,7 +1534,8 @@ class GeneralSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.menu,
-              title: L10n.of(context).ui_bottom_tab_bar,
+              // issue #42：与内嵌设置页保持一致，入口标题改为「导航栏设置」。
+              title: L10n.of(context).ui_nav_bar_settings,
               // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
               // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
               subtitle: !fileManager.bottomNavBarEnabled

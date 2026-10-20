@@ -4270,6 +4270,28 @@ class L10nAr extends L10n {
   String get ui_select_lyrics_file => 'استيراد كلمات محلية';
 
   @override
+  String get lyric_animation_style => 'نمط حركة كلمات الأغاني';
+
+  @override
+  String get lyric_style_classic => 'الكتابة الكلاسيكية';
+
+  @override
+  String get lyric_style_classic_desc =>
+      'كتابة كلمة بكلمة، وتتلاشى الأسطر المجاورة بحسب المسافة';
+
+  @override
+  String get lyric_style_glow => 'كتابة متوهجة';
+
+  @override
+  String get lyric_style_glow_desc => 'كتابة مع توهج نيون';
+
+  @override
+  String get lyric_style_immersive => 'مسرح غامر';
+
+  @override
+  String get lyric_style_immersive_desc => 'حروف ضخمة مع توهج سينمائي';
+
+  @override
   String get ui_no_lyrics_found => 'لم يتم العثور على كلمات الأغنية';
 
   @override
@@ -8347,6 +8369,25 @@ class L10nAr extends L10n {
   String get ui_bottom_tab_bar => 'شريط التنقل';
 
   @override
+  String get ui_nav_bar_settings => 'إعدادات شريط التنقل';
+
+  @override
+  String get ui_show_nav_bar => 'إظهار شريط التنقل';
+
+  @override
+  String get ui_nav_bar_opacity => 'عتامة شريط التنقل';
+
+  @override
+  String get ui_nav_bar_opacity_hint =>
+      'كلما انخفضت زادت الشفافية، وأعلى قيمة تعني تعتيمًا كاملاً';
+
+  @override
+  String get ui_nav_bar_opacity_reset => 'استعادة الافتراضي';
+
+  @override
+  String get ui_category_settings => 'إعدادات صفحة الفئات';
+
+  @override
   String get ui_persistent_tab_bar => 'إبقاء شريط التنقل على الصفحات الأخرى';
 
   @override
@@ -8532,4 +8573,35 @@ class L10nAr extends L10n {
 
   @override
   String get msg_extract_target_folder => 'مجلد الوجهة';
+
+  @override
+  String get lyric_display => 'كلمات الأغاني';
+
+  @override
+  String get lyric_mode_off => 'إيقاف';
+
+  @override
+  String get lyric_mode_single => 'سطر واحد';
+
+  @override
+  String get lyric_mode_half => 'نصف الشاشة';
+
+  @override
+  String get lyric_mode_full => 'ملء الشاشة';
+
+  @override
+  String get lyric_settings => 'إعدادات كلمات الأغاني';
+
+  @override
+  String get lyric_style_pv => 'عرض نصي متحرك';
+
+  @override
+  String get lyric_style_pv_desc => 'سطر عملاق مع حروف طائرة وآثار ضوء وومضات';
+
+  @override
+  String get lyric_style_echo => 'شظايا الصدى';
+
+  @override
+  String get lyric_style_echo_desc =>
+      'الكلمات المُغنّاة تتحول إلى شظايا مجوفة تتطاير ببطء';
 }

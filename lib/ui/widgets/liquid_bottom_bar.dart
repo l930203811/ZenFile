@@ -144,6 +144,8 @@ class LiquidBarSurface extends StatelessWidget {
     this.topBorderOpacity = 1,
     this.bottomBorderOpacity = 1,
     this.blurSigma = 0,
+    this.opacity,
+    this.blurEnabled = true,
     this.child,
   });
 
@@ -156,6 +158,16 @@ class LiquidBarSurface extends StatelessWidget {
   /// 背景模糊半径（dp）。0 = 不模糊（4-tab 走这一档）。
   final double blurSigma;
 
+  /// 底色层的**有效不透明度**（issue #42：允许调透明度 / 完全关闭）。
+  ///
+  /// `null` = 沿用原配方（深色 `black@42%` / 浅色 `lightBarBackground@90%`），
+  /// 即未自定义时观感不变。取值 1.0 时跳过背景模糊 —— 不透明面板背后再模糊
+  /// 既看不见、又白付 BackdropFilter 的逐帧重算代价。
+  final double? opacity;
+
+  /// 是否允许背景模糊（issue #42 性能降级开关，语义同 [LiquidGlassPanel.blurEnabled]）。
+  final bool blurEnabled;
+
   /// 面板内容。省略时面板填满父级约束（用作纯背景层）。
   final Widget? child;
 
@@ -163,6 +175,18 @@ class LiquidBarSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = scheme.brightness == Brightness.dark;
+
+    final Color surfaceColor;
+    if (opacity == null) {
+      surfaceColor = isDark
+          ? Colors.black.withValues(alpha: 0.42)
+          : AppTheme.lightBarBackground(scheme).withValues(alpha: 0.9);
+    } else {
+      final base = isDark ? Colors.black : AppTheme.lightBarBackground(scheme);
+      surfaceColor = base.withValues(alpha: opacity!.clamp(0.0, 1.0));
+    }
+    final effectiveBlur =
+        (!blurEnabled || (opacity != null && opacity! >= 0.999)) ? 0.0 : blurSigma;
 
     BorderSide side(double opacity) {
       if (opacity <= 0.001) return BorderSide.none;
@@ -174,9 +198,7 @@ class LiquidBarSurface extends StatelessWidget {
 
     final surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.black.withValues(alpha: 0.42)
-            : AppTheme.lightBarBackground(scheme).withValues(alpha: 0.9),
+        color: surfaceColor,
         borderRadius: borderRadius,
         border: Border(
           top: side(topBorderOpacity),
@@ -188,14 +210,17 @@ class LiquidBarSurface extends StatelessWidget {
       child: child ?? const SizedBox.expand(),
     );
 
-    if (blurSigma <= 0) return surface;
+    // 实底时整层跳过 BackdropFilter（理由同 LiquidGlassPanel）。
+    if (effectiveBlur <= 0) {
+      return ClipRRect(borderRadius: borderRadius, child: surface);
+    }
     // 模糊只能作用在自己背后：先裁形状再 BackdropFilter，否则圆角外会带出一圈毛边。
     return ClipRRect(
       borderRadius: borderRadius,
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(
-          sigmaX: blurSigma,
-          sigmaY: blurSigma,
+          sigmaX: effectiveBlur,
+          sigmaY: effectiveBlur,
           tileMode: TileMode.mirror,
         ),
         child: surface,
@@ -216,6 +241,7 @@ class LiquidBottomBar extends StatefulWidget {
     this.height = kLiquidBarHeight,
     this.attachedTop = false,
     this.showGlassPlate = true,
+    this.opacity,
   }) : assert(itemCount > 0);
 
   final int itemCount;
@@ -241,6 +267,12 @@ class LiquidBottomBar extends StatefulWidget {
   /// 现走这一形态 —— 背景色跟随主题、与顶部栏一致，但少了模糊层）。
   /// 浏览页操作栏仍是独立玻璃胶囊（含模糊），与本组件各自成型。
   final bool showGlassPlate;
+
+  /// 底板不透明度（issue #42）。`null` = 沿用原玻璃配方。
+  ///
+  /// 注意必须传给**底板**（[LiquidBarSurface]）：`showGlassPlate: false` 时
+  /// 用户看到的正是那块实底胶囊，透明度调节要落在它身上才有意义。
+  final double? opacity;
 
   @override
   State<LiquidBottomBar> createState() => _LiquidBottomBarState();
@@ -494,6 +526,7 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
       borderRadius: shape,
       topBorderOpacity: 1 - attached,
       highlightOpacity: 1 - attached,
+      surfaceOpacity: widget.opacity,
     );
   }
 
@@ -505,6 +538,9 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
     return LiquidBarSurface(
       borderRadius: shape,
       topBorderOpacity: 1 - attached,
+      // issue #42：不透明度调节必须落在用户实际看到的那块底板上 ——
+      // 首页 4-tab 走 showGlassPlate:false，看的正是这里。
+      opacity: widget.opacity,
     );
   }
 

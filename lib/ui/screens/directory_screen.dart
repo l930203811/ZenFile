@@ -87,6 +87,16 @@ class DirectoryScreen extends StatefulWidget {
   /// 操作栏折叠后若底栏顶角仍是方角，就会露出一只「平顶胶囊」悬在列表下方。
   static final ValueNotifier<bool> browseBarExpanded = ValueNotifier<bool>(true);
 
+  /// 浏览页文件列表**正在滚动**（issue #42 性能降级开关）。
+  ///
+  /// 静态而非实例字段：与 [browseBarExpanded] 同一套做法，底栏控制台的组成
+  /// 部件（4-tab 底栏渲染在 HomeScreen）不与本页列表同属一个 State，滚动状态
+  /// 需要跨组件共享。滚动期间冻结底栏玻璃层的背景模糊 —— BackdropFilter 压在
+  /// 滚动列表上要为它的区域逐帧保存并重算背景，大目录 / 低端机上与列表光栅化
+  /// 叠加就会掉帧；滚动静止后恢复。底色 / 描边保留，只是暂时失去「透出模糊
+  /// 背景」的玻璃感，与系统级「滚动时暂停实时模糊」的降级策略一致。
+  static final ValueNotifier<bool> browseListScrolling = ValueNotifier(false);
+
   @override
   State<DirectoryScreen> createState() => _DirectoryScreenState();
 }
@@ -517,78 +527,94 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     return Padding(
       // 必须与 HomeScreen 里 4-tab 的 horizontal 16 保持一致，否则两条栏会错开。
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: LiquidBarSurface(
-        borderRadius: attached
-            ? const BorderRadius.vertical(top: Radius.circular(22))
-            : BorderRadius.circular(22),
-        // 拼成整块时不画底边描边：接缝处下方 4-tab 也没有顶边描边，两侧都不画
-        // 才不会合成一道 1.2px 的亮线。
-        bottomBorderOpacity: attached ? 0 : 1,
-        // 本栏正压在文件列表上（外层 extendBody），底色只有 42% 黑：
-        // 不模糊的话深色模式下列表里的白字会以灰影透出来。
-        blurSigma: kLiquidGlassBlurSigma,
-        child: SizedBox(
-          height: 44,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 后退
-              IconButton(
-                icon: Icon(
-                  Broken.arrow_left_2,
-                  color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+      // issue #42 性能优化：文件列表滚动期间冻结本栏的背景模糊 —— BackdropFilter
+      // 压在滚动列表上要为它的区域逐帧保存并重算背景，大目录 / 低端机上与列表
+      // 光栅化叠加就会掉帧。静止后恢复；这里只重建玻璃层，不整栏 setState。
+      child: ValueListenableBuilder<bool>(
+        valueListenable: DirectoryScreen.browseListScrolling,
+        builder: (context, scrolling, _) => LiquidBarSurface(
+          borderRadius: attached
+              ? const BorderRadius.vertical(top: Radius.circular(22))
+              : BorderRadius.circular(22),
+          // 拼成整块时不画底边描边：接缝处下方 4-tab 也没有顶边描边，两侧都不画
+          // 才不会合成一道 1.2px 的亮线。
+          bottomBorderOpacity: attached ? 0 : 1,
+          // 本栏正压在文件列表上（外层 extendBody），底色只有 42% 黑：
+          // 不模糊的话深色模式下列表里的白字会以灰影透出来。
+          blurSigma: kLiquidGlassBlurSigma,
+          // 滚动期间关掉模糊（issue #42）：底色 / 描边 / 高光保留，
+          // 只是暂时失去「透出模糊背景」的玻璃感。
+          blurEnabled: !scrolling,
+          // issue #42：与 4-tab 共用同一个不透明度设置。**必须同源** ——
+          // 两条栏在浏览页上下紧贴、拼成一个整体，透明度只要差一档，
+          // 接缝处立刻显出色差（正是当初把玻璃层抽成唯一实现的原因）。
+          // 调到 100% 时本行会连同 blurSigma 一起被跳过（实底无需模糊）。
+          opacity: context.select<FileManagerProvider, double>(
+            (p) => p.navBarOpacityFor(theme.brightness),
+          ),
+          child: SizedBox(
+            height: 44,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // 后退
+                IconButton(
+                  icon: Icon(
+                    Broken.arrow_left_2,
+                    color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                  tooltip: L10n.of(context).ui_nav_back,
+                  onPressed: provider.canGoBack ? () => _goBack(provider) : null,
                 ),
-                tooltip: L10n.of(context).ui_nav_back,
-                onPressed: provider.canGoBack ? () => _goBack(provider) : null,
-              ),
-              // 前进
-              IconButton(
-                icon: Icon(
-                  Broken.arrow_right_3,
-                  color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                // 前进
+                IconButton(
+                  icon: Icon(
+                    Broken.arrow_right_3,
+                    color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                  tooltip: L10n.of(context).ui_nav_forward,
+                  onPressed: provider.canGoForward ? () => _goForward(provider) : null,
                 ),
-                tooltip: L10n.of(context).ui_nav_forward,
-                onPressed: provider.canGoForward ? () => _goForward(provider) : null,
-              ),
-              // 新建（复刻 AppBar 右上角的 PopupMenuButton）
-              PopupMenuButton<String>(
-                icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                tooltip: L10n.of(context).ui_new,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                position: PopupMenuPosition.under,
-                elevation: 8,
-                onSelected: (val) => _handleMenuAction(context, val, provider),
-                // 远程加密目录：只暴露该场景支持的操作（加密上传 / 新建文件夹）。
-                // 「新建文件」「压缩包」「新建收藏」依赖本地写入或本地路径解析，
-                // 在 cryptremote:// 虚拟路径下不可用，故隐藏。
-                itemBuilder: (context) => provider.activeTab.isCryptRemote
-                    ? [
-                        PopupMenuItem(value: 'encrypt_upload', child: Row(children: [Icon(Icons.upload_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).crypt_remote_upload, style: TextStyle(fontWeight: FontWeight.w600))])),
-                        PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                      ]
-                    : [
-                        PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                        PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                        PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-                        PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
-                      ],
-              ),
-              // 复制标签页
-              IconButton(
-                icon: Icon(Broken.copy, color: theme.colorScheme.primary),
-                tooltip: L10n.of(context).msg4e9c344a,
-                onPressed: () => provider.duplicateActiveTab(),
-              ),
-              // 向上（进入父目录，记录到历史栈）
-              IconButton(
-                icon: Icon(
-                  Broken.arrow_up_1,
-                  color: provider.canGoUp ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                // 新建（复刻 AppBar 右上角的 PopupMenuButton）
+                PopupMenuButton<String>(
+                  icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+                  tooltip: L10n.of(context).ui_new,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  position: PopupMenuPosition.under,
+                  elevation: 8,
+                  onSelected: (val) => _handleMenuAction(context, val, provider),
+                  // 远程加密目录：只暴露该场景支持的操作（加密上传 / 新建文件夹）。
+                  // 「新建文件」「压缩包」「新建收藏」依赖本地写入或本地路径解析，
+                  // 在 cryptremote:// 虚拟路径下不可用，故隐藏。
+                  itemBuilder: (context) => provider.activeTab.isCryptRemote
+                      ? [
+                          PopupMenuItem(value: 'encrypt_upload', child: Row(children: [Icon(Icons.upload_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).crypt_remote_upload, style: TextStyle(fontWeight: FontWeight.w600))])),
+                          PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        ]
+                      : [
+                          PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                          PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                          PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                          PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
+                        ],
                 ),
-                tooltip: L10n.of(context).ui_go_up,
-                onPressed: provider.canGoUp ? () => _goUp(provider) : null,
-              ),
-            ],
+                // 复制标签页
+                IconButton(
+                  icon: Icon(Broken.copy, color: theme.colorScheme.primary),
+                  tooltip: L10n.of(context).msg4e9c344a,
+                  onPressed: () => provider.duplicateActiveTab(),
+                ),
+                // 向上（进入父目录，记录到历史栈）
+                IconButton(
+                  icon: Icon(
+                    Broken.arrow_up_1,
+                    color: provider.canGoUp ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                  tooltip: L10n.of(context).ui_go_up,
+                  onPressed: provider.canGoUp ? () => _goUp(provider) : null,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1794,7 +1820,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                     Expanded(
                                       child: NotificationListener<ScrollNotification>(
                                         onNotification: (n) {
-                                          if (n is ScrollUpdateNotification && n.dragDetails != null) {
+                                          // issue #42：滚动开始 / 结束切换底栏玻璃层的背景模糊
+                                          // （见 [DirectoryScreen.browseListScrolling]）——
+                                          // 滚动期间冻结模糊，静止后恢复。
+                                          if (n is ScrollStartNotification) {
+                                            DirectoryScreen.browseListScrolling.value = true;
+                                          } else if (n is ScrollEndNotification) {
+                                            DirectoryScreen.browseListScrolling.value = false;
+                                          } else if (n is ScrollUpdateNotification && n.dragDetails != null) {
                                             _onBrowseListDrag(n.scrollDelta ?? 0, n.metrics.pixels, n.metrics.maxScrollExtent);
                                           }
                                           return false;

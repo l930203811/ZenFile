@@ -4290,6 +4290,28 @@ class L10nEn extends L10n {
   String get ui_select_lyrics_file => 'Import local lyrics';
 
   @override
+  String get lyric_animation_style => 'Lyric animation style';
+
+  @override
+  String get lyric_style_classic => 'Classic sweep';
+
+  @override
+  String get lyric_style_classic_desc =>
+      'Word-by-word sweep, neighbors fade by distance';
+
+  @override
+  String get lyric_style_glow => 'Glow sweep';
+
+  @override
+  String get lyric_style_glow_desc => 'Sweep with neon glow';
+
+  @override
+  String get lyric_style_immersive => 'Immersive stage';
+
+  @override
+  String get lyric_style_immersive_desc => 'Oversized type with cinematic glow';
+
+  @override
   String get ui_no_lyrics_found => 'No lyrics found';
 
   @override
@@ -8375,6 +8397,25 @@ class L10nEn extends L10n {
   String get ui_bottom_tab_bar => 'Navigation Bar';
 
   @override
+  String get ui_nav_bar_settings => 'Navigation Bar Settings';
+
+  @override
+  String get ui_show_nav_bar => 'Show Navigation Bar';
+
+  @override
+  String get ui_nav_bar_opacity => 'Navigation Bar Opacity';
+
+  @override
+  String get ui_nav_bar_opacity_hint =>
+      'Lower is more transparent; highest is fully opaque';
+
+  @override
+  String get ui_nav_bar_opacity_reset => 'Reset to Default';
+
+  @override
+  String get ui_category_settings => 'Category Page Settings';
+
+  @override
   String get ui_persistent_tab_bar => 'Keep Nav Bar on Other Pages';
 
   @override
@@ -8560,4 +8601,36 @@ class L10nEn extends L10n {
 
   @override
   String get msg_extract_target_folder => 'Extract to folder';
+
+  @override
+  String get lyric_display => 'Lyrics';
+
+  @override
+  String get lyric_mode_off => 'Off';
+
+  @override
+  String get lyric_mode_single => 'Single line';
+
+  @override
+  String get lyric_mode_half => 'Half screen';
+
+  @override
+  String get lyric_mode_full => 'Full screen';
+
+  @override
+  String get lyric_settings => 'Lyric settings';
+
+  @override
+  String get lyric_style_pv => 'Text PV';
+
+  @override
+  String get lyric_style_pv_desc =>
+      'Giant single line with flying glyphs, particle trails and sparkles';
+
+  @override
+  String get lyric_style_echo => 'Echo fragments';
+
+  @override
+  String get lyric_style_echo_desc =>
+      'Sung words burst into hollow fragments that drift away';
 }

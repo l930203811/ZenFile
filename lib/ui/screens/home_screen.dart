@@ -997,6 +997,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           // 去掉外层玻璃底板：只保留滑动的胶囊指示器与 tab 内容，
           // 观感是「一枚胶囊在 4 个槽位间滑动」，不再有承载它的那块板。
           showGlassPlate: false,
+          // issue #42：底栏不透明度由用户在「导航栏设置」里调节。
+          // `showGlassPlate:false` 时可见的正是那块实底胶囊（LiquidBarSurface），
+          // 所以这个值必须一路传到它；调到 100% 时连背景模糊一起省掉。
+          opacity: context.select<FileManagerProvider, double>(
+            (p) => p.navBarOpacityFor(Theme.of(context).brightness),
+          ),
           onSelect: (i) {
             final tab = tabData[i];
             if (tab[3] as bool) {

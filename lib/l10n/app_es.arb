@@ -4161,6 +4161,13 @@
   "ui_lyrics_load_failed": "No se puede analizar este archivo de letra",
   "ui_select_lyrics_file": "Importar letra local",
   "ui_search_lyrics_online": "Buscar letra en línea",
+  "lyric_animation_style": "Estilo de animación de letra",
+  "lyric_style_classic": "Barrido clásico",
+  "lyric_style_classic_desc": "Barrido palabra por palabra, las líneas vecinas se desvanecen por distancia",
+  "lyric_style_glow": "Barrido brillante",
+  "lyric_style_glow_desc": "Barrido con brillo de neón",
+  "lyric_style_immersive": "Escenario inmersivo",
+  "lyric_style_immersive_desc": "Tipografía gigante con brillo cinematográfico",
   "ui_no_lyrics_found": "No se encontró letra",
   "ui_lyrics_auto_load_hint": "Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente",
   "ui_lyrics_panel": "Panel de letras",
@@ -8458,6 +8465,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "Ajustes de la barra de navegación",
+  "ui_show_nav_bar": "Mostrar barra de navegación",
+  "ui_nav_bar_opacity": "Opacidad de la barra de navegación",
+  "ui_nav_bar_opacity_hint": "Más bajo = más transparente, máximo = totalmente opaco",
+  "ui_nav_bar_opacity_reset": "Restablecer valor predeterminado",
+  "ui_category_settings": "Ajustes de la página de categorías",
   "ui_persistent_tab_bar": "Mantener la barra de navegación en otras páginas",
   "ui_pick_bottom_tab": "Personalizar entradas",
   "@ui_pick_bottom_tab": {
@@ -8666,5 +8679,15 @@
   "msg_archive_extract_failed": "Error de extracción",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "Carpeta de destino",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "Letra",
+  "lyric_mode_off": "Desactivado",
+  "lyric_mode_single": "Una línea",
+  "lyric_mode_half": "Media pantalla",
+  "lyric_mode_full": "Pantalla completa",
+  "lyric_settings": "Ajustes de letra",
+  "lyric_style_pv": "PV de texto",
+  "lyric_style_pv_desc": "Línea gigante con letras voladoras, estelas de partículas y destellos",
+  "lyric_style_echo": "Fragmentos de eco",
+  "lyric_style_echo_desc": "Las palabras cantadas estallan en fragmentos huecos que derivan lentamente"
 }

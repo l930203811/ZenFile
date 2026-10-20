@@ -2110,6 +2110,49 @@ class PreferencesService {
     await _prefs?.setBool(_keyPersistentTabBar, enabled);
   }
 
+  /// 「导航栏不透明度」（issue #42：深色主题下底栏太透明，需可调 / 可关闭）。
+  ///
+  /// 取值 = 底栏玻璃层的**有效不透明度** 0.20~1.00；`null` 表示「未设置」，
+  /// 由使用处按主题默认值渲染 —— 深色 0.42（v3.5.9 起的玻璃观感）、
+  /// 浅色 0.90（主题色混白）。这样新增设置**不改变任何老用户的默认外观**，
+  /// 只有主动拖动滑杆的用户才会写入真实值。
+  ///
+  /// 1.00 = 完全不透明（纯实底）：此时使用处会**跳过背景模糊**
+  /// （BackdropFilter 在不透明面板下纯属浪费，且在列表滚动时逐帧重算，
+  /// 是浏览页卡顿的来源之一）。
+  ///
+  /// 键名与「导航栏」开关（`bottom_nav_bar_enabled`）刻意分开：一个是可见性、
+  /// 一个是外观，互不牵连，升级时也不会互相覆盖。
+  static const String _keyNavBarOpacity = 'nav_bar_opacity';
+
+  /// 深色主题下底栏玻璃的默认不透明度（与 v3.5.9 的玻璃配方逐位一致）。
+  static const double kNavBarDefaultOpacityDark = 0.42;
+
+  /// 浅色主题下底栏玻璃的默认不透明度（主题色混白的比例）。
+  static const double kNavBarDefaultOpacityLight = 0.90;
+
+  /// 滑杆下限：再低就几乎全透明，底栏文字会与内容糊在一起，失去可读性。
+  static const double kNavBarMinOpacity = 0.20;
+
+  /// 读取已保存的不透明度；未设置时返回 `null`（由使用处取主题默认值）。
+  static double? getNavBarOpacity() {
+    final v = _prefs?.getDouble(_keyNavBarOpacity);
+    if (v == null) return null;
+    return v.clamp(kNavBarMinOpacity, 1.0);
+  }
+
+  static Future<void> saveNavBarOpacity(double opacity) async {
+    await _prefs?.setDouble(
+      _keyNavBarOpacity,
+      opacity.clamp(kNavBarMinOpacity, 1.0),
+    );
+  }
+
+  /// 清除自定义不透明度，恢复「跟随主题默认」。
+  static Future<void> clearNavBarOpacity() async {
+    await _prefs?.remove(_keyNavBarOpacity);
+  }
+
   /// 自定义入口（「自定义」开关）在分类列表中的插入位置（0..分类数，等于分类数=末尾）。
   /// 默认 -1 = 未设置（使用处按分类数末尾处理），避免新装用户自定义卡片跑到最前。
   static const String _keyCustomEntryPosition = 'custom_entry_position';

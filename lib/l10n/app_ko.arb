@@ -4161,6 +4161,13 @@
   "ui_lyrics_load_failed": "이 가사 파일을 분석할 수 없습니다",
   "ui_select_lyrics_file": "로컬 가사 가져오기",
   "ui_search_lyrics_online": "온라인 가사 검색",
+  "lyric_animation_style": "가사 애니메이션 스타일",
+  "lyric_style_classic": "클래식 스윕",
+  "lyric_style_classic_desc": "글자별 스윕, 거리에 따라 인접 줄 페이드",
+  "lyric_style_glow": "글로우 스윕",
+  "lyric_style_glow_desc": "네온 글로우를 더한 스윕",
+  "lyric_style_immersive": "몰입 스테이지",
+  "lyric_style_immersive_desc": "초대형 타이포그래피와 시네마틱 글로우",
   "ui_no_lyrics_found": "가사를 찾을 수 없습니다",
   "ui_lyrics_auto_load_hint": ".lrc 가사 파일을 오디오와 같은 폴더에\n(파일명도 동일하게) 두면 자동으로 불러옵니다",
   "ui_lyrics_panel": "가사 패널",
@@ -8458,6 +8465,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "탐색 모음 설정",
+  "ui_show_nav_bar": "탐색 모음 표시",
+  "ui_nav_bar_opacity": "탐색 모음 불투명도",
+  "ui_nav_bar_opacity_hint": "낮을수록 투명, 최대는 완전 불투명",
+  "ui_nav_bar_opacity_reset": "기본값으로 복원",
+  "ui_category_settings": "카테고리 페이지 설정",
   "ui_persistent_tab_bar": "다른 페이지에서도 내비게이션 바 유지",
   "ui_pick_bottom_tab": "항목 사용자 정의",
   "@ui_pick_bottom_tab": {
@@ -8666,5 +8679,15 @@
   "msg_archive_extract_failed": "압축 해제 실패",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "압축 해제할 폴더",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "가사 표시",
+  "lyric_mode_off": "끄기",
+  "lyric_mode_single": "한 줄 표시",
+  "lyric_mode_half": "반화면 표시",
+  "lyric_mode_full": "전체화면",
+  "lyric_settings": "가사 설정",
+  "lyric_style_pv": "텍스트 PV",
+  "lyric_style_pv_desc": "한 줄 거대 글자, 글자가 날아와 흩어지며 빛 궤적과 반짝임",
+  "lyric_style_echo": "메아리 파편",
+  "lyric_style_echo_desc": "채워지는 동안 불렀던 글자가 속이 빈 파편이 되어 떠다님"
 }

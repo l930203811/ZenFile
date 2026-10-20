@@ -4115,6 +4115,27 @@ class L10nZh extends L10n {
   String get ui_select_lyrics_file => '导入本地歌词';
 
   @override
+  String get lyric_animation_style => '歌词动画风格';
+
+  @override
+  String get lyric_style_classic => '经典扫过';
+
+  @override
+  String get lyric_style_classic_desc => '逐字扫过，邻近行依距离渐层';
+
+  @override
+  String get lyric_style_glow => '辉光扫过';
+
+  @override
+  String get lyric_style_glow_desc => '扫过叠加霓虹辉光';
+
+  @override
+  String get lyric_style_immersive => '沉浸巨幕';
+
+  @override
+  String get lyric_style_immersive_desc => '超大字级与电影感辉光';
+
+  @override
   String get ui_no_lyrics_found => '未找到歌词';
 
   @override
@@ -7951,6 +7972,24 @@ class L10nZh extends L10n {
   String get ui_bottom_tab_bar => '导航栏';
 
   @override
+  String get ui_nav_bar_settings => '导航栏设置';
+
+  @override
+  String get ui_show_nav_bar => '显示导航栏';
+
+  @override
+  String get ui_nav_bar_opacity => '导航栏不透明度';
+
+  @override
+  String get ui_nav_bar_opacity_hint => '调低更透明，调到最高为纯实底色';
+
+  @override
+  String get ui_nav_bar_opacity_reset => '恢复默认';
+
+  @override
+  String get ui_category_settings => '分类页设置';
+
+  @override
   String get ui_persistent_tab_bar => '导航栏常驻其他页面';
 
   @override
@@ -8118,6 +8157,36 @@ class L10nZh extends L10n {
 
   @override
   String get msg_extract_target_folder => '解压到的文件夹';
+
+  @override
+  String get lyric_display => '歌词显示';
+
+  @override
+  String get lyric_mode_off => '关闭';
+
+  @override
+  String get lyric_mode_single => '单行显示';
+
+  @override
+  String get lyric_mode_half => '半屏显示';
+
+  @override
+  String get lyric_mode_full => '全屏显示';
+
+  @override
+  String get lyric_settings => '歌词设置';
+
+  @override
+  String get lyric_style_pv => '文字 PV';
+
+  @override
+  String get lyric_style_pv_desc => '单行巨字，唱到的字飞入、炸开，带光轨与闪点';
+
+  @override
+  String get lyric_style_echo => '回声碎片';
+
+  @override
+  String get lyric_style_echo_desc => '扫过填充的同时，唱过的字炸成空心碎片缓缓漂移';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12186,6 +12255,27 @@ class L10nZhTw extends L10nZh {
   String get ui_select_lyrics_file => '匯入本地歌詞';
 
   @override
+  String get lyric_animation_style => '歌詞動畫風格';
+
+  @override
+  String get lyric_style_classic => '經典掃過';
+
+  @override
+  String get lyric_style_classic_desc => '逐字掃過，鄰近行依距離漸層';
+
+  @override
+  String get lyric_style_glow => '輝光掃過';
+
+  @override
+  String get lyric_style_glow_desc => '掃過疊加霓虹輝光';
+
+  @override
+  String get lyric_style_immersive => '沉浸巨幕';
+
+  @override
+  String get lyric_style_immersive_desc => '超大字級與電影感輝光';
+
+  @override
   String get ui_no_lyrics_found => '未找到歌詞';
 
   @override
@@ -16037,6 +16127,24 @@ class L10nZhTw extends L10nZh {
   String get ui_bottom_tab_bar => '導覽列';
 
   @override
+  String get ui_nav_bar_settings => '導覽列設定';
+
+  @override
+  String get ui_show_nav_bar => '顯示導覽列';
+
+  @override
+  String get ui_nav_bar_opacity => '導覽列不透明度';
+
+  @override
+  String get ui_nav_bar_opacity_hint => '調低更透明，調到最高為純實底色';
+
+  @override
+  String get ui_nav_bar_opacity_reset => '恢復預設';
+
+  @override
+  String get ui_category_settings => '分類頁設定';
+
+  @override
   String get ui_persistent_tab_bar => '導覽列常駐其他頁面';
 
   @override
@@ -16204,4 +16312,34 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_extract_target_folder => '解壓縮到的資料夾';
+
+  @override
+  String get lyric_display => '歌詞顯示';
+
+  @override
+  String get lyric_mode_off => '關閉';
+
+  @override
+  String get lyric_mode_single => '單行顯示';
+
+  @override
+  String get lyric_mode_half => '半屏顯示';
+
+  @override
+  String get lyric_mode_full => '全屏顯示';
+
+  @override
+  String get lyric_settings => '歌詞設定';
+
+  @override
+  String get lyric_style_pv => '文字 PV';
+
+  @override
+  String get lyric_style_pv_desc => '單行巨字，唱到的字飛入、炸開，帶光軌與閃點';
+
+  @override
+  String get lyric_style_echo => '迴聲碎片';
+
+  @override
+  String get lyric_style_echo_desc => '掃過填充的同時，唱過的字炸成空心碎片緩緩漂移';
 }

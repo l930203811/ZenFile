@@ -4165,6 +4165,13 @@
   "ui_lyrics_load_failed": "この歌詞ファイルを解析できません",
   "ui_select_lyrics_file": "ローカル歌詞をインポート",
   "ui_search_lyrics_online": "オンライン歌詞検索",
+  "lyric_animation_style": "歌詞アニメーションスタイル",
+  "lyric_style_classic": "クラシックスイープ",
+  "lyric_style_classic_desc": "文字ごとのスイープ、距離に応じて隣の行がフェード",
+  "lyric_style_glow": "グロースイープ",
+  "lyric_style_glow_desc": "ネオンの輝きを重ねたスイープ",
+  "lyric_style_immersive": "没入ステージ",
+  "lyric_style_immersive_desc": "巨大な文字とシネマティックな輝き",
   "ui_no_lyrics_found": "歌詞が見つかりません",
   "ui_lyrics_auto_load_hint": ".lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます",
   "ui_lyrics_panel": "歌詞パネル",
@@ -8462,6 +8469,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "ナビゲーションバー設定",
+  "ui_show_nav_bar": "ナビゲーションバーを表示",
+  "ui_nav_bar_opacity": "ナビゲーションバーの不透明度",
+  "ui_nav_bar_opacity_hint": "低いほど透明、最大で完全不透明",
+  "ui_nav_bar_opacity_reset": "既定値に戻す",
+  "ui_category_settings": "カテゴリページ設定",
   "ui_persistent_tab_bar": "他のページでもナビゲーションバーを表示",
   "ui_pick_bottom_tab": "エントリをカスタマイズ",
   "@ui_pick_bottom_tab": {
@@ -8670,5 +8683,15 @@
   "msg_archive_extract_failed": "解凍に失敗しました",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "展開先フォルダ",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "歌詞の表示",
+  "lyric_mode_off": "オフ",
+  "lyric_mode_single": "1 行表示",
+  "lyric_mode_half": "半画面表示",
+  "lyric_mode_full": "全画面表示",
+  "lyric_settings": "歌詞の設定",
+  "lyric_style_pv": "文字 PV",
+  "lyric_style_pv_desc": "巨大な一行、文字の飛来・拡散、光の軌跡と閃光",
+  "lyric_style_echo": "残響の欠片",
+  "lyric_style_echo_desc": "塗りつぶしと同時に、歌った文字が空心の欠片になって漂う"
 }

@@ -2425,131 +2425,11 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             },
                             header: Column(
                               children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0,
-                            vertical: 8.0,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  L10n.of(context).ui_columns_per_row,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: DropdownButton<int>(
-                                  value: gridColumns,
-                                  isDense: true,
-                                  underline: const SizedBox(),
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  borderRadius: BorderRadius.circular(8),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                  ),
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: 2,
-                                      child: Text(L10n.of(context).ui_2columns),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 3,
-                                      child: Text(L10n.of(context).ui_3columns),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 4,
-                                      child: Text(L10n.of(context).ui_4columns),
-                                    ),
-                                  ],
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      context.read<FileManagerProvider>().setCategoriesGridColumns(val);
-                                      setModalState(() {});
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // ===== 分类卡片样式（底框 + 边框 / 极简）=====
-                        // 只切换分类页网格卡片的**装饰层**（底色 / 边框 / 阴影），
-                        // 图标、标题、计数与说明一律保留 —— 供用户对比「有卡片框」
-                        // 与「纯图标文字」哪种更清爽。行样式与「每行显示」保持一致。
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0,
-                            vertical: 8.0,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  L10n.of(context).ui_category_card_style,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: DropdownButton<int>(
-                                  value: cardStyle,
-                                  isDense: true,
-                                  underline: const SizedBox(),
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  borderRadius: BorderRadius.circular(8),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                  ),
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: 0,
-                                      child: Text(L10n.of(context).ui_category_card_style_filled),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 1,
-                                      child: Text(L10n.of(context).ui_category_card_style_minimal),
-                                    ),
-                                  ],
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      context.read<FileManagerProvider>().setCategoryCardStyle(val);
-                                      setModalState(() {});
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // ===== 底部导航栏 =====
+                        // ===== 导航栏设置区（分隔线上方**只放导航栏相关设置**）=====
+                        // 「每行显示」「分类卡片样式」「添加文件/文件夹快捷方式」三项
+                        // 属分类页设置，已下移到分隔线下方（见 header 末尾），
+                        // 让上方这段成为纯粹的「导航栏配置」。
+                        // ===== 导航栏（issue #42：标题改为「显示导航栏」）=====
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -2559,7 +2439,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  L10n.of(context).ui_bottom_tab_bar,
+                                  L10n.of(context).ui_show_nav_bar,
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -2579,6 +2459,19 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                 },
                               ),
                             ],
+                          ),
+                        ),
+                        // ===== 导航栏不透明度（issue #42）=====
+                        // 与「设置 → 常规与行为 → 导航栏设置」面板里的滑杆共用
+                        // 同一份 provider 状态（NavBarOpacitySlider），两处双向同步。
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
+                          child: NavBarOpacitySlider(
+                            provider: context.watch<FileManagerProvider>(),
+                            onChanged: () => setModalState(() {}),
                           ),
                         ),
                         // ===== 导航栏常驻（其他页面也显示 4-tab）=====
@@ -2727,6 +2620,184 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                         ),
                         const SizedBox(height: 8),
                         const Divider(),
+                        // ===== 分类页设置区（分隔线**下方**，位于「系统」上方）=====
+                        // 分隔线以上只留导航栏相关设置；以下三项都属分类页自身的
+                        // 呈现方式，故集中放在这里。列表（含「系统」）紧随其后。
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Text(
+                            L10n.of(context).ui_category_settings,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.4,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        // ===== 每行显示（2 / 3 / 4 列）=====
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_columns_per_row,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: DropdownButton<int>(
+                                  value: gridColumns,
+                                  isDense: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  borderRadius: BorderRadius.circular(8),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 2,
+                                      child: Text(L10n.of(context).ui_2columns),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 3,
+                                      child: Text(L10n.of(context).ui_3columns),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 4,
+                                      child: Text(L10n.of(context).ui_4columns),
+                                    ),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      context.read<FileManagerProvider>().setCategoriesGridColumns(val);
+                                      setModalState(() {});
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // ===== 分类卡片样式（底框 + 边框 / 极简）=====
+                        // 只切换分类页网格卡片的**装饰层**（底色 / 边框 / 阴影），
+                        // 图标、标题、计数与说明一律保留 —— 供用户对比「有卡片框」
+                        // 与「纯图标文字」哪种更清爽。行样式与「每行显示」保持一致。
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  L10n.of(context).ui_category_card_style,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: DropdownButton<int>(
+                                  value: cardStyle,
+                                  isDense: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  borderRadius: BorderRadius.circular(8),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 0,
+                                      child: Text(L10n.of(context).ui_category_card_style_filled),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 1,
+                                      child: Text(L10n.of(context).ui_category_card_style_minimal),
+                                    ),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      context.read<FileManagerProvider>().setCategoryCardStyle(val);
+                                      setModalState(() {});
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // ===== 添加文件 / 文件夹快捷方式 =====
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Broken.add, size: 20),
+                            label: Text(
+                              L10n.of(context).msg944d5ecd,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(46),
+                              foregroundColor: theme.colorScheme.primary,
+                              side: BorderSide(
+                                color: theme.colorScheme.primary.withValues(alpha: 
+                                  0.5,
+                                ),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final paths = await InternalFilePickerScreen.show(
+                                context,
+                                rootPath: fileManager.rootPath,
+                              );
+                              if (paths != null && paths.isNotEmpty) {
+                                for (final p in paths) {
+                                  provider.addCustomShortcut(p);
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                               ],
                             ),
                           ),

@@ -4360,6 +4360,29 @@ class L10nFr extends L10n {
   String get ui_select_lyrics_file => 'Importer des paroles locales';
 
   @override
+  String get lyric_animation_style => 'Style d\'animation des paroles';
+
+  @override
+  String get lyric_style_classic => 'Balayage classique';
+
+  @override
+  String get lyric_style_classic_desc =>
+      'Balayage mot à mot, les lignes voisines s\'estompent avec la distance';
+
+  @override
+  String get lyric_style_glow => 'Balayage lumineux';
+
+  @override
+  String get lyric_style_glow_desc => 'Balayage avec lueur néon';
+
+  @override
+  String get lyric_style_immersive => 'Scène immersive';
+
+  @override
+  String get lyric_style_immersive_desc =>
+      'Typographie surdimensionnée avec lueur cinématographique';
+
+  @override
   String get ui_no_lyrics_found => 'Aucune parole trouvée';
 
   @override
@@ -8506,6 +8529,25 @@ class L10nFr extends L10n {
   String get ui_bottom_tab_bar => 'Barre de navigation';
 
   @override
+  String get ui_nav_bar_settings => 'Paramètres de la barre de navigation';
+
+  @override
+  String get ui_show_nav_bar => 'Afficher la barre de navigation';
+
+  @override
+  String get ui_nav_bar_opacity => 'Opacité de la barre de navigation';
+
+  @override
+  String get ui_nav_bar_opacity_hint =>
+      'Plus bas = plus transparent, maximum = totalement opaque';
+
+  @override
+  String get ui_nav_bar_opacity_reset => 'Rétablir la valeur par défaut';
+
+  @override
+  String get ui_category_settings => 'Paramètres de la page des catégories';
+
+  @override
   String get ui_persistent_tab_bar =>
       'Conserver la barre de navigation sur les autres pages';
 
@@ -8697,4 +8739,36 @@ class L10nFr extends L10n {
 
   @override
   String get msg_extract_target_folder => 'Dossier de destination';
+
+  @override
+  String get lyric_display => 'Paroles';
+
+  @override
+  String get lyric_mode_off => 'Désactivé';
+
+  @override
+  String get lyric_mode_single => 'Une ligne';
+
+  @override
+  String get lyric_mode_half => 'Demi-écran';
+
+  @override
+  String get lyric_mode_full => 'Plein écran';
+
+  @override
+  String get lyric_settings => 'Réglages des paroles';
+
+  @override
+  String get lyric_style_pv => 'PV textuel';
+
+  @override
+  String get lyric_style_pv_desc =>
+      'Ligne géante : lettres volantes, traînées de particules et étincelles';
+
+  @override
+  String get lyric_style_echo => 'Fragments d\'écho';
+
+  @override
+  String get lyric_style_echo_desc =>
+      'Les mots chantés éclatent en fragments creux qui dérivent lentement';
 }

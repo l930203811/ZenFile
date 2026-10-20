@@ -7774,6 +7774,48 @@ abstract class L10n {
   /// **'导入本地歌词'**
   String get ui_select_lyrics_file;
 
+  /// No description provided for @lyric_animation_style.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词动画风格'**
+  String get lyric_animation_style;
+
+  /// No description provided for @lyric_style_classic.
+  ///
+  /// In zh, this message translates to:
+  /// **'经典扫过'**
+  String get lyric_style_classic;
+
+  /// No description provided for @lyric_style_classic_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'逐字扫过，邻近行依距离渐层'**
+  String get lyric_style_classic_desc;
+
+  /// No description provided for @lyric_style_glow.
+  ///
+  /// In zh, this message translates to:
+  /// **'辉光扫过'**
+  String get lyric_style_glow;
+
+  /// No description provided for @lyric_style_glow_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫过叠加霓虹辉光'**
+  String get lyric_style_glow_desc;
+
+  /// No description provided for @lyric_style_immersive.
+  ///
+  /// In zh, this message translates to:
+  /// **'沉浸巨幕'**
+  String get lyric_style_immersive;
+
+  /// No description provided for @lyric_style_immersive_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'超大字级与电影感辉光'**
+  String get lyric_style_immersive_desc;
+
   /// No description provided for @ui_no_lyrics_found.
   ///
   /// In zh, this message translates to:
@@ -14884,6 +14926,42 @@ abstract class L10n {
   /// **'导航栏'**
   String get ui_bottom_tab_bar;
 
+  /// Navigation bar settings (entry title in General & behavior)
+  ///
+  /// In zh, this message translates to:
+  /// **'导航栏设置'**
+  String get ui_nav_bar_settings;
+
+  /// Show navigation bar (switch title)
+  ///
+  /// In zh, this message translates to:
+  /// **'显示导航栏'**
+  String get ui_show_nav_bar;
+
+  /// Navigation bar opacity (slider label)
+  ///
+  /// In zh, this message translates to:
+  /// **'导航栏不透明度'**
+  String get ui_nav_bar_opacity;
+
+  /// Navigation bar opacity slider hint
+  ///
+  /// In zh, this message translates to:
+  /// **'调低更透明，调到最高为纯实底色'**
+  String get ui_nav_bar_opacity_hint;
+
+  /// Reset navigation bar opacity to theme default
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get ui_nav_bar_opacity_reset;
+
+  /// Category page settings (section divider label)
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页设置'**
+  String get ui_category_settings;
+
   /// No description provided for @ui_persistent_tab_bar.
   ///
   /// In zh, this message translates to:
@@ -15201,6 +15279,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'解压到的文件夹'**
   String get msg_extract_target_folder;
+
+  /// No description provided for @lyric_display.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词显示'**
+  String get lyric_display;
+
+  /// No description provided for @lyric_mode_off.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get lyric_mode_off;
+
+  /// No description provided for @lyric_mode_single.
+  ///
+  /// In zh, this message translates to:
+  /// **'单行显示'**
+  String get lyric_mode_single;
+
+  /// No description provided for @lyric_mode_half.
+  ///
+  /// In zh, this message translates to:
+  /// **'半屏显示'**
+  String get lyric_mode_half;
+
+  /// No description provided for @lyric_mode_full.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏显示'**
+  String get lyric_mode_full;
+
+  /// No description provided for @lyric_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词设置'**
+  String get lyric_settings;
+
+  /// No description provided for @lyric_style_pv.
+  ///
+  /// In zh, this message translates to:
+  /// **'文字 PV'**
+  String get lyric_style_pv;
+
+  /// No description provided for @lyric_style_pv_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'单行巨字，唱到的字飞入、炸开，带光轨与闪点'**
+  String get lyric_style_pv_desc;
+
+  /// No description provided for @lyric_style_echo.
+  ///
+  /// In zh, this message translates to:
+  /// **'回声碎片'**
+  String get lyric_style_echo;
+
+  /// No description provided for @lyric_style_echo_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫过填充的同时，唱过的字炸成空心碎片缓缓漂移'**
+  String get lyric_style_echo_desc;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

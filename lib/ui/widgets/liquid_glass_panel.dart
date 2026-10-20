@@ -39,6 +39,8 @@ class LiquidGlassPanel extends StatelessWidget {
     this.bottomBorderOpacity = 1,
     this.highlightOpacity = 1,
     this.blurSigma = kLiquidGlassBlurSigma,
+    this.surfaceOpacity,
+    this.blurEnabled = true,
   });
 
   /// 面板外形。底栏用胶囊 / 上圆下方，操作栏用「只圆上角」。
@@ -64,10 +66,46 @@ class LiquidGlassPanel extends StatelessWidget {
 
   final double blurSigma;
 
+  /// 玻璃底色层的**有效不透明度**（issue #42：允许用户调透明度 / 完全关闭）。
+  ///
+  /// `null` = 用本组件的原始配方（深色 `black@42%` / 浅色 `lightBarBackground@90%`），
+  /// 即未自定义时保持既有观感。传入 1.0 时面板成为**纯实底**：此时
+  /// [blurSigma] 会被忽略（不透明面板后面再模糊既看不见、又白付一次
+  /// BackdropFilter 的逐帧重算代价 —— 浏览页底栏压在滚动列表上，这笔开销
+  /// 正是 issue #42 卡顿的来源之一）。
+  final double? surfaceOpacity;
+
+  /// 是否允许背景模糊（issue #42 性能降级开关）。
+  ///
+  /// 浏览页列表滚动时上游会把这层关掉：BackdropFilter 压在滚动列表上要为
+  /// 它的区域逐帧保存并重算背景，低端机 / 大目录下与列表光栅化叠加就会掉帧。
+  /// 关掉时面板仍保留底色 / 描边 / 高光，只是失去「透出模糊背景」的玻璃感，
+  /// 滚动静止后恢复 —— 与系统级「滚动时暂停实时模糊」的做法一致。
+  final bool blurEnabled;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = scheme.brightness == Brightness.dark;
+
+    // 底色：未自定义时沿用原配方；自定义时把原配方色按新不透明度重算，
+    // 保证「色相 / 明度层次」不变，只是变实或变透。
+    final Color surfaceColor;
+    if (surfaceOpacity == null) {
+      surfaceColor = isDark
+          ? Colors.black.withValues(alpha: 0.42)
+          : AppTheme.lightBarBackground(scheme).withValues(alpha: 0.9);
+    } else {
+      final base = isDark ? Colors.black : AppTheme.lightBarBackground(scheme);
+      surfaceColor = base.withValues(alpha: surfaceOpacity!.clamp(0.0, 1.0));
+    }
+
+    // 滚动中（blurEnabled=false）或实底（不透明度≈1）时不再模糊：
+    // 模糊层看不见内容，只是纯开销。
+    final effectiveBlur = (!blurEnabled ||
+            (surfaceOpacity != null && surfaceOpacity! >= 0.999))
+        ? 0.0
+        : blurSigma;
 
     BorderSide side(double opacity) {
       if (opacity <= 0.001) return BorderSide.none;
@@ -84,60 +122,69 @@ class LiquidGlassPanel extends StatelessWidget {
     // `paint.color` —— 同装饰里同时给 color 和 gradient，底色根本不会被画出来，
     // 只有渐变层生效。曾在这里踩过：浅色高光渐变中段是 white@0 ⇒ 整块面板几乎全透明，
     // 4-tab 直接透出页面色（实测有效不透明度仅 1.2%），表现为「底栏和页面浑融为一体」。
+    //
+    // ① 底色层：**不带 gradient**，唯一决定面板主体的颜色与描边。
+    // 浅色不用纯白：跟随主题的「栏位」底色 —— 与顶部栏逐位相同
+    // （AppTheme.lightBarBackground）。此前是 white@58% 叠在近白的页面
+    // 上，结果就是一块纯白：既不跟随主题色，也比页面更亮，顶栏 / 页面 /
+    // 底栏三条带子的层次全糊在一起。
+    // 深色维持黑雾（叠在深灰页面上得到略暗的玻璃）。
+    final surface = DecoratedBox(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: borderRadius,
+        border: Border(
+          top: side(topBorderOpacity),
+          bottom: side(bottomBorderOpacity),
+          left: side(1),
+          right: side(1),
+        ),
+      ),
+      // ② 受光层：只有渐变，叠在底色之上。两个成分分开调——
+      //    · 薄雾 sheen：**常驻**、覆盖整个面板，决定「面板主体比页面亮一档」；
+      //    · 顶部高光 glow：只作用于面板最上面 16%，纯粹是受光感，拼接态可整条关掉。
+      // 关掉高光只影响顶部那 16%，主体亮度两态严格相同（曾把两者合成一条全高
+      // 渐变，接缝处整条关掉后连主体亮度一起被抽走，浏览页 4-tab 比页面还暗）。
+      //
+      // 浅色模式薄雾为 0：栏位本身已是「主题色混白」，比页面（更淡的同色系）
+      // 深一档，层次已经出来了；再叠白只会把主题色洗淡，又糊成一片白。
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: const [0, 0.16, 1],
+            colors: [
+              Colors.white.withValues(
+                alpha: _sheen(isDark) + _glow(isDark) * highlightOpacity,
+              ),
+              Colors.white.withValues(alpha: _sheen(isDark)),
+              Colors.white.withValues(alpha: _sheen(isDark)),
+            ],
+          ),
+        ),
+        child: child ?? const SizedBox.expand(),
+      ),
+    );
+
+    // 实底（不透明度≈1）时**整层跳过 BackdropFilter**，而不是把 sigma 传 0：
+    // BackdropFilter 只要进了树就要为它的区域保存并重算背景层，浏览页底栏压在
+    // 滚动列表上时这笔开销逐帧都在付，而实底下它一点也看不见（issue #42 卡顿的
+    // 来源之一）。这里直接省掉整个图层。
+    if (effectiveBlur <= 0) {
+      return ClipRRect(borderRadius: borderRadius, child: surface);
+    }
+    // 模糊只能作用在自己背后：先裁形状再 BackdropFilter，否则圆角外会带出一圈毛边。
     return ClipRRect(
       borderRadius: borderRadius,
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(
-          sigmaX: blurSigma,
-          sigmaY: blurSigma,
+          sigmaX: effectiveBlur,
+          sigmaY: effectiveBlur,
           tileMode: TileMode.mirror,
         ),
-        // ① 底色层：**不带 gradient**，唯一决定面板主体的颜色与描边。
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            // 浅色不用纯白：跟随主题的「栏位」底色 —— 与顶部栏逐位相同
-            // （AppTheme.lightBarBackground）。此前是 white@58% 叠在近白的页面
-            // 上，结果就是一块纯白：既不跟随主题色，也比页面更亮，顶栏 / 页面 /
-            // 底栏三条带子的层次全糊在一起。
-            // 深色维持黑雾（叠在深灰页面上得到略暗的玻璃）。
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.42)
-                : AppTheme.lightBarBackground(scheme).withValues(alpha: 0.9),
-            borderRadius: borderRadius,
-            border: Border(
-              top: side(topBorderOpacity),
-              bottom: side(bottomBorderOpacity),
-              left: side(1),
-              right: side(1),
-            ),
-          ),
-          // ② 受光层：只有渐变，叠在底色之上。两个成分分开调——
-          //    · 薄雾 sheen：**常驻**、覆盖整个面板，决定「面板主体比页面亮一档」；
-          //    · 顶部高光 glow：只作用于面板最上面 16%，纯粹是受光感，拼接态可整条关掉。
-          // 关掉高光只影响顶部那 16%，主体亮度两态严格相同（曾把两者合成一条全高
-          // 渐变，接缝处整条关掉后连主体亮度一起被抽走，浏览页 4-tab 比页面还暗）。
-          //
-          // 浅色模式薄雾为 0：栏位本身已是「主题色混白」，比页面（更淡的同色系）
-          // 深一档，层次已经出来了；再叠白只会把主题色洗淡，又糊成一片白。
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0, 0.16, 1],
-                colors: [
-                  Colors.white.withValues(
-                    alpha: _sheen(isDark) + _glow(isDark) * highlightOpacity,
-                  ),
-                  Colors.white.withValues(alpha: _sheen(isDark)),
-                  Colors.white.withValues(alpha: _sheen(isDark)),
-                ],
-              ),
-            ),
-            child: child ?? const SizedBox.expand(),
-          ),
-        ),
+        child: surface,
       ),
     );
   }

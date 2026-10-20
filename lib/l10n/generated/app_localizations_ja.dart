@@ -4148,6 +4148,27 @@ class L10nJa extends L10n {
   String get ui_select_lyrics_file => 'ローカル歌詞をインポート';
 
   @override
+  String get lyric_animation_style => '歌詞アニメーションスタイル';
+
+  @override
+  String get lyric_style_classic => 'クラシックスイープ';
+
+  @override
+  String get lyric_style_classic_desc => '文字ごとのスイープ、距離に応じて隣の行がフェード';
+
+  @override
+  String get lyric_style_glow => 'グロースイープ';
+
+  @override
+  String get lyric_style_glow_desc => 'ネオンの輝きを重ねたスイープ';
+
+  @override
+  String get lyric_style_immersive => '没入ステージ';
+
+  @override
+  String get lyric_style_immersive_desc => '巨大な文字とシネマティックな輝き';
+
+  @override
   String get ui_no_lyrics_found => '歌詞が見つかりません';
 
   @override
@@ -8122,6 +8143,24 @@ class L10nJa extends L10n {
   String get ui_bottom_tab_bar => 'ナビゲーションバー';
 
   @override
+  String get ui_nav_bar_settings => 'ナビゲーションバー設定';
+
+  @override
+  String get ui_show_nav_bar => 'ナビゲーションバーを表示';
+
+  @override
+  String get ui_nav_bar_opacity => 'ナビゲーションバーの不透明度';
+
+  @override
+  String get ui_nav_bar_opacity_hint => '低いほど透明、最大で完全不透明';
+
+  @override
+  String get ui_nav_bar_opacity_reset => '既定値に戻す';
+
+  @override
+  String get ui_category_settings => 'カテゴリページ設定';
+
+  @override
   String get ui_persistent_tab_bar => '他のページでもナビゲーションバーを表示';
 
   @override
@@ -8295,4 +8334,34 @@ class L10nJa extends L10n {
 
   @override
   String get msg_extract_target_folder => '展開先フォルダ';
+
+  @override
+  String get lyric_display => '歌詞の表示';
+
+  @override
+  String get lyric_mode_off => 'オフ';
+
+  @override
+  String get lyric_mode_single => '1 行表示';
+
+  @override
+  String get lyric_mode_half => '半画面表示';
+
+  @override
+  String get lyric_mode_full => '全画面表示';
+
+  @override
+  String get lyric_settings => '歌詞の設定';
+
+  @override
+  String get lyric_style_pv => '文字 PV';
+
+  @override
+  String get lyric_style_pv_desc => '巨大な一行、文字の飛来・拡散、光の軌跡と閃光';
+
+  @override
+  String get lyric_style_echo => '残響の欠片';
+
+  @override
+  String get lyric_style_echo_desc => '塗りつぶしと同時に、歌った文字が空心の欠片になって漂う';
 }

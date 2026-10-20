@@ -4161,6 +4161,13 @@
   "ui_lyrics_load_failed": "تعذر تحليل ملف كلمات الأغنية",
   "ui_select_lyrics_file": "استيراد كلمات محلية",
   "ui_search_lyrics_online": "البحث عن كلمات الأغنية عبر الإنترنت",
+  "lyric_animation_style": "نمط حركة كلمات الأغاني",
+  "lyric_style_classic": "الكتابة الكلاسيكية",
+  "lyric_style_classic_desc": "كتابة كلمة بكلمة، وتتلاشى الأسطر المجاورة بحسب المسافة",
+  "lyric_style_glow": "كتابة متوهجة",
+  "lyric_style_glow_desc": "كتابة مع توهج نيون",
+  "lyric_style_immersive": "مسرح غامر",
+  "lyric_style_immersive_desc": "حروف ضخمة مع توهج سينمائي",
   "ui_no_lyrics_found": "لم يتم العثور على كلمات الأغنية",
   "ui_lyrics_auto_load_hint": "ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا",
   "ui_lyrics_panel": "لوحة كلمات الأغنية",
@@ -8458,6 +8465,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "إعدادات شريط التنقل",
+  "ui_show_nav_bar": "إظهار شريط التنقل",
+  "ui_nav_bar_opacity": "عتامة شريط التنقل",
+  "ui_nav_bar_opacity_hint": "كلما انخفضت زادت الشفافية، وأعلى قيمة تعني تعتيمًا كاملاً",
+  "ui_nav_bar_opacity_reset": "استعادة الافتراضي",
+  "ui_category_settings": "إعدادات صفحة الفئات",
   "ui_persistent_tab_bar": "إبقاء شريط التنقل على الصفحات الأخرى",
   "ui_pick_bottom_tab": "تخصيص العناصر",
   "@ui_pick_bottom_tab": {
@@ -8666,5 +8679,15 @@
   "msg_archive_extract_failed": "فشل الاستخراج",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "مجلد الوجهة",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "كلمات الأغاني",
+  "lyric_mode_off": "إيقاف",
+  "lyric_mode_single": "سطر واحد",
+  "lyric_mode_half": "نصف الشاشة",
+  "lyric_mode_full": "ملء الشاشة",
+  "lyric_settings": "إعدادات كلمات الأغاني",
+  "lyric_style_pv": "عرض نصي متحرك",
+  "lyric_style_pv_desc": "سطر عملاق مع حروف طائرة وآثار ضوء وومضات",
+  "lyric_style_echo": "شظايا الصدى",
+  "lyric_style_echo_desc": "الكلمات المُغنّاة تتحول إلى شظايا مجوفة تتطاير ببطء"
 }

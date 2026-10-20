@@ -4183,6 +4183,13 @@
   "ui_lyrics_loaded": "Lyrics loaded",
   "ui_lyrics_load_failed": "Cannot parse this lyrics file",
   "ui_select_lyrics_file": "Import local lyrics",
+  "lyric_animation_style": "Lyric animation style",
+  "lyric_style_classic": "Classic sweep",
+  "lyric_style_classic_desc": "Word-by-word sweep, neighbors fade by distance",
+  "lyric_style_glow": "Glow sweep",
+  "lyric_style_glow_desc": "Sweep with neon glow",
+  "lyric_style_immersive": "Immersive stage",
+  "lyric_style_immersive_desc": "Oversized type with cinematic glow",
   "ui_no_lyrics_found": "No lyrics found",
   "ui_lyrics_auto_load_hint": "Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load",
   "ui_lyrics_panel": "Lyrics panel",
@@ -8524,6 +8531,12 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "Navigation Bar Settings",
+  "ui_show_nav_bar": "Show Navigation Bar",
+  "ui_nav_bar_opacity": "Navigation Bar Opacity",
+  "ui_nav_bar_opacity_hint": "Lower is more transparent; highest is fully opaque",
+  "ui_nav_bar_opacity_reset": "Reset to Default",
+  "ui_category_settings": "Category Page Settings",
   "ui_persistent_tab_bar": "Keep Nav Bar on Other Pages",
   "ui_pick_bottom_tab": "Customize entries",
   "@ui_pick_bottom_tab": {
@@ -8732,5 +8745,15 @@
   "msg_archive_extract_failed": "Extraction failed",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "Extract to folder",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "Lyrics",
+  "lyric_mode_off": "Off",
+  "lyric_mode_single": "Single line",
+  "lyric_mode_half": "Half screen",
+  "lyric_mode_full": "Full screen",
+  "lyric_settings": "Lyric settings",
+  "lyric_style_pv": "Text PV",
+  "lyric_style_pv_desc": "Giant single line with flying glyphs, particle trails and sparkles",
+  "lyric_style_echo": "Echo fragments",
+  "lyric_style_echo_desc": "Sung words burst into hollow fragments that drift away"
 }

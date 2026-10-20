@@ -4378,6 +4378,13 @@
   "ui_lyrics_loaded": "歌词已加载",
   "ui_lyrics_load_failed": "无法解析该歌词文件",
   "ui_select_lyrics_file": "导入本地歌词",
+  "lyric_animation_style": "歌词动画风格",
+  "lyric_style_classic": "经典扫过",
+  "lyric_style_classic_desc": "逐字扫过，邻近行依距离渐层",
+  "lyric_style_glow": "辉光扫过",
+  "lyric_style_glow_desc": "扫过叠加霓虹辉光",
+  "lyric_style_immersive": "沉浸巨幕",
+  "lyric_style_immersive_desc": "超大字级与电影感辉光",
   "ui_no_lyrics_found": "未找到歌词",
   "ui_lyrics_auto_load_hint": "将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载",
   "ui_lyrics_panel": "歌词全屏面板",
@@ -8776,6 +8783,30 @@
   "@ui_bottom_tab_bar": {
     "description": "Navigation bar (visibility + position)"
   },
+  "ui_nav_bar_settings": "导航栏设置",
+  "@ui_nav_bar_settings": {
+    "description": "Navigation bar settings (entry title in General & behavior)"
+  },
+  "ui_show_nav_bar": "显示导航栏",
+  "@ui_show_nav_bar": {
+    "description": "Show navigation bar (switch title)"
+  },
+  "ui_nav_bar_opacity": "导航栏不透明度",
+  "@ui_nav_bar_opacity": {
+    "description": "Navigation bar opacity (slider label)"
+  },
+  "ui_nav_bar_opacity_hint": "调低更透明，调到最高为纯实底色",
+  "@ui_nav_bar_opacity_hint": {
+    "description": "Navigation bar opacity slider hint"
+  },
+  "ui_nav_bar_opacity_reset": "恢复默认",
+  "@ui_nav_bar_opacity_reset": {
+    "description": "Reset navigation bar opacity to theme default"
+  },
+  "ui_category_settings": "分类页设置",
+  "@ui_category_settings": {
+    "description": "Category page settings (section divider label)"
+  },
   "ui_persistent_tab_bar": "导航栏常驻其他页面",
   "ui_pick_bottom_tab": "自定义入口",
   "@ui_pick_bottom_tab": {
@@ -8984,5 +9015,15 @@
   "msg_archive_extract_failed": "解压失败",
   "@msg_archive_extract_failed": {"description": "Snackbar title shown when extracting an archive fails"},
   "msg_extract_target_folder": "解压到的文件夹",
-  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"}
+  "@msg_extract_target_folder": {"description": "Label above the destination folder path in the extract archive dialog"},
+  "lyric_display": "歌词显示",
+  "lyric_mode_off": "关闭",
+  "lyric_mode_single": "单行显示",
+  "lyric_mode_half": "半屏显示",
+  "lyric_mode_full": "全屏显示",
+  "lyric_settings": "歌词设置",
+  "lyric_style_pv": "文字 PV",
+  "lyric_style_pv_desc": "单行巨字，唱到的字飞入、炸开，带光轨与闪点",
+  "lyric_style_echo": "回声碎片",
+  "lyric_style_echo_desc": "扫过填充的同时，唱过的字炸成空心碎片缓缓漂移"
 }
