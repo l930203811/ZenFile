@@ -1636,6 +1636,148 @@ class PreferencesService {
     }
   }
 
+  // --- Lyric Animation Style ---
+  /// 歌词动画风格名（classic / glow / immersive / pv / echo / mixed；
+  /// 见 LyricAnimationStyle；mixed 为默认）。
+  /// 只存字符串，避免 preferences_service 反向依赖风格枚举。
+  static const String _keyLyricAnimationStyle = 'lyric_animation_style';
+
+  static String? getLyricAnimationStyleName() =>
+      _prefs?.getString(_keyLyricAnimationStyle);
+
+  static Future<void> saveLyricAnimationStyleName(String styleName) async =>
+      _prefs?.setString(_keyLyricAnimationStyle, styleName) ??
+      Future.value();
+
+  // --- Lyrics Display Mode ---
+  /// 歌词显示模式：0=关闭, 1=单行, 2=多行内联（半屏）。
+  /// 全屏（3）为瞬时态，不落盘。读取时钳制在 0..2，异常值回落 2（默认半屏）。
+  static const String _keyLyricsDisplayMode = 'lyrics_display_mode';
+
+  static int getLyricsDisplayMode() {
+    final v = _prefs?.getInt(_keyLyricsDisplayMode) ?? 2;
+    return (v >= 0 && v <= 2) ? v : 2;
+  }
+
+  static Future<void> saveLyricsDisplayMode(int mode) async =>
+      _prefs?.setInt(_keyLyricsDisplayMode, mode) ?? Future.value();
+
+  // --- Lyrics Colors ---
+  /// 歌词三色（null = 跟随主题默认）：
+  /// [unplayed] 未唱到的歌词，默认 colorScheme.onSurface；
+  /// [current] 正在演唱的字/行，默认主题强调色；
+  /// [played] 已唱过的歌词，默认主题强调色。
+  /// 存 ARGB int；删除 key 即恢复默认。
+  static const String _keyLyricColorUnplayed = 'lyric_color_unplayed';
+  static const String _keyLyricColorCurrent = 'lyric_color_current';
+  static const String _keyLyricColorPlayed = 'lyric_color_played';
+
+  static Color? getLyricColorUnplayed() {
+    final v = _prefs?.getInt(_keyLyricColorUnplayed);
+    return v == null ? null : Color(v);
+  }
+
+  static Color? getLyricColorCurrent() {
+    final v = _prefs?.getInt(_keyLyricColorCurrent);
+    return v == null ? null : Color(v);
+  }
+
+  static Color? getLyricColorPlayed() {
+    final v = _prefs?.getInt(_keyLyricColorPlayed);
+    return v == null ? null : Color(v);
+  }
+
+  static Future<void> saveLyricColorUnplayed(Color? color) async {
+    if (color == null) {
+      await _prefs?.remove(_keyLyricColorUnplayed);
+    } else {
+      await _prefs?.setInt(_keyLyricColorUnplayed, color.toARGB32());
+    }
+  }
+
+  static Future<void> saveLyricColorCurrent(Color? color) async {
+    if (color == null) {
+      await _prefs?.remove(_keyLyricColorCurrent);
+    } else {
+      await _prefs?.setInt(_keyLyricColorCurrent, color.toARGB32());
+    }
+  }
+
+  static Future<void> saveLyricColorPlayed(Color? color) async {
+    if (color == null) {
+      await _prefs?.remove(_keyLyricColorPlayed);
+    } else {
+      await _prefs?.setInt(_keyLyricColorPlayed, color.toARGB32());
+    }
+  }
+
+  // --- Lyric Time Offset ---
+  // 全局偏移 + 单曲覆盖（单曲设置过即覆盖全局，仅对该歌曲生效）。
+  // 单位毫秒；正值 = 歌词延后，负值 = 歌词提前。范围 ±30s。
+  static const String _keyLyricOffsetGlobal = 'lyric_offset_global';
+  static const String _keyLyricOffsetPerSong = 'lyric_offset_per_song';
+  static const int lyricOffsetMinMs = -30000;
+  static const int lyricOffsetMaxMs = 30000;
+
+  /// 全局歌词偏移（毫秒），默认 0。
+  static int getLyricOffsetGlobal() {
+    final v = _prefs?.getInt(_keyLyricOffsetGlobal) ?? 0;
+    return v.clamp(lyricOffsetMinMs, lyricOffsetMaxMs);
+  }
+
+  static Future<void> saveLyricOffsetGlobal(int ms) async {
+    await _prefs?.setInt(
+      _keyLyricOffsetGlobal,
+      ms.clamp(lyricOffsetMinMs, lyricOffsetMaxMs),
+    );
+  }
+
+  /// 单曲歌词偏移（毫秒）；null = 未设置（回落全局）。
+  static int? getLyricOffsetForSong(String audioPath) {
+    if (audioPath.isEmpty) return null;
+    final json = _prefs?.getString(_keyLyricOffsetPerSong);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final v = map[audioPath];
+      if (v is int) return v.clamp(lyricOffsetMinMs, lyricOffsetMaxMs);
+      if (v is num) {
+        return v.toInt().clamp(lyricOffsetMinMs, lyricOffsetMaxMs);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存单曲歌词偏移（覆盖全局，仅对 [audioPath] 生效）。
+  static Future<void> saveLyricOffsetForSong(String audioPath, int ms) async {
+    if (audioPath.isEmpty) return;
+    final json = _prefs?.getString(_keyLyricOffsetPerSong);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[audioPath] = ms.clamp(lyricOffsetMinMs, lyricOffsetMaxMs);
+    await _prefs?.setString(_keyLyricOffsetPerSong, jsonEncode(map));
+  }
+
+  /// 清除单曲偏移（回落到全局）。
+  static Future<void> removeLyricOffsetForSong(String audioPath) async {
+    if (audioPath.isEmpty) return;
+    final json = _prefs?.getString(_keyLyricOffsetPerSong);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(audioPath);
+      await _prefs?.setString(_keyLyricOffsetPerSong, jsonEncode(map));
+    } catch (_) {}
+  }
+
   // --- Lyric File Mappings ---
   static const String _keyLyricMappings = 'lyric_file_mappings';
 

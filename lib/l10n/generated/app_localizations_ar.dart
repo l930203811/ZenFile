@@ -4270,6 +4270,9 @@ class L10nAr extends L10n {
   String get ui_select_lyrics_file => 'استيراد كلمات محلية';
 
   @override
+  String get ui_lyrics_menu => 'قائمة كلمات الأغنية';
+
+  @override
   String get lyric_animation_style => 'نمط حركة كلمات الأغاني';
 
   @override
@@ -8604,4 +8607,66 @@ class L10nAr extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'الكلمات المُغنّاة تتحول إلى شظايا مجوفة تتطاير ببطء';
+
+  @override
+  String get lyric_style_mixed => 'مختلط';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'يعرض كل سطر عشوائياً أحد الأنماط الخمسة: كلاسيكي، توهج، ضخم، PV أو صدى';
+
+  @override
+  String get lyric_color_settings => 'ألوان كلمات الأغنية';
+
+  @override
+  String get lyric_color_unplayed => 'لم يتم التشغيل';
+
+  @override
+  String get lyric_color_unplayed_desc => 'كلمات لم تُغنَّ بعد';
+
+  @override
+  String get lyric_color_current => 'قيد التشغيل الآن';
+
+  @override
+  String get lyric_color_current_desc => 'المقطع الذي يُغنَّى الآن';
+
+  @override
+  String get lyric_color_played => 'تم التشغيل';
+
+  @override
+  String get lyric_color_played_desc => 'كلمات تم غناؤها';
+
+  @override
+  String get lyric_color_default => 'الافتراضي';
+
+  @override
+  String get lyric_color_reset => 'إعادة تعيين';
+
+  @override
+  String get lyric_offset => 'إزاحة كلمات الأغاني';
+
+  @override
+  String get lyric_offset_desc =>
+      'تعديل توقيت كل كلمات الأغنية: السالب = أبكر، الموجب = أحدث';
+
+  @override
+  String get lyric_offset_scope_current => 'الأغنية الحالية';
+
+  @override
+  String get lyric_offset_scope_global => 'عام';
+
+  @override
+  String get lyric_offset_effective => 'القيمة المطبقة';
+
+  @override
+  String get lyric_offset_reset => 'إعادة تعيين';
+
+  @override
+  String get lyric_offset_clear_current => 'إزالة إزاحة الأغنية';
+
+  @override
+  String get lyric_offset_input_title => 'أدخل قيمة الإزاحة';
+
+  @override
+  String get lyric_offset_input_hint => 'الإزاحة (بالثواني)';
 }

@@ -4150,6 +4150,9 @@ class L10nKo extends L10n {
   String get ui_select_lyrics_file => '로컬 가사 가져오기';
 
   @override
+  String get ui_lyrics_menu => '가사 메뉴';
+
+  @override
   String get lyric_animation_style => '가사 애니메이션 스타일';
 
   @override
@@ -8373,4 +8376,65 @@ class L10nKo extends L10n {
 
   @override
   String get lyric_style_echo_desc => '채워지는 동안 불렀던 글자가 속이 빈 파편이 되어 떠다님';
+
+  @override
+  String get lyric_style_mixed => '혼합';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      '줄마다 클래식, 글로우, 몰입형, PV, 에코 중 하나가 무작위로 적용됩니다';
+
+  @override
+  String get lyric_color_settings => '가사 색상';
+
+  @override
+  String get lyric_color_unplayed => '재생 전';
+
+  @override
+  String get lyric_color_unplayed_desc => '아직 불리지 않은 가사';
+
+  @override
+  String get lyric_color_current => '재생 중';
+
+  @override
+  String get lyric_color_current_desc => '지금 불리고 있는 글자';
+
+  @override
+  String get lyric_color_played => '재생 완료';
+
+  @override
+  String get lyric_color_played_desc => '이미 불린 가사';
+
+  @override
+  String get lyric_color_default => '기본값';
+
+  @override
+  String get lyric_color_reset => '기본값으로 복원';
+
+  @override
+  String get lyric_offset => '가사 오프셋';
+
+  @override
+  String get lyric_offset_desc => '전체 가사 타이밍 조정(음수 = 앞당김, 양수 = 지연)';
+
+  @override
+  String get lyric_offset_scope_current => '현재 곡';
+
+  @override
+  String get lyric_offset_scope_global => '전체';
+
+  @override
+  String get lyric_offset_effective => '적용값';
+
+  @override
+  String get lyric_offset_reset => '초기화';
+
+  @override
+  String get lyric_offset_clear_current => '현재 곡 오프셋 삭제';
+
+  @override
+  String get lyric_offset_input_title => '오프셋 값 입력';
+
+  @override
+  String get lyric_offset_input_hint => '오프셋(초)';
 }

@@ -15,6 +15,7 @@ import '../../../services/background_play_permission.dart';
 import '../../../services/desktop_lyric_service.dart';
 import '../../../services/desktop_lyric_controller.dart';
 import '../../../services/preferences_service.dart';
+import '../../../services/lyric_animation_style.dart';
 import '../../../services/lyric_parser.dart';
 import '../../../services/lyric_search_service.dart';
 import '../../../services/remote_streaming_service.dart';
@@ -29,6 +30,9 @@ import 'marquee_text_widget.dart';
 import 'audio_controls_widget.dart';
 import 'audio_queue_sheet.dart';
 import 'audio_particles_widget.dart';
+import 'lyric_settings_page.dart';
+import 'lyric_offset_dialog.dart';
+import 'lyric_style_sheet.dart';
 import 'lyrics_view_widget.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -134,17 +138,21 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _backgroundPlayPendingPermission = false;
 
   // 歌词显示模式：0=关闭, 1=单行, 2=多行内联, 3=全屏面板
-  int _lyricsDisplayMode = 0;
+  int _lyricsDisplayMode = 2;
 
   // 歌词
   List<LyricLine>? _lyrics;
-  String? _lyricSourcePath; // 实际歌词文件路径
   bool _isLoadingLyrics = false;
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
   bool _lyricsWerePlaceholder = false; // 检测歌词为占位文本时显示多语言提示
 
+  /// 生效的歌词整体偏移（毫秒）：单曲覆盖优先，否则全局值。
+  /// 正值 = 歌词延后，负值 = 歌词提前；见 [_lyricPosition]。
+  int _lyricOffsetMs = 0;
+
   // 桌面歌词悬浮窗
   bool _desktopLyricEnabled = false;
+  LyricAnimationStyle _lyricStyle = LyricAnimationStyle.mixed;
   // 标记用户已跳转系统设置请求悬浮窗权限，等待返回应用时复检
   bool _desktopLyricPendingPermission = false;
   StreamSubscription<void>? _desktopLyricClickSub;
@@ -182,6 +190,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _currentIndex = _safeIndex(widget.initialIndex, _songs.length);
     _isBackgroundMode = PreferencesService.getAudioBackgroundPlay();
     _desktopLyricEnabled = PreferencesService.getDesktopLyricEnabled();
+    _lyricStyle = LyricAnimationStyle.fromName(
+        PreferencesService.getLyricAnimationStyleName());
+    _lyricsDisplayMode = PreferencesService.getLyricsDisplayMode();
 
     // 桌面歌词悬浮窗：注册 MethodChannel 与单击回调
     DesktopLyricService.instance.ensureInitialized();
@@ -876,6 +887,25 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     return lyrics;
   }
 
+  /// 歌词用的播放位置：整体偏移后的位置。
+  ///
+  /// 偏移为「歌词时间轴整体平移量」：把播放位置减去偏移再交给歌词视图，
+  /// 正值让歌词出现得更晚（歌词慢了），负值让歌词更早（歌词快了）。
+  /// `findCurrentLineIndex` / `graphemeFillAt` 对负值均安全（无当前行）。
+  Duration get _lyricPosition =>
+      Duration(milliseconds: position.inMilliseconds - _lyricOffsetMs);
+
+  /// 刷新生效的歌词偏移：单曲覆盖优先，否则全局；同步给桌面歌词。
+  void _refreshLyricOffset() {
+    final ms = PreferencesService.getLyricOffsetForSong(_currentPath) ??
+        PreferencesService.getLyricOffsetGlobal();
+    DesktopLyricController.instance.setOffsetMs(ms);
+    if (!mounted) return;
+    if (ms != _lyricOffsetMs) {
+      setState(() => _lyricOffsetMs = ms);
+    }
+  }
+
   /// 自动加载当前歌曲的歌词
   void _loadLyrics() {
     final audioPath = _currentPath;
@@ -883,9 +913,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     final title = _currentTitle;
     final artist = _getDisplayArtist();
 
+    // 切歌：按新歌曲重算歌词整体偏移（单曲覆盖 / 全局）。
+    _refreshLyricOffset();
+
     setState(() {
       _lyrics = null;
-      _lyricSourcePath = null;
       _isLoadingLyrics = true;
       _lyricsWerePlaceholder = false;
     });
@@ -903,7 +935,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         if (mounted) {
           setState(() {
             _lyrics = sanitized;
-            _lyricSourcePath = sanitized != null ? loaded.sourcePath : null;
             _isLoadingLyrics = false;
           });
           if (_desktopLyricEnabled) {
@@ -919,8 +950,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       if (mounted && generation == _lyricsLoadGeneration) {
         setState(() {
           _lyrics = null;
-          _lyricSourcePath = null;
-          _isLoadingLyrics = false;
+              _isLoadingLyrics = false;
         });
         if (_desktopLyricEnabled) {
           DesktopLyricController.instance.setLyrics(null);
@@ -947,9 +977,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         await PreferencesService.saveLyricMapping(_currentPath, lrcPath);
         setState(() {
           _lyrics = lyrics;
-          _lyricSourcePath = lrcPath;
           _lyricsDisplayMode = 2;
         });
+        // 用户手动指定了歌词文件：切到半屏展示，并记住该模式。
+        PreferencesService.saveLyricsDisplayMode(2);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(L10n.of(context).ui_lyrics_loaded, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1289,14 +1320,214 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _loadLyrics();
   }
 
-  /// 切换完整内联歌词显示（用歌词视图替换封面）
-  void _cycleLyricsDisplayMode() {
-    setState(() {
-      _lyricsDisplayMode = (_lyricsDisplayMode + 1) % 4;
-    });
-    if (_lyricsDisplayMode == 3) {
+  /// 歌词显示模式菜单（歌词按钮点击后向上弹出）：
+  /// 第一组为显示模式（关闭 / 单行 / 半屏 / 全屏），分隔线之下为动画风格。
+  /// 选中风格即按「当前显示模式」应用，不再强制拉全屏。
+  void _showLyricModeMenu() {
+    final l10n = L10n.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      // 共 9 个条目，超出 showModalBottomSheet 默认的 9/16 屏高限制会把
+      // 底部两项（文字 PV / 回声碎片）整块裁掉 ⇒ 放开高度限制 +
+      // 内部滚动兜底（小屏 / 横屏）。
+      isScrollControlled: true,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final surface =
+            isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface;
+        final titleColor = isDark ? Colors.white : theme.colorScheme.onSurface;
+
+        Widget item({
+          required IconData icon,
+          required String title,
+          required bool selected,
+          required VoidCallback onTap,
+          String? desc,
+        }) {
+          return ListTile(
+            leading: Icon(icon,
+                color: selected
+                    ? Colors.deepPurpleAccent
+                    : titleColor.withValues(alpha: 0.7)),
+            title: Text(title,
+                style: TextStyle(
+                    color: titleColor, fontWeight: FontWeight.w600)),
+            subtitle: desc == null
+                ? null
+                : Text(desc,
+                    style: TextStyle(
+                        color: titleColor.withValues(alpha: 0.55),
+                        fontSize: 12)),
+            trailing: selected
+                ? const Icon(Icons.check_circle_rounded,
+                    color: Colors.deepPurpleAccent)
+                : null,
+            onTap: onTap,
+          );
+        }
+
+        return SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Row(
+                      children: [
+                        const Icon(Broken.document,
+                            color: Colors.deepPurpleAccent, size: 20),
+                        const SizedBox(width: 8),
+                        Text(l10n.lyric_display,
+                            style: TextStyle(
+                                color: titleColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                  item(
+                    icon: Icons.block_flipped,
+                    title: l10n.lyric_mode_off,
+                    selected: _lyricsDisplayMode == 0,
+                    onTap: () => _setLyricDisplayMode(ctx, 0),
+                  ),
+                  item(
+                    icon: Icons.short_text_rounded,
+                    title: l10n.lyric_mode_single,
+                    selected: _lyricsDisplayMode == 1,
+                    onTap: () => _setLyricDisplayMode(ctx, 1),
+                  ),
+                  item(
+                    icon: Icons.view_agenda_outlined,
+                    title: l10n.lyric_mode_half,
+                    selected: _lyricsDisplayMode == 2,
+                    onTap: () => _setLyricDisplayMode(ctx, 2),
+                  ),
+                  item(
+                    icon: Icons.fullscreen_rounded,
+                    title: l10n.lyric_mode_full,
+                    selected: _lyricsDisplayMode == 3,
+                    onTap: () => _setLyricDisplayMode(ctx, 3),
+                  ),
+                  // ── 分隔线：上方为显示模式，下方为动画风格 ────────────
+                  Container(
+                    height: 1,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    color: titleColor.withValues(alpha: 0.08),
+                  ),
+                  // ── 动画风格分组：按当前显示模式应用，不强制全屏 ────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.animation_rounded,
+                            color: Colors.deepPurpleAccent, size: 18),
+                        const SizedBox(width: 8),
+                        Text(l10n.lyric_animation_style,
+                            style: TextStyle(
+                                color: titleColor.withValues(alpha: 0.75),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                  item(
+                    icon: Icons.shuffle_rounded,
+                    title: l10n.lyric_style_mixed,
+                    desc: l10n.lyric_style_mixed_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.mixed,
+                    onTap: () =>
+                        _applyLyricStyle(ctx, LyricAnimationStyle.mixed),
+                  ),
+                  item(
+                    icon: Icons.music_note_rounded,
+                    title: l10n.lyric_style_classic,
+                    desc: l10n.lyric_style_classic_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.classic,
+                    onTap: () =>
+                        _applyLyricStyle(ctx, LyricAnimationStyle.classic),
+                  ),
+                  item(
+                    icon: Icons.auto_awesome,
+                    title: l10n.lyric_style_glow,
+                    desc: l10n.lyric_style_glow_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.glow,
+                    onTap: () =>
+                        _applyLyricStyle(ctx, LyricAnimationStyle.glow),
+                  ),
+                  item(
+                    icon: Icons.movie_rounded,
+                    title: l10n.lyric_style_immersive,
+                    desc: l10n.lyric_style_immersive_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.immersive,
+                    onTap: () =>
+                        _applyLyricStyle(ctx, LyricAnimationStyle.immersive),
+                  ),
+                  item(
+                    icon: Icons.bolt_rounded,
+                    title: l10n.lyric_style_pv,
+                    desc: l10n.lyric_style_pv_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.pv,
+                    onTap: () => _applyLyricStyle(ctx, LyricAnimationStyle.pv),
+                  ),
+                  item(
+                    icon: Icons.blur_on_rounded,
+                    title: l10n.lyric_style_echo,
+                    desc: l10n.lyric_style_echo_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.echo,
+                    onTap: () =>
+                        _applyLyricStyle(ctx, LyricAnimationStyle.echo),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 应用选中的歌词显示模式（0=关闭 / 1=单行 / 2=半屏 / 3=全屏）。
+  /// 0~2 持久化，下次进入播放页恢复；3 为瞬时态、不落盘——
+  /// 选中即推全屏路由，退出后回落到之前持久化的模式（见 [_showLyricsPanel]）。
+  void _setLyricDisplayMode(BuildContext ctx, int mode) {
+    Navigator.pop(ctx);
+    if (mode == 3) {
+      setState(() => _lyricsDisplayMode = 3);
       _showLyricsPanel();
+      return;
     }
+    setState(() => _lyricsDisplayMode = mode);
+    PreferencesService.saveLyricsDisplayMode(mode);
+  }
+
+  /// 从菜单选择动画风格：立即持久化，并按「当前显示模式」应用——
+  /// 单行 / 半屏 / 全屏各自生效（单行与半屏同样支持全部 5 种风格），
+  /// 不再强制拉全屏。当前为关闭时回落到半屏，让所选风格立即可见。
+  void _applyLyricStyle(BuildContext ctx, LyricAnimationStyle style) {
+    Navigator.pop(ctx);
+    final int base = _lyricsDisplayMode == 0 ? 2 : _lyricsDisplayMode;
+    setState(() {
+      _lyricStyle = style;
+      _lyricsDisplayMode = base;
+    });
+    PreferencesService.saveLyricAnimationStyleName(style.name);
+    // base 理论上只可能是 1/2（3 时全屏路由已遮挡本页菜单）；防御性 clamp，
+    // 避免把瞬时态 3 写进持久化（读取端会被裁成 0）。
+    PreferencesService.saveLyricsDisplayMode(base.clamp(0, 2));
   }
 
   // ─── 桌面歌词悬浮窗 ────────────────────────────────────────────────────
@@ -1330,7 +1561,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   /// 切换桌面歌词悬浮窗开关
-  void _toggleDesktopLyric() async {
+  Future<void> _toggleDesktopLyric() async {
     if (_desktopLyricEnabled) {
       DesktopLyricController.instance.stop();
       await DesktopLyricService.instance.hide();
@@ -1445,7 +1676,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   /// 获取当前应显示的歌词行
   LyricLine? _getCurrentLyricLine() {
     if (_lyrics == null || _lyrics!.isEmpty) return null;
-    final index = LyricParser.findCurrentLineIndex(_lyrics!, position);
+    final index = LyricParser.findCurrentLineIndex(_lyrics!, _lyricPosition);
     if (index < 0 || index >= _lyrics!.length) return null;
     return _lyrics![index];
   }
@@ -1461,11 +1692,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         height: 44,
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
+          // 单行歌词的 PV/ECHO 唱字特效要向上穿越封面卡片显示：默认
+          // layoutBuilder 的 Stack 与 SizeTransition 自带裁剪都会把溢出
+          // 特效裁掉——这里自定义不裁剪的 Stack，过渡改为淡入 + 轻微
+          // 上移（Transform 不裁剪，观感与原来的尺寸过渡接近）。
+          layoutBuilder: (currentChild, previousChildren) => Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: <Widget>[...previousChildren, ?currentChild],
+          ),
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axisAlignment: 0,
+            child: Transform.translate(
+              offset: Offset(0, 8 * (1 - animation.value)),
               child: child,
             ),
           ),
@@ -1473,7 +1712,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               ? SizedBox(
                   key: ValueKey<String>(line.text),
                   width: double.infinity,
-                  child: _buildLyricLineText(line, accent, isDark),
+                  height: 44,
+                  child: Center(
+                    child: SingleLineLyricSweep(
+                      lyrics: _lyrics!,
+                      position: _lyricPosition,
+                      accentColor: accent,
+                      style: _lyricStyle,
+                      isPlaying: isPlaying,
+                    ),
+                  ),
                 )
               : _isLoadingLyrics
                   ? SizedBox(
@@ -1509,121 +1757,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
-  /// 构建歌词行文本（支持逐字高亮 + 平滑过渡 + 放大效果）
-  Widget _buildLyricLineText(LyricLine line, Color accent, bool isDark) {
-    if (line.text.isEmpty) {
-      return Text(
-        '♪',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: accent,
-          height: 1.4,
-        ),
-      );
-    }
-
-    final baseColor = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5);
-    final highlightColor = accent;
-
-    // 检查是否有逐字时间戳
-    if (line.hasWordTimestamps) {
-      return RichText(
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        text: TextSpan(
-          children: line.words!.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final word = entry.value;
-            final progress = _calcWordProgress(line, idx);
-
-            // 颜色插值
-            final textColor = Color.lerp(baseColor, highlightColor, progress)!;
-
-            // 字重过渡
-            FontWeight fontWeight;
-            if (progress > 0.7) {
-              fontWeight = FontWeight.w700;
-            } else if (progress > 0.3) {
-              fontWeight = FontWeight.w600;
-            } else {
-              fontWeight = FontWeight.w500;
-            }
-
-            // 放大效果：progress=0.5 时达到最大放大
-            final scaleBoost = 3.0 * _wordScaleCurve(progress);
-
-            return TextSpan(
-              text: word.text,
-              style: TextStyle(
-                fontSize: 15.0 + scaleBoost,
-                fontWeight: fontWeight,
-                color: textColor,
-                height: 1.4,
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    }
-
-    // 普通歌词
-    return Text(
-      line.text,
-      textAlign: TextAlign.center,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: accent,
-        height: 1.4,
-      ),
-    );
-  }
-
-  /// 计算单个字的高亮过渡进度 (0.0 ~ 1.0)
-  double _calcWordProgress(LyricLine line, int wordIndex) {
-    final words = line.words!;
-    final posMs = position.inMilliseconds;
-    final currentWordTs = words[wordIndex].timestamp.inMilliseconds;
-
-    if (posMs < currentWordTs) {
-      return 0.0;
-    }
-
-    // 固定过渡时长 300ms
-    const transitionDuration = 300;
-
-    // 如果不是最后一个字且间隔很短，缩短过渡时间避免重叠
-    int actualDuration = transitionDuration;
-    if (wordIndex + 1 < words.length) {
-      final nextWordTs = words[wordIndex + 1].timestamp.inMilliseconds;
-      final gapDuration = nextWordTs - currentWordTs;
-      if (gapDuration < transitionDuration) {
-        actualDuration = (gapDuration * 0.6).toInt().clamp(80, transitionDuration);
-      }
-    }
-
-    final elapsed = posMs - currentWordTs;
-    final progress = (elapsed / actualDuration).clamp(0.0, 1.0);
-    return _easeInOutCubic(progress);
-  }
-
-  /// easeInOutCubic 缓动函数
-  double _easeInOutCubic(double t) {
-    return t < 0.5
-        ? 4 * t * t * t
-        : 1 - (-2 * t + 2) * (-2 * t + 2) * (-2 * t + 2) / 2;
-  }
-
-  /// 字体放大曲线：t=0 和 t=1 时为 0，t=0.5 时为 1
-  double _wordScaleCurve(double t) {
-    return 4 * t * (1 - t);
-  }
-
   /// 构建 artwork 或完整内联歌词视图
   Widget _buildArtworkOrLyrics(Color accent, ThemeData theme, bool isDark) {
     if (_lyricsDisplayMode != 2) {
@@ -1637,7 +1770,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             accentColor: accent,
             isPlaying: isPlaying,
             onDoubleTap: _showLyricsPanel,
-            onLongPress: _showEqualizerDialog,
+            onLongPress: _showEqualizerSheet,
           ),
           if ((isBuffering || _isWaitingForCache) && widget.isRemote)
             Container(
@@ -1662,7 +1795,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 显示内联歌词
     return GestureDetector(
       onDoubleTap: _showLyricsPanel,
-      onLongPress: _showEqualizerDialog,
+      onLongPress: _showEqualizerSheet,
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.35,
@@ -1676,8 +1809,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             : (_lyrics != null && _lyrics!.isNotEmpty
                 ? LyricsViewWidget(
                     lyrics: _lyrics!,
-                    position: position,
+                    position: _lyricPosition,
                     accentColor: accent,
+                    style: _lyricStyle,
+                    isPlaying: isPlaying,
                     onSeek: (d) => player.seek(d),
                   )
                 : _buildInlineNoLyrics(theme, isDark, accent)),
@@ -1721,6 +1856,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             ),
             const SizedBox(height: 16),
             TextButton.icon(
+              onPressed: _showLyricSearchDialog,
+              icon: const Icon(Icons.search_rounded, size: 18),
+              label: Text(L10n.of(context).ui_search_lyrics_online, style: const TextStyle(fontWeight: FontWeight.w600)),
+              style: TextButton.styleFrom(
+                foregroundColor: accent,
+                backgroundColor: accent.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
               onPressed: _selectLyricFile,
               icon: const Icon(Icons.folder_open_rounded, size: 18),
               label: Text(L10n.of(context).ui_select_lyrics_file, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -1737,31 +1884,99 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
-  /// 显示歌词面板
+  /// current lyric animation style localized name (more-menu subtitle).
+  String _lyricStyleLabel() {
+    final l10n = L10n.of(context);
+    switch (_lyricStyle) {
+      case LyricAnimationStyle.classic:
+        return l10n.lyric_style_classic;
+      case LyricAnimationStyle.glow:
+        return l10n.lyric_style_glow;
+      case LyricAnimationStyle.immersive:
+        return l10n.lyric_style_immersive;
+      case LyricAnimationStyle.pv:
+        return l10n.lyric_style_pv;
+      case LyricAnimationStyle.echo:
+        return l10n.lyric_style_echo;
+      case LyricAnimationStyle.mixed:
+        return l10n.lyric_style_mixed;
+    }
+  }
+
+  /// 歌词偏移弹窗的实时预览：只改内存（不落盘），单行/内联/全屏歌词
+  /// 立即按新偏移渲染；取消时弹窗会以原值回调恢复。
+  void _previewLyricOffset(int ms) {
+    DesktopLyricController.instance.setOffsetMs(ms);
+    if (!mounted || ms == _lyricOffsetMs) return;
+    setState(() => _lyricOffsetMs = ms);
+  }
+
+  /// 打开歌词设置页（桌面歌词 / 歌词颜色 / 歌词偏移 / 在线搜索 / 本地导入）。
+  void _showLyricSettingsPage() {
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => LyricSettingsPage(
+              desktopLyricEnabled: _desktopLyricEnabled,
+              onToggleDesktopLyric: _toggleDesktopLyric,
+              onSearchOnlineLyrics: _showLyricSearchDialog,
+              onImportLocalLyrics: _selectLyricFile,
+              songPath: _currentPath,
+              songTitle: _currentTitle,
+              onPreviewLyricOffset: _previewLyricOffset,
+            ),
+          ),
+        )
+        .then((_) {
+          // 设置页可改桌面歌词开关 / 歌词偏移，返回后同步本地状态。
+          if (!mounted) return;
+          setState(() {
+            _desktopLyricEnabled =
+                PreferencesService.getDesktopLyricEnabled();
+          });
+          _refreshLyricOffset();
+        });
+  }
+
+  /// 打开全屏歌词页（真正全屏路由；退出后复位显示模式）。
   void _showLyricsPanel() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _LyricsPanel(
-        player: player,
-        lyrics: _lyrics,
-        lyricSourcePath: _lyricSourcePath,
-        title: _currentTitle,
-        artist: _getDisplayArtist(),
-        accentColor: Theme.of(context).colorScheme.primary,
-        isLoading: _isLoadingLyrics,
-        onSelectLyricFile: () {
-          Navigator.pop(ctx);
-          _selectLyricFile();
-        },
-        onSearchOnline: () {
-          Navigator.pop(ctx);
-          _showLyricSearchDialog();
-        },
-        onSeek: (d) => player.seek(d),
-      ),
-    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => _FullScreenLyricsPage(
+              player: player,
+              lyrics: _lyrics,
+              title: _currentTitle,
+              artist: _getDisplayArtist(),
+              accentColor: Theme.of(context).colorScheme.primary,
+              isLoading: _isLoadingLyrics,
+              onSelectLyricFile: _selectLyricFile,
+              onSearchOnline: _showLyricSearchDialog,
+              songPath: _currentPath,
+              lyricOffsetMs: _lyricOffsetMs,
+            ),
+          ),
+        )
+        .then((_) {
+          // 退出全屏后：模式 3 是瞬时态，回落到用户之前选择的显示模式
+          // （从单行/半屏临时进入时不改动用户当前模式；从菜单选「全屏显示」
+          // 进入的，回到菜单里选中的那个 0/1/2 模式）。
+          if (mounted && _lyricsDisplayMode == 3) {
+            setState(() {
+              _lyricsDisplayMode = PreferencesService.getLyricsDisplayMode();
+            });
+          }
+          // 全屏页可切换动画风格，退出后同步回播放页（单行/半屏也用该风格）。
+          if (mounted) {
+            setState(() {
+              _lyricStyle = LyricAnimationStyle.fromName(
+                  PreferencesService.getLyricAnimationStyleName());
+            });
+          }
+          // 全屏页可调整歌词偏移，退出后按偏好重算（含桌面歌词同步）。
+          _refreshLyricOffset();
+        });
   }
 
   /// 设置睡眠定时器，指定分钟后暂停播放并退出播放器。
@@ -2004,70 +2219,71 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
-  void _showEqualizerDialog() {
-    showDialog(
+  /// 音效与均衡器面板：与歌词显示按钮一致，从底部弹出（showModalBottomSheet）。
+  ///
+  /// 「音频输出（AO）模式」与「均衡器预设」用下拉框呈现：点击展开全部选项、
+  /// 选择后自动收起，收起态只显示当前选中项。
+  ///
+  /// 播放器页面 tune 按钮（`onShowEqualizer`）与三点菜单都走本方法，状态源
+  /// 同一（[_eqPreset] + `PreferencesService`），两处入口天然双向同步。
+  void _showEqualizerSheet() {
+    final mediaQuery = MediaQuery.of(context);
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E1E2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setModalState) {
           return DefaultTextStyle(
             style: const TextStyle(color: Colors.white),
-            child: AlertDialog(
-              backgroundColor: const Color(0xFF1E1E2E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: Row(
-                children: [
-                  const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      L10n.of(context).msgb7c87215,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: 20,
+                bottom: 20 + mediaQuery.padding.bottom,
               ),
-              content: SizedBox(
-                width: double.maxFinite,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: mediaQuery.size.height * 0.75,
+                ),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── 音频输出（AO）兼容模式（兼容免 Root 音效软件） ──
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      // ── 标题 ──
+                      Row(
                         children: [
-                          Text(L10n.of(dialogContext).audio_opensles_title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 2),
-                          Text(L10n.of(dialogContext).audio_opensles_desc, style: const TextStyle(color: Colors.white54, fontSize: 11)),
-                          const SizedBox(height: 8),
-                          // 档位名（Auto / AudioTrack / OpenSL ES）是产品/技术名，
-                          // 各语言不译，故刻意不进 l10n；切换后对**正在播放的**
-                          // 播放器立即生效（见 _aoModeChip 的 onSelected）。
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              for (final mode in MpvAoMode.values)
-                                _aoModeChip(mode, setModalState),
-                            ],
+                          const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              L10n.of(context).msgb7c87215,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      // ── 音频输出（AO）兼容模式（兼容免 Root 音效软件） ──
+                      Text(L10n.of(dialogContext).audio_opensles_title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(L10n.of(dialogContext).audio_opensles_desc, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                      const SizedBox(height: 8),
+                      // 档位名（Auto / AudioTrack / OpenSL ES）是产品/技术名，
+                      // 各语言不译，故刻意不进 l10n；下拉框收起态只显示当前
+                      // 档位，切换后对**正在播放的**播放器立即生效（见
+                      // _applyAudioOutputToReusedPlayer）。
+                      _aoModeDropdown(setModalState),
                       const SizedBox(height: 12),
                       // ── 均衡器预设（实时生效） ──
                       Text(L10n.of(dialogContext).eq_presets, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 6,
-                        children: [
-                          for (final preset in EqPreset.values)
-                            _eqPresetChip(preset, setModalState),
-                        ],
-                      ),
+                      _eqPresetDropdown(setModalState),
                       const SizedBox(height: 16),
                       // ── 播放速度 ──
                       Row(
@@ -2139,12 +2355,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(L10n.of(dialogContext).ui_done, style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              ],
             ),
           );
         },
@@ -2152,8 +2362,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
-  /// 均衡器预设芯片组件。
-  /// 音频输出（AO）档位芯片。
+  /// 音频输出（AO）档位热应用。
   ///
   /// 标签用技术名（`AudioTrack` / `OpenSL ES`），各语言不译，所以不进 l10n。
   /// 对**当前正在播放的** Player 立即应用 AO 档位。
@@ -2181,41 +2390,85 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   /// = 链 `audiotrack,opensles` + 固定会话号 + 会话广播 ⇒ 免 Root 音效软件能接管；
   /// `OpenSL ES` = 链 `opensles,audiotrack`，会话号由系统分配 ⇒ **无法**被音效软件
   /// 接管（仅作 audiotrack 建不起来时的兜底）。
-  Widget _aoModeChip(MpvAoMode mode, StateSetter setModalState) {
-    final isSelected = PreferencesService.getAudioOutputMode() == mode;
-    return ChoiceChip(
-      label: Text(mode.label, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.white70)),
-      selected: isSelected,
-      selectedColor: Colors.deepPurpleAccent,
-      backgroundColor: const Color(0xFF2A2A3E),
-      onSelected: (selected) {
-        if (!selected) return;
-        setModalState(() {});
-        PreferencesService.saveAudioOutputMode(mode);
-        // ⚠️ 必须**立即**对正在播放的播放器热应用：档位改的是 AO（音频输出
-        // 路径），只有音频输出重建时才生效。只存偏好而不应用，「切档位」在
-        // 听感上会毫无变化（AO 不是音质），体感等同功能失效 —— 真机反馈
-        // 「切换了 4 个模式没有任何效果」。热切换会有极短暂音。
-        _applyAudioOutputToReusedPlayer('audio-switch');
-      },
+  /// 下拉框形态：收起态只显示当前档位，点击展开全部档位、选择后自动收起
+  /// （DropdownButton 默认行为），替代原先铺满两行的档位芯片。
+  Widget _aoModeDropdown(StateSetter setModalState) {
+    final current = PreferencesService.getAudioOutputMode();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButton<MpvAoMode>(
+        value: current,
+        isExpanded: true,
+        underline: const SizedBox.shrink(),
+        dropdownColor: const Color(0xFF2A2A3E),
+        iconEnabledColor: Colors.white70,
+        style: const TextStyle(color: Colors.white, fontSize: 13),
+        items: [
+          for (final mode in MpvAoMode.values)
+            DropdownMenuItem(
+              value: mode,
+              child: Text(mode.label, style: const TextStyle(fontSize: 13, color: Colors.white)),
+            ),
+        ],
+        onChanged: (mode) {
+          if (mode == null || mode == current) return;
+          setModalState(() {});
+          PreferencesService.saveAudioOutputMode(mode);
+          // ⚠️ 必须**立即**对正在播放的播放器热应用：档位改的是 AO（音频输出
+          // 路径），只有音频输出重建时才生效。只存偏好而不应用，「切档位」在
+          // 听感上会毫无变化（AO 不是音质），体感等同功能失效 —— 真机反馈
+          // 「切换了 4 个模式没有任何效果」。热切换会有极短暂音。
+          _applyAudioOutputToReusedPlayer('audio-switch');
+          // 同步页面侧状态：下一次从任一入口（tune 按钮 / 三点菜单）打开
+          // 面板都读同一偏好，双向一致。
+          setState(() {});
+        },
+      ),
     );
   }
 
-  Widget _eqPresetChip(EqPreset preset, StateSetter setModalState) {
-    final isSelected = _eqPreset == preset;
-    return ChoiceChip(
-      label: Text(preset.labelL10n(L10n.of(context)), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.white70)),
-      selected: isSelected,
-      selectedColor: Colors.deepPurpleAccent,
-      backgroundColor: const Color(0xFF2A2A3E),
-                            onSelected: (selected) {
-                              if (!selected) return;
-                              setModalState(() => _eqPreset = preset);
-                              setState(() {});
-                              // mpv 内置均衡器实时应用
-                              _eqService.applyPreset(preset);
-                              PreferencesService.saveAudioEqPreset(preset.key);
-                            },
+  /// 均衡器预设下拉框：收起态只显示当前预设，点击展开全部、选择后自动收起；
+  /// 选择即实时应用到 mpv 内置均衡器并落盘偏好。
+  Widget _eqPresetDropdown(StateSetter setModalState) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButton<EqPreset>(
+        value: _eqPreset,
+        isExpanded: true,
+        underline: const SizedBox.shrink(),
+        dropdownColor: const Color(0xFF2A2A3E),
+        iconEnabledColor: Colors.white70,
+        style: const TextStyle(color: Colors.white, fontSize: 13),
+        items: [
+          for (final preset in EqPreset.values)
+            DropdownMenuItem(
+              value: preset,
+              child: Text(
+                preset.labelL10n(L10n.of(context)),
+                style: const TextStyle(fontSize: 13, color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+        onChanged: (preset) {
+          if (preset == null || preset == _eqPreset) return;
+          setModalState(() => _eqPreset = preset);
+          setState(() {});
+          // mpv 内置均衡器实时应用
+          _eqService.applyPreset(preset);
+          PreferencesService.saveAudioEqPreset(preset.key);
+        },
+      ),
     );
   }
 
@@ -2456,46 +2709,25 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       _handleBackgroundToggle(ctx, () => setSheet(() {}));
                     },
                   ),
-                  // ── 桌面歌词悬浮窗 ────────────────────────────────────────────────
+                  // ── 歌词设置（桌面歌词 / 动画风格 / 搜索 / 导入统一入口） ──────
                   ListTile(
-                    leading: Icon(
-                      Broken.note_text,
-                      color: _desktopLyricEnabled ? Colors.deepPurpleAccent : Colors.white,
-                    ),
+                    leading: const Icon(Icons.music_note_rounded,
+                        color: Colors.white),
                     title: Text(
-                      L10n.of(context).ui_desktop_lyric,
-                      style: TextStyle(
-                        color: _desktopLyricEnabled ? Colors.deepPurpleAccent : Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      L10n.of(context).lyric_settings,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600),
                     ),
-                    trailing: Switch(
-                      value: _desktopLyricEnabled,
-                      activeColor: Colors.deepPurpleAccent,
-                      onChanged: (_) {
-                        _toggleDesktopLyric();
-                        setSheet(() {});
-                      },
+                    subtitle: Text(
+                      _lyricStyleLabel(),
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12),
                     ),
-                    onTap: () {
-                      _toggleDesktopLyric();
-                      setSheet(() {});
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.search_rounded, color: Colors.white),
-                    title: Text(L10n.of(context).ui_search_lyrics_online, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded,
+                        color: Colors.white54),
                     onTap: () {
                       Navigator.pop(ctx);
-                      _showLyricSearchDialog();
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.folder_open_rounded, color: Colors.white),
-                    title: Text(L10n.of(context).ui_select_lyrics_file, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _selectLyricFile();
+                      _showLyricSettingsPage();
                     },
                   ),
                   ListTile(
@@ -2503,7 +2735,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     title: Text(L10n.of(context).msgb7c87215, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                     onTap: () {
                       Navigator.pop(ctx);
-                      _showEqualizerDialog();
+                      _showEqualizerSheet();
                     },
                   ),
                   ListTile(
@@ -2653,92 +2885,118 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         Expanded(
           child: FadeTransition(
             opacity: _fadeAnim,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildArtworkOrLyrics(accent, theme, isDark),
-                  _buildSingleLineLyrics(accent, theme, isDark),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    child: Row(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 超长标题向左循环滚动（跑马灯），避免省略号截断
-                              MarqueeText(
-                                text: _currentTitle,
-                                textAlign: TextAlign.left,
-                                active: isPlaying,
-                                scrollWhenPaused: true,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 24,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _getDisplayArtist(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                            size: 28,
-                          ),
-                          onPressed: () => setState(() => _isFavorite = !_isFavorite),
-                        ),
+                        _buildArtworkOrLyrics(accent, theme, isDark),
+                        _buildSingleLineLyrics(accent, theme, isDark),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AudioWaveformWidget(
-                      position: position,
-                      duration: duration,
-                      isPlaying: isPlaying,
-                      accentColor: accent,
-                      onSeekStart: () => isSeeking = true,
-                      onSeek: (d) {
-                        isSeeking = false;
-                        setState(() => position = d);
-                        player.seek(d);
-                      },
-                    ),
+                ),
+                // 歌曲信息 + 波形 + 播控整体 pinned 到导航栏上方：三者间距
+                // 均匀（14dp），底部再留 20dp 呼吸空间，不紧贴导航栏。
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 标题 / 歌手 / 收藏
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                                  MarqueeText(
+                                    text: _currentTitle,
+                                    textAlign: TextAlign.left,
+                                    active: isPlaying,
+                                    scrollWhenPaused: true,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 24,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _getDisplayArtist(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                _isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: _isFavorite
+                                    ? Colors.redAccent
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                size: 28,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _isFavorite = !_isFavorite),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: AudioWaveformWidget(
+                          position: position,
+                          duration: duration,
+                          isPlaying: isPlaying,
+                          accentColor: accent,
+                          onSeekStart: () => isSeeking = true,
+                          onSeek: (d) {
+                            isSeeking = false;
+                            setState(() => position = d);
+                            player.seek(d);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      AudioControlsWidget(
+                        isPlaying: isPlaying,
+                        position: position,
+                        duration: duration,
+                        onPlayPause: () => player.playOrPause(),
+                        onPrevious: _allSongs.length > 1 ? _playPrevious : null,
+                        onNext: _allSongs.length > 1 ? _playNext : null,
+                        onShowLyrics: _showLyricModeMenu,
+                        onShowSleepTimer: _showSleepTimerDialog,
+                        onShowEqualizer: _showEqualizerSheet,
+                        onShowQueue: () => _showQueueSheet(accent),
+                        playbackMode: _playbackMode,
+                        onTogglePlaybackMode: _cyclePlaybackMode,
+                        accentColor: accent,
+                        lyricsDisplayMode: _lyricsDisplayMode,
+                        audioPath: _currentPath,
+                      ),
+                    ],
                   ),
-                  AudioControlsWidget(
-                    isPlaying: isPlaying,
-                    position: position,
-                    duration: duration,
-                    onPlayPause: () => player.playOrPause(),
-                    onPrevious: _allSongs.length > 1 ? _playPrevious : null,
-                    onNext: _allSongs.length > 1 ? _playNext : null,
-                    onShowLyrics: _cycleLyricsDisplayMode,
-                    onShowSleepTimer: _showSleepTimerDialog,
-                    onShowEqualizer: _showEqualizerDialog,
-                    onShowQueue: () => _showQueueSheet(accent),
-                    playbackMode: _playbackMode,
-                    onTogglePlaybackMode: _cyclePlaybackMode,
-                    accentColor: accent,
-                    hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                    lyricsDisplayMode: _lyricsDisplayMode,
-                    audioPath: _currentPath,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -2808,90 +3066,118 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               Expanded(
                 child: FadeTransition(
                   opacity: _fadeAnim,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSingleLineLyrics(accent, theme, isDark),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // 超长标题向左循环滚动（跑马灯），避免省略号截断
-                              MarqueeText(
-                                text: _currentTitle,
-                                textAlign: TextAlign.center,
-                                active: isPlaying,
-                                scrollWhenPaused: true,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _getDisplayArtist(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              _buildSingleLineLyrics(accent, theme, isDark),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        IconButton(
-                          icon: Icon(
-                            _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                            size: 32,
-                          ),
-                          onPressed: () => setState(() => _isFavorite = !_isFavorite),
+                      ),
+                      // 标题 / 收藏 / 波形 / 播控整体 pinned 到导航栏上方：
+                      // 间距均匀（12dp），底部再留 20dp 不紧贴导航栏。
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                                  MarqueeText(
+                                    text: _currentTitle,
+                                    textAlign: TextAlign.center,
+                                    active: isPlaying,
+                                    scrollWhenPaused: true,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 20,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _getDisplayArtist(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            IconButton(
+                              icon: Icon(
+                                _isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: _isFavorite
+                                    ? Colors.redAccent
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                size: 32,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _isFavorite = !_isFavorite),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: AudioWaveformWidget(
+                                position: position,
+                                duration: duration,
+                                isPlaying: isPlaying,
+                                accentColor: accent,
+                                onSeekStart: () => isSeeking = true,
+                                onSeek: (d) {
+                                  isSeeking = false;
+                                  setState(() => position = d);
+                                  player.seek(d);
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            AudioControlsWidget(
+                              isPlaying: isPlaying,
+                              position: position,
+                              duration: duration,
+                              onPlayPause: () => player.playOrPause(),
+                              onPrevious: _allSongs.length > 1
+                                  ? _playPrevious
+                                  : null,
+                              onNext: _allSongs.length > 1 ? _playNext : null,
+                              onShowLyrics: _showLyricModeMenu,
+                              onShowSleepTimer: _showSleepTimerDialog,
+                              onShowEqualizer: _showEqualizerSheet,
+                              onShowQueue: () => _showQueueSheet(accent),
+                              playbackMode: _playbackMode,
+                              onTogglePlaybackMode: _cyclePlaybackMode,
+                              accentColor: accent,
+                              lyricsDisplayMode: _lyricsDisplayMode,
+                              audioPath: _currentPath,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: AudioWaveformWidget(
-                            position: position,
-                            duration: duration,
-                            isPlaying: isPlaying,
-                            accentColor: accent,
-                            onSeekStart: () => isSeeking = true,
-                            onSeek: (d) {
-                              isSeeking = false;
-                              setState(() => position = d);
-                              player.seek(d);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        AudioControlsWidget(
-                          isPlaying: isPlaying,
-                          position: position,
-                          duration: duration,
-                          onPlayPause: () => player.playOrPause(),
-                          onPrevious: _allSongs.length > 1 ? _playPrevious : null,
-                          onNext: _allSongs.length > 1 ? _playNext : null,
-                          onShowLyrics: _cycleLyricsDisplayMode,
-                          onShowSleepTimer: _showSleepTimerDialog,
-                          onShowEqualizer: _showEqualizerDialog,
-                          onShowQueue: () => _showQueueSheet(accent),
-                          playbackMode: _playbackMode,
-                          onTogglePlaybackMode: _cyclePlaybackMode,
-                          accentColor: accent,
-                          hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                          lyricsDisplayMode: _lyricsDisplayMode,
-                          audioPath: _currentPath,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -2903,142 +3189,333 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 }
 
-/// 歌词面板：全屏底部弹窗，实时同步显示歌词。
-class _LyricsPanel extends StatefulWidget {
+/// 全屏歌词页：真正全屏的歌词视图，支持切换动画风格、本地导入与在线搜索。
+class _FullScreenLyricsPage extends StatefulWidget {
   final Player player;
   final List<LyricLine>? lyrics;
-  final String? lyricSourcePath;
   final String title;
   final String artist;
   final Color accentColor;
   final bool isLoading;
-  final VoidCallback? onSelectLyricFile;
-  final VoidCallback? onSearchOnline;
-  final void Function(Duration)? onSeek;
+  final VoidCallback onSelectLyricFile;
+  final VoidCallback onSearchOnline;
 
-  const _LyricsPanel({
+  /// 当前歌曲标识（歌词偏移「仅本曲」作用域用）。
+  final String songPath;
+
+  /// 进入时的生效歌词偏移（毫秒）。
+  final int lyricOffsetMs;
+
+  const _FullScreenLyricsPage({
     required this.player,
     required this.lyrics,
-    required this.lyricSourcePath,
     required this.title,
     required this.artist,
     required this.accentColor,
     required this.isLoading,
-    this.onSelectLyricFile,
-    this.onSearchOnline,
-    this.onSeek,
+    required this.onSelectLyricFile,
+    required this.onSearchOnline,
+    required this.songPath,
+    this.lyricOffsetMs = 0,
   });
 
   @override
-  State<_LyricsPanel> createState() => _LyricsPanelState();
+  State<_FullScreenLyricsPage> createState() => _FullScreenLyricsPageState();
 }
 
-class _LyricsPanelState extends State<_LyricsPanel> {
+class _FullScreenLyricsPageState extends State<_FullScreenLyricsPage> {
   Duration _position = Duration.zero;
   StreamSubscription<Duration>? _positionSub;
+  bool _isPlaying = false;
+  StreamSubscription<bool>? _playingSub;
+  late LyricAnimationStyle _style;
+
+  /// 生效的歌词整体偏移（毫秒）：正值延后、负值提前。
+  int _lyricOffsetMs = 0;
+
+  /// 顶栏（歌曲信息 / 搜索 / 导入 / 风格切换 / 偏移）是否可见。
+  /// 默认隐藏 = 沉浸式全屏；点击歌词区空白处显示，2s 无操作自动收起。
+  bool _chromeVisible = false;
+
+  /// 顶栏自动隐藏定时器（显示 2s 后回到沉浸模式）。
+  Timer? _chromeTimer;
 
   @override
   void initState() {
     super.initState();
+    _style = LyricAnimationStyle.fromName(
+        PreferencesService.getLyricAnimationStyleName());
+    _lyricOffsetMs = widget.lyricOffsetMs;
+    _isPlaying = widget.player.state.playing;
     _positionSub = widget.player.stream.position.listen((p) {
       if (mounted) setState(() => _position = p);
+    });
+    _playingSub = widget.player.stream.playing.listen((playing) {
+      if (mounted) setState(() => _isPlaying = playing);
     });
   }
 
   @override
   void dispose() {
+    _chromeTimer?.cancel();
     _positionSub?.cancel();
+    _playingSub?.cancel();
     super.dispose();
+  }
+
+  /// 显示顶栏并启动 2s 自动隐藏（再次点击空白处可立即收起）。
+  void _showChrome() {
+    _chromeTimer?.cancel();
+    setState(() => _chromeVisible = true);
+    _startChromeHideTimer();
+  }
+
+  void _hideChrome() {
+    _chromeTimer?.cancel();
+    setState(() => _chromeVisible = false);
+  }
+
+  /// 顶栏已显示时重排自动隐藏计时（弹出菜单开关后沿用相同节奏）。
+  void _rearmChromeTimer() {
+    if (!_chromeVisible) return;
+    _chromeTimer?.cancel();
+    _startChromeHideTimer();
+  }
+
+  void _startChromeHideTimer() {
+    _chromeTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() => _chromeVisible = false);
+    });
+  }
+
+  void _toggleChrome() {
+    if (_chromeVisible) {
+      _hideChrome();
+    } else {
+      _showChrome();
+    }
+  }
+
+  /// 歌词整体偏移设置（实时预览，确认才落盘）。
+  void _showOffsetDialog() {
+    LyricOffsetDialog.show(
+      context,
+      songPath: widget.songPath,
+      songTitle: widget.title,
+      globalMs: PreferencesService.getLyricOffsetGlobal(),
+      songMs: PreferencesService.getLyricOffsetForSong(widget.songPath),
+      effectiveMs: _lyricOffsetMs,
+      onPreview: (ms) {
+        if (!mounted) return;
+        setState(() => _lyricOffsetMs = ms);
+        DesktopLyricController.instance.setOffsetMs(ms);
+      },
+    ).then((result) {
+      if (!mounted || result == null) return;
+      setState(() => _lyricOffsetMs = result);
+      DesktopLyricController.instance.setOffsetMs(result);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
 
-    return Container(
-      height: mediaQuery.size.height * 0.85,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // 拖拽指示器
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
+    // 全屏沉浸：状态栏透明，顶部渐变延伸至状态栏后方。
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    ));
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: _chromeWrap(
+          child: IconButton(
+            icon: Icon(Broken.arrow_down_2,
+                color: isDark ? Colors.white : theme.colorScheme.onSurface),
+            tooltip: MaterialLocalizations.of(context).closeButtonLabel,
+            onPressed: () => Navigator.pop(context),
           ),
-          // 标题栏
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.5),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+        ),
+        title: _chromeWrap(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isDark ? Colors.white : theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                widget.artist,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: (isDark ? Colors.white : theme.colorScheme.onSurface)
+                      .withValues(alpha: 0.55),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          // 在线搜索 / 本地导入合并为一个入口：点击弹出菜单二选一。
+          _chromeWrap(
+            child: PopupMenuButton<String>(
+              tooltip: l10n.ui_lyrics_menu,
+              icon: Icon(
+                Icons.lyrics_rounded,
+                size: 22,
+                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
+                    .withValues(alpha: 0.75),
+              ),
+              // 菜单打开期间暂停顶栏自动隐藏，避免锚点按钮消失。
+              onOpened: () => _chromeTimer?.cancel(),
+              onCanceled: _rearmChromeTimer,
+              onSelected: (value) {
+                if (value == 'search') {
+                  widget.onSearchOnline();
+                } else if (value == 'import') {
+                  widget.onSelectLyricFile();
+                }
+                _rearmChromeTimer();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'search',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.search_rounded, size: 20),
+                    title: Text(l10n.ui_search_lyrics_online),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.folder_open_rounded, color: widget.accentColor, size: 22),
-                  tooltip: L10n.of(context).ui_select_lyrics_file,
-                  onPressed: widget.onSelectLyricFile,
-                ),
-                IconButton(
-                  icon: Icon(Broken.arrow_down_2, color: isDark ? Colors.white : theme.colorScheme.onSurface, size: 24),
-                  onPressed: () => Navigator.pop(context),
+                PopupMenuItem<String>(
+                  value: 'import',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.folder_open_rounded, size: 20),
+                    title: Text(l10n.ui_select_lyrics_file),
+                  ),
                 ),
               ],
             ),
           ),
-          Divider(color: theme.colorScheme.onSurface.withValues(alpha: 0.08), height: 1),
-          // 歌词内容
-          Expanded(
-            child: widget.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : widget.lyrics != null && widget.lyrics!.isNotEmpty
-                    ? LyricsViewWidget(
-                        lyrics: widget.lyrics!,
-                        position: _position,
-                        accentColor: widget.accentColor,
-                        onSeek: widget.onSeek,
-                      )
-                    : _buildNoLyricsWidget(theme, isDark),
+          _chromeWrap(
+            child: IconButton(
+              icon: Icon(
+                Icons.animation_rounded,
+                size: 22,
+                color: widget.accentColor,
+              ),
+              tooltip: l10n.lyric_animation_style,
+              onPressed: () {
+                showLyricStyleSheet(
+                  context,
+                  current: _style,
+                  onSelected: (s) => setState(() => _style = s),
+                );
+              },
+            ),
+          ),
+          _chromeWrap(
+            child: IconButton(
+              icon: const Icon(Icons.timer_outlined, size: 22),
+              color: _lyricOffsetMs != 0
+                  ? widget.accentColor
+                  : (isDark ? Colors.white : theme.colorScheme.onSurface)
+                      .withValues(alpha: 0.75),
+              tooltip: _lyricOffsetMs != 0
+                  ? '${l10n.lyric_offset}  ${formatLyricOffset(_lyricOffsetMs)}'
+                  : l10n.lyric_offset,
+              onPressed: _showOffsetDialog,
+            ),
           ),
         ],
+      ),
+      // 点击歌词区（非歌词行本身）显示顶栏；显示 2s 后自动收起，
+      // 再次点击立即收起，回到沉浸模式。
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _toggleChrome,
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          // 顶栏隐藏时歌词延伸至状态栏下方，真正沉浸；显示时让出 AppBar 高度。
+          padding: EdgeInsets.only(
+            top: _chromeVisible
+                ? mediaQuery.padding.top + kToolbarHeight
+                : mediaQuery.padding.top,
+            bottom: mediaQuery.padding.bottom,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  widget.accentColor.withValues(alpha: isDark ? 0.14 : 0.10),
+                  theme.scaffoldBackgroundColor,
+                  theme.scaffoldBackgroundColor,
+                ],
+                stops: const [0.0, 0.45, 1.0],
+              ),
+            ),
+            child: widget.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : (widget.lyrics != null && widget.lyrics!.isNotEmpty
+                    ? LyricsViewWidget(
+                        lyrics: widget.lyrics!,
+                        position: Duration(
+                          milliseconds:
+                              _position.inMilliseconds - _lyricOffsetMs,
+                        ),
+                        accentColor: widget.accentColor,
+                        style: _style,
+                        isPlaying: _isPlaying,
+                        onSeek: (d) => widget.player.seek(d),
+                      )
+                    : _buildNoLyrics(theme, isDark)),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildNoLyricsWidget(ThemeData theme, bool isDark) {
+  /// 顶栏控件显隐包裹：沉浸态淡出 + 上移，并屏蔽点击。
+  Widget _chromeWrap({required Widget child}) {
+    return IgnorePointer(
+      ignoring: !_chromeVisible,
+      child: AnimatedSlide(
+        offset: _chromeVisible ? Offset.zero : const Offset(0, -0.4),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        child: AnimatedOpacity(
+          opacity: _chromeVisible ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoLyrics(ThemeData theme, bool isDark) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -3048,7 +3525,8 @@ class _LyricsPanelState extends State<_LyricsPanel> {
             Icon(
               Broken.document,
               size: 64,
-              color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.2),
+              color: (isDark ? Colors.white : theme.colorScheme.onSurface)
+                  .withValues(alpha: 0.2),
             ),
             const SizedBox(height: 16),
             Text(
@@ -3056,7 +3534,8 @@ class _LyricsPanelState extends State<_LyricsPanel> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.6),
+                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
+                    .withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 8),
@@ -3066,7 +3545,8 @@ class _LyricsPanelState extends State<_LyricsPanel> {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.6,
-                color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.4),
+                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
+                    .withValues(alpha: 0.4),
               ),
             ),
             const SizedBox(height: 24),
@@ -3081,9 +3561,12 @@ class _LyricsPanelState extends State<_LyricsPanel> {
                   label: Text(L10n.of(context).ui_search_lyrics_online),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: widget.accentColor,
-                    side: BorderSide(color: widget.accentColor.withValues(alpha: 0.4)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    side: BorderSide(
+                        color: widget.accentColor.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
                 OutlinedButton.icon(
@@ -3092,9 +3575,12 @@ class _LyricsPanelState extends State<_LyricsPanel> {
                   label: Text(L10n.of(context).ui_select_lyrics_file),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: widget.accentColor,
-                    side: BorderSide(color: widget.accentColor.withValues(alpha: 0.4)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    side: BorderSide(
+                        color: widget.accentColor.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ],

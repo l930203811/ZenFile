@@ -4361,6 +4361,9 @@ class L10nEs extends L10n {
   String get ui_select_lyrics_file => 'Importar letra local';
 
   @override
+  String get ui_lyrics_menu => 'Menú de letras';
+
+  @override
   String get lyric_animation_style => 'Estilo de animación de letra';
 
   @override
@@ -8752,4 +8755,66 @@ class L10nEs extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'Las palabras cantadas estallan en fragmentos huecos que derivan lentamente';
+
+  @override
+  String get lyric_style_mixed => 'Mixto';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'Cada verso muestra al azar uno de los cinco estilos: clásico, brillo, inmersivo, PV o eco';
+
+  @override
+  String get lyric_color_settings => 'Colores de la letra';
+
+  @override
+  String get lyric_color_unplayed => 'Sin reproducir';
+
+  @override
+  String get lyric_color_unplayed_desc => 'Letra aún no cantada';
+
+  @override
+  String get lyric_color_current => 'Reproduciendo';
+
+  @override
+  String get lyric_color_current_desc => 'La sílaba que se canta';
+
+  @override
+  String get lyric_color_played => 'Reproducido';
+
+  @override
+  String get lyric_color_played_desc => 'Letra ya cantada';
+
+  @override
+  String get lyric_color_default => 'Predeterminado';
+
+  @override
+  String get lyric_color_reset => 'Restablecer';
+
+  @override
+  String get lyric_offset => 'Desplazamiento de letra';
+
+  @override
+  String get lyric_offset_desc =>
+      'Ajusta el tiempo de toda la letra: negativo = antes, positivo = después';
+
+  @override
+  String get lyric_offset_scope_current => 'Canción actual';
+
+  @override
+  String get lyric_offset_scope_global => 'Global';
+
+  @override
+  String get lyric_offset_effective => 'Vigente';
+
+  @override
+  String get lyric_offset_reset => 'Restablecer';
+
+  @override
+  String get lyric_offset_clear_current => 'Quitar desplazamiento de canción';
+
+  @override
+  String get lyric_offset_input_title => 'Introducir desplazamiento';
+
+  @override
+  String get lyric_offset_input_hint => 'Desplazamiento (segundos)';
 }

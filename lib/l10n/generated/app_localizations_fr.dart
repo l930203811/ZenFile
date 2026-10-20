@@ -4360,6 +4360,9 @@ class L10nFr extends L10n {
   String get ui_select_lyrics_file => 'Importer des paroles locales';
 
   @override
+  String get ui_lyrics_menu => 'Menu des paroles';
+
+  @override
   String get lyric_animation_style => 'Style d\'animation des paroles';
 
   @override
@@ -8771,4 +8774,66 @@ class L10nFr extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'Les mots chantés éclatent en fragments creux qui dérivent lentement';
+
+  @override
+  String get lyric_style_mixed => 'Mixte';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'Chaque ligne affiche aléatoirement l’un des cinq styles : classique, lueur, immersif, PV ou écho';
+
+  @override
+  String get lyric_color_settings => 'Couleurs des paroles';
+
+  @override
+  String get lyric_color_unplayed => 'Non lu';
+
+  @override
+  String get lyric_color_unplayed_desc => 'Paroles pas encore chantées';
+
+  @override
+  String get lyric_color_current => 'En cours';
+
+  @override
+  String get lyric_color_current_desc => 'Le mot en cours de chant';
+
+  @override
+  String get lyric_color_played => 'Déjà lu';
+
+  @override
+  String get lyric_color_played_desc => 'Paroles déjà chantées';
+
+  @override
+  String get lyric_color_default => 'Par défaut';
+
+  @override
+  String get lyric_color_reset => 'Réinitialiser';
+
+  @override
+  String get lyric_offset => 'Décalage des paroles';
+
+  @override
+  String get lyric_offset_desc =>
+      'Décale le timing de toutes les lignes : négatif = plus tôt, positif = plus tard';
+
+  @override
+  String get lyric_offset_scope_current => 'Morceau actuel';
+
+  @override
+  String get lyric_offset_scope_global => 'Global';
+
+  @override
+  String get lyric_offset_effective => 'Effectif';
+
+  @override
+  String get lyric_offset_reset => 'Réinitialiser';
+
+  @override
+  String get lyric_offset_clear_current => 'Effacer le décalage du morceau';
+
+  @override
+  String get lyric_offset_input_title => 'Saisir le décalage';
+
+  @override
+  String get lyric_offset_input_hint => 'Décalage (secondes)';
 }

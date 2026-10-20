@@ -4115,6 +4115,9 @@ class L10nZh extends L10n {
   String get ui_select_lyrics_file => '导入本地歌词';
 
   @override
+  String get ui_lyrics_menu => '歌词菜单';
+
+  @override
   String get lyric_animation_style => '歌词动画风格';
 
   @override
@@ -8187,6 +8190,66 @@ class L10nZh extends L10n {
 
   @override
   String get lyric_style_echo_desc => '扫过填充的同时，唱过的字炸成空心碎片缓缓漂移';
+
+  @override
+  String get lyric_style_mixed => '混合模式';
+
+  @override
+  String get lyric_style_mixed_desc => '每句歌词随机呈现经典、辉光、巨幕、PV 与回声中的一种风格，逐句变化';
+
+  @override
+  String get lyric_color_settings => '歌词颜色';
+
+  @override
+  String get lyric_color_unplayed => '未播放';
+
+  @override
+  String get lyric_color_unplayed_desc => '尚未唱到的歌词';
+
+  @override
+  String get lyric_color_current => '当前播放';
+
+  @override
+  String get lyric_color_current_desc => '正在演唱的字';
+
+  @override
+  String get lyric_color_played => '已播放';
+
+  @override
+  String get lyric_color_played_desc => '已经唱过的歌词';
+
+  @override
+  String get lyric_color_default => '默认';
+
+  @override
+  String get lyric_color_reset => '恢复默认';
+
+  @override
+  String get lyric_offset => '歌词偏移';
+
+  @override
+  String get lyric_offset_desc => '调整整首歌词的时间：负值提前，正值延后';
+
+  @override
+  String get lyric_offset_scope_current => '当前歌曲';
+
+  @override
+  String get lyric_offset_scope_global => '全局';
+
+  @override
+  String get lyric_offset_effective => '生效值';
+
+  @override
+  String get lyric_offset_reset => '重置';
+
+  @override
+  String get lyric_offset_clear_current => '清除本曲偏移';
+
+  @override
+  String get lyric_offset_input_title => '输入偏移值';
+
+  @override
+  String get lyric_offset_input_hint => '偏移值（秒）';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12253,6 +12316,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_select_lyrics_file => '匯入本地歌詞';
+
+  @override
+  String get ui_lyrics_menu => '歌詞選單';
 
   @override
   String get lyric_animation_style => '歌詞動畫風格';
@@ -16342,4 +16408,64 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get lyric_style_echo_desc => '掃過填充的同時，唱過的字炸成空心碎片緩緩漂移';
+
+  @override
+  String get lyric_style_mixed => '混合模式';
+
+  @override
+  String get lyric_style_mixed_desc => '每句歌詞隨機呈現經典、輝光、巨幕、PV 與回聲中的一種風格，逐句變化';
+
+  @override
+  String get lyric_color_settings => '歌詞顏色';
+
+  @override
+  String get lyric_color_unplayed => '未播放';
+
+  @override
+  String get lyric_color_unplayed_desc => '尚未唱到的歌詞';
+
+  @override
+  String get lyric_color_current => '目前播放';
+
+  @override
+  String get lyric_color_current_desc => '正在演唱的字';
+
+  @override
+  String get lyric_color_played => '已播放';
+
+  @override
+  String get lyric_color_played_desc => '已經唱過的歌詞';
+
+  @override
+  String get lyric_color_default => '預設';
+
+  @override
+  String get lyric_color_reset => '恢復預設';
+
+  @override
+  String get lyric_offset => '歌詞偏移';
+
+  @override
+  String get lyric_offset_desc => '調整整首歌詞的時間：負值提前，正值延後';
+
+  @override
+  String get lyric_offset_scope_current => '目前歌曲';
+
+  @override
+  String get lyric_offset_scope_global => '全域';
+
+  @override
+  String get lyric_offset_effective => '生效值';
+
+  @override
+  String get lyric_offset_reset => '重設';
+
+  @override
+  String get lyric_offset_clear_current => '清除本曲偏移';
+
+  @override
+  String get lyric_offset_input_title => '輸入偏移值';
+
+  @override
+  String get lyric_offset_input_hint => '偏移值（秒）';
 }

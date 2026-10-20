@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.0';
+  static const String _latestChangelogVersion = 'v3.6.1';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v361,
     _v360,
     _v359,
     _v358,
@@ -948,7 +949,59 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.0 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.1 ────────────────────────────────────────────────
+  static const _Changelog _v361 = _Changelog(
+    version: 'v3.6.1',
+    date: '2026-10-21',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '歌词动画风格扩充至 6 种：新增「文字 PV」（唱字逐字飞入、逐渐揭示整句）与「回声碎片」（空心字碎片漂移）两种唱字特效，只呈现当前播放的一句歌词',
+        '新增「混合模式」并作为默认动画风格：它是一个独立风格但没有单一形态——每句歌词随机呈现五种内置风格（经典、辉光、巨幕、文字 PV、回声碎片）中的一种，逐句变化；也可以固定为任意单一风格',
+        '歌词显示菜单改版：用分隔线区分「显示模式」（关闭 / 单行 / 半屏 / 全屏）与「动画风格」；选择动画风格不再强制跳转全屏，而是按当前显示模式即时应用，单行与半屏同样支持全部 6 种风格',
+        '歌词显示默认改为半屏：进入播放页即在内联歌词区显示歌词，仍可在显示菜单里切换为关闭 / 单行 / 全屏',
+        '播放页三点菜单新增「歌词设置」：桌面歌词开关、动画风格、歌词配色与整体偏移集中在一处管理',
+        '新增歌词整体偏移：全屏歌词页顶栏与「歌词设置」均可进入，支持只应用于当前歌曲或全局生效；拖动滑杆实时预览、点击数值可手动输入，范围 ±30 秒、步进 0.1 秒，桌面歌词同步应用，设置自动持久化',
+        '新增歌词配色自定义：未播放 / 当前播放 / 已播放三色可分别调整，默认经典搭配（纯白 / 亮黄绿 / 草绿），支持一键恢复默认',
+        '底部导航栏新增不透明度调节：「自定义快捷方式」页与「设置 → 常规与行为 → 导航栏设置」双入口，数值双向同步，可恢复默认，默认观感与之前一致',
+      ]),
+      _ChangeSection('✨ 界面焕新', [
+        '播放页的歌曲名、歌手、收藏与波形整体下移，与播放控制按钮均匀排列',
+        '歌词变色区分歌词源类型：普通 LRC（无逐字时间戳）整句一次性变色，不再逐字乱跳；带逐字时间戳的 LRC 仍严格逐字变色，逐字弹放动画与唱字特效保持原样',
+        '全屏歌词模式下点击空白处可呼出顶部菜单，2 秒无操作自动隐藏，重回沉浸模式',
+        '全屏歌词顶栏的「在线搜索歌词」与「本地导入歌词」合并为单一入口，点击弹出菜单选择',
+        '单行歌词显示时，文字 PV 与回声碎片特效可向上穿过封面卡片显示',
+        '半屏歌词未匹配到歌词文件时，在「导入本地歌词」上方新增「搜索在线歌词」入口',
+      ]),
+      _ChangeSection('⚡ 性能优化', [
+        '浏览页文件列表滚动期间冻结底部操作栏玻璃层的背景模糊，滚动结束自动恢复，大目录滑动更顺畅',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'Expanded the lyrics animation library to 6 styles: added "Text PV" (characters fly in one by one to gradually reveal the whole line) and "Echo Shards" (hollow character fragments drifting), both showing only the line currently being sung',
+        'Added "Mixed" as the default animation style: a standalone style with no single shape - each line randomly renders as one of the five built-in styles (classic, glow, immersive, text PV, echo shards), changing line by line; any single style can still be pinned',
+        'Reworked the lyrics display menu: a divider now separates the display modes (off / single line / half screen / full screen) from the animation styles; picking a style no longer forces full screen, it applies to the current display mode instead, and single-line and half-screen modes support all 6 styles too',
+        'Lyrics now default to half-screen display: opening the player shows the inline lyrics area right away, and you can still switch to off / single line / full screen in the display menu',
+        'Added a "Lyric settings" page to the player three-dot menu, gathering the desktop lyrics switch, animation styles, lyric colors and the overall offset in one place',
+        'Added an overall lyric offset: available from the full-screen lyrics top bar and from "Lyric settings"; it can apply to the current song only or globally, the slider previews in real time and the displayed value can be tapped for manual input (±30 seconds in 0.1-second steps), desktop lyrics follow along, and the setting persists',
+        'Added lyric color customization: the unplayed / current / played colors can be adjusted independently, with a classic default set (white / lime / light green) and one-tap restore',
+        'Added navigation bar opacity control: available from both "Custom shortcuts" and "Settings → General & behavior → Navigation bar settings", the two stay in sync, it can be restored to default, and the default look is unchanged',
+      ]),
+      _ChangeSection('✨ Interface', [
+        'Moved the song title, artist, favorite button and waveform down on the player page so they line up evenly with the playback controls',
+        'Lyric coloring now follows the lyric source: plain LRC files (without word timestamps) fill the whole line at once instead of jumping character by character, while enhanced LRC with word timestamps still colors strictly word by word; the character pop animation and singing effects are unchanged',
+        'In full-screen lyrics mode, tapping the blank area reveals the top menu, which auto-hides after 2 seconds of inactivity and returns to immersive mode',
+        'Merged "Search lyrics online" and "Import local lyrics" in the full-screen lyrics top bar into a single button that opens a menu',
+        'In single-line lyrics mode, the Text PV and Echo Shards effects can now travel up across the cover card',
+        'When no lyrics file is matched in half-screen mode, a "Search lyrics online" entry now sits above "Import local lyrics"',
+      ]),
+      _ChangeSection('⚡ Performance', [
+        'The browser file list now freezes the action bar glass blur while scrolling and restores it afterwards, making large folders scroll more smoothly',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.0 ─────────────────────────────────────────────────────────
   static const _Changelog _v360 = _Changelog(
     version: 'v3.6.0',
     date: '2026-10-19',

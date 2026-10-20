@@ -4334,6 +4334,9 @@ class L10nDe extends L10n {
   String get ui_select_lyrics_file => 'Lokale Liedtexte importieren';
 
   @override
+  String get ui_lyrics_menu => 'Songtext-Menü';
+
+  @override
   String get lyric_animation_style => 'Stil der Liedtext-Animation';
 
   @override
@@ -8734,4 +8737,66 @@ class L10nDe extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'Gesungene Wörter zerfallen in hohle Fragmente, die davontreiben';
+
+  @override
+  String get lyric_style_mixed => 'Gemischt';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'Jede Zeile zeigt zufällig einen der fünf Stile: Klassik, Glühen, Großansicht, PV oder Echo';
+
+  @override
+  String get lyric_color_settings => 'Textfarben';
+
+  @override
+  String get lyric_color_unplayed => 'Nicht gespielt';
+
+  @override
+  String get lyric_color_unplayed_desc => 'Noch nicht gesungene Zeilen';
+
+  @override
+  String get lyric_color_current => 'Aktuell';
+
+  @override
+  String get lyric_color_current_desc => 'Die aktuell gesungene Silbe';
+
+  @override
+  String get lyric_color_played => 'Bereits gespielt';
+
+  @override
+  String get lyric_color_played_desc => 'Bereits gesungene Zeilen';
+
+  @override
+  String get lyric_color_default => 'Standard';
+
+  @override
+  String get lyric_color_reset => 'Zurücksetzen';
+
+  @override
+  String get lyric_offset => 'Songtext-Versatz';
+
+  @override
+  String get lyric_offset_desc =>
+      'Timing aller Textzeilen verschieben: negativ = früher, positiv = später';
+
+  @override
+  String get lyric_offset_scope_current => 'Aktueller Titel';
+
+  @override
+  String get lyric_offset_scope_global => 'Global';
+
+  @override
+  String get lyric_offset_effective => 'Wirksam';
+
+  @override
+  String get lyric_offset_reset => 'Zurücksetzen';
+
+  @override
+  String get lyric_offset_clear_current => 'Titel-Versatz entfernen';
+
+  @override
+  String get lyric_offset_input_title => 'Versatz eingeben';
+
+  @override
+  String get lyric_offset_input_hint => 'Versatz (Sekunden)';
 }

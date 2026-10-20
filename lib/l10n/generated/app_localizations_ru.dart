@@ -4338,6 +4338,9 @@ class L10nRu extends L10n {
   String get ui_select_lyrics_file => 'Импорт локального текста';
 
   @override
+  String get ui_lyrics_menu => 'Меню текста';
+
+  @override
   String get lyric_animation_style => 'Стиль анимации текста';
 
   @override
@@ -8716,4 +8719,66 @@ class L10nRu extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'Закрашенные слова разлетаются полыми осколками, медленно уплывающими';
+
+  @override
+  String get lyric_style_mixed => 'Микс';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'Каждая строка случайно получает один из пяти стилей: классика, свечение, крупный, PV или эхо';
+
+  @override
+  String get lyric_color_settings => 'Цвета текста';
+
+  @override
+  String get lyric_color_unplayed => 'Не воспроизведено';
+
+  @override
+  String get lyric_color_unplayed_desc => 'Ещё не исполненные строки';
+
+  @override
+  String get lyric_color_current => 'Сейчас играет';
+
+  @override
+  String get lyric_color_current_desc => 'Исполняемый сейчас слог';
+
+  @override
+  String get lyric_color_played => 'Воспроизведено';
+
+  @override
+  String get lyric_color_played_desc => 'Уже исполненные строки';
+
+  @override
+  String get lyric_color_default => 'По умолчанию';
+
+  @override
+  String get lyric_color_reset => 'Сбросить';
+
+  @override
+  String get lyric_offset => 'Смещение текста';
+
+  @override
+  String get lyric_offset_desc =>
+      'Сдвиг тайминга всех строк: минус — раньше, плюс — позже';
+
+  @override
+  String get lyric_offset_scope_current => 'Текущий трек';
+
+  @override
+  String get lyric_offset_scope_global => 'Глобально';
+
+  @override
+  String get lyric_offset_effective => 'Применяется';
+
+  @override
+  String get lyric_offset_reset => 'Сбросить';
+
+  @override
+  String get lyric_offset_clear_current => 'Убрать смещение трека';
+
+  @override
+  String get lyric_offset_input_title => 'Введите смещение';
+
+  @override
+  String get lyric_offset_input_hint => 'Смещение (секунды)';
 }

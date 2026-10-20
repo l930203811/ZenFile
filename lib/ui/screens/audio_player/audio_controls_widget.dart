@@ -19,7 +19,6 @@ class AudioControlsWidget extends StatelessWidget {
   final int playbackMode;
   final VoidCallback onTogglePlaybackMode;
   final Color accentColor;
-  final bool hasLyrics;
   // 0=off, 1=single line, 2=multi line, 3=full panel
   final int lyricsDisplayMode;
   // 当前播放文件的路径，用于从扩展名/文件头推断真实格式与位深
@@ -40,7 +39,6 @@ class AudioControlsWidget extends StatelessWidget {
     required this.playbackMode,
     required this.onTogglePlaybackMode,
     required this.accentColor,
-    this.hasLyrics = false,
     this.lyricsDisplayMode = 0,
     this.audioPath,
   });
@@ -225,11 +223,11 @@ class AudioControlsWidget extends StatelessWidget {
                               : lyricsDisplayMode == 2
                                   ? L10n.of(context).ui_lyrics_mode_multi_line
                                   : L10n.of(context).ui_lyrics_mode_full_panel,
+                      // 仅在实际展示歌词（模式非关闭）时高亮；
+                      // 关闭态统一中性色，避免"有歌词"造成的常亮误导。
                       color: lyricsDisplayMode != 0
                           ? accentColor
-                          : hasLyrics
-                              ? accentColor.withValues(alpha: 0.6)
-                              : theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.8),
                       onPressed: onShowLyrics,
                     ),
                     // Sleep Timer

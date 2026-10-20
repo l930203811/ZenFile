@@ -4148,6 +4148,9 @@ class L10nJa extends L10n {
   String get ui_select_lyrics_file => 'ローカル歌詞をインポート';
 
   @override
+  String get ui_lyrics_menu => '歌詞メニュー';
+
+  @override
   String get lyric_animation_style => '歌詞アニメーションスタイル';
 
   @override
@@ -8364,4 +8367,65 @@ class L10nJa extends L10n {
 
   @override
   String get lyric_style_echo_desc => '塗りつぶしと同時に、歌った文字が空心の欠片になって漂う';
+
+  @override
+  String get lyric_style_mixed => 'ミックス';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      '行ごとにクラシック・グロー・ジャンボ・PV・エコーの中からランダムに1つを表示';
+
+  @override
+  String get lyric_color_settings => '歌詞の色';
+
+  @override
+  String get lyric_color_unplayed => '未再生';
+
+  @override
+  String get lyric_color_unplayed_desc => 'まだ歌われていない歌詞';
+
+  @override
+  String get lyric_color_current => '再生中';
+
+  @override
+  String get lyric_color_current_desc => 'いま歌われている字';
+
+  @override
+  String get lyric_color_played => '再生済み';
+
+  @override
+  String get lyric_color_played_desc => 'すでに歌われた歌詞';
+
+  @override
+  String get lyric_color_default => 'デフォルト';
+
+  @override
+  String get lyric_color_reset => 'デフォルトに戻す';
+
+  @override
+  String get lyric_offset => '歌詞のオフセット';
+
+  @override
+  String get lyric_offset_desc => '歌詞全体のタイミングを調整（負値＝早く、正値＝遅く）';
+
+  @override
+  String get lyric_offset_scope_current => '現在の曲';
+
+  @override
+  String get lyric_offset_scope_global => '全体';
+
+  @override
+  String get lyric_offset_effective => '適用値';
+
+  @override
+  String get lyric_offset_reset => 'リセット';
+
+  @override
+  String get lyric_offset_clear_current => 'この曲のオフセットを削除';
+
+  @override
+  String get lyric_offset_input_title => 'オフセット値を入力';
+
+  @override
+  String get lyric_offset_input_hint => 'オフセット（秒）';
 }

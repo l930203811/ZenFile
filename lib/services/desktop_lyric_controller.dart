@@ -34,6 +34,9 @@ class DesktopLyricController {
   String? _lastText;
   int _lastHighlightLen = -1;
 
+  /// 歌词整体偏移（毫秒）：正值 = 歌词延后，负值 = 提前。0 = 不偏移。
+  int _offsetMs = 0;
+
   /// 心跳计数器
   int _heartbeatCounter = 0;
   static const int _heartbeatInterval = 20;
@@ -55,6 +58,18 @@ class DesktopLyricController {
     _highlightColor = highlightColor;
     _normalColor = normalColor;
   }
+
+  /// 设置歌词整体偏移（毫秒）；变化后重置节流缓存，确保立即按新偏移推送。
+  void setOffsetMs(int ms) {
+    if (_offsetMs == ms) return;
+    _offsetMs = ms;
+    _lastText = null;
+    _lastHighlightLen = -1;
+  }
+
+  /// 应用歌词偏移：把播放位置平移到歌词时间轴上。
+  Duration _applyOffset(Duration position) =>
+      Duration(milliseconds: position.inMilliseconds - _offsetMs);
 
   /// 启动位置监听
   ///
@@ -91,6 +106,7 @@ class DesktopLyricController {
     _normalColor = null;
     _lastText = null;
     _lastHighlightLen = -1;
+    _offsetMs = 0;
     _heartbeatCounter = 0;
     _recovering = false;
   }
@@ -101,9 +117,10 @@ class DesktopLyricController {
 
   /// 根据当前位置更新桌面歌词
   void _update(Duration position) {
-    final line = _getCurrentLyricLine(position);
+    final pos = _applyOffset(position);
+    final line = _getCurrentLyricLine(pos);
     final text = line?.text ?? '';
-    final highlightLen = _calcHighlightLen(line, position);
+    final highlightLen = _calcHighlightLen(line, pos);
 
     if (text != _lastText || highlightLen != _lastHighlightLen) {
       _lastText = text;
@@ -131,9 +148,10 @@ class DesktopLyricController {
     if (!stillShowing && _player != null) {
       _recovering = true;
       try {
-        final line = _getCurrentLyricLine(_player!.state.position);
+        final pos = _applyOffset(_player!.state.position);
+        final line = _getCurrentLyricLine(pos);
         final text = line?.text ?? '';
-        final highlightLen = _calcHighlightLen(line, _player!.state.position);
+        final highlightLen = _calcHighlightLen(line, pos);
         await DesktopLyricService.instance.show(
           text,
           highlightColor: _highlightColor,

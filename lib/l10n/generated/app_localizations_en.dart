@@ -4290,6 +4290,9 @@ class L10nEn extends L10n {
   String get ui_select_lyrics_file => 'Import local lyrics';
 
   @override
+  String get ui_lyrics_menu => 'Lyrics menu';
+
+  @override
   String get lyric_animation_style => 'Lyric animation style';
 
   @override
@@ -8633,4 +8636,66 @@ class L10nEn extends L10n {
   @override
   String get lyric_style_echo_desc =>
       'Sung words burst into hollow fragments that drift away';
+
+  @override
+  String get lyric_style_mixed => 'Mixed';
+
+  @override
+  String get lyric_style_mixed_desc =>
+      'Each line randomly shows one of the five styles: classic, glow, immersive, PV or echo';
+
+  @override
+  String get lyric_color_settings => 'Lyric colors';
+
+  @override
+  String get lyric_color_unplayed => 'Not played';
+
+  @override
+  String get lyric_color_unplayed_desc => 'Lyrics not yet sung';
+
+  @override
+  String get lyric_color_current => 'Now playing';
+
+  @override
+  String get lyric_color_current_desc => 'The word being sung';
+
+  @override
+  String get lyric_color_played => 'Played';
+
+  @override
+  String get lyric_color_played_desc => 'Lyrics already sung';
+
+  @override
+  String get lyric_color_default => 'Default';
+
+  @override
+  String get lyric_color_reset => 'Reset to default';
+
+  @override
+  String get lyric_offset => 'Lyric offset';
+
+  @override
+  String get lyric_offset_desc =>
+      'Shift the timing of all lyrics: negative = earlier, positive = later';
+
+  @override
+  String get lyric_offset_scope_current => 'Current song';
+
+  @override
+  String get lyric_offset_scope_global => 'Global';
+
+  @override
+  String get lyric_offset_effective => 'Effective';
+
+  @override
+  String get lyric_offset_reset => 'Reset';
+
+  @override
+  String get lyric_offset_clear_current => 'Clear song offset';
+
+  @override
+  String get lyric_offset_input_title => 'Enter offset';
+
+  @override
+  String get lyric_offset_input_hint => 'Offset (seconds)';
 }

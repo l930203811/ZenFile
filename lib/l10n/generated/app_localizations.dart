@@ -7774,6 +7774,12 @@ abstract class L10n {
   /// **'导入本地歌词'**
   String get ui_select_lyrics_file;
 
+  /// No description provided for @ui_lyrics_menu.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词菜单'**
+  String get ui_lyrics_menu;
+
   /// No description provided for @lyric_animation_style.
   ///
   /// In zh, this message translates to:
@@ -15339,6 +15345,126 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'扫过填充的同时，唱过的字炸成空心碎片缓缓漂移'**
   String get lyric_style_echo_desc;
+
+  /// No description provided for @lyric_style_mixed.
+  ///
+  /// In zh, this message translates to:
+  /// **'混合模式'**
+  String get lyric_style_mixed;
+
+  /// No description provided for @lyric_style_mixed_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'每句歌词随机呈现经典、辉光、巨幕、PV 与回声中的一种风格，逐句变化'**
+  String get lyric_style_mixed_desc;
+
+  /// No description provided for @lyric_color_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词颜色'**
+  String get lyric_color_settings;
+
+  /// No description provided for @lyric_color_unplayed.
+  ///
+  /// In zh, this message translates to:
+  /// **'未播放'**
+  String get lyric_color_unplayed;
+
+  /// No description provided for @lyric_color_unplayed_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未唱到的歌词'**
+  String get lyric_color_unplayed_desc;
+
+  /// No description provided for @lyric_color_current.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前播放'**
+  String get lyric_color_current;
+
+  /// No description provided for @lyric_color_current_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在演唱的字'**
+  String get lyric_color_current_desc;
+
+  /// No description provided for @lyric_color_played.
+  ///
+  /// In zh, this message translates to:
+  /// **'已播放'**
+  String get lyric_color_played;
+
+  /// No description provided for @lyric_color_played_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'已经唱过的歌词'**
+  String get lyric_color_played_desc;
+
+  /// No description provided for @lyric_color_default.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get lyric_color_default;
+
+  /// No description provided for @lyric_color_reset.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get lyric_color_reset;
+
+  /// No description provided for @lyric_offset.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词偏移'**
+  String get lyric_offset;
+
+  /// No description provided for @lyric_offset_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'调整整首歌词的时间：负值提前，正值延后'**
+  String get lyric_offset_desc;
+
+  /// No description provided for @lyric_offset_scope_current.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前歌曲'**
+  String get lyric_offset_scope_current;
+
+  /// No description provided for @lyric_offset_scope_global.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局'**
+  String get lyric_offset_scope_global;
+
+  /// No description provided for @lyric_offset_effective.
+  ///
+  /// In zh, this message translates to:
+  /// **'生效值'**
+  String get lyric_offset_effective;
+
+  /// No description provided for @lyric_offset_reset.
+  ///
+  /// In zh, this message translates to:
+  /// **'重置'**
+  String get lyric_offset_reset;
+
+  /// No description provided for @lyric_offset_clear_current.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除本曲偏移'**
+  String get lyric_offset_clear_current;
+
+  /// No description provided for @lyric_offset_input_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入偏移值'**
+  String get lyric_offset_input_title;
+
+  /// No description provided for @lyric_offset_input_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'偏移值（秒）'**
+  String get lyric_offset_input_hint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

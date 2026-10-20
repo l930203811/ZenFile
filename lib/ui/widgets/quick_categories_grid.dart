@@ -2461,6 +2461,13 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ],
                           ),
                         ),
+                        // 总开关关闭时，下方所有导航栏子设置（不透明度 / 常驻 /
+                        // 位置 / 槽位配置）整体收起隐藏，只在开启状态显示 ——
+                        // 避免关掉导航栏后还留着一屏改了也不生效的设置。
+                        // 槽位区原先单独读 PreferencesService，现统一并入此条件
+                        // （`watch` 驱动，切换开关由 setModalState /
+                        // notifyListeners 触发重建，收起 / 展开即时生效）。
+                        if (context.watch<FileManagerProvider>().bottomNavBarEnabled) ...[
                         // ===== 导航栏不透明度（issue #42）=====
                         // 与「设置 → 常规与行为 → 导航栏设置」面板里的滑杆共用
                         // 同一份 provider 状态（NavBarOpacitySlider），两处双向同步。
@@ -2544,8 +2551,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
-                        // 槽位配置区：开关关闭时整体折叠隐藏
-                        if (PreferencesService.getBottomNavBarEnabled()) ...[
+                        // 槽位配置区：4 个槽位的长按切换与排序（并入上方总开关条件）。
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20.0,
@@ -2565,59 +2571,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           _buildBottomSlotRow(context, 2, setModalState),
                           _buildBottomSlotRow(context, 3, setModalState),
                         ],
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0,
-                            vertical: 4.0,
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              L10n.of(context).msg445a43cb,
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 
-                                  0.6,
-                                ),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Broken.add, size: 20),
-                            label: Text(
-                              L10n.of(context).msg944d5ecd,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(46),
-                              foregroundColor: theme.colorScheme.primary,
-                              side: BorderSide(
-                                color: theme.colorScheme.primary.withValues(alpha: 
-                                  0.5,
-                                ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final paths = await InternalFilePickerScreen.show(
-                                context,
-                                rootPath: fileManager.rootPath,
-                              );
-                              if (paths != null && paths.isNotEmpty) {
-                                for (final p in paths) {
-                                  provider.addCustomShortcut(p);
-                                }
-                              }
-                            },
-                          ),
-                        ),
                         const SizedBox(height: 8),
                         const Divider(),
                         // ===== 分类页设置区（分隔线**下方**，位于「系统」上方）=====
@@ -2798,6 +2751,25 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           ),
                         ),
                         const SizedBox(height: 8),
+                        // 「长按图标拖动排列分类图标」提示：紧贴下方分类列表的
+                        // 开关行（默认首行即「系统」）上方 —— 描述的正是这个列表
+                        // 的长按拖拽排序，随列表一起滚动。
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              L10n.of(context).msg445a43cb,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
                               ],
                             ),
                           ),
