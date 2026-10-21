@@ -874,14 +874,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         : L10n.of(context).ui_dark_mode,
                     onPressed: widget.toggleTheme,
                   ),
-                  // 常用功能：单/双窗口
+                  // 常用功能：单/双窗口（目标态图标：当前双窗→显示单窗方框；当前单窗→显示左右双栏）
                   IconButton(
                     icon: Icon(
                       context
                               .read<FileManagerProvider>()
                               .enableSplitScreen
-                          ? Broken.grid_1
-                          : Broken.grid_2,
+                          ? Icons.square_outlined
+                          : Icons.view_column_outlined,
                       color: theme.colorScheme.primary,
                     ),
                     tooltip: context.read<FileManagerProvider>().enableSplitScreen

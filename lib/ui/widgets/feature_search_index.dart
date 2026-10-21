@@ -175,7 +175,9 @@ class FeatureSearchIndex {
       ),
       FeatureSearchEntry(
         group: FeatureSearchGroup.quick,
-        icon: fileManager.enableSplitScreen ? Broken.grid_1 : Broken.grid_2,
+        icon: fileManager.enableSplitScreen
+            ? Icons.square_outlined
+            : Icons.view_column_outlined,
         title: fileManager.enableSplitScreen
             ? l10n.ui_single_window
             : l10n.ui_dual_window,
