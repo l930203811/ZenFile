@@ -4303,10 +4303,11 @@ class L10nEn extends L10n {
       'Word-by-word sweep, neighbors fade by distance';
 
   @override
-  String get lyric_style_glow => 'Glow sweep';
+  String get lyric_style_typewriter => 'Typewriter';
 
   @override
-  String get lyric_style_glow_desc => 'Sweep with neon glow';
+  String get lyric_style_typewriter_desc =>
+      'Words type out one by one with a blinking cursor; no glow, no zoom';
 
   @override
   String get lyric_style_immersive => 'Immersive stage';
@@ -8642,7 +8643,7 @@ class L10nEn extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'Each line randomly shows one of the five styles: classic, glow, immersive, PV or echo';
+      'Shows only the current line centered; each line gets a random style and entrance animation';
 
   @override
   String get lyric_color_settings => 'Lyric colors';

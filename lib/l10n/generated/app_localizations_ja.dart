@@ -4160,10 +4160,10 @@ class L10nJa extends L10n {
   String get lyric_style_classic_desc => '文字ごとのスイープ、距離に応じて隣の行がフェード';
 
   @override
-  String get lyric_style_glow => 'グロースイープ';
+  String get lyric_style_typewriter => 'タイプライター';
 
   @override
-  String get lyric_style_glow_desc => 'ネオンの輝きを重ねたスイープ';
+  String get lyric_style_typewriter_desc => '一文字ずつ打ち出し、現在の文字に点滅カーソル、グローなし・拡大なし';
 
   @override
   String get lyric_style_immersive => '没入ステージ';
@@ -8372,8 +8372,7 @@ class L10nJa extends L10n {
   String get lyric_style_mixed => 'ミックス';
 
   @override
-  String get lyric_style_mixed_desc =>
-      '行ごとにクラシック・グロー・ジャンボ・PV・エコーの中からランダムに1つを表示';
+  String get lyric_style_mixed_desc => '現在の一句だけを中央表示、各句がランダムなスタイルと入場アニメーションを適用';
 
   @override
   String get lyric_color_settings => '歌詞の色';

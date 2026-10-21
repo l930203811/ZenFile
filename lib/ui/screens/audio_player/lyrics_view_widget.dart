@@ -63,6 +63,9 @@ class _StyleProfile {
   /// 普通 LRC 的均分时间线同样生效——所有歌词都走逐字，不再有行放大兜底。
   final double charZoom;
 
+  /// 打字机模式：当前字右侧画一道随节奏闪烁的光标竖线，无辉光、不缩放。
+  final bool typewriter;
+
   const _StyleProfile({
     required this.fontSize,
     required this.lineHeight,
@@ -71,6 +74,7 @@ class _StyleProfile {
     required this.rowGap,
     this.weight = FontWeight.w600,
     this.charZoom = 1.0,
+    this.typewriter = false,
   });
 }
 
@@ -295,6 +299,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   int _currentLineIndex = -1;
   bool _isUserScrolling = false;
 
+  /// 首帧/懒加载居中重试计数：当前行尚未布局（context==null）时先估算
+  /// 粗定位，下一帧拿到真实 RenderBox 再精校，避免非开头播放切视图停偏。
+  int _scrollRetries = 0;
+
   /// 逐行时间线（与 lyrics 对齐）。
   late List<LyricLineTimeline> _timelines;
 
@@ -305,6 +313,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   // ── 混合模式：逐句风格计划（一次性排定，整首歌内只读） ─────────────
   List<LyricAnimationStyle> _mixedPlan = const [];
   String _mixedPlanSig = '';
+
+  /// 混合模式当前句的入场动效编号（0=淡入上移 / 1=缩放弹入 / 2=右滑入），
+  /// 换行时随机掷一个，使每句进入舞台的方式也各不相同。
+  int _mixedEnterKind = 0;
 
   /// 进度插值状态。
   late Duration _lastPos;
@@ -564,6 +576,8 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _echoLine = cur;
       _echoSpawned = 0;
       _echoFragments.clear();
+      // 换行随机抽一种入场动效（与逐句视觉风格独立），避免句句同一套路。
+      _mixedEnterKind = _planRng.nextInt(3);
     }
   }
 
@@ -998,6 +1012,8 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _echoFragments.clear();
       _echoLine = -1;
       _echoSpawned = 0;
+      _scrollRetries = 0;
+      _mixedEnterKind = 0;
       _updateCurrentIndices();
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _scrollToCurrentLine(animate: false),
@@ -1028,15 +1044,20 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       return;
     }
     final context = _itemKeys[_currentLineIndex].currentContext;
-    if (context == null) {
-      _scrollToEstimated(animate: animate);
+    final box = context?.findRenderObject() as RenderBox?;
+    if (context == null || box == null) {
+      // 首帧或懒加载：当前行尚未渲染出 RenderBox，先用固定行高估算粗定位，
+      // 下一帧列表把该行构建出来后再用真实坐标精校；重试有限次，避免死循环。
+      _scrollToEstimated(animate: false);
+      if (_scrollRetries < 4) {
+        _scrollRetries++;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _scrollToCurrentLine(animate: false);
+        });
+      }
       return;
     }
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null) {
-      _scrollToEstimated(animate: animate);
-      return;
-    }
+    _scrollRetries = 0;
     final listBox =
         _scrollController.position.context.storageContext.findRenderObject()
             as RenderBox?;
@@ -1100,16 +1121,17 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     double viewportHeight,
   ) {
     switch (style) {
-      case LyricAnimationStyle.glow:
-        // 辉光扫过：双层霓虹辉光 + 轻度字放大，与经典（无辉光+强放大）
-        // 形成明确观感区分。
+      case LyricAnimationStyle.typewriter:
+        // 打字机：逐字敲出 + 当前字右侧闪烁光标，无辉光、当前字不缩放，
+        // 与经典（无辉光但靠当前字弹放放大）在运动形态上明显区分。
         return const _StyleProfile(
           fontSize: 21.0,
           lineHeight: 1.42,
-          glowNear: 10.0,
-          glowFar: 26.0,
+          glowNear: 0.0,
+          glowFar: 0.0,
           rowGap: 8.0,
-          charZoom: 1.16,
+          charZoom: 1.0,
+          typewriter: true,
         );
       case LyricAnimationStyle.immersive:
         // 巨字：随视口高度伸缩并封顶，模拟 folia Lattice 的 24~64px 预算策略。
@@ -1361,6 +1383,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
         _lastMaxWidth = maxWidth;
         _lastProfile = profile;
         _lastViewportH = viewportHeight;
+
+        // 混合模式：文字 PV 舞台——只呈现当前一句（已播/待播完全不渲染），
+        // 整句居中，每句带随机入场动效与随机视觉风格，不再走可滚动整列。
+        if (widget.style == LyricAnimationStyle.mixed) {
+          return _buildMixedStage(constraints, maxWidth, viewportHeight);
+        }
+
         final topPadding = viewportHeight * 0.4;
         final bottomPadding = viewportHeight * 0.4;
 
@@ -1401,20 +1430,15 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
           ),
         );
 
-        // ECHO / 融合模式：碎片漂移画布铺在歌词列表上层（特效盖住歌词，
-        // 而非被歌词盖住）；融合模式再叠加一层 PV 唱字闪点与云室径迹。
-        if (widget.style == LyricAnimationStyle.echo ||
-            widget.style == LyricAnimationStyle.mixed) {
+        // ECHO：碎片漂移画布铺在歌词列表上层（特效盖住歌词，而非被歌词
+        // 盖住）。混合模式已在上面走单句舞台并自带特效层，不会走到这里。
+        if (widget.style == LyricAnimationStyle.echo) {
           return Stack(
             children: [
               list,
               Positioned.fill(
                 child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: widget.style == LyricAnimationStyle.mixed
-                        ? _MixedFxPainter(this)
-                        : _EchoPainter(this),
-                  ),
+                  child: CustomPaint(painter: _EchoPainter(this)),
                 ),
               ),
             ],
@@ -1451,6 +1475,85 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
         );
       },
     );
+  }
+
+  /// 混合模式单句舞台：整列只画当前播放句并居中（已播/待播不渲染），
+  /// 换行时用随机入场动效淡入，视觉风格仍由 [_mixedPlan] 逐句决定。
+  Widget _buildMixedStage(
+    BoxConstraints constraints,
+    double maxWidth,
+    double viewportHeight,
+  ) {
+    _lastMaxWidth = maxWidth;
+    _lastViewportH = viewportHeight;
+    final idx = _currentLineIndex;
+    if (idx >= 0 && idx < widget.lyrics.length) {
+      _lastProfile = _profileForStyle(_styleForLine(idx), viewportHeight);
+    }
+
+    Widget body = const SizedBox.shrink();
+    if (idx >= 0 && idx < widget.lyrics.length) {
+      body = KeyedSubtree(
+        key: ValueKey<int>(idx),
+        child: _buildLineItem(idx, maxWidth),
+      );
+    }
+
+    final stage = Center(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 320),
+        switchInCurve: Curves.easeOutCubic,
+        transitionBuilder: _mixedEnterTransition,
+        child: body,
+      ),
+    );
+
+    return Stack(
+      children: [
+        stage,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(painter: _MixedFxPainter(this)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 混合模式逐句随机入场动效：0 淡入上移 / 1 缩放弹入 / 2 右滑入。
+  Widget _mixedEnterTransition(Widget child, Animation<double> anim) {
+    switch (_mixedEnterKind) {
+      case 1:
+        return FadeTransition(
+          opacity: anim,
+          child: ScaleTransition(
+            scale: Tween(begin: 0.86, end: 1.0).animate(anim),
+            child: child,
+          ),
+        );
+      case 2:
+        return FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0.25, 0),
+              end: Offset.zero,
+            ).animate(anim),
+            child: child,
+          ),
+        );
+      default:
+        return FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 0.10),
+              end: Offset.zero,
+            ).animate(anim),
+            child: child,
+          ),
+        );
+    }
   }
 
   static const Duration _toneDuration = Duration(milliseconds: 260);
@@ -1520,6 +1623,8 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
           charZoom: charZoom,
           zoomGlyph: zoomGlyph,
           originX: measured.originX,
+          typewriter: profile.typewriter,
+          cursorColor: _currentColor,
         ),
       );
     }
@@ -1605,6 +1710,12 @@ class _SweepPainter extends CustomPainter {
   /// 与绘制坐标之间差此量。
   final double originX;
 
+  /// 打字机模式：在当前字右缘画一道光标竖线。
+  final bool typewriter;
+
+  /// 光标颜色（打字机模式）；null 时回退到当前播放色由调用方传入。
+  final Color? cursorColor;
+
   const _SweepPainter({
     required this.base,
     required this.highlight,
@@ -1617,6 +1728,8 @@ class _SweepPainter extends CustomPainter {
     this.charZoom = 1.0,
     this.zoomGlyph,
     this.originX = 0,
+    this.typewriter = false,
+    this.cursorColor,
   });
 
   @override
@@ -1675,6 +1788,22 @@ class _SweepPainter extends CustomPainter {
         );
         canvas.restore();
       }
+    }
+
+    // 4) 打字机光标：当前字右缘一道竖线，随唱字推进（无辉光、不缩放）。
+    if (typewriter && fill.index >= 0 && fill.index < boundaries.length) {
+      final bl = boundaries[fill.index].line;
+      final cx = originX + _glyphRightX(boundaries, metrics, fill.index);
+      final top = dy + lineTops[bl];
+      final bottom = dy + lineBottoms[bl];
+      final cursor = cursorColor ?? const Color(0xFFFFFFFF);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(cx + 2, top + 1, 2.2, bottom - top - 2),
+          const Radius.circular(1.1),
+        ),
+        Paint()..color = cursor.withValues(alpha: 0.9),
+      );
     }
   }
 
@@ -1741,6 +1870,8 @@ class _SweepPainter extends CustomPainter {
       old.timeline != timeline ||
       old.charZoom != charZoom ||
       old.zoomGlyph != zoomGlyph ||
+      old.typewriter != typewriter ||
+      old.cursorColor != cursorColor ||
       old.originX != originX;
 }
 
@@ -2207,14 +2338,15 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
     // 与 LyricsViewWidget 的风格语言保持一致（经典无辉光强放大 /
     // 辉光轻放大 / 巨幕大字 / PV 特粗 + 唱字闪点 / 回声碎片）。
     switch (widget.style) {
-      case LyricAnimationStyle.glow:
+      case LyricAnimationStyle.typewriter:
         return const _StyleProfile(
           fontSize: 16.0,
           lineHeight: 1.3,
-          glowNear: 8.0,
-          glowFar: 18.0,
+          glowNear: 0.0,
+          glowFar: 0.0,
           rowGap: 0,
-          charZoom: 1.16,
+          charZoom: 1.0,
+          typewriter: true,
         );
       case LyricAnimationStyle.immersive:
         return const _StyleProfile(
@@ -2604,6 +2736,8 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
             charZoom: charZoom,
             zoomGlyph: zoomGlyph,
             originX: measured.originX,
+            typewriter: p.typewriter,
+            cursorColor: _currentColor,
           ),
         );
         // PV / ECHO：唱字即时特效铺在歌词上层（与主视图一致的层级）。

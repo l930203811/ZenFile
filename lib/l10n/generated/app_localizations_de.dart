@@ -4347,10 +4347,11 @@ class L10nDe extends L10n {
       'Wortweises Wischen, Nachbarzeilen blenden nach Entfernung ab';
 
   @override
-  String get lyric_style_glow => 'Leuchtendes Wischen';
+  String get lyric_style_typewriter => 'Schreibmaschine';
 
   @override
-  String get lyric_style_glow_desc => 'Wischen mit Neon-Leuchten';
+  String get lyric_style_typewriter_desc =>
+      'Zeichen erscheinen nacheinander mit blinkendem Cursor, ohne Leuchten oder Zoom';
 
   @override
   String get lyric_style_immersive => 'Immersive Bühne';
@@ -8743,7 +8744,7 @@ class L10nDe extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'Jede Zeile zeigt zufällig einen der fünf Stile: Klassik, Glühen, Großansicht, PV oder Echo';
+      'Nur die aktuelle Zeile zentriert; jede Zeile erhält zufälligen Stil und Einstiegsanimation';
 
   @override
   String get lyric_color_settings => 'Textfarben';

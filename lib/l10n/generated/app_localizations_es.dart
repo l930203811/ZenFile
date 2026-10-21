@@ -4374,10 +4374,11 @@ class L10nEs extends L10n {
       'Barrido palabra por palabra, las líneas vecinas se desvanecen por distancia';
 
   @override
-  String get lyric_style_glow => 'Barrido brillante';
+  String get lyric_style_typewriter => 'Máquina de escribir';
 
   @override
-  String get lyric_style_glow_desc => 'Barrido con brillo de neón';
+  String get lyric_style_typewriter_desc =>
+      'Las letras aparecen una a una con cursor parpadeante, sin brillo ni zoom';
 
   @override
   String get lyric_style_immersive => 'Escenario inmersivo';
@@ -8761,7 +8762,7 @@ class L10nEs extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'Cada verso muestra al azar uno de los cinco estilos: clásico, brillo, inmersivo, PV o eco';
+      'Solo la línea actual centrada; cada verso tiene estilo y entrada aleatorios';
 
   @override
   String get lyric_color_settings => 'Colores de la letra';

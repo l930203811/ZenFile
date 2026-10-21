@@ -1,15 +1,16 @@
 /// 歌词动画风格（借鉴 folia-major 的多风格歌词动画体系，纯 Flutter 重写实现）。
 ///
-/// 每种风格对应 folia 的一套歌词观感：
-/// - [classic]    Monet 经典：逐字扫过 + 距离衰减 + 弹簧滚动
-/// - [glow]       Pendolo：扫过 + 霓虹辉光 + 词级着色
+/// 每种风格对应一套独立观感：
+/// - [classic]    Monet 经典：逐字扫过 + 当前字弹放 + 距离衰减 + 弹簧滚动
+/// - [typewriter] 打字机：逐字敲出，当前字右侧带闪烁光标，无辉光、不放大，
+///                与「经典扫过」（缩放强调）运动形态完全不同
 /// - [immersive]  Lattice：巨字自适应 + 电影感辉光 + 疏行距
 /// - [pv]         Lumiere 文字 PV：单行巨字 + 呼吸晃动 + 四芒闪点，
 ///                切行时贝塞尔飞入 + 粒子径迹 + 崩解散聚
 /// - [echo]       Lumiere 歌词回声：扫过 + 唱词炸出空心字碎片漂移背景
 /// - [mixed]      混合模式：一个独立风格，但自身没有单一形态——**每句歌词
-///                随机呈现池中的一种内置风格**（见 [kLyricMixedStylePool]），
-///                一句一时一面，逐句之间自然变化（默认风格）
+///                只呈现当前句（文字 PV 舞台），并随机获得池中一种入场与
+///                视觉风格**（见 [kLyricMixedStylePool]），一句一时一面
 ///
 /// 风格持久化在 PreferencesService（只存 name 字符串，避免循环依赖）。
 library;
@@ -18,17 +19,21 @@ import 'dart:math' as math;
 
 enum LyricAnimationStyle {
   classic,
-  glow,
+  typewriter,
   immersive,
   pv,
   echo,
 
-  /// 混合模式：自身即一种独立风格，观感上是「每句随机一种内置风格」。
+  /// 混合模式：自身即一种独立风格，观感上是「单句舞台 + 每句随机一种风格」。
   mixed;
 
   /// 由持久化字符串还原；未知值（含旧版本残留）与从未设置过的用户
   /// 均回落 [mixed]（默认风格）。
+  ///
+  /// 旧版本把「辉光扫过」存为 `glow`，该风格已被 [typewriter] 取代，
+  /// 这里把历史 `glow` 平滑映射到 [typewriter]，避免老用户设置丢失。
   static LyricAnimationStyle fromName(String? name) {
+    if (name == 'glow') return typewriter;
     for (final s in values) {
       if (s.name == name) return s;
     }
@@ -39,7 +44,7 @@ enum LyricAnimationStyle {
 /// 混合模式的逐句风格池：不含 [LyricAnimationStyle.mixed] 自身，避免自引用。
 const List<LyricAnimationStyle> kLyricMixedStylePool = [
   LyricAnimationStyle.classic,
-  LyricAnimationStyle.glow,
+  LyricAnimationStyle.typewriter,
   LyricAnimationStyle.immersive,
   LyricAnimationStyle.pv,
   LyricAnimationStyle.echo,

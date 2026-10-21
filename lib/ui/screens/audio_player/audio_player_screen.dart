@@ -1460,12 +1460,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                         _applyLyricStyle(ctx, LyricAnimationStyle.classic),
                   ),
                   item(
-                    icon: Icons.auto_awesome,
-                    title: l10n.lyric_style_glow,
-                    desc: l10n.lyric_style_glow_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.glow,
+                    icon: Icons.keyboard_rounded,
+                    title: l10n.lyric_style_typewriter,
+                    desc: l10n.lyric_style_typewriter_desc,
+                    selected: _lyricStyle == LyricAnimationStyle.typewriter,
                     onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.glow),
+                        _applyLyricStyle(ctx, LyricAnimationStyle.typewriter),
                   ),
                   item(
                     icon: Icons.movie_rounded,
@@ -1890,8 +1890,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     switch (_lyricStyle) {
       case LyricAnimationStyle.classic:
         return l10n.lyric_style_classic;
-      case LyricAnimationStyle.glow:
-        return l10n.lyric_style_glow;
+      case LyricAnimationStyle.typewriter:
+        return l10n.lyric_style_typewriter;
       case LyricAnimationStyle.immersive:
         return l10n.lyric_style_immersive;
       case LyricAnimationStyle.pv:

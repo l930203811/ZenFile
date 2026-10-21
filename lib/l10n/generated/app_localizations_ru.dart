@@ -4351,10 +4351,11 @@ class L10nRu extends L10n {
       'Покадровое заполнение, соседние строки гаснут по расстоянию';
 
   @override
-  String get lyric_style_glow => 'Свечение';
+  String get lyric_style_typewriter => 'Печатная машинка';
 
   @override
-  String get lyric_style_glow_desc => 'Заполнение с неоновым свечением';
+  String get lyric_style_typewriter_desc =>
+      'Буквы печатаются по одной с мигающим курсором, без свечения и увеличения';
 
   @override
   String get lyric_style_immersive => 'Иммерсивная сцена';
@@ -8725,7 +8726,7 @@ class L10nRu extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'Каждая строка случайно получает один из пяти стилей: классика, свечение, крупный, PV или эхо';
+      'Только текущая строка по центру; каждой строке — случайный стиль и появление';
 
   @override
   String get lyric_color_settings => 'Цвета текста';

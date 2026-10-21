@@ -7798,17 +7798,17 @@ abstract class L10n {
   /// **'逐字扫过，邻近行依距离渐层'**
   String get lyric_style_classic_desc;
 
-  /// No description provided for @lyric_style_glow.
+  /// No description provided for @lyric_style_typewriter.
   ///
   /// In zh, this message translates to:
-  /// **'辉光扫过'**
-  String get lyric_style_glow;
+  /// **'打字机'**
+  String get lyric_style_typewriter;
 
-  /// No description provided for @lyric_style_glow_desc.
+  /// No description provided for @lyric_style_typewriter_desc.
   ///
   /// In zh, this message translates to:
-  /// **'扫过叠加霓虹辉光'**
-  String get lyric_style_glow_desc;
+  /// **'逐字敲出，当前字右侧带闪烁光标，无辉光、不放大'**
+  String get lyric_style_typewriter_desc;
 
   /// No description provided for @lyric_style_immersive.
   ///
@@ -15355,7 +15355,7 @@ abstract class L10n {
   /// No description provided for @lyric_style_mixed_desc.
   ///
   /// In zh, this message translates to:
-  /// **'每句歌词随机呈现经典、辉光、巨幕、PV 与回声中的一种风格，逐句变化'**
+  /// **'只呈现当前一句并居中，每句随机获得不同视觉风格与入场动效'**
   String get lyric_style_mixed_desc;
 
   /// No description provided for @lyric_color_settings.

@@ -101,11 +101,12 @@ Future<void> showLyricStyleSheet(
                     _pick(ctx, LyricAnimationStyle.classic, onSelected),
               ),
               item(
-                icon: Icons.auto_awesome,
-                title: l10n.lyric_style_glow,
-                desc: l10n.lyric_style_glow_desc,
-                selected: current == LyricAnimationStyle.glow,
-                onTap: () => _pick(ctx, LyricAnimationStyle.glow, onSelected),
+                icon: Icons.keyboard_rounded,
+                title: l10n.lyric_style_typewriter,
+                desc: l10n.lyric_style_typewriter_desc,
+                selected: current == LyricAnimationStyle.typewriter,
+                onTap: () =>
+                    _pick(ctx, LyricAnimationStyle.typewriter, onSelected),
               ),
               item(
                 icon: Icons.movie_rounded,

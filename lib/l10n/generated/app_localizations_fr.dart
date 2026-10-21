@@ -4373,10 +4373,11 @@ class L10nFr extends L10n {
       'Balayage mot à mot, les lignes voisines s\'estompent avec la distance';
 
   @override
-  String get lyric_style_glow => 'Balayage lumineux';
+  String get lyric_style_typewriter => 'Machine à écrire';
 
   @override
-  String get lyric_style_glow_desc => 'Balayage avec lueur néon';
+  String get lyric_style_typewriter_desc =>
+      'Les caractères apparaissent un à un avec curseur clignotant, sans lueur ni zoom';
 
   @override
   String get lyric_style_immersive => 'Scène immersive';
@@ -8780,7 +8781,7 @@ class L10nFr extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'Chaque ligne affiche aléatoirement l’un des cinq styles : classique, lueur, immersif, PV ou écho';
+      'Affiche seulement la ligne actuelle centrée ; chaque ligne a un style et une entrée aléatoires';
 
   @override
   String get lyric_color_settings => 'Couleurs des paroles';

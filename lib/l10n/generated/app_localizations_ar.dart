@@ -4283,10 +4283,11 @@ class L10nAr extends L10n {
       'كتابة كلمة بكلمة، وتتلاشى الأسطر المجاورة بحسب المسافة';
 
   @override
-  String get lyric_style_glow => 'كتابة متوهجة';
+  String get lyric_style_typewriter => 'الآلة الكاتبة';
 
   @override
-  String get lyric_style_glow_desc => 'كتابة مع توهج نيون';
+  String get lyric_style_typewriter_desc =>
+      'تظهر الحروف حرفاً حرفاً مع مؤشر وامض، بلا توهج أو تكبير';
 
   @override
   String get lyric_style_immersive => 'مسرح غامر';
@@ -8613,7 +8614,7 @@ class L10nAr extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      'يعرض كل سطر عشوائياً أحد الأنماط الخمسة: كلاسيكي، توهج، ضخم، PV أو صدى';
+      'يعرض السطر الحالي فقط في المنتصف؛ كل سطر له أسلوب وحركة دخول عشوائية';
 
   @override
   String get lyric_color_settings => 'ألوان كلمات الأغنية';

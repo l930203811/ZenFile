@@ -4162,10 +4162,11 @@ class L10nKo extends L10n {
   String get lyric_style_classic_desc => '글자별 스윕, 거리에 따라 인접 줄 페이드';
 
   @override
-  String get lyric_style_glow => '글로우 스윕';
+  String get lyric_style_typewriter => '타자기';
 
   @override
-  String get lyric_style_glow_desc => '네온 글로우를 더한 스윕';
+  String get lyric_style_typewriter_desc =>
+      '글자가 한 글자씩 타자되며 현재 글자에 깜빡이는 커서, 글로우·확대 없음';
 
   @override
   String get lyric_style_immersive => '몰입 스테이지';
@@ -8382,7 +8383,7 @@ class L10nKo extends L10n {
 
   @override
   String get lyric_style_mixed_desc =>
-      '줄마다 클래식, 글로우, 몰입형, PV, 에코 중 하나가 무작위로 적용됩니다';
+      '현재 한 줄만 중앙에 표시, 줄마다 무작위 스타일과 등장 애니메이션 적용';
 
   @override
   String get lyric_color_settings => '가사 색상';

@@ -4127,10 +4127,10 @@ class L10nZh extends L10n {
   String get lyric_style_classic_desc => '逐字扫过，邻近行依距离渐层';
 
   @override
-  String get lyric_style_glow => '辉光扫过';
+  String get lyric_style_typewriter => '打字机';
 
   @override
-  String get lyric_style_glow_desc => '扫过叠加霓虹辉光';
+  String get lyric_style_typewriter_desc => '逐字敲出，当前字右侧带闪烁光标，无辉光、不放大';
 
   @override
   String get lyric_style_immersive => '沉浸巨幕';
@@ -8195,7 +8195,7 @@ class L10nZh extends L10n {
   String get lyric_style_mixed => '混合模式';
 
   @override
-  String get lyric_style_mixed_desc => '每句歌词随机呈现经典、辉光、巨幕、PV 与回声中的一种风格，逐句变化';
+  String get lyric_style_mixed_desc => '只呈现当前一句并居中，每句随机获得不同视觉风格与入场动效';
 
   @override
   String get lyric_color_settings => '歌词颜色';
@@ -12330,10 +12330,10 @@ class L10nZhTw extends L10nZh {
   String get lyric_style_classic_desc => '逐字掃過，鄰近行依距離漸層';
 
   @override
-  String get lyric_style_glow => '輝光掃過';
+  String get lyric_style_typewriter => '打字機';
 
   @override
-  String get lyric_style_glow_desc => '掃過疊加霓虹輝光';
+  String get lyric_style_typewriter_desc => '逐字敲出，當前字右側帶閃爍游標，無輝光、不放大';
 
   @override
   String get lyric_style_immersive => '沉浸巨幕';
@@ -16413,7 +16413,7 @@ class L10nZhTw extends L10nZh {
   String get lyric_style_mixed => '混合模式';
 
   @override
-  String get lyric_style_mixed_desc => '每句歌詞隨機呈現經典、輝光、巨幕、PV 與回聲中的一種風格，逐句變化';
+  String get lyric_style_mixed_desc => '只呈現當前一句並置中，每句隨機獲得不同視覺風格與入場動效';
 
   @override
   String get lyric_color_settings => '歌詞顏色';
