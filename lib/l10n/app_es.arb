@@ -796,6 +796,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "Mantén pulsado un elemento para arrastrarlo y reordenarlo",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "Mantén pulsada una tarjeta para arrastrarla y reordenarla",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3569,6 +3577,7 @@
   },
   "ui_single_window": "Ventana única",
   "ui_dual_window": "Ventana doble",
+  "ui_swap_panes": "Intercambiar paneles",
   "ui_filter_by_category": "Filtrar por categoría",
   "ui_all_files": "Todos",
   "ui_filter_others": "Otros",
@@ -4167,8 +4176,8 @@
   "lyric_style_classic_desc": "Barrido palabra por palabra, las líneas vecinas se desvanecen por distancia",
   "lyric_style_typewriter": "Máquina de escribir",
   "lyric_style_typewriter_desc": "Las letras aparecen una a una con cursor parpadeante, sin brillo ni zoom",
-  "lyric_style_immersive": "Escenario inmersivo",
-  "lyric_style_immersive_desc": "Tipografía gigante con brillo cinematográfico",
+  "lyric_style_meteor": "Lluvia de meteoros",
+  "lyric_style_meteor_desc": "Toda la línea se enciende primero y cada palabra cantada cae con estela de meteoro",
   "ui_no_lyrics_found": "No se encontró letra",
   "ui_lyrics_auto_load_hint": "Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente",
   "ui_lyrics_panel": "Panel de letras",
@@ -8691,8 +8700,18 @@
   "lyric_style_pv_desc": "Línea gigante con letras voladoras, estelas de partículas y destellos",
   "lyric_style_echo": "Fragmentos de eco",
   "lyric_style_echo_desc": "Las palabras cantadas estallan en fragmentos huecos que derivan lentamente",
+  "lyric_style_drop": "Caída",
+  "lyric_style_drop_desc": "Los caracteres cantados caen desde arriba y se clavan en su sitio con un anillo de luz; los demás esperan arriba",
+  "lyric_style_burst": "Estallido lateral",
+  "lyric_style_burst_desc": "Los caracteres entran alternando izquierda y derecha con estelas y rebote; el cantado lanza rayos",
+  "lyric_style_cube": "Giro 3D",
+  "lyric_style_cube_desc": "Cada carácter entra girando sobre su eje vertical con grosor y sombra; el cantado sigue girando",
+  "lyric_style_punch": "Impacto",
+  "lyric_style_punch_desc": "El carácter cantado pasa de doble tamaño a su sitio de golpe, con ondas de choque y líneas de velocidad",
+  "lyric_style_wave": "Ondulante",
+  "lyric_style_wave_desc": "Los caracteres ondulan y su reflejo se desvanece debajo",
   "lyric_style_mixed": "Mixto",
-  "lyric_style_mixed_desc": "Solo la línea actual centrada; cada verso tiene estilo y entrada aleatorios",
+  "lyric_style_mixed_desc": "Solo se muestra el verso que suena; cada verso recibe al azar un estilo completo de diez disponibles",
   "lyric_color_settings": "Colores de la letra",
   "lyric_color_unplayed": "Sin reproducir",
   "lyric_color_unplayed_desc": "Letra aún no cantada",

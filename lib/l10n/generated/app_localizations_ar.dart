@@ -732,6 +732,14 @@ class L10nAr extends L10n {
       'اسحب لأعلى من أسفل الشاشة لفتح المفضلة';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'اضغط مطولاً على أي عنصر لسحبه وإعادة ترتيبه';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'اضغط مطولاً على البطاقة لسحبها وإعادة ترتيبها';
+
+  @override
   String get ui_new_favorite => 'إضافة إلى المفضلات';
 
   @override
@@ -3239,6 +3247,9 @@ class L10nAr extends L10n {
   String get ui_dual_window => 'نافذتان';
 
   @override
+  String get ui_swap_panes => 'تبديل النافذتين';
+
+  @override
   String get ui_filter_by_category => 'تصفية حسب الفئة';
 
   @override
@@ -4290,10 +4301,11 @@ class L10nAr extends L10n {
       'تظهر الحروف حرفاً حرفاً مع مؤشر وامض، بلا توهج أو تكبير';
 
   @override
-  String get lyric_style_immersive => 'مسرح غامر';
+  String get lyric_style_meteor => 'تساقط الشُّهب';
 
   @override
-  String get lyric_style_immersive_desc => 'حروف ضخمة مع توهج سينمائي';
+  String get lyric_style_meteor_desc =>
+      'يضيء السطر كله أولاً، ثم يسقط كل حرف مُغنّى بأثر شهابي';
 
   @override
   String get ui_no_lyrics_found => 'لم يتم العثور على كلمات الأغنية';
@@ -8610,11 +8622,46 @@ class L10nAr extends L10n {
       'الكلمات المُغنّاة تتحول إلى شظايا مجوفة تتطاير ببطء';
 
   @override
+  String get lyric_style_drop => 'سقوط الجذب';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'تسقط الأحرف المُغنّاة من الأعلى وتستقر في مكانها مع حلقة ضوء وشظايا، وغير المُغنّاة تنتظر فوق';
+
+  @override
+  String get lyric_style_burst => 'اندفاع جانبي';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'تدخل الأحرف بالتناوب من اليمين واليسار مع أثر وارتداد، والحرف المُغنّى يطلق أشعة';
+
+  @override
+  String get lyric_style_cube => 'دوران مجسّم';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'يدخل كل حرف دائرًا حول محوره الرأسي بسماكة وظل، والمُغنّى يستمر في الدوران';
+
+  @override
+  String get lyric_style_punch => 'انفجار صدمي';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'ينكمش الحرف المُغنّى من ضعف الحجم إلى مكانه فجأة مع حلقات موجة صدمة وخطوط سرعة';
+
+  @override
+  String get lyric_style_wave => 'تموج';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'تتراقص الأحرف صعودًا وهبوطًا ويخبو انعكاسها المرآوي أسفلها';
+
+  @override
   String get lyric_style_mixed => 'مختلط';
 
   @override
   String get lyric_style_mixed_desc =>
-      'يعرض السطر الحالي فقط في المنتصف؛ كل سطر له أسلوب وحركة دخول عشوائية';
+      'يظهر السطر الذي يُغنى فقط؛ ويحصل كل سطر عشوائياً على نمط كامل من بين عشرة أنماط';
 
   @override
   String get lyric_color_settings => 'ألوان كلمات الأغنية';

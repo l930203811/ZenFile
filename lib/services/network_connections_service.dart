@@ -246,6 +246,32 @@ class NetworkConnectionsService {
     await _prefs?.setString(_keyConnections, _scrubbedJson(current));
   }
 
+  /// 拖动排序：按 [visibleOrder] 这一新顺序写回全部连接。
+  ///
+  /// ⚠️ 列表页会先把「已下线的网盘连接」过滤掉再展示，所以 [visibleOrder] 通常
+  /// 是全量列表的**子集**，它的下标不等于全量下标——直接按它重写会把被过滤掉
+  /// 的条目挤掉/错位。这里先把可见项在全量列表中的槽位收集出来（升序），只在
+  /// 这些槽位上按新顺序填回，其余条目保持原有位置不动。
+  ///
+  /// 长度为 0 或槽位数与入参不一致（例如期间别处增删了连接）时直接放弃本次
+  /// 写入，宁可不排序也不能把连接写丢。
+  static Future<void> reorderConnections(
+    List<NetworkConnectionModel> visibleOrder,
+  ) async {
+    await init();
+    final all = getConnections();
+    final visibleIds = visibleOrder.map((c) => c.id).toSet();
+    final slots = <int>[];
+    for (var i = 0; i < all.length; i++) {
+      if (visibleIds.contains(all[i].id)) slots.add(i);
+    }
+    if (slots.isEmpty || slots.length != visibleOrder.length) return;
+    for (var k = 0; k < slots.length; k++) {
+      all[slots[k]] = visibleOrder[k];
+    }
+    await _prefs?.setString(_keyConnections, _scrubbedJson(all));
+  }
+
   /// 判断连接类型是否为 SMB（局域网）。标签本地化（中文「局域网/SMB」、英文
   /// 「LAN/SMB」），历史版本还存过 `Samba` / `CIFS`，故统一交给
   /// [detectRemoteProtocolKind] 做包含匹配，与 [FileManagerProvider.isSmbType] 一致。

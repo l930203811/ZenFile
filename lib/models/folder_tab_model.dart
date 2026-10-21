@@ -36,6 +36,13 @@ class FolderTab {
   // ── 远程加密目录（cryptremote://，客户端解密，支持读写）──
   bool isCryptRemote;
 
+  /// 当前路径是否为压缩包内浏览视图（`zip://{zip绝对路径}|{内部目录}` 虚拟路径）。
+  ///
+  /// 压缩包内浏览复用 FolderTab 的 currentPath/currentFiles/pathHistory 承载，
+  /// 不新增持久化字段：按 currentPath 前缀识别即可，重启后恢复出的 zip:// 路径
+  /// 会由 provider 的 zip 分支重新解析压缩包，无需额外状态。
+  bool get isZipView => currentPath.startsWith('zip://');
+
   // ── Per-tab navigation history ──
   final List<String> pathHistory;
   int historyIndex;

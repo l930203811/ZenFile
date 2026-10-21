@@ -101,6 +101,24 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
     }
   }
 
+  /// 拖动排序：先本地重排让 UI 立即跟上，再异步落盘。
+  ///
+  /// ⚠️ 直接用 [_connections]（已过滤掉下线网盘连接的可见列表）重排没问题，
+  /// 但**不能**用它整体覆盖存储：那是全量列表的子集。真正的写回在
+  /// [NetworkConnectionsService.reorderConnections] 里按 id 定位槽位完成。
+  /// ⚠️ 回调用的是 `onReorderItem`（不是已废弃的 `onReorder`）：它给的 newIndex
+  /// 已按「先移除再插入」换算过，这里**不能再 -1**，否则从下往上拖会偏一位。
+  Future<void> _onReorderConnections(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+    final list = List<NetworkConnectionModel>.of(_connections);
+    if (oldIndex < 0 || oldIndex >= list.length) return;
+    final moved = list.removeAt(oldIndex);
+    list.insert(newIndex.clamp(0, list.length), moved);
+    if (!mounted) return;
+    setState(() => _connections = list);
+    await NetworkConnectionsService.reorderConnections(list);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -174,16 +192,38 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                     ],
                   ),
                 )
-              : ListView.builder(
+              : ReorderableListView.builder(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   itemCount: _connections.length,
+                  // 长按卡片即可上下拖动排序（卡片本身没有长按菜单，不冲突）。
+                  onReorderItem: _onReorderConnections,
+                  // 少于两条时拖动没有意义，不显示排序提示，避免多余的一行。
+                  header: _connections.length < 2
+                      ? null
+                      : Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 2),
+                          child: Text(
+                            L10n.of(context).ui_connection_reorder_hint,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.45,
+                              ),
+                            ),
+                          ),
+                        ),
                   itemBuilder: (context, index) {
                     final conn = _connections[index];
                     final color = _getColorForType(conn.type);
                     final iconData = _getIconForType(conn.type);
 
                     return Card(
+                      // 拖动排序要求每项有稳定唯一的 key：连接 id 恒定。
+                      key: ValueKey('conn_${conn.id}'),
                       margin: const EdgeInsets.only(bottom: 10),
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

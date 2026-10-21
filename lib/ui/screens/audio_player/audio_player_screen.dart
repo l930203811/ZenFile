@@ -32,6 +32,8 @@ import 'audio_queue_sheet.dart';
 import 'audio_particles_widget.dart';
 import 'lyric_settings_page.dart';
 import 'lyric_offset_dialog.dart';
+import 'lyric_color_picker_dialog.dart';
+import 'lyric_style_dropdown.dart';
 import 'lyric_style_sheet.dart';
 import 'lyrics_view_widget.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -1322,15 +1324,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 歌词显示模式菜单（歌词按钮点击后向上弹出）：
   /// 第一组为显示模式（关闭 / 单行 / 半屏 / 全屏），分隔线之下为动画风格。
-  /// 选中风格即按「当前显示模式」应用，不再强制拉全屏。
+  /// 显示模式选中即关闭弹窗；动画风格改成下拉框，选中后留在弹窗内可连续比较。
   void _showLyricModeMenu() {
     final l10n = L10n.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      // 共 9 个条目，超出 showModalBottomSheet 默认的 9/16 屏高限制会把
-      // 底部两项（文字 PV / 回声碎片）整块裁掉 ⇒ 放开高度限制 +
-      // 内部滚动兜底（小屏 / 横屏）。
+      // 下拉框展开时菜单最高 380dp，加上上方 4 个显示模式条目会超过默认的
+      // 9/16 屏高 ⇒ 放开高度限制 + 内部滚动兜底（小屏 / 横屏）。
       isScrollControlled: true,
       builder: (ctx) {
         final theme = Theme.of(ctx);
@@ -1368,7 +1369,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           );
         }
 
-        return SafeArea(
+        // 用 StatefulBuilder 承载「下拉框选中即生效」的局部刷新：弹窗保持
+        // 打开，收起态立刻显示新风格、说明文字同步更新。
+        Widget buildSheet(StateSetter setSheet) => SafeArea(
           child: Container(
             decoration: BoxDecoration(
               color: surface,
@@ -1427,74 +1430,50 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     ),
                     color: titleColor.withValues(alpha: 0.08),
                   ),
-                  // ── 动画风格分组：按当前显示模式应用，不强制全屏 ────────
+                  // ── 动画风格：下拉框（收起态只显示当前选中的风格） ────────
+                  // 与「音效与均衡器」页同一套观感。11 种风格平铺在任何手机上都
+                  // 会溢出（新增的 5 种被挤到屏幕外、根本点不到），下拉框固定
+                  // 只占一行，选中后自动收起并同步下方说明文字。
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
+                    padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
                     child: Row(
                       children: [
-                        const Icon(Icons.animation_rounded,
-                            color: Colors.deepPurpleAccent, size: 18),
+                        const Icon(
+                          Icons.animation_rounded,
+                          color: Colors.deepPurpleAccent,
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
-                        Text(l10n.lyric_animation_style,
-                            style: TextStyle(
-                                color: titleColor.withValues(alpha: 0.75),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700)),
+                        Text(
+                          l10n.lyric_animation_style,
+                          style: TextStyle(
+                            color: titleColor.withValues(alpha: 0.75),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  item(
-                    icon: Icons.shuffle_rounded,
-                    title: l10n.lyric_style_mixed,
-                    desc: l10n.lyric_style_mixed_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.mixed,
-                    onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.mixed),
-                  ),
-                  item(
-                    icon: Icons.music_note_rounded,
-                    title: l10n.lyric_style_classic,
-                    desc: l10n.lyric_style_classic_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.classic,
-                    onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.classic),
-                  ),
-                  item(
-                    icon: Icons.keyboard_rounded,
-                    title: l10n.lyric_style_typewriter,
-                    desc: l10n.lyric_style_typewriter_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.typewriter,
-                    onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.typewriter),
-                  ),
-                  item(
-                    icon: Icons.movie_rounded,
-                    title: l10n.lyric_style_immersive,
-                    desc: l10n.lyric_style_immersive_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.immersive,
-                    onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.immersive),
-                  ),
-                  item(
-                    icon: Icons.bolt_rounded,
-                    title: l10n.lyric_style_pv,
-                    desc: l10n.lyric_style_pv_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.pv,
-                    onTap: () => _applyLyricStyle(ctx, LyricAnimationStyle.pv),
-                  ),
-                  item(
-                    icon: Icons.blur_on_rounded,
-                    title: l10n.lyric_style_echo,
-                    desc: l10n.lyric_style_echo_desc,
-                    selected: _lyricStyle == LyricAnimationStyle.echo,
-                    onTap: () =>
-                        _applyLyricStyle(ctx, LyricAnimationStyle.echo),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: LyricStyleDropdown(
+                      value: _lyricStyle,
+                      isDark: isDark,
+                      foreground: titleColor,
+                      onChanged: (style) =>
+                          _applyLyricStyleInline(style, setSheet),
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
               ),
             ),
           ),
+        );
+
+        return StatefulBuilder(
+          builder: (ctx, setSheet) => buildSheet(setSheet),
         );
       },
     );
@@ -1514,16 +1493,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     PreferencesService.saveLyricsDisplayMode(mode);
   }
 
-  /// 从菜单选择动画风格：立即持久化，并按「当前显示模式」应用——
-  /// 单行 / 半屏 / 全屏各自生效（单行与半屏同样支持全部 5 种风格），
-  /// 不再强制拉全屏。当前为关闭时回落到半屏，让所选风格立即可见。
-  void _applyLyricStyle(BuildContext ctx, LyricAnimationStyle style) {
-    Navigator.pop(ctx);
+  /// 从下拉框选择动画风格：**不关闭弹窗**，按「当前显示模式」应用——
+  /// 单行 / 半屏 / 全屏各自生效，不再强制拉全屏。当前为关闭时回落到
+  /// 半屏，让所选风格立即可见。
+  ///
+  /// [setSheet] 只用于刷新弹窗内那一份 [_lyricStyle]：下拉框收起态与说明
+  /// 文字都读它。留窗的用意是让用户能连续比较几种风格（风格是即时生效
+  /// 的视觉偏好），点空白处即可关闭。
+  void _applyLyricStyleInline(LyricAnimationStyle style, StateSetter setSheet) {
     final int base = _lyricsDisplayMode == 0 ? 2 : _lyricsDisplayMode;
     setState(() {
       _lyricStyle = style;
       _lyricsDisplayMode = base;
     });
+    // 弹窗是独立的 StatefulBuilder 子树，页面 setState 刷不到它 ⇒ 必须
+    // 显式刷新一次，否则下拉框收起态仍显示旧风格、说明文字也不更新。
+    setSheet(() {});
     PreferencesService.saveLyricAnimationStyleName(style.name);
     // base 理论上只可能是 1/2（3 时全屏路由已遮挡本页菜单）；防御性 clamp，
     // 避免把瞬时态 3 写进持久化（读取端会被裁成 0）。
@@ -1534,13 +1519,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 获取桌面歌词颜色（ARGB int 格式，用于原生层渲染）
   /// 返回 [highlightColor, normalColor]。
+  ///
+  /// ⚠️ 配色口径与屏幕歌词一致，**不跟随主题色**：已唱部分用「当前播放」
+  /// 色，未唱部分用「未播放」色（压到 65% 不透明度，保留层次）。
+  /// 早前取 `colorScheme.primary`，换主题就把桌面歌词染成主题色，与用户在
+  /// 歌词设置里选的配色完全脱节。
   List<int> _getDesktopLyricColors() {
-    final accent = Theme.of(context).colorScheme.primary;
-    // 高亮色 = 主题主色（已唱部分）
-    final highlightColor = accent.value;
-    // 普通色 = 主题主色 35% 透明度（未唱部分）
-    final normalColor = accent.withValues(alpha: 0.35).value;
-    return [highlightColor, normalColor];
+    final current =
+        PreferencesService.getLyricColorCurrent() ?? kLyricColorCurrentDefault;
+    final unplayed =
+        PreferencesService.getLyricColorUnplayed() ??
+        kLyricColorUnplayedDefault;
+    return [current.toARGB32(), unplayed.withValues(alpha: 0.65).toARGB32()];
   }
 
   /// 若用户上次开启了桌面歌词，恢复显示（带权限校验）
@@ -1892,12 +1882,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return l10n.lyric_style_classic;
       case LyricAnimationStyle.typewriter:
         return l10n.lyric_style_typewriter;
-      case LyricAnimationStyle.immersive:
-        return l10n.lyric_style_immersive;
+      case LyricAnimationStyle.meteor:
+        return l10n.lyric_style_meteor;
       case LyricAnimationStyle.pv:
         return l10n.lyric_style_pv;
       case LyricAnimationStyle.echo:
         return l10n.lyric_style_echo;
+      case LyricAnimationStyle.drop:
+        return l10n.lyric_style_drop;
+      case LyricAnimationStyle.burst:
+        return l10n.lyric_style_burst;
+      case LyricAnimationStyle.cube:
+        return l10n.lyric_style_cube;
+      case LyricAnimationStyle.punch:
+        return l10n.lyric_style_punch;
+      case LyricAnimationStyle.wave:
+        return l10n.lyric_style_wave;
       case LyricAnimationStyle.mixed:
         return l10n.lyric_style_mixed;
     }
@@ -1935,6 +1935,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 PreferencesService.getDesktopLyricEnabled();
           });
           _refreshLyricOffset();
+          // 设置页还能改「三色」：桌面歌词正在显示时必须把新配色推给
+          // 原生层，否则要等下次重开桌面歌词才变色（看着像没生效）。
+          if (_desktopLyricEnabled &&
+              DesktopLyricController.instance.isRunning) {
+            final colors = _getDesktopLyricColors();
+            DesktopLyricController.instance.setColors(
+              highlightColor: colors[0],
+              normalColor: colors[1],
+            );
+          }
         });
   }
 
@@ -2968,6 +2978,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           isPlaying: isPlaying,
                           accentColor: accent,
                           onSeekStart: () => isSeeking = true,
+                          onSeekCancel: () => isSeeking = false,
                           onSeek: (d) {
                             isSeeking = false;
                             setState(() => position = d);
@@ -3147,6 +3158,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                 isPlaying: isPlaying,
                                 accentColor: accent,
                                 onSeekStart: () => isSeeking = true,
+                                onSeekCancel: () => isSeeking = false,
                                 onSeek: (d) {
                                   isSeeking = false;
                                   setState(() => position = d);

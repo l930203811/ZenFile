@@ -98,8 +98,11 @@ class PreferencesService {
     await _prefs?.setBool(_keyDefaultToBrowseScreen, val);
   }
 
+  /// 「记住上次打开的文件夹」：**默认关闭**。
+  /// 未显式设置过时返回 false（新装/未改动过该开关的用户不恢复上次标签页）；
+  /// 用户手动开启后会写入 true，之后按用户选择走。
   static bool getRememberLastFolder() {
-    return _prefs?.getBool(_keyRememberLastFolder) ?? true;
+    return _prefs?.getBool(_keyRememberLastFolder) ?? false;
   }
 
   static Future<void> saveRememberLastFolder(bool val) async {
@@ -1637,7 +1640,7 @@ class PreferencesService {
   }
 
   // --- Lyric Animation Style ---
-  /// 歌词动画风格名（classic / glow / immersive / pv / echo / mixed；
+  /// 歌词动画风格名（classic / typewriter / meteor / pv / echo / mixed；
   /// 见 LyricAnimationStyle；mixed 为默认）。
   /// 只存字符串，避免 preferences_service 反向依赖风格枚举。
   static const String _keyLyricAnimationStyle = 'lyric_animation_style';

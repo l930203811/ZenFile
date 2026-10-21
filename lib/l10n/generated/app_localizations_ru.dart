@@ -748,6 +748,14 @@ class L10nRu extends L10n {
       'Проведите вверх от нижнего края экрана, чтобы открыть «Избранное»';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'Нажмите и удерживайте элемент, чтобы перетащить и изменить порядок';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'Нажмите и удерживайте карточку, чтобы перетащить и изменить порядок';
+
+  @override
   String get ui_new_favorite => 'Добавить в избранное';
 
   @override
@@ -3295,6 +3303,9 @@ class L10nRu extends L10n {
   String get ui_dual_window => 'Двойное окно';
 
   @override
+  String get ui_swap_panes => 'Поменять окна местами';
+
+  @override
   String get ui_filter_by_category => 'Фильтр по категории';
 
   @override
@@ -4358,11 +4369,11 @@ class L10nRu extends L10n {
       'Буквы печатаются по одной с мигающим курсором, без свечения и увеличения';
 
   @override
-  String get lyric_style_immersive => 'Иммерсивная сцена';
+  String get lyric_style_meteor => 'Метеоритный дождь';
 
   @override
-  String get lyric_style_immersive_desc =>
-      'Крупный шрифт с кинематографичным свечением';
+  String get lyric_style_meteor_desc =>
+      'Сначала вспыхивает вся строка, затем пропетые слова падают со следом метеора';
 
   @override
   String get ui_no_lyrics_found => 'Текст песни не найден';
@@ -8722,11 +8733,46 @@ class L10nRu extends L10n {
       'Закрашенные слова разлетаются полыми осколками, медленно уплывающими';
 
   @override
+  String get lyric_style_drop => 'Падение';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'Пропетые символы падают сверху и встают на место со вспышкой кольца и искрами; остальные ждут наверху';
+
+  @override
+  String get lyric_style_burst => 'Боковой выброс';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'Символы влетают поочерёдно слева и справа со шлейфом и отскоком; пропетый испускает лучи';
+
+  @override
+  String get lyric_style_cube => '3D-вращение';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'Каждый символ входит, вращаясь вокруг вертикальной оси, с толщиной и тенью; пропетый продолжает вращаться';
+
+  @override
+  String get lyric_style_punch => 'Удар';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'Пропетый символ сжимается с двойного размера на место, взрываясь кольцами ударной волны и линиями скорости';
+
+  @override
+  String get lyric_style_wave => 'Волна';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'Символы колышутся вверх-вниз, а ниже тает зеркальное отражение';
+
+  @override
   String get lyric_style_mixed => 'Микс';
 
   @override
   String get lyric_style_mixed_desc =>
-      'Только текущая строка по центру; каждой строке — случайный стиль и появление';
+      'Показывается только поющаяся строка; каждая строка получает случайный полный стиль одного из десяти';
 
   @override
   String get lyric_color_settings => 'Цвета текста';

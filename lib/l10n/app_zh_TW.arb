@@ -820,6 +820,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "長按項目可拖曳排序",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "長按卡片可拖曳排序",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3640,6 +3648,7 @@
   },
   "ui_single_window": "單一視窗",
   "ui_dual_window": "雙視窗",
+  "ui_swap_panes": "互換左右視窗",
   "ui_filter_by_category": "按類別過濾",
   "ui_all_files": "全部",
   "ui_filter_others": "其它",
@@ -4237,8 +4246,8 @@
   "lyric_style_classic_desc": "逐字掃過，鄰近行依距離漸層",
   "lyric_style_typewriter": "打字機",
   "lyric_style_typewriter_desc": "逐字敲出，當前字右側帶閃爍游標，無輝光、不放大",
-  "lyric_style_immersive": "沉浸巨幕",
-  "lyric_style_immersive_desc": "超大字級與電影感輝光",
+  "lyric_style_meteor": "流星墜落",
+  "lyric_style_meteor_desc": "整句先亮起，唱過的字帶流星尾跡逐字墜下",
   "ui_no_lyrics_found": "未找到歌詞",
   "ui_lyrics_auto_load_hint": "將 .lrc 歌詞檔案放在音訊同目錄下\n（檔名與音訊相同）即可自動載入",
   "ui_lyrics_panel": "歌詞全螢幕面板",
@@ -8839,8 +8848,18 @@
   "lyric_style_pv_desc": "單行巨字，唱到的字飛入、炸開，帶光軌與閃點",
   "lyric_style_echo": "迴聲碎片",
   "lyric_style_echo_desc": "掃過填充的同時，唱過的字炸成空心碎片緩緩漂移",
+  "lyric_style_drop": "重力墜落",
+  "lyric_style_drop_desc": "唱到的字從高處砸落到位，落地濺起光環與碎屑，未唱的字懸著等位",
+  "lyric_style_burst": "左右彈射",
+  "lyric_style_burst_desc": "字從左、右交替高速彈入，帶拖影與過衝回彈，唱到的字炸出放射光線",
+  "lyric_style_cube": "立體旋入",
+  "lyric_style_cube_desc": "每個字帶厚度與投影繞豎軸旋入，唱到的字持續自轉",
+  "lyric_style_punch": "衝擊爆字",
+  "lyric_style_punch_desc": "唱到的字從兩倍大猛縮到位，炸開衝擊波環與速度線",
+  "lyric_style_wave": "波紋漂浮",
+  "lyric_style_wave_desc": "逐字上下起伏，行下方有鏡像倒影隨波淡出",
   "lyric_style_mixed": "混合模式",
-  "lyric_style_mixed_desc": "只呈現當前一句並置中，每句隨機獲得不同視覺風格與入場動效",
+  "lyric_style_mixed_desc": "只呈現目前正在唱的那一句，每句隨機獲得一種完整風格（十種風格可選），逐句不同",
   "lyric_color_settings": "歌詞顏色",
   "lyric_color_unplayed": "未播放",
   "lyric_color_unplayed_desc": "尚未唱到的歌詞",

@@ -736,6 +736,14 @@ class L10nEn extends L10n {
       'Swipe up from the bottom of the screen to open Favorites';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'Long-press an item to drag and reorder';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'Long-press a card to drag and reorder';
+
+  @override
   String get ui_new_favorite => 'Add to Favorites';
 
   @override
@@ -3244,6 +3252,9 @@ class L10nEn extends L10n {
   String get ui_dual_window => 'Dual Window';
 
   @override
+  String get ui_swap_panes => 'Swap panes';
+
+  @override
   String get ui_filter_by_category => 'Filter by Category';
 
   @override
@@ -4310,10 +4321,11 @@ class L10nEn extends L10n {
       'Words type out one by one with a blinking cursor; no glow, no zoom';
 
   @override
-  String get lyric_style_immersive => 'Immersive stage';
+  String get lyric_style_meteor => 'Meteor fall';
 
   @override
-  String get lyric_style_immersive_desc => 'Oversized type with cinematic glow';
+  String get lyric_style_meteor_desc =>
+      'The whole line lights up first, then each sung word drops away on a meteor trail';
 
   @override
   String get ui_no_lyrics_found => 'No lyrics found';
@@ -8639,11 +8651,46 @@ class L10nEn extends L10n {
       'Sung words burst into hollow fragments that drift away';
 
   @override
+  String get lyric_style_drop => 'Falling drop';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'Sung characters drop from above and slam into place with a ring of sparks; unsung ones hang waiting';
+
+  @override
+  String get lyric_style_burst => 'Side burst';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'Characters shoot in from alternating sides with trails and overshoot; the sung one fires radiating rays';
+
+  @override
+  String get lyric_style_cube => '3D spin-in';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'Characters spin in on their vertical axis with real thickness and shadow; the sung one keeps turning';
+
+  @override
+  String get lyric_style_punch => 'Impact burst';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'The sung character snaps from double size into place, blasting shockwave rings and speed lines';
+
+  @override
+  String get lyric_style_wave => 'Floating wave';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'Characters ripple up and down with a mirrored reflection fading below';
+
+  @override
   String get lyric_style_mixed => 'Mixed';
 
   @override
   String get lyric_style_mixed_desc =>
-      'Shows only the current line centered; each line gets a random style and entrance animation';
+      'Only the line being sung is shown; each line randomly gets one complete style out of ten, changing line by line';
 
   @override
   String get lyric_color_settings => 'Lyric colors';

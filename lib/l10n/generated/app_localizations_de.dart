@@ -749,6 +749,14 @@ class L10nDe extends L10n {
       'Wischen Sie vom unteren Bildschirmrand nach oben, um die Favoriten zu öffnen';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'Eintrag lange drücken, um ihn zu verschieben und neu zu sortieren';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'Karte lange drücken, um sie zu verschieben und neu zu sortieren';
+
+  @override
   String get ui_new_favorite => 'Zu Favoriten hinzufügen';
 
   @override
@@ -3291,6 +3299,9 @@ class L10nDe extends L10n {
   String get ui_dual_window => 'Doppeltes Fenster';
 
   @override
+  String get ui_swap_panes => 'Fenster tauschen';
+
+  @override
   String get ui_filter_by_category => 'Nach Kategorie filtern';
 
   @override
@@ -4354,11 +4365,11 @@ class L10nDe extends L10n {
       'Zeichen erscheinen nacheinander mit blinkendem Cursor, ohne Leuchten oder Zoom';
 
   @override
-  String get lyric_style_immersive => 'Immersive Bühne';
+  String get lyric_style_meteor => 'Meteorenfall';
 
   @override
-  String get lyric_style_immersive_desc =>
-      'Übergroße Typografie mit filmischem Leuchten';
+  String get lyric_style_meteor_desc =>
+      'Erst leuchtet die ganze Zeile auf, dann fällt jede gesungene Silbe mit Schweif nach unten';
 
   @override
   String get ui_no_lyrics_found => 'Kein Liedtext gefunden';
@@ -8740,11 +8751,46 @@ class L10nDe extends L10n {
       'Gesungene Wörter zerfallen in hohle Fragmente, die davontreiben';
 
   @override
+  String get lyric_style_drop => 'Schwerkraft-Fall';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'Gesungene Zeichen stürzen von oben herab und schlagen mit Lichtring und Splittern auf; ungesungene warten oben';
+
+  @override
+  String get lyric_style_burst => 'Seiten-Burst';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'Zeichen schießen abwechselnd von links und rechts herein, mit Nachziehern und Überschwingen; das gesungene strahlt Linien ab';
+
+  @override
+  String get lyric_style_cube => '3D-Spin';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'Jedes Zeichen dreht sich mit echter Dicke und Schatten um die Hochachse herein; das gesungene dreht sich weiter';
+
+  @override
+  String get lyric_style_punch => 'Impact-Burst';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'Das gesungene Zeichen schnellt von doppelter Größe auf seinen Platz und lässt Schockwellen und Speedlines explodieren';
+
+  @override
+  String get lyric_style_wave => 'Wellengang';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'Zeichen wogen auf und ab, darunter klingt ein Spiegelbild wellenförmig aus';
+
+  @override
   String get lyric_style_mixed => 'Gemischt';
 
   @override
   String get lyric_style_mixed_desc =>
-      'Nur die aktuelle Zeile zentriert; jede Zeile erhält zufälligen Stil und Einstiegsanimation';
+      'Nur die gerade gesungene Zeile wird gezeigt; jede Zeile erhält zufällig einen vollständigen Stil aus zehn';
 
   @override
   String get lyric_color_settings => 'Textfarben';

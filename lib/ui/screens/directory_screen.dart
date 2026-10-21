@@ -23,6 +23,7 @@ import '../widgets/selection_action_bar.dart';
 import '../widgets/bulk_crypt_actions.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/file_name_validation.dart';
+import '../../core/utils.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
@@ -324,6 +325,60 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// 双窗口中缝的「左右窗口互换」按钮。
+  ///
+  /// ⚠️ 它必须**叠**在两个窗口之上（Stack + Positioned），不能在 Row 里占位：
+  /// 双窗口原本就是两个紧贴的 Expanded（间距 0），插一个定宽盒子会把窗口推开。
+  ///
+  /// 外观：**只有图标**——没有边框、没有底色、没有投影。中缝那点宽度本来就窄，
+  /// 画一个带框的扁矩形会像两个窗口之间多贴了一块补丁；去掉全部装饰后箭头直接
+  /// 压在中缝上，读起来就是「两个窗口之间的一条互换提示」。
+  ///
+  /// 高度仍与两个窗口顶部那条状态条对齐（PaneBrowser 里 16 / 28 两档，判据与
+  /// 那边保持一致），这样图标的垂直中心始终落在状态条中线上。
+  Widget _buildPaneSwapButton(FileManagerProvider provider, ThemeData theme) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: provider.progressMinimized,
+      builder: (ctx, progressMin, _) {
+        // PaneBrowser 的判据：有剪贴板 / 有后台进度 / 显示文件计数 ⇒ 28dp 高条，
+        // 否则 16dp。多选态下计数不显示，所以这里也要排除。
+        final bool tallBand =
+            provider.hasClipboard ||
+            progressMin ||
+            (provider.showFolderFileCount &&
+                provider.activeTab.selectedPaths.isEmpty);
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          // 无装饰，尺寸不再有视觉意义，只负责两件事：
+          // ①撑出一个可点热区（16dp 高的条上也要点得中）；
+          // ②跟随状态条高度变化，让图标垂直居中不漂移。
+          width: 44,
+          height: tallBand ? 28.0 : 16.0,
+          child: Tooltip(
+            message: L10n.of(context).ui_swap_panes,
+            waitDuration: const Duration(milliseconds: 500),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: provider.swapPanes,
+                borderRadius: BorderRadius.circular(4),
+                child: Center(
+                  child: Icon(
+                    // 断线风格图标，与顶栏其它按钮同一套字体。
+                    Broken.arrow_swap_horizontal,
+                    size: 15,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -700,7 +755,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   /// 构造表示「返回父目录」的虚拟文件夹项（MT 管理器风格的 `...`）。
   FileItemModel _parentDirectoryItem(FileManagerProvider provider) {
-    final parentPath = p.posix.dirname(provider.currentPath);
+    // zip://（压缩包内浏览）路径不能直接 p.dirname —— 会切坏虚拟路径
+    //（丢 `|` 后的内部目录/破坏尾斜杠），必须走 provider 的 zip 感知父路径。
+    final parentPath = provider.navigationParentPath(provider.currentPath);
     return FileItemModel(
       entity: Directory(parentPath),
       name: '...',
@@ -749,6 +806,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   void _handleAction(BuildContext context, String action, String path) async {
     final provider = context.read<FileManagerProvider>();
+    // zip://（压缩包内浏览）v2：放行写操作（copy/cut/delete/rename/extract），
+    // 由 provider 层的 zip 重写链路处理；其余动作（archive/encrypt/...）仍拦截，
+    // 避免 UI 对虚拟路径做真实文件系统/加密操作。
+    if (path.startsWith('zip://') &&
+        !const ['extract', 'copy', 'cut', 'delete', 'rename'].contains(action)) {
+      return;
+    }
     switch (action) {
       case 'archive':
         final res = await CreateArchiveDialog.show(
@@ -771,6 +835,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         }
         break;
       case 'extract':
+        // zip:// 条目（压缩包内浏览）：解压到 zip 所在真实父目录并刷新；
+        // 普通压缩包仍走原直接解压对话框。
+        if (path.startsWith('zip://')) {
+          await provider.extractZipEntriesToParent([path]);
+          break;
+        }
         await provider.extractArchiveDirectly(context, path);
         break;
       case 'copy':
@@ -791,7 +861,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         if (isMulti && provider.selectedPaths.length > 1) {
           await BatchRenameDialog.show(context, provider);
         } else {
-          final currentName = p.posix.basename(path);
+          // zip:// 条目（目录带尾斜杠）用虚拟路径感知的显示名，p.basename 会拿到空串
+          final currentName = FileUtils.zipEntryDisplayName(path) ?? p.posix.basename(path);
           final newName = await FileActionDialogs.showRenameDialog(
             context,
             currentName: currentName,
@@ -1636,35 +1707,25 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             }
                             return false; // 继续冒泡，不影响其他监听者
                           },
-                          child: Row(
-                              children: [
-                                Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
-                                // 中缝：左右窗口互换按钮（顶部对齐各自标题栏）
-                                SizedBox(
-                                  width: 34,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(top: 5),
-                                      child: IconButton(
-                                        onPressed: () => provider.swapPanes(),
-                                        icon: Icon(
-                                          Icons.swap_horiz,
-                                          size: 18,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        style: IconButton.styleFrom(
-                                          shape: const CircleBorder(),
-                                          backgroundColor: theme.colorScheme.primary
-                                              .withValues(alpha: 0.10),
-                                          fixedSize: const Size(30, 30),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
-                              ],
+                          // ⚠️ 两个窗口必须紧贴（原本就是两个 Expanded，间距为 0）。
+                          // 互换按钮不能插进这个 Row —— 定宽 SizedBox 会凭空把左右
+                          // 窗口推开一条缝，所以改成 Stack 叠加、悬浮在中缝上方。
+                          child: Stack(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
+                                  Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
+                                ],
+                              ),
+                              // top: 2 对齐 PaneBrowser 容器自身的 vertical margin。
+                              Positioned(
+                                top: 2,
+                                left: 0,
+                                right: 0,
+                                child: Center(child: _buildPaneSwapButton(provider, theme)),
+                              ),
+                            ],
                           ),
                         )
                       : (provider.isLoading && provider.currentFiles.isEmpty && !provider.isPasting)

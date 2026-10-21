@@ -173,7 +173,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
   /// 构造「返回父目录」的虚拟文件夹项。
   FileItemModel _parentDirectoryItem(FileManagerProvider provider, FolderTab tab) {
-    final parentPath = p.posix.dirname(tab.currentPath);
+    // zip://（压缩包内浏览）路径不能直接 p.dirname —— 会切坏虚拟路径
+    //（丢 `|` 后的内部目录/破坏尾斜杠），必须走 provider 的 zip 感知父路径。
+    final parentPath = provider.navigationParentPath(tab.currentPath);
     return FileItemModel(
       entity: Directory(parentPath),
       name: '...',
@@ -186,7 +188,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
   void _goUp(FileManagerProvider provider, FolderTab tab) {
     _activatePane(provider);
-    final parentPath = p.posix.dirname(tab.currentPath);
+    // zip:// 感知的父路径：zip 内逐级向上，压缩包根的上一级 = zip 所在真实目录。
+    final parentPath = provider.navigationParentPath(tab.currentPath);
     if (parentPath == tab.currentPath) return;
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(tab.currentPath, _scrollController.offset);
@@ -238,6 +241,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
   void _handleAction(BuildContext context, String action, String path) async {
     final provider = context.read<FileManagerProvider>();
     _activatePane(provider);
+    // zip://（压缩包内浏览）v2：放行写操作（copy/cut/delete/rename/extract），
+    // 由 provider 层的 zip 重写链路处理；其余动作（archive/encrypt/...）仍拦截。
+    if (path.startsWith('zip://') &&
+        !const ['extract', 'copy', 'cut', 'delete', 'rename'].contains(action)) {
+      return;
+    }
     switch (action) {
       case 'archive':
         final res = await CreateArchiveDialog.show(
@@ -260,6 +269,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
         }
         break;
       case 'extract':
+        // zip:// 条目（压缩包内浏览）：解压到 zip 所在真实父目录并刷新；
+        // 普通压缩包仍走原直接解压对话框。
+        if (path.startsWith('zip://')) {
+          await provider.extractZipEntriesToParent([path]);
+          break;
+        }
         await provider.extractArchiveDirectly(context, path);
         break;
       case 'encrypt':
@@ -305,7 +320,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (isMulti && provider.selectedPaths.length > 1) {
           await BatchRenameDialog.show(context, provider);
         } else {
-          final currentName = p.posix.basename(path);
+          // zip:// 条目（目录带尾斜杠）用虚拟路径感知的显示名，p.basename 会拿到空串
+          final currentName = FileUtils.zipEntryDisplayName(path) ?? p.posix.basename(path);
           final newName = await FileActionDialogs.showRenameDialog(
             context,
             currentName: currentName,

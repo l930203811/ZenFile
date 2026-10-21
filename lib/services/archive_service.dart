@@ -1345,6 +1345,149 @@ class ArchiveService {
     return bb.takeBytes();
   }
 
+  // ==================== zip:// 虚拟路径写操作（重写式，仅 .zip） ====================
+  //
+  // zip 格式没有原位删除/改名/追加的公开结构（中央目录之后全是 EOCD），任何写操作
+  // 都等于「整包重写」。为满足「失败不破坏原包」的硬要求，任务在 compute 隔离区内
+  // 完成解码 → 修改条目集 → 编码 → 写**临时文件**；原文件由调用方在成功后原子替换
+  // （rename），任何一步失败原 zip 都完好无损。
+
+  /// 通用 zip 重写：删除条目 / 改名（目录=子树前缀）/ 追加字节条目。
+  ///
+  /// - [deletePaths]：要删除的内部路径；目录以 `/` 结尾（按前缀删除整棵子树），
+  ///   文件为精确名。名称按 `_normalizeForMatch` 归一化后比对。
+  /// - [renamePaths]：旧内部路径 -> 新内部路径；目录 key 以 `/` 结尾（整棵子树
+  ///   前缀替换），文件为精确名。多个 key 按「最长优先」匹配。
+  /// - [addEntries]：新条目内部路径 -> 内容；value 为 null 表示**空目录条目**
+  ///   （isFile=false）。同名旧条目不会自动覆盖，调用方需自行加入 [deletePaths]。
+  ///
+  /// 结果写到 [tempOutputPath]（必须是调用方可原子 rename 到原路径的同分区路径）。
+  /// 返回是否成功；失败时调用方应删除残留临时文件，原 zip 不受影响。
+  static Future<bool> rewriteZipArchive({
+    required String archivePath,
+    required String tempOutputPath,
+    List<String> deletePaths = const <String>[],
+    Map<String, String> renamePaths = const <String, String>{},
+    Map<String, Uint8List?> addEntries = const <String, Uint8List?>{},
+  }) {
+    return compute(_rewriteZipArchiveTask, <String, dynamic>{
+      'archivePath': archivePath,
+      'tempOutputPath': tempOutputPath,
+      'deletePaths': deletePaths,
+      'renamePaths': renamePaths,
+      'addEntries': addEntries,
+    });
+  }
+
+  /// 匹配「删除目标」：目录（`/` 结尾）按前缀整树删除，文件精确匹配。
+  static bool _zipDeleteMatches(String name, List<String> deletePaths) {
+    for (final toDel in deletePaths) {
+      if (toDel.endsWith('/')) {
+        if (name.startsWith(toDel) || name == toDel.substring(0, toDel.length - 1)) {
+          return true;
+        }
+      } else if (name == toDel) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 应用「改名」：目录 key（`/` 结尾）做子树前缀替换，文件 key 精确替换。
+  /// key 按长度降序匹配（长前缀优先，避免 `a/` 抢走本该 `a/b/` 的条目）。
+  /// 返回 null 表示该条目已被改名目标删除（不应发生，防御式跳过）。
+  static String? _zipApplyRename(String name, List<MapEntry<String, String>> sortedRenames) {
+    for (final r in sortedRenames) {
+      if (r.key.endsWith('/')) {
+        if (name.startsWith(r.key)) return r.value + name.substring(r.key.length);
+        if (name == r.key.substring(0, r.key.length - 1)) {
+          return r.value.endsWith('/') ? r.value : '${r.value}/';
+        }
+      } else if (name == r.key) {
+        return r.value;
+      }
+    }
+    return name;
+  }
+
+  static bool _rewriteZipArchiveTask(Map<String, dynamic> args) {
+    final archivePath = args['archivePath'] as String;
+    final tempOutputPath = args['tempOutputPath'] as String;
+    final deletePaths = (args['deletePaths'] as List).cast<String>().map(_normalizeForMatch).toList();
+    final sortedRenames = (args['renamePaths'] as Map)
+        .cast<String, String>()
+        .entries
+        .map((e) => MapEntry(_normalizeForMatch(e.key), _normalizeForMatch(e.value)))
+        .toList()
+      ..sort((a, b) => b.key.length.compareTo(a.key.length));
+    final addEntries = (args['addEntries'] as Map).cast<String, Uint8List?>();
+
+    try {
+      final srcFile = File(archivePath);
+      if (!srcFile.existsSync() || srcFile.lengthSync() == 0) return false;
+
+      // 1) 解码原包（decodeBuffer 会把各条目数据读进内存，流可安全关闭）
+      final input = InputFileStream(archivePath);
+      final Archive oldArchive;
+      try {
+        oldArchive = ZipDecoder().decodeBuffer(input);
+      } finally {
+        try { input.closeSync(); } catch (_) {}
+      }
+
+      // 2) 构建新条目集：旧条目（过滤/改名）+ 追加条目（从 bytes 构造）
+      final out = Archive();
+      for (int i = 0; i < oldArchive.length; i++) {
+        final f = oldArchive[i];
+        final name = _normalizeForMatch(f.name);
+        if (name.isEmpty) continue;
+        if (_zipDeleteMatches(name, deletePaths)) continue;
+        final newName = _zipApplyRename(name, sortedRenames);
+        if (newName == null || newName.isEmpty) continue;
+        if (newName == name) {
+          // 未改名：原条目直接搬入（content 已内存化，编码时按需读取）
+          out.addFile(f);
+        } else {
+          // 改名：ArchiveFile.name 只能构造时指定，须从 bytes 重建（保留修改时间）
+          final content = f.content;
+          final bytes = content is Uint8List
+              ? content
+              : content is List<int> ? Uint8List.fromList(content) : Uint8List(0);
+          final nf = ArchiveFile(newName, bytes.length, bytes);
+          nf.isFile = f.isFile;
+          if (f.lastModTime != null && f.lastModTime! > 0) nf.lastModTime = f.lastModTime;
+          out.addFile(nf);
+        }
+      }
+      for (final e in addEntries.entries) {
+        final name = _normalizeForMatch(e.key);
+        if (name.isEmpty) continue;
+        final bytes = e.value;
+        if (bytes == null) {
+          // 空目录条目（与 _encodeArchiveTask 的空目录构造方式一致）
+          final dirName = name.endsWith('/') ? name : '$name/';
+          final af = ArchiveFile(dirName, 0, null);
+          af.isFile = false;
+          out.addFile(af);
+        } else {
+          final af = ArchiveFile(name, bytes.length, bytes);
+          out.addFile(af);
+        }
+      }
+
+      // 3) 编码并写临时文件（level 6 与创建压缩包的默认档一致）
+      final encoded = ZipEncoder().encode(out, level: 6);
+      if (encoded == null || encoded.isEmpty) return false;
+      File(tempOutputPath)
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(encoded is Uint8List ? encoded : Uint8List.fromList(encoded));
+      return true;
+    } catch (e) {
+      debugPrint('Error rewriting zip archive: $e');
+      return false;
+    }
+  }
+
   static Future<bool> deleteItemsFromArchive({
     required String archivePath,
     required List<String> internalPathsToDelete,

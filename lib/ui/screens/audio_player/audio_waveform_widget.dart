@@ -9,6 +9,14 @@ class AudioWaveformWidget extends StatefulWidget {
   final ValueChanged<Duration> onSeek;
   final VoidCallback? onSeekStart;
 
+  /// 拖动/点击被取消（既没落成 tap 也没落成 pan）时回调。
+  ///
+  /// 必须提供：调用方用 [onSeekStart] 把「正在拖动」标志置真、在 onSeek 里
+  /// 复位；一旦手势被取消，onSeek 永不触发，标志会**永久卡在真**，进度流被
+  /// 全部丢弃 ⇒ 歌词/进度条从此不再更新。之前只处理了 tap 取消，pan 取消
+  /// （手指滑出控件又被父级接管）没有出口。
+  final VoidCallback? onSeekCancel;
+
   const AudioWaveformWidget({
     super.key,
     required this.position,
@@ -17,6 +25,7 @@ class AudioWaveformWidget extends StatefulWidget {
     required this.accentColor,
     required this.onSeek,
     this.onSeekStart,
+    this.onSeekCancel,
   });
 
   @override
@@ -220,6 +229,12 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
                 onPanEnd: (_) {
                   _finalizeSeek(safeDur);
                 },
+                onPanCancel: () {
+                  setState(() {
+                    _dragPercentage = null;
+                  });
+                  widget.onSeekCancel?.call();
+                },
                 onTapDown: (details) {
                   widget.onSeekStart?.call();
                   _updateDragPercentage(details.localPosition, constraints.maxWidth);
@@ -231,6 +246,7 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
                   setState(() {
                     _dragPercentage = null;
                   });
+                  widget.onSeekCancel?.call();
                 },
                 child: SizedBox(
                   height: maxBarHeight + 16,

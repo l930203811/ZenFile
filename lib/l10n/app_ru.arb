@@ -796,6 +796,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "Нажмите и удерживайте элемент, чтобы перетащить и изменить порядок",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "Нажмите и удерживайте карточку, чтобы перетащить и изменить порядок",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3569,6 +3577,7 @@
   },
   "ui_single_window": "Одиночное окно",
   "ui_dual_window": "Двойное окно",
+  "ui_swap_panes": "Поменять окна местами",
   "ui_filter_by_category": "Фильтр по категории",
   "ui_all_files": "Все",
   "ui_filter_others": "Другое",
@@ -4167,8 +4176,8 @@
   "lyric_style_classic_desc": "Покадровое заполнение, соседние строки гаснут по расстоянию",
   "lyric_style_typewriter": "Печатная машинка",
   "lyric_style_typewriter_desc": "Буквы печатаются по одной с мигающим курсором, без свечения и увеличения",
-  "lyric_style_immersive": "Иммерсивная сцена",
-  "lyric_style_immersive_desc": "Крупный шрифт с кинематографичным свечением",
+  "lyric_style_meteor": "Метеоритный дождь",
+  "lyric_style_meteor_desc": "Сначала вспыхивает вся строка, затем пропетые слова падают со следом метеора",
   "ui_no_lyrics_found": "Текст песни не найден",
   "ui_lyrics_auto_load_hint": "Поместите файл .lrc в ту же папку, что и аудио\n(с тем же именем файла), чтобы автоматически загрузить",
   "ui_lyrics_panel": "Панель текста",
@@ -8691,8 +8700,18 @@
   "lyric_style_pv_desc": "Огромная строка: буквы влетают и разлетаются, со световыми треками и искрами",
   "lyric_style_echo": "Осколки эха",
   "lyric_style_echo_desc": "Закрашенные слова разлетаются полыми осколками, медленно уплывающими",
+  "lyric_style_drop": "Падение",
+  "lyric_style_drop_desc": "Пропетые символы падают сверху и встают на место со вспышкой кольца и искрами; остальные ждут наверху",
+  "lyric_style_burst": "Боковой выброс",
+  "lyric_style_burst_desc": "Символы влетают поочерёдно слева и справа со шлейфом и отскоком; пропетый испускает лучи",
+  "lyric_style_cube": "3D-вращение",
+  "lyric_style_cube_desc": "Каждый символ входит, вращаясь вокруг вертикальной оси, с толщиной и тенью; пропетый продолжает вращаться",
+  "lyric_style_punch": "Удар",
+  "lyric_style_punch_desc": "Пропетый символ сжимается с двойного размера на место, взрываясь кольцами ударной волны и линиями скорости",
+  "lyric_style_wave": "Волна",
+  "lyric_style_wave_desc": "Символы колышутся вверх-вниз, а ниже тает зеркальное отражение",
   "lyric_style_mixed": "Микс",
-  "lyric_style_mixed_desc": "Только текущая строка по центру; каждой строке — случайный стиль и появление",
+  "lyric_style_mixed_desc": "Показывается только поющаяся строка; каждая строка получает случайный полный стиль одного из десяти",
   "lyric_color_settings": "Цвета текста",
   "lyric_color_unplayed": "Не воспроизведено",
   "lyric_color_unplayed_desc": "Ещё не исполненные строки",

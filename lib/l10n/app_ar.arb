@@ -796,6 +796,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "اضغط مطولاً على أي عنصر لسحبه وإعادة ترتيبه",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "اضغط مطولاً على البطاقة لسحبها وإعادة ترتيبها",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3569,6 +3577,7 @@
   },
   "ui_single_window": "نافذة واحدة",
   "ui_dual_window": "نافذتان",
+  "ui_swap_panes": "تبديل النافذتين",
   "ui_filter_by_category": "تصفية حسب الفئة",
   "ui_all_files": "الكل",
   "ui_filter_others": "أخرى",
@@ -4167,8 +4176,8 @@
   "lyric_style_classic_desc": "كتابة كلمة بكلمة، وتتلاشى الأسطر المجاورة بحسب المسافة",
   "lyric_style_typewriter": "الآلة الكاتبة",
   "lyric_style_typewriter_desc": "تظهر الحروف حرفاً حرفاً مع مؤشر وامض، بلا توهج أو تكبير",
-  "lyric_style_immersive": "مسرح غامر",
-  "lyric_style_immersive_desc": "حروف ضخمة مع توهج سينمائي",
+  "lyric_style_meteor": "تساقط الشُّهب",
+  "lyric_style_meteor_desc": "يضيء السطر كله أولاً، ثم يسقط كل حرف مُغنّى بأثر شهابي",
   "ui_no_lyrics_found": "لم يتم العثور على كلمات الأغنية",
   "ui_lyrics_auto_load_hint": "ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا",
   "ui_lyrics_panel": "لوحة كلمات الأغنية",
@@ -8691,8 +8700,18 @@
   "lyric_style_pv_desc": "سطر عملاق مع حروف طائرة وآثار ضوء وومضات",
   "lyric_style_echo": "شظايا الصدى",
   "lyric_style_echo_desc": "الكلمات المُغنّاة تتحول إلى شظايا مجوفة تتطاير ببطء",
+  "lyric_style_drop": "سقوط الجذب",
+  "lyric_style_drop_desc": "تسقط الأحرف المُغنّاة من الأعلى وتستقر في مكانها مع حلقة ضوء وشظايا، وغير المُغنّاة تنتظر فوق",
+  "lyric_style_burst": "اندفاع جانبي",
+  "lyric_style_burst_desc": "تدخل الأحرف بالتناوب من اليمين واليسار مع أثر وارتداد، والحرف المُغنّى يطلق أشعة",
+  "lyric_style_cube": "دوران مجسّم",
+  "lyric_style_cube_desc": "يدخل كل حرف دائرًا حول محوره الرأسي بسماكة وظل، والمُغنّى يستمر في الدوران",
+  "lyric_style_punch": "انفجار صدمي",
+  "lyric_style_punch_desc": "ينكمش الحرف المُغنّى من ضعف الحجم إلى مكانه فجأة مع حلقات موجة صدمة وخطوط سرعة",
+  "lyric_style_wave": "تموج",
+  "lyric_style_wave_desc": "تتراقص الأحرف صعودًا وهبوطًا ويخبو انعكاسها المرآوي أسفلها",
   "lyric_style_mixed": "مختلط",
-  "lyric_style_mixed_desc": "يعرض السطر الحالي فقط في المنتصف؛ كل سطر له أسلوب وحركة دخول عشوائية",
+  "lyric_style_mixed_desc": "يظهر السطر الذي يُغنى فقط؛ ويحصل كل سطر عشوائياً على نمط كامل من بين عشرة أنماط",
   "lyric_color_settings": "ألوان كلمات الأغنية",
   "lyric_color_unplayed": "لم يتم التشغيل",
   "lyric_color_unplayed_desc": "كلمات لم تُغنَّ بعد",

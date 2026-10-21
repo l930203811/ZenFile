@@ -76,6 +76,21 @@ class _StyleProfile {
     this.charZoom = 1.0,
     this.typewriter = false,
   });
+
+  /// 只替换少量字段：混合模式要保留各风格的字重 / 辉光 / 弹放，仅统一字号
+  /// 与行高（见 [_LyricsViewWidgetState._profileForLine]）。
+  _StyleProfile copyWith({double? fontSize, double? lineHeight}) {
+    return _StyleProfile(
+      fontSize: fontSize ?? this.fontSize,
+      lineHeight: lineHeight ?? this.lineHeight,
+      glowNear: glowNear,
+      glowFar: glowFar,
+      rowGap: rowGap,
+      weight: weight,
+      charZoom: charZoom,
+      typewriter: typewriter,
+    );
+  }
 }
 
 /// 动态歌词显示组件（借鉴 folia「Monet 逐字扫过」观感，纯 Flutter 内置能力实现）。
@@ -86,7 +101,7 @@ class _StyleProfile {
 /// - 距离衰减 tone：当前行全亮 + 强调色，邻近行按距离降低不透明度并缩小。
 /// - 弹簧滚动：当前行切换时用弹簧曲线平滑滚到视口中央。
 /// - 进度插值：position 流非帧率，[isPlaying] 为真时按墙钟插值，得到丝滑扫过。
-/// - 多动画风格（[style]）：classic / glow / immersive / pv / echo / mixed。
+/// - 多动画风格（[style]）：classic / typewriter / meteor / pv / echo / mixed。
 ///   其中 [LyricAnimationStyle.mixed] 是**一个独立风格但无单一形态**：
 ///   每句歌词随机呈现 [kLyricMixedStylePool] 中的一种内置风格（逐句随机、
 ///   整首固定），一句一时一面；它不是在多种风格之间整体切换。
@@ -369,6 +384,9 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   final Map<String, TextPainter> _zoomGlyphCache = {};
   String _zoomGlyphSig = '';
 
+  /// 逐字重绘风格（meteor / drop~wave）用的字形缓存（见 [_MotionLinePainter]）。
+  final _GlyphTextCache _motionGlyphs = _GlyphTextCache();
+
   /// 当前字的单字 painter（highlight 样式、原字号），按 字符|样式 缓存，
   /// 仅在成为当前字时构建一次，避免每帧 layout。
   TextPainter _zoomGlyphPainter(String ch, _StyleProfile p) {
@@ -453,8 +471,24 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   }
 
   /// 第 [index] 句的排版参数（混合模式下逐句可为不同风格的字号/辉光/字重）。
-  _StyleProfile _profileForLine(int index) =>
-      _profileForStyle(_styleForLine(index), _lastViewportH);
+  ///
+  /// ⚠️ 混合模式会把**字号统一到同一档**：此前只有「文字 PV / 沉浸巨幕 / 回声
+  /// 碎片」因为自带 `vh/11~vh/13` 的巨字预算而明显偏大，其余风格只有 20~22，
+  /// 逐句跳动看着很不齐。舞台一次只显示当前一句，统一放大不会挤压其它行；
+  /// 各风格仍保留自己的字重 / 辉光 / 弹放，差异感不丢。
+  _StyleProfile _profileForLine(int index) {
+    final style = _styleForLine(index);
+    final base = _profileForStyle(style, _lastViewportH);
+    if (widget.style != LyricAnimationStyle.mixed) return base;
+    return base.copyWith(
+      fontSize: _mixedUnifiedFontSize(_lastViewportH),
+      lineHeight: 1.30,
+    );
+  }
+
+  /// 混合舞台的统一字号：与「文字 PV」原来的巨字档同量级（vh/11，夹 30~40）。
+  double _mixedUnifiedFontSize(double viewportHeight) =>
+      (viewportHeight / 11.0).clamp(30.0, 40.0);
 
   void _onTick(Duration elapsed) {
     if (!mounted || widget.lyrics.isEmpty) return;
@@ -470,6 +504,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
         : (now.difference(_pvLastFrame!).inMicroseconds / 1e6).clamp(0.0, 0.05);
     _pvLastFrame = now;
 
+    // 墙钟秒数：驱动「与播放进程绑定」的一切——PV 呼吸 / 揭示、句级运动的
+    // 呼吸与漂浮。只在播放中推进，暂停时这些运动应连同歌词一起静止。
+    if (widget.isPlaying) _pvClock += dt;
+
     if (_currentLineIndex != _pvPrevLine) {
       _onLineSwitched(_pvPrevLine, _currentLineIndex);
       _pvPrevLine = _currentLineIndex;
@@ -477,20 +515,19 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
     switch (widget.style) {
       case LyricAnimationStyle.pv:
-        _pvClock += dt;
-        final revealT = (_pvClock - _pvRevealStart) / _pvRevealDur;
-        _pvRevealT = revealT.clamp(0.0, 1.0);
+        _updatePvRevealT();
         _updatePv(pos, dt);
       case LyricAnimationStyle.echo:
         _updateEcho(pos, dt);
       case LyricAnimationStyle.mixed:
-        // 混合模式：当前句抽到哪种风格，就跑哪一套动效——PV 句走唱字
-        // 闪点 + 云室径迹，ECHO 句走空心字碎片，其余风格只保留自身观感。
+        // 混合模式：当前句抽到哪种风格，就跑哪一套动效——PV 句走完整文字
+        // PV（飞入揭示 + 云室径迹 + 唱字四芒闪点），ECHO 句走空心字碎片，
+        // 其余风格直接走列表条目自己的绘制器（逐字动效都在绘制层）。
         // 未跑的那一路仍要继续老化时才有可能落幕，否则 _animationsActive()
         // 恒为真 ⇒ 暂停后仍逐帧重绘。
-        _pvClock += dt;
         switch (_styleForLine(_currentLineIndex)) {
           case LyricAnimationStyle.pv:
+            _updatePvRevealT();
             _updatePv(pos, dt);
             _ageEchoFragments(dt);
           case LyricAnimationStyle.echo:
@@ -511,6 +548,24 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _pvSparkles.isNotEmpty ||
       _pvRevealT < 1 ||
       _echoFragments.isNotEmpty;
+
+  void _updatePvRevealT() {
+    if (_pvRevealDur <= 0) {
+      _pvRevealT = 1;
+      return;
+    }
+    _pvRevealT = ((_pvClock - _pvRevealStart) / _pvRevealDur).clamp(0.0, 1.0);
+  }
+
+  /// 当前是否处于「整句居中的 PV 舞台」：纯 PV 风格，或混合模式下当前句恰好
+  /// 抽到 PV（此时舞台直接铺 [_PvPainter]，而不是列表条目）。
+  ///
+  /// 两种布局的字坐标换算完全不同（前者自己按画布居中算，后者要把列表项的
+  /// RenderBox 位置换算上来），所以生成粒子/闪点时必须据此二选一。
+  bool _pvCenteredStage() =>
+      widget.style == LyricAnimationStyle.pv ||
+      (widget.style == LyricAnimationStyle.mixed &&
+          _styleForLine(_currentLineIndex) == LyricAnimationStyle.pv);
 
   /// 播放中按墙钟对 position 插值；并钳制到当前行结束，避免两次 position 流之间过冲。
   Duration _interpolatedPosition() {
@@ -542,7 +597,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   // ── PV / ECHO 帧更新 ──────────────────────────────────────────────────
 
   void _onLineSwitched(int prev, int cur) {
-    if (widget.style == LyricAnimationStyle.pv) {
+    // ⚠️ 混合模式下当前句抽到 PV 时也必须走这段：之前只看 widget.style，
+    // 混合模式的 PV 句拿不到 _pvFlyFrom / 揭示进度，_PvPainter 里 revealing
+    // 恒为 false ⇒ 整句直接就位、没有飞入 —— 这正是「混合模式里文字 PV
+    // 效果没呈现出来」的根因。
+    if (widget.style == LyricAnimationStyle.pv ||
+        (widget.style == LyricAnimationStyle.mixed &&
+            _styleForLine(cur) == LyricAnimationStyle.pv)) {
       // 只呈现当前播放行；换行重新走「逐字飞入揭示」。
       _pvFlyFrom = _buildFlyFrom(cur);
       _pvRevealStart = _pvClock;
@@ -570,6 +631,12 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     // 两句风格可能不同（PV 句有粒子、ECHO 句有碎片），残留会跨风格
     // 冻结导致 _animationsActive() 永不归零 ⇒ 暂停仍在逐帧重绘。
     if (widget.style == LyricAnimationStyle.mixed) {
+      // 上一句是 PV 但换得快、揭示还没跑完：这里不复位，_pvRevealT 会永远
+      // 停在 <1 ⇒ _animationsActive() 恒为真 ⇒ 暂停后仍逐帧重绘。
+      if (_styleForLine(cur) != LyricAnimationStyle.pv) {
+        _pvRevealT = 1;
+        _pvFlyFrom = const [];
+      }
       _pvFillIndex = 0;
       _pvSparkles.clear();
       _pvParticles.clear();
@@ -714,9 +781,9 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _styleForLine(_currentLineIndex),
     );
     if (glyphIndex + 1 >= measured.boundaries.length) return;
-    if (widget.style != LyricAnimationStyle.pv) {
-      // 列表视图（含混合模式的 PV 句）走列表，字位置必须按列表项换算；
-      // 只有纯 PV 风格才是「整句居中」的独立布局，可直接用 measurement。
+    if (!_pvCenteredStage()) {
+      // 列表视图：字位置必须把列表项的 RenderBox 位置换算上来。
+      // （混合模式的 PV 句一旦走上整句居中画布，就走下面的居中分支。）
       final c = _listGlyphCenter(measured, glyphIndex);
       if (c == null) return;
       _pvSparkles.add(_PvSparkle(c));
@@ -751,7 +818,7 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     if (glyphIndex + 1 >= measured.boundaries.length) return;
     double x;
     double y;
-    if (widget.style != LyricAnimationStyle.pv) {
+    if (!_pvCenteredStage()) {
       final c = _listGlyphCenter(measured, glyphIndex);
       if (c == null) return;
       x = c.dx;
@@ -999,6 +1066,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _lastPos = widget.position;
       _lastPosWallClock = DateTime.now();
     }
+    // 进度是否发生了「跳变」（快进 / 快退 / 点歌词跳转）。正常播放时相邻帧
+    // 的位置差只有几十~几百毫秒，只有 seek 才会一次跨过 1s 以上。
+    final jumped =
+        (widget.position - oldWidget.position).inMilliseconds.abs() > 1200;
     if (oldWidget.lyrics.length != widget.lyrics.length ||
         oldWidget.lyrics != widget.lyrics ||
         oldWidget.style != widget.style) {
@@ -1021,10 +1092,20 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     } else {
       final oldLineIndex = _currentLineIndex;
       _updateCurrentIndices();
-      if (_currentLineIndex != oldLineIndex && !_isUserScrolling) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToCurrentLine(),
-        );
+      if (_currentLineIndex != oldLineIndex) {
+        if (jumped) {
+          // ⚠️ 快进/快退必须**无视** _isUserScrolling：用户刚手动翻过歌词
+          // （或点波形前就在翻），4s 静默期内否则会把自动居中吞掉——
+          // 这正是「快进/快退后当前行不回到屏幕中间」的根因之一。
+          _isUserScrolling = false;
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _scrollToCurrentLine(),
+          );
+        } else if (!_isUserScrolling) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _scrollToCurrentLine(),
+          );
+        }
       }
     }
   }
@@ -1038,18 +1119,27 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
   // ── 滚动 ──────────────────────────────────────────────────────────────
   void _scrollToCurrentLine({bool animate = true}) {
-    if (!_scrollController.hasClients ||
-        _currentLineIndex < 0 ||
-        _currentLineIndex >= _itemKeys.length) {
-      return;
-    }
-    final context = _itemKeys[_currentLineIndex].currentContext;
-    final box = context?.findRenderObject() as RenderBox?;
-    if (context == null || box == null) {
-      // 首帧或懒加载：当前行尚未渲染出 RenderBox，先用固定行高估算粗定位，
-      // 下一帧列表把该行构建出来后再用真实坐标精校；重试有限次，避免死循环。
-      _scrollToEstimated(animate: false);
-      if (_scrollRetries < 4) {
+    if (!_scrollController.hasClients) return;
+    final index = _currentLineIndex;
+    if (index < 0 || index >= _itemKeys.length) return;
+
+    final viewportHeight = _scrollController.position.viewportDimension;
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    final box =
+        _itemKeys[index].currentContext?.findRenderObject() as RenderBox?;
+
+    double targetOffset;
+    if (box == null) {
+      // 目标行还没被构建（首帧、懒加载、跨屏快进/快退）。此时**不能**按
+      // 固定行高估算：大字号风格（meteor / drop / cube…）单行实际 70~100dp，
+      // 按 56dp 估会偏出几百 dp —— 表现就是「快进/快退后当前行不在屏幕中央，
+      // 甚至根本看不见」。这里按每行真实排版高度累加，直接算出精确偏移。
+      targetOffset = _offsetForUnbuiltLine(index, viewportHeight);
+      // 远距离跳转直接落位，不做长距离动画：先滑一段再纠正会更晃。
+      _scrollController.jumpTo(targetOffset.clamp(0.0, maxScrollExtent));
+      // 落位后目标行已经进入构建范围，再校一次（拿到真实 RenderBox 时用
+      // 实测坐标收口，避免 maxScrollExtent 估算偏低导致的边界偏差）。
+      if (_scrollRetries < 2) {
         _scrollRetries++;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _scrollToCurrentLine(animate: false);
@@ -1058,6 +1148,7 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       return;
     }
     _scrollRetries = 0;
+
     final listBox =
         _scrollController.position.context.storageContext.findRenderObject()
             as RenderBox?;
@@ -1065,16 +1156,12 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
     final itemOffset = box.localToGlobal(Offset.zero, ancestor: listBox).dy;
     final itemHeight = box.size.height;
-    final viewportHeight = _scrollController.position.viewportDimension;
-    final targetOffset =
+    targetOffset =
         _scrollController.offset +
         itemOffset -
         (viewportHeight / 2) +
         (itemHeight / 2);
-    final clampedOffset = targetOffset.clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
+    final clampedOffset = targetOffset.clamp(0.0, maxScrollExtent);
 
     if (!animate) {
       _scrollController.jumpTo(clampedOffset);
@@ -1087,32 +1174,49 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     );
   }
 
-  void _scrollToEstimated({bool animate = true}) {
-    if (!_scrollController.hasClients || _currentLineIndex < 0) return;
-    const estimatedLineHeight = 56.0;
-    final viewportHeight = _scrollController.position.viewportDimension;
-    final targetOffset =
-        (_currentLineIndex * estimatedLineHeight) -
-        (viewportHeight / 2) +
-        (estimatedLineHeight / 2);
-    final clampedOffset = targetOffset.clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
-    if (animate) {
-      _scrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-      );
-    } else {
-      _scrollController.jumpTo(clampedOffset);
+  /// 目标行尚未构建时，它的纵向偏移：**逐行累加真实排版高度**。
+  ///
+  /// 列表结构见 [_buildLineItem]：`Padding(vertical: 当前行 12 / 其它行 rowGap)
+  /// > CustomPaint(measured.base.height + 6)`；顶部留白等于 build 里的
+  /// `viewportHeight * 0.4`。行高只取决于文字与字号（颜色不影响），测量结果与
+  /// item 构建共用 [_measureCache]，行一旦被构建就直接命中缓存。
+  double _offsetForUnbuiltLine(int index, double viewportHeight) {
+    final maxWidth = _lastMaxWidth;
+    // 顶部留白 = build() 里的 topPadding（viewportHeight * 0.4）。
+    var y = (_lastViewportH > 0 ? _lastViewportH : viewportHeight) * 0.4;
+    for (var i = 0; i < index; i++) {
+      y += _lineItemHeight(i, maxWidth);
     }
+    return y + _lineItemHeight(index, maxWidth) / 2 - viewportHeight / 2;
+  }
+
+  /// 第 [i] 行的实际排版高度（含上下 Padding），用于未构建时的精确落位。
+  double _lineItemHeight(int i, double maxWidth) {
+    final profile = _profileForLine(i);
+    final pad = i == _currentLineIndex ? 12.0 : profile.rowGap;
+    final timeline = i < _timelines.length ? _timelines[i] : null;
+    double contentHeight;
+    if (timeline == null || timeline.isEmpty) {
+      // 与 _buildFallbackText 的 Text 高度一致（单行 '♪'）。
+      contentHeight = profile.fontSize * profile.lineHeight;
+    } else {
+      // 走与 item 构建完全相同的测量入口，行高才能和真实布局逐像素一致
+      // （内部按 text + 样式签名校验缓存，换风格/换字号不会用到旧高度）。
+      final measured = _measureFor(
+        i,
+        maxWidth,
+        timeline,
+        profile,
+        _styleForLine(i),
+      );
+      contentHeight = measured.base.height + 6;
+    }
+    return contentHeight + pad * 2;
   }
 
   // ── 风格与排版 ────────────────────────────────────────────────────────
 
-  /// 按风格与视口高度解析视觉参数（immersive / pv 的巨字随视口自适应）。
+  /// 按风格与视口高度解析视觉参数（pv 的巨字随视口自适应）。
   _StyleProfile _profileFor(double viewportHeight) =>
       _profileForStyle(widget.style, viewportHeight);
 
@@ -1133,16 +1237,17 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
           charZoom: 1.0,
           typewriter: true,
         );
-      case LyricAnimationStyle.immersive:
-        // 巨字：随视口高度伸缩并封顶，模拟 folia Lattice 的 24~64px 预算策略。
-        final size = (viewportHeight / 13).clamp(26.0, 44.0);
-        return _StyleProfile(
-          fontSize: size,
-          lineHeight: 1.28,
-          glowNear: 14.0,
-          glowFar: 34.0,
-          rowGap: 10.0,
-          charZoom: 1.08,
+      case LyricAnimationStyle.meteor:
+        // 流星坠落：字号与 drop 同档，行距再放宽一档——唱过的字要带着尾迹
+        // 往下飞出去，行间没有余量的话流星会直接压在下一行歌词上。
+        return const _StyleProfile(
+          fontSize: 25.0,
+          lineHeight: 1.40,
+          glowNear: 10.0,
+          glowFar: 26.0,
+          rowGap: 18.0,
+          weight: FontWeight.w700,
+          charZoom: 1.0,
         );
       case LyricAnimationStyle.pv:
         // 文字 PV：单行巨字 + 疏行距，飞入/散聚动画在本文件 _PvPainter。
@@ -1163,6 +1268,62 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
           glowFar: 0.0,
           rowGap: 10.0,
           charZoom: 1.14,
+        );
+      case LyricAnimationStyle.drop:
+        // 重力坠落：字号与 PV 同档，行距放宽给下落轨迹与落点光环留位置。
+        return const _StyleProfile(
+          fontSize: 25.5,
+          lineHeight: 1.42,
+          glowNear: 10.0,
+          glowFar: 26.0,
+          rowGap: 14.0,
+          weight: FontWeight.w700,
+          charZoom: 1.10,
+        );
+      case LyricAnimationStyle.burst:
+        // 左右弹射：最粗 + 强辉光，横向拖影与放射线才看得清。
+        return const _StyleProfile(
+          fontSize: 25.0,
+          lineHeight: 1.38,
+          glowNear: 10.0,
+          glowFar: 28.0,
+          rowGap: 14.0,
+          weight: FontWeight.w700,
+          charZoom: 1.12,
+        );
+      case LyricAnimationStyle.cube:
+        // 立体旋入：特粗 + 最强辉光（字块翻到侧面会变暗，需要底光撑住）。
+        return const _StyleProfile(
+          fontSize: 25.5,
+          lineHeight: 1.40,
+          glowNear: 12.0,
+          glowFar: 30.0,
+          rowGap: 14.0,
+          weight: FontWeight.w800,
+          charZoom: 1.10,
+        );
+      case LyricAnimationStyle.punch:
+        // 冲击爆字：放大由绘制层自己做（2.4 倍起缩），这里 charZoom 置 1
+        // 避免与爆字缩放叠乘。
+        return const _StyleProfile(
+          fontSize: 25.0,
+          lineHeight: 1.40,
+          glowNear: 12.0,
+          glowFar: 32.0,
+          rowGap: 14.0,
+          weight: FontWeight.w800,
+          charZoom: 1.0,
+        );
+      case LyricAnimationStyle.wave:
+        // 水波倒影：行距放宽，给下方镜像倒影留出位置。
+        return const _StyleProfile(
+          fontSize: 25.0,
+          lineHeight: 1.44,
+          glowNear: 10.0,
+          glowFar: 26.0,
+          rowGap: 16.0,
+          weight: FontWeight.w600,
+          charZoom: 1.10,
         );
       case LyricAnimationStyle.classic:
         // 经典扫过：无辉光，靠「当前字弹放 / 当前行整行放大」制造存在感。
@@ -1477,8 +1638,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     );
   }
 
-  /// 混合模式单句舞台：整列只画当前播放句并居中（已播/待播不渲染），
-  /// 换行时用随机入场动效淡入，视觉风格仍由 [_mixedPlan] 逐句决定。
+  /// 混合模式单句舞台：整列只画当前播放句（已播/待播一句都不渲染）。
+  ///
+  /// 当前句抽到不同风格时走不同的呈现通道：
+  /// - **PV**：直接铺 [_PvPainter] 的「整句居中」画布，完整保留逐字飞入揭示、
+  ///   暗底裁剪、呼吸、云室径迹与唱字四芒闪点（与单独选「文字 PV」一致）；
+  /// - **其它风格**：居中条目（逐字动效由 [_MotionLinePainter] 负责），
+  ///   换行时用随机入场动效衔接。
   Widget _buildMixedStage(
     BoxConstraints constraints,
     double maxWidth,
@@ -1487,30 +1653,40 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     _lastMaxWidth = maxWidth;
     _lastViewportH = viewportHeight;
     final idx = _currentLineIndex;
+    final lineStyle = _styleForLine(idx);
     if (idx >= 0 && idx < widget.lyrics.length) {
-      _lastProfile = _profileForStyle(_styleForLine(idx), viewportHeight);
+      _lastProfile = _profileForLine(idx);
     }
 
-    Widget body = const SizedBox.shrink();
-    if (idx >= 0 && idx < widget.lyrics.length) {
-      body = KeyedSubtree(
-        key: ValueKey<int>(idx),
-        child: _buildLineItem(idx, maxWidth),
+    final Widget body;
+    if (idx < 0 || idx >= widget.lyrics.length) {
+      body = const SizedBox.shrink();
+    } else if (lineStyle == LyricAnimationStyle.pv) {
+      // ⚠️ 这里刻意多做一层：早期版本混合舞台一律走列表条目渲染，PV 句只能
+      // 拿到「扫过 + 碎片」，飞入/揭示/径迹全都没跑，用户看到的「文字 PV
+      // 没呈现」就是这么来的。现在抽到 PV 就整块换成 PV 画布。
+      body = Positioned.fill(
+        child: CustomPaint(size: Size.infinite, painter: _PvPainter(this)),
+      );
+    } else {
+      body = Center(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 320),
+          switchInCurve: Curves.easeOutCubic,
+          transitionBuilder: _mixedEnterTransition,
+          child: KeyedSubtree(
+            key: ValueKey<int>(idx),
+            child: _buildLineItem(idx, maxWidth),
+          ),
+        ),
       );
     }
 
-    final stage = Center(
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 320),
-        switchInCurve: Curves.easeOutCubic,
-        transitionBuilder: _mixedEnterTransition,
-        child: body,
-      ),
-    );
-
     return Stack(
       children: [
-        stage,
+        body,
+        // 特效层：ECHO 碎片漂移做背景，PV 云室径迹与唱字四芒闪点压在上层。
+        // PV 句这块会主动跳过 PV 部分（画布自己已经画过一遍，避免双重描边）。
         Positioned.fill(
           child: IgnorePointer(
             child: CustomPaint(painter: _MixedFxPainter(this)),
@@ -1563,7 +1739,7 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   Widget _buildLineItem(int index, double maxWidth) {
     final line = widget.lyrics[index];
     final lineStyle = _styleForLine(index);
-    final profile = _profileForStyle(lineStyle, _lastViewportH);
+    final profile = _profileForLine(index);
     final timeline = (index >= 0 && index < _timelines.length)
         ? _timelines[index]
         : null;
@@ -1611,21 +1787,39 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       }
       content = CustomPaint(
         size: Size(maxWidth, measured.base.height + 6),
-        painter: _SweepPainter(
-          base: measured.base,
-          highlight: measured.highlight,
-          metrics: measured.metrics,
-          lineTops: measured.lineTops,
-          lineBottoms: measured.lineBottoms,
-          boundaries: measured.boundaries,
-          timeline: timeline,
-          position: position,
-          charZoom: charZoom,
-          zoomGlyph: zoomGlyph,
-          originX: measured.originX,
-          typewriter: profile.typewriter,
-          cursorColor: _currentColor,
-        ),
+        // 逐字重绘风格（meteor / drop / burst / cube / punch / wave）由该层接管：
+        // 它们在「扫过」之上还有自己的字号语言与逐字动效，只给整行套
+        // Transform 是看不出区别的（见 _MotionLinePainter 注释）。
+        // 只对当前句启用——逐字绘制比整行裁剪贵，铺满整屏会掉帧。
+        painter: isActive && _isMotionStyle(lineStyle)
+            ? _MotionLinePainter(
+                measured: measured,
+                profile: profile,
+                style: lineStyle,
+                timeline: timeline,
+                position: position,
+                clock: _pvClock,
+                baseColor: _baseColor,
+                playedColor: _playedColor,
+                currentColor: _currentColor,
+                glyphs: _motionGlyphs,
+                charZoom: profile.charZoom,
+              )
+            : _SweepPainter(
+                base: measured.base,
+                highlight: measured.highlight,
+                metrics: measured.metrics,
+                lineTops: measured.lineTops,
+                lineBottoms: measured.lineBottoms,
+                boundaries: measured.boundaries,
+                timeline: timeline,
+                position: position,
+                charZoom: charZoom,
+                zoomGlyph: zoomGlyph,
+                originX: measured.originX,
+                typewriter: profile.typewriter,
+                cursorColor: _currentColor,
+              ),
       );
     }
 
@@ -1648,6 +1842,9 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
             padding: EdgeInsets.symmetric(
               vertical: isActive ? 12 : profile.rowGap,
             ),
+            // 动效全部由绘制层逐字完成（见 _MotionLinePainter）；外层不再
+            // 套整句 Transform——那会与逐字相位打架，也曾是「五种风格看起来
+            // 几乎一样」的根因。
             child: content,
           ),
         ),
@@ -2129,6 +2326,9 @@ class _MixedFxPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _EchoPainter(state).paint(canvas, size);
+    // 整句居中的 PV 舞台（纯 PV 风格或混合模式抽到 PV）：[_PvPainter] 自己
+    // 已经画过径迹与闪点，这里再画一遍会双重描边 ⇒ 直接跳过。
+    if (state._pvCenteredStage()) return;
     for (final p in state._pvParticles) {
       final k = p.age / p.life;
       final a = (1 - k) * 0.5;
@@ -2150,6 +2350,890 @@ class _MixedFxPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MixedFxPainter old) => true;
+}
+
+// ── 逐字重绘层（meteor / drop / burst / cube / punch / wave） ────────────
+
+/// 这几种风格由 [_MotionLinePainter] **逐字重绘**，而不是「整行 TextPainter
+/// 外加一层 Transform」。列表里只有当前句走它，其它行仍走 [_SweepPainter]。
+bool _isMotionStyle(LyricAnimationStyle s) =>
+    s == LyricAnimationStyle.meteor ||
+    s == LyricAnimationStyle.drop ||
+    s == LyricAnimationStyle.burst ||
+    s == LyricAnimationStyle.cube ||
+    s == LyricAnimationStyle.punch ||
+    s == LyricAnimationStyle.wave;
+
+/// easeOutCubic：入场类位移/透明度用它，避免线性加速的机械感。
+double _easeOutCubic(double t) {
+  final x = t.clamp(0.0, 1.0);
+  return 1 - math.pow(1 - x, 3).toDouble();
+}
+
+/// easeOutBack：末尾**冲过头再回弹**（弹射 / 立体旋入用）。
+///
+/// 这正是「有冲击力」的来源：字不是匀速停到位，而是撞过来、弹一下才定住。
+double _easeOutBack(double t) {
+  final x = (t.clamp(0.0, 1.0) - 1);
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * x * x * x + c1 * x * x;
+}
+
+/// 逐字 TextPainter 缓存。
+///
+/// 这些风格每帧都要逐字绘制（一句 20 来个字），每次新建 TextPainter 都要
+/// 重新排版，逐帧做必然掉帧 ⇒ 按「字 + 色调 + 透明度桶」缓存。
+/// [sig] 是字体/字重/行高签名，变了就整表清空（切换风格 / 混合模式换句）。
+class _GlyphTextCache {
+  final Map<String, TextPainter> _cache = {};
+  String _sig = '';
+
+  TextPainter get({
+    required String ch,
+    required String variant,
+    required String sig,
+    required TextStyle Function() build,
+  }) {
+    if (_sig != sig) {
+      _cache.clear();
+      _sig = sig;
+    }
+    final key = '$ch|$variant';
+    final hit = _cache[key];
+    if (hit != null) return hit;
+    final tp = TextPainter(
+      text: TextSpan(text: ch, style: build()),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    // 上限兜底：长歌词 + 多档透明度可能攒到几百条，超了就整表重来。
+    if (_cache.length > 320) _cache.clear();
+    _cache[key] = tp;
+    return tp;
+  }
+}
+
+/// 逐字重绘风格的整句重绘器。
+///
+/// 设计口径对齐「文字 PV」与「回声碎片」：那两种风格的辨识度来自**逐字绘制
+/// + 环境光效 + 空间运动**，而不是给整行套一点位移/缩放。上一版四种风格
+/// 就是后者，彼此几乎看不出差别（用户反馈「大体看上去效果几乎一致」），
+/// 所以整体重做成「各有明确的运动方向 + 落地/炸开反馈」：
+///
+/// - `meteor` 流星坠落：整句先一起亮起，唱过的字带流星尾迹逐字往下坠走
+/// - `drop`  重力坠落：唱到的字从上方砸落、触地弹跳、压扁回弹 + 冲击光环与碎屑
+/// - `burst` 左右弹射：奇偶字分别从左 / 右高速弹入，拖影 + 过冲回弹 + 放射线
+/// - `cube`  立体旋入：字块带厚度与投影绕竖轴旋入，唱字持续自转（真 3D 观感）
+/// - `punch` 冲击爆字：唱字 2.4 倍猛缩到位 + 双重冲击波环 + 速度线，未唱字退远
+/// - `wave`  水波倒影：逐字上下起伏，行下方有镜像倒影随波淡出
+///
+/// ⚠️ 只用 canvas 变换绘制，**不改字号**（字号变 = 行高变 = 整列表重排）。
+class _MotionLinePainter extends CustomPainter {
+  final _MeasuredLine measured;
+  final _StyleProfile profile;
+  final LyricAnimationStyle style;
+  final LyricLineTimeline timeline;
+  final Duration position;
+
+  /// 墙钟秒（只在播放中推进）：驱动起伏 / 自转 / 摆动。
+  final double clock;
+
+  final Color baseColor;
+  final Color playedColor;
+  final Color currentColor;
+  final _GlyphTextCache glyphs;
+  final double charZoom;
+
+  const _MotionLinePainter({
+    required this.measured,
+    required this.profile,
+    required this.style,
+    required this.timeline,
+    required this.position,
+    required this.clock,
+    required this.baseColor,
+    required this.playedColor,
+    required this.currentColor,
+    required this.glyphs,
+    this.charZoom = 1.0,
+  });
+
+  /// 本句已走秒数（入场类动效的时基）。
+  ///
+  /// 不用 [phase]：长句的 phase 走得很慢，逐字入场会被拉成好几秒。
+  double get _lineSeconds {
+    final ms = (position - timeline.lineStart).inMilliseconds;
+    return (ms / 1000.0).clamp(0.0, 600.0);
+  }
+
+  double _cx(int i) =>
+      measured.originX +
+      _glyphCenterX(measured.boundaries, measured.metrics, i);
+
+  double _cy(int i) {
+    final b = measured.boundaries[i];
+    return (measured.lineTops[b.line] + measured.lineBottoms[b.line]) / 2;
+  }
+
+  String get _glyphSig =>
+      '${profile.fontSize}|${profile.weight}|${profile.lineHeight}';
+
+  /// 取某字的单字 painter（按色调 + 透明度桶 + 是否带辉光缓存）。
+  TextPainter _glyphPainter(
+    int i, {
+    required Color color,
+    required double alpha,
+    bool glow = false,
+  }) {
+    final bucket = _LyricsViewWidgetState._alphaBucket(alpha);
+    final key =
+        '${color.toARGB32()}|${glow ? 1 : 0}|$bucket|${glow ? profile.glowFar.round() : 0}';
+    return glyphs.get(
+      ch: timeline.graphemes[i].char,
+      variant: key,
+      sig: _glyphSig,
+      build: () => TextStyle(
+        fontSize: profile.fontSize,
+        fontWeight: profile.weight,
+        height: profile.lineHeight,
+        color: color.withValues(alpha: bucket),
+        shadows: glow && profile.glowFar > 0
+            ? <Shadow>[
+                Shadow(
+                  color: color.withValues(alpha: 0.45),
+                  blurRadius: profile.glowNear,
+                ),
+                Shadow(
+                  color: color.withValues(alpha: 0.26),
+                  blurRadius: profile.glowFar,
+                ),
+              ]
+            : null,
+      ),
+    );
+  }
+
+  /// 画一个字：以字心为锚点，可叠加缩放 / 3D 翻转 / 平面旋转 / 拖影 / 压扁。
+  ///
+  /// [ghosts] > 0 时沿 ([ghostDx], [ghostDy]) 方向叠若干份低透明度复制件，
+  /// 作为运动拖影（坠落是竖直向上拖，弹射是水平方向拖）。
+  void _drawGlyph(
+    Canvas canvas,
+    int i, {
+    required Color color,
+    required double alpha,
+    bool glow = false,
+    double dx = 0,
+    double dy = 0,
+    double scale = 1.0,
+    double sx = 1.0,
+    double sy = 1.0,
+    double rotY = 0,
+    double rotZ = 0,
+    double persp = 0.0015,
+    int ghosts = 0,
+    double ghostDx = 0,
+    double ghostDy = 0,
+    double ghostAlpha = 0.24,
+  }) {
+    if (alpha <= 0.02) return;
+    final cx = _cx(i) + dx;
+    final cy = _cy(i) + dy;
+    for (var k = ghosts; k >= 1; k--) {
+      final ga = alpha * ghostAlpha / k;
+      if (ga <= 0.02) continue;
+      _paintGlyphTp(
+        canvas,
+        _glyphPainter(i, color: color, alpha: ga),
+        cx + ghostDx * k,
+        cy + ghostDy * k,
+        scale,
+        sx,
+        sy,
+        rotY,
+        rotZ,
+        persp,
+      );
+    }
+    _paintGlyphTp(
+      canvas,
+      _glyphPainter(i, color: color, alpha: alpha, glow: glow),
+      cx,
+      cy,
+      scale,
+      sx,
+      sy,
+      rotY,
+      rotZ,
+      persp,
+    );
+  }
+
+  void _paintGlyphTp(
+    Canvas canvas,
+    TextPainter tp,
+    double cx,
+    double cy,
+    double scale,
+    double sx,
+    double sy,
+    double rotY,
+    double rotZ,
+    double persp,
+  ) {
+    canvas.save();
+    canvas.translate(cx, cy);
+    if (rotY != 0) {
+      // 透视：翻到接近侧面时字会被压扁，正好是「实体字块转过去」的观感。
+      canvas.transform(
+        (Matrix4.identity()
+              ..setEntry(3, 2, persp)
+              ..rotateY(rotY)
+              ..rotateZ(rotZ))
+            .storage,
+      );
+    } else if (rotZ != 0) {
+      canvas.rotate(rotZ);
+    }
+    if (scale != 1.0 || sx != 1.0 || sy != 1.0) {
+      canvas.scale(scale * sx, scale * sy);
+    }
+    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+    canvas.restore();
+  }
+
+  /// 已唱 / 当前 / 未唱三档着色（与扫过视图同一套歌词三色）。
+  Color _toneOf(int i, ({int index, double fraction}) fill) => i < fill.index
+      ? playedColor
+      : (i == fill.index ? currentColor : baseColor);
+
+  /// 未唱字的底字透明度。
+  ///
+  /// ⚠️ 句首之前（`fill.index < 0`，例如整首开头 / seek 到行前）不能沿用
+  /// 0.26——那会让整句淡到看不见，正是「切风格后歌词消失」的观感。此时
+  /// 抬到 0.45，看起来是「还没开口、但字在那儿」。
+  double _alphaOf(int i, ({int index, double fraction}) fill) =>
+      i <= fill.index ? 1.0 : (fill.index < 0 ? 0.45 : 0.26);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (timeline.isEmpty) return;
+    final n = timeline.graphemes.length;
+    if (n == 0) return;
+    final fill = graphemeFillAt(timeline, position);
+    final dy = math.max(0.0, (size.height - measured.base.height) / 2);
+    canvas.save();
+    canvas.translate(0, dy);
+    switch (style) {
+      case LyricAnimationStyle.meteor:
+        _paintMeteor(canvas, size, fill, n);
+      case LyricAnimationStyle.drop:
+        _paintDrop(canvas, size, fill, n);
+      case LyricAnimationStyle.burst:
+        _paintBurst(canvas, size, fill, n);
+      case LyricAnimationStyle.cube:
+        _paintCube(canvas, size, fill, n);
+      case LyricAnimationStyle.punch:
+        _paintPunch(canvas, size, fill, n);
+      case LyricAnimationStyle.wave:
+        _paintWave(canvas, size, fill, n);
+      default:
+        measured.base.paint(canvas, Offset(measured.originX, 0));
+    }
+    canvas.restore();
+  }
+
+  // ── meteor：流星坠落 ──────────────────────────────────────────────────
+  //
+  // 与 drop 方向相反：drop 是「唱到的字从上面砸下来、落到自己的格位上」，
+  // meteor 是「整句先一起亮着，唱过的字再脱离格位、带着流星尾迹往下坠走」。
+  //
+  // 所以时基完全不同：**每个字的坠落从它的 endTime（唱完那一刻）开始**，
+  // 而不是从 fill.index 推。这样同一画面里「正在唱的字」仍然完整地待在
+  // 格位上，「唱完的字」已经开始往下掉——用户要的「先显示整句、再逐字坠落」
+  // 就是这一条时间差，任何一帧都能同时看到这两态。
+  void _paintMeteor(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final fs = profile.fontSize;
+    // 整行一起登场：0.34s 内整句由淡到实、同时上浮到位。这是「先显示当前
+    // 播放的整句歌词」的那一拍，与 drop/burst/cube/punch 的逐字错峰入场不同。
+    final lineIn = _easeOutCubic((_lineSeconds / 0.34).clamp(0.0, 1.0));
+    const fallDur = 0.72; // 单字下坠时长（秒）
+    final fallDist = fs * 2.3; // 下坠距离：太短读不出「划落」
+
+    /// 坠落位移：p^1.5 —— 比起纯自由落体（p^2）前段就有明显位移。
+    /// 纯重力曲线会让字在 70% 的时间窗里几乎没离开行，只有最后几帧才冲出去，
+    /// 随机一帧看过去就像「没动」（与上一批风格翻车的原因同源）。
+    double fallOf(double kk) =>
+        math.pow(kk.clamp(0.0, 1.0), 1.5).toDouble() * fallDist;
+
+    for (var i = 0; i < n; i++) {
+      final g = timeline.graphemes[i];
+      final isCurrent = i == fill.index;
+      final tone = _toneOf(i, fill);
+      // 唱完后的秒数；<= 0 表示还没唱完（含正在唱），字留在格位上。
+      final double tFall =
+          (position.inMilliseconds - g.endTime.inMilliseconds) / 1000.0;
+
+      // 入场：整句同步（不是逐字），所以这里只跟 lineIn 走。
+      var dy = (1 - lineIn) * fs * 0.55;
+      // 未唱字给 0.62：整句要「先看得清」，0.26 那档是扫过风格用的。
+      var alpha = (i <= fill.index ? 1.0 : 0.62) * (0.42 + 0.58 * lineIn);
+      var scale = 1.0;
+      var k = 0.0;
+
+      if (tFall > 0) {
+        k = (tFall / fallDur).clamp(0.0, 1.0);
+        // 余痕：字飞走后，原位留一层很淡的残影。没有它的话，读到句尾时整行
+        // 几乎空掉（只剩当前字和后面几个未唱字），用户会以为「歌词丢了」——
+        // 这是本项目在别的风格上踩过的老坑。它不参与坠落，只是「唱过的痕迹」。
+        _drawGlyph(
+          canvas,
+          i,
+          color: playedColor,
+          alpha: 0.14 * (0.42 + 0.58 * lineIn) * math.min(1.0, k * 2.4),
+        );
+        dy += fallOf(k);
+        // 尾段燃尽：不是「到点消失」，而是像流星烧完。
+        alpha *= 1 - math.pow(k, 2.6).toDouble();
+        scale = 1.0 - 0.16 * (fallOf(k) / fallDist); // 远去缩一点，强化纵深
+      } else if (isCurrent) {
+        // 正在唱的字：整句里最亮，先给一点「将被甩出去」的势能——随字内
+        // 进度轻微上浮 + 放大，p→1 时正好接上坠落的第一帧。
+        final p = fill.fraction.clamp(0.0, 1.0);
+        dy -= 2.2 * p;
+        scale = 1.0 + 0.07 * p;
+      }
+
+      // 1) 彗尾：从头部往上拉一道**锥形光带**（由粗到细、由亮到暗）。
+      //    流星靠这道光认得出来；只叠几份半透明字副本会糊成一团。
+      if (k > 0.02) {
+        final tailLen = fs * (0.70 + 1.30 * k); // 越甩越开，尾越长
+        final cx0 = _cx(i);
+        final cy0 = _cy(i) + dy;
+        final tailTop = Offset(cx0, cy0 - tailLen);
+        // 外层柔光：一条更宽更淡的描边垫在下面，尾迹才有「发光」的厚度，
+        // 否则 1~2dp 的细线在手机上几乎看不见。
+        canvas.drawLine(
+          tailTop,
+          Offset(cx0, cy0),
+          Paint()
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = fs * 0.30
+            ..color = tone.withValues(alpha: alpha * 0.13),
+        );
+        // 内芯偏白：纯歌词绿拉出来的尾迹像草，不像流星。
+        final bright = Color.lerp(tone, Colors.white, 0.60) ?? tone;
+        const segs = 3;
+        for (var j = 0; j < segs; j++) {
+          final a = alpha * (0.50 - 0.11 * j);
+          if (a <= 0.02) continue;
+          canvas.drawLine(
+            Offset(cx0, cy0 - tailLen * (j / segs)),
+            Offset(cx0, cy0 - tailLen * ((j + 1) / segs)),
+            Paint()
+              ..strokeCap = StrokeCap.round
+              ..strokeWidth = fs * (0.17 - 0.037 * j)
+              ..color = (j == 0 ? bright : tone).withValues(alpha: a),
+          );
+        }
+        // 2) 运动残像：头部上方一份淡字，补出「刚从格位里飞出去」的连续感。
+        //    只留一份——多份会与光带互相糊住，反而看不出形状。
+        _drawGlyph(
+          canvas,
+          i,
+          color: tone,
+          alpha: alpha * 0.3,
+          dy: dy - math.max(3.0, fs * 0.22),
+          scale: scale * 0.96,
+        );
+        // 3) 余烬：沿光带向上散开的几粒亮尘（相位固定 ⇒ 暂停即静止）。
+        _paintMeteorSparks(canvas, i, cx0, cy0, tailLen, alpha);
+        // 4) 点燃的头部：字的下缘一个白热点，像流星正在烧。
+        final hot = Color.lerp(tone, Colors.white, 0.85) ?? tone;
+        canvas.drawCircle(
+          Offset(cx0, cy0 + fs * 0.36),
+          math.max(1.0, fs * 0.085 * (1 - k)),
+          Paint()..color = hot.withValues(alpha: alpha * 0.55),
+        );
+      }
+
+      _drawGlyph(
+        canvas,
+        i,
+        color: tone,
+        alpha: alpha,
+        // 头部带辉光：拖长尾迹的关键是「亮头 + 暗尾」。
+        glow: k > 0 ? true : isCurrent,
+        dy: dy,
+        scale: scale,
+      );
+    }
+  }
+
+  /// 流星余烬：沿彗尾向上散开的亮尘，越靠近尾端越稀越小。
+  ///
+  /// 相位只跟「字索引 + 序号」有关，不随帧随机 ⇒ 暂停时火花静止，
+  /// 播放时也只是随 [clock] 缓慢摆动，不会像噪点一样闪。
+  void _paintMeteorSparks(
+    Canvas canvas,
+    int i,
+    double cx,
+    double cy,
+    double tailLen,
+    double alpha,
+  ) {
+    final fs = profile.fontSize;
+    for (var j = 0; j < 3; j++) {
+      final t = (j + 1) / 4; // 尾部 25% / 50% / 75% 处
+      final ph = i * 1.7 + j * 2.1;
+      final lateral = math.sin(ph + clock * 2.4) * fs * (0.14 + 0.22 * t);
+      final a = alpha * (0.40 - 0.09 * j);
+      if (a <= 0.02) continue;
+      canvas.drawCircle(
+        Offset(cx + lateral, cy - tailLen * t),
+        math.max(0.5, fs * 0.032 * (1 - 0.22 * j)),
+        Paint()..color = currentColor.withValues(alpha: a),
+      );
+    }
+  }
+
+  // ── drop：重力坠落 ────────────────────────────────────────────────────
+  //
+  // 唱到的字**从上方砸下来**（自由落体 + 触地弹跳），落地瞬间压扁再回弹，
+  // 同时溅起一圈冲击光环和几粒碎屑；未唱的字悬在上方一点等位，已唱的字
+  // 稳稳留在原地。整句读起来像「字被一颗一颗丢到位置上」，重音落在字上。
+  void _paintDrop(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final fs = profile.fontSize;
+    final fallDist = fs * 0.95 + 8;
+    for (var i = 0; i < n; i++) {
+      final isCurrent = i == fill.index;
+      final isSung = i < fill.index;
+      var dy = 0.0;
+      var sx = 1.0;
+      var sy = 1.0;
+      var alpha = _alphaOf(i, fill);
+      var ghosts = 0;
+      var ghostDy = 0.0;
+      var ghostAlpha = 0.24;
+      double p = 0;
+      if (isCurrent) {
+        p = fill.fraction.clamp(0.0, 1.0);
+        // ⚠️ 关键：下落必须铺满**整个字窗**（重力加速 p^2.4），而不是只占前
+        // 几十毫秒。否则随机一帧看过去，当前字早已落地 ⇒ 四种风格看起来和
+        // 普通扫过没差别（用户反馈「效果几乎一致」的根因）。
+        final fall = math.pow(p, 2.4).toDouble();
+        dy = -(1 - fall) * fallDist;
+        // 最后 12% 落地压扁 → 回弹。
+        final squash = math.sin(math.pi * ((p - 0.88) / 0.12).clamp(0.0, 1.0));
+        sy = 1 - 0.24 * squash;
+        sx = 1 + 0.22 * squash;
+        // 下落过程由淡到实：顶端几乎透明 ⇒ 不会糊住上一行歌词。
+        alpha = 0.30 + 0.70 * fall;
+        if (fall < 0.995) {
+          ghosts = 3;
+          ghostDy = -(6 + (1 - fall) * 10);
+          ghostAlpha = 0.30;
+        }
+      } else if (!isSung) {
+        // 未唱：悬在上方等位，给出「还没掉下来」的线索。
+        dy = -fs * 0.18;
+      }
+      _drawGlyph(
+        canvas,
+        i,
+        color: _toneOf(i, fill),
+        alpha: alpha,
+        glow: isCurrent || isSung,
+        dy: dy,
+        sx: sx,
+        sy: sy,
+        ghosts: ghosts,
+        ghostDy: ghostDy,
+        ghostAlpha: ghostAlpha,
+      );
+      if (isCurrent) _paintDropImpact(canvas, i, p);
+    }
+  }
+
+  /// 坠落落点的冲击光环 + 碎屑。
+  void _paintDropImpact(Canvas canvas, int i, double p) {
+    final k = ((p - 0.86) / 0.14).clamp(0.0, 1.0);
+    if (k <= 0 || k >= 1) return;
+    final fs = profile.fontSize;
+    final cx = _cx(i);
+    final cy = _cy(i) + fs * 0.46;
+    final grow = _easeOutCubic(k);
+    final rx = fs * (0.30 + 1.35 * grow);
+    final a = (1 - k) * 0.55;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(cx, cy), width: rx * 2, height: rx * 0.6),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(0.7, 2.8 * (1 - k))
+        ..color = currentColor.withValues(alpha: a),
+    );
+    // 碎屑：向左右两侧弹开（固定 4 粒，成本可忽略）。
+    for (var j = 0; j < 4; j++) {
+      final dir = j.isEven ? -1.0 : 1.0;
+      final spread = 0.55 + 0.35 * (j ~/ 2);
+      final px = cx + dir * rx * spread;
+      final py = cy - 4 - 9 * grow * (1 - k) - (j % 2) * 2;
+      canvas.drawCircle(
+        Offset(px, py),
+        math.max(0.5, 1.7 * (1 - k)),
+        Paint()..color = playedColor.withValues(alpha: a * 0.85),
+      );
+    }
+  }
+
+  // ── burst：左右弹射 ────────────────────────────────────────────────────
+  //
+  // 奇数字从左边、偶数字从右边**高速弹进来**（入场用 easeOutBack ⇒ 撞过头
+  // 再回弹），带 3 层横向拖影；唱到的字在整个字窗内持续「被推进来」并炸出
+  // 一圈放射光线。与「整句横向推进」的旧幻灯片完全不同：逐字、双向交替。
+  void _paintBurst(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final sec = _lineSeconds;
+    final fs = profile.fontSize;
+    for (var i = 0; i < n; i++) {
+      final dir = i.isEven ? -1.0 : 1.0;
+      // 整句入场：逐字错峰弹入，过冲让每个字都「弹一下」才定住。
+      final enterT = ((sec - i * 0.03) / 0.44).clamp(0.0, 1.0);
+      final enter = _easeOutBack(enterT);
+      var dx = dir * (1 - enter) * (fs * 2.4);
+      var scale = 1.0 + 0.45 * (1 - enterT);
+      var ghosts = enterT < 0.995 ? 3 : 0;
+      final isCurrent = i == fill.index;
+      var rayK = 0.0;
+      if (isCurrent) {
+        // 唱到的字：整段字窗都在「从侧面推进来」——p=0 时偏在来向侧且放大，
+        // p→1 才落回自己的格位。这样任何一帧都能看到当前字正在弹射。
+        final p = fill.fraction.clamp(0.0, 1.0);
+        final e = _easeOutCubic((p / 0.92).clamp(0.0, 1.0));
+        dx += dir * (1 - e) * (fs * 1.15);
+        scale *= 1.0 + 0.45 * (1 - e);
+        if (e < 0.995) ghosts = 3;
+        rayK = p;
+      }
+      _drawGlyph(
+        canvas,
+        i,
+        color: _toneOf(i, fill),
+        alpha: _alphaOf(i, fill),
+        glow: isCurrent,
+        dx: dx,
+        scale: scale,
+        ghosts: ghosts,
+        // 拖影留在「来向」一侧，读起来是速度残像。
+        ghostDx: dir * 8,
+        ghostAlpha: 0.30,
+      );
+      if (isCurrent) _paintBurstRays(canvas, i, rayK, dir);
+    }
+  }
+
+  /// 弹射到位瞬间的放射光线。
+  void _paintBurstRays(Canvas canvas, int i, double k, double dir) {
+    if (k >= 0.99) return;
+    final fs = profile.fontSize;
+    final cx = _cx(i);
+    final cy = _cy(i);
+    final len = fs * (0.30 + 0.95 * k);
+    final a = (1 - k) * (1 - k) * 0.55;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 0.6 + 1.8 * (1 - k)
+      ..color = currentColor.withValues(alpha: a);
+    final inner = fs * 0.62;
+    for (var j = 0; j < 6; j++) {
+      final ang = -math.pi / 2 + j * math.pi / 3 + 0.18 * dir;
+      final c = math.cos(ang);
+      final s = math.sin(ang);
+      canvas.drawLine(
+        Offset(cx + c * inner, cy + s * inner),
+        Offset(cx + c * (inner + len), cy + s * (inner + len)),
+        paint,
+      );
+    }
+  }
+
+  // ── cube：立体旋入 ────────────────────────────────────────────────────
+  //
+  // 每个字是一个**有厚度、有投影的字块**：绕竖轴从侧面旋进来（强透视 +
+  // 深色侧面副本模拟挤出厚度 + 右下暗影），落定后轻微呼吸；唱到的字持续
+  // 360° 自转，明暗随受光面变化。这是四种里唯一的「真 3D」观感。
+  void _paintCube(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final sec = _lineSeconds;
+    for (var i = 0; i < n; i++) {
+      final enterT = ((sec - i * 0.035) / 0.52).clamp(0.0, 1.0);
+      final enter = _easeOutBack(enterT);
+      // 从 -100° 旋入：过冲收尾会短暂越过 0°，像字块「卡」进座位。
+      var rotY = -(1 - enter) * 1.75;
+      var dy = 0.0;
+      final isCurrent = i == fill.index;
+      // 常驻倾斜：不能只靠「转到某个角度」才看出立体——随机一帧常常正好
+      // 转到正视（rotY≈0），看起来就和普通歌词一样。所以每个字都带一层
+      // 缓慢摆动的基础倾角。
+      // 相位按字错开 ⇒ 即便某一帧正好不动，整行也是「高低错落的字块墙」，
+      // 而不是一排平面字（这是上一版最容易被看成普通歌词的原因）。
+      rotY += 0.24 * math.sin(i * 0.9 + clock * 0.55);
+      if (isCurrent) {
+        // 唱到的字绕竖轴匀速自转（约 3.5s 一圈，太快会看成闪烁）+ 轻微悬浮。
+        rotY += 2 * math.pi * (clock * 0.29);
+        dy = -1.4 * math.sin(clock * 2.2);
+      }
+      final color = _toneOf(i, fill);
+      final alpha = _alphaOf(i, fill);
+      // 受光面：转到侧面时整体压暗（cos 越小越暗）。
+      final lit = 0.62 + 0.38 * math.cos(rotY).abs();
+      // 1) 投影：右下暗影，立体感主要靠它。
+      _drawGlyph(
+        canvas,
+        i,
+        color: Colors.black,
+        alpha: alpha * 0.45,
+        dx: 3.0,
+        dy: dy + 4.0,
+        rotY: rotY,
+        persp: 0.0045,
+      );
+      // 2) 厚度：常驻一份「右下挤出」（保证正视时也是实体字块），再叠
+      //    旋转朝向带来的侧面偏移。
+      final offX = 2.2 - math.sin(rotY) * 5.0;
+      final offY = 1.8;
+      final sideColor = Color.lerp(color, Colors.black, 0.55) ?? color;
+      // 长句降档：每字 4 次绘制（投影 + 3 层厚度 + 正面）在 20 字以上时
+      // 逐帧成本偏高，厚度减到 2 层（观感几乎无差）。
+      final thick = n > 18 ? 2 : 3;
+      for (var k = thick; k >= 1; k--) {
+        _drawGlyph(
+          canvas,
+          i,
+          color: sideColor,
+          alpha: alpha * 0.55 / k,
+          dx: offX * k * 0.7,
+          dy: dy + offY * k * 0.7,
+          rotY: rotY,
+          persp: 0.0045,
+        );
+      }
+      // 3) 正面字。
+      _drawGlyph(
+        canvas,
+        i,
+        color: color,
+        alpha: alpha * lit,
+        glow: isCurrent,
+        dy: dy,
+        rotY: rotY,
+        persp: 0.0045,
+        scale: isCurrent
+            ? 1.0 +
+                  (charZoom - 1.0) *
+                      0.4 *
+                      math.sin(math.pi * fill.fraction.clamp(0.0, 1.0))
+            : 1.0,
+      );
+    }
+  }
+
+  // ── punch：冲击爆字 ────────────────────────────────────────────────────
+  //
+  // 每个字本身是「一次打击」：唱到的字从 2.4 倍猛地缩到位，同时炸开两圈
+  // 冲击波和 8 条速度线；未唱的字缩小退到远景（0.74 + 压暗），当前字因此
+  // 永远是最突出的一个。
+  void _paintPunch(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final sec = _lineSeconds;
+    for (var i = 0; i < n; i++) {
+      final isCurrent = i == fill.index;
+      final isSung = i < fill.index;
+      var scale = isSung ? 1.0 : 0.74;
+      var alpha = isSung ? 1.0 : _alphaOf(i, fill) * 0.85;
+      double p = 0;
+      if (isCurrent) {
+        p = fill.fraction.clamp(0.0, 1.0);
+        // 同样铺满整个字窗：当前字从 2.2 倍一路收回到 1.0（不是一闪就没了）。
+        final e = _easeOutCubic(p);
+        scale = 1.0 + 1.25 * (1 - e);
+        alpha = 1.0;
+      } else if (!isSung && fill.index < 0) {
+        // 句首之前（fill.index == -1）：整行都还没开口，别把字压没了。
+        scale = 0.9;
+        alpha = 0.45;
+      }
+      // 整句入场：从 1.3 倍缩回 1（错峰），与逐字爆字叠加但不同步。
+      final enterT = ((sec - i * 0.02) / 0.34).clamp(0.0, 1.0);
+      scale *= 1.0 + 0.28 * (1 - _easeOutCubic(enterT));
+      _drawGlyph(
+        canvas,
+        i,
+        color: _toneOf(i, fill),
+        alpha: alpha,
+        glow: isCurrent,
+        scale: scale,
+      );
+      if (isCurrent) _paintPunchShock(canvas, i, p);
+    }
+  }
+
+  /// 爆字瞬间的双重冲击波 + 速度线。
+  void _paintPunchShock(Canvas canvas, int i, double p) {
+    final k = p.clamp(0.0, 1.0);
+    if (k >= 1) return;
+    final fs = profile.fontSize;
+    final cx = _cx(i);
+    final cy = _cy(i);
+    for (var r = 0; r < 2; r++) {
+      final kk = (k - r * 0.26).clamp(0.0, 1.0);
+      if (kk <= 0) continue;
+      final rad = fs * (0.45 + 2.5 * _easeOutCubic(kk));
+      canvas.drawCircle(
+        Offset(cx, cy),
+        rad,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(0.6, 3.2 * (1 - kk))
+          ..color = currentColor.withValues(alpha: 0.42 * (1 - kk) * (1 - kk)),
+      );
+    }
+    final a = (1 - k) * (1 - k) * 0.5;
+    if (a <= 0.02) return;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 0.5 + 2.0 * (1 - k)
+      ..color = currentColor.withValues(alpha: a);
+    for (var j = 0; j < 8; j++) {
+      final ang = j * math.pi / 4 + 0.22;
+      final c = math.cos(ang);
+      final s = math.sin(ang);
+      final r0 = fs * (0.65 + 1.7 * k);
+      final r1 = r0 + fs * 0.55 * (1 - k);
+      canvas.drawLine(
+        Offset(cx + c * r0, cy + s * r0),
+        Offset(cx + c * r1, cy + s * r1),
+        paint,
+      );
+    }
+  }
+
+  // ── wave：水波倒影 ────────────────────────────────────────────────────
+  void _paintWave(
+    Canvas canvas,
+    Size size,
+    ({int index, double fraction}) fill,
+    int n,
+  ) {
+    final top = measured.lineTops.first;
+    final bottom = measured.lineBottoms.last;
+    final lineH = bottom - top;
+    // 每个字的竖直起伏：相位随字索引错开 ⇒ 整句像水面波纹掠过。
+    double dyOf(int i) =>
+        5.5 * math.sin(clock * 2.0 + i * 0.55) +
+        1.6 * math.sin(clock * 1.1 + i * 0.2);
+    double tiltOf(int i) => 0.02 * math.sin(clock * 1.6 + i * 0.5);
+
+    // 1) 倒影：整行镜像画在下方，再用竖直渐变把远端吃掉（dstIn 遮罩）。
+    // 倒影紧贴行底：gap 同时用于「镜像原点平移」和「遮罩矩形起点」，
+    // 两处必须同一个量，否则倒影会被裁掉一半。
+    final gap = profile.fontSize * 0.34;
+    final mirrorTop = bottom + gap;
+    final mirrorH = math.max(6.0, lineH);
+    final mirrorRect = Rect.fromLTWH(0, mirrorTop, size.width, mirrorH);
+    canvas.saveLayer(mirrorRect, Paint());
+    canvas.save();
+    canvas.translate(0, 2 * bottom + gap);
+    canvas.scale(1.0, -1.0);
+    for (var i = 0; i < n; i++) {
+      _drawGlyph(
+        canvas,
+        i,
+        color: _toneOf(i, fill),
+        alpha: 0.5,
+        dy: dyOf(i),
+        scale: 0.94,
+      );
+    }
+    canvas.restore();
+    canvas.drawRect(
+      mirrorRect,
+      Paint()
+        ..blendMode = BlendMode.dstIn
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: 0.85),
+            Colors.white.withValues(alpha: 0.0),
+          ],
+        ).createShader(mirrorRect),
+    );
+    canvas.restore();
+
+    // 2) 水面波光：倒影上缘两道横向细光，暗示水面。
+    for (var k = 0; k < 2; k++) {
+      final y = mirrorTop + 1.5 + k * 4.0;
+      final w = size.width * (0.55 + 0.1 * k);
+      final a = (0.10 - 0.03 * k) * (0.7 + 0.3 * math.sin(clock * 1.7 + k));
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH((size.width - w) / 2, y, w, 1.2),
+          const Radius.circular(0.6),
+        ),
+        Paint()..color = playedColor.withValues(alpha: a.clamp(0.0, 1.0)),
+      );
+    }
+
+    // 3) 正文字：逐字起伏 + 轻微斜摆，唱到的字带辉光。
+    for (var i = 0; i < n; i++) {
+      _drawGlyph(
+        canvas,
+        i,
+        color: _toneOf(i, fill),
+        alpha: _alphaOf(i, fill),
+        glow: i == fill.index,
+        dy: dyOf(i),
+        rotZ: tiltOf(i),
+        scale: i == fill.index
+            ? 1.0 +
+                  (charZoom - 1.0) *
+                      math.sin(math.pi * fill.fraction.clamp(0.0, 1.0))
+            : 1.0,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MotionLinePainter old) =>
+      old.position != position ||
+      old.clock != clock ||
+      old.style != style ||
+      old.profile.fontSize != profile.fontSize ||
+      old.playedColor != playedColor ||
+      old.currentColor != currentColor;
 }
 
 // ── 单行歌词扫过（播放页 mode 1 复用） ──────────────────────────────────
@@ -2208,6 +3292,11 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
   DateTime _lineEnteredAt = DateTime.now();
   double _enterT = 1;
 
+  /// 句级运动用的墙钟秒数（呼吸 / 漂浮 / 摆动），只在 tick 真的推进时累加，
+  /// 暂停时静止。列表侧的同名物是 `_LyricsViewWidgetState._pvClock`。
+  double _fxClock = 0;
+  DateTime? _fxFrameAt;
+
   bool _fxActive() => _fxSparkles.isNotEmpty || _fxFragments.isNotEmpty;
 
   @override
@@ -2216,6 +3305,11 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
     _lastPos = widget.position;
     _lastWall = DateTime.now();
     _lastRendered = widget.position;
+    // ⚠️ 必须在这里初始化：_onTick 里要拿它算帧间隔。此前只在 tick 内部赋值，
+    // 首帧读到的是 null ⇒ 空断言抛异常 ⇒ Ticker._tick 里的 scheduleTick 被跳过
+    // ⇒ ticker 永久停摆。表现就是单行模式切风格后「瞬间出现又消失 / 直接不
+    // 显示歌词」（停摆时 _enterT 可能停在 0，整行一直透明）。
+    _fxFrameAt = DateTime.now();
     _ticker = Ticker(_onTick);
     _ticker.start();
   }
@@ -2280,6 +3374,16 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
       return;
     }
     _lastRendered = pos;
+    // 句级运动的墙钟：只在播放中推进，暂停时整句连同运动一起静止。
+    if (widget.isPlaying) {
+      final now = DateTime.now();
+      final lastFrame = _fxFrameAt;
+      if (lastFrame != null) {
+        final stepSec = now.difference(lastFrame).inMicroseconds / 1e6;
+        _fxClock += math.min(0.05, math.max(0.0, stepSec));
+      }
+      _fxFrameAt = now;
+    }
     _updateFx(pos);
     setState(() {});
   }
@@ -2337,7 +3441,9 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
     // 单行槽位紧凑（44dp）：按风格给不同的字号 / 辉光 / 弹放参数，
     // 与 LyricsViewWidget 的风格语言保持一致（经典无辉光强放大 /
     // 辉光轻放大 / 巨幕大字 / PV 特粗 + 唱字闪点 / 回声碎片）。
-    switch (widget.style) {
+    // ⚠️ 必须按传入的 [style] 分支（而不是 widget.style）：混合模式下每句的
+    // 风格由逐句计划给出，这里要的就是那一份，否则所有句都挤到 mixed 兜底。
+    switch (style) {
       case LyricAnimationStyle.typewriter:
         return const _StyleProfile(
           fontSize: 16.0,
@@ -2348,14 +3454,16 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
           charZoom: 1.0,
           typewriter: true,
         );
-      case LyricAnimationStyle.immersive:
+      case LyricAnimationStyle.meteor:
+        // 流星坠落：单行槽位矮，字号略收一档给下坠尾迹留余量。
         return const _StyleProfile(
-          fontSize: 18.5,
-          lineHeight: 1.25,
-          glowNear: 10.0,
-          glowFar: 24.0,
+          fontSize: 17.5,
+          lineHeight: 1.3,
+          glowNear: 8.0,
+          glowFar: 18.0,
           rowGap: 0,
-          charZoom: 1.08,
+          weight: FontWeight.w700,
+          charZoom: 1.0,
         );
       case LyricAnimationStyle.pv:
         // PV：特粗字重 + 辉光（弹放交给唱字四芒闪点，见 _SingleLineFxPainter）。
@@ -2375,6 +3483,56 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
           glowFar: 0.0,
           rowGap: 0,
           charZoom: 1.14,
+        );
+      case LyricAnimationStyle.drop:
+        return const _StyleProfile(
+          fontSize: 17.5,
+          lineHeight: 1.3,
+          glowNear: 8.0,
+          glowFar: 18.0,
+          rowGap: 0,
+          weight: FontWeight.w700,
+          charZoom: 1.06,
+        );
+      case LyricAnimationStyle.burst:
+        return const _StyleProfile(
+          fontSize: 17.0,
+          lineHeight: 1.3,
+          glowNear: 8.0,
+          glowFar: 18.0,
+          rowGap: 0,
+          weight: FontWeight.w700,
+          charZoom: 1.06,
+        );
+      case LyricAnimationStyle.cube:
+        return const _StyleProfile(
+          fontSize: 17.5,
+          lineHeight: 1.28,
+          glowNear: 8.0,
+          glowFar: 20.0,
+          rowGap: 0,
+          weight: FontWeight.w700,
+          charZoom: 1.05,
+        );
+      case LyricAnimationStyle.punch:
+        return const _StyleProfile(
+          fontSize: 17.0,
+          lineHeight: 1.3,
+          glowNear: 8.0,
+          glowFar: 20.0,
+          rowGap: 0,
+          weight: FontWeight.w700,
+          charZoom: 1.0,
+        );
+      case LyricAnimationStyle.wave:
+        return const _StyleProfile(
+          fontSize: 17.5,
+          lineHeight: 1.3,
+          glowNear: 8.0,
+          glowFar: 18.0,
+          rowGap: 0,
+          weight: FontWeight.w600,
+          charZoom: 1.10,
         );
       case LyricAnimationStyle.classic:
         return const _StyleProfile(
@@ -2467,6 +3625,9 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
   // ── 当前字 painter 缓存 ─────────────────────────────────────────────
   final Map<String, TextPainter> _zoomGlyphCache = {};
   String _zoomGlyphSig = '';
+
+  /// 逐字重绘风格（meteor / drop~wave）用的字形缓存（见 [_MotionLinePainter]）。
+  final _GlyphTextCache _motionGlyphs = _GlyphTextCache();
 
   TextPainter _zoomGlyphPainter(String ch, _StyleProfile p) {
     final sig =
@@ -2724,28 +3885,47 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
         final sweep = CustomPaint(
           // +_kSingleLineCanvasPad：给弹放的当前字留出上下不被裁剪的余量。
           size: Size(maxWidth, measured.base.height + _kSingleLineCanvasPad),
-          painter: _SweepPainter(
-            base: measured.base,
-            highlight: measured.highlight,
-            metrics: measured.metrics,
-            lineTops: measured.lineTops,
-            lineBottoms: measured.lineBottoms,
-            boundaries: measured.boundaries,
-            timeline: timeline,
-            position: pos,
-            charZoom: charZoom,
-            zoomGlyph: zoomGlyph,
-            originX: measured.originX,
-            typewriter: p.typewriter,
-            cursorColor: _currentColor,
-          ),
+          // 逐字重绘风格在单行槽位同样走逐字重绘（与列表视图同一套实现）。
+          // 否则单行模式切到这些风格会退回「整行 + Transform」的旧观感。
+          painter: _isMotionStyle(lineStyle)
+              ? _MotionLinePainter(
+                  measured: measured,
+                  profile: p,
+                  style: lineStyle,
+                  timeline: timeline,
+                  position: pos,
+                  clock: _fxClock,
+                  baseColor: _baseColor,
+                  playedColor: _playedColor,
+                  currentColor: _currentColor,
+                  glyphs: _motionGlyphs,
+                  charZoom: p.charZoom,
+                )
+              : _SweepPainter(
+                  base: measured.base,
+                  highlight: measured.highlight,
+                  metrics: measured.metrics,
+                  lineTops: measured.lineTops,
+                  lineBottoms: measured.lineBottoms,
+                  boundaries: measured.boundaries,
+                  timeline: timeline,
+                  position: pos,
+                  charZoom: charZoom,
+                  zoomGlyph: zoomGlyph,
+                  originX: measured.originX,
+                  typewriter: p.typewriter,
+                  cursorColor: _currentColor,
+                ),
         );
         // PV / ECHO：唱字即时特效铺在歌词上层（与主视图一致的层级）。
         // 换行淡入 + 轻微上移：从无到有过渡，而非整行硬切。
         Widget textLayer = sweep;
         if (_enterT < 1) {
+          // 下限 0.15：换行淡入本身只有 240ms，正常看不出差别；但如果 ticker
+          // 因任何原因停摆（例如上一版首帧空断言），_enterT 会永远停在 0，
+          // 整行就是全透明的——这里兜一层，绝不让歌词「直接不显示」。
           textLayer = Opacity(
-            opacity: _enterT,
+            opacity: math.max(0.15, _enterT),
             child: Transform.translate(
               offset: Offset(0, 6 * (1 - _enterT)),
               child: sweep,

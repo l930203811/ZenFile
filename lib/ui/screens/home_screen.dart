@@ -622,11 +622,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       if (mounted) {
                         _switchTab(1);
                         provider.setNavigateToBrowseTab(false);
-                        // 消费 pending 浏览导航
+                        // 消费 pending 浏览导航。
+                        // ⚠️ pending 目录的加载必须放进 addPostFrameCallback：
+                        // 浏览 tab 是惰性构建的，首次进入时 _switchTab(1) 触发的
+                        // 本帧重建里 DirectoryScreen 才真正 mount。若在 microtask
+                        // 里同步 loadDirectory（zip:// 虚拟路径等异步加载），目录
+                        // 加载与浏览页首帧构建时序交叠——加载完成晚于首帧时页面
+                        // 仍显示 remembered/默认目录，表现为「点了压缩包却停在
+                        // 普通目录」。postFrame 保证加载发生在 DirectoryScreen
+                        // 完成首次 build 之后，任何入口（分类页/浏览页/所在位置）
+                        // 的定位行为都一致。
+                        // 先在 microtask 内取值并闭环 pending 状态（防残留被后续
+                        // 导航串台），postFrame 只负责执行加载（纯 provider 调用，
+                        // 不碰 context；mounted 仅作防御）。
                         if (provider.pendingBrowsePath != null) {
-                          provider.loadDirectory(provider.pendingBrowsePath!);
-                          provider.setHighlightedPaths(provider.pendingHighlightedPaths);
+                          final targetPath = provider.pendingBrowsePath!;
+                          final highlightPaths = provider.pendingHighlightedPaths;
                           provider.clearPendingBrowseNavigation();
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            provider.loadDirectory(targetPath);
+                            provider.setHighlightedPaths(highlightPaths);
+                          });
                         }
                       }
                     });
@@ -874,14 +891,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         : L10n.of(context).ui_dark_mode,
                     onPressed: widget.toggleTheme,
                   ),
-                  // 常用功能：单/双窗口（目标态图标：当前双窗→显示单窗方框；当前单窗→显示左右双栏）
+                  // 常用功能：单/双窗口（目标态图标：当前双窗→单窗方框；当前单窗→左右双栏）
+                  //
+                  // ⚠️ 必须用 Broken 图标字体：顶栏其它按钮（抽屉 / 搜索 / 刷新 /
+                  // 排序 / 主题 / 设置）全是这套「断线描边」风格，换成 Material 的
+                  // outlined 图标笔触偏实、圆角也不一样，一眼能看出是外来户。
+                  // Broken.stop = 单个圆角方框（单窗口），Broken.grid_4 = 圆角方框
+                  // 中间一道竖线（左右双窗口），两者笔触与其它按钮完全同源。
                   IconButton(
                     icon: Icon(
                       context
                               .read<FileManagerProvider>()
                               .enableSplitScreen
-                          ? Icons.square_outlined
-                          : Icons.view_column_outlined,
+                          ? Broken.stop
+                          : Broken.grid_4,
                       color: theme.colorScheme.primary,
                     ),
                     tooltip: context.read<FileManagerProvider>().enableSplitScreen

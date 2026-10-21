@@ -697,6 +697,12 @@ class L10nZh extends L10n {
   String get ui_favorites_swipe_hint => '从屏幕底部上滑即可打开收藏夹';
 
   @override
+  String get ui_favorites_reorder_hint => '长按条目可拖动排序';
+
+  @override
+  String get ui_connection_reorder_hint => '长按卡片可拖动排序';
+
+  @override
   String get ui_new_favorite => '新建收藏';
 
   @override
@@ -3133,6 +3139,9 @@ class L10nZh extends L10n {
   String get ui_dual_window => '双窗口';
 
   @override
+  String get ui_swap_panes => '互换左右窗口';
+
+  @override
   String get ui_filter_by_category => '按类别过滤';
 
   @override
@@ -4133,10 +4142,10 @@ class L10nZh extends L10n {
   String get lyric_style_typewriter_desc => '逐字敲出，当前字右侧带闪烁光标，无辉光、不放大';
 
   @override
-  String get lyric_style_immersive => '沉浸巨幕';
+  String get lyric_style_meteor => '流星坠落';
 
   @override
-  String get lyric_style_immersive_desc => '超大字级与电影感辉光';
+  String get lyric_style_meteor_desc => '整句先亮起，唱过的字带流星尾迹逐字坠下';
 
   @override
   String get ui_no_lyrics_found => '未找到歌词';
@@ -8192,10 +8201,40 @@ class L10nZh extends L10n {
   String get lyric_style_echo_desc => '扫过填充的同时，唱过的字炸成空心碎片缓缓漂移';
 
   @override
+  String get lyric_style_drop => '重力坠落';
+
+  @override
+  String get lyric_style_drop_desc => '唱到的字从高处砸落到位，落地溅起光环与碎屑，未唱的字悬着等位';
+
+  @override
+  String get lyric_style_burst => '左右弹射';
+
+  @override
+  String get lyric_style_burst_desc => '字从左、右交替高速弹入，带拖影与过冲回弹，唱到的字炸出放射光线';
+
+  @override
+  String get lyric_style_cube => '立体旋入';
+
+  @override
+  String get lyric_style_cube_desc => '每个字带厚度与投影绕竖轴旋入，唱到的字持续自转';
+
+  @override
+  String get lyric_style_punch => '冲击爆字';
+
+  @override
+  String get lyric_style_punch_desc => '唱到的字从两倍大猛缩到位，炸开冲击波环与速度线';
+
+  @override
+  String get lyric_style_wave => '波纹漂浮';
+
+  @override
+  String get lyric_style_wave_desc => '逐字上下起伏，行下方有镜像倒影随波淡出';
+
+  @override
   String get lyric_style_mixed => '混合模式';
 
   @override
-  String get lyric_style_mixed_desc => '只呈现当前一句并居中，每句随机获得不同视觉风格与入场动效';
+  String get lyric_style_mixed_desc => '只呈现当前正在唱的那一句，每句随机获得一种完整风格（十种风格可选），逐句不同';
 
   @override
   String get lyric_color_settings => '歌词颜色';
@@ -8943,6 +8982,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_favorites_swipe_hint => '從螢幕底部上滑即可開啟收藏夾';
+
+  @override
+  String get ui_favorites_reorder_hint => '長按項目可拖曳排序';
+
+  @override
+  String get ui_connection_reorder_hint => '長按卡片可拖曳排序';
 
   @override
   String get ui_new_favorite => '新增收藏';
@@ -11372,6 +11417,9 @@ class L10nZhTw extends L10nZh {
   String get ui_dual_window => '雙視窗';
 
   @override
+  String get ui_swap_panes => '互換左右視窗';
+
+  @override
   String get ui_filter_by_category => '按類別過濾';
 
   @override
@@ -12336,10 +12384,10 @@ class L10nZhTw extends L10nZh {
   String get lyric_style_typewriter_desc => '逐字敲出，當前字右側帶閃爍游標，無輝光、不放大';
 
   @override
-  String get lyric_style_immersive => '沉浸巨幕';
+  String get lyric_style_meteor => '流星墜落';
 
   @override
-  String get lyric_style_immersive_desc => '超大字級與電影感輝光';
+  String get lyric_style_meteor_desc => '整句先亮起，唱過的字帶流星尾跡逐字墜下';
 
   @override
   String get ui_no_lyrics_found => '未找到歌詞';
@@ -16410,10 +16458,40 @@ class L10nZhTw extends L10nZh {
   String get lyric_style_echo_desc => '掃過填充的同時，唱過的字炸成空心碎片緩緩漂移';
 
   @override
+  String get lyric_style_drop => '重力墜落';
+
+  @override
+  String get lyric_style_drop_desc => '唱到的字從高處砸落到位，落地濺起光環與碎屑，未唱的字懸著等位';
+
+  @override
+  String get lyric_style_burst => '左右彈射';
+
+  @override
+  String get lyric_style_burst_desc => '字從左、右交替高速彈入，帶拖影與過衝回彈，唱到的字炸出放射光線';
+
+  @override
+  String get lyric_style_cube => '立體旋入';
+
+  @override
+  String get lyric_style_cube_desc => '每個字帶厚度與投影繞豎軸旋入，唱到的字持續自轉';
+
+  @override
+  String get lyric_style_punch => '衝擊爆字';
+
+  @override
+  String get lyric_style_punch_desc => '唱到的字從兩倍大猛縮到位，炸開衝擊波環與速度線';
+
+  @override
+  String get lyric_style_wave => '波紋漂浮';
+
+  @override
+  String get lyric_style_wave_desc => '逐字上下起伏，行下方有鏡像倒影隨波淡出';
+
+  @override
   String get lyric_style_mixed => '混合模式';
 
   @override
-  String get lyric_style_mixed_desc => '只呈現當前一句並置中，每句隨機獲得不同視覺風格與入場動效';
+  String get lyric_style_mixed_desc => '只呈現目前正在唱的那一句，每句隨機獲得一種完整風格（十種風格可選），逐句不同';
 
   @override
   String get lyric_color_settings => '歌詞顏色';

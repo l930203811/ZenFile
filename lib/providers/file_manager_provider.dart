@@ -17,12 +17,13 @@ import '../models/file_filter_type.dart';
 import '../models/category_filter_type.dart';
 import 'media_provider.dart';
 import 'package:mime/mime.dart';
+// zip:// 条目浏览要用 package:archive 的 Archive / ArchiveFile 类型。
+import 'package:archive/archive.dart';
 import '../ui/screens/image_viewer_screen.dart';
 import '../ui/screens/video_player/video_player_screen.dart';
 import '../ui/screens/audio_player/audio_player_screen.dart';
 import '../ui/screens/text_editor_screen.dart';
 import '../ui/screens/document_viewer_screen.dart';
-import '../ui/screens/archive_viewer_screen.dart';
 import '../ui/screens/database_reader_screen.dart';
 import '../services/archive_service.dart';
 import '../services/apk_installer_service.dart';
@@ -499,6 +500,34 @@ class FileManagerProvider extends ChangeNotifier {
       PreferencesService.saveFavorites(_favorites);
       notifyListeners();
     }
+  }
+
+  /// 拖动排序：把 [groupKey] 分组内的第 [oldIndex] 项移到第 [newIndex] 项之前。
+  ///
+  /// ⚠️ [_favorites] 是**所有分组混在一张表里的单一有序列表**，UI 按 `group`
+  /// 过滤后再展示，所以「组内下标」≠「全局下标」。这里先把本组在全局列表中
+  /// 占的槽位收集出来（升序），**只在这些槽位上**写回新顺序——其他分组的
+  /// 条目位置一个都不动，既不串组也不会因为下标错位把条目挪到别的组里。
+  ///
+  /// [groupKey] 为规范化后的分组名，默认分组传空串（与 UI 侧归类规则一致）。
+  /// [oldIndex] / [newIndex] 直接取 `ReorderableListView.onReorderItem` 的值：
+  /// 该回调已按「先移除再插入」换算过 newIndex，这里不再自行 -1。
+  void reorderFavoriteInGroup(String groupKey, int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final slots = <int>[];
+    for (var i = 0; i < _favorites.length; i++) {
+      final g = (_favorites[i]['group'] as String?)?.trim() ?? '';
+      if (g == groupKey) slots.add(i);
+    }
+    if (oldIndex < 0 || oldIndex >= slots.length) return;
+    final items = slots.map((i) => _favorites[i]).toList();
+    final moved = items.removeAt(oldIndex);
+    items.insert(newIndex.clamp(0, items.length), moved);
+    for (var k = 0; k < slots.length; k++) {
+      _favorites[slots[k]] = items[k];
+    }
+    PreferencesService.saveFavorites(_favorites);
+    notifyListeners();
   }
 
   void addPinnedFolderShortcut(String path, String label) {
@@ -1080,7 +1109,8 @@ class FileManagerProvider extends ChangeNotifier {
     _navigateToBrowseTabNotifier.value = false;
   }
 
-  bool _rememberLastFolder = true;
+  // 与 PreferencesService.getRememberLastFolder() 的默认值保持一致：默认关闭。
+  bool _rememberLastFolder = false;
   bool get rememberLastFolder => _rememberLastFolder;
 
   void toggleRememberLastFolder() {
@@ -1185,17 +1215,40 @@ class FileManagerProvider extends ChangeNotifier {
     final pending = _folderItemCountInFlight[cacheKey];
     if (pending != null) return pending;
 
-    final future = _computeFolderItemCount(
-      cacheKey,
-      folderPath,
-      isRemote: isRemote,
-    );
+    final future = folderPath.startsWith('zip://')
+        ? _computeZipFolderItemCount(cacheKey, folderPath)
+        : _computeFolderItemCount(
+            cacheKey,
+            folderPath,
+            isRemote: isRemote,
+          );
     _folderItemCountInFlight[cacheKey] = future;
     try {
       return await future;
     } finally {
       _folderItemCountInFlight.remove(cacheKey);
     }
+  }
+
+  /// zip:// 虚拟目录的「项数」统计（getFolderItemCount 的 zip 分流）。
+  ///
+  /// 直接复用 [_buildZipEntries] —— 与浏览页实际渲染的列表**严格同源**
+  /// （隐藏文件过滤、深层条目折叠去重、目录在前完全一致），计数不会和
+  /// 列表对不上；Archive 未命中 LRU 缓存时会读一次压缩包（有缓存兜底）。
+  /// 失败记 0 并写缓存，与本地目录分支的失败行为一致。
+  Future<int> _computeZipFolderItemCount(String cacheKey, String virtualPath) async {
+    int count = 0;
+    try {
+      final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(virtualPath);
+      final archive = await _getZipArchiveCached(zipPath);
+      if (archive != null) {
+        count = _buildZipEntries(archive, zipPath, internalDir).length;
+      }
+    } catch (_) {
+      count = 0;
+    }
+    _folderItemCounts[cacheKey] = count;
+    return count;
   }
 
   Future<int> _computeFolderItemCount(
@@ -5348,6 +5401,15 @@ class FileManagerProvider extends ChangeNotifier {
   /// 越过存储根目录。
   String _parentOf(String path) {
     if (path.isEmpty || path == '/') return path;
+    // zip:// 虚拟路径：zip 内部逐级向上；压缩包根的上一级就是 zip 文件所在的
+    // 真实目录 —— 与「返回/向上」的用户预期一致（goBack 历史栈耗尽、goUp
+    // 都经此处）。
+    if (path.startsWith('zip://')) {
+      final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(path);
+      if (internalDir.isEmpty) return p.dirname(zipPath);
+      final segs = internalDir.substring(0, internalDir.length - 1).split('/')..removeLast();
+      return FileUtils.buildZipVirtualPath(zipPath, segs.join('/'));
+    }
     // 远程/远程加密目录：父目录需在「连接根」之上截止，且始终落到合法的
     // `remote://{connId}|{serverPath}`（即便从 cryptremote:// 向上也退回普通远程
     // 视图，避免构造出空服务端路径导致挂载点解析失败 / WebDAV 列目录挂起）。
@@ -5389,6 +5451,13 @@ class FileManagerProvider extends ChangeNotifier {
   /// （远程加解密后「向上/返回」需落在合法 `remote://` 路径，否则会冻结）。
   @visibleForTesting
   static String? remoteParentPathForTest(String path) => _remoteParentPath(path);
+
+  /// 公开访问器：[path] 的「父级可导航路径」，zip:// 感知（内部委托 [_parentOf]）。
+  ///
+  /// 供浏览页 `...` 返回父目录项、双窗格向上按钮等**自行用 p.dirname 计算父目录**
+  /// 的 UI 使用：对 zip:// 虚拟路径 p.dirname 会切坏虚拟路径（丢 `|` 后的内部
+  /// 目录或破坏尾斜杠），必须走这里。
+  String navigationParentPath(String path) => _parentOf(path);
 
   /// 返回当前 tab 的“根路径”：远程取连接自身的 rootPath（如 SMB/WebDAV 共享
   /// 根可能非 '/'），兜底为 '/'；本地为存储根目录。
@@ -5436,6 +5505,24 @@ class FileManagerProvider extends ChangeNotifier {
   }) {
     final bool isRemotePath = currentPath.startsWith('remote://') ||
         currentPath.startsWith('cryptremote://');
+
+    // zip:// 虚拟路径：面包屑 = 压缩包文件名 + 各级内部目录，目标统一为合法
+    // 的 zip:// 虚拟路径。若按 '/' 直接切分 currentPath 会得到 'zip:'、
+    // '/a/b.zip|sub' 这类垃圾段（点进去被 zip 分支之外的逻辑吞掉或报错）。
+    if (currentPath.startsWith('zip://')) {
+      final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(currentPath);
+      final zipName = p.basename(zipPath);
+      final segs = internalDir.split('/').where((n) => n.isNotEmpty).toList();
+      return (
+        labels: [zipName, ...segs],
+        targets: [
+          FileUtils.buildZipVirtualPath(zipPath, ''),
+          for (int k = 0; k < segs.length; k++)
+            FileUtils.buildZipVirtualPath(zipPath, segs.sublist(0, k + 1).join('/')),
+        ],
+      );
+    }
+
     var root = '/';
     if (isRemoteTab) {
       root = remoteRoot;
@@ -6595,6 +6682,755 @@ class FileManagerProvider extends ChangeNotifier {
     return false;
   }
 
+  // ── 压缩包内浏览（zip:// 虚拟路径，只读）─────────────────────────────
+  //
+  // 压缩包不再跳独立查看页，而是在当前浏览 tab 内像子目录一样浏览：
+  // 虚拟路径 `zip://{zip绝对路径}|{internalDir}` 复用 FolderTab 的
+  // currentPath/currentFiles/pathHistory，浏览/返回/前进与普通目录无异。
+
+  /// 已解析压缩包的 LRU 缓存（key = zip 绝对路径，容量 3）。
+  ///
+  /// 为什么必须缓存：readArchive 在隔离区整包解析（zip/tar 中央目录），
+  /// zip:// 各级子目录之间导航若每次都重解，大压缩包每进一层都要卡一次。
+  /// Map 按插入序迭代：命中时先删后插即等价 LRU 触碰，超容量淘汰最旧（首 key）。
+  final Map<String, Archive> _zipArchiveCache = {};
+  static const int _zipArchiveCacheCapacity = 3;
+
+  /// 获取（并缓存）压缩包解析结果；zip 不存在 / 为空 / 解析失败返回 null。
+  Future<Archive?> _getZipArchiveCached(String zipPath) async {
+    if (_zipArchiveCache.containsKey(zipPath)) {
+      final hit = _zipArchiveCache.remove(zipPath)!;
+      _zipArchiveCache[zipPath] = hit; // 触碰：移到最新
+      return hit;
+    }
+    try {
+      final f = File(zipPath);
+      if (!f.existsSync() || f.lengthSync() == 0) return null;
+      final archive = await ArchiveService.readArchive(zipPath);
+      if (archive == null) return null;
+      _zipArchiveCache.remove(zipPath);
+      _zipArchiveCache[zipPath] = archive;
+      while (_zipArchiveCache.length > _zipArchiveCacheCapacity) {
+        _zipArchiveCache.remove(_zipArchiveCache.keys.first);
+      }
+      return archive;
+    } catch (e) {
+      debugPrint('[ZenFile] 解析压缩包失败: $zipPath, $e');
+      return null;
+    }
+  }
+
+  /// 归一化压缩包内部条目名（与 ArchiveViewerScreen 同算法）：
+  /// 反斜杠 → 正斜杠，去掉前导 `/` 与 `./`，保证与 internalDir 同一形态可比。
+  static String _normalizeZipEntryPath(String path) {
+    var name = path.replaceAll('\\', '/');
+    while (name.startsWith('/')) {
+      name = name.substring(1);
+    }
+    while (name.startsWith('./')) {
+      name = name.substring(2);
+    }
+    return name;
+  }
+
+  /// 由压缩包条目构造浏览页列表项。
+  ///
+  /// path 用 zip:// 虚拟路径（目录以 `/` 结尾），entity 只是与真实 IO 无关的
+  /// 占位 stub（图标/判型走 name 与 displayPath）；修改时间取条目 lastModTime，
+  /// 无该信息（如折叠目录）时给 now。
+  FileItemModel _zipEntryToFileItem({
+    required String zipPath,
+    required String fullInternalPath,
+    required String name,
+    required bool isDirectory,
+    required int size,
+    int? lastModTime,
+  }) {
+    return FileItemModel(
+      entity: isDirectory ? Directory('zip://$zipPath|$fullInternalPath') : File('zip://$zipPath|$fullInternalPath'),
+      name: name,
+      path: FileUtils.buildZipVirtualPath(zipPath, fullInternalPath),
+      isDirectory: isDirectory,
+      size: size,
+      modified: (lastModTime != null && lastModTime > 0)
+          ? DateTime.fromMillisecondsSinceEpoch(lastModTime * 1000)
+          : DateTime.now(),
+    );
+  }
+
+  /// 按当前 internalDir 生成 zip 内条目列表（算法迁移自 ArchiveViewerScreen）：
+  /// 直接子项平铺，更深层的条目折叠为直接子目录；目录名去重、目录在前排序。
+  /// 隐藏文件过滤与本地目录分支一致（受「显示隐藏文件」开关控制）。
+  List<FileItemModel> _buildZipEntries(Archive archive, String zipPath, String internalDir) {
+    final seenFolders = <String>{};
+    final items = <FileItemModel>[];
+    for (final f in archive.files) {
+      final name = _normalizeZipEntryPath(f.name);
+      if (name.isEmpty || name == internalDir) continue;
+      if (!name.startsWith(internalDir)) continue;
+      final remaining = name.substring(internalDir.length);
+      final parts = remaining.split('/');
+      // 名字以 `/` 结尾的条目 split 后末段为空 —— 是显式目录项；
+      // 单段是直接文件；多段是深层条目，折叠为其直接子目录。
+      // 目录（显式或折叠）统一走 else 分支，size 恒 0（与查看器一致）。
+      final isDirectFile = parts.length == 1;
+      final firstName = parts[0];
+      if (firstName.isEmpty) continue;
+      if (!_showHiddenFiles && firstName.startsWith('.')) continue;
+      if (isDirectFile) {
+        items.add(_zipEntryToFileItem(
+          zipPath: zipPath,
+          fullInternalPath: name,
+          name: firstName,
+          isDirectory: false,
+          size: f.size,
+          lastModTime: f.lastModTime,
+        ));
+      } else {
+        // 目录（显式目录项或深层折叠）：去重后 size 恒 0（与查看器一致）
+        if (seenFolders.add(firstName)) {
+          items.add(_zipEntryToFileItem(
+            zipPath: zipPath,
+            fullInternalPath: '$internalDir$firstName/',
+            name: firstName,
+            isDirectory: true,
+            size: 0,
+            lastModTime: f.lastModTime,
+          ));
+        }
+      }
+    }
+    // 目录在前、自然名称排序，与浏览页普通列表一致
+    items.sort((a, b) {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return FileUtils.compareNatural(a.name, b.name);
+    });
+    return items;
+  }
+
+  /// zip:// 流程的轻量提示（无 BuildContext 的 provider 内 SnackBar，
+  /// 与远程分支的提示通道一致）。
+  void _showZipToast(String message) {
+    final ctx = _gateContext(null);
+    if (ctx != null && ctx.mounted) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
+    }
+  }
+
+  /// v1 加密压缩包提示：暂不支持在浏览页内输入密码，复用「请输入密码」文案。
+  /// （独立查看页 ArchiveViewerScreen 仍有完整密码流程，浏览页 v1 不做。）
+  void _showZipPasswordRequiredToast() {
+    try {
+      final ctx = _gateContext(null);
+      if (ctx != null && ctx.mounted) {
+        _showZipToast(L10n.of(ctx).crypt_error_password_required);
+      }
+    } catch (_) {}
+  }
+
+  /// zip 打不开（文件被删/为空/损坏）的提示，复用「无法打开: 原因」文案。
+  void _showZipOpenFailedToast(String zipPath) {
+    try {
+      final ctx = _gateContext(null);
+      if (ctx != null && ctx.mounted) {
+        _showZipToast(L10n.of(ctx).archive_open_failed_with_reason(zipPath));
+      }
+    } catch (_) {}
+  }
+
+  /// zip:// 加载失败（需密码/文件不存在/解析失败）时回退到 zip 所在真实父目录。
+  ///
+  /// 刚 push 进历史栈的 zip:// 路径会被**替换**为父目录而不是再 push 一条：
+  /// 否则用户按返回会重新进入打不开的 zip → 再次失败回退，形成循环体验。
+  Future<void> _fallbackZipToParent(FolderTab tab, String zipPath, {bool showLoading = true, bool recordHistory = true}) async {
+    final parent = p.dirname(zipPath);
+    if (recordHistory &&
+        tab.pathHistory.isNotEmpty &&
+        tab.historyIndex >= 0 &&
+        tab.historyIndex < tab.pathHistory.length &&
+        tab.pathHistory[tab.historyIndex].startsWith('zip://')) {
+      tab.pathHistory[tab.historyIndex] = parent;
+    }
+    tab.isLoading = false;
+    await loadDirectory(parent, showLoading: showLoading);
+  }
+
+  /// 加载 zip:// 虚拟目录（loadDirectory 的 zip 分支实现）。
+  ///
+  /// 收尾严格仿照本地/远程分支：写 currentPath/currentFiles、恢复加载态、
+  /// 持久化 + notifyListeners。zip 解析失败（文件被删/损坏/需密码）时提示并
+  /// 回退到 zip 所在真实父目录，绝不把 tab 留在一个打不开的虚拟路径上。
+  Future<void> _loadZipDirectory(String virtualPath, {bool showLoading = true, bool recordHistory = true}) async {
+    final tab = activeTab;
+    if (showLoading) {
+      tab.isLoading = true;
+      notifyListeners();
+    }
+    // 历史栈走通用机制 push：进入 zip 与 zip 内进子目录都记录历史，
+    // 返回键/手势按栈回退天然工作（zip 根的上一条就是 zip 所在真实目录）。
+    if (recordHistory && virtualPath.isNotEmpty) {
+      _pushPathToHistory(virtualPath);
+    }
+    final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(virtualPath);
+
+    // v1 不支持加密 zip 密码流程：预检到加密直接回退，避免「列表能看、
+    // 点开必失败」的半残状态。
+    if (ArchiveService.zipNeedsPassword(zipPath)) {
+      _showZipPasswordRequiredToast();
+      await _fallbackZipToParent(tab, zipPath, showLoading: showLoading, recordHistory: recordHistory);
+      return;
+    }
+
+    try {
+      final archive = await _getZipArchiveCached(zipPath);
+      if (archive == null) {
+        // zip 文件不存在/为空/解析失败：提示后回退到真实父目录。
+        _showZipOpenFailedToast(zipPath);
+        await _fallbackZipToParent(tab, zipPath, showLoading: showLoading, recordHistory: recordHistory);
+        return;
+      }
+      tab.currentPath = virtualPath;
+      tab.currentFiles = _buildZipEntries(archive, zipPath, internalDir);
+    } catch (e) {
+      debugPrint('[ZenFile] 压缩包目录加载失败: $e');
+      // 与远程分支同策略：失败不清空旧列表（用户不至于看到内容凭空消失），
+      // 但路径必须回滚，避免面包屑与内容错位。
+      tab.currentPath = virtualPath;
+    }
+    tab.isLoading = false;
+    _persistTabs();
+    notifyListeners();
+  }
+
+  /// 打开 zip:// 虚拟路径指向的压缩包内条目（浏览页文件点击的分流入口，
+  /// 由 [openFile] 调用）。
+  ///
+  /// 条目先经隔离区解压到临时目录（zip_preview，写入前整体清空 —— 预览残留
+  /// 没有复用价值，按会话覆盖可防目录无限膨胀），再走 [openFileNatively]
+  /// 按扩展名分发内置查看器。图片收集 zip 内同目录全部图片一次性解压后交给
+  /// ImageViewerScreen，支持左右滑动（迁移自查看器的图片批量预览）。
+  Future<void> openZipEntry(BuildContext context, String virtualPath) async {
+    final (zipPath, internalPath) = FileUtils.parseZipVirtualPath(virtualPath);
+    final entryPath = internalPath.replaceAll(RegExp(r'/+$'), '');
+    if (entryPath.isEmpty) return;
+    final entryName = p.basename(entryPath);
+    try {
+      if (ArchiveService.zipNeedsPassword(zipPath)) {
+        _showZipPasswordRequiredToast();
+        return;
+      }
+      final isImage = FileUtils.isImage(entryName);
+      // 图片：同目录图片列表取当前 tab 的 zip 视图条目（openFile 分流发生时
+      // tab 必停在 zip 视图）；拿不到则退化为仅打开当前图片。
+      List<String> entries;
+      if (isImage) {
+        final siblingEntries = activeTab.currentFiles
+            .where((f) => !f.isDirectory && FileUtils.isImage(f.name) && f.path.startsWith('zip://$zipPath|'))
+            .map((f) => FileUtils.parseZipVirtualPath(f.path).$2.replaceAll(RegExp(r'/+$'), ''))
+            .where((e) => e.isNotEmpty)
+            .toList();
+        if (!siblingEntries.contains(entryPath)) siblingEntries.add(entryPath);
+        entries = siblingEntries;
+      } else {
+        entries = <String>[entryPath];
+      }
+
+      final map = await ArchiveService.extractEntriesToBytes(zipPath, entries);
+      final tempDir = await _prepareZipPreviewTempDir();
+      final validEntries = <String>[];
+      final tempPaths = <String, String>{};
+      for (final entry in entries) {
+        final bytes = map[entry];
+        if (bytes == null || bytes.isEmpty) continue;
+        final tempFile = File(p.join(tempDir.path, p.basename(entry)));
+        await tempFile.writeAsBytes(bytes);
+        validEntries.add(entry);
+        tempPaths[entry] = tempFile.path;
+      }
+      if (validEntries.isEmpty) {
+        throw Exception(L10n.of(context).archive_unsupported_format);
+      }
+      if (!context.mounted) return;
+
+      if (isImage) {
+        final initialIdx = validEntries.indexOf(entryPath);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ImageViewerScreen(
+              imagePath: tempPaths[validEntries[initialIdx >= 0 ? initialIdx : 0]]!,
+              siblingPaths: validEntries.map((e) => tempPaths[e]!).toList(),
+            ),
+          ),
+        );
+      } else {
+        await openFileNatively(context, tempPaths[entryPath] ?? tempPaths[validEntries.first]!);
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 打开压缩包内条目失败: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).archive_open_failed_with_reason(e.toString())),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 准备 zip 条目预览临时目录：写入前整体清空重建（按会话覆盖策略）。
+  Future<Directory> _prepareZipPreviewTempDir() async {
+    final base = await getTemporaryDirectory();
+    final dir = Directory(p.join(base.path, 'zip_preview'));
+    if (dir.existsSync()) {
+      try {
+        dir.deleteSync(recursive: true);
+      } catch (_) {}
+    }
+    dir.createSync(recursive: true);
+    return dir;
+  }
+
+  /// 「解压到当前位置」：把 zip:// 条目（文件或目录树）解压到压缩包所在的真实
+  /// 父目录（迁移自 ArchiveViewerScreen._extractItemOut），完成后刷新该目录。
+  /// 目录条目会收集其子树内全部文件条目批量解压（隔离区一次完成，规避跨隔离区
+  /// 文件流失效）。返回是否成功。
+  Future<bool> extractZipEntriesToParent(List<String> virtualPaths) async {
+    if (virtualPaths.isEmpty) return false;
+    final (zipPath, _) = FileUtils.parseZipVirtualPath(virtualPaths.first);
+    final destDir = p.dirname(zipPath);
+    final ok = await _extractZipEntriesToDir(virtualPaths, destDir);
+    if (ok) {
+      // 刷新解压目标目录：视图会从 zip 内部跳到真实目录，用户可直接看到结果。
+      await loadDirectory(destDir, showLoading: false);
+    }
+    return ok;
+  }
+
+  /// 把 zip:// 条目（文件或目录树）解压到**指定**真实目录的共享实现。
+  /// 只负责写盘不刷新视图（粘贴到真实目录 / 解压到父目录各自决定收尾）。
+  Future<bool> _extractZipEntriesToDir(List<String> virtualPaths, String destDir) async {
+    if (virtualPaths.isEmpty) return false;
+    final (zipPath, _) = FileUtils.parseZipVirtualPath(virtualPaths.first);
+    try {
+      if (ArchiveService.zipNeedsPassword(zipPath)) {
+        _showZipPasswordRequiredToast();
+        return false;
+      }
+      final archive = await _getZipArchiveCached(zipPath);
+      if (archive == null) {
+        _showZipOpenFailedToast(zipPath);
+        return false;
+      }
+      // 展开选中项：文件直接收集；目录条目收集其子树内全部文件条目，
+      // 并记录「内部根 → 目标目录名」映射用于还原目录结构。
+      final fileEntries = <String>[];
+      final dirRoots = <String, String>{};
+      for (final vp in virtualPaths) {
+        final (zp, ip) = FileUtils.parseZipVirtualPath(vp);
+        // 跨压缩包的批量选择 v1 不支持，静默跳过（浏览页选择集按 tab 隔离，正常到不了这里）
+        if (zp != zipPath) continue;
+        final entry = ip.replaceAll(RegExp(r'/+$'), '');
+        if (entry.isEmpty) continue;
+        if (vp.endsWith('/')) {
+          dirRoots[entry] = p.basename(entry);
+          for (final f in archive.files) {
+            if (!f.isFile) continue;
+            final n = _normalizeZipEntryPath(f.name);
+            if (n.startsWith('$entry/')) fileEntries.add(n);
+          }
+        } else {
+          fileEntries.add(entry);
+        }
+      }
+      if (fileEntries.isEmpty) return false;
+
+      final map = await ArchiveService.extractEntriesToBytes(zipPath, fileEntries);
+      for (final entry in map.entries) {
+        final bytes = entry.value;
+        if (bytes == null || bytes.isEmpty) continue;
+        String? destPath;
+        for (final root in dirRoots.keys) {
+          if (entry.key.startsWith('$root/')) {
+            destPath = p.join(destDir, dirRoots[root]!, entry.key.substring(root.length + 1));
+            break;
+          }
+        }
+        destPath ??= p.join(destDir, p.basename(entry.key));
+        final destFile = File(destPath);
+        await destFile.create(recursive: true);
+        await destFile.writeAsBytes(bytes);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile] 解压 zip 条目失败: $e');
+      final ctx = _gateContext(null);
+      if (ctx != null && ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(ctx).archive_extract_failed_with_reason(e.toString())),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
+  // ── zip:// 写操作（v2：仅 .zip 支持重写；tar/7z/rar 等保持只读）──────────
+  //
+  // 全部走「读原包 → 修改条目集 → 编码 → 临时文件 → 原子替换」的重写链路
+  // （ArchiveService.rewriteZipArchive），失败时原 zip 完好，缓存失效后刷新视图。
+
+  /// 按上下文取 l10n 文案并弹 zip 轻量提示（无 BuildContext 的 provider 内 SnackBar）。
+  void _showZipL10nToast(String Function(L10n l10n) text) {
+    try {
+      final ctx = _gateContext(null);
+      if (ctx != null && ctx.mounted) {
+        _showZipToast(text(L10n.of(ctx)));
+      }
+    } catch (_) {}
+  }
+
+  /// 对 [zipPath] 执行一次重写（删除/改名/追加的组合），成功后原子替换原文件、
+  /// 失效解析缓存。返回是否成功；失败已 toast，原 zip 不受影响。
+  ///
+  /// 临时文件与原 zip 同目录同分区（rename 才可能原子），失败时清理。
+  Future<bool> _rewriteZipFile(
+    String zipPath, {
+    List<String> deletePaths = const <String>[],
+    Map<String, String> renamePaths = const <String, String>{},
+    Map<String, Uint8List?> addEntries = const <String, Uint8List?>{},
+  }) async {
+    // 格式边界：zip 才有通用重写能力（tar/7z/rar 无法重写）
+    if (!zipPath.toLowerCase().endsWith('.zip')) {
+      _showZipL10nToast((l10n) => l10n.archive_unsupported_format);
+      return false;
+    }
+    if (ArchiveService.zipNeedsPassword(zipPath)) {
+      _showZipPasswordRequiredToast();
+      return false;
+    }
+    final tempPath = p.join(p.dirname(zipPath), '.${p.basename(zipPath)}.zftmp');
+    final tempFile = File(tempPath);
+    bool ok = false;
+    Object? err;
+    try {
+      ok = await ArchiveService.rewriteZipArchive(
+        archivePath: zipPath,
+        tempOutputPath: tempPath,
+        deletePaths: deletePaths,
+        renamePaths: renamePaths,
+        addEntries: addEntries,
+      );
+    } catch (e) {
+      err = e;
+    }
+    if (!ok) {
+      if (tempFile.existsSync()) {
+        try { tempFile.deleteSync(); } catch (_) {}
+      }
+      _showZipL10nToast((l10n) => '${l10n.msg5fa802be}: ${err ?? l10n.archive_unsupported_format}');
+      return false;
+    }
+    // 原子替换：POSIX 直接 rename 覆盖；Windows/部分 FS 对已存在目标会失败，
+    // 先删原文件再 rename，rename 失败时把临时文件拷回原路径兜底恢复。
+    try {
+      try {
+        if (tempFile.existsSync()) {
+          // 规避「目标已存在导致 rename 失败」：同分区 rename 失败极快，先试一次
+          tempFile.renameSync(zipPath);
+        }
+      } catch (_) {
+        if (File(zipPath).existsSync()) {
+          try { File(zipPath).deleteSync(); } catch (_) {}
+        }
+        tempFile.renameSync(zipPath);
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] zip 原子替换失败: $e');
+      if (!File(zipPath).existsSync() && tempFile.existsSync()) {
+        // 兜底恢复：原包已被删而替换失败，把重写结果拷回原路径
+        try { tempFile.copySync(zipPath); } catch (_) {}
+      }
+      if (tempFile.existsSync()) {
+        try { tempFile.deleteSync(); } catch (_) {}
+      }
+      _showZipL10nToast((l10n) => '${l10n.msg5fa802be}: ${e.toString()}');
+      return false;
+    }
+    // 重写后内存里的解析结果已过期，必须失效（浏览/后续写操作都会重新解析）
+    _zipArchiveCache.remove(zipPath);
+    clearFolderItemCountsCache();
+    return true;
+  }
+
+  /// 重写后刷新当前视图：活动 tab 停在该 zip 视图内时按当前虚拟路径重载列表。
+  Future<void> _refreshAfterZipRewrite(String zipPath) async {
+    if (activeTab.currentPath.startsWith('zip://$zipPath|')) {
+      await loadDirectory(activeTab.currentPath, showLoading: false);
+    }
+  }
+
+  /// 收集 zip 内目录条目的子树文件清单（与 [_extractZipEntriesToDir] 同算法）。
+  List<String> _collectZipSubtreeFiles(Archive archive, String dirEntry) {
+    final files = <String>[];
+    for (final f in archive.files) {
+      if (!f.isFile) continue;
+      final n = _normalizeZipEntryPath(f.name);
+      if (n.startsWith('$dirEntry/')) files.add(n);
+    }
+    return files;
+  }
+
+  /// 收集真实文件系统源到「追加进 zip」的条目集：文件读 bytes；目录递归收集
+  /// 全部文件 + 空目录。同名旧条目按覆盖语义先记入 [deletePaths]。
+  Future<void> _collectRealEntriesForZip(
+    String srcPath,
+    String destInternalPrefix,
+    Map<String, Uint8List?> addEntries,
+    Set<String> deletePaths,
+  ) async {
+    String destKey(String name) => destInternalPrefix + name;
+
+    final type = FileSystemEntity.typeSync(srcPath);
+    if (type == FileSystemEntityType.file) {
+      final f = File(srcPath);
+      final bytes = await f.readAsBytes();
+      final key = destKey(p.basename(srcPath));
+      addEntries[key] = bytes;
+      deletePaths.add(key);
+      return;
+    }
+    if (type != FileSystemEntityType.directory) return;
+    final dir = Directory(srcPath);
+    if (!dir.existsSync()) return;
+    final baseName = p.basename(srcPath);
+    final rootPrefix = '$destInternalPrefix$baseName/';
+    bool hasChildren = false;
+    for (final e in dir.listSync(recursive: true)) {
+      if (e is File) {
+        hasChildren = true;
+        final rel = p.relative(e.path, from: srcPath).replaceAll('\\', '/');
+        final key = '$rootPrefix$rel';
+        try {
+          addEntries[key] = await e.readAsBytes();
+          deletePaths.add(key);
+        } catch (_) {}
+      } else if (e is Directory) {
+        hasChildren = true;
+        final rel = p.relative(e.path, from: srcPath).replaceAll('\\', '/');
+        final key = '$rootPrefix$rel/';
+        // 空目录以 null 条目追加；非空目录条目可省略（文件路径隐式建目录）
+        if (!addEntries.containsKey(key)) {
+          addEntries[key] = null;
+        }
+      }
+    }
+    if (!hasChildren) {
+      // 完全空的目录：只追加目录条目本身
+      addEntries[rootPrefix] = null;
+      deletePaths.add(rootPrefix);
+    }
+  }
+
+  /// zip:// 条目删除（单项/多选共用）：从所属 zip 移除条目并刷新视图。
+  Future<void> deleteZipEntries(List<String> virtualPaths) async {
+    if (virtualPaths.isEmpty) return;
+    final (zipPath, _) = FileUtils.parseZipVirtualPath(virtualPaths.first);
+    final deletePaths = <String>[];
+    for (final vp in virtualPaths) {
+      final (zp, ip) = FileUtils.parseZipVirtualPath(vp);
+      if (zp != zipPath) continue; // 跨包批量选择不属于本次删除范围
+      final entry = ip.replaceAll(RegExp(r'/+$'), '');
+      if (entry.isEmpty) continue;
+      deletePaths.add(vp.endsWith('/') ? '$entry/' : entry);
+    }
+    if (deletePaths.isEmpty) return;
+    final ok = await _rewriteZipFile(zipPath, deletePaths: deletePaths);
+    if (ok) await _refreshAfterZipRewrite(zipPath);
+  }
+
+  /// zip:// 条目重命名：文件改末段名；目录按子树前缀整树改名。
+  /// 沿用真实路径重命名的同一套名称校验（[validateFileName]）。
+  Future<void> renameZipEntry(String oldVirtualPath, String newName, [BuildContext? context]) async {
+    final nameProblem = validateFileName(newName);
+    if (nameProblem != null) {
+      debugPrint('[ZenFile] zip 内重命名被拒绝（$nameProblem）：$newName');
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(fileNameProblemText(L10n.of(context), nameProblem)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+    final (zipPath, internalPath) = FileUtils.parseZipVirtualPath(oldVirtualPath);
+    final isDir = oldVirtualPath.endsWith('/');
+    final entry = internalPath.replaceAll(RegExp(r'/+$'), '');
+    if (entry.isEmpty) return; // zip 根没有「名字」可改
+    final slash = entry.lastIndexOf('/');
+    final parent = slash >= 0 ? entry.substring(0, slash) : '';
+    final newEntry = parent.isEmpty ? newName : '$parent/$newName';
+    final newKey = isDir ? '$newEntry/' : newEntry;
+    final oldKey = isDir ? '$entry/' : entry;
+
+    // 同名冲突：zip 内已有同名条目（文件/显式目录）时拒绝，避免静默混淆
+    final archive = await _getZipArchiveCached(zipPath);
+    if (archive == null) {
+      _showZipOpenFailedToast(zipPath);
+      return;
+    }
+    for (final f in archive.files) {
+      final n = _normalizeZipEntryPath(f.name);
+      if (n == newEntry || n == newKey) {
+        _showZipL10nToast((l10n) => l10n.msg_file_exists);
+        return;
+      }
+    }
+
+    final ok = await _rewriteZipFile(zipPath, renamePaths: {oldKey: newKey});
+    if (ok) await _refreshAfterZipRewrite(zipPath);
+  }
+
+  /// 粘贴到 zip 内目录：把剪贴板条目追加进目标 zip。
+  ///
+  /// 源三种形态：
+  /// - 同包 zip:// 剪切 = 移动，直接改条目子树前缀（renamePaths，零多余读字节）；
+  /// - 复制（同包/跨包）或跨包剪切 = 源条目解压 bytes 追加（跨包剪切再改写源包删除）；
+  /// - 真实文件/目录 = 读 bytes 递归追加（目录保留相对结构、空目录建条目）。
+  /// 同名覆盖：追加前把目标已有同名条目记入 deletePaths 一次完成。
+  Future<void> _pasteIntoZipView({required bool clearAfterPaste}) async {
+    if (_clipboardPaths.isEmpty) return;
+    final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(activeTab.currentPath);
+    final targetDir = internalDir.endsWith('/') ? internalDir : '$internalDir/';
+    final isCut = _isCut;
+
+    final addEntries = <String, Uint8List?>{};
+    final deletePaths = <String>{};
+    final renamePaths = <String, String>{};
+    final realCutPaths = <String>[];
+    final crossZipCut = <String, List<String>>{};
+
+    for (final src in List<String>.from(_clipboardPaths)) {
+      if (src.startsWith('zip://')) {
+        final (srcZip, srcInternal) = FileUtils.parseZipVirtualPath(src);
+        final srcEntry = srcInternal.replaceAll(RegExp(r'/+$'), '');
+        if (srcEntry.isEmpty) continue;
+        final srcIsDir = src.endsWith('/');
+        final name = srcEntry.split('/').last;
+        if (name.isEmpty) continue;
+        final destKey = '$targetDir$name';
+        if (srcZip == zipPath && isCut) {
+          // 同包剪切 = 移动：整棵子树前缀改名
+          renamePaths[srcIsDir ? '$srcEntry/' : srcEntry] = srcIsDir ? '$destKey/' : destKey;
+        } else {
+          // 复制（同/跨包）或跨包剪切：解压 bytes 追加
+          final archive = await _getZipArchiveCached(srcZip);
+          if (archive == null) {
+            _showZipOpenFailedToast(srcZip);
+            continue;
+          }
+          final files = srcIsDir ? _collectZipSubtreeFiles(archive, srcEntry) : <String>[srcEntry];
+          if (files.isEmpty && !srcIsDir) continue;
+          final map = await ArchiveService.extractEntriesToBytes(srcZip, files);
+          for (final e in map.entries) {
+            if (e.value == null) continue;
+            final rel = srcIsDir ? e.key.substring(srcEntry.length + 1) : name;
+            final key = srcIsDir ? '$destKey/$rel' : destKey;
+            addEntries[key] = e.value;
+            deletePaths.add(key);
+          }
+          if (isCut && srcZip != zipPath) {
+            crossZipCut.putIfAbsent(srcZip, () => []).add(srcIsDir ? '$srcEntry/' : srcEntry);
+          }
+        }
+      } else {
+        // 真实文件/目录源：读 bytes 递归追加
+        await _collectRealEntriesForZip(src, targetDir, addEntries, deletePaths);
+        if (isCut) realCutPaths.add(src);
+      }
+    }
+    if (addEntries.isEmpty && renamePaths.isEmpty) return;
+
+    activeTab.isLoading = true;
+    notifyListeners();
+    final bool ok;
+    try {
+      ok = await _rewriteZipFile(
+        zipPath,
+        deletePaths: deletePaths.toList(),
+        renamePaths: renamePaths,
+        addEntries: addEntries,
+      );
+      if (ok) {
+        // 剪切收尾：真实源删除（走 deleteFile：回收站/受限路径语义一致），
+        // 跨包源在源包内重写删除。
+        for (final rp in realCutPaths) {
+          try { await deleteFile(rp); } catch (e) { debugPrint('[ZenFile] zip 内粘贴删除真实源失败: $e'); }
+        }
+        for (final e in crossZipCut.entries) {
+          await _rewriteZipFile(e.key, deletePaths: e.value);
+        }
+        await _refreshAfterZipRewrite(zipPath);
+      }
+    } finally {
+      activeTab.isLoading = false;
+      notifyListeners();
+    }
+    if (isCut || clearAfterPaste) _clearActiveClipboard();
+  }
+
+  /// zip:// 剪贴板条目粘贴到真实目录：解压写入（剪切成功后从源包删除条目）。
+  /// 返回 true 表示剪贴板全部为 zip:// 条目（处理完毕）；混合源返回 false，
+  /// 由 [_pasteFileToTab] 剔除 zip:// 后继续普通链路。
+  Future<bool> _pasteZipClipboardEntriesToRealDir({required bool clearAfterPaste}) async {
+    final zipSrc = _clipboardPaths.where((sp) => sp.startsWith('zip://')).toList();
+    if (zipSrc.isEmpty) return false;
+    // 远程/加密目标目录不支持 zip 条目写入（上传链路未接 zip:// 源）
+    if (activeTab.isRemote || activeTab.isCryptRemote) {
+      _showZipL10nToast((l10n) => l10n.archive_unsupported_format);
+      if (_clipboardPaths.every((sp) => sp.startsWith('zip://'))) {
+        if (_isCut || clearAfterPaste) _clearActiveClipboard();
+        return true;
+      }
+      return false;
+    }
+    final destDir = activeTab.currentPath;
+    activeTab.isLoading = true;
+    notifyListeners();
+    final bool ok;
+    try {
+      ok = await _extractZipEntriesToDir(zipSrc, destDir);
+      if (ok && _isCut) {
+        // 剪切：成功后逐源包删除对应条目
+        final byZip = <String, List<String>>{};
+        for (final vp in zipSrc) {
+          final (zp, ip) = FileUtils.parseZipVirtualPath(vp);
+          final entry = ip.replaceAll(RegExp(r'/+$'), '');
+          if (entry.isEmpty) continue;
+          byZip.putIfAbsent(zp, () => []).add(vp.endsWith('/') ? '$entry/' : entry);
+        }
+        for (final e in byZip.entries) {
+          await _rewriteZipFile(e.key, deletePaths: e.value);
+        }
+      }
+    } finally {
+      activeTab.isLoading = false;
+      notifyListeners();
+    }
+    if (ok) await loadDirectory(destDir, showLoading: false);
+    if (ok && (_isCut || clearAfterPaste)) _clearActiveClipboard();
+    return _clipboardPaths.every((sp) => sp.startsWith('zip://'));
+  }
+
   Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true, bool forceRefresh = false}) async {
     // 标记「本标签页已尝试列举过」。恢复出来的标签页（开启「记住上次打开文件夹」
     // 后从 SharedPreferences 还原）currentFiles 是空常量列表，但目录从未被列举 ——
@@ -6603,6 +7439,20 @@ class FileManagerProvider extends ChangeNotifier {
     // 避免每次切换都对一个打不开的目录自动重试。详见
     // [FolderTab.hasLoaded] 与 [ensureTabContentLoaded]。
     activeTab.hasLoaded = true;
+
+    // ── 压缩包内浏览分支（zip://，只读）──
+    // 放在所有分支最前：zip:// 不是真实文件系统路径，绝不能落到下方
+    // 远程翻转 / 本地列目录逻辑上。远程/加密 tab 中进入 zip 视图时保留
+    // isRemote 标志不动（返回历史栈里的 remote:// 路径时远程分支仍可接管）。
+    //
+    // 双窗口语义：点击统一经由 _openFolder → 先 setActivePane 激活发生点击的
+    // 窗格，再走 loadDirectoryForTab（临时把 activeTabIndex 切到目标 tab）。
+    // 因此本分支写入 activeTab 的就是「发生点击的那个窗口」的 tab，另一窗口
+    // 的路径/内容不受影响 —— 与进入普通子目录完全同一套机制。
+    if (path.startsWith('zip://')) {
+      await _loadZipDirectory(path, showLoading: showLoading, recordHistory: recordHistory);
+      return;
+    }
 
     // ── Remote → Local transition guard ──
     // 当当前 tab 处于远程模式，但请求的路径明显是本地存储路径时（例如从共
@@ -7439,6 +8289,12 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   void copyFile(String path) {
+    // zip:// 条目允许进剪贴板（v2）：粘贴时由 _pasteFileToTab 分流 —— 进 zip 内
+    // 追加 / 解压写入真实目录。
+    if (path.startsWith('zip://')) {
+      setClipboard([path], isCut: false);
+      return;
+    }
     if (currIsRemote) {
       if (currentFiles.isEmpty) {
         setClipboard([path], isCut: false);
@@ -7457,6 +8313,11 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   void cutFile(String path) {
+    // zip:// 条目允许剪切（v2）：虚拟路径进剪贴板，粘贴成功后从源 zip 删除。
+    if (path.startsWith('zip://')) {
+      setClipboard([path], isCut: true);
+      return;
+    }
     if (currIsRemote) {
       if (currentFiles.isEmpty) {
         setClipboard([path], isCut: true);
@@ -7476,6 +8337,13 @@ class FileManagerProvider extends ChangeNotifier {
 
   void copySelected() {
     if (selectedPaths.isEmpty) return;
+    // zip:// 虚拟路径可进剪贴板（v2）：zip 视图内多选复制，粘贴时按源分流。
+    if (selectedPaths.any((p) => p.startsWith('zip://'))) {
+      setClipboard(selectedPaths.toList(), isCut: false);
+      selectedPaths.clear();
+      notifyListeners();
+      return;
+    }
     if (currIsRemote) {
       final items = currentFiles
           .where((f) => selectedPaths.contains(f.path))
@@ -7496,6 +8364,13 @@ class FileManagerProvider extends ChangeNotifier {
 
   void cutSelected() {
     if (selectedPaths.isEmpty) return;
+    // zip:// 虚拟路径可剪切（v2）：粘贴成功后从源 zip 删除对应条目。
+    if (selectedPaths.any((p) => p.startsWith('zip://'))) {
+      setClipboard(selectedPaths.toList(), isCut: true);
+      selectedPaths.clear();
+      notifyListeners();
+      return;
+    }
     if (currIsRemote) {
       final items = currentFiles
           .where((f) => selectedPaths.contains(f.path))
@@ -7516,6 +8391,14 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> deleteSelected() async {
     if (selectedPaths.isEmpty) return;
+    // zip:// 条目（zip 视图内多选）：走 zip 重写删除（v2）。
+    if (selectedPaths.any((p) => p.startsWith('zip://'))) {
+      final zipPaths = selectedPaths.where((p) => p.startsWith('zip://')).toList();
+      selectedPaths.clear();
+      notifyListeners();
+      await deleteZipEntries(zipPaths);
+      return;
+    }
     // 快照待删路径：finally 中会清空 selectedPaths，需提前保留用于媒体列表裁剪。
     final deletedPaths = List<String>.from(selectedPaths);
 
@@ -7599,6 +8482,7 @@ class FileManagerProvider extends ChangeNotifier {
     int? targetTabIndex,
   }) async {
     if (taskIndex < 0 || taskIndex >= _clipboardTasks.length) return;
+    // zip:// 目标/源的粘贴分流在 _pasteFileToTab 内处理（v2：支持写入压缩包）。
     final task = _clipboardTasks[taskIndex];
     // 载入活动字段（粘贴链路读取活动字段）
     _loadTaskIntoActive(task);
@@ -7658,6 +8542,24 @@ class FileManagerProvider extends ChangeNotifier {
 
     final oldIndex = _activeTabIndex;
     _activeTabIndex = targetTabIndex;
+
+    // —— zip:// 目标（v2）：粘贴进压缩包（追加/移动条目），必须挡在远程/加密
+    // 链路之前 —— zip 视图下这些标志可能是残留值，普通链路会把虚拟路径当
+    // 真实文件系统/远程路径处理。
+    if (activeTab.isZipView) {
+      await _pasteIntoZipView(clearAfterPaste: clearAfterPaste);
+      return;
+    }
+
+    // —— zip:// 源（v2）：压缩包条目粘贴到真实目录 —— 先解压写入目标目录
+    // （剪切成功后从源包删除），混合源时剔除 zip:// 后继续走普通链路。
+    if (_clipboardPaths.any((sp) => sp.startsWith('zip://'))) {
+      final handledAll =
+          await _pasteZipClipboardEntriesToRealDir(clearAfterPaste: clearAfterPaste);
+      if (handledAll) return;
+      _clipboardPaths.removeWhere((sp) => sp.startsWith('zip://'));
+      if (_clipboardPaths.isEmpty) return;
+    }
 
     // —— 远程加密目录内部复制/移动 ——
     // 目标 tab 是远程加密目录时，源为后端密文项、目标为当前加密目录，必须走
@@ -10529,6 +11431,11 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> deleteFile(String path) async {
+    // zip:// 条目删除：从所属 zip 重写移除并刷新（v2）。
+    if (path.startsWith('zip://')) {
+      await deleteZipEntries([path]);
+      return;
+    }
     // Look up the file to check if it has a remote source
     final file = currentFiles.cast<FileItemModel?>().firstWhere(
       (f) => f?.path == path,
@@ -10600,6 +11507,11 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> renameFile(String oldPath, String newName, [BuildContext? context]) async {
+    // zip://（压缩包内）重命名：文件改末段名 / 目录改子树前缀（v2 重写链路）。
+    if (oldPath.startsWith('zip://')) {
+      await renameZipEntry(oldPath, newName, context);
+      return;
+    }
     // 单段名校验（所有分支的统一入口）：名称含 '/' 等路径分隔符时
     // p.join(dirname, name) 会拼出嵌套路径（a.jpg → a.jpg/a.jpg），
     // rename() 因父目录不存在而失败，随后 _renameWithFallback 兜底会把
@@ -10878,6 +11790,11 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<String?> createFolder(String name) async {
     _lastCreateError = null;
+    // v1 裁剪：zip://（压缩包内浏览）只读，不支持在压缩包内新建文件夹。
+    if (activeTab.isZipView) {
+      _lastCreateError = '压缩包内暂不支持新建';
+      return null;
+    }
     // 单段名校验：名称含 '/' 时 p.join 会拼出嵌套路径，Directory.create()
     // 会把中间目录一并建出（a/b → 建出文件夹 a、里面放 b），与重命名
     // 链路同源。入口直接拒绝。
@@ -10959,6 +11876,11 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<String?> createFile(String name) async {
     _lastCreateError = null;
+    // v1 裁剪：zip://（压缩包内浏览）只读，不支持在压缩包内新建文件。
+    if (activeTab.isZipView) {
+      _lastCreateError = '压缩包内暂不支持新建';
+      return null;
+    }
     // 单段名校验：同 createFolder，防止嵌套路径建出中间目录。
     final nameProblem = validateFileName(name);
     if (nameProblem != null) {
@@ -11049,6 +11971,9 @@ class FileManagerProvider extends ChangeNotifier {
     BuildContext? context,
   }) async {
     final paths = targetPaths ?? (selectedPaths.isNotEmpty ? selectedPaths.toList() : [currentPath]);
+    // v1 裁剪：zip://（压缩包内浏览）只读，不支持把压缩包内条目再压缩到压缩包
+    // 内（虚拟路径无法参与真实压缩）。
+    if (paths.any((p) => p.startsWith('zip://'))) return;
 
     // 纯 Shizuku 下，若压缩源位于其它应用的 Android/{data,obb}，dart:io 读不到内容，
     // 需在 startCompression spawn isolate 之前经 SAF 递归下载到本地临时目录，再交给压缩
@@ -11266,6 +12191,9 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> extractArchiveDirectly(BuildContext context, String path) async {
+    // v1 裁剪：zip:// 虚拟路径（压缩包内条目）无法直接解压 —— 条目不是真实
+    // 文件。「解压到当前位置」请走 extractZipEntriesToParent（浏览页已接线）。
+    if (path.startsWith('zip://')) return;
     // 默认解压到压缩包所在位置（ExtractArchiveDialog 会根据 archivePath 自动取 dirname，此处兜底传入压缩包目录）
     final archiveDir = p.dirname(path);
     // 预检：ZIP 是否加密。加密包必须在拿到密码后才开始解压——否则 archive 包会
@@ -11424,12 +12352,11 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (FileUtils.isArchive(path)) {
       if (!context.mounted) return true;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ArchiveViewerScreen(archivePath: path),
-        ),
-      );
+      // 压缩包不再跳独立查看页：改为在**当前浏览 tab 内**以虚拟路径
+      // `zip://{zip绝对路径}|{内部目录}` 进入，像进入普通子目录一样浏览。
+      // 历史栈由 loadDirectory 内的 _pushPathToHistory 自然 push ——
+      // 从 zip 视图按返回/手势，上一条就是 zip 所在的真实目录。
+      await loadDirectory(FileUtils.buildZipVirtualPath(path, ''));
       return true;
     }
 
@@ -12767,6 +13694,55 @@ class FileManagerProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
+
+    // zip:// 虚拟路径（压缩包内条目）：先解压到临时目录再按扩展名打开。
+    // 必须放在所有本地/远程/加密链路之前 —— 虚拟路径经不起任何真实文件系统操作。
+    if (path.startsWith('zip://')) {
+      await openZipEntry(context, path);
+      return;
+    }
+
+    // 本地真实压缩包：进入浏览 tab 的 zip:// 虚拟视图（与浏览页内点击压缩包一致）。
+    // 分类页（压缩类别）/最近列表/全局搜索/收藏夹等入口都从这里进来。
+    //
+    // 导航惯例与「打开所在位置」(showFileInLocation) 完全一致——**在点击事件内
+    // 同步启动 loadDirectory，先把内容写进浏览 tab 的 provider 状态，再做页面
+    // 切换**（加载与切 tab 职责分离，互不依赖对方时序）：
+    //   1) loadDirectory(zip://) 是纯 provider 状态写入（activeTab.currentPath /
+    //      currentFiles），不依赖浏览页是否已挂载，await 返回后内容必然就位；
+    //   2) setNavigateToBrowseTab(true) 走既有切 tab 通道（内部强制通知，即使
+    //      notifier 残留 true 也能再次触发 HomeScreen 消费；didChangeDependencies
+    //      的旧通道兜底同样能切过去——两条路都只负责切 tab，不承载加载职责）；
+    //   3) popUntil 收起壳内/全屏页面。浏览页内点击时 popUntil 与 _switchTab(1)
+    //      均为 no-op，内容已就位，行为与原先一致。
+    //
+    // ⚠️ 不要改回 v2 的「pendingBrowse + HomeScreen postFrame 异步消费」链：那条链
+    // 把加载挂在 ValueNotifier 重建 → microtask → postFrame 三级异步跳变之后，
+    // 任一环被抢先复位 notifier（home_screen.didChangeDependencies 只复位布尔不
+    // 消费 pending），或 notifier 残留 true 时 ValueNotifier 同值不再通知，pending
+    // 都会被静默丢弃——表现为「切到浏览页却停在根目录/原地不动」（v2 实测回归）。
+    if (!isRemoteStream &&
+        !path.startsWith('remote://') &&
+        !path.startsWith('cryptremote://') &&
+        !path.startsWith('http') &&
+        FileUtils.isArchive(path) &&
+        !activeTab.isRemote &&
+        File(path).existsSync()) {
+      // zip 解析失败已在 _loadZipDirectory 内提示并回退 zip 父目录；这里兜底吞掉
+      // loadDirectory 可能抛出的异常（同 init 的防御），保证导航仍能进行。
+      try {
+        await loadDirectory(FileUtils.buildZipVirtualPath(path, ''));
+      } catch (_) {}
+      if (!context.mounted) return;
+      // ⚠️ 必须用 Navigator.of(context) 而不是根 navigatorKey：触发页可能挂在
+      // ShellNavigator 的**壳内嵌套 Navigator**（媒体分类页等）——根 navigatorKey
+      // 的 popUntil 对它是 no-op，分类页壳收不起来。用触发页自己的 context 逐级
+      // 向上找最近的 Navigator（与「打开所在位置」惯例 intent_handler 完全一致）：
+      // 壳内页收到壳内 Navigator（pop 到透明基底），全屏页收到根 Navigator，都正确。
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      setNavigateToBrowseTab(true);
+      return;
+    }
 
     // 加密会话解锁闸门：打开**本地加密文件**前必须已在本会话解锁过保险箱。
     // 远程文件（remote:// / 远程 tab / 流式 URL）不触达本地加密，跳过门禁。

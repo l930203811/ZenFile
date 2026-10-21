@@ -181,18 +181,43 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
           const SizedBox(height: 3),
           Padding(
             padding: const EdgeInsets.only(left: 40),
-            child: Text(
-              l10n.ui_favorites_swipe_hint,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-                fontSize: 12,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.ui_favorites_swipe_hint,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                    fontSize: 12,
+                  ),
+                ),
+                // 收藏为空时没有可拖的条目，不必提示排序。
+                if (widget.provider.favorites.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.ui_favorites_reorder_hint,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.45,
+                      ),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
+  /// 拖动排序依赖稳定且唯一的 item key：新建收藏一定带 `id`，历史数据可能只有
+  /// path，因此用 path + isRemote 兜底（同一路径可以本地/远程各存一条）。
+  ValueKey<String> _favoriteItemKey(Map<String, dynamic> fav) =>
+      ValueKey<String>(
+        'fav_${fav['id'] ?? '${fav['path']}_${fav['isRemote']}'}',
+      );
 
   Widget _buildFavoriteItem(
     BuildContext context, {
@@ -204,17 +229,20 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
     final isRemote = fav['isRemote'] == true;
     final theme = Theme.of(context);
     return Padding(
+      key: _favoriteItemKey(fav),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: Row(
           children: [
-            // 主内容：点击打开收藏，长按弹出「编辑 / 删除」菜单
+            // 主内容：点击打开收藏。
+            // ⚠️ 长按不再弹菜单——长按已交给 ReorderableListView 用作拖动排序的
+            // 起手手势（同时挂 onLongPress 会与拖拽抢夺手势，表现为「按住就弹菜单，
+            // 拖不动」）。编辑 / 删除从右侧三点按钮进入，功能不减。
             Expanded(
               child: InkWell(
                 onTap: onTap,
-                onLongPress: () => _showItemMenu(context, fav),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -417,7 +445,51 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
         ),
       ),
       childrenPadding: const EdgeInsets.only(bottom: 4),
-      children: favs.map((fav) {
+      children: [
+        // 只有一项时拖动没有意义，直接渲染，省掉一层 reorder view。
+        if (favs.length < 2)
+          for (final fav in favs)
+            _buildFavoriteItem(
+              context,
+              fav: fav,
+              onTap: () {
+                Navigator.pop(context);
+                _openFavorite(fav, context);
+              },
+            )
+        else
+          _buildReorderableGroup(context, key, favs),
+      ],
+    );
+  }
+
+  /// 分组内的可拖动收藏列表。
+  ///
+  /// ⚠️ 在「底部面板 → SingleChildScrollView → ExpansionTile」这条链路里，
+  /// 以下三处必须照写，否则不是崩就是滚不动：
+  ///   1. `shrinkWrap + NeverScrollableScrollPhysics`：本列表不自滚、高度按内容
+  ///      撑开，滚动统一交给外层 ScrollView（否则两层都能滚，手势互相抢）；
+  ///   2. `primary: false`：shrinkWrap 的滚动视图不显式关 primary 会去绑定主滚动
+  ///      控制器，和外层冲突；
+  ///   3. item key 必须稳定且跟随条目（见 [_favoriteItemKey]），否则重排动画
+  ///      会把行认错。
+  Widget _buildReorderableGroup(
+    BuildContext context,
+    String groupKey,
+    List<Map<String, dynamic>> favs,
+  ) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: favs.length,
+      // onReorderItem（而非已废弃的 onReorder）：回调给的 newIndex 已按「先移除
+      // 再插入」换算好，原样交给 provider，不要在 UI 侧再补 -1。
+      onReorderItem: (oldIndex, newIndex) =>
+          widget.provider.reorderFavoriteInGroup(groupKey, oldIndex, newIndex),
+      itemBuilder: (context, index) {
+        final fav = favs[index];
         return _buildFavoriteItem(
           context,
           fav: fav,
@@ -426,7 +498,7 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
             _openFavorite(fav, context);
           },
         );
-      }).toList(),
+      },
     );
   }
 

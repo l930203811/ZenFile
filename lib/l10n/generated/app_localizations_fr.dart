@@ -751,6 +751,14 @@ class L10nFr extends L10n {
       'Balayez vers le haut depuis le bas de l’écran pour ouvrir les favoris';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'Appuyez longuement sur un élément pour le faire glisser et le réordonner';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'Appuyez longuement sur une carte pour la faire glisser et la réordonner';
+
+  @override
   String get ui_new_favorite => 'Ajouter aux favoris';
 
   @override
@@ -3312,6 +3320,9 @@ class L10nFr extends L10n {
   String get ui_dual_window => 'Fenêtre double';
 
   @override
+  String get ui_swap_panes => 'Inverser les volets';
+
+  @override
   String get ui_filter_by_category => 'Filtrer par catégorie';
 
   @override
@@ -4380,11 +4391,11 @@ class L10nFr extends L10n {
       'Les caractères apparaissent un à un avec curseur clignotant, sans lueur ni zoom';
 
   @override
-  String get lyric_style_immersive => 'Scène immersive';
+  String get lyric_style_meteor => 'Chute de météores';
 
   @override
-  String get lyric_style_immersive_desc =>
-      'Typographie surdimensionnée avec lueur cinématographique';
+  String get lyric_style_meteor_desc =>
+      'Toute la ligne s\'allume d\'abord, puis chaque mot chanté tombe avec une traînée de météore';
 
   @override
   String get ui_no_lyrics_found => 'Aucune parole trouvée';
@@ -8777,11 +8788,46 @@ class L10nFr extends L10n {
       'Les mots chantés éclatent en fragments creux qui dérivent lentement';
 
   @override
+  String get lyric_style_drop => 'Chute gravitaire';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'Les caractères chantés tombent d\'en haut et s\'écrasent en place avec un anneau de lumière ; les autres attendent au-dessus';
+
+  @override
+  String get lyric_style_burst => 'Jet latéral';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'Les caractères jaillissent alternativement de gauche et de droite, avec traînée et rebond ; celui qui est chanté projette des rayons';
+
+  @override
+  String get lyric_style_cube => 'Rotation 3D';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'Chaque caractère entre en tournant sur son axe vertical avec épaisseur et ombre ; celui qui est chanté continue de tourner';
+
+  @override
+  String get lyric_style_punch => 'Impact';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'Le caractère chanté passe de deux fois sa taille à sa place en jaillissant, avec ondes de choc et lignes de vitesse';
+
+  @override
+  String get lyric_style_wave => 'Ondulation';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'Les caractères ondulent, et leur reflet miroir se dissipe en dessous';
+
+  @override
   String get lyric_style_mixed => 'Mixte';
 
   @override
   String get lyric_style_mixed_desc =>
-      'Affiche seulement la ligne actuelle centrée ; chaque ligne a un style et une entrée aléatoires';
+      'Seule la ligne chantée s\'affiche ; chaque ligne reçoit au hasard un style complet parmi dix';
 
   @override
   String get lyric_color_settings => 'Couleurs des paroles';

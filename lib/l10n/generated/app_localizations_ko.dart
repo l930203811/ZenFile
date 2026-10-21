@@ -699,6 +699,12 @@ class L10nKo extends L10n {
   String get ui_favorites_swipe_hint => '화면 하단에서 위로 스와이프하여 즐겨찾기를 엽니다';
 
   @override
+  String get ui_favorites_reorder_hint => '항목을 길게 눌러 순서를 변경할 수 있습니다';
+
+  @override
+  String get ui_connection_reorder_hint => '카드를 길게 눌러 순서를 변경할 수 있습니다';
+
+  @override
   String get ui_new_favorite => '즐겨찾기에 추가';
 
   @override
@@ -3146,6 +3152,9 @@ class L10nKo extends L10n {
   String get ui_dual_window => '이중 창';
 
   @override
+  String get ui_swap_panes => '좌우 창 바꾸기';
+
+  @override
   String get ui_filter_by_category => '카테고리별 필터';
 
   @override
@@ -4169,10 +4178,11 @@ class L10nKo extends L10n {
       '글자가 한 글자씩 타자되며 현재 글자에 깜빡이는 커서, 글로우·확대 없음';
 
   @override
-  String get lyric_style_immersive => '몰입 스테이지';
+  String get lyric_style_meteor => '유성 낙하';
 
   @override
-  String get lyric_style_immersive_desc => '초대형 타이포그래피와 시네마틱 글로우';
+  String get lyric_style_meteor_desc =>
+      '먼저 한 줄 전체가 밝아지고, 부른 글자가 유성 꼬리를 남기며 하나씩 떨어진다';
 
   @override
   String get ui_no_lyrics_found => '가사를 찾을 수 없습니다';
@@ -8379,11 +8389,45 @@ class L10nKo extends L10n {
   String get lyric_style_echo_desc => '채워지는 동안 불렀던 글자가 속이 빈 파편이 되어 떠다님';
 
   @override
+  String get lyric_style_drop => '중력 낙하';
+
+  @override
+  String get lyric_style_drop_desc =>
+      '불린 글자는 위에서 떨어져 자리를 잡고 광륜과 파편이 튀며, 아직 안 불린 글자는 위에서 기다립니다';
+
+  @override
+  String get lyric_style_burst => '좌우 버스트';
+
+  @override
+  String get lyric_style_burst_desc =>
+      '글자가 좌우에서 번갈아 빠르게 튀어 들어오며 잔상과 되튐이 생기고, 불린 글자는 빛줄기를 내뿜습니다';
+
+  @override
+  String get lyric_style_cube => '입체 스핀';
+
+  @override
+  String get lyric_style_cube_desc =>
+      '글자가 두께와 그림자를 지닌 채 세로축으로 회전하며 들어오고, 불린 글자는 계속 자전합니다';
+
+  @override
+  String get lyric_style_punch => '임팩트 버스트';
+
+  @override
+  String get lyric_style_punch_desc =>
+      '불린 글자가 두 배 크기에서 단번에 줄어 자리를 잡고 충격파 고리와 속도선이 터집니다';
+
+  @override
+  String get lyric_style_wave => '물결';
+
+  @override
+  String get lyric_style_wave_desc => '글자마다 위아래로 물결치고 아래에는 거울상 잔영이 흔들리며 사라집니다';
+
+  @override
   String get lyric_style_mixed => '혼합';
 
   @override
   String get lyric_style_mixed_desc =>
-      '현재 한 줄만 중앙에 표시, 줄마다 무작위 스타일과 등장 애니메이션 적용';
+      '부르고 있는 줄만 표시하며, 줄마다 열 가지 스타일 중 하나를 무작위로 적용합니다';
 
   @override
   String get lyric_color_settings => '가사 색상';

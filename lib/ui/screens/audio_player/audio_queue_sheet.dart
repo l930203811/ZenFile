@@ -47,7 +47,8 @@ class AudioQueueSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Playing Queue (${songs.length})',
+                  // 标题与播放控件上「播放队列」按钮同一词条，10 语言均已翻译。
+                  '${L10n.of(context).ui_playback_queue} (${songs.length})',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

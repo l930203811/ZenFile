@@ -752,6 +752,14 @@ class L10nEs extends L10n {
       'Desliza hacia arriba desde la parte inferior de la pantalla para abrir los favoritos';
 
   @override
+  String get ui_favorites_reorder_hint =>
+      'Mantén pulsado un elemento para arrastrarlo y reordenarlo';
+
+  @override
+  String get ui_connection_reorder_hint =>
+      'Mantén pulsada una tarjeta para arrastrarla y reordenarla';
+
+  @override
   String get ui_new_favorite => 'Agregar a favoritos';
 
   @override
@@ -3313,6 +3321,9 @@ class L10nEs extends L10n {
   String get ui_dual_window => 'Ventana doble';
 
   @override
+  String get ui_swap_panes => 'Intercambiar paneles';
+
+  @override
   String get ui_filter_by_category => 'Filtrar por categoría';
 
   @override
@@ -4381,11 +4392,11 @@ class L10nEs extends L10n {
       'Las letras aparecen una a una con cursor parpadeante, sin brillo ni zoom';
 
   @override
-  String get lyric_style_immersive => 'Escenario inmersivo';
+  String get lyric_style_meteor => 'Lluvia de meteoros';
 
   @override
-  String get lyric_style_immersive_desc =>
-      'Tipografía gigante con brillo cinematográfico';
+  String get lyric_style_meteor_desc =>
+      'Toda la línea se enciende primero y cada palabra cantada cae con estela de meteoro';
 
   @override
   String get ui_no_lyrics_found => 'No se encontró letra';
@@ -8758,11 +8769,46 @@ class L10nEs extends L10n {
       'Las palabras cantadas estallan en fragmentos huecos que derivan lentamente';
 
   @override
+  String get lyric_style_drop => 'Caída';
+
+  @override
+  String get lyric_style_drop_desc =>
+      'Los caracteres cantados caen desde arriba y se clavan en su sitio con un anillo de luz; los demás esperan arriba';
+
+  @override
+  String get lyric_style_burst => 'Estallido lateral';
+
+  @override
+  String get lyric_style_burst_desc =>
+      'Los caracteres entran alternando izquierda y derecha con estelas y rebote; el cantado lanza rayos';
+
+  @override
+  String get lyric_style_cube => 'Giro 3D';
+
+  @override
+  String get lyric_style_cube_desc =>
+      'Cada carácter entra girando sobre su eje vertical con grosor y sombra; el cantado sigue girando';
+
+  @override
+  String get lyric_style_punch => 'Impacto';
+
+  @override
+  String get lyric_style_punch_desc =>
+      'El carácter cantado pasa de doble tamaño a su sitio de golpe, con ondas de choque y líneas de velocidad';
+
+  @override
+  String get lyric_style_wave => 'Ondulante';
+
+  @override
+  String get lyric_style_wave_desc =>
+      'Los caracteres ondulan y su reflejo se desvanece debajo';
+
+  @override
   String get lyric_style_mixed => 'Mixto';
 
   @override
   String get lyric_style_mixed_desc =>
-      'Solo la línea actual centrada; cada verso tiene estilo y entrada aleatorios';
+      'Solo se muestra el verso que suena; cada verso recibe al azar un estilo completo de diez disponibles';
 
   @override
   String get lyric_color_settings => 'Colores de la letra';

@@ -668,8 +668,12 @@ class FileActionSheet {
     bool isEncrypted = false,
     bool isPinned = false,
   }) {
+    // zip 内条目（zip:// 虚拟路径）：v2 写能力上线后「压缩」失去意义
+    // （嵌套压缩会生成幽灵包），替换为「解压当前条目」到 zip 所在真实目录；
+    // 顶部 isArchive 的解压项与替换后的解压项重复，一并隐藏。
+    final isZipEntry = filePath?.startsWith('zip://') ?? false;
     final items = <ActionItem>[
-      if (isArchive)
+      if (isArchive && !isZipEntry)
         ActionItem(
           icon: Broken.archive,
           label: L10n.of(context).ui_extract,
@@ -717,11 +721,18 @@ class FileActionSheet {
           label: L10n.of(context).msg2a4cfb07,
           onTap: () => onAction('open_with'),
         ),
-      ActionItem(
-        icon: Broken.box_add,
-        label: L10n.of(context).ui_compress,
-        onTap: () => onAction('archive'),
-      ),
+      // 压缩包内条目：压缩 → 解压（extractZipEntriesToParent）；普通条目：压缩
+      isZipEntry
+          ? ActionItem(
+              icon: Broken.archive,
+              label: L10n.of(context).ui_extract,
+              onTap: () => onAction('extract'),
+            )
+          : ActionItem(
+              icon: Broken.box_add,
+              label: L10n.of(context).ui_compress,
+              onTap: () => onAction('archive'),
+            ),
       if (filePath != null)
         ActionItem(
           icon: isEncrypted ? Broken.unlock : Broken.lock,

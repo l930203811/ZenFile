@@ -180,26 +180,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             ShellNavigator.push(context, MaterialPageRoute(builder: (_) => const WebSharingScreen()));
                           },
                         ),
-                        ...connections.map((conn) {
-                          IconData iconData;
-                          if (FileManagerProvider.isSmbType(conn.type)) {
-                            iconData = Icons.dns_rounded;
-                          } else if (conn.type == 'FTP') {
-                            iconData = Icons.swap_horizontal_circle_rounded;
-                          } else if (conn.type == 'SFTP') {
-                            iconData = Icons.vpn_lock_rounded;
-                          } else if (conn.type == 'WebDav') {
-                            iconData = Icons.web_rounded;
-                          } else {
-                            iconData = Broken.wifi;
-                          }
-                          return _buildConnectionTile(
-                            context,
-                            conn: conn,
-                            icon: iconData,
-                            title: conn.name,
-                          );
-                        }),
+                        ..._buildConnectionTiles(context, connections),
                         _buildDrawerTile(
                           context,
                           icon: Icons.add_link_rounded,
@@ -407,7 +388,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v3.6.1',
+                'ZenFile v3.6.2',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -565,8 +546,96 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
     }
   }
 
+  IconData _iconForConnection(NetworkConnectionModel conn) {
+    if (FileManagerProvider.isSmbType(conn.type)) return Icons.dns_rounded;
+    if (conn.type == 'FTP') return Icons.swap_horizontal_circle_rounded;
+    if (conn.type == 'SFTP') return Icons.vpn_lock_rounded;
+    if (conn.type == 'WebDav') return Icons.web_rounded;
+    return Broken.wifi;
+  }
+
+  /// 拖动排序：先异步落盘（会立即反映到 [NetworkConnectionsService.getConnections]），
+  /// 再重绘抽屉。
+  ///
+  /// ⚠️ 抽屉展示的是**全量**连接（不像「网络」分类页过滤掉了下线网盘），所以这里
+  /// 可以直接按 id 重排全表；写回仍走
+  /// [NetworkConnectionsService.reorderConnections] 的槽位对齐。
+  /// ⚠️ 回调取 `onReorderItem`（非已废弃的 `onReorder`）：newIndex 框架已按「先
+  /// 移除再插入」换算过，**不能再 -1**，否则自下往上拖会偏一位。
+  Future<void> _onReorderDrawerConnections(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+    final list = NetworkConnectionsService.getConnections();
+    if (oldIndex < 0 || oldIndex >= list.length) return;
+    final moved = list.removeAt(oldIndex);
+    list.insert(newIndex.clamp(0, list.length), moved);
+    await NetworkConnectionsService.reorderConnections(list);
+    if (mounted) setState(() {});
+  }
+
+  /// 网络分区下的已保存连接列表：不足两条时拖动没有意义，直接平铺渲染。
+  List<Widget> _buildConnectionTiles(
+    BuildContext context,
+    List<NetworkConnectionModel> connections,
+  ) {
+    if (connections.length < 2) {
+      return [
+        for (final conn in connections)
+          _buildConnectionTile(
+            context,
+            conn: conn,
+            icon: _iconForConnection(conn),
+            title: conn.name,
+          ),
+      ];
+    }
+    return [_buildReorderableConnections(context, connections)];
+  }
+
+  /// ⚠️ 与收藏夹面板同理：嵌在「SingleChildScrollView → ExpansionTile」里，以下
+  /// 三处必须照写，否则不是崩就是滚不动：
+  ///   1. `shrinkWrap + NeverScrollableScrollPhysics`：本列表不自滚、高度按内容撑
+  ///      开，滚动统一交给抽屉外层（两层都能滚会互抢手势）；
+  ///   2. `primary: false`：shrinkWrap 的滚动视图不显式关 primary 会去绑主滚动控
+  ///      制器，与外层冲突；
+  ///   3. item key 跟随条目自身（见 [ValueKey]），否则重排动画会把行认错。
+  Widget _buildReorderableConnections(
+    BuildContext context,
+    List<NetworkConnectionModel> connections,
+  ) {
+    final theme = Theme.of(context);
+    final hintColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: connections.length,
+      onReorderItem: _onReorderDrawerConnections,
+      // 抽屉里没有第二条嵌入任何拖动按钮的空间，用一行小字告诉用户入口在哪。
+      // （header 不参与重排，只是列表首部的普通 widget。）
+      header: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 0, 8, 2),
+        child: Text(
+          L10n.of(context).ui_connection_reorder_hint,
+          style: TextStyle(fontSize: 11, color: hintColor),
+        ),
+      ),
+      itemBuilder: (context, index) {
+        final conn = connections[index];
+        return _buildConnectionTile(
+          context,
+          tileKey: ValueKey<String>('drawer_conn_${conn.id}'),
+          conn: conn,
+          icon: _iconForConnection(conn),
+          title: conn.name,
+        );
+      },
+    );
+  }
+
   Widget _buildConnectionTile(
     BuildContext context, {
+    Key? tileKey,
     required NetworkConnectionModel conn,
     required IconData icon,
     required String title,
@@ -631,6 +700,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
     }
 
     return LiquidPressable(
+      key: tileKey,
       pressScale: 1.03,
       child: Padding(
       padding: const EdgeInsets.only(left: 12.0, right: 4.0, top: 2.0, bottom: 2.0),
@@ -663,7 +733,9 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
               }
             }
           },
-          onLongPress: showOptionsSheet,
+          // ⚠️ 整条的长按不再弹菜单——长按已交给外层 ReorderableListView 作为
+          // 拖动起手（同时挂 onLongPress 会与拖拽抢手势，表现为「按住就弹菜单、
+          // 拖不动」）。编辑 / 删除从右侧三点按钮进入，功能不减。
           borderRadius: BorderRadius.circular(16),
           splashColor: theme.colorScheme.primary.withValues(alpha: 0.15),
           highlightColor: theme.colorScheme.primary.withValues(alpha: 0.08),

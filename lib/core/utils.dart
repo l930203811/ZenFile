@@ -117,6 +117,66 @@ class FileUtils {
         lower.endsWith('.001');
   }
 
+  // ── zip:// 虚拟路径（压缩包内浏览）──────────────────────────────────
+  //
+  // 格式：`zip://{zip绝对路径}|{internalDir}`。
+  // internalDir 归一化：无前导 `/`、以 `/` 结尾；压缩包根 = 空字符串
+  //（即 `zip:///a/b.zip|`）。取**第一个** `|` 分割——与 cryptremote:// 用
+  // `|` 分隔连接 id 与服务端路径是同一权衡：压缩包绝对路径几乎不可能含 `|`，
+  // 而内部目录名理论上可含 `|`，必须保证内部目录整体留在第二个段里。
+
+  /// 构造 zip:// 虚拟路径。
+  ///
+  /// [internalDir] 允许传任意形态（带/不带前导与尾随 `/`），统一归一化；
+  /// 压缩包根传空串。
+  static String buildZipVirtualPath(String zipPath, String internalDir) {
+    var dir = internalDir.replaceAll('\\', '/');
+    while (dir.startsWith('/')) {
+      dir = dir.substring(1);
+    }
+    if (dir.isNotEmpty && !dir.endsWith('/')) {
+      dir = '$dir/';
+    }
+    return 'zip://$zipPath|$dir';
+  }
+
+  /// 解析 zip:// 虚拟路径，返回 `(zipPath, internalDir)`（internalDir 已归一化）。
+  ///
+  /// 容错：路径里没有 `|` 时（如对 `zip:///a/b.zip` 做 p.dirname 的产物），
+  /// 视为压缩包根，整个尾部当 zipPath。调用方无需再判空。
+  static (String, String) parseZipVirtualPath(String virtualPath) {
+    final rest = virtualPath.substring('zip://'.length);
+    final sep = rest.indexOf('|');
+    if (sep < 0) return (rest, '');
+    final dir = rest.substring(sep + 1).replaceAll('\\', '/');
+    var normalized = dir;
+    while (normalized.startsWith('/')) {
+      normalized = normalized.substring(1);
+    }
+    if (normalized.isNotEmpty && !normalized.endsWith('/')) {
+      normalized = '$normalized/';
+    }
+    return (rest.substring(0, sep), normalized);
+  }
+
+  /// zip:// 虚拟路径条目的显示名：目录先去尾斜杠再取末段（`p.basename` 对
+  /// `zip://...|dir/` 会返回空串，重命名/对话框等 UI 需要真实名字）。
+  /// 非 zip:// 路径返回 null，调用方自行回退到 p.basename。
+  static String? zipEntryDisplayName(String virtualPath) {
+    if (!virtualPath.startsWith('zip://')) return null;
+    var name = virtualPath.endsWith('/')
+        ? virtualPath.substring(0, virtualPath.length - 1)
+        : virtualPath;
+    final sep = name.indexOf('|');
+    if (sep >= 0) name = name.substring(sep + 1);
+    if (name.isEmpty || name == '/') return null;
+    while (name.endsWith('/')) {
+      name = name.substring(0, name.length - 1);
+    }
+    final segments = name.split('/');
+    return segments.isEmpty ? null : segments.last;
+  }
+
   /// 返回压缩包格式的简短标签（大写），用于图标显示。
   /// 例如 .zip → "ZIP"，.7z → "7Z"，.tar.gz → "TAR.GZ"
   static String getArchiveTypeLabel(String path) {

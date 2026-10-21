@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.1';
+  static const String _latestChangelogVersion = 'v3.6.2';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v362,
     _v361,
     _v360,
     _v359,
@@ -949,7 +950,55 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.1 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.2 ────────────────────────────────────────────────
+  static const _Changelog _v362 = _Changelog(
+    version: 'v3.6.2',
+    date: '2026-10-21',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '压缩包内可以直接浏览和操作：点开压缩包即可看到里面的目录结构，并能直接删除、重命名、粘贴，或把条目解压到压缩包所在的上级目录；所有写操作都先重写一份临时副本再原子替换，中途失败不会损坏原来的压缩包',
+        '收藏夹支持长按拖动排序：在同一分组内长按收藏项即可上下拖动，松手后顺序自动保存',
+        '远程连接支持长按拖动排序：「网络」分类页与侧边抽屉里的已保存连接都能拖动调整顺序，两处排序保持同步',
+        '新增「流星坠落」歌词风格，替换原「沉浸巨幕」：整句歌词先完整亮起，每唱完一个字就带着流星尾迹向下坠走，唱过的字在原位留一道淡痕，继续跟读不会断',
+        '重做五种逐字歌词风格：重力坠落（砸落溅起光环与碎屑）、左右弹射（左右交替高速弹入带拖影）、立体旋入（字块带厚度绕竖轴旋入）、冲击爆字（两倍大猛缩到位并炸开冲击波）、波纹漂浮（逐字起伏带水面倒影）；「辉光扫过」改为「打字机」（逐字敲出、当前字右侧带闪动光标）',
+        '混合模式改为单句舞台：每句歌词随机获得一种完整风格，任意连续十句互不重复，真正做到一句一时一面',
+        '歌词动画风格改为下拉列表：点开是一次性展开的完整列表，选中后自动收起、只显示当前风格，不再占用整页高度',
+        '桌面歌词颜色改为跟随歌词配色：当前播放的字用「当前播放色」，其余用「未播放色」半透明，不再固定跟随主题色',
+      ]),
+      _ChangeSection('✨ 界面焕新', [
+        '双窗口模式新增「互换左右窗口」按钮：矩形、悬浮在左右两窗口正中，高度跟随窗口顶部状态条自动变高变矮，不再占用窗口宽度把左右窗口撑开',
+        '顶栏的单/双窗口切换图标改为与其它按钮同一套断线描边风格：单窗是方框，双窗是方框中间加一道竖线',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复半屏与全屏歌词下拖动波形快进或快退后，当前歌词不会自动回到屏幕正中的问题；流星坠落等大字号逐字风格偏移最明显，现已统一修正，手动翻动歌词后立刻快进也能正常回中',
+        '修复波形拖动被其它手势打断后进度条卡住、歌词不再跟随播放的问题',
+        '音频播放列表标题「Playing Queue」改为支持全部 10 种界面语言',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'You can now browse inside archives and act on their contents: open a zip to see its folder structure, then delete, rename, paste, or extract entries into the folder that holds the archive; every write rebuilds a temporary copy first and swaps it in atomically, so a failure never damages the original archive',
+        'Favorites can be reordered by long-pressing and dragging: drag items up or down within a group and the new order is saved automatically',
+        'Saved remote connections can be reordered by long-pressing and dragging, both on the Network category page and in the side drawer, and the order stays in sync between the two',
+        'Added the "Meteor fall" lyrics style in place of "Immersive screen": the whole line lights up first, then each character falls away with a meteor trail as soon as it has been sung, leaving a faint trace behind so the line stays readable',
+        'Reworked five character-by-character lyrics styles: Gravity drop (characters slam down, splashing rings and debris), Side burst (characters shoot in from left and right with motion trails), Cube spin (character blocks with thickness rotate in around a vertical axis), Impact punch (characters shrink down from double size and blast a shockwave ring) and Wave float (characters bob with a mirrored reflection); "Glow sweep" became "Typewriter" (characters typed out with a blinking cursor)',
+        'Mixed mode is now a single-line stage: each line randomly takes one complete style, and no style repeats across ten consecutive lines',
+        'The lyrics animation style is now a dropdown: it opens as a single list, collapses right after you pick a style, and shows only the current one instead of taking up a whole page',
+        'Desktop lyrics now follow the lyric color scheme: the current word uses the "current" color and the rest use the "unplayed" color at reduced opacity, instead of following the theme',
+      ]),
+      _ChangeSection('✨ Interface', [
+        'Dual-window mode has a new "Swap panes" button: a rectangle floating in the middle above both panes, growing taller or shorter with the pane top status band, and it no longer takes width away from the panes',
+        'The single/dual window toggle in the top bar now uses the same broken-line outline style as the other buttons: a square for single window and a square with a vertical divider for dual window',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed the current lyric not returning to the centre of the screen after seeking with the waveform in half-screen and full-screen modes; the offset was worst with the large-type motion styles such as Meteor fall, and seeking right after scrolling the lyrics by hand now recentres as well',
+        'Fixed the progress bar seizing up and the lyrics no longer following playback when a waveform drag was interrupted by another gesture',
+        'Localized the audio playback queue title ("Playing Queue") into all 10 UI languages',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.1 ──────────────────────────────────────────────────────────
   static const _Changelog _v361 = _Changelog(
     version: 'v3.6.1',
     date: '2026-10-21',

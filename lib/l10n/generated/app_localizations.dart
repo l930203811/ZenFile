@@ -1402,6 +1402,18 @@ abstract class L10n {
   /// **'从屏幕底部上滑即可打开收藏夹'**
   String get ui_favorites_swipe_hint;
 
+  /// ui\widgets\favorites_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按条目可拖动排序'**
+  String get ui_favorites_reorder_hint;
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按卡片可拖动排序'**
+  String get ui_connection_reorder_hint;
+
   /// directory_screen.dart
   ///
   /// In zh, this message translates to:
@@ -5962,6 +5974,12 @@ abstract class L10n {
   /// **'双窗口'**
   String get ui_dual_window;
 
+  /// No description provided for @ui_swap_panes.
+  ///
+  /// In zh, this message translates to:
+  /// **'互换左右窗口'**
+  String get ui_swap_panes;
+
   /// No description provided for @ui_filter_by_category.
   ///
   /// In zh, this message translates to:
@@ -7810,17 +7828,17 @@ abstract class L10n {
   /// **'逐字敲出，当前字右侧带闪烁光标，无辉光、不放大'**
   String get lyric_style_typewriter_desc;
 
-  /// No description provided for @lyric_style_immersive.
+  /// No description provided for @lyric_style_meteor.
   ///
   /// In zh, this message translates to:
-  /// **'沉浸巨幕'**
-  String get lyric_style_immersive;
+  /// **'流星坠落'**
+  String get lyric_style_meteor;
 
-  /// No description provided for @lyric_style_immersive_desc.
+  /// No description provided for @lyric_style_meteor_desc.
   ///
   /// In zh, this message translates to:
-  /// **'超大字级与电影感辉光'**
-  String get lyric_style_immersive_desc;
+  /// **'整句先亮起，唱过的字带流星尾迹逐字坠下'**
+  String get lyric_style_meteor_desc;
 
   /// No description provided for @ui_no_lyrics_found.
   ///
@@ -15346,6 +15364,66 @@ abstract class L10n {
   /// **'扫过填充的同时，唱过的字炸成空心碎片缓缓漂移'**
   String get lyric_style_echo_desc;
 
+  /// No description provided for @lyric_style_drop.
+  ///
+  /// In zh, this message translates to:
+  /// **'重力坠落'**
+  String get lyric_style_drop;
+
+  /// No description provided for @lyric_style_drop_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'唱到的字从高处砸落到位，落地溅起光环与碎屑，未唱的字悬着等位'**
+  String get lyric_style_drop_desc;
+
+  /// No description provided for @lyric_style_burst.
+  ///
+  /// In zh, this message translates to:
+  /// **'左右弹射'**
+  String get lyric_style_burst;
+
+  /// No description provided for @lyric_style_burst_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'字从左、右交替高速弹入，带拖影与过冲回弹，唱到的字炸出放射光线'**
+  String get lyric_style_burst_desc;
+
+  /// No description provided for @lyric_style_cube.
+  ///
+  /// In zh, this message translates to:
+  /// **'立体旋入'**
+  String get lyric_style_cube;
+
+  /// No description provided for @lyric_style_cube_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'每个字带厚度与投影绕竖轴旋入，唱到的字持续自转'**
+  String get lyric_style_cube_desc;
+
+  /// No description provided for @lyric_style_punch.
+  ///
+  /// In zh, this message translates to:
+  /// **'冲击爆字'**
+  String get lyric_style_punch;
+
+  /// No description provided for @lyric_style_punch_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'唱到的字从两倍大猛缩到位，炸开冲击波环与速度线'**
+  String get lyric_style_punch_desc;
+
+  /// No description provided for @lyric_style_wave.
+  ///
+  /// In zh, this message translates to:
+  /// **'波纹漂浮'**
+  String get lyric_style_wave;
+
+  /// No description provided for @lyric_style_wave_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'逐字上下起伏，行下方有镜像倒影随波淡出'**
+  String get lyric_style_wave_desc;
+
   /// No description provided for @lyric_style_mixed.
   ///
   /// In zh, this message translates to:
@@ -15355,7 +15433,7 @@ abstract class L10n {
   /// No description provided for @lyric_style_mixed_desc.
   ///
   /// In zh, this message translates to:
-  /// **'只呈现当前一句并居中，每句随机获得不同视觉风格与入场动效'**
+  /// **'只呈现当前正在唱的那一句，每句随机获得一种完整风格（十种风格可选），逐句不同'**
   String get lyric_style_mixed_desc;
 
   /// No description provided for @lyric_color_settings.

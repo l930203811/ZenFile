@@ -793,6 +793,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "Eintrag lange drücken, um ihn zu verschieben und neu zu sortieren",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "Karte lange drücken, um sie zu verschieben und neu zu sortieren",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3566,6 +3574,7 @@
   },
   "ui_single_window": "Einzelnes Fenster",
   "ui_dual_window": "Doppeltes Fenster",
+  "ui_swap_panes": "Fenster tauschen",
   "ui_filter_by_category": "Nach Kategorie filtern",
   "ui_all_files": "Alle",
   "ui_filter_others": "Sonstiges",
@@ -4164,8 +4173,8 @@
   "lyric_style_classic_desc": "Wortweises Wischen, Nachbarzeilen blenden nach Entfernung ab",
   "lyric_style_typewriter": "Schreibmaschine",
   "lyric_style_typewriter_desc": "Zeichen erscheinen nacheinander mit blinkendem Cursor, ohne Leuchten oder Zoom",
-  "lyric_style_immersive": "Immersive Bühne",
-  "lyric_style_immersive_desc": "Übergroße Typografie mit filmischem Leuchten",
+  "lyric_style_meteor": "Meteorenfall",
+  "lyric_style_meteor_desc": "Erst leuchtet die ganze Zeile auf, dann fällt jede gesungene Silbe mit Schweif nach unten",
   "ui_no_lyrics_found": "Kein Liedtext gefunden",
   "ui_lyrics_auto_load_hint": "Legen Sie die .lrc-Datei im selben Ordner wie die Audiodatei ab\n(mit dem gleichen Dateinamen) für automatisches Laden",
   "ui_lyrics_panel": "Liedtext-Panel",
@@ -8688,8 +8697,18 @@
   "lyric_style_pv_desc": "Riesige Zeile: fliegende Buchstaben, Partikelspuren und Funken",
   "lyric_style_echo": "Echo-Fragmente",
   "lyric_style_echo_desc": "Gesungene Wörter zerfallen in hohle Fragmente, die davontreiben",
+  "lyric_style_drop": "Schwerkraft-Fall",
+  "lyric_style_drop_desc": "Gesungene Zeichen stürzen von oben herab und schlagen mit Lichtring und Splittern auf; ungesungene warten oben",
+  "lyric_style_burst": "Seiten-Burst",
+  "lyric_style_burst_desc": "Zeichen schießen abwechselnd von links und rechts herein, mit Nachziehern und Überschwingen; das gesungene strahlt Linien ab",
+  "lyric_style_cube": "3D-Spin",
+  "lyric_style_cube_desc": "Jedes Zeichen dreht sich mit echter Dicke und Schatten um die Hochachse herein; das gesungene dreht sich weiter",
+  "lyric_style_punch": "Impact-Burst",
+  "lyric_style_punch_desc": "Das gesungene Zeichen schnellt von doppelter Größe auf seinen Platz und lässt Schockwellen und Speedlines explodieren",
+  "lyric_style_wave": "Wellengang",
+  "lyric_style_wave_desc": "Zeichen wogen auf und ab, darunter klingt ein Spiegelbild wellenförmig aus",
   "lyric_style_mixed": "Gemischt",
-  "lyric_style_mixed_desc": "Nur die aktuelle Zeile zentriert; jede Zeile erhält zufälligen Stil und Einstiegsanimation",
+  "lyric_style_mixed_desc": "Nur die gerade gesungene Zeile wird gezeigt; jede Zeile erhält zufällig einen vollständigen Stil aus zehn",
   "lyric_color_settings": "Textfarben",
   "lyric_color_unplayed": "Nicht gespielt",
   "lyric_color_unplayed_desc": "Noch nicht gesungene Zeilen",

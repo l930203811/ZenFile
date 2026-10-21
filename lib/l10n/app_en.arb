@@ -803,6 +803,14 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_favorites_reorder_hint": "Long-press an item to drag and reorder",
+  "@ui_favorites_reorder_hint": {
+    "description": "ui\\widgets\\favorites_sheet.dart"
+  },
+  "ui_connection_reorder_hint": "Long-press a card to drag and reorder",
+  "@ui_connection_reorder_hint": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
   },
@@ -3576,6 +3584,7 @@
   },
   "ui_single_window": "Single Window",
   "ui_dual_window": "Dual Window",
+  "ui_swap_panes": "Swap panes",
   "ui_filter_by_category": "Filter by Category",
   "ui_all_files": "All",
   "ui_filter_others": "Others",
@@ -4189,8 +4198,8 @@
   "lyric_style_classic_desc": "Word-by-word sweep, neighbors fade by distance",
   "lyric_style_typewriter": "Typewriter",
   "lyric_style_typewriter_desc": "Words type out one by one with a blinking cursor; no glow, no zoom",
-  "lyric_style_immersive": "Immersive stage",
-  "lyric_style_immersive_desc": "Oversized type with cinematic glow",
+  "lyric_style_meteor": "Meteor fall",
+  "lyric_style_meteor_desc": "The whole line lights up first, then each sung word drops away on a meteor trail",
   "ui_no_lyrics_found": "No lyrics found",
   "ui_lyrics_auto_load_hint": "Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load",
   "ui_lyrics_panel": "Lyrics panel",
@@ -8757,8 +8766,18 @@
   "lyric_style_pv_desc": "Giant single line with flying glyphs, particle trails and sparkles",
   "lyric_style_echo": "Echo fragments",
   "lyric_style_echo_desc": "Sung words burst into hollow fragments that drift away",
+  "lyric_style_drop": "Falling drop",
+  "lyric_style_drop_desc": "Sung characters drop from above and slam into place with a ring of sparks; unsung ones hang waiting",
+  "lyric_style_burst": "Side burst",
+  "lyric_style_burst_desc": "Characters shoot in from alternating sides with trails and overshoot; the sung one fires radiating rays",
+  "lyric_style_cube": "3D spin-in",
+  "lyric_style_cube_desc": "Characters spin in on their vertical axis with real thickness and shadow; the sung one keeps turning",
+  "lyric_style_punch": "Impact burst",
+  "lyric_style_punch_desc": "The sung character snaps from double size into place, blasting shockwave rings and speed lines",
+  "lyric_style_wave": "Floating wave",
+  "lyric_style_wave_desc": "Characters ripple up and down with a mirrored reflection fading below",
   "lyric_style_mixed": "Mixed",
-  "lyric_style_mixed_desc": "Shows only the current line centered; each line gets a random style and entrance animation",
+  "lyric_style_mixed_desc": "Only the line being sung is shown; each line randomly gets one complete style out of ten, changing line by line",
   "lyric_color_settings": "Lyric colors",
   "lyric_color_unplayed": "Not played",
   "lyric_color_unplayed_desc": "Lyrics not yet sung",

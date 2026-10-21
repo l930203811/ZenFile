@@ -699,6 +699,12 @@ class L10nJa extends L10n {
   String get ui_favorites_swipe_hint => '画面の下から上にスワイプして「お気に入り」を開けます';
 
   @override
+  String get ui_favorites_reorder_hint => '項目を長押しするとドラッグで並べ替えできます';
+
+  @override
+  String get ui_connection_reorder_hint => 'カードを長押しするとドラッグで並べ替えできます';
+
+  @override
   String get ui_new_favorite => 'お気に入りに追加';
 
   @override
@@ -3146,6 +3152,9 @@ class L10nJa extends L10n {
   String get ui_dual_window => '二画面';
 
   @override
+  String get ui_swap_panes => '左右のウィンドウを入れ替え';
+
+  @override
   String get ui_filter_by_category => 'カテゴリで絞り込み';
 
   @override
@@ -4166,10 +4175,10 @@ class L10nJa extends L10n {
   String get lyric_style_typewriter_desc => '一文字ずつ打ち出し、現在の文字に点滅カーソル、グローなし・拡大なし';
 
   @override
-  String get lyric_style_immersive => '没入ステージ';
+  String get lyric_style_meteor => '流星落下';
 
   @override
-  String get lyric_style_immersive_desc => '巨大な文字とシネマティックな輝き';
+  String get lyric_style_meteor_desc => 'まず一行全体が点灯し、歌い終えた字が流星の尾を引いて順に落ちていく';
 
   @override
   String get ui_no_lyrics_found => '歌詞が見つかりません';
@@ -8369,10 +8378,43 @@ class L10nJa extends L10n {
   String get lyric_style_echo_desc => '塗りつぶしと同時に、歌った文字が空心の欠片になって漂う';
 
   @override
+  String get lyric_style_drop => '重力落下';
+
+  @override
+  String get lyric_style_drop_desc =>
+      '歌い進む字は上から落ちてきて着地し、光の輪と破片が飛び散ります。未唱の字は上で待機します';
+
+  @override
+  String get lyric_style_burst => '左右バースト';
+
+  @override
+  String get lyric_style_burst_desc =>
+      '字が左右交互に高速で飛び込み、残像と行き過ぎの戻りを伴い、歌い始めた字は光線を放ちます';
+
+  @override
+  String get lyric_style_cube => '立体スピン';
+
+  @override
+  String get lyric_style_cube_desc => '字は厚みと影を伴って縦軸で回転しながら入り、歌っている字は回り続けます';
+
+  @override
+  String get lyric_style_punch => 'インパクトバースト';
+
+  @override
+  String get lyric_style_punch_desc =>
+      '歌い始めた字は二倍の大きさから一気に縮んで定位置に収まり、衝撃波の輪と速度線が炸裂します';
+
+  @override
+  String get lyric_style_wave => '波ゆらぎ';
+
+  @override
+  String get lyric_style_wave_desc => '一字ずつ上下に波打ち、行の下には鏡像の残像が揺れて消える';
+
+  @override
   String get lyric_style_mixed => 'ミックス';
 
   @override
-  String get lyric_style_mixed_desc => '現在の一句だけを中央表示、各句がランダムなスタイルと入場アニメーションを適用';
+  String get lyric_style_mixed_desc => '歌っている行だけを表示し、行ごとに10種のスタイルから1つを抽選して適用';
 
   @override
   String get lyric_color_settings => '歌詞の色';
