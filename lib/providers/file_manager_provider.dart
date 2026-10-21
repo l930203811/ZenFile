@@ -6749,7 +6749,14 @@ class FileManagerProvider extends ChangeNotifier {
     return FileItemModel(
       entity: isDirectory ? Directory('zip://$zipPath|$fullInternalPath') : File('zip://$zipPath|$fullInternalPath'),
       name: name,
-      path: FileUtils.buildZipVirtualPath(zipPath, fullInternalPath),
+      // ⚠️ 目录用 buildZipVirtualPath（补尾斜杠，写链路靠尾斜杠识别目录树）；
+      // 文件必须原样拼接**不带**尾斜杠 —— buildZipVirtualPath 会给任意非 `/` 结尾
+      // 的 internalDir 补 `/`，文件路径带上尾斜杠后，写链路（删除/解压/粘贴/
+      // 重命名）的 `path.endsWith('/')` 会把文件误判成目录：解压/粘贴收集子树为
+      // 空静默失败、重命名产出 `新名/` 目录条目。
+      path: isDirectory
+          ? FileUtils.buildZipVirtualPath(zipPath, fullInternalPath)
+          : 'zip://$zipPath|$fullInternalPath',
       isDirectory: isDirectory,
       size: size,
       modified: (lastModTime != null && lastModTime > 0)
@@ -7047,7 +7054,11 @@ class FileManagerProvider extends ChangeNotifier {
           fileEntries.add(entry);
         }
       }
-      if (fileEntries.isEmpty) return false;
+      if (fileEntries.isEmpty) {
+        // 正常不会到这（路径格式修复后文件/目录判定准确）；留日志便于诊断。
+        debugPrint('[ZenFile] 解压 zip 条目：未收集到可解压的文件条目 $virtualPaths');
+        return false;
+      }
 
       final map = await ArchiveService.extractEntriesToBytes(zipPath, fileEntries);
       for (final entry in map.entries) {

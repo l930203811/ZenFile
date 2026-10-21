@@ -523,11 +523,15 @@ class ActionItem {
   final String label;
   final VoidCallback onTap;
   final bool destructive;
+  /// false 时按钮置灰不可点（对当前条目不适用的动作，如 zip:// 条目的
+  /// 加密/收藏/分享等），避免用户点了没反应误以为是 bug。
+  final bool enabled;
   const ActionItem({
     required this.icon,
     required this.label,
     required this.onTap,
     this.destructive = false,
+    this.enabled = true,
   });
 }
 
@@ -615,18 +619,22 @@ class _ActionGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 置灰态：图标与文字降低不透明度，点击无响应（也不关闭面板）
+    final disabled = !item.enabled;
     final color = item.destructive
         ? theme.colorScheme.error
         : theme.colorScheme.primary;
     final labelColor = item.destructive
         ? theme.colorScheme.error
         : theme.colorScheme.onSurface;
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        Navigator.pop(context);
-        item.onTap();
-      },
+    return Opacity(
+      opacity: disabled ? 0.38 : 1.0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: disabled ? null : () {
+          Navigator.pop(context);
+          item.onTap();
+        },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -650,6 +658,7 @@ class _ActionGridTile extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 }
@@ -671,6 +680,11 @@ class FileActionSheet {
     // zip 内条目（zip:// 虚拟路径）：v2 写能力上线后「压缩」失去意义
     // （嵌套压缩会生成幽灵包），替换为「解压当前条目」到 zip 所在真实目录；
     // 顶部 isArchive 的解压项与替换后的解压项重复，一并隐藏。
+    //
+    // 已实现且可用的写动作：copy / cut / delete / rename / extract（走 zip 重写
+    // 链路）；其余动作（设为首页/在位置中显示/打开方式/加密/置顶/收藏/属性/分享）
+    // 只认真实文件系统路径，对 zip:// 虚拟路径均无效 —— 统一置灰不可点，
+    // 避免用户点击无反应误以为是 bug。
     final isZipEntry = filePath?.startsWith('zip://') ?? false;
     final items = <ActionItem>[
       if (isArchive && !isZipEntry)
@@ -708,18 +722,21 @@ class FileActionSheet {
               ? L10n.of(context).ui_cancel_set_as_home
               : L10n.of(context).ui_set_as_home,
           onTap: () => onAction(isCurrentHome ? 'clear_home' : 'set_as_home'),
+          enabled: !isZipEntry,
         ),
       if (showInLocation)
         ActionItem(
           icon: Broken.folder_open,
           label: L10n.of(context).msgcd8264f1,
           onTap: () => onAction('show_in_location'),
+          enabled: !isZipEntry,
         ),
       if (openWith)
         ActionItem(
           icon: Broken.eye,
           label: L10n.of(context).msg2a4cfb07,
           onTap: () => onAction('open_with'),
+          enabled: !isZipEntry,
         ),
       // 压缩包内条目：压缩 → 解压（extractZipEntriesToParent）；普通条目：压缩
       isZipEntry
@@ -740,6 +757,7 @@ class FileActionSheet {
               ? L10n.of(context).crypt_action_decrypt
               : L10n.of(context).vault_action_encrypt,
           onTap: () => onAction(isEncrypted ? 'decrypt' : 'encrypt'),
+          enabled: !isZipEntry,
         ),
       ActionItem(
         icon: Icons.push_pin,
@@ -747,22 +765,26 @@ class FileActionSheet {
             ? L10n.of(context).ui_unpin
             : L10n.of(context).ui_pin_to_top,
         onTap: () => onAction(isPinned ? 'unpin' : 'pin_to_top'),
+        enabled: !isZipEntry,
       ),
       ActionItem(
         icon: Broken.folder_favorite,
         label: L10n.of(context).ui_favorite,
         onTap: () => onAction('favorite'),
+        enabled: !isZipEntry,
       ),
       ActionItem(
         icon: Broken.info_circle,
         label: L10n.of(context).ui_properties,
         onTap: () => onAction('properties'),
+        enabled: !isZipEntry,
       ),
       if (showShare)
         ActionItem(
           icon: Icons.share_outlined,
           label: L10n.of(context).ui_share,
           onTap: () => onAction('share'),
+          enabled: !isZipEntry,
         ),
     ];
     return ActionGridSheet.show(

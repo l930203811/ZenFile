@@ -1422,66 +1422,72 @@ class ArchiveService {
       ..sort((a, b) => b.key.length.compareTo(a.key.length));
     final addEntries = (args['addEntries'] as Map).cast<String, Uint8List?>();
 
+    // 输入流必须**存活到编码结束**：archive 包 ZipDecoder.decodeBuffer 生成的
+    // ArchiveFile 内容是共享 FileBuffer 的惰性窗口（ZipFile.readBytes 返回
+    // InputFileStream.clone，仅预读首页），并非全量内存化。若在 ZipEncoder.encode
+    // 之前 closeSync，FileBuffer 被关闭（_fileSize=0 且句柄失效），编码阶段读
+    // content 时对已关闭句柄 _readBuffer/readInto 必然抛异常 —— 表现为重写任务
+    // 恒失败，zip 内删除/改名/粘贴全部「静默无效果」。因此 closeSync 放 finally，
+    // 保证编码与写盘完成后才释放。
     try {
       final srcFile = File(archivePath);
       if (!srcFile.existsSync() || srcFile.lengthSync() == 0) return false;
 
-      // 1) 解码原包（decodeBuffer 会把各条目数据读进内存，流可安全关闭）
+      // 1) 解码原包（条目内容为惰性窗口，编码期间仍需从输入流读取）
       final input = InputFileStream(archivePath);
-      final Archive oldArchive;
       try {
-        oldArchive = ZipDecoder().decodeBuffer(input);
+        final oldArchive = ZipDecoder().decodeBuffer(input);
+
+        // 2) 构建新条目集：旧条目（过滤/改名）+ 追加条目（从 bytes 构造）
+        final out = Archive();
+        for (int i = 0; i < oldArchive.length; i++) {
+          final f = oldArchive[i];
+          final name = _normalizeForMatch(f.name);
+          if (name.isEmpty) continue;
+          if (_zipDeleteMatches(name, deletePaths)) continue;
+          final newName = _zipApplyRename(name, sortedRenames);
+          if (newName == null || newName.isEmpty) continue;
+          if (newName == name) {
+            // 未改名：原条目直接搬入（编码时经仍打开的输入流按需读取）
+            out.addFile(f);
+          } else {
+            // 改名：ArchiveFile.name 只能构造时指定，须从 bytes 重建（保留修改时间）
+            final content = f.content;
+            final bytes = content is Uint8List
+                ? content
+                : content is List<int> ? Uint8List.fromList(content) : Uint8List(0);
+            final nf = ArchiveFile(newName, bytes.length, bytes);
+            nf.isFile = f.isFile;
+            if (f.lastModTime != null && f.lastModTime! > 0) nf.lastModTime = f.lastModTime;
+            out.addFile(nf);
+          }
+        }
+        for (final e in addEntries.entries) {
+          final name = _normalizeForMatch(e.key);
+          if (name.isEmpty) continue;
+          final bytes = e.value;
+          if (bytes == null) {
+            // 空目录条目（与 _encodeArchiveTask 的空目录构造方式一致）
+            final dirName = name.endsWith('/') ? name : '$name/';
+            final af = ArchiveFile(dirName, 0, null);
+            af.isFile = false;
+            out.addFile(af);
+          } else {
+            final af = ArchiveFile(name, bytes.length, bytes);
+            out.addFile(af);
+          }
+        }
+
+        // 3) 编码并写临时文件（level 6 与创建压缩包的默认档一致）
+        final encoded = ZipEncoder().encode(out, level: 6);
+        if (encoded == null || encoded.isEmpty) return false;
+        File(tempOutputPath)
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(encoded is Uint8List ? encoded : Uint8List.fromList(encoded));
+        return true;
       } finally {
         try { input.closeSync(); } catch (_) {}
       }
-
-      // 2) 构建新条目集：旧条目（过滤/改名）+ 追加条目（从 bytes 构造）
-      final out = Archive();
-      for (int i = 0; i < oldArchive.length; i++) {
-        final f = oldArchive[i];
-        final name = _normalizeForMatch(f.name);
-        if (name.isEmpty) continue;
-        if (_zipDeleteMatches(name, deletePaths)) continue;
-        final newName = _zipApplyRename(name, sortedRenames);
-        if (newName == null || newName.isEmpty) continue;
-        if (newName == name) {
-          // 未改名：原条目直接搬入（content 已内存化，编码时按需读取）
-          out.addFile(f);
-        } else {
-          // 改名：ArchiveFile.name 只能构造时指定，须从 bytes 重建（保留修改时间）
-          final content = f.content;
-          final bytes = content is Uint8List
-              ? content
-              : content is List<int> ? Uint8List.fromList(content) : Uint8List(0);
-          final nf = ArchiveFile(newName, bytes.length, bytes);
-          nf.isFile = f.isFile;
-          if (f.lastModTime != null && f.lastModTime! > 0) nf.lastModTime = f.lastModTime;
-          out.addFile(nf);
-        }
-      }
-      for (final e in addEntries.entries) {
-        final name = _normalizeForMatch(e.key);
-        if (name.isEmpty) continue;
-        final bytes = e.value;
-        if (bytes == null) {
-          // 空目录条目（与 _encodeArchiveTask 的空目录构造方式一致）
-          final dirName = name.endsWith('/') ? name : '$name/';
-          final af = ArchiveFile(dirName, 0, null);
-          af.isFile = false;
-          out.addFile(af);
-        } else {
-          final af = ArchiveFile(name, bytes.length, bytes);
-          out.addFile(af);
-        }
-      }
-
-      // 3) 编码并写临时文件（level 6 与创建压缩包的默认档一致）
-      final encoded = ZipEncoder().encode(out, level: 6);
-      if (encoded == null || encoded.isEmpty) return false;
-      File(tempOutputPath)
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(encoded is Uint8List ? encoded : Uint8List.fromList(encoded));
-      return true;
     } catch (e) {
       debugPrint('Error rewriting zip archive: $e');
       return false;
