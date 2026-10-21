@@ -1745,6 +1745,33 @@ class FileManagerProvider extends ChangeNotifier {
     ensureTabContentLoaded(target);
   }
 
+  /// 双窗口：互换左右两个 pane 的内容，焦点跟随原内容（而非跟随位置）。
+  ///
+  /// - 多标签双窗口：交换 `_paneTabIndexes[0]/[1]` 的 pane→tab 映射；
+  /// - 普通双窗口：直接交换 `_tabs[0]/[1]` 两个标签页对象（左 pane 固定读
+  ///   tab0、右 pane 固定读 tab1，换对象即换内容）。
+  void swapPanes() {
+    if (!_enableSplitScreen || _tabs.length < 2) return;
+    // 焦点跟随原内容：交换后原焦点位置翻转到另一侧。
+    final flippedPane = _activePaneIndex == 0 ? 1 : 0;
+    if (isSplitMultiTabActive) {
+      final t = _paneTabIndexes[0];
+      _paneTabIndexes[0] = _paneTabIndexes[1];
+      _paneTabIndexes[1] = t;
+      _activePaneIndex = flippedPane;
+      _activeTabIndex = paneTabIndex(flippedPane);
+    } else {
+      final t = _tabs[0];
+      _tabs[0] = _tabs[1];
+      _tabs[1] = t;
+      _activePaneIndex = flippedPane;
+      _activeTabIndex = flippedPane;
+    }
+    clearSelection();
+    _persistTabs();
+    notifyListeners();
+  }
+
   /// 将标签页收敛到 [keep] 个：优先保留当前激活的标签页，其余从尾部丢弃。
   void _collapseTabsTo(int keep) {
     if (_tabs.length <= keep || keep <= 0) return;

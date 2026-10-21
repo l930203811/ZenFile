@@ -1639,6 +1639,30 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           child: Row(
                               children: [
                                 Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
+                                // 中缝：左右窗口互换按钮（顶部对齐各自标题栏）
+                                SizedBox(
+                                  width: 34,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 5),
+                                      child: IconButton(
+                                        onPressed: () => provider.swapPanes(),
+                                        icon: Icon(
+                                          Icons.swap_horiz,
+                                          size: 18,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        style: IconButton.styleFrom(
+                                          shape: const CircleBorder(),
+                                          backgroundColor: theme.colorScheme.primary
+                                              .withValues(alpha: 0.10),
+                                          fixedSize: const Size(30, 30),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
                               ],
                           ),
