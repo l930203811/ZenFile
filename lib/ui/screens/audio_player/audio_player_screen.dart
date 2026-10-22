@@ -23,6 +23,7 @@ import '../../../services/network_connections_service.dart';
 import '../../../services/audio_equalizer_service.dart';
 import '../../../services/mpv_audio_output_service.dart';
 import '../../../providers/file_manager_provider.dart';
+import '../../../providers/media_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
 import 'audio_waveform_widget.dart';
@@ -188,8 +189,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _songs = widget.allSongs ?? const <SongModel>[];
-    _currentIndex = _safeIndex(widget.initialIndex, _songs.length);
+    final q = _sameSourceQueue(
+      widget.allSongs ?? const <SongModel>[],
+      widget.initialIndex,
+      widget.isRemote || _isRemoteLike(widget.audioPath),
+    );
+    _songs = q.songs;
+    _currentIndex = q.index;
     _isBackgroundMode = PreferencesService.getAudioBackgroundPlay();
     _desktopLyricEnabled = PreferencesService.getDesktopLyricEnabled();
     _lyricStyle = LyricAnimationStyle.fromName(
@@ -266,8 +272,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         // 用户点的是另一首：队列以调用方传入的为准（未传则单曲页），
         // 让 _currentSong/_currentPath 指向新歌 —— 不能沿用后台旧队列，
         // 否则 _openTrack 解析到的仍是旧歌。
-        _songs = widget.allSongs ?? const <SongModel>[];
-        _currentIndex = _safeIndex(widget.initialIndex, _songs.length);
+        final q = _sameSourceQueue(
+          widget.allSongs ?? const <SongModel>[],
+          widget.initialIndex,
+          widget.isRemote || _isRemoteLike(widget.audioPath),
+        );
+        _songs = q.songs;
+        _currentIndex = q.index;
       } else {
         // ⚠️ 从通知栏进来时调用方**不传 allSongs**，必须用 handler 的快照补齐队列，
         // 否则播放列表是空的，切歌/下一首全乱（issue #34）。同样要早于随机序生成。
@@ -365,6 +376,37 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     return index >= len ? len - 1 : index;
   }
 
+  /// 路径是否属于「远程 / 流式」：`remote://` 虚拟路径，或建流得到的播放地址。
+  static bool _isRemoteLike(String path) =>
+      MediaProvider.isRemotePath(path) ||
+      path.startsWith('http://') ||
+      path.startsWith('https://');
+
+  /// 把队列收敛成与当前曲目**同源**的一批，并保住当前曲目下标。
+  ///
+  /// 为什么需要：调用方给的 `allSongs` 可能是并集列表（媒体类别页的
+  /// `MediaProvider.audios` 同时含本地扫描结果与自定义远程路径），直接整表当
+  /// 队列就会出现「播本地歌，播放队列里却混着远程音频」——远程项要另行建流才
+  /// 能播，混在本地队列里点一下就是「没反应 / 跳到别处」。
+  ///
+  /// ⚠️ 过滤后下标会整体前移，所以必须**按当前曲目的路径重算**，不能沿用
+  /// 调用方给的下标。判定与调用方的路径形态不一致时（当前曲目被滤掉），退回
+  /// 原队列——宁可放过，绝不让播放列表变空。
+  ({List<SongModel> songs, int index}) _sameSourceQueue(
+    List<SongModel> src,
+    int index,
+    bool wantRemote,
+  ) {
+    if (src.isEmpty) return (songs: src, index: 0);
+    final safe = _safeIndex(index, src.length);
+    final current = src[safe].data;
+    final kept = src.where((s) => _isRemoteLike(s.data) == wantRemote).toList();
+    if (kept.isEmpty) return (songs: src, index: safe);
+    final i = kept.indexWhere((s) => s.data == current);
+    if (i < 0) return (songs: src, index: safe);
+    return (songs: kept, index: i);
+  }
+
   /// 复用后台播放会话时，用 handler 保存的**原始队列**校正本页的队列与当前下标。
   ///
   /// 只在「本页复用的正是 handler 当前那个 player」时调用：此时后台真正在播的队列就在
@@ -385,8 +427,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 当前播放项不在这个队列里（例如远程流的代理地址与队列项对不上）时不强行替换，
     // 保留调用方给的列表，避免把播放位置弄丢。
     if (idx < 0) return;
-    _songs = q;
-    _currentIndex = idx;
+    // 同样做一次同源收敛：这份快照可能来自「并集列表」时代的旧会话，直接采用会
+    // 把远程音频混回本地曲目的播放队列（见 [_sameSourceQueue]）。
+    final same = _sameSourceQueue(q, idx, _isRemoteLike(curId));
+    _songs = same.songs;
+    _currentIndex = same.index;
   }
 
   void _initListeners() {
@@ -1928,11 +1973,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           ),
         )
         .then((_) {
-          // 设置页可改桌面歌词开关 / 歌词偏移，返回后同步本地状态。
+          // 设置页可改桌面歌词开关 / 歌词偏移 / 动画风格，返回后同步本地状态。
           if (!mounted) return;
           setState(() {
             _desktopLyricEnabled =
                 PreferencesService.getDesktopLyricEnabled();
+            _lyricStyle = LyricAnimationStyle.fromName(
+                PreferencesService.getLyricAnimationStyleName());
           });
           _refreshLyricOffset();
           // 设置页还能改「三色」：桌面歌词正在显示时必须把新配色推给

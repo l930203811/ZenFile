@@ -4177,7 +4177,7 @@
   "lyric_style_typewriter": "Máquina de escribir",
   "lyric_style_typewriter_desc": "Las letras aparecen una a una con cursor parpadeante, sin brillo ni zoom",
   "lyric_style_meteor": "Lluvia de meteoros",
-  "lyric_style_meteor_desc": "Toda la línea se enciende primero y cada palabra cantada cae con estela de meteoro",
+  "lyric_style_meteor_desc": "Toda la línea se enciende primero y cada palabra cantada desciende girando despacio, apilándose en la parte inferior",
   "ui_no_lyrics_found": "No se encontró letra",
   "ui_lyrics_auto_load_hint": "Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente",
   "ui_lyrics_panel": "Panel de letras",

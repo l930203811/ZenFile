@@ -328,60 +328,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
-  /// 双窗口中缝的「左右窗口互换」按钮。
-  ///
-  /// ⚠️ 它必须**叠**在两个窗口之上（Stack + Positioned），不能在 Row 里占位：
-  /// 双窗口原本就是两个紧贴的 Expanded（间距 0），插一个定宽盒子会把窗口推开。
-  ///
-  /// 外观：**只有图标**——没有边框、没有底色、没有投影。中缝那点宽度本来就窄，
-  /// 画一个带框的扁矩形会像两个窗口之间多贴了一块补丁；去掉全部装饰后箭头直接
-  /// 压在中缝上，读起来就是「两个窗口之间的一条互换提示」。
-  ///
-  /// 高度仍与两个窗口顶部那条状态条对齐（PaneBrowser 里 16 / 28 两档，判据与
-  /// 那边保持一致），这样图标的垂直中心始终落在状态条中线上。
-  Widget _buildPaneSwapButton(FileManagerProvider provider, ThemeData theme) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: provider.progressMinimized,
-      builder: (ctx, progressMin, _) {
-        // PaneBrowser 的判据：有剪贴板 / 有后台进度 / 显示文件计数 ⇒ 28dp 高条，
-        // 否则 16dp。多选态下计数不显示，所以这里也要排除。
-        final bool tallBand =
-            provider.hasClipboard ||
-            progressMin ||
-            (provider.showFolderFileCount &&
-                provider.activeTab.selectedPaths.isEmpty);
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          // 无装饰，尺寸不再有视觉意义，只负责两件事：
-          // ①撑出一个可点热区（16dp 高的条上也要点得中）；
-          // ②跟随状态条高度变化，让图标垂直居中不漂移。
-          width: 44,
-          height: tallBand ? 28.0 : 16.0,
-          child: Tooltip(
-            message: L10n.of(context).ui_swap_panes,
-            waitDuration: const Duration(milliseconds: 500),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: provider.swapPanes,
-                borderRadius: BorderRadius.circular(4),
-                child: Center(
-                  child: Icon(
-                    // 断线风格图标，与顶栏其它按钮同一套字体。
-                    Broken.arrow_swap_horizontal,
-                    size: 15,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
 /// 构建顶部固定区域（标签页 + 路径面包屑）
   Widget _buildFixedTopArea(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
@@ -566,7 +512,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
   }
 
-  /// 浏览页操作栏：后退 / 前进 / 新建 / 复制标签页 / 向上
+  /// 浏览页操作栏：后退 / 前进 / 新建 / 互换左右窗口（双窗口）/ 向上
+  ///
+  /// 「复制标签页」已并入标签栏右侧加号的弹出菜单（见 [DirectoryTabBar]），
+  /// 腾出的槽位给了双窗口的「互换左右窗口」。
   ///
   /// 位置规则：显示在底部 4-tab 导航上方（bottomNavigationBar 区域），
   /// 由 [_buildCollapsibleBrowseActionBar] 包裹，随列表滚动自动折叠/展开。
@@ -653,12 +602,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
                         ],
                 ),
-                // 复制标签页
-                IconButton(
-                  icon: Icon(Broken.copy, color: theme.colorScheme.primary),
-                  tooltip: L10n.of(context).msg4e9c344a,
-                  onPressed: () => provider.duplicateActiveTab(),
-                ),
+                // 互换左右窗口：入口从双窗口中缝的悬浮按钮迁移到这里。
+                //
+                // 中缝那点宽度属于「两个窗口紧贴」本身，任何压在上面的按钮都会
+                // 遮住一点点状态条；这里只有双窗口且至少两个标签页时才有意义
+                //（与 provider.swapPanes 的守卫条件一致），单窗口直接不占位。
+                if (provider.enableSplitScreen && provider.tabs.length >= 2)
+                  IconButton(
+                    icon: Icon(
+                      Broken.arrow_swap_horizontal,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: L10n.of(context).ui_swap_panes,
+                    onPressed: provider.swapPanes,
+                  ),
                 // 向上（进入父目录，记录到历史栈）
                 IconButton(
                   icon: Icon(
@@ -1707,24 +1664,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             }
                             return false; // 继续冒泡，不影响其他监听者
                           },
-                          // ⚠️ 两个窗口必须紧贴（原本就是两个 Expanded，间距为 0）。
-                          // 互换按钮不能插进这个 Row —— 定宽 SizedBox 会凭空把左右
-                          // 窗口推开一条缝，所以改成 Stack 叠加、悬浮在中缝上方。
-                          child: Stack(
+                          // ⚠️ 两个窗口必须紧贴：这里只能是两个 Expanded，中间不能
+                          // 插任何定宽盒子（会把窗口推开一条缝）、也不能再叠东西
+                          // 压在状态条上。「互换左右窗口」的入口已迁到底部操作栏。
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
-                                  Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
-                                ],
-                              ),
-                              // top: 2 对齐 PaneBrowser 容器自身的 vertical margin。
-                              Positioned(
-                                top: 2,
-                                left: 0,
-                                right: 0,
-                                child: Center(child: _buildPaneSwapButton(provider, theme)),
-                              ),
+                              Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
+                              Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
                             ],
                           ),
                         )

@@ -4369,7 +4369,7 @@ class L10nDe extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      'Erst leuchtet die ganze Zeile auf, dann fällt jede gesungene Silbe mit Schweif nach unten';
+      'Erst leuchtet die ganze Zeile auf, dann sinkt jede gesungene Silbe langsam rotierend nach unten und stapelt sich am unteren Rand';
 
   @override
   String get ui_no_lyrics_found => 'Kein Liedtext gefunden';

@@ -167,8 +167,9 @@ class PreferencesService {
     await _prefs?.setBool(_keyRememberCategoryFilter, val);
   }
 
+  /// 列表与布局样式：文件夹 / 文件计数标题（默认开启）。
   static bool getShowFolderFileCount() {
-    return _prefs?.getBool(_keyShowFolderFileCount) ?? false;
+    return _prefs?.getBool(_keyShowFolderFileCount) ?? true;
   }
 
   static Future<void> saveShowFolderFileCount(bool val) async {

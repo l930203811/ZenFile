@@ -4145,7 +4145,7 @@ class L10nZh extends L10n {
   String get lyric_style_meteor => '流星坠落';
 
   @override
-  String get lyric_style_meteor_desc => '整句先亮起，唱过的字带流星尾迹逐字坠下';
+  String get lyric_style_meteor_desc => '整句先亮起，唱过的字缓慢旋转、飘向屏幕底部并随机堆叠';
 
   @override
   String get ui_no_lyrics_found => '未找到歌词';
@@ -12387,7 +12387,7 @@ class L10nZhTw extends L10nZh {
   String get lyric_style_meteor => '流星墜落';
 
   @override
-  String get lyric_style_meteor_desc => '整句先亮起，唱過的字帶流星尾跡逐字墜下';
+  String get lyric_style_meteor_desc => '整句先亮起，唱過的字緩慢旋轉、飄向螢幕底部並隨機堆疊';
 
   @override
   String get ui_no_lyrics_found => '未找到歌詞';

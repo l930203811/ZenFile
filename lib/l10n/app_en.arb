@@ -4199,7 +4199,7 @@
   "lyric_style_typewriter": "Typewriter",
   "lyric_style_typewriter_desc": "Words type out one by one with a blinking cursor; no glow, no zoom",
   "lyric_style_meteor": "Meteor fall",
-  "lyric_style_meteor_desc": "The whole line lights up first, then each sung word drops away on a meteor trail",
+  "lyric_style_meteor_desc": "The whole line lights up first, then each sung word drifts down slowly spinning and piles up at the bottom",
   "ui_no_lyrics_found": "No lyrics found",
   "ui_lyrics_auto_load_hint": "Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load",
   "ui_lyrics_panel": "Lyrics panel",

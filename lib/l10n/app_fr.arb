@@ -4177,7 +4177,7 @@
   "lyric_style_typewriter": "Machine à écrire",
   "lyric_style_typewriter_desc": "Les caractères apparaissent un à un avec curseur clignotant, sans lueur ni zoom",
   "lyric_style_meteor": "Chute de météores",
-  "lyric_style_meteor_desc": "Toute la ligne s'allume d'abord, puis chaque mot chanté tombe avec une traînée de météore",
+  "lyric_style_meteor_desc": "Toute la ligne s'allume d'abord, puis chaque mot chanté descend en tournant lentement et s'empile en bas",
   "ui_no_lyrics_found": "Aucune parole trouvée",
   "ui_lyrics_auto_load_hint": "Placez le fichier .lrc dans le même dossier que l'audio\n(avec le même nom de fichier) pour le charger automatiquement",
   "ui_lyrics_panel": "Panneau des paroles",

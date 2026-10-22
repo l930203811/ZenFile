@@ -4325,7 +4325,7 @@ class L10nEn extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      'The whole line lights up first, then each sung word drops away on a meteor trail';
+      'The whole line lights up first, then each sung word drifts down slowly spinning and piles up at the bottom';
 
   @override
   String get ui_no_lyrics_found => 'No lyrics found';

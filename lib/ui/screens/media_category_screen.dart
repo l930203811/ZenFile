@@ -6346,7 +6346,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     }
 
     final provider = context.read<MediaProvider>();
-    final audios = provider.audios;
+    // ⚠️ 不能直接把 `provider.audios` 整表当队列：它是**全盘并集**（本地扫描
+    // 结果 + 自定义路径里扫出来的远程服务器文件）。用一个本地路径去 resume 时，
+    // 队列里会混进远程音频 —— 用户反馈「播的是本地歌，播放队列里莫名出现远程
+    // 文件」。远程项要建流才能播，混在本地队列里点了就是「没反应 / 跳到别处」。
+    // 这里按「与当前曲目同侧」过滤：本地曲目只留本地项，远程曲目只留远程项。
+    final wantRemote = MediaProvider.isRemotePath(path);
+    final audios = provider.audios
+        .where((s) => MediaProvider.isRemotePath(s.data) == wantRemote)
+        .toList();
     final index = audios.indexWhere((s) => s.data == path);
 
     Navigator.push(

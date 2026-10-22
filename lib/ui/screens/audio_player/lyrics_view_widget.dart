@@ -25,6 +25,75 @@ const double _kSingleLineCanvasPad = 8.0;
 /// 的默认裁剪已在播放页 _buildSingleLineLyrics 一并放开）。
 const double _kSingleLineFxCross = 160.0;
 
+/// 流星坠落：一个字从格位飘到屏幕底部所需的时长（**歌曲秒**，不是墙钟秒）。
+///
+/// 比「坠落到行内就烧完」的旧版长得多——要一路飘到屏幕底部才落地，太快的
+/// 话看着还是「掉了一格」而不是「飘走了」。
+///
+/// ⚠️ 时基刻意用歌曲时间而不是墙钟：飘落进度 = `(当前进度 - 该字唱完时刻) /
+/// 时长`，于是暂停时进度不动 ⇒ 整片飘落的字一起静止（与本项目其它动效一致），
+/// 且播放/暂停/续播都不会出现位置跳变。
+const int _kMeteorFallMs = 2300;
+
+/// 流星坠落：底部堆叠区最多保留多少枚落字。
+///
+/// 落定的字被**烘焙**进一张 [ui.Picture]，每帧只回放一次，所以真正的开销
+/// 不在绘制而在「落定瞬间重录一遍」。这个上限只用于避免一首长歌把落字攒到
+/// 几百枚（画面底部早就糊成一片，再多也没有观感收益）。
+const int _kMeteorStackCap = 88;
+
+/// 流星坠落：底部堆叠的分列数（把落点分列，才像「一堆」而不是「一条」）。
+const int _kMeteorPileCols = 16;
+
+/// 流星坠落：每一列最多叠几层（轮转使用，见 [_LyricsViewWidgetState]）。
+const int _kMeteorPileLevels = 3;
+
+/// 流星坠落：落定后的缩放与透明度（比飞行中暗、小，读起来是「堆在底下」）。
+const double _kMeteorLandedScale = 0.82;
+const double _kMeteorLandedAlpha = 0.55;
+
+/// 流星坠落：视口矮于这个高度就不做「飘到屏幕底部 + 堆叠」。
+///
+/// 单行槽位只有 44dp，没有纵深可言，飘落会直接糊在封面上；此时退回旧版
+/// 「在行内坠一段就燃尽」的画法（见 [_MotionLinePainter._paintMeteor]）。
+const double _kMeteorMinViewport = 190.0;
+
+/// 流星坠落：每字的「离格时刻」（毫秒），即该字从格位飘出去的时刻。
+///
+/// 时基就是该字唱完的时刻（`endTime`）。时间线本身已经把行尾的句间静默切掉
+/// （见 [tailGapMsFor]），所以末字不会等到下一句开口才飘；这里只再夹一层
+/// 上限兜底，防止个别歌词（例如被手动补过的末行）仍把末字压在行尾。
+///
+/// ⚠️ 不要把整句「提前」：那会让扫过还没到末字、它就先飞走了（字还没唱到
+/// 就坠落）。提前只能由时间线的行尾留白负责，且量很小。
+///
+/// ⚠️ 行内绘制器必须用**同一份时刻表**交棒（见 [_MotionLinePainter] 的
+/// `meteorEscapeMs`）：否则行内还按 endTime 画着完整的字，飘落层已经又画了
+/// 一枚，同一个字一分为二。
+List<int> meteorEscapeMs(LyricLineTimeline tl) {
+  final n = tl.graphemes.length;
+  if (n == 0) return const [];
+  final endMs = tl.lineEnd.inMilliseconds;
+  final lineMs = endMs - tl.lineStart.inMilliseconds;
+  // 上限：整句必须在本句内散完，末字不能压到下一句开口。
+  final capMs = lineMs > 0 ? (endMs - tailGapMsFor(lineMs)).toDouble() : null;
+
+  final out = <int>[];
+  var prevMs = -double.infinity;
+  for (var i = 0; i < n; i++) {
+    final g = tl.graphemes[i];
+    final start = g.startTime.inMilliseconds.toDouble();
+    final end = g.endTime.inMilliseconds.toDouble();
+    var ms = (capMs == null) ? end : math.min(end, capMs);
+    // 不得早于本字开唱：逐字歌词的字时间是真实的，字还没开口就飘走很难看。
+    if (ms < start) ms = start;
+    if (ms <= prevMs) ms = prevMs + 1;
+    prevMs = ms;
+    out.add(ms.round());
+  }
+  return out;
+}
+
 /// 近临界阻尼弹簧曲线：位移从 0 平滑滑到 1，中段带一次极小回弹。
 /// 用于 ScrollController.animateTo，越界回弹由滚动物理处理。
 class _SpringCurve extends Curve {
@@ -307,6 +376,69 @@ class _EchoFragment {
   });
 }
 
+// ── 流星坠落：飘落层与底部堆叠 ──────────────────────────────────────────
+
+/// 一枚正在从格位飘向屏幕底部的字。
+///
+/// 起点是它在歌词行里的真实位置，终点是屏幕底部的堆叠位；中间不是直线：
+/// 横向有主漂移 + 叶片式摆动（收束到 0，保证正好落在堆叠位）、纵向有轻微
+/// 起伏，同时缓慢自转。所有随机量都在发射时一次性定死，之后只跟歌曲进度
+/// 走 ⇒ 暂停时整片飘落的字一起静止。
+class _MeteorLeaf {
+  final String char;
+  final double fromX;
+  final double fromY;
+  final double toX;
+  final double toY;
+
+  /// 横向摆幅 / 相位。
+  final double swayAmp;
+  final double swayPhase;
+
+  /// 纵向起伏幅 / 相位。
+  final double bobAmp;
+  final double bobPhase;
+
+  /// 起始角度与整段落差（弧度，可正可负）。
+  final double rotStart;
+  final double rotSpan;
+
+  /// 发射时刻（= 该字的 `endTime`，毫秒）。飘落进度由此刻起算。
+  final int spawnMs;
+
+  const _MeteorLeaf({
+    required this.char,
+    required this.fromX,
+    required this.fromY,
+    required this.toX,
+    required this.toY,
+    required this.swayAmp,
+    required this.swayPhase,
+    required this.bobAmp,
+    required this.bobPhase,
+    required this.rotStart,
+    required this.rotSpan,
+    required this.spawnMs,
+  });
+}
+
+/// 一枚已经落到屏幕底部、进入堆叠层的字（位置 / 角度 / 缩放全部冻结）。
+class _MeteorPiled {
+  final String char;
+  final double x;
+  final double y;
+  final double rot;
+  final double scale;
+
+  const _MeteorPiled({
+    required this.char,
+    required this.x,
+    required this.y,
+    required this.rot,
+    required this.scale,
+  });
+}
+
 class _LyricsViewWidgetState extends State<LyricsViewWidget>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
@@ -351,6 +483,51 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     rowGap: 8,
   );
   double _lastViewportH = 400;
+  double _lastViewportW = 300;
+
+  // ── 流星坠落：飘落层 + 底部堆叠 ──────────────────────────────────────
+  final List<_MeteorLeaf> _meteorLeaves = [];
+
+  /// 已落定、被烘焙进 [_meteorPicture] 的字（超出 [_kMeteorStackCap] 丢最旧）。
+  final List<_MeteorPiled> _meteorPiled = [];
+
+  /// 底部堆叠每列已落几枚（轮转取层，见 [_spawnMeteorLeaf]）。
+  final List<int> _meteorColHeights = List<int>.filled(_kMeteorPileCols, 0);
+
+  /// 每句已发射到第几个字：`行号 -> 已发射字数`。
+  final Map<int, int> _meteorLaunched = {};
+
+  /// 上一帧的当前行号：切句那一帧要回头把上一行的末字补发出去
+  /// （末字 `endTime` 恰好等于下一行起点，翻页后它就再也不是「当前行」了）。
+  int _meteorPrevLine = -1;
+
+  /// 末字屏幕坐标缓存（只留最近一个当前行）。
+  ///
+  /// 翻页补发时旧行可能已经拿不到 RenderBox（滚动出屏，或混合模式切到整句
+  /// 居中的 PV 舞台 ⇒ 列表项不再 build），此时用上一帧记下的末字位置兜底。
+  int _meteorTailLine = -1;
+  Offset? _meteorTailPos;
+
+  /// 每行的离格时刻表缓存（见 [meteorEscapeMs]）：行内绘制器与发射逻辑共用
+  /// 同一份，避免两处各算一遍导致时刻不一致。
+  final Map<int, List<int>> _meteorEscape = {};
+
+  /// 落定层的烘焙结果。
+  ui.Picture? _meteorPicture;
+  String _meteorPictureSig = '';
+
+  /// 落定层版本号：每落一枚 / 每清一次就 +1，用来判定要不要重录。
+  int _meteorPileVersion = 0;
+
+  /// 落字的单字 painter 缓存（按 字符|透明度桶）。
+  final Map<String, TextPainter> _meteorGlyphCache = {};
+  String _meteorGlyphSig = '';
+
+  /// 当前视口是否够高、可以做「飘到屏幕底部 + 堆叠」。
+  ///
+  /// 由 build 写入，行内绘制器据此决定「唱完的字是留在行内坠一段，还是直接
+  /// 交棒给飘落层」——两者必须同开同关，否则会出现字凭空消失。
+  bool _meteorEscapes = false;
 
   // ── PV 动画状态 ───────────────────────────────────────────────────────
   double _pvClock = 0;
@@ -540,6 +717,8 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       default:
         break;
     }
+    // 流星坠落：发射 / 飘落 / 落定堆叠（与上面几套动效互不干扰）。
+    _updateMeteor(pos);
     setState(() {});
   }
 
@@ -749,11 +928,12 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   /// PV 视图是"整句居中"的独立布局，闪点/径迹可用 measurement 直接推算；
   /// 融合模式走列表，字在滚动列表里的实际位置必须由 RenderBox 换算
   /// （与 ECHO 碎片同源），列表项尚未布局时返回 null。
-  Offset? _listGlyphCenter(_MeasuredLine measured, int i) {
-    if (_currentLineIndex < 0 || _currentLineIndex >= _itemKeys.length) {
+  Offset? _listGlyphCenter(_MeasuredLine measured, int i, {int? lineIndex}) {
+    final line = lineIndex ?? _currentLineIndex;
+    if (line < 0 || line >= _itemKeys.length) {
       return null;
     }
-    final ctx = _itemKeys[_currentLineIndex].currentContext;
+    final ctx = _itemKeys[line].currentContext;
     final box = ctx?.findRenderObject() as RenderBox?;
     final self = context.findRenderObject() as RenderBox?;
     if (box == null || self == null) return null;
@@ -937,6 +1117,395 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     return Offset(o.dx + _kHPadding + m.originX + b.x, top + h / 2);
   }
 
+  // ── 流星坠落：飘落 / 堆叠 ─────────────────────────────────────────────
+
+  /// 是否需要在视口上铺一层「飘落 + 底部堆叠」画布。
+  ///
+  /// 只有「流星坠落」和「混合模式」会用到；混合模式逐句抽风格，抽到流星的
+  /// 那几句才真正发射。铺层本身很轻（没东西时 paint 直接 return），所以按
+  /// 风格粗判即可，不必逐句判断。
+  bool get _meteorOverlayNeeded =>
+      widget.style == LyricAnimationStyle.meteor ||
+      widget.style == LyricAnimationStyle.mixed;
+
+  /// 发射「已经唱完」的字，并把飘到位的字落定进堆叠层。
+  ///
+  /// 时基与行内绘制器完全一致（同一份 [meteorEscapeMs]），差别只在落点：行内
+  /// 画布只有一行高、画不到屏幕底部，所以飘落全程由铺满视口的
+  /// [_MeteorLayerPainter] 接手，行内只留一层余痕
+  /// （见 [_MotionLinePainter._paintMeteor]）。
+  void _updateMeteor(Duration pos) {
+    final idx = _currentLineIndex;
+    final prev = _meteorPrevLine;
+    _meteorPrevLine = idx;
+    if (!_meteorEscapes) return;
+
+    // 切句那一帧：上一行已不再是「当前行」，剩下没发射的字（尤其末字）就
+    // 再也轮不到 [_launchMeteorLine] 了。这里回头补发一次，保证不会有字被
+    // 永远留在格位上（掉帧 / 跳播 / 末字时刻恰好压在行尾时都会用到）。
+    if (prev >= 0 && prev != idx) _flushMeteorLine(prev, pos);
+    if (idx < 0) return;
+    _launchMeteorLine(idx, pos);
+
+    if (_meteorLeaves.isEmpty) return;
+    final nowMs = pos.inMilliseconds;
+    var changed = false;
+    final flying = <_MeteorLeaf>[];
+    for (final leaf in _meteorLeaves) {
+      if (nowMs - leaf.spawnMs >= _kMeteorFallMs) {
+        _pileMeteorLeaf(leaf);
+        changed = true;
+      } else {
+        flying.add(leaf);
+      }
+    }
+    if (changed) {
+      _meteorLeaves
+        ..clear()
+        ..addAll(flying);
+    }
+  }
+
+  /// 第 [idx] 行的离格时刻表（缓存，整首歌内只算一次）。
+  List<int> _escapeMsFor(int idx) {
+    if (idx < 0 || idx >= _timelines.length) return const [];
+    final hit = _meteorEscape[idx];
+    if (hit != null) return hit;
+    final list = meteorEscapeMs(_timelines[idx]);
+    _meteorEscape[idx] = list;
+    return list;
+  }
+
+  /// 按离格时刻表发射第 [idx] 行中已经唱完的字，并记下末字坐标。
+  void _launchMeteorLine(int idx, Duration pos) {
+    if (idx < 0 || idx >= _timelines.length) return;
+    if (_styleForLine(idx) != LyricAnimationStyle.meteor) return;
+    final tl = _timelines[idx];
+    if (tl.isEmpty) return;
+
+    final escape = _escapeMsFor(idx);
+    final profile = _profileForStyle(
+      LyricAnimationStyle.meteor,
+      _lastViewportH,
+    );
+    final measured = _measureFor(
+      idx,
+      _lastMaxWidth,
+      tl,
+      _profileForLine(idx),
+      LyricAnimationStyle.meteor,
+    );
+    final nowMs = pos.inMilliseconds;
+    var launched = _meteorLaunched[idx] ?? 0;
+    for (var i = launched; i < tl.graphemes.length; i++) {
+      if (nowMs < escape[i]) break;
+      final c = _listGlyphCenter(measured, i, lineIndex: idx);
+      // 行还没布局出来就先不发射（下一帧再试），否则字会凭空消失。
+      if (c == null) break;
+      _spawnMeteorLeaf(tl.graphemes[i].char, c, profile, escape[i]);
+      launched = i + 1;
+    }
+    _meteorLaunched[idx] = launched;
+
+    // 记下末字的屏幕坐标：切句补发时旧行可能已经滚出屏幕 / 不再 build
+    // （混合模式切到整句居中的 PV 舞台），RenderBox 会拿不到。
+    final last = tl.graphemes.length - 1;
+    if (launched <= last) {
+      final c = _listGlyphCenter(measured, last, lineIndex: idx);
+      if (c != null) {
+        _meteorTailLine = idx;
+        _meteorTailPos = c;
+      }
+    }
+  }
+
+  /// 把第 [idx] 行剩下没发射的字一次性全发出去（切句 / 跳播时兜底）。
+  ///
+  /// 与 [_launchMeteorLine] 的差别：不看时刻表——这一行已经唱完了，剩下的字
+  /// 无论到没到点都要离格，否则它们会永远留在格位上。
+  void _flushMeteorLine(int idx, Duration pos) {
+    if (idx < 0 || idx >= _timelines.length) return;
+    if (_styleForLine(idx) != LyricAnimationStyle.meteor) return;
+    final tl = _timelines[idx];
+    if (tl.isEmpty) return;
+    var launched = _meteorLaunched[idx] ?? 0;
+    if (launched >= tl.graphemes.length) return;
+
+    final escape = _escapeMsFor(idx);
+    final profile = _profileForStyle(
+      LyricAnimationStyle.meteor,
+      _lastViewportH,
+    );
+    final measured = _measureFor(
+      idx,
+      _lastMaxWidth,
+      tl,
+      _profileForLine(idx),
+      LyricAnimationStyle.meteor,
+    );
+    final nowMs = pos.inMilliseconds;
+    for (var i = launched; i < tl.graphemes.length; i++) {
+      final last = i == tl.graphemes.length - 1;
+      final c =
+          _listGlyphCenter(measured, i, lineIndex: idx) ??
+          // 末字兜底用上一帧记下的位置（见 [_launchMeteorLine]）。
+          (last && _meteorTailLine == idx ? _meteorTailPos : null);
+      if (c == null) break;
+      _spawnMeteorLeaf(
+        tl.graphemes[i].char,
+        c,
+        profile,
+        math.max(nowMs, escape[i]),
+      );
+      launched = i + 1;
+    }
+    _meteorLaunched[idx] = launched;
+  }
+
+  /// 把一枚字发射成飘落的字。
+  ///
+  /// 落点是**屏幕底部**而不是行内：`fromY` 到 `toY` 跨越了整个剩余视口，
+  /// 所以它是「飘走」而不是「掉了一格」。横向漂移 + 摆动保证轨迹不是竖直线。
+  void _spawnMeteorLeaf(
+    String char,
+    Offset from,
+    _StyleProfile profile,
+    int spawnMs,
+  ) {
+    // 兜底：极端长句 / 快速跳播时不让飞行中的字无限堆积。
+    if (_meteorLeaves.length >= 64) return;
+    final fs = profile.fontSize;
+    final w = math.max(1.0, _lastViewportW);
+
+    // 落点 x：从起点往左右随机漂一段（不是垂直下落）。
+    final drift = (_rng.nextDouble() * 2 - 1) * fs * 1.6;
+    final toX = (from.dx + drift)
+        .clamp(fs * 0.6, math.max(fs * 0.6, w - fs * 0.6))
+        .toDouble();
+
+    // 落点 y：底部分列堆叠。列内轮转取层（而不是「填满就停」），这样任何
+    // 时候新字都有层可落，又不会无限往上堆；再加一点抖动，看着是散落的。
+    final step = fs * 0.62;
+    final col = ((toX / w) * _kMeteorPileCols)
+        .clamp(0.0, (_kMeteorPileCols - 1).toDouble())
+        .floor();
+    final level = _meteorColHeights[col] % _kMeteorPileLevels;
+    _meteorColHeights[col]++;
+    final toY =
+        _lastViewportH -
+        fs * 0.80 -
+        level * step +
+        (_rng.nextDouble() - 0.5) * step * 0.42;
+
+    // 缓慢自转：整段只转 0.28~0.70 圈，方向随机。
+    final turns = 0.28 + _rng.nextDouble() * 0.42;
+    final dir = _rng.nextBool() ? 1.0 : -1.0;
+
+    _meteorLeaves.add(
+      _MeteorLeaf(
+        char: char,
+        fromX: from.dx,
+        fromY: from.dy,
+        toX: toX,
+        toY: toY,
+        swayAmp: fs * (0.55 + _rng.nextDouble() * 0.85),
+        swayPhase: _rng.nextDouble() * math.pi * 2,
+        bobAmp: fs * (0.18 + _rng.nextDouble() * 0.22),
+        bobPhase: _rng.nextDouble() * math.pi * 2,
+        rotStart: (_rng.nextDouble() - 0.5) * 0.5,
+        rotSpan: turns * 2 * math.pi * dir,
+        spawnMs: spawnMs,
+      ),
+    );
+  }
+
+  /// 一枚字飘到头：冻结在落点，进入烘焙好的堆叠层。
+  void _pileMeteorLeaf(_MeteorLeaf leaf) {
+    _meteorPiled.add(
+      _MeteorPiled(
+        char: leaf.char,
+        x: leaf.toX,
+        y: leaf.toY,
+        rot: leaf.rotStart + leaf.rotSpan,
+        scale: _kMeteorLandedScale,
+      ),
+    );
+    if (_meteorPiled.length > _kMeteorStackCap) {
+      _meteorPiled.removeRange(0, _meteorPiled.length - _kMeteorStackCap);
+    }
+    _meteorPileVersion++;
+  }
+
+  /// 清空整套飘落 / 堆叠状态（换歌、换风格、快进快退时调用）。
+  void _resetMeteor() {
+    _meteorLeaves.clear();
+    _meteorPiled.clear();
+    _meteorLaunched.clear();
+    _meteorPrevLine = -1;
+    _meteorTailLine = -1;
+    _meteorTailPos = null;
+    _meteorEscape.clear();
+    for (var i = 0; i < _meteorColHeights.length; i++) {
+      _meteorColHeights[i] = 0;
+    }
+    _meteorPileVersion++;
+    _meteorPicture?.dispose();
+    _meteorPicture = null;
+    _meteorPictureSig = '';
+  }
+
+  /// 飘落层的绘制：先回放烘焙好的堆叠层，再画飞行中的字。
+  void _paintMeteorLayer(Canvas canvas, Size size) {
+    if (_meteorPiled.isEmpty && _meteorLeaves.isEmpty) return;
+    final pic = _meteorPictureFor(size);
+    if (pic != null) canvas.drawPicture(pic);
+    if (_meteorLeaves.isEmpty) return;
+    final fs = _profileForStyle(
+      LyricAnimationStyle.meteor,
+      _lastViewportH,
+    ).fontSize;
+    final nowMs = _lastRenderedPos.inMilliseconds;
+    for (final leaf in _meteorLeaves) {
+      _drawMeteorLeaf(canvas, leaf, fs, nowMs);
+    }
+  }
+
+  /// 落定的字整层烘焙成一张 [ui.Picture]。
+  ///
+  /// ⚠️ 这是本特效能跑在真机上的关键：落定的字**永不再动**，如果每帧把几十
+  /// 上百枚字逐个 `TextPainter.paint` 一遍，长歌到后半段必然掉帧。烘焙成
+  /// 一张图后每帧只有一次 `drawPicture` + 十几枚飞行中的字。
+  /// 只有「有新字落定 / 视口尺寸变了 / 配色变了」才重录一次。
+  ui.Picture? _meteorPictureFor(Size size) {
+    final sig =
+        '${size.width.toStringAsFixed(1)}x${size.height.toStringAsFixed(1)}'
+        '|$_meteorPileVersion|$_meteorGlyphSig';
+    if (sig == _meteorPictureSig && _meteorPicture != null) {
+      return _meteorPicture;
+    }
+    _meteorPictureSig = sig;
+    _meteorPicture?.dispose();
+    _meteorPicture = null;
+    if (_meteorPiled.isEmpty) return null;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, Offset.zero & size);
+    for (final p in _meteorPiled) {
+      _paintMeteorGlyph(
+        canvas,
+        p.char,
+        Offset(p.x, p.y),
+        p.rot,
+        p.scale,
+        _kMeteorLandedAlpha,
+      );
+    }
+    final pic = recorder.endRecording();
+    _meteorPicture = pic;
+    return pic;
+  }
+
+  /// 落字的单字 painter：按 字符 + 透明度桶 缓存（重录 / 飞行都要用）。
+  TextPainter _meteorGlyphPainter(String ch, double alpha) {
+    final profile = _profileForStyle(
+      LyricAnimationStyle.meteor,
+      _lastViewportH,
+    );
+    final sig =
+        '${profile.fontSize}|${profile.weight}|${_playedColor.toARGB32()}';
+    if (_meteorGlyphSig != sig) {
+      _meteorGlyphCache.clear();
+      _meteorGlyphSig = sig;
+    }
+    final bucket = _alphaBucket(alpha);
+    final key = '$ch|$bucket';
+    var tp = _meteorGlyphCache[key];
+    if (tp == null) {
+      tp = TextPainter(
+        text: TextSpan(
+          text: ch,
+          style: TextStyle(
+            fontSize: profile.fontSize,
+            fontWeight: profile.weight,
+            color: _playedColor.withValues(alpha: bucket),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      if (_meteorGlyphCache.length > 320) _meteorGlyphCache.clear();
+      _meteorGlyphCache[key] = tp;
+    }
+    return tp;
+  }
+
+  /// 画一枚字：以字心为锚点，可旋转 / 缩放。
+  void _paintMeteorGlyph(
+    Canvas canvas,
+    String ch,
+    Offset center,
+    double rot,
+    double scale,
+    double alpha,
+  ) {
+    final tp = _meteorGlyphPainter(ch, alpha);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    if (rot != 0) canvas.rotate(rot);
+    if (scale != 1.0) canvas.scale(scale, scale);
+    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+    canvas.restore();
+  }
+
+  /// 画一枚飞行中的字：主位移 + 横向摆动 + 纵向起伏 + 缓慢自转，起飞段
+  /// 还带一小截流星尾迹（飘远后淡掉）。
+  void _drawMeteorLeaf(Canvas canvas, _MeteorLeaf leaf, double fs, int nowMs) {
+    final t = ((nowMs - leaf.spawnMs) / _kMeteorFallMs).clamp(0.0, 1.0);
+    final ease = _easeOutCubic(t);
+    // 纵向：略带缓入的下落（飘落的轻盈感来自横向，纵向太陡会像坠石）。
+    final fall = math.pow(t, 1.18).toDouble();
+    // 起飞先被"托"起来一下（前 16% 行程上扬再回落）：这是「飘」字的关键，
+    // 直接从格位直线下坠看着是被推下去，而不是自己飘走。
+    final lift = math.sin(math.pi * (t / 0.16).clamp(0.0, 1.0)) * fs * 0.30;
+    final y =
+        leaf.fromY +
+        (leaf.toY - leaf.fromY) * fall -
+        lift +
+        math.sin(t * math.pi * 3.0 + leaf.bobPhase) * leaf.bobAmp * (1 - t);
+    // 横向：主漂移 + 摆动；摆动乘 (1-t) 收束到 0 ⇒ 一定落在堆叠位上。
+    final x =
+        leaf.fromX +
+        (leaf.toX - leaf.fromX) * ease +
+        math.sin(t * math.pi * 2.0 + leaf.swayPhase) * leaf.swayAmp * (1 - t);
+    final rot = leaf.rotStart + leaf.rotSpan * t;
+    final scale = 1.0 - 0.18 * t;
+
+    // 尾迹：只在起飞的前半段保留一点「流星」的身份，飘远了就让它是片叶子。
+    if (t < 0.5) {
+      final fade = 1 - t / 0.5;
+      final tailLen = fs * (0.45 + 0.85 * t);
+      final end = Offset(x, y - tailLen);
+      canvas.drawLine(
+        end,
+        Offset(x, y),
+        Paint()
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = fs * 0.26
+          ..color = _currentColor.withValues(alpha: 0.11 * fade),
+      );
+      final core =
+          Color.lerp(_currentColor, Colors.white, 0.55) ?? _currentColor;
+      canvas.drawLine(
+        Offset(x, y - tailLen * 0.62),
+        Offset(x, y),
+        Paint()
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = fs * 0.10
+          ..color = core.withValues(alpha: 0.32 * fade),
+      );
+    }
+
+    _paintMeteorGlyph(canvas, leaf.char, Offset(x, y), rot, scale, 1.0);
+  }
+
   // ── PV / ECHO 绘制缓存 ────────────────────────────────────────────────
 
   /// PV 飞入字样式：当前播放色 + 辉光，随 alpha 淡入（揭示特效层）。
@@ -1083,6 +1652,8 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       _echoFragments.clear();
       _echoLine = -1;
       _echoSpawned = 0;
+      // 换歌 / 换风格：飘落中的字与底部堆叠全部作废（行号与字号都变了）。
+      _resetMeteor();
       _scrollRetries = 0;
       _mixedEnterKind = 0;
       _updateCurrentIndices();
@@ -1092,6 +1663,11 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     } else {
       final oldLineIndex = _currentLineIndex;
       _updateCurrentIndices();
+      if (jumped) {
+        // 快进 / 快退：飘落中的字是按「唱完那一刻」发射的，跳播后这套时间
+        // 轴整个失效，留着会出现一堆字从旧位置凭空飘下去。直接清场重来。
+        _resetMeteor();
+      }
       if (_currentLineIndex != oldLineIndex) {
         if (jumped) {
           // ⚠️ 快进/快退必须**无视** _isUserScrolling：用户刚手动翻过歌词
@@ -1112,6 +1688,9 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
   @override
   void dispose() {
+    // ui.Picture 是引擎侧资源，必须显式释放（不像 Dart 对象能靠 GC）。
+    _meteorPicture?.dispose();
+    _meteorPicture = null;
     _ticker.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -1532,6 +2111,9 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   @override
   Widget build(BuildContext context) {
     if (widget.style == LyricAnimationStyle.pv) {
+      // PV 走独立画布，没有飘落层；开关必须在这里也关掉，否则从流星切到
+      // PV 时它会残留为 true（行内绘制器与飘落层必须同开同关）。
+      _meteorEscapes = false;
       return _buildPvView();
     }
     return LayoutBuilder(
@@ -1544,6 +2126,11 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
         _lastMaxWidth = maxWidth;
         _lastProfile = profile;
         _lastViewportH = viewportHeight;
+        _lastViewportW = constraints.maxWidth;
+        // 视口够不够高，决定「唱完的字是留在行内坠一段，还是飘到屏幕底部」。
+        // 行内绘制器与飘落层共用这一个开关，必须同开同关。
+        _meteorEscapes =
+            _meteorOverlayNeeded && viewportHeight >= _kMeteorMinViewport;
 
         // 混合模式：文字 PV 舞台——只呈现当前一句（已播/待播完全不渲染），
         // 整句居中，每句带随机入场动效与随机视觉风格，不再走可滚动整列。
@@ -1591,21 +2178,31 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
           ),
         );
 
-        // ECHO：碎片漂移画布铺在歌词列表上层（特效盖住歌词，而非被歌词
-        // 盖住）。混合模式已在上面走单句舞台并自带特效层，不会走到这里。
+        // 特效层一律铺在歌词列表**上层**（盖住歌词，而不是被歌词盖住），
+        // 且必须在列表的 ShaderMask 之外——那层渐变把上下 10% 渐隐成透明，
+        // 飘到屏幕底部的落字会被一起吃掉。
+        // 混合模式已在上面走单句舞台并自带特效层，不会走到这里。
+        final overlays = <Widget>[];
         if (widget.style == LyricAnimationStyle.echo) {
-          return Stack(
-            children: [
-              list,
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _EchoPainter(this)),
-                ),
+          overlays.add(
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _EchoPainter(this)),
               ),
-            ],
+            ),
           );
         }
-        return list;
+        if (_meteorEscapes) {
+          overlays.add(
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _MeteorLayerPainter(this)),
+              ),
+            ),
+          );
+        }
+        if (overlays.isEmpty) return list;
+        return Stack(children: <Widget>[list, ...overlays]);
       },
     );
   }
@@ -1692,6 +2289,14 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
             child: CustomPaint(painter: _MixedFxPainter(this)),
           ),
         ),
+        // 流星坠落：混合模式抽到流星的那几句同样把字飘到屏幕底部堆叠
+        // （发射判据是「当前句的风格 == meteor」，见 _updateMeteor）。
+        if (_meteorEscapes)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(painter: _MeteorLayerPainter(this)),
+            ),
+          ),
       ],
     );
   }
@@ -1804,6 +2409,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
                 currentColor: _currentColor,
                 glyphs: _motionGlyphs,
                 charZoom: profile.charZoom,
+                // 视口够高时，唱完的字交给铺满视口的飘落层（一路飘到屏幕
+                // 底部并堆叠），行内只留余痕；矮视口才在行内坠一段燃尽。
+                meteorEscapes: _meteorEscapes,
+                meteorEscapeMs:
+                    _meteorEscapes && lineStyle == LyricAnimationStyle.meteor
+                    ? _escapeMsFor(index)
+                    : null,
               )
             : _SweepPainter(
                 base: measured.base,
@@ -2185,6 +2797,11 @@ class _PvPainter extends CustomPainter {
         }
         measured.highlight.paint(canvas, Offset(originX, originY));
         canvas.restore();
+        // ⚠️ `ramp < 1` 时上面多压了一层 saveLayer，必须再弹一次：此前只
+        // restore 一次，图层栈不平 ⇒ 渲染库直接抛「save() 比 restore() 多
+        // 一次」的断言、画面破损（普通 LRC 的整句淡入阶段才会踩到，所以
+        // 它表现为偶发闪一下坏帧，而不是稳定复现）。
+        if (ramp < 1) canvas.restore();
       }
     } else {
       for (var i = 0; i < timeline.graphemes.length; i++) {
@@ -2279,6 +2896,23 @@ class _EchoPicture {
   final double width;
   final double height;
   const _EchoPicture(this.picture, this.width, this.height);
+}
+
+/// 流星坠落的飘落层：铺满整个歌词视口，负责「字飘到屏幕底部并堆叠」。
+///
+/// 为什么必须单独一层：行内 [_MotionLinePainter] 的画布只有一行高，既画不
+/// 到屏幕底部，也画不出「堆叠」（落定的字要一直留在那儿，属于整个视口的
+/// 状态，不属于某一行）。而且歌词列表外层有上下渐隐的 ShaderMask，飘落层
+/// 必须放在它**外面**，否则落到底部的字会被一起渐隐掉。
+class _MeteorLayerPainter extends CustomPainter {
+  final _LyricsViewWidgetState state;
+  const _MeteorLayerPainter(this.state);
+
+  @override
+  void paint(Canvas canvas, Size size) => state._paintMeteorLayer(canvas, size);
+
+  @override
+  bool shouldRepaint(covariant _MeteorLayerPainter old) => true;
 }
 
 /// ECHO 背景层：唱词炸出的空心字碎片漂移、旋转、淡出。
@@ -2420,7 +3054,8 @@ class _GlyphTextCache {
 /// 就是后者，彼此几乎看不出差别（用户反馈「大体看上去效果几乎一致」），
 /// 所以整体重做成「各有明确的运动方向 + 落地/炸开反馈」：
 ///
-/// - `meteor` 流星坠落：整句先一起亮起，唱过的字带流星尾迹逐字往下坠走
+/// - `meteor` 流星坠落：整句先一起亮起，唱过的字脱离格位往下飘走（详见
+///            [_paintMeteor]；飘到屏幕底部并堆叠由 [_MeteorLayerPainter] 接手）
 /// - `drop`  重力坠落：唱到的字从上方砸落、触地弹跳、压扁回弹 + 冲击光环与碎屑
 /// - `burst` 左右弹射：奇偶字分别从左 / 右高速弹入，拖影 + 过冲回弹 + 放射线
 /// - `cube`  立体旋入：字块带厚度与投影绕竖轴旋入，唱字持续自转（真 3D 观感）
@@ -2444,6 +3079,19 @@ class _MotionLinePainter extends CustomPainter {
   final _GlyphTextCache glyphs;
   final double charZoom;
 
+  /// 流星坠落专用：为 true 时「唱完的字」不在行内坠落，而是直接交棒给铺满
+  /// 视口的 [_MeteorLayerPainter]（一路飘到屏幕底部并堆叠）。
+  ///
+  /// ⚠️ 必须与飘落层的开关**同开同关**（都由 `_meteorEscapes` 提供）：开着的
+  /// 话行内把字撤掉，关着的话行内得自己把它画完，否则字会凭空消失。
+  final bool meteorEscapes;
+
+  /// 流星坠落专用：每字的离格时刻（毫秒，见 [meteorEscapeMs]）。
+  ///
+  /// 行内按它判断「这个字交棒了没」。值为 null 时退回 `endTime`（矮视口的
+  /// 行内坠落画法，此时没有飘落层，不存在交棒）。
+  final List<int>? meteorEscapeMs;
+
   const _MotionLinePainter({
     required this.measured,
     required this.profile,
@@ -2456,6 +3104,8 @@ class _MotionLinePainter extends CustomPainter {
     required this.currentColor,
     required this.glyphs,
     this.charZoom = 1.0,
+    this.meteorEscapes = false,
+    this.meteorEscapeMs,
   });
 
   /// 本句已走秒数（入场类动效的时基）。
@@ -2646,12 +3296,19 @@ class _MotionLinePainter extends CustomPainter {
   // ── meteor：流星坠落 ──────────────────────────────────────────────────
   //
   // 与 drop 方向相反：drop 是「唱到的字从上面砸下来、落到自己的格位上」，
-  // meteor 是「整句先一起亮着，唱过的字再脱离格位、带着流星尾迹往下坠走」。
+  // meteor 是「整句先一起亮着，唱过的字再脱离格位往下飘走」。
   //
   // 所以时基完全不同：**每个字的坠落从它的 endTime（唱完那一刻）开始**，
   // 而不是从 fill.index 推。这样同一画面里「正在唱的字」仍然完整地待在
-  // 格位上，「唱完的字」已经开始往下掉——用户要的「先显示整句、再逐字坠落」
+  // 格位上，「唱完的字」已经开始往下走——用户要的「先显示整句、再逐字坠落」
   // 就是这一条时间差，任何一帧都能同时看到这两态。
+  //
+  // 坠落轨迹分两种形态：
+  // - [meteorEscapes] 为真（半屏 / 全屏）：字一唱完就**整枚交给飘落层**
+  //   （[_MeteorLayerPainter]，铺满视口），一路缓慢旋转 + 左右摆动飘到屏幕
+  //   底部并随机堆叠。行内画布只有一行高，画不到屏幕底部，也画不出堆叠。
+  // - 为假（单行槽位等矮视口）：退回「在行内坠一段就燃尽」的老画法，至少
+  //   保留「逐字往下掉」的语义，不会让字凭空消失。
   void _paintMeteor(
     Canvas canvas,
     Size size,
@@ -2675,9 +3332,13 @@ class _MotionLinePainter extends CustomPainter {
       final g = timeline.graphemes[i];
       final isCurrent = i == fill.index;
       final tone = _toneOf(i, fill);
-      // 唱完后的秒数；<= 0 表示还没唱完（含正在唱），字留在格位上。
-      final double tFall =
-          (position.inMilliseconds - g.endTime.inMilliseconds) / 1000.0;
+      // 离格后走过的秒数；<= 0 表示还没到点（含正在唱），字留在格位上。
+      // ⚠️ 有飘落层时必须用与发射端**同一份**离格时刻表，否则行内还画着完整
+      // 的字、飘落层又画了一枚 ⇒ 同一个字一分为二。
+      final escapeMs = meteorEscapeMs != null && i < meteorEscapeMs!.length
+          ? meteorEscapeMs![i]
+          : g.endTime.inMilliseconds;
+      final double tFall = (position.inMilliseconds - escapeMs) / 1000.0;
 
       // 入场：整句同步（不是逐字），所以这里只跟 lineIn 走。
       var dy = (1 - lineIn) * fs * 0.55;
@@ -2687,10 +3348,21 @@ class _MotionLinePainter extends CustomPainter {
       var k = 0.0;
 
       if (tFall > 0) {
-        k = (tFall / fallDur).clamp(0.0, 1.0);
         // 余痕：字飞走后，原位留一层很淡的残影。没有它的话，读到句尾时整行
         // 几乎空掉（只剩当前字和后面几个未唱字），用户会以为「歌词丢了」——
         // 这是本项目在别的风格上踩过的老坑。它不参与坠落，只是「唱过的痕迹」。
+        if (meteorEscapes) {
+          // 交棒给飘落层：同一时刻飘落层会在原位生成一枚一模一样的字往下
+          // 飘，行内这边再画一遍就成了「一分为二」，所以只留余痕。
+          _drawGlyph(
+            canvas,
+            i,
+            color: playedColor,
+            alpha: 0.13 * (0.42 + 0.58 * lineIn) * math.min(1.0, tFall / 0.3),
+          );
+          continue;
+        }
+        k = (tFall / fallDur).clamp(0.0, 1.0);
         _drawGlyph(
           canvas,
           i,
@@ -3233,7 +3905,9 @@ class _MotionLinePainter extends CustomPainter {
       old.style != style ||
       old.profile.fontSize != profile.fontSize ||
       old.playedColor != playedColor ||
-      old.currentColor != currentColor;
+      old.currentColor != currentColor ||
+      old.meteorEscapes != meteorEscapes ||
+      !identical(old.meteorEscapeMs, meteorEscapeMs);
 }
 
 // ── 单行歌词扫过（播放页 mode 1 复用） ──────────────────────────────────

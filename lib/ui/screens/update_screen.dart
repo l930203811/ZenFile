@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.2';
+  static const String _latestChangelogVersion = 'v3.6.3';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v363,
     _v362,
     _v361,
     _v360,
@@ -950,7 +951,49 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.2 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.3 ────────────────────────────────────────────────
+  static const _Changelog _v363 = _Changelog(
+    version: 'v3.6.3',
+    date: '2026-10-22',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '「流星坠落」重做为真正的飘落：唱过的字脱离格位，缓慢自转、左右摆动着一路飘到屏幕底部，并随机堆叠在底部（原先只是在行内坠一小段就烧完）；暂停时整片飘落的字一起静止',
+        '歌词设置页新增「歌词动画风格」入口，副标题直接显示当前风格；改完返回播放页立即生效，不必再回到播放页菜单里切换',
+      ]),
+      _ChangeSection('✨ 界面焕新', [
+        '标签栏的加号合并了两类动作：点击弹出「新建标签页 / 复制标签页」两个选项，原先放在底部操作栏的「复制标签页」不再单独占位',
+        '双窗口的「互换左右窗口」移到底部操作栏：不再以悬浮按钮压在两个窗口中缝上（也就不再遮住窗口顶部状态条），单窗口时完全不显示',
+        '「显示文件夹和文件计数标题」改为默认开启',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复歌词最后一个字迟迟不结束的问题：末字唱完后仍保持高亮与放大、坠落流星的末字也要等下一句开口才开始飘。原因是每行的结束时间被当成了下一行的起点，中间那段句间静默被算进了末字的演唱时间；现在行尾的静默会被切掉，末字在自己唱完的那一刻就结束，逐字歌词（QRC / KRC / 增强 LRC）的最后一个字还会按本行节奏补一个自然尾巴',
+        '修复逐字歌词下「坠落流星」的末字还没唱到就提前飘落的问题',
+        '修复播放队列里混入远程音频的问题：明明在播本地音频，队列里却出现远程文件（点它也不响应）；现在队列只保留与当前曲目同源的条目，此前已存下的旧混合队列也会自动收敛',
+        '修复压缩包内的删除、粘贴与解压失效，以及 GZ 格式解压失败的问题',
+        '修复逐字歌词中连续重复的字（叠词）时间戳错乱的问题',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'Reworked "Meteor fall" into a real drift: once a character has been sung it leaves its slot, spins slowly and sways as it drifts all the way down to the bottom of the screen, then piles up there at random (it used to drop only a short way inside the line and burn out); everything freezes together when playback is paused',
+        'Lyrics settings gained a "Lyrics animation style" entry that shows the current style as its subtitle; changes apply as soon as you return to the player, with no need to open the player menu again',
+      ]),
+      _ChangeSection('✨ Interface', [
+        'The tab bar plus button now covers both actions: it opens a menu with "New tab" and "Duplicate tab", and "Duplicate tab" no longer takes a slot in the bottom action bar',
+        '"Swap panes" in dual-window mode moved to the bottom action bar: it no longer floats over the seam between the two panes (so it stops covering the pane status band), and it is hidden entirely in single-window mode',
+        '"Show folder and file count titles" is now enabled by default',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed the last character of a line never finishing: it stayed highlighted and enlarged, and with Meteor fall it only started falling when the next line began. The cause was that a line\'s end time is actually the start of the next line, so the silence between lines was counted as singing time for the last character; the trailing silence is now trimmed, the last character ends the moment it is sung, and for word-timestamped lyrics (QRC / KRC / enhanced LRC) the final character also gets a natural tail derived from the line\'s own rhythm',
+        'Fixed the last character falling before it was actually sung with "Meteor fall" on word-timestamped lyrics',
+        'Fixed remote audio leaking into the playback queue: remote files showed up even while a local track was playing (and tapping them did nothing); the queue now keeps only entries from the same source as the current track, and older mixed queues are cleaned up automatically',
+        'Fixed delete, paste and extract failing inside archives, and GZ archives failing to extract',
+        'Fixed garbled timestamps for immediately repeated characters in word-timestamped lyrics',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.2 ──────────────────────────────────────────────────────────
   static const _Changelog _v362 = _Changelog(
     version: 'v3.6.2',
     date: '2026-10-21',

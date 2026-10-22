@@ -4395,7 +4395,7 @@ class L10nFr extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      'Toute la ligne s\'allume d\'abord, puis chaque mot chanté tombe avec une traînée de météore';
+      'Toute la ligne s\'allume d\'abord, puis chaque mot chanté descend en tournant lentement et s\'empile en bas';
 
   @override
   String get ui_no_lyrics_found => 'Aucune parole trouvée';

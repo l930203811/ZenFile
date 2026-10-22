@@ -7837,7 +7837,7 @@ abstract class L10n {
   /// No description provided for @lyric_style_meteor_desc.
   ///
   /// In zh, this message translates to:
-  /// **'整句先亮起，唱过的字带流星尾迹逐字坠下'**
+  /// **'整句先亮起，唱过的字缓慢旋转、飘向屏幕底部并随机堆叠'**
   String get lyric_style_meteor_desc;
 
   /// No description provided for @ui_no_lyrics_found.

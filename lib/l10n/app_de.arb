@@ -4174,7 +4174,7 @@
   "lyric_style_typewriter": "Schreibmaschine",
   "lyric_style_typewriter_desc": "Zeichen erscheinen nacheinander mit blinkendem Cursor, ohne Leuchten oder Zoom",
   "lyric_style_meteor": "Meteorenfall",
-  "lyric_style_meteor_desc": "Erst leuchtet die ganze Zeile auf, dann fällt jede gesungene Silbe mit Schweif nach unten",
+  "lyric_style_meteor_desc": "Erst leuchtet die ganze Zeile auf, dann sinkt jede gesungene Silbe langsam rotierend nach unten und stapelt sich am unteren Rand",
   "ui_no_lyrics_found": "Kein Liedtext gefunden",
   "ui_lyrics_auto_load_hint": "Legen Sie die .lrc-Datei im selben Ordner wie die Audiodatei ab\n(mit dem gleichen Dateinamen) für automatisches Laden",
   "ui_lyrics_panel": "Liedtext-Panel",

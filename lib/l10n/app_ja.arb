@@ -4181,7 +4181,7 @@
   "lyric_style_typewriter": "タイプライター",
   "lyric_style_typewriter_desc": "一文字ずつ打ち出し、現在の文字に点滅カーソル、グローなし・拡大なし",
   "lyric_style_meteor": "流星落下",
-  "lyric_style_meteor_desc": "まず一行全体が点灯し、歌い終えた字が流星の尾を引いて順に落ちていく",
+  "lyric_style_meteor_desc": "まず一行全体が点灯し、歌い終えた字がゆっくり回転しながら画面下へ舞い落ち、ランダムに積み重なる",
   "ui_no_lyrics_found": "歌詞が見つかりません",
   "ui_lyrics_auto_load_hint": ".lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます",
   "ui_lyrics_panel": "歌詞パネル",

@@ -4177,7 +4177,7 @@
   "lyric_style_typewriter": "타자기",
   "lyric_style_typewriter_desc": "글자가 한 글자씩 타자되며 현재 글자에 깜빡이는 커서, 글로우·확대 없음",
   "lyric_style_meteor": "유성 낙하",
-  "lyric_style_meteor_desc": "먼저 한 줄 전체가 밝아지고, 부른 글자가 유성 꼬리를 남기며 하나씩 떨어진다",
+  "lyric_style_meteor_desc": "먼저 한 줄 전체가 밝아지고, 부른 글자가 천천히 회전하며 화면 아래로 흩날려 무작위로 쌓인다",
   "ui_no_lyrics_found": "가사를 찾을 수 없습니다",
   "ui_lyrics_auto_load_hint": ".lrc 가사 파일을 오디오와 같은 폴더에\n(파일명도 동일하게) 두면 자동으로 불러옵니다",
   "ui_lyrics_panel": "가사 패널",

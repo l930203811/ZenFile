@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../services/lyric_animation_style.dart';
 import '../../../services/preferences_service.dart';
 import 'lyric_color_picker_dialog.dart';
 import 'lyric_offset_dialog.dart';
+import 'lyric_style_dropdown.dart';
+import 'lyric_style_sheet.dart';
 
 /// 歌词设置页：从播放页三点菜单进入，集中管理歌词相关功能。
 ///
-/// 包含桌面歌词开关、歌词颜色（未播放/当前播放/已播放）、歌词整体偏移、
-/// 在线搜索歌词、本地导入歌词。
-/// 歌词动画风格不在此设置：风格需进入全屏歌词才可见，入口已移至
-/// 播放页歌词按钮弹出的显示模式菜单。
+/// 包含桌面歌词开关、歌词动画风格、歌词颜色（未播放/当前播放/已播放）、
+/// 歌词整体偏移、在线搜索歌词、本地导入歌词。
+///
+/// 动画风格此前不在此页（只有全屏歌词页顶栏能进），但它是「歌词怎么显示」
+/// 的一部分，放在设置页里才找得到；三个入口共用同一个下拉弹窗
+/// [showLyricStyleSheet]，选中即写 [PreferencesService]，不会两处不同步。
 /// 桌面歌词开关的权限/启动逻辑由播放页持有（需要 player 实例同步进度），
 /// 因此通过 [onToggleDesktopLyric] 回调委托，页面只负责开关状态展示。
 class LyricSettingsPage extends StatefulWidget {
@@ -50,6 +55,11 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
     super.initState();
     _desktopLyricEnabled = widget.desktopLyricEnabled;
   }
+
+  /// 当前歌词动画风格（弹窗选中后会自己落盘，这里只读不写）。
+  LyricAnimationStyle get _style => LyricAnimationStyle.fromName(
+    PreferencesService.getLyricAnimationStyleName(),
+  );
 
   // ── 歌词三色 ──────────────────────────────────────────────────────────
   // null = 未自定义（用默认配色）。effective 用于色点 / 色值展示。
@@ -162,6 +172,22 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
                     PreferencesService.getDesktopLyricEnabled(),
               );
             },
+          ),
+          const Divider(height: 1),
+          // ── 歌词动画风格 ────────────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.animation_rounded),
+            title: Text(
+              l10n.lyric_animation_style,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(lyricStyleName(l10n, _style)),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => showLyricStyleSheet(
+              context,
+              current: _style,
+              onSelected: (_) => setState(() {}),
+            ),
           ),
           const Divider(height: 1),
           // ── 歌词颜色 ────────────────────────────────────────────────────

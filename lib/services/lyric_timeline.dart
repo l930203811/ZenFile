@@ -63,6 +63,69 @@ List<String> splitLyricGraphemes(String text) {
 
 Duration _ms(int v) => Duration(milliseconds: v);
 
+int _clampInt(int v, int lo, int hi) => v < lo ? lo : (v > hi ? hi : v);
+
+/// 逐字歌词：估算末词时长时「每字毫秒」的上下限与缺省值。
+const int _kMinCharMs = 90;
+const int _kMaxCharMs = 900;
+const int _kDefaultCharMs = 260;
+
+/// 行尾留白（毫秒）：本行最后一个字的结束时刻要从 [lineEnd] 往回收这么多。
+///
+/// ⚠️ 一行的 `lineEnd` 通常是**下一行的起始时间**，末尾那一段是句间静默、
+/// 并不是演唱。直接拿它当末字的 `endTime`，会让末字的高亮 / 放大 / 坠落特效
+/// 一直挂到下一句开口那一刻才收 —— 表现为「末字唱完了还不恢复原样」「坠落
+/// 流星的末字像被下一句顶下去的」。这里按行长取一小段留白把行尾收回来。
+int tailGapMsFor(int lineMs) {
+  if (lineMs <= 0) return 0;
+  return _clampInt((lineMs * 0.12).round(), 180, 900);
+}
+
+/// 行内最后一个字真正唱完的时刻（把句间静默从行尾切掉）。
+///
+/// 行长极短时留白减半，否则末字几乎分不到时间。
+Duration _effectiveLineEnd(Duration lineStart, Duration lineEnd) {
+  final startMs = lineStart.inMilliseconds;
+  final endMs = lineEnd.inMilliseconds;
+  final lineMs = endMs - startMs;
+  if (lineMs <= 0) return lineEnd;
+  var gap = tailGapMsFor(lineMs);
+  if (gap * 2 > lineMs) gap = lineMs ~/ 2;
+  return _ms(endMs - gap);
+}
+
+/// 估算本行**末词**的结束时刻（逐字歌词用）。
+///
+/// 末词没有「下一个词的时间戳」可当终点，不能拿 [lineEnd]（下一句起点）顶替：
+/// 那样末词的时长会被整段句间静默撑开，末字于是要等到下一句开口才「唱完」。
+/// 这里用本行前面的词间隔反推「每字时长」（取中位数，避免个别拖长音把整体
+/// 拉长），给末词一个自然的尾巴，再夹到 [cap] 之内。
+Duration _estimateLastWordEnd(
+  List<LyricWord> words,
+  int w,
+  Duration wStart,
+  Duration cap,
+) {
+  final samples = <int>[];
+  for (var k = 0; k + 1 < words.length; k++) {
+    final durMs =
+        words[k + 1].timestamp.inMilliseconds -
+        words[k].timestamp.inMilliseconds;
+    final chars = splitLyricGraphemes(words[k].text).length;
+    if (durMs > 0 && chars > 0) samples.add((durMs / chars).round());
+  }
+  var perChar = _kDefaultCharMs;
+  if (samples.isNotEmpty) {
+    samples.sort();
+    perChar = samples[samples.length ~/ 2];
+  }
+  perChar = _clampInt(perChar, _kMinCharMs, _kMaxCharMs);
+  final count = math.max(1, splitLyricGraphemes(words[w].text).length);
+  final estMs = wStart.inMilliseconds + perChar * count;
+  final capMs = cap.inMilliseconds;
+  return _ms(estMs < capMs ? estMs : capMs);
+}
+
 /// 把 [chars] 中从 [from] 起的 [count] 个字，在 [start, end] 区间内按数量均分。
 List<LyricGrapheme> _evenGraphemes(
   List<String> chars,
@@ -102,7 +165,11 @@ LyricLineTimeline buildLineTimeline(LyricLine line, Duration lineEnd) {
     );
   }
 
-  // 无逐字时间戳：整行在 [行首, 行尾] 上均分，得到平滑的整行扫过。
+  // ⚠️ 行尾要先把句间静默切掉：末字的 endTime 不能压在下一句开口上，否则
+  // 所有风格都会「末字迟迟不结束」（高亮/放大不复原、坠落流星等下一句才飘）。
+  final tailEnd = _effectiveLineEnd(line.timestamp, lineEnd);
+
+  // 无逐字时间戳：整行在 [行首, 有效行尾] 上均分，得到平滑的整行扫过。
   if (!line.hasWordTimestamps) {
     return LyricLineTimeline(
       graphemes: _evenGraphemes(
@@ -110,7 +177,7 @@ LyricLineTimeline buildLineTimeline(LyricLine line, Duration lineEnd) {
         0,
         chars.length,
         line.timestamp,
-        lineEnd,
+        tailEnd,
       ),
       text: text,
       lineStart: line.timestamp,
@@ -126,7 +193,11 @@ LyricLineTimeline buildLineTimeline(LyricLine line, Duration lineEnd) {
   for (var w = 0; w < words.length && cursor < chars.length; w++) {
     final word = words[w];
     final wStart = word.timestamp;
-    final wEnd = (w + 1 < words.length) ? words[w + 1].timestamp : lineEnd;
+    // 末词没有下一个词可作终点：用本行节奏估一个自然尾巴，而不是拿 lineEnd
+    //（下一句起点）顶替——否则末字会被整段句间静默撑到下一句开口才「唱完」。
+    final wEnd = (w + 1 < words.length)
+        ? words[w + 1].timestamp
+        : _estimateLastWordEnd(words, w, wStart, tailEnd);
     final take = math.min(
       splitLyricGraphemes(word.text).length,
       chars.length - cursor,
@@ -141,8 +212,14 @@ LyricLineTimeline buildLineTimeline(LyricLine line, Duration lineEnd) {
     final tailStart = graphemes.isNotEmpty
         ? graphemes.last.endTime
         : line.timestamp;
+    // 剩余字符落在有效行尾；万一前面已经把 tailStart 推过了行尾，就按每字
+    // 一个最小步长往后补，避免出现零时长的字。
+    var end = tailEnd;
+    if (end.inMilliseconds <= tailStart.inMilliseconds) {
+      end = _ms(tailStart.inMilliseconds + 120 * (chars.length - cursor));
+    }
     graphemes.addAll(
-      _evenGraphemes(chars, cursor, chars.length - cursor, tailStart, lineEnd),
+      _evenGraphemes(chars, cursor, chars.length - cursor, tailStart, end),
     );
   }
 

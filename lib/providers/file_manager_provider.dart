@@ -1119,7 +1119,8 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _showFolderFileCount = false;
+  // 默认开启（与 PreferencesService.getShowFolderFileCount 的兜底值一致）。
+  bool _showFolderFileCount = true;
   bool get showFolderFileCount => _showFolderFileCount;
 
   void toggleFolderFileCount() {

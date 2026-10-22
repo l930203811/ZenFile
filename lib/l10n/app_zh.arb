@@ -4394,7 +4394,7 @@
   "lyric_style_typewriter": "打字机",
   "lyric_style_typewriter_desc": "逐字敲出，当前字右侧带闪烁光标，无辉光、不放大",
   "lyric_style_meteor": "流星坠落",
-  "lyric_style_meteor_desc": "整句先亮起，唱过的字带流星尾迹逐字坠下",
+  "lyric_style_meteor_desc": "整句先亮起，唱过的字缓慢旋转、飘向屏幕底部并随机堆叠",
   "ui_no_lyrics_found": "未找到歌词",
   "ui_lyrics_auto_load_hint": "将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载",
   "ui_lyrics_panel": "歌词全屏面板",

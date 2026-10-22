@@ -4178,7 +4178,8 @@ class L10nJa extends L10n {
   String get lyric_style_meteor => '流星落下';
 
   @override
-  String get lyric_style_meteor_desc => 'まず一行全体が点灯し、歌い終えた字が流星の尾を引いて順に落ちていく';
+  String get lyric_style_meteor_desc =>
+      'まず一行全体が点灯し、歌い終えた字がゆっくり回転しながら画面下へ舞い落ち、ランダムに積み重なる';
 
   @override
   String get ui_no_lyrics_found => '歌詞が見つかりません';

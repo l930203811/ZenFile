@@ -4396,7 +4396,7 @@ class L10nEs extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      'Toda la línea se enciende primero y cada palabra cantada cae con estela de meteoro';
+      'Toda la línea se enciende primero y cada palabra cantada desciende girando despacio, apilándose en la parte inferior';
 
   @override
   String get ui_no_lyrics_found => 'No se encontró letra';

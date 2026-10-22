@@ -4305,7 +4305,7 @@ class L10nAr extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      'يضيء السطر كله أولاً، ثم يسقط كل حرف مُغنّى بأثر شهابي';
+      'يضيء السطر كله أولاً، ثم يهبط كل حرف مُغنّى وهو يدور ببطء ويتكدس عشوائياً في الأسفل';
 
   @override
   String get ui_no_lyrics_found => 'لم يتم العثور على كلمات الأغنية';

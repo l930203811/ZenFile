@@ -4182,7 +4182,7 @@ class L10nKo extends L10n {
 
   @override
   String get lyric_style_meteor_desc =>
-      '먼저 한 줄 전체가 밝아지고, 부른 글자가 유성 꼬리를 남기며 하나씩 떨어진다';
+      '먼저 한 줄 전체가 밝아지고, 부른 글자가 천천히 회전하며 화면 아래로 흩날려 무작위로 쌓인다';
 
   @override
   String get ui_no_lyrics_found => '가사를 찾을 수 없습니다';

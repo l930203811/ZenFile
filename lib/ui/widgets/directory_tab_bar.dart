@@ -222,13 +222,58 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
               ),
             ),
           ),
-          // 新建标签页按钮：点击直接在当前根目录新建标签页
-          IconButton(
+          // 新建标签页 / 复制标签页：**两个入口合并成一个加号菜单**。
+          //
+          // 「复制标签页」原先是底部操作栏里的独立按钮，但它和「新建标签页」
+          // 是同一类动作（再开一个标签），分在两处反而要找。合并后加号就地弹出
+          // 两个选项；腾出来的操作栏槽位给了双窗口的「互换左右窗口」。
+          PopupMenuButton<String>(
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             icon: const Icon(Broken.add, size: 20),
             tooltip: L10n.of(context).msgb52d4a73,
-            onPressed: () => widget.provider.addTab(widget.provider.rootPath),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            // 就地向下展开：菜单锚在这个加号正下方，而不是飘到屏幕边缘。
+            position: PopupMenuPosition.under,
+            elevation: 8,
+            onSelected: (value) {
+              final provider = widget.provider;
+              if (value == 'duplicate') {
+                provider.duplicateActiveTab();
+              } else {
+                provider.addTab(provider.rootPath);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'new',
+                child: Row(
+                  children: [
+                    const Icon(Broken.add, size: 20),
+                    const SizedBox(width: 12),
+                    Text(
+                      L10n.of(context).msgb52d4a73,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'duplicate',
+                child: Row(
+                  children: [
+                    const Icon(Broken.copy, size: 20),
+                    const SizedBox(width: 12),
+                    Text(
+                      L10n.of(context).msg4e9c344a,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           // 关闭所有标签页按钮：点击弹出多语言确认，确认后
           // 单窗口保留 1 个、双窗口新建 2 个本地根目录标签。
