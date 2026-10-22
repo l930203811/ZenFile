@@ -804,6 +804,62 @@ class ArchiveService {
     }
   }
 
+  /// 流式 GZIP 解码（健壮版，替代 `GZipDecoder().decodeStream`）。
+  ///
+  /// archive 3.6.1 的 `GZipDecoder._readHeader` 读取 FNAME/FCOMMENT 时走
+  /// `InputFileStream.readString()`，内部用 `Utf8Decoder().convert` 严格解码：
+  /// 中文 Windows 下 7-Zip / gzip 写入 .gz 的原始文件名多为 GBK 字节，会直接抛
+  /// FormatException —— 这是「.gz 解压失败」的根因之一（gzip 头里的文件名只是
+  /// 附加元数据，按字节跳过即可，绝不应让它中断解压）。
+  ///
+  /// 根因之二：`Inflate.stream` 解完 BFINAL 块即返回，不消费成员尾部 CRC32+ISIZE，
+  /// 也不再看后续数据 —— 拼接的多成员 gzip（RFC 1952 允许，pigz 等工具会产出）
+  /// 会被静默截断为第一个成员。
+  ///
+  /// 本方法手工按字节解析 gzip 头（RFC 1952，不做任何 UTF-8 解码），再用
+  /// Inflate.stream 解 deflate 主体（与 decodeStream 同路径），并循环处理后续
+  /// 成员；结束时 flush [output]（不负责 close，由调用方 closeSync）。
+  static void gunzipDecodeStream(InputStreamBase input, OutputStreamBase output) {
+    var member = 0;
+    while (!input.isEOS) {
+      final signature = input.readUint16();
+      if (signature != GZipDecoder.SIGNATURE) {
+        // 首成员签名不符说明不是 gzip（交由调用方报错）；后续位置的非 gzip
+        // 数据（如尾部 NUL 填充）视为垃圾，停止。
+        if (member == 0) {
+          throw ArchiveException('Invalid GZip Signature');
+        }
+        break;
+      }
+      final compressionMethod = input.readByte();
+      if (compressionMethod != GZipDecoder.DEFLATE) {
+        throw ArchiveException('Invalid GZip Compression Method');
+      }
+      final flags = input.readByte();
+      input.skip(6); // mtime(4) + xfl(1) + os(1)
+      if (flags & GZipDecoder.FLAG_EXTRA != 0) {
+        final xlen = input.readUint16();
+        input.skip(xlen);
+      }
+      // FNAME / FCOMMENT：逐字节读到 NUL 即丢弃，不做字符集解码
+      if (flags & GZipDecoder.FLAG_NAME != 0) {
+        while (!input.isEOS && input.readByte() != 0) {}
+      }
+      if (flags & GZipDecoder.FLAG_COMMENT != 0) {
+        while (!input.isEOS && input.readByte() != 0) {}
+      }
+      if (flags & GZipDecoder.FLAG_HCRC != 0) {
+        input.readUint16();
+      }
+      // deflate 主体：与 GZipDecoder.decodeStream 完全相同的解压路径
+      Inflate.stream(input, output);
+      // 跳过本成员尾部 CRC32(4) + ISIZE(4)，继续尝试下一个成员（多成员 gzip）
+      input.skip(8);
+      member++;
+    }
+    output.flush();
+  }
+
   /// 把 TAR.* 外层流式解压到临时 TAR 文件（同步实现，运行在 compute Isolate）。
   /// 返回临时 TAR 文件路径（调用方负责删除），异常返回 null 让调用方走 fallback。
   static File? _unwrapTarWrapperSync(File src, String lowerPath) {
@@ -811,12 +867,11 @@ class ArchiveService {
     final tarTmp = File(p.join(tmpDir.path, 'zenfile_svc_ext_${DateTime.now().millisecondsSinceEpoch}.tar'));
 
     if (lowerPath.endsWith('.tar.gz') || lowerPath.endsWith('.tgz')) {
-      // tar.gz：用 GZipDecoder.decodeStream 流式 InputFileStream -> OutputFileStream
+      // tar.gz：流式 gunzip（健壮版，兼容 GBK FNAME / 多成员）InputFileStream -> OutputFileStream
       final input = InputFileStream(src.path);
       final output = OutputFileStream(tarTmp.path);
       try {
-        GZipDecoder().decodeStream(input, output);
-        output.flush();
+        gunzipDecodeStream(input, output);
       } catch (_) {
         try { input.closeSync(); } catch (_) {}
         try { output.closeSync(); } catch (_) {}
@@ -900,12 +955,11 @@ class ArchiveService {
         final name = p.basenameWithoutExtension(archivePath);
         final destFile = File(p.join(destinationDir, name));
         destFile.createSync(recursive: true);
-        // 单文件 .gz：GZipDecoder.decodeStream 流式
+        // 单文件 .gz：流式解压（健壮版 gunzip，兼容 GBK 文件名与多成员）
         final input = InputFileStream(archivePath);
         final output = OutputFileStream(destFile.path);
         try {
-          GZipDecoder().decodeStream(input, output);
-          output.flush();
+          gunzipDecodeStream(input, output);
         } finally {
           try { input.closeSync(); } catch (_) {}
           try { output.closeSync(); } catch (_) {}
@@ -962,17 +1016,20 @@ class ArchiveService {
         zipInputToClose = input;
         archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
       } else if (lowerPath.endsWith('.tar')) {
+        // TAR 条目内容与 ZIP 一样是共享 FileBuffer 的惰性窗口：closeSync 后
+        // FileBuffer._fileSize=0、句柄关闭，读 content 会静默返回空/错误数据，
+        // >1MB 条目甚至 RangeError。输入流必须存活到所有条目写出完毕。
         final input = InputFileStream(archivePath);
+        zipInputToClose = input;
         archive = TarDecoder().decodeBuffer(input);
-        try { input.closeSync(); } catch (_) {}
       } else {
         // TAR.*：先流式拆外层到临时 TAR
         final unwrapped = _unwrapTarWrapperSync(srcFile, lowerPath);
         if (unwrapped != null) {
           tempTarWrapper = unwrapped;
           final input = InputFileStream(unwrapped.path);
+          zipInputToClose = input;
           archive = TarDecoder().decodeBuffer(input);
-          try { input.closeSync(); } catch (_) {}
         } else {
           // fallback：走 InputFileStream + zip decoder
           final input = InputFileStream(archivePath);
@@ -996,7 +1053,7 @@ class ArchiveService {
           }
         }
       } finally {
-        // ✅ 在所有文件提取完成后才关闭 ZIP 输入流
+        // ✅ 在所有文件提取完成后才关闭输入流（ZIP/TAR 条目内容均为惰性窗口）
         if (zipInputToClose != null) {
           try { zipInputToClose.closeSync(); } catch (_) {}
         }
@@ -1217,6 +1274,27 @@ class ArchiveService {
     final filePathToAdd = args['filePathToAdd'] as String;
     final internalPath = args['internalPath'] as String;
 
+    // 输入流与解包临时文件必须存活到「旧条目内容全部写出」：archive 3.6.1 的
+    // Zip/Tar decodeBuffer 返回的条目内容是共享 FileBuffer 的惰性窗口，closeSync
+    // 会把 _fileSize 置 0 并失效句柄，之后编码阶段读内容必然损坏（与
+    // _rewriteZipArchiveTask 同源）。此处只打开不关闭，由 releaseInput() 在
+    // 重编码完成后统一释放。声明置于 try 之外以便 finally 兜底；因被闭包捕获
+    // 类型提升失效，decodeBuffer 等调用须通过局部非空变量传参。
+    InputFileStream? input;
+    File? tempTarWrapper;
+    void releaseInput() {
+      final fs = input;
+      if (fs != null) {
+        try { fs.closeSync(); } catch (_) {}
+        input = null;
+      }
+      final t = tempTarWrapper;
+      if (t != null && t.existsSync()) {
+        try { t.deleteSync(); } catch (_) {}
+        tempTarWrapper = null;
+      }
+    }
+
     try {
       final archiveFile = File(archivePath);
       final fileToAdd = File(filePathToAdd);
@@ -1233,27 +1311,23 @@ class ArchiveService {
       final nameInside = p.join(internalPath, p.basename(filePathToAdd)).replaceAll('\\', '/');
 
       late Archive oldArchive;
-      File? tempTarWrapper;
       try {
         if (archiveFile.existsSync() && archiveFile.lengthSync() > 0) {
           if (isZip) {
-            final input = InputFileStream(archivePath);
-            try {
-              oldArchive = ZipDecoder().decodeBuffer(input);
-            } finally { try { input.closeSync(); } catch (_) {} }
+            final fs = InputFileStream(archivePath);
+            input = fs;
+            oldArchive = ZipDecoder().decodeBuffer(fs);
           } else if (isTar) {
-            final input = InputFileStream(archivePath);
-            try {
-              oldArchive = TarDecoder().decodeBuffer(input);
-            } finally { try { input.closeSync(); } catch (_) {} }
+            final fs = InputFileStream(archivePath);
+            input = fs;
+            oldArchive = TarDecoder().decodeBuffer(fs);
           } else {
             final unwrapped = _unwrapTarWrapperSync(archiveFile, lowerPath);
             if (unwrapped != null) {
               tempTarWrapper = unwrapped;
-              final input = InputFileStream(unwrapped.path);
-              try {
-                oldArchive = TarDecoder().decodeBuffer(input);
-              } finally { try { input.closeSync(); } catch (_) {} }
+              final fs = InputFileStream(unwrapped.path);
+              input = fs;
+              oldArchive = TarDecoder().decodeBuffer(fs);
             } else {
               oldArchive = Archive();
             }
@@ -1263,10 +1337,6 @@ class ArchiveService {
         }
       } catch (_) {
         oldArchive = Archive();
-      } finally {
-        if (tempTarWrapper != null && tempTarWrapper.existsSync()) {
-          try { tempTarWrapper.deleteSync(); } catch (_) {}
-        }
       }
 
       // 读入待追加文件（按分块，避免 readAsBytesSync）
@@ -1277,19 +1347,29 @@ class ArchiveService {
 
       try {
         if (isZip) {
-          final enc = ZipFileEncoder();
-          enc.create(archivePath);
+          // 输出写同分区临时文件：输入流仍指向原包，绝不能在消费惰性条目的同时
+          // 用输出流截断写同一文件；成功后 rename 原子替换（失败则原包完好）。
+          final zipTmp = File(p.join(p.dirname(archivePath), '.${p.basename(archivePath)}.zfaddtmp'));
           try {
-            for (int i = 0; i < oldArchive.length; i++) {
-              final e = oldArchive[i];
-              enc.addArchiveFile(e);
+            final enc = ZipFileEncoder();
+            enc.create(zipTmp.path);
+            try {
+              for (int i = 0; i < oldArchive.length; i++) {
+                final e = oldArchive[i];
+                enc.addArchiveFile(e);
+              }
+              final newAf = ArchiveFile(nameInside, newFileBytes.length, newFileBytes);
+              enc.addArchiveFile(newAf);
+            } finally {
+              enc.closeSync();
             }
-            final newAf = ArchiveFile(nameInside, newFileBytes.length, newFileBytes);
-            enc.addArchiveFile(newAf);
+            // 旧条目内容已全部写出：先释放输入流，再替换原包
+            releaseInput();
+            zipTmp.renameSync(archivePath);
+            return true;
           } finally {
-            enc.closeSync();
+            if (zipTmp.existsSync()) { try { zipTmp.deleteSync(); } catch (_) {} }
           }
-          return true;
         }
 
         // tar / tar.*：统一先写 TAR
@@ -1306,6 +1386,9 @@ class ArchiveService {
           tarEnc.finish();
           output.closeSync();
         }
+        // 旧条目内容已全部写入 tarTmp：此刻才能关闭输入流/删除解包临时文件，
+        // 后续 rename 或 _encodeTarToFormat 会写 archivePath，不能再占用原包句柄
+        releaseInput();
 
         if (isTar) {
           tarTmp.renameSync(archivePath);
@@ -1323,6 +1406,9 @@ class ArchiveService {
     } catch (e) {
       debugPrint('Error adding to archive: $e');
       return false;
+    } finally {
+      // 兜底：任何路径（含解码失败）都确保输入流/解包临时文件被释放
+      releaseInput();
     }
   }
 
@@ -1508,6 +1594,25 @@ class ArchiveService {
     final archivePath = args['archivePath'] as String;
     final internalPathsToDelete = args['internalPathsToDelete'] as List<String>;
 
+    // 输入流与解包临时文件必须存活到「保留条目内容全部写出」：条目内容是共享
+    // FileBuffer 的惰性窗口，提前 closeSync（_fileSize 置 0、句柄失效）会让
+    // 重写阶段读内容必然损坏（与 _rewriteZipArchiveTask 同源），故统一延后释放。
+    // 因被闭包捕获类型提升失效，releaseInput/decodeBuffer 须用局部非空变量。
+    InputFileStream? input;
+    File? tempTarWrapper;
+    void releaseInput() {
+      final fs = input;
+      if (fs != null) {
+        try { fs.closeSync(); } catch (_) {}
+        input = null;
+      }
+      final t = tempTarWrapper;
+      if (t != null && t.existsSync()) {
+        try { t.deleteSync(); } catch (_) {}
+        tempTarWrapper = null;
+      }
+    }
+
     try {
       final archiveFile = File(archivePath);
       if (!archiveFile.existsSync() || archiveFile.lengthSync() == 0) return false;
@@ -1522,30 +1627,23 @@ class ArchiveService {
 
       // 1) 流式读入旧 Archive（不一次性 readAsBytesSync 压缩包）
       late Archive oldArchive;
-      File? tempTarWrapper;
-      try {
-        if (isZip) {
-          final input = InputFileStream(archivePath);
-          try { oldArchive = ZipDecoder().decodeBuffer(input); }
-          finally { try { input.closeSync(); } catch (_) {} }
-        } else if (isTar) {
-          final input = InputFileStream(archivePath);
-          try { oldArchive = TarDecoder().decodeBuffer(input); }
-          finally { try { input.closeSync(); } catch (_) {} }
+      if (isZip) {
+        final fs = InputFileStream(archivePath);
+        input = fs;
+        oldArchive = ZipDecoder().decodeBuffer(fs);
+      } else if (isTar) {
+        final fs = InputFileStream(archivePath);
+        input = fs;
+        oldArchive = TarDecoder().decodeBuffer(fs);
+      } else {
+        final unwrapped = _unwrapTarWrapperSync(archiveFile, lowerPath);
+        if (unwrapped != null) {
+          tempTarWrapper = unwrapped;
+          final fs = InputFileStream(unwrapped.path);
+          input = fs;
+          oldArchive = TarDecoder().decodeBuffer(fs);
         } else {
-          final unwrapped = _unwrapTarWrapperSync(archiveFile, lowerPath);
-          if (unwrapped != null) {
-            tempTarWrapper = unwrapped;
-            final input = InputFileStream(unwrapped.path);
-            try { oldArchive = TarDecoder().decodeBuffer(input); }
-            finally { try { input.closeSync(); } catch (_) {} }
-          } else {
-            return false;
-          }
-        }
-      } finally {
-        if (tempTarWrapper != null && tempTarWrapper.existsSync()) {
-          try { tempTarWrapper.deleteSync(); } catch (_) {}
+          return false;
         }
       }
 
@@ -1578,14 +1676,24 @@ class ArchiveService {
       final tarTmp = File(p.join(tmpDir.path, 'zenfile_svc_del_${DateTime.now().millisecondsSinceEpoch}.tar'));
       try {
         if (isZip) {
-          final enc = ZipFileEncoder();
-          enc.create(archivePath);
+          // 输出写同分区临时文件：输入流仍指向原包，绝不能在消费惰性条目的同时
+          // 用输出流截断写同一文件；成功后 rename 原子替换（失败则原包完好）。
+          final zipTmp = File(p.join(p.dirname(archivePath), '.${p.basename(archivePath)}.zfdeltmp'));
           try {
-            for (final f in keepFiles) {
-              enc.addArchiveFile(f);
-            }
-          } finally { enc.closeSync(); }
-          return true;
+            final enc = ZipFileEncoder();
+            enc.create(zipTmp.path);
+            try {
+              for (final f in keepFiles) {
+                enc.addArchiveFile(f);
+              }
+            } finally { enc.closeSync(); }
+            // 保留条目内容已全部写出：先释放输入流，再替换原包
+            releaseInput();
+            zipTmp.renameSync(archivePath);
+            return true;
+          } finally {
+            if (zipTmp.existsSync()) { try { zipTmp.deleteSync(); } catch (_) {} }
+          }
         }
 
         final output = OutputFileStream(tarTmp.path);
@@ -1599,6 +1707,9 @@ class ArchiveService {
           tarEnc.finish();
           output.closeSync();
         }
+        // 保留条目内容已全部写入 tarTmp：此刻才能关闭输入流/删除解包临时文件，
+        // 后续 rename 或 _encodeTarToFormat 会写 archivePath，不能再占用原包句柄
+        releaseInput();
 
         if (isTar) {
           tarTmp.renameSync(archivePath);
@@ -1615,6 +1726,9 @@ class ArchiveService {
     } catch (e) {
       debugPrint('Error deleting from archive: $e');
       return false;
+    } finally {
+      // 兜底：任何路径（含解码失败）都确保输入流/解包临时文件被释放
+      releaseInput();
     }
   }
 }

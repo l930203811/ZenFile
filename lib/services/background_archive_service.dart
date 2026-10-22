@@ -141,13 +141,12 @@ Future<String> _streamDecompressToTar(File src, String format, _ProgressThrottle
 
   try {
     if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) {
-      // tar.gz：使用 GZipDecoder.decodeStream 流式，全程不驻留整包
+      // tar.gz：健壮版流式 gunzip（兼容 GBK FNAME / 多成员），全程不驻留整包
       t.send(0.08, 'Decoding tar.gz wrapper…', force: true);
       final input = InputFileStream(src.path);
       final output = OutputFileStream(tarTmp.path);
       try {
-        GZipDecoder().decodeStream(input, output);
-        output.flush();
+        ArchiveService.gunzipDecodeStream(input, output);
       } finally {
         try { input.closeSync(); } catch (_) {}
         try { output.closeSync(); } catch (_) {}
@@ -1688,14 +1687,16 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
       t.send(0.05, 'Preparing to extract…', force: true);
 
       late Archive archive;
-      // 需要保持引用以便在所有文件提取完成后才关闭
-      InputFileStream? zipInputToClose;
+      // 需要保持引用以便在所有文件提取完成后才关闭（ZIP/TAR 条目内容均为
+      // 共享 FileBuffer 的惰性窗口，提前 closeSync 会让读 content 得到空/
+      // 错误数据，>1MB 条目甚至 RangeError）
+      InputFileStream? archiveInputToClose;
       // 注意：tempTarPath 在方法开头已声明（供 finally 清理），此处不得重新声明，
       // 否则外层变量永远是 null ⇒ TAR.* 解压留下的临时文件再也不会被删除。
 
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
         final input = InputFileStream(archivePath);
-        zipInputToClose = input;
+        archiveInputToClose = input;
         // requirePasswordIfEncrypted：加密 ZIP 且没给密码时立刻抛
         // ArchivePasswordRequiredException，而不是让 archive 包解出「空内容」——
         // 后者会静默写出一堆 0 字节文件，用户误以为压缩包损坏（真机反馈）。
@@ -1705,17 +1706,19 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
           requirePasswordIfEncrypted: true,
         );
       } else if (lowerPath.endsWith('.tar')) {
+        // TAR：条目内容是惰性窗口，输入流保持打开直到全部条目写出（见 finally）
         final input = InputFileStream(archivePath);
+        archiveInputToClose = input;
         archive = TarDecoder().decodeBuffer(input);
-        try { input.closeSync(); } catch (_) {}
       } else {
         // TAR.*：优先用「流式解压外层 → 临时 TAR 文件 → TarDecoder 读临时文件」
         t.send(0.07, 'Unwrapping outer compression…', force: true);
         tempTarPath = await _streamDecompressToTar(file, 'tar', t);
 
+        // 同上：临时 TAR 的输入流保持打开直到所有条目写出完毕
         final input = InputFileStream(tempTarPath);
+        archiveInputToClose = input;
         archive = TarDecoder().decodeBuffer(input);
-        try { input.closeSync(); } catch (_) {}
       }
 
       // 在 try 块外声明变量，以便在 finally 块后访问
@@ -1808,9 +1811,9 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
           }
         }
       } finally {
-        // ✅ 在所有文件提取完成后才关闭 ZIP 输入流
-        if (zipInputToClose != null) {
-          try { zipInputToClose.closeSync(); } catch (_) {}
+        // ✅ 在所有文件提取完成后才关闭输入流（ZIP/TAR 条目内容均为惰性窗口）
+        if (archiveInputToClose != null) {
+          try { archiveInputToClose.closeSync(); } catch (_) {}
         }
       }
 
@@ -1834,7 +1837,7 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
     }
   }
 
-  /// 单文件 .gz：用 GZipDecoder.decodeStream 流式解码，全程不驻留整包字节。
+  /// 单文件 .gz：健壮版流式 gunzip 解码，全程不驻留整包字节。
   static Future<void> _extractSingleFileGzStream(File src, String destDir, _ProgressThrottler t) async {
     final name = p.basenameWithoutExtension(src.path);
     final out = File(p.join(destDir, name))..createSync(recursive: true);
@@ -1843,8 +1846,9 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
       final input = InputFileStream(src.path);
       final output = OutputFileStream(out.path);
       try {
-        GZipDecoder().decodeStream(input, output);
-        output.flush();
+        // 健壮版流式 gunzip：兼容 GBK FNAME 与多成员 gzip（详见
+        // ArchiveService.gunzipDecodeStream 注释）
+        ArchiveService.gunzipDecodeStream(input, output);
       } finally {
         try { input.closeSync(); } catch (_) {}
         try { output.closeSync(); } catch (_) {}

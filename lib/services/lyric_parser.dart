@@ -184,7 +184,12 @@ class LyricParser {
             int textStart = ts.end;
             int textEnd = line.length;
             for (final t in allTimes) {
-              if (t.start > textStart) {
+              // ⚠️ 必须 >=：零字符间隔的连续标签（`<01:02.670><01:03.030>难`，
+              // 气口写法）里前一空标签的 end 恰等于后一标签的 start，用 `>`
+              // 会越过后一标签把「难」包进空标签的词里 —— 同一个字产出两份
+              // （叠词，「不孝有三」实测）。>= 时相邻标签立即截断：空标签产出
+              // 空词被下方跳过，实字标签正常单份。
+              if (t.start >= textStart) {
                 textEnd = t.start;
                 break;
               }
