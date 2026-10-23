@@ -41,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   // 槽位。用于「从槽位 A 的页面里再打开槽位 B 的页面」时把高亮让给 B，B 退出后再还给 A。
   final List<int> _slotPageStack = <int>[];
   DateTime? _lastBackPressTime;
-  late AnimationController _refreshIconController;
   bool _isRefreshing = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // 缓存屏幕宽度，仅在尺寸真正变化时更新；build 不再读取 MediaQuery，
@@ -98,10 +97,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _refreshIconController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
     _currentIndex = context.read<FileManagerProvider>().defaultToBrowseScreen ? 1 : 0;
     // 默认停在浏览页时（设置里的开关）必须当帧就构建，否则首帧是空白。
     _browseTabBuilt = _currentIndex == _browseTabIndex;
@@ -163,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void dispose() {
     DirectoryScreen.browseBarExpanded.removeListener(_onBrowseBarExpandedChanged);
-    _refreshIconController.dispose();
     _fmRef?.settingsSearchRequestNotifier
         .removeListener(_onSettingsSearchRequested);
     _fmRef?.quickActionRequestNotifier
@@ -290,10 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   Future<void> _handleRefresh() async {
     if (_isRefreshing) return;
-    setState(() {
-      _isRefreshing = true;
-    });
-    _refreshIconController.repeat();
+    _isRefreshing = true;
     try {
       await Future.wait([
         context.read<FileManagerProvider>().updateStorageSpace(),
@@ -302,10 +293,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     } catch (_) {
     } finally {
       if (mounted) {
-        _refreshIconController.stop();
-        setState(() {
-          _isRefreshing = false;
-        });
+        _isRefreshing = false;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(L10n.of(context).msge109d1ea),
@@ -842,8 +830,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  // 抽屉入口：纵向三个空心圆点（断线描边风格，与其它按钮同源）。
+                  //
+                  // 不用 Broken.sidebar_left（那是「侧边栏」的象形，读作展开/收起
+                  // 面板而不是「打开抽屉」），也不直接用 Broken.more（横向三点且
+                  // 字形偏实）。这里自绘三个描边圆点，笔触与其它 Broken 按钮一致。
                   IconButton(
-                    icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                    icon: _VerticalDotsIcon(color: theme.colorScheme.primary),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   // 全局搜索：图标样式，点击进入全局搜索页
@@ -855,15 +848,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         context,
                         MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
                       );
-                    },
-                  ),
-                  // 常用功能：刷新
-                  IconButton(
-                    icon: Icon(Broken.refresh, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).msg354c1c9a,
-                    onPressed: () {
-                      _switchTab(0);
-                      _handleRefresh();
                     },
                   ),
                   // 常用功能：排序
@@ -899,13 +883,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   // Broken.stop = 单个圆角方框（单窗口），Broken.grid_4 = 圆角方框
                   // 中间一道竖线（左右双窗口），两者笔触与其它按钮完全同源。
                   IconButton(
-                    icon: Icon(
-                      context
-                              .read<FileManagerProvider>()
-                              .enableSplitScreen
-                          ? Broken.stop
-                          : Broken.grid_4,
+                    // 单/双窗口：在原有方框底子上叠一个数字徽标——单窗是「1」，
+                    // 双窗是「2」。纯图形（方框 / 左右双栏）在 24dp 下几乎分不出
+                    // 差别，数字一眼可辨，且不破坏顶栏的断线描边风格。
+                    icon: _SplitWindowBadge(
+                      isDual:
+                          context.read<FileManagerProvider>().enableSplitScreen,
                       color: theme.colorScheme.primary,
+                      background: theme.appBarTheme.backgroundColor ??
+                          theme.colorScheme.surface,
                     ),
                     tooltip: context.read<FileManagerProvider>().enableSplitScreen
                         ? L10n.of(context).ui_single_window
@@ -1272,17 +1258,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         );
         // 高度无界（极端嵌套场景）时不套滚动，避免不必要的布局约束冲突。
         if (!constraints.hasBoundedHeight) return grid;
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高，
-            // 否则最后一行分类会被胶囊永久盖住。
-            padding: EdgeInsets.only(
-              top: 4,
-              bottom: MediaQuery.paddingOf(context).bottom + 4,
+        // 分类页下拉刷新「仪表盘」（存储空间 + 各分类计数）：
+        // AlwaysScrollableScrollPhysics 保证内容不满一屏时也能触发下拉，
+        // 否则 RefreshIndicator 等不到 overscroll 通知、下拉毫无反应。
+        return RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: Theme.of(context).colorScheme.primary,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          child: SizedBox(
+            height: constraints.maxHeight,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高，
+              // 否则最后一行分类会被胶囊永久盖住。
+              padding: EdgeInsets.only(
+                top: 4,
+                bottom: MediaQuery.paddingOf(context).bottom + 4,
+              ),
+              child: grid,
             ),
-            child: grid,
           ),
         );
       },
@@ -1290,3 +1284,113 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   }
 }
 
+/// 纵向排列的三个空心圆点（断线描边风格）。
+///
+/// Broken 图标集里没有「竖排三点」的字形：横向的 Broken.more 语义是「更多」，
+/// 且字形偏实。抽屉入口要的是「打开菜单」的抽象三点，这里直接用 Canvas 画三个
+/// 等大描边圆——笔触粗细与圆角同顶栏其它 Broken 按钮保持同一套断线观感。
+class _VerticalDotsIcon extends StatelessWidget {
+  final Color color;
+
+  const _VerticalDotsIcon({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: CustomPaint(painter: _VerticalDotsPainter(color)),
+    );
+  }
+}
+
+class _VerticalDotsPainter extends CustomPainter {
+  final Color color;
+
+  const _VerticalDotsPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 笔触与 Broken 的 24dp 图标同重量；round cap 让断口也是圆的。
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    const r = 2.0;
+    const gap = 5.0; // 相邻圆心距（总高 22dp，落在 24dp 盒内不溢出）
+    for (var i = -1; i <= 1; i++) {
+      canvas.drawCircle(Offset(cx, cy + i * gap), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_VerticalDotsPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// 单 / 双窗口切换按钮：方框底 + 数字徽标。
+///
+/// 单窗口 = Broken.stop（单个圆角方框）中央一个 1；
+/// 双窗口 = Broken.grid_4（左右双栏）中央一个 2。
+///
+/// 数字必须带一圈与顶栏同色的描边阴影：方框的笔触和双栏中间那道竖线都会
+/// 从数字上穿过，直接叠字会被线条切花。
+class _SplitWindowBadge extends StatelessWidget {
+  final bool isDual;
+  final Color color;
+
+  /// 顶栏背景色（数字描边用，必须与按钮背后的颜色一致）。
+  final Color background;
+
+  const _SplitWindowBadge({
+    required this.isDual,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 八向同色阴影 = 给数字描一圈背景色的边，把压在笔画上的方框/竖线切断。
+    // 只做四向会在斜角留下毛刺。
+    final outline = <Shadow>[
+      for (final d in const [
+        Offset(-1, 0),
+        Offset(1, 0),
+        Offset(0, -1),
+        Offset(0, 1),
+        Offset(-0.8, -0.8),
+        Offset(0.8, -0.8),
+        Offset(-0.8, 0.8),
+        Offset(0.8, 0.8),
+      ])
+        Shadow(color: background, offset: d),
+    ];
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            isDual ? Broken.grid_4 : Broken.stop,
+            size: 24,
+            color: color,
+          ),
+          Text(
+            isDual ? '2' : '1',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
+              shadows: outline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.3';
+  static const String _latestChangelogVersion = 'v3.6.4';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v364,
     _v363,
     _v362,
     _v361,
@@ -951,7 +952,45 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.3 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.4 ────────────────────────────────────────────────
+  static const _Changelog _v364 = _Changelog(
+    version: 'v3.6.4',
+    date: '2026-10-24',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '歌词「全屏显示」重做：不再跳转到单独的全屏页面，而是直接在播放页内进入全屏沉浸态，背景与背景动画照常保留；全屏状态下按系统返回键即退出全屏，不会再直接退出播放页',
+        '全屏状态下点击空白处可临时唤出操作界面（可交互），2 秒无操作后自动隐藏；这 2 秒内若操作了上一首、下一首、进度条等按钮，则再延后 1 秒才隐藏',
+        '移除全屏显示右上角的三个按钮入口',
+      ]),
+      _ChangeSection('✨ 界面焕新', [
+        '顶部栏的抽屉入口改为纵向排列的三点描边图标，与顶栏其它按钮风格统一',
+        '单 / 双窗口切换按钮改用数字标识：单窗口显示「1」，双窗口显示「2」',
+        '顶部栏移除「刷新仪表盘」按钮，改为在分类页下拉即可刷新仪表盘',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复受限目录（Android/data、Android/obb）中的文件无法复制、剪切到普通目录的问题：此前会提示需要 ROOT 或 Shizuku 授权，现在与浏览、删除一样，无需任何授权即可直接复制与剪切（支持目录、多选与同名冲突处理）',
+        '修复全屏显示下按返回键会直接退出播放器页面的问题',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'Reworked the lyrics full-screen mode: it no longer opens a separate full-screen page but goes immersive right inside the player, keeping the background and its animation intact; in full screen, the system back key exits full screen instead of leaving the player',
+        'While in full screen, tapping a blank area brings the controls back (fully interactive) and they hide again after 2 seconds of inactivity; if you use buttons such as previous/next or the progress bar during those 2 seconds, hiding is delayed by another second',
+        'Removed the three buttons in the top-right corner of the full-screen view',
+      ]),
+      _ChangeSection('✨ Interface', [
+        'The drawer button in the top bar is now a vertically arranged three-dot outline icon, matching the other top-bar buttons',
+        'The single/dual-window toggle now uses numbers: "1" for single window, "2" for dual window',
+        'Removed the "Refresh dashboard" button from the top bar — pull down on the category page to refresh the dashboard instead',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed files in restricted directories (Android/data, Android/obb) failing to copy or move to normal folders: it used to ask for ROOT or Shizuku, and now copying and cutting work with no authorization at all, just like browsing and deleting (folders, multi-selection and name conflicts included)',
+        'Fixed the back key leaving the player page while in full-screen mode',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.3 ──────────────────────────────────────────────────────────
   static const _Changelog _v363 = _Changelog(
     version: 'v3.6.3',
     date: '2026-10-22',

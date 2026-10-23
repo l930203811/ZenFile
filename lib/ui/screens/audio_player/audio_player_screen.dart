@@ -32,10 +32,8 @@ import 'audio_controls_widget.dart';
 import 'audio_queue_sheet.dart';
 import 'audio_particles_widget.dart';
 import 'lyric_settings_page.dart';
-import 'lyric_offset_dialog.dart';
 import 'lyric_color_picker_dialog.dart';
 import 'lyric_style_dropdown.dart';
-import 'lyric_style_sheet.dart';
 import 'lyrics_view_widget.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -140,8 +138,25 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   // 标记用户已跳转系统设置请求通知权限，等待返回应用时复检
   bool _backgroundPlayPendingPermission = false;
 
-  // 歌词显示模式：0=关闭, 1=单行, 2=多行内联, 3=全屏面板
+  // 歌词显示模式：0=关闭, 1=单行, 2=多行内联, 3=全屏（沉浸式，本页内生效）
   int _lyricsDisplayMode = 2;
+
+  /// 沉浸式全屏态（显示模式 3）：**不再推独立全屏路由**，就在本页把
+  /// 播放控制 / 波形 / 顶栏 / 底部按钮全部收起来，只留歌词与背景。
+  ///
+  /// 交互：
+  /// - 系统返回键 = 退出全屏回到半屏显示（不退出播放器页，见 build 的
+  ///   `PopScope`；再按一次返回才退出播放器）；
+  /// - 点击空白处恢复全部 UI（可交互），再次点击或 2 秒无操作后自动重新
+  ///   隐藏；这 2 秒内操作了控件（上一首/下一首/拖进度等）则推迟到 1 秒后；
+  /// - 背景渐变与粒子动画始终保留。
+  bool _immersive = false;
+
+  /// 沉浸态下 UI 是否临时可见（见 [_immersive]）。
+  bool _immersiveChromeVisible = false;
+
+  /// 沉浸态 UI 的自动隐藏定时器（点空白唤出 2 秒；操作控件 1 秒）。
+  Timer? _immersiveChromeTimer;
 
   // 歌词
   List<LyricLine>? _lyrics;
@@ -788,6 +803,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _positionSaveTimer?.cancel();
     _cacheCheckTimer?.cancel();
     _sleepTimer?.cancel();
+    _immersiveChromeTimer?.cancel();
     _fadeController.dispose();
     // 清理桌面歌词悬浮窗
     _desktopLyricClickSub?.cancel();
@@ -1525,17 +1541,101 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   /// 应用选中的歌词显示模式（0=关闭 / 1=单行 / 2=半屏 / 3=全屏）。
-  /// 0~2 持久化，下次进入播放页恢复；3 为瞬时态、不落盘——
-  /// 选中即推全屏路由，退出后回落到之前持久化的模式（见 [_showLyricsPanel]）。
+  /// 0~2 持久化，下次进入播放页恢复；3 为**本页内的沉浸态**、不落盘——
+  /// 选中即收起播放控制与波形，退出沉浸后回落到之前持久化的模式。
+  ///
+  /// 沉浸态下再次选「全屏」= 退出沉浸（与「点击空白处唤出 UI 后再选一次」
+  /// 是同一个动作），不必先记住之前是哪个模式。
   void _setLyricDisplayMode(BuildContext ctx, int mode) {
     Navigator.pop(ctx);
     if (mode == 3) {
-      setState(() => _lyricsDisplayMode = 3);
-      _showLyricsPanel();
+      if (_immersive) {
+        _exitImmersive();
+        return;
+      }
+      setState(() {
+        _lyricsDisplayMode = 3;
+        _immersive = true;
+        // 先进来时让 UI 露一下脸（2s 后自动收起），用户才知道「点空白能唤出」。
+        _immersiveChromeVisible = true;
+      });
+      _armImmersiveChromeHideTimer();
       return;
     }
+    // 选 0/1/2 时若正沉浸，一并退出沉浸（否则歌词被 UI 藏住看不出效果）。
+    if (_immersive) _exitImmersive();
     setState(() => _lyricsDisplayMode = mode);
     PreferencesService.saveLyricsDisplayMode(mode);
+  }
+
+  // ─── 沉浸式全屏（显示模式 3，本页内生效，不推独立路由） ────────────────
+
+  /// 进入沉浸态：收起播放控制 / 波形 / 顶栏 / 底部按钮，只留歌词与背景。
+  void _enterImmersive() {
+    if (_immersive) return;
+    setState(() {
+      _lyricsDisplayMode = 3;
+      _immersive = true;
+      _immersiveChromeVisible = true;
+    });
+    _armImmersiveChromeHideTimer();
+  }
+
+  /// 退出沉浸态：UI 全部恢复，显示模式回落到用户之前持久化的 0/1/2。
+  void _exitImmersive() {
+    _immersiveChromeTimer?.cancel();
+    _immersiveChromeTimer = null;
+    setState(() {
+      _immersive = false;
+      _immersiveChromeVisible = false;
+      _lyricsDisplayMode = PreferencesService.getLyricsDisplayMode().clamp(
+        0,
+        2,
+      );
+    });
+  }
+
+  /// 沉浸态下点击空白处：显示则立即收起，隐藏则显示并重新计时 2 秒。
+  void _toggleImmersiveChrome() {
+    if (!_immersive) return;
+    if (_immersiveChromeVisible) {
+      _immersiveChromeTimer?.cancel();
+      setState(() => _immersiveChromeVisible = false);
+      return;
+    }
+    setState(() => _immersiveChromeVisible = true);
+    _armImmersiveChromeHideTimer();
+  }
+
+  /// 2 秒无操作自动收起沉浸态 UI。
+  ///
+  /// - [delay] 默认 2 秒（点空白处唤出 UI 的基准）；用户操作控件时按 1 秒
+  ///   重新计时，见 [_noteImmersiveInteraction]。
+  /// - 底部弹窗 / 对话框 / 子页面是压在播放页之上的独立路由：开着的时候
+  ///   本页路由不是 current，此时不收起、隔 500ms 复检，等它关掉再收
+  ///   （否则用户在弹窗里挑歌，UI 在背后被抢收，关掉弹窗会莫名消失）。
+  void _armImmersiveChromeHideTimer([
+    Duration delay = const Duration(seconds: 2),
+  ]) {
+    _immersiveChromeTimer?.cancel();
+    _immersiveChromeTimer = Timer(delay, () {
+      if (!mounted || !_immersive) return;
+      if (ModalRoute.of(context)?.isCurrent == false) {
+        _armImmersiveChromeHideTimer(const Duration(milliseconds: 500));
+        return;
+      }
+      setState(() => _immersiveChromeVisible = false);
+    });
+  }
+
+  /// 沉浸态 UI 可见期间用户操作了控件（上一首/下一首/播放暂停/拖进度等）：
+  /// 把自动收起推迟到 1 秒后。
+  ///
+  /// 点空白处唤出 UI 的基准是 2 秒，但「点控件」说明用户还在用这套 UI——
+  /// 刚点完上一首就把 UI 抢收，切歌结果都看不全，所以按 1 秒重新计时。
+  void _noteImmersiveInteraction() {
+    if (!_immersive || !_immersiveChromeVisible) return;
+    _armImmersiveChromeHideTimer(const Duration(seconds: 1));
   }
 
   /// 从下拉框选择动画风格：**不关闭弹窗**，按「当前显示模式」应用——
@@ -1638,7 +1738,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
     // 从通知栏点击返回前台：同步 UI 与后台播放器的状态
     // （通知栏切歌/暂停后，handler 的 player 状态可能与 UI 显示不一致）
-    if (_isBackgroundMode && player != null) {
+    // ⚠️ `player` 是 late 非空字段，`!= null` 恒真（未初始化时访问是抛
+    // LateInitializationError 而不是返回 null），所以这里不再做空判断。
+    if (_isBackgroundMode) {
       setState(() {
         isPlaying = player.state.playing;
         position = player.state.position;
@@ -1794,64 +1896,81 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 构建 artwork 或完整内联歌词视图
   Widget _buildArtworkOrLyrics(Color accent, ThemeData theme, bool isDark) {
-    if (_lyricsDisplayMode != 2) {
-      // 显示封面
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          AudioArtworkWidget(
-            audioId: _currentId,
-            audioPath: _currentPath,
-            accentColor: accent,
-            isPlaying: isPlaying,
-            onDoubleTap: _showLyricsPanel,
-            onLongPress: _showEqualizerSheet,
+    if (_lyricsDisplayMode == 2 || _lyricsDisplayMode == 3) {
+      // 沉浸态（模式 3）：歌词铺满整块区域，不带卡片底色与高度上限——
+      // 半屏那一套是「嵌在播放页里的一格」，沉浸态要的是只有歌词和背景。
+      final immersive = _lyricsDisplayMode == 3;
+      final lyricsChild = _isLoadingLyrics
+          ? const Center(child: CircularProgressIndicator())
+          : (_lyrics != null && _lyrics!.isNotEmpty
+              ? LyricsViewWidget(
+                  lyrics: _lyrics!,
+                  position: _lyricPosition,
+                  accentColor: accent,
+                  style: _lyricStyle,
+                  isPlaying: isPlaying,
+                  onSeek: (d) => player.seek(d),
+                )
+              : _buildInlineNoLyrics(theme, isDark, accent));
+      if (immersive) {
+        // 沉浸态：点击空白处唤出/收起 UI（歌词行自身的点击跳转由
+        // LyricsViewWidget 内部处理，不会与外层手势冲突）。
+        //
+        // ⚠️ 这里**不能**再包 SizedBox.expand：调用方在沉浸态是直接把本 widget
+        // 挂到 Expanded 下（见 _buildNormalScreenLayout），高度已经有限；而半屏
+        // 那条路是 SingleChildScrollView 里无界高度的 Column，强制 expand 会撞
+        // 「unbounded height」。
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _toggleImmersiveChrome,
+          child: lyricsChild,
+        );
+      }
+      return GestureDetector(
+        onDoubleTap: _showLyricsPanel,
+        onLongPress: _showEqualizerSheet,
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.35,
           ),
-          if ((isBuffering || _isWaitingForCache) && widget.isRemote)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                  const SizedBox(width: 8),
-                  Text(L10n.of(context).ui_caching, style: const TextStyle(color: Colors.white, fontSize: 13)),
-                ],
-              ),
-            ),
-        ],
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: lyricsChild,
+        ),
       );
     }
 
-    // 显示内联歌词
-    return GestureDetector(
-      onDoubleTap: _showLyricsPanel,
-      onLongPress: _showEqualizerSheet,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.35,
+    // 显示封面（模式 0 / 1）
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        AudioArtworkWidget(
+          audioId: _currentId,
+          audioPath: _currentPath,
+          accentColor: accent,
+          isPlaying: isPlaying,
+          onDoubleTap: _showLyricsPanel,
+          onLongPress: _showEqualizerSheet,
         ),
-        decoration: BoxDecoration(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: _isLoadingLyrics
-            ? const Center(child: CircularProgressIndicator())
-            : (_lyrics != null && _lyrics!.isNotEmpty
-                ? LyricsViewWidget(
-                    lyrics: _lyrics!,
-                    position: _lyricPosition,
-                    accentColor: accent,
-                    style: _lyricStyle,
-                    isPlaying: isPlaying,
-                    onSeek: (d) => player.seek(d),
-                  )
-                : _buildInlineNoLyrics(theme, isDark, accent)),
-      ),
+        if ((isBuffering || _isWaitingForCache) && widget.isRemote)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                const SizedBox(width: 8),
+                Text(L10n.of(context).ui_caching, style: const TextStyle(color: Colors.white, fontSize: 13)),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
@@ -1995,45 +2114,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         });
   }
 
-  /// 打开全屏歌词页（真正全屏路由；退出后复位显示模式）。
+  /// 「全屏显示」入口（双击封面 / 点击单行歌词 / 菜单选「全屏」共用）。
+  ///
+  /// 早期实现是推一个真正的全屏路由；现在改为**本页内的沉浸态**：收起播放
+  /// 控制与波形、只留歌词和背景，点空白处可唤出 UI，2 秒后自动收起。
+  /// 背景渐变与粒子动画始终保留（沉浸只藏控件，不藏背景）。
   void _showLyricsPanel() {
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (_) => _FullScreenLyricsPage(
-              player: player,
-              lyrics: _lyrics,
-              title: _currentTitle,
-              artist: _getDisplayArtist(),
-              accentColor: Theme.of(context).colorScheme.primary,
-              isLoading: _isLoadingLyrics,
-              onSelectLyricFile: _selectLyricFile,
-              onSearchOnline: _showLyricSearchDialog,
-              songPath: _currentPath,
-              lyricOffsetMs: _lyricOffsetMs,
-            ),
-          ),
-        )
-        .then((_) {
-          // 退出全屏后：模式 3 是瞬时态，回落到用户之前选择的显示模式
-          // （从单行/半屏临时进入时不改动用户当前模式；从菜单选「全屏显示」
-          // 进入的，回到菜单里选中的那个 0/1/2 模式）。
-          if (mounted && _lyricsDisplayMode == 3) {
-            setState(() {
-              _lyricsDisplayMode = PreferencesService.getLyricsDisplayMode();
-            });
-          }
-          // 全屏页可切换动画风格，退出后同步回播放页（单行/半屏也用该风格）。
-          if (mounted) {
-            setState(() {
-              _lyricStyle = LyricAnimationStyle.fromName(
-                  PreferencesService.getLyricAnimationStyleName());
-            });
-          }
-          // 全屏页可调整歌词偏移，退出后按偏好重算（含桌面歌词同步）。
-          _refreshLyricOffset();
-        });
+    _enterImmersive();
   }
 
   /// 设置睡眠定时器，指定分钟后暂停播放并退出播放器。
@@ -2835,7 +2922,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
     ));
 
-    return Scaffold(
+    // ⚠️ 用局部变量承接 Scaffold 再套 PopScope（而非直接
+    // `return PopScope(child: Scaffold(...))`）：后者要把整个 Scaffold 子树
+    // 重排 +2 缩进，diff 膨胀，还会把 LayoutBuilder 里的
+    // `return _buildXxxLayout(...)` 顶过 80 列、逼出额外换行 hunk。
+    final scaffold = Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
@@ -2883,175 +2974,224 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         ],
       ),
     );
+    return PopScope(
+      // 沉浸态下系统返回键先退出全屏（回到半屏显示），而不是退出播放器页；
+      // 退出后再按一次返回才正常 pop。非沉浸态行为不变。
+      canPop: !_immersive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _immersive) _exitImmersive();
+      },
+      child: scaffold,
+    );
+  }
+
+  /// 沉浸态下把一段 UI 收起来：渐隐 + 高度收缩（父级布局跟着让位，歌词区
+  /// 自动铺满）。非沉浸态原样返回，不引入任何额外开销。
+  ///
+  /// ⚠️ 不用 `Opacity + IgnorePointer` 常驻占位：那会让歌词区永远被压在原来
+  /// 的高度上，「全屏」只是变透明而不是真的全屏。
+  Widget _immersiveChrome(Widget child) {
+    if (!_immersive) return child;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: _immersiveChromeVisible ? 1 : 0),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      builder: (context, v, c) => Opacity(opacity: v, child: c),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        child: _immersiveChromeVisible
+            // 用户操作控件期间不抢收 UI：控件区任意指针活动（点按钮、拖进度
+            // 条）都把自动收起推迟到 1 秒后。Listener 只观测指针、不参与手势
+            // 竞争，不会影响按钮/拖拽本身。
+            ? Listener(
+                onPointerDown: (_) => _noteImmersiveInteraction(),
+                onPointerMove: (_) => _noteImmersiveInteraction(),
+                onPointerUp: (_) => _noteImmersiveInteraction(),
+                child: child,
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
   }
 
   Widget _buildNormalScreenLayout(BuildContext context, Color accent, ThemeData theme, bool isDark) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(Broken.arrow_down_2, size: 28),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      _allSongs.isNotEmpty
-                          ? '${_currentIndex + 1} / ${_allSongs.length}'
-                          : '1 / 1',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: accent,
-                        letterSpacing: 1.0,
+        _immersiveChrome(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Broken.arrow_down_2, size: 28),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        _allSongs.isNotEmpty
+                            ? '${_currentIndex + 1} / ${_allSongs.length}'
+                            : '1 / 1',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: accent,
+                          letterSpacing: 1.0,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _getDisplayAlbum(),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                      const SizedBox(height: 2),
+                      Text(
+                        _getDisplayAlbum(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.more_horiz_rounded, size: 22),
+                    onPressed: _showMoreMenu,
+                  ),
                 ),
-                child: IconButton(
-                  icon: const Icon(Icons.more_horiz_rounded, size: 22),
-                  onPressed: _showMoreMenu,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Expanded(
           child: FadeTransition(
             opacity: _fadeAnim,
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildArtworkOrLyrics(accent, theme, isDark),
-                        _buildSingleLineLyrics(accent, theme, isDark),
-                      ],
-                    ),
-                  ),
-                ),
-                // 歌曲信息 + 波形 + 播控整体 pinned 到导航栏上方：三者间距
-                // 均匀（14dp），底部再留 20dp 呼吸空间，不紧贴导航栏。
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+            // 沉浸态：歌词直接占满整块（不再套 SingleChildScrollView + 居中
+            // Column）——ListView 系列需要有限高度，而无界的滚动列会给它
+            // unbounded height；挂在 Expanded 下高度天然有限。
+            child: _immersive
+                ? _buildArtworkOrLyrics(accent, theme, isDark)
+                : Column(
                     children: [
-                      // 标题 / 歌手 / 收藏
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 28),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // 超长标题向左循环滚动（跑马灯），避免省略号截断
-                                  MarqueeText(
-                                    text: _currentTitle,
-                                    textAlign: TextAlign.left,
-                                    active: isPlaying,
-                                    scrollWhenPaused: true,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 24,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _getDisplayArtist(),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                _isFavorite
-                                    ? Icons.favorite_rounded
-                                    : Icons.favorite_border_rounded,
-                                color: _isFavorite
-                                    ? Colors.redAccent
-                                    : theme.colorScheme.onSurface.withValues(
-                                        alpha: 0.6,
-                                      ),
-                                size: 28,
-                              ),
-                              onPressed: () =>
-                                  setState(() => _isFavorite = !_isFavorite),
-                            ),
-                          ],
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildArtworkOrLyrics(accent, theme, isDark),
+                              _buildSingleLineLyrics(accent, theme, isDark),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: AudioWaveformWidget(
+                      // 歌曲信息 + 波形 + 播控整体 pinned 到导航栏上方：三者间距
+                      // 均匀（14dp），底部再留 20dp 呼吸空间，不紧贴导航栏。
+                      // 沉浸态整块收起（见 [_immersiveChrome]）。
+                      _immersiveChrome(
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 标题 / 歌手 / 收藏
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 28),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                                    MarqueeText(
+                                      text: _currentTitle,
+                                      textAlign: TextAlign.left,
+                                      active: isPlaying,
+                                      scrollWhenPaused: true,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 24,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      _getDisplayArtist(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  _isFavorite
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color: _isFavorite
+                                      ? Colors.redAccent
+                                      : theme.colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                  size: 28,
+                                ),
+                                onPressed: () =>
+                                    setState(() => _isFavorite = !_isFavorite),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: AudioWaveformWidget(
+                            position: position,
+                            duration: duration,
+                            isPlaying: isPlaying,
+                            accentColor: accent,
+                            onSeekStart: () => isSeeking = true,
+                            onSeekCancel: () => isSeeking = false,
+                            onSeek: (d) {
+                              isSeeking = false;
+                              setState(() => position = d);
+                              player.seek(d);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        AudioControlsWidget(
+                          isPlaying: isPlaying,
                           position: position,
                           duration: duration,
-                          isPlaying: isPlaying,
+                          onPlayPause: () => player.playOrPause(),
+                          onPrevious: _allSongs.length > 1 ? _playPrevious : null,
+                          onNext: _allSongs.length > 1 ? _playNext : null,
+                          onShowLyrics: _showLyricModeMenu,
+                          onShowSleepTimer: _showSleepTimerDialog,
+                          onShowEqualizer: _showEqualizerSheet,
+                          onShowQueue: () => _showQueueSheet(accent),
+                          playbackMode: _playbackMode,
+                          onTogglePlaybackMode: _cyclePlaybackMode,
                           accentColor: accent,
-                          onSeekStart: () => isSeeking = true,
-                          onSeekCancel: () => isSeeking = false,
-                          onSeek: (d) {
-                            isSeeking = false;
-                            setState(() => position = d);
-                            player.seek(d);
-                          },
+                          lyricsDisplayMode: _lyricsDisplayMode,
+                          audioPath: _currentPath,
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      AudioControlsWidget(
-                        isPlaying: isPlaying,
-                        position: position,
-                        duration: duration,
-                        onPlayPause: () => player.playOrPause(),
-                        onPrevious: _allSongs.length > 1 ? _playPrevious : null,
-                        onNext: _allSongs.length > 1 ? _playNext : null,
-                        onShowLyrics: _showLyricModeMenu,
-                        onShowSleepTimer: _showSleepTimerDialog,
-                        onShowEqualizer: _showEqualizerSheet,
-                        onShowQueue: () => _showQueueSheet(accent),
-                        playbackMode: _playbackMode,
-                        onTogglePlaybackMode: _cyclePlaybackMode,
-                        accentColor: accent,
-                        lyricsDisplayMode: _lyricsDisplayMode,
-                        audioPath: _currentPath,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -3069,26 +3209,28 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           flex: 1,
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Broken.arrow_down_2, size: 24),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              _immersiveChrome(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Broken.arrow_down_2, size: 24),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.more_horiz_rounded, size: 20),
-                        onPressed: _showMoreMenu,
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.more_horiz_rounded, size: 20),
+                          onPressed: _showMoreMenu,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Expanded(
@@ -3106,18 +3248,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           flex: 1,
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  _allSongs.isNotEmpty
-                      ? '${_currentIndex + 1} / ${_allSongs.length}'
-                      : '1 / 1',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: accent,
-                    letterSpacing: 1.0,
+              _immersiveChrome(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    _allSongs.isNotEmpty
+                        ? '${_currentIndex + 1} / ${_allSongs.length}'
+                        : '1 / 1',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: accent,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
               ),
@@ -3138,102 +3282,105 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       ),
                       // 标题 / 收藏 / 波形 / 播控整体 pinned 到导航栏上方：
                       // 间距均匀（12dp），底部再留 20dp 不紧贴导航栏。
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // 超长标题向左循环滚动（跑马灯），避免省略号截断
-                                  MarqueeText(
-                                    text: _currentTitle,
-                                    textAlign: TextAlign.center,
-                                    active: isPlaying,
-                                    scrollWhenPaused: true,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 20,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _getDisplayArtist(),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            IconButton(
-                              icon: Icon(
-                                _isFavorite
-                                    ? Icons.favorite_rounded
-                                    : Icons.favorite_border_rounded,
-                                color: _isFavorite
-                                    ? Colors.redAccent
-                                    : theme.colorScheme.onSurface.withValues(
-                                        alpha: 0.6,
+                      // 沉浸态整块收起（见 [_immersiveChrome]）。
+                      _immersiveChrome(
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                                    MarqueeText(
+                                      text: _currentTitle,
+                                      textAlign: TextAlign.center,
+                                      active: isPlaying,
+                                      scrollWhenPaused: true,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 20,
+                                        letterSpacing: 0.2,
                                       ),
-                                size: 32,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      _getDisplayArtist(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              onPressed: () =>
-                                  setState(() => _isFavorite = !_isFavorite),
-                            ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
+                              const SizedBox(height: 12),
+                              IconButton(
+                                icon: Icon(
+                                  _isFavorite
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color: _isFavorite
+                                      ? Colors.redAccent
+                                      : theme.colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                  size: 32,
+                                ),
+                                onPressed: () =>
+                                    setState(() => _isFavorite = !_isFavorite),
                               ),
-                              child: AudioWaveformWidget(
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: AudioWaveformWidget(
+                                  position: position,
+                                  duration: duration,
+                                  isPlaying: isPlaying,
+                                  accentColor: accent,
+                                  onSeekStart: () => isSeeking = true,
+                                  onSeekCancel: () => isSeeking = false,
+                                  onSeek: (d) {
+                                    isSeeking = false;
+                                    setState(() => position = d);
+                                    player.seek(d);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              AudioControlsWidget(
+                                isPlaying: isPlaying,
                                 position: position,
                                 duration: duration,
-                                isPlaying: isPlaying,
+                                onPlayPause: () => player.playOrPause(),
+                                onPrevious: _allSongs.length > 1
+                                    ? _playPrevious
+                                    : null,
+                                onNext: _allSongs.length > 1 ? _playNext : null,
+                                onShowLyrics: _showLyricModeMenu,
+                                onShowSleepTimer: _showSleepTimerDialog,
+                                onShowEqualizer: _showEqualizerSheet,
+                                onShowQueue: () => _showQueueSheet(accent),
+                                playbackMode: _playbackMode,
+                                onTogglePlaybackMode: _cyclePlaybackMode,
                                 accentColor: accent,
-                                onSeekStart: () => isSeeking = true,
-                                onSeekCancel: () => isSeeking = false,
-                                onSeek: (d) {
-                                  isSeeking = false;
-                                  setState(() => position = d);
-                                  player.seek(d);
-                                },
+                                lyricsDisplayMode: _lyricsDisplayMode,
+                                audioPath: _currentPath,
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            AudioControlsWidget(
-                              isPlaying: isPlaying,
-                              position: position,
-                              duration: duration,
-                              onPlayPause: () => player.playOrPause(),
-                              onPrevious: _allSongs.length > 1
-                                  ? _playPrevious
-                                  : null,
-                              onNext: _allSongs.length > 1 ? _playNext : null,
-                              onShowLyrics: _showLyricModeMenu,
-                              onShowSleepTimer: _showSleepTimerDialog,
-                              onShowEqualizer: _showEqualizerSheet,
-                              onShowQueue: () => _showQueueSheet(accent),
-                              playbackMode: _playbackMode,
-                              onTogglePlaybackMode: _cyclePlaybackMode,
-                              accentColor: accent,
-                              lyricsDisplayMode: _lyricsDisplayMode,
-                              audioPath: _currentPath,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -3248,405 +3395,3 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 }
 
-/// 全屏歌词页：真正全屏的歌词视图，支持切换动画风格、本地导入与在线搜索。
-class _FullScreenLyricsPage extends StatefulWidget {
-  final Player player;
-  final List<LyricLine>? lyrics;
-  final String title;
-  final String artist;
-  final Color accentColor;
-  final bool isLoading;
-  final VoidCallback onSelectLyricFile;
-  final VoidCallback onSearchOnline;
-
-  /// 当前歌曲标识（歌词偏移「仅本曲」作用域用）。
-  final String songPath;
-
-  /// 进入时的生效歌词偏移（毫秒）。
-  final int lyricOffsetMs;
-
-  const _FullScreenLyricsPage({
-    required this.player,
-    required this.lyrics,
-    required this.title,
-    required this.artist,
-    required this.accentColor,
-    required this.isLoading,
-    required this.onSelectLyricFile,
-    required this.onSearchOnline,
-    required this.songPath,
-    this.lyricOffsetMs = 0,
-  });
-
-  @override
-  State<_FullScreenLyricsPage> createState() => _FullScreenLyricsPageState();
-}
-
-class _FullScreenLyricsPageState extends State<_FullScreenLyricsPage> {
-  Duration _position = Duration.zero;
-  StreamSubscription<Duration>? _positionSub;
-  bool _isPlaying = false;
-  StreamSubscription<bool>? _playingSub;
-  late LyricAnimationStyle _style;
-
-  /// 生效的歌词整体偏移（毫秒）：正值延后、负值提前。
-  int _lyricOffsetMs = 0;
-
-  /// 顶栏（歌曲信息 / 搜索 / 导入 / 风格切换 / 偏移）是否可见。
-  /// 默认隐藏 = 沉浸式全屏；点击歌词区空白处显示，2s 无操作自动收起。
-  bool _chromeVisible = false;
-
-  /// 顶栏自动隐藏定时器（显示 2s 后回到沉浸模式）。
-  Timer? _chromeTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _style = LyricAnimationStyle.fromName(
-        PreferencesService.getLyricAnimationStyleName());
-    _lyricOffsetMs = widget.lyricOffsetMs;
-    _isPlaying = widget.player.state.playing;
-    _positionSub = widget.player.stream.position.listen((p) {
-      if (mounted) setState(() => _position = p);
-    });
-    _playingSub = widget.player.stream.playing.listen((playing) {
-      if (mounted) setState(() => _isPlaying = playing);
-    });
-  }
-
-  @override
-  void dispose() {
-    _chromeTimer?.cancel();
-    _positionSub?.cancel();
-    _playingSub?.cancel();
-    super.dispose();
-  }
-
-  /// 显示顶栏并启动 2s 自动隐藏（再次点击空白处可立即收起）。
-  void _showChrome() {
-    _chromeTimer?.cancel();
-    setState(() => _chromeVisible = true);
-    _startChromeHideTimer();
-  }
-
-  void _hideChrome() {
-    _chromeTimer?.cancel();
-    setState(() => _chromeVisible = false);
-  }
-
-  /// 顶栏已显示时重排自动隐藏计时（弹出菜单开关后沿用相同节奏）。
-  void _rearmChromeTimer() {
-    if (!_chromeVisible) return;
-    _chromeTimer?.cancel();
-    _startChromeHideTimer();
-  }
-
-  void _startChromeHideTimer() {
-    _chromeTimer = Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() => _chromeVisible = false);
-    });
-  }
-
-  void _toggleChrome() {
-    if (_chromeVisible) {
-      _hideChrome();
-    } else {
-      _showChrome();
-    }
-  }
-
-  /// 歌词整体偏移设置（实时预览，确认才落盘）。
-  void _showOffsetDialog() {
-    LyricOffsetDialog.show(
-      context,
-      songPath: widget.songPath,
-      songTitle: widget.title,
-      globalMs: PreferencesService.getLyricOffsetGlobal(),
-      songMs: PreferencesService.getLyricOffsetForSong(widget.songPath),
-      effectiveMs: _lyricOffsetMs,
-      onPreview: (ms) {
-        if (!mounted) return;
-        setState(() => _lyricOffsetMs = ms);
-        DesktopLyricController.instance.setOffsetMs(ms);
-      },
-    ).then((result) {
-      if (!mounted || result == null) return;
-      setState(() => _lyricOffsetMs = result);
-      DesktopLyricController.instance.setOffsetMs(result);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final mediaQuery = MediaQuery.of(context);
-
-    // 全屏沉浸：状态栏透明，顶部渐变延伸至状态栏后方。
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-    ));
-
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: _chromeWrap(
-          child: IconButton(
-            icon: Icon(Broken.arrow_down_2,
-                color: isDark ? Colors.white : theme.colorScheme.onSurface),
-            tooltip: MaterialLocalizations.of(context).closeButtonLabel,
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        title: _chromeWrap(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isDark ? Colors.white : theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                widget.artist,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: (isDark ? Colors.white : theme.colorScheme.onSurface)
-                      .withValues(alpha: 0.55),
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          // 在线搜索 / 本地导入合并为一个入口：点击弹出菜单二选一。
-          _chromeWrap(
-            child: PopupMenuButton<String>(
-              tooltip: l10n.ui_lyrics_menu,
-              icon: Icon(
-                Icons.lyrics_rounded,
-                size: 22,
-                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
-                    .withValues(alpha: 0.75),
-              ),
-              // 菜单打开期间暂停顶栏自动隐藏，避免锚点按钮消失。
-              onOpened: () => _chromeTimer?.cancel(),
-              onCanceled: _rearmChromeTimer,
-              onSelected: (value) {
-                if (value == 'search') {
-                  widget.onSearchOnline();
-                } else if (value == 'import') {
-                  widget.onSelectLyricFile();
-                }
-                _rearmChromeTimer();
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  value: 'search',
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.search_rounded, size: 20),
-                    title: Text(l10n.ui_search_lyrics_online),
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'import',
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.folder_open_rounded, size: 20),
-                    title: Text(l10n.ui_select_lyrics_file),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _chromeWrap(
-            child: IconButton(
-              icon: Icon(
-                Icons.animation_rounded,
-                size: 22,
-                color: widget.accentColor,
-              ),
-              tooltip: l10n.lyric_animation_style,
-              onPressed: () {
-                showLyricStyleSheet(
-                  context,
-                  current: _style,
-                  onSelected: (s) => setState(() => _style = s),
-                );
-              },
-            ),
-          ),
-          _chromeWrap(
-            child: IconButton(
-              icon: const Icon(Icons.timer_outlined, size: 22),
-              color: _lyricOffsetMs != 0
-                  ? widget.accentColor
-                  : (isDark ? Colors.white : theme.colorScheme.onSurface)
-                      .withValues(alpha: 0.75),
-              tooltip: _lyricOffsetMs != 0
-                  ? '${l10n.lyric_offset}  ${formatLyricOffset(_lyricOffsetMs)}'
-                  : l10n.lyric_offset,
-              onPressed: _showOffsetDialog,
-            ),
-          ),
-        ],
-      ),
-      // 点击歌词区（非歌词行本身）显示顶栏；显示 2s 后自动收起，
-      // 再次点击立即收起，回到沉浸模式。
-      body: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: _toggleChrome,
-        child: AnimatedPadding(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          // 顶栏隐藏时歌词延伸至状态栏下方，真正沉浸；显示时让出 AppBar 高度。
-          padding: EdgeInsets.only(
-            top: _chromeVisible
-                ? mediaQuery.padding.top + kToolbarHeight
-                : mediaQuery.padding.top,
-            bottom: mediaQuery.padding.bottom,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  widget.accentColor.withValues(alpha: isDark ? 0.14 : 0.10),
-                  theme.scaffoldBackgroundColor,
-                  theme.scaffoldBackgroundColor,
-                ],
-                stops: const [0.0, 0.45, 1.0],
-              ),
-            ),
-            child: widget.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : (widget.lyrics != null && widget.lyrics!.isNotEmpty
-                    ? LyricsViewWidget(
-                        lyrics: widget.lyrics!,
-                        position: Duration(
-                          milliseconds:
-                              _position.inMilliseconds - _lyricOffsetMs,
-                        ),
-                        accentColor: widget.accentColor,
-                        style: _style,
-                        isPlaying: _isPlaying,
-                        onSeek: (d) => widget.player.seek(d),
-                      )
-                    : _buildNoLyrics(theme, isDark)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 顶栏控件显隐包裹：沉浸态淡出 + 上移，并屏蔽点击。
-  Widget _chromeWrap({required Widget child}) {
-    return IgnorePointer(
-      ignoring: !_chromeVisible,
-      child: AnimatedSlide(
-        offset: _chromeVisible ? Offset.zero : const Offset(0, -0.4),
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-        child: AnimatedOpacity(
-          opacity: _chromeVisible ? 1 : 0,
-          duration: const Duration(milliseconds: 200),
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNoLyrics(ThemeData theme, bool isDark) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Broken.document,
-              size: 64,
-              color: (isDark ? Colors.white : theme.colorScheme.onSurface)
-                  .withValues(alpha: 0.2),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              L10n.of(context).ui_no_lyrics_found,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
-                    .withValues(alpha: 0.6),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              L10n.of(context).ui_lyrics_auto_load_hint,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.6,
-                color: (isDark ? Colors.white : theme.colorScheme.onSurface)
-                    .withValues(alpha: 0.4),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: widget.onSearchOnline,
-                  icon: const Icon(Icons.search_rounded, size: 20),
-                  label: Text(L10n.of(context).ui_search_lyrics_online),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: widget.accentColor,
-                    side: BorderSide(
-                        color: widget.accentColor.withValues(alpha: 0.4)),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: widget.onSelectLyricFile,
-                  icon: const Icon(Icons.folder_open_rounded, size: 20),
-                  label: Text(L10n.of(context).ui_select_lyrics_file),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: widget.accentColor,
-                    side: BorderSide(
-                        color: widget.accentColor.withValues(alpha: 0.4)),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

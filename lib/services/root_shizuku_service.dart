@@ -1204,6 +1204,28 @@ class SafAndroidDataService {
     }
   }
 
+  /// 经 SAF（已授权树）删除受限路径 [localPath] 处的条目（DocumentsContract.deleteDocument，
+  /// 复用原生既有 `delete` 处理器）。用于「复制/剪切进受限目录」的覆盖语义——
+  /// DocumentsContract.createDocument 遇同名会自动改名 "name (1)"，写入前须先清理旧条目。
+  /// 未授权或失败返回 false（调用方按需兜底），不抛异常。
+  static Future<bool> deleteViaSaf(String localPath, {bool isObb = false}) async {
+    final rel = _relFromLocal(localPath);
+    if (!rel.startsWith('Android/')) return false;
+    final treeUri = await _treeUriForRel(rel);
+    if (treeUri == null || treeUri.isEmpty) return false;
+    try {
+      final docUri = _buildSafDocUri(treeUri, 'primary:$rel');
+      final out = await _channel.invokeMethod('delete', {
+        'rootUri': treeUri,
+        'uri': docUri,
+      });
+      return out == true;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF deleteViaSaf failed: $e');
+      return false;
+    }
+  }
+
   /// 经 SAF（已授权树）在受限目录下新建文件夹。
   /// 纯 Shizuku（无 root）下 shell(uid 2000) 经 FUSE 无其它应用 Android/{data,obb} 写权限，
   /// 故走 DocumentsContract.createDocument（与 MT 管理器同源方案）。未授权自动请求。

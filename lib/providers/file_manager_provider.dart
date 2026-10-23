@@ -8670,7 +8670,25 @@ class FileManagerProvider extends ChangeNotifier {
         _clipboardPaths.any((sp) => isRestrictedPath(sp) && !_isRestrictedAndroidPath(sp));
     if (legacyRestrictedPaste) {
       // root 优先解析执行模式（不依赖导航后可能被重置的 tab 模式）
-      final legacyUseRoot = await _resolveBypassMode() ?? activeTab.useRootMode;
+      final legacyResolvedRoot = await _resolveBypassMode();
+      // ★ 纯 SAF 模式（无 root / 无 Shizuku）且目标为 Android/{data,obb}：shell
+      //   （runCommand）没有任何执行通道，原逻辑以 activeTab.useRootMode=false 兜底
+      //   执行 mv/cp 必然失败。目标在此类设备上通常已获 SAF 树授权（浏览层同源），
+      //   改走 SAF 写入通道（DocumentsContract 建目/写文件）。/data 等系统受限路径
+      //   的 SAF 树不可授权，不进此分支、维持原 shell 行为。
+      if (legacyResolvedRoot == null &&
+          _isRestrictedAndroidPath(currentPath) &&
+          await SafAndroidDataService.ensureTreeForPath(currentPath)) {
+        await _pasteLocalIntoRestrictedViaSaf(context);
+        if (clearAfterPaste) {
+          _clearActiveClipboard();
+        }
+        activeTab.isLoading = false;
+        await loadDirectory(currentPath, showLoading: false, clearCache: true);
+        notifyListeners();
+        return;
+      }
+      final legacyUseRoot = legacyResolvedRoot ?? activeTab.useRootMode;
       try {
         for (final srcPath in _clipboardPaths) {
           final name = p.basename(srcPath);
@@ -8742,6 +8760,67 @@ class FileManagerProvider extends ChangeNotifier {
       if (_clipboardPaths.any((sp) => _needsBypass(sp) || _isRestrictedAndroidPath(sp))) {
         bypassUseRoot = await _resolveBypassMode();
         if (bypassUseRoot == null) {
+          // ① 零宽 / '/./' 变体通道（与浏览层「无需授权直访」、删除通道 ④ 同源，
+          //    无需 root/Shizuku/SAF 任何授权）：逐源探测可达性，全部可达时整批
+          //    走变体直拷。v3.5.8 起受限判定会先剥离变体标记，剪贴板里的受限源
+          //    不再「漏判成普通路径」落回 Dart IO —— 那个（意外的）旧行为正是
+          //    v3.5.8 之前「无授权也能复制/剪切出来」的原因，这里把该通道显式补回。
+          final restrictedSources =
+              _clipboardPaths.where(_isRestrictedAndroidPath).toList();
+          var variantReady =
+              restrictedSources.isNotEmpty &&
+              restrictedSources.length == _clipboardPaths.length;
+          if (variantReady) {
+            for (final sp in restrictedSources) {
+              if (await _typeViaNoAuthVariants(
+                    stripRestrictedVariantMarkers(sp),
+                  ) ==
+                  null) {
+                variantReady = false;
+                break;
+              }
+            }
+          }
+          if (variantReady) {
+            if (context.mounted) {
+              await _pasteRestrictedAndroidViaVariants(
+                context,
+                clearAfterPaste: clearAfterPaste,
+              );
+            }
+            return;
+          }
+          // ② 变体不可达（如已修补内核的设备）：回退 SAF 树授权读取链路。
+          //    纯 SAF 模式（无 root / 无 Shizuku）：浏览、删除均可行，读取经
+          //    ContentResolver 完成；上方精细链路依赖 shell（statItem/copyItem），
+          //    无 Shizuku 时全部不可用。逐源预授权（未授权会弹选择器），全部
+          //    就绪后整批走 SAF 读取链路。
+          var safReady = true;
+          for (final sp in restrictedSources) {
+            if (!await SafAndroidDataService.ensureTreeForPath(sp)) {
+              safReady = false;
+              break;
+            }
+          }
+          // 多选实际同目录，混合「受限+普通」源不会出现；一旦出现（或授权被拒）
+          // 维持原报错，不让普通源走错通道。
+          if (safReady && restrictedSources.length == _clipboardPaths.length) {
+            await _pasteRestrictedAndroidViaSaf(
+              context,
+              clearAfterPaste: clearAfterPaste,
+            );
+            return;
+          }
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(L10n.of(context)
+                    .e1(Exception('Restricted source requires ROOT or Shizuku'))),
+                backgroundColor: Colors.redAccent,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
           throw Exception('Restricted source requires ROOT or Shizuku');
         }
         // 纯 Shizuku（无 root）时 shell 两种路径都读不到其它应用 Android/{data,obb}
@@ -9246,6 +9325,444 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 }
+
+// ── 无授权直访（变体）与纯 SAF 模式（无 root / 无 Shizuku）的受限目录粘贴链路 ──
+//
+// 背景一（变体通道，_pasteRestrictedAndroidViaVariants）：部分设备内核的
+// case-fold 会忽略零宽字符（U+200B），FUSE 对 /Android/{data,obb} 的访问控制
+// 按路径串匹配 ⇒ 注入零宽（或 '/./' 组件）的变体路径可用标准 Dart IO 直读。
+// 浏览层的「无需授权直访」与删除通道 ④ 一直依赖它；v3.5.8 之前复制/剪切也是
+// 靠剪贴板变体路径「漏判成普通路径」意外走通的（v3.5.8 修正判定后反而失效）。
+// 这里把它显式补回：无需任何授权，与浏览/删除同源。
+//
+// 背景二（SAF 通道，_pasteRestrictedAndroidViaSaf）：变体不可达的设备（如已
+// 修补内核）上，用户经系统选择器授权 Android/data/<包名> 目录树后，浏览
+// （原生 listDirectory）与删除（File.delete / 零宽变体通道）都可行，但复制/
+// 剪切此前硬性要求 root/Shizuku——读取链路只接了 shell（statItem/copyItem），
+// 没接 SAF 读取。以下方法补上 SAF 通道：源内容经 ContentResolver 读取
+// （downloadPathViaSaf，等价 openInputStream/openFileDescriptor → 落盘，
+// 文件/目录通吃、原生递归），落盘目标恒为普通目录（或已授权树内），与普通
+// 复制共用 Dart IO 写出。有 root/Shizuku 时仍优先走原精细链路，不经过这里。
+
+  /// 受限源「无授权直访」变体探测：零宽变体 + '/./' 变体，任一可达即返回其
+  /// 类型；全部不可达返回 null。与浏览层多级策略的 ③④ 通道同源。
+  /// [cleanPath] 必须是已剥离变体标记的标准路径。
+  Future<FileSystemEntityType?> _typeViaNoAuthVariants(String cleanPath) async {
+    final t = await typeViaRestrictedVariants(cleanPath);
+    if (t != null) return t;
+    final dot = _androidDotVariantPath(cleanPath);
+    if (dot == null) return null;
+    try {
+      final t2 = FileSystemEntity.typeSync(dot);
+      if (t2 != FileSystemEntityType.notFound) return t2;
+    } catch (_) {}
+    return null;
+  }
+
+  /// 经「无授权直访」变体通道把受限条目复制到普通路径 [destPath]（文件/目录
+  /// 通吃，目录递归）。先试零宽变体（[tryCopyTreeViaRestrictedVariants] 既有
+  /// 递归实现），再试 '/./' 变体。任一通道成功返回 true。
+  Future<bool> _copyRestrictedViaNoAuthVariants(
+      String srcPath, String destPath) async {
+    if (await tryCopyTreeViaRestrictedVariants(srcPath, destPath)) return true;
+    final dot = _androidDotVariantPath(srcPath);
+    if (dot == null) return false;
+    try {
+      final t = FileSystemEntity.typeSync(dot);
+      if (t == FileSystemEntityType.notFound) return false;
+      if (t == FileSystemEntityType.directory) {
+        await _copyDirViaDartIo(Directory(dot), Directory(destPath));
+      } else {
+        await File(dot).copy(destPath);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 变体路径下的目录递归复制：list() 返回的子路径自带变体前缀，递归延续
+  /// 同一通道（不再触碰干净路径的 Dart IO）。
+  Future<void> _copyDirViaDartIo(Directory src, Directory dest) async {
+    if (!dest.existsSync()) {
+      dest.createSync(recursive: true);
+    }
+    await for (final entity in src.list(followLinks: false)) {
+      final name = entity.path.split('/').last;
+      final target = '${dest.path}/$name';
+      if (entity is Directory) {
+        await _copyDirViaDartIo(entity, Directory(target));
+      } else if (entity is File) {
+        await entity.copy(target);
+      }
+    }
+  }
+
+  /// 把 Android/{data,obb} 受限源（调用方已确保剪贴板全部为受限源且逐源
+  /// [_typeViaNoAuthVariants] 可达）复制/剪切到当前普通目录 —— 零宽 / '/./'
+  /// 变体通道，**无需 root/Shizuku/SAF 任何授权**（与浏览层「无需授权直访」、
+  /// 删除通道 ④ 同源，即 v3.5.8 之前复制/剪切实际依赖的通道）。
+  /// 进度对话框/loading 的建立与清理均由 [_pasteFileToTab] 统一负责（本方法
+  /// 在其内层 try 中调用，其外层 finally 兜底刷新目标/源目录与状态复位），
+  /// 这里只更新传输进度。剪切收尾复用与删除链路完全一致的 [_deleteRestrictedItem]。
+  Future<void> _pasteRestrictedAndroidViaVariants(
+    BuildContext context, {
+    required bool clearAfterPaste,
+  }) async {
+    final cutSources =
+        _isCut ? List<String>.from(_clipboardPaths) : const <String>[];
+    final List<String> finalTopLevelDestPaths = [];
+    Object? failure;
+    bool cancelled = false;
+    final total = _clipboardPaths.length;
+    for (int i = 0; i < total; i++) {
+      final srcPath = stripRestrictedVariantMarkers(_clipboardPaths[i]);
+      if (_isOperationCancelled) {
+        cancelled = true;
+        break;
+      }
+      final name = p.basename(srcPath);
+
+      // 变体通道无逐块回调，按条目推进度（与 shell cp/mv 链路粒度一致）。
+      progressNotifier.value = FileOperationProgress(
+        totalFiles: total,
+        currentFileIndex: i + 1,
+        currentFileName: name,
+        percentage: total > 0 ? i / total : 0,
+        speedMBs: 0.0,
+        eta: Duration.zero,
+        totalBytes: 1,
+        bytesProcessed: 0,
+      );
+
+      try {
+        String destPath = p.join(currentPath, name);
+        final destType = FileSystemEntity.typeSync(destPath);
+        if (destType != FileSystemEntityType.notFound) {
+          // 冲突语义与主链路一致：弹同名对话框。源受限 stat 不可用，
+          // keepBoth/rename 的避让类型按目标既有条目判定。
+          ConflictDialogResponse? response;
+          if (context.mounted) {
+            response = await ConflictDialog.show(
+              context,
+              fileName: name,
+              sourceFile: File(srcPath),
+              destFile: File(destPath),
+            );
+          }
+          final resolution = response?.result ?? ConflictResult.cancel;
+          if (resolution == ConflictResult.cancel) {
+            cancelled = true; // 与主链路一致：取消不清剪贴板，便于重试
+            break;
+          } else if (resolution == ConflictResult.skip) {
+            continue;
+          } else if (resolution == ConflictResult.keepBoth) {
+            destPath = _getUniquePath(
+                destPath, destType == FileSystemEntityType.directory);
+          } else if (resolution == ConflictResult.rename) {
+            final customName = response?.customName ?? name;
+            destPath = _getUniquePath(
+              p.join(p.dirname(destPath), customName),
+              destType == FileSystemEntityType.directory,
+            );
+          }
+          // overwrite：直接落盘（File.copy 截断写 / 目录合并）。
+        }
+
+        final ok = await _copyRestrictedViaNoAuthVariants(srcPath, destPath);
+        if (!ok) {
+          throw Exception('Variant copy failed: $srcPath -> $destPath');
+        }
+        finalTopLevelDestPaths.add(destPath);
+        if (_isCut) {
+          // 剪切收尾：删除受限源。复用删除链路（shell → 直删 → 变体），
+          // 用户实测「能删除」的设备上该链路可用；失败不中断（避免剪切变
+          // 复制且剪贴板不消失），仅记日志。
+          try {
+            await _deleteRestrictedItem(srcPath);
+          } catch (delErr) {
+            debugPrint('[ZenFile] 变体剪切源删除失败（已复制成功）: $delErr');
+          }
+        }
+      } catch (e) {
+        failure = e;
+        break; // 与既有受限链路一致：单项失败终止余项
+      }
+    }
+
+    if (cutSources.isNotEmpty) {
+      MediaProvider.instance?.pruneDeletedMediaPaths(cutSources);
+    }
+    if (failure != null && !cancelled) {
+      debugPrint('[ZenFile] 变体受限粘贴失败: $failure');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).e1(failure)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      // 失败即返回：交由外层 finally 清理进度与刷新目标/源目录。
+      return;
+    }
+
+    if (clearAfterPaste && !cancelled) {
+      _clearActiveClipboard();
+    }
+    _highlightedPaths.clear();
+    _highlightedPaths.addAll(finalTopLevelDestPaths);
+    _shouldScrollToHighlight = true;
+  }
+
+  /// 把 Android/{data,obb} 受限源（调用方已确保 SAF 树就绪且剪贴板全部为受限源）
+  /// 复制/剪切到当前普通目录。进度对话框/loading 的建立与清理均由
+  /// [_pasteFileToTab] 统一负责（本方法在其内层 try 中调用，其外层 finally 兜底
+  /// 刷新目标/源目录与状态复位），这里只更新传输进度。剪切收尾复用与删除链路
+  /// 完全一致的 [_deleteRestrictedItem]。
+  Future<void> _pasteRestrictedAndroidViaSaf(
+    BuildContext context, {
+    required bool clearAfterPaste,
+  }) async {
+    final cutSources = _isCut ? List<String>.from(_clipboardPaths) : const <String>[];
+    final List<String> finalTopLevelDestPaths = [];
+    Object? failure;
+    bool cancelled = false;
+    final total = _clipboardPaths.length;
+    for (int i = 0; i < total; i++) {
+      final srcPath = stripRestrictedVariantMarkers(_clipboardPaths[i]);
+      if (_isOperationCancelled) {
+        cancelled = true;
+        break;
+      }
+      final name = p.basename(srcPath);
+
+      // SAF 读取无逐块回调，按条目推进度（与 shell cp/mv 链路粒度一致）。
+      progressNotifier.value = FileOperationProgress(
+        totalFiles: total,
+        currentFileIndex: i + 1,
+        currentFileName: name,
+        percentage: total > 0 ? i / total : 0,
+        speedMBs: 0.0,
+        eta: Duration.zero,
+        totalBytes: 1,
+        bytesProcessed: 0,
+      );
+
+      try {
+        String destPath = p.join(currentPath, name);
+        final destType = FileSystemEntity.typeSync(destPath);
+        if (destType != FileSystemEntityType.notFound) {
+          // 冲突语义与主链路一致：弹同名对话框。源受限 stat 不可用，
+          // keepBoth/rename 的避让类型按目标既有条目判定。
+          ConflictDialogResponse? response;
+          if (context.mounted) {
+            response = await ConflictDialog.show(
+              context,
+              fileName: name,
+              sourceFile: File(srcPath),
+              destFile: File(destPath),
+            );
+          }
+          final resolution = response?.result ?? ConflictResult.cancel;
+          if (resolution == ConflictResult.cancel) {
+            cancelled = true; // 与主链路一致：取消不清剪贴板，便于重试
+            break;
+          } else if (resolution == ConflictResult.skip) {
+            continue;
+          } else if (resolution == ConflictResult.keepBoth) {
+            destPath = _getUniquePath(destPath, destType == FileSystemEntityType.directory);
+          } else if (resolution == ConflictResult.rename) {
+            final customName = response?.customName ?? name;
+            destPath = _getUniquePath(
+              p.join(p.dirname(destPath), customName),
+              destType == FileSystemEntityType.directory,
+            );
+          }
+          // overwrite：直接落盘（原生 FileOutputStream 截断写 / 目录合并）
+        }
+
+        // SAF 读取通道：文件直接拷字节，目录原生递归整树落盘（含空目录）。
+        final ok = await SafAndroidDataService.downloadPathViaSaf(srcPath, destPath);
+        if (!ok) {
+          throw Exception('SAF copy failed: $srcPath -> $destPath');
+        }
+        finalTopLevelDestPaths.add(destPath);
+        if (_isCut) {
+          // 剪切收尾：删除受限源。复用删除链路（shell → 直删 → 变体），
+          // 用户实测「能删除」的设备上该链路可用；失败不中断（避免剪切变
+          // 复制且剪贴板不消失），仅记日志。
+          try {
+            await _deleteRestrictedItem(srcPath);
+          } catch (delErr) {
+            debugPrint('[ZenFile] SAF 剪切源删除失败（已复制成功）: $delErr');
+          }
+        }
+      } catch (e) {
+        failure = e;
+        break; // 与既有受限链路一致：单项失败终止余项
+      }
+    }
+
+    if (cutSources.isNotEmpty) {
+      MediaProvider.instance?.pruneDeletedMediaPaths(cutSources);
+    }
+    if (failure != null && !cancelled) {
+      debugPrint('[ZenFile] SAF restricted paste failed: $failure');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).e1(failure)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      // 失败即返回：交由外层 finally 清理进度与刷新目标/源目录。
+      return;
+    }
+
+    if (clearAfterPaste && !cancelled) {
+      _clearActiveClipboard();
+    }
+    _highlightedPaths.clear();
+    _highlightedPaths.addAll(finalTopLevelDestPaths);
+    _shouldScrollToHighlight = true;
+  }
+
+  /// 纯 SAF 模式：把普通剪贴板条目写入受限目标目录（Android/{data,obb} 树内，
+  /// 调用方已确保树授权）。文件=同名探测→SAF 删旧→上传；目录=同名目录合并 /
+  /// 同名非目录删除后整树写入。剪切成功后删除普通源（失败不中断）。
+  Future<void> _pasteLocalIntoRestrictedViaSaf(BuildContext context) async {
+    try {
+      final cutSources = _isCut ? List<String>.from(_clipboardPaths) : const <String>[];
+      // 目标层同名快照只取一次（覆盖语义探测用），子层在各递归内自取。
+      List<FileItemModel>? existingInDest = await _safListRestrictedDir(currentPath);
+      for (final rawSrc in _clipboardPaths) {
+        final srcPath = stripRestrictedVariantMarkers(rawSrc);
+        final name = p.basename(srcPath);
+        final destPath = p.join(currentPath, name);
+        final t = FileSystemEntity.typeSync(srcPath);
+        if (t == FileSystemEntityType.directory) {
+          if (!await _safWriteTreeIntoRestricted(srcPath, destPath)) {
+            throw Exception('SAF write failed: $srcPath -> $destPath');
+          }
+        } else {
+          // 覆盖语义与 shell cp 保持一致：同名先删（SAF createDocument 遇同名
+          // 会自动改名 "name (1)"，必须先清理旧条目再写入）。
+          if (existingInDest != null && existingInDest.any((it) => it.name == name)) {
+            await SafAndroidDataService.deleteViaSaf(destPath);
+          }
+          if (!await SafAndroidDataService.uploadFileViaSaf(srcPath, currentPath, name)) {
+            throw Exception('SAF write failed: $srcPath -> $destPath');
+          }
+        }
+      }
+      for (final srcPath in cutSources) {
+        try {
+          final st = FileSystemEntity.typeSync(srcPath);
+          if (st == FileSystemEntityType.directory) {
+            await Directory(srcPath).delete(recursive: true);
+          } else if (st != FileSystemEntityType.notFound) {
+            await File(srcPath).delete();
+          }
+        } catch (e) {
+          debugPrint('[ZenFile] SAF 写入受限目录后删除普通源失败: $e');
+        }
+      }
+      if (cutSources.isNotEmpty) {
+        MediaProvider.instance?.pruneDeletedMediaPaths(cutSources);
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isCut ? L10n.of(context).msg05d3c93c : L10n.of(context).msgb7e3a1c2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error pasting into restricted dir via SAF: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).e1(e)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      progressNotifier.value = null;
+      _isPasting = false;
+    }
+  }
+
+  /// 经 SAF 把普通目录 [srcDir] 整树写入受限目标目录 [restrictedDestDir]（树内）。
+  /// 目标同名目录已存在则合并写入；同名非目录先删再建（覆盖语义）。任一步
+  /// 失败返回 false。SAF createDocument 遇同名会生成 "name (1)"，因此每层
+  /// 先做同名快照、逐项覆盖前清理旧条目。
+  Future<bool> _safWriteTreeIntoRestricted(String srcDir, String restrictedDestDir) async {
+    try {
+      final existing = await _safListRestrictedDir(p.dirname(restrictedDestDir));
+      final destName = p.basename(restrictedDestDir);
+      final sameNameDir =
+          existing?.any((it) => it.name == destName && it.isDirectory) ?? false;
+      final sameNameOther =
+          existing?.any((it) => it.name == destName && !it.isDirectory) ?? false;
+      if (sameNameOther) {
+        await SafAndroidDataService.deleteViaSaf(restrictedDestDir);
+      }
+      if (!sameNameDir) {
+        if (!await SafAndroidDataService.createFolderViaSaf(
+            p.dirname(restrictedDestDir), destName)) {
+          return false;
+        }
+      }
+      // 本层同名快照：覆盖写文件前清理旧条目。
+      final childExisting = await _safListRestrictedDir(restrictedDestDir);
+      for (final entity in Directory(srcDir).listSync(followLinks: false)) {
+        final name = p.basename(entity.path);
+        if (entity is Directory) {
+          if (!await _safWriteTreeIntoRestricted(entity.path, p.join(restrictedDestDir, name))) {
+            return false;
+          }
+        } else if (entity is File) {
+          if (childExisting != null && childExisting.any((it) => it.name == name)) {
+            await SafAndroidDataService.deleteViaSaf(p.join(restrictedDestDir, name));
+          }
+          if (!await SafAndroidDataService.uploadFileViaSaf(entity.path, restrictedDestDir, name)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF 受限目录整树写入失败: $e');
+      return false;
+    }
+  }
+
+  /// 经 SAF 列出受限目录（Android/{data,obb} 内）的内容；失败返回 null。
+  /// [restrictedDir] 为用户可见标准路径（/storage/emulated/0/Android/...）。
+  /// 与 [_trySafAccess] 的区别：隐藏文件始终列出（覆盖探测不能漏点名的条目），
+  /// 且不做「未授权返回 null 之外」的额外语义。
+  Future<List<FileItemModel>?> _safListRestrictedDir(String restrictedDir) async {
+    var rel = restrictedDir.replaceAll(RegExp(r'/+'), '/');
+    const root = '/storage/emulated/0/';
+    if (!rel.startsWith(root)) return null;
+    rel = rel.substring(root.length);
+    final isObb = rel.startsWith('Android/obb');
+    final marker = isObb ? 'Android/obb' : 'Android/data';
+    if (!rel.startsWith(marker)) return null;
+    final sub = rel.substring(marker.length).replaceAll(RegExp(r'^/+'), '');
+    return SafAndroidDataService.listAndroidDataSubDirViaSAF(
+      sub,
+      showHiddenFiles: true,
+      isObb: isObb,
+    );
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // 粘贴重名冲突（本地 ↔ 远程统一处理）
