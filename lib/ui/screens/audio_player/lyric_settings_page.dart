@@ -136,6 +136,21 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
     setState(() {});
   }
 
+  /// 条目统一样式：圆角边框卡片。本页不画分隔线，条目边界靠各自的
+  /// 描边呈现（描边色与全局 dividerColor 同源的 12% onSurface）。
+  Widget _bordered(Widget child, ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
+        ),
+      ),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
@@ -156,40 +171,44 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
         children: [
           const SizedBox(height: 8),
           // ── 桌面歌词悬浮窗 ──────────────────────────────────────────────
-          SwitchListTile(
-            secondary: const Icon(Broken.note_text),
-            title: Text(
-              l10n.ui_desktop_lyric,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+          _bordered(
+            SwitchListTile(
+              secondary: const Icon(Broken.note_text),
+              title: Text(
+                l10n.ui_desktop_lyric,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              value: _desktopLyricEnabled,
+              activeThumbColor: theme.colorScheme.primary,
+              onChanged: (_) async {
+                await widget.onToggleDesktopLyric();
+                if (!mounted) return;
+                setState(
+                  () => _desktopLyricEnabled =
+                      PreferencesService.getDesktopLyricEnabled(),
+                );
+              },
             ),
-            value: _desktopLyricEnabled,
-            activeThumbColor: theme.colorScheme.primary,
-            onChanged: (_) async {
-              await widget.onToggleDesktopLyric();
-              if (!mounted) return;
-              setState(
-                () => _desktopLyricEnabled =
-                    PreferencesService.getDesktopLyricEnabled(),
-              );
-            },
+            theme,
           ),
-          const Divider(height: 1),
           // ── 歌词动画风格 ────────────────────────────────────────────────
-          ListTile(
-            leading: const Icon(Icons.animation_rounded),
-            title: Text(
-              l10n.lyric_animation_style,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.animation_rounded),
+              title: Text(
+                l10n.lyric_animation_style,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(lyricStyleName(l10n, _style)),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => showLyricStyleSheet(
+                context,
+                current: _style,
+                onSelected: (_) => setState(() {}),
+              ),
             ),
-            subtitle: Text(lyricStyleName(l10n, _style)),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => showLyricStyleSheet(
-              context,
-              current: _style,
-              onSelected: (_) => setState(() {}),
-            ),
+            theme,
           ),
-          const Divider(height: 1),
           // ── 歌词颜色 ────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
@@ -207,119 +226,133 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
               ],
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.lyrics_outlined),
-            title: Text(l10n.lyric_color_unplayed),
-            subtitle: Text(l10n.lyric_color_unplayed_desc),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _colorLabel(effUnplayed),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.lyrics_outlined),
+              title: Text(l10n.lyric_color_unplayed),
+              subtitle: Text(l10n.lyric_color_unplayed_desc),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _colorLabel(effUnplayed),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _colorDot(effUnplayed, theme),
-              ],
+                  const SizedBox(width: 8),
+                  _colorDot(effUnplayed, theme),
+                ],
+              ),
+              onTap: () => _pickColor(
+                title: l10n.lyric_color_unplayed,
+                effective: effUnplayed,
+                custom: _unplayed,
+                save: PreferencesService.saveLyricColorUnplayed,
+              ),
             ),
-            onTap: () => _pickColor(
-              title: l10n.lyric_color_unplayed,
-              effective: effUnplayed,
-              custom: _unplayed,
-              save: PreferencesService.saveLyricColorUnplayed,
-            ),
+            theme,
           ),
-          ListTile(
-            leading: const Icon(Icons.music_note_rounded),
-            title: Text(l10n.lyric_color_current),
-            subtitle: Text(l10n.lyric_color_current_desc),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _colorLabel(effCurrent),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.music_note_rounded),
+              title: Text(l10n.lyric_color_current),
+              subtitle: Text(l10n.lyric_color_current_desc),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _colorLabel(effCurrent),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _colorDot(effCurrent, theme),
-              ],
+                  const SizedBox(width: 8),
+                  _colorDot(effCurrent, theme),
+                ],
+              ),
+              onTap: () => _pickColor(
+                title: l10n.lyric_color_current,
+                effective: effCurrent,
+                custom: _current,
+                save: PreferencesService.saveLyricColorCurrent,
+              ),
             ),
-            onTap: () => _pickColor(
-              title: l10n.lyric_color_current,
-              effective: effCurrent,
-              custom: _current,
-              save: PreferencesService.saveLyricColorCurrent,
-            ),
+            theme,
           ),
-          ListTile(
-            leading: const Icon(Icons.playlist_add_check_rounded),
-            title: Text(l10n.lyric_color_played),
-            subtitle: Text(l10n.lyric_color_played_desc),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _colorLabel(effPlayed),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.playlist_add_check_rounded),
+              title: Text(l10n.lyric_color_played),
+              subtitle: Text(l10n.lyric_color_played_desc),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _colorLabel(effPlayed),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _colorDot(effPlayed, theme),
-              ],
+                  const SizedBox(width: 8),
+                  _colorDot(effPlayed, theme),
+                ],
+              ),
+              onTap: () => _pickColor(
+                title: l10n.lyric_color_played,
+                effective: effPlayed,
+                custom: _played,
+                save: PreferencesService.saveLyricColorPlayed,
+              ),
             ),
-            onTap: () => _pickColor(
-              title: l10n.lyric_color_played,
-              effective: effPlayed,
-              custom: _played,
-              save: PreferencesService.saveLyricColorPlayed,
-            ),
+            theme,
           ),
-          const Divider(height: 1),
           // ── 歌词整体偏移 ────────────────────────────────────────────────
-          ListTile(
-            leading: const Icon(Icons.timer_outlined),
-            title: Text(l10n.lyric_offset),
-            subtitle: Text(_offsetSubtitle()),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: _showOffsetDialog,
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: Text(l10n.lyric_offset),
+              subtitle: Text(_offsetSubtitle()),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: _showOffsetDialog,
+            ),
+            theme,
           ),
-          const Divider(height: 1),
           // ── 在线搜索歌词 ────────────────────────────────────────────────
-          ListTile(
-            leading: const Icon(Icons.search_rounded),
-            title: Text(
-              l10n.ui_search_lyrics_online,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.search_rounded),
+              title: Text(
+                l10n.ui_search_lyrics_online,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onSearchOnlineLyrics();
+              },
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              Navigator.pop(context);
-              widget.onSearchOnlineLyrics();
-            },
+            theme,
           ),
-          const Divider(height: 1),
           // ── 本地导入歌词 ────────────────────────────────────────────────
-          ListTile(
-            leading: const Icon(Icons.folder_open_rounded),
-            title: Text(
-              l10n.ui_select_lyrics_file,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.folder_open_rounded),
+              title: Text(
+                l10n.ui_select_lyrics_file,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onImportLocalLyrics();
+              },
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              Navigator.pop(context);
-              widget.onImportLocalLyrics();
-            },
+            theme,
           ),
-          const Divider(height: 1),
         ],
       ),
     );
