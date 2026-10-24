@@ -6,6 +6,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../widgets/nav_bar_settings_sheet.dart';
+import '../widgets/persistent_nav_bar_scope.dart';
 import '../../services/preferences_service.dart';
 import '../../services/cache_clean_service.dart';
 import '../../services/app_manager_service.dart';
@@ -15,8 +16,12 @@ import 'internal_file_picker_screen.dart';
 import 'backup_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../../main.dart';
-import 'apk_install_settings_screen.dart';
+import '../../services/root_shizuku_service.dart';
+import '../../services/virus_total_service.dart';
+import 'virus_total_settings_screen.dart';
 import 'security_settings_screen.dart';
+import 'category_settings_screen.dart';
+import 'browse_settings_screen.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   /// 是否作为首页 IndexedStack 的**内嵌页面**（底部导航第 4 项）渲染。
@@ -74,6 +79,22 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
   void initState() {
     super.initState();
     _applyExternalQuery();
+    _loadShizukuStatus();
+  }
+
+  // —— Root/Shizuku 可用性（原 APK 安装子页逻辑随迁）——
+  // 决定搜索态「静默安装」开关是否可启用，与「通用设置」子页同一判定。
+  RootShizukuStatus? _shizukuStatus;
+
+  Future<void> _loadShizukuStatus() async {
+    final status = await RootShizukuService.checkStatus();
+    if (mounted) setState(() => _shizukuStatus = status);
+  }
+
+  bool get _canSilentInstall {
+    final s = _shizukuStatus;
+    if (s == null) return false;
+    return s.isRootAvailable || (s.isShizukuAvailable && s.shizukuPermissionGranted);
   }
 
   @override
@@ -115,97 +136,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     return visibilities.contains(true);
   }
 
-  String _getTrailingInfoTypeLabel(String option) {
-    switch (option) {
-      case 'dateTime': return L10n.of(context).msg11fea612;
-      case 'sizeAndCount': return L10n.of(context).msg12e86877;
-      case 'none':
-      default:
-        return L10n.of(context).msg7908038f;
-    }
-  }
-
-  void _showTrailingInfoTypePickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) {
-        final current = fileManager.trailingInfoType;
-        final options = [
-          {'key': 'none', 'name': L10n.of(context).msg7908038f, 'desc': L10n.of(context).msg9136d4dc},
-          {'key': 'dateTime', 'name': L10n.of(context).msg11fea612, 'desc': L10n.of(context).msg84986f91},
-          {'key': 'sizeAndCount', 'name': L10n.of(context).msg12e86877, 'desc': L10n.of(context).msgfc000737},
-        ];
-
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(L10n.of(context).msg83de16cc, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(height: 6),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(L10n.of(context).msgaa2a18a1, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
-                    ),
-                    const SizedBox(height: 16),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: options.length,
-                      itemBuilder: (_, i) {
-                        final opt = options[i];
-                        final key = opt['key'] as String;
-                        final name = opt['name'] as String;
-                        final desc = opt['desc'] as String;
-                        final isSelected = current == key;
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          leading: Container(
-                            width: 36, height: 36,
-                            decoration: BoxDecoration(
-                              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              key == 'none' ? Icons.visibility_off_rounded : key == 'dateTime' ? Icons.access_time_rounded : Icons.info_outline_rounded,
-                              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
-                              size: 20,
-                            ),
-                          ),
-                          title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
-                          subtitle: Text(desc, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
-                          trailing: isSelected ? Icon(Icons.radio_button_checked_rounded, color: theme.colorScheme.primary) : Icon(Icons.radio_button_off_rounded, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-                          onTap: () {
-                            fileManager.setTrailingInfoType(key);
-                            Navigator.pop(ctx);
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // 「三点禁用尾部信息」的文案与选择弹窗已随「浏览页设置」迁至
+  // browse_settings_screen.dart（getTrailingInfoTypeLabel /
+  // showTrailingInfoTypePickerDialog），此处经 import 直接复用。
 
   Widget _buildCategoryCard(
     BuildContext context,
@@ -260,92 +193,106 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final theme = Theme.of(context);
     final fileManager = context.watch<FileManagerProvider>();
 
-    // Visibilities for global search filtering
-    final showAddressBarVis = _shouldShow(L10n.of(context).msg26e4c5d6, L10n.of(context).windows1);
-    final hideNavBarVis = _shouldShow(L10n.of(context).msga1fbf3c6, L10n.of(context).msg02dddc02);
-    final resetViewersVis = _shouldShow(L10n.of(context).ui_reset_default_viewers, L10n.of(context).msg50923c95);
-    final skipDialogVis = _shouldShow(L10n.of(context).msg6fdc09ac, L10n.of(context).msg0a4b0442);
+    // ===== 全局搜索过滤（v2.2 设置页重组）=====
+    // 设置项已按「通用 / 分类页 / 浏览页 / 导航栏与底栏」四个子页面（区）重新
+    // 分组，搜索态沿用旧模式：命中的条目平铺内联展示，按新分组加小标题。
+    // 各条目的 prefs key / provider 读写不变，这里只调整分组归属。
+    final languageVis = _shouldShow(L10n.of(context).ui_language, _getCurrentLocaleName(context, PreferencesService.getAppLocale()));
     final defaultBrowseVis = _shouldShow(L10n.of(context).msga432d127, L10n.of(context).msge1157984);
     final swipeModeVis = _shouldShow(L10n.of(context).msgd48a082d, L10n.of(context).msgae1854a2);
-    final showFloatingVis = _shouldShow(L10n.of(context).ui_show_action_bar, L10n.of(context).msg11b1ec65);
-    final showHiddenVis = _shouldShow(L10n.of(context).msg124d9054, L10n.of(context).msg7e7765b6);
-    final folderFileCountVis = _shouldShow(L10n.of(context).msg86f3d70f, L10n.of(context).msg40e9c325);
+    final rememberLastFolderVis = _shouldShow(L10n.of(context).msg59c7debc, L10n.of(context).msgd1591ba4);
     final use24HourVis = _shouldShow(L10n.of(context).ui_use_24h_format, L10n.of(context).ampm24);
     final hideTimeDateVis = _shouldShow(L10n.of(context).msg25ee6612, L10n.of(context).msg337359a6);
-    final folderContentsVis = _shouldShow(L10n.of(context).ui_show_folder_contents_count, L10n.of(context).msga517863e);
-    final folderSizesVis = _shouldShow(L10n.of(context).ui_show_folder_size, L10n.of(context).msg59a24fcb);
-    // 入口标题已改为「导航栏设置」（issue #42），过滤用的标题必须同步，
-    // 否则在设置里搜索「导航栏」会匹配不到这一项。
-    final navBarVis = _shouldShow(L10n.of(context).ui_nav_bar_settings, L10n.of(context).msg309e2a28);
-    final hideActionTextVis = _shouldShow(L10n.of(context).ui_hide_action_text, L10n.of(context).msg9b7639ac);
-    final highlightFolderVis = _shouldShow(L10n.of(context).msgd33e3082, L10n.of(context).msgdd69671b);
-    final autoOpenCreatedVis = _shouldShow(L10n.of(context).auto_open_created_folder, L10n.of(context).auto_open_created_folder_desc);
     final mediaPreviewsVis = _shouldShow(L10n.of(context).ui_show_media_previews, L10n.of(context).msg57736228);
-    final adaptiveNamesVis = _shouldShow(L10n.of(context).ui_adaptive_multiline_names, L10n.of(context).msg1eda8a50);
-    final hideActionButtonsVis = _shouldShow(L10n.of(context).ui_show_action_menu_buttons, L10n.of(context).ui_action_menu_subtitle);
-    final dragDropVis = _shouldShow(L10n.of(context).ui_enable_drag_drop, L10n.of(context).msgad54815d);
-    final confirmDragVis = fileManager.enableDragDrop && _shouldShow(L10n.of(context).ui_confirm_drag_drop, L10n.of(context).msg5dff8f2d);
-    final multipleTabsVis = _shouldShow(L10n.of(context).ui_enable_multi_tabs, L10n.of(context).msg4b0a7063);
-    final splitScreenVis = _shouldShow(L10n.of(context).ui_enable_split_screen, L10n.of(context).msgf04ac00d);
-    final rememberLastFolderVis = _shouldShow(L10n.of(context).msg59c7debc, L10n.of(context).msgd1591ba4);
+    final skipDialogVis = _shouldShow(L10n.of(context).msg6fdc09ac, L10n.of(context).msg0a4b0442);
+    final resetViewersVis = _shouldShow(L10n.of(context).ui_reset_default_viewers, L10n.of(context).msg50923c95);
 
-    final generalStartupList = [
+    // —— APK 安装（原独立子页迁入「通用设置」，搜索态归入通用组）——
+    // 匹配串除各自标题外并入组名「APK 安装设置」：直接搜组名也能带出整组条目。
+    final apkGroupTitle = L10n.of(context).vt_install_settings_title;
+    final silentInstallVis = _shouldShow(L10n.of(context).vt_silent_install, apkGroupTitle);
+    final keepApkVis = _shouldShow(L10n.of(context).vt_keep_apk, apkGroupTitle);
+    final securityScanVis = _shouldShow(L10n.of(context).vt_settings_title, apkGroupTitle);
+    final apkOpenModeVis = _shouldShow(L10n.of(context).apk_open_mode_title, apkGroupTitle);
+
+    final accentColorVis = _shouldShow(L10n.of(context).msg1b9633fe, _getAccentColorLabel(context, fileManager.accentColorOption));
+    final folderIconVis = _shouldShow(L10n.of(context).msg64db4c2d, _getFolderIconLabel(context, fileManager.folderIconOption));
+    final amoledVis = _shouldShow(L10n.of(context).amoled1, L10n.of(context).amoled2);
+    final appIconVis = _shouldShow(L10n.of(context).ui_app_icon, _getAppIconLabel(context, fileManager.activeAppIcon));
+    final typographyVis = _shouldShow(L10n.of(context).msg5228b59f, _getFontFamilyLabel(context, fileManager.fontFamilyOption));
+
+    // —— 通用设置：语言 / 主题外观 / 通用行为 / 时间日期 / 媒体与默认操作 / APK 安装 ——
+    final generalGroupList = [
+      languageVis,
       defaultBrowseVis,
       swipeModeVis,
       rememberLastFolderVis,
-      hideNavBarVis,
+      use24HourVis || hideTimeDateVis,
+      accentColorVis,
+      folderIconVis,
+      amoledVis,
+      appIconVis,
+      typographyVis,
+      mediaPreviewsVis,
+      skipDialogVis,
+      resetViewersVis,
+      silentInstallVis,
+      keepApkVis,
+      securityScanVis,
+      apkOpenModeVis,
     ];
 
-    final fileExplorerList = [
+    // —— 分类页设置：主屏幕自定义 ——
+    final customizeShortcutsVis = _shouldShow(L10n.of(context).msge7d18d73, L10n.of(context).msg036fe6a4);
+    final categoryGroupList = [customizeShortcutsVis];
+
+    // —— 浏览页设置：文件浏览器与导航 + 列表与布局样式 ——
+    final showAddressBarVis = _shouldShow(L10n.of(context).msg26e4c5d6, L10n.of(context).windows1);
+    final showFloatingVis = _shouldShow(L10n.of(context).ui_show_action_bar, L10n.of(context).msg11b1ec65);
+    final showHiddenVis = _shouldShow(L10n.of(context).msg124d9054, L10n.of(context).msg7e7765b6);
+    final autoOpenCreatedVis = _shouldShow(L10n.of(context).auto_open_created_folder, L10n.of(context).auto_open_created_folder_desc);
+    final highlightFolderVis = _shouldShow(L10n.of(context).msgd33e3082, L10n.of(context).msgdd69671b);
+    final multipleTabsVis = _shouldShow(L10n.of(context).ui_enable_multi_tabs, L10n.of(context).msg4b0a7063);
+    final splitScreenVis = _shouldShow(L10n.of(context).ui_enable_split_screen, L10n.of(context).msgf04ac00d);
+    final dragDropVis = _shouldShow(L10n.of(context).ui_enable_drag_drop, L10n.of(context).msgad54815d);
+    final confirmDragVis = fileManager.enableDragDrop && _shouldShow(L10n.of(context).ui_confirm_drag_drop, L10n.of(context).msg5dff8f2d);
+    final folderFileCountVis = _shouldShow(L10n.of(context).msg86f3d70f, L10n.of(context).msg40e9c325);
+    final folderContentsVis = _shouldShow(L10n.of(context).ui_show_folder_contents_count, L10n.of(context).msga517863e);
+    final folderSizesVis = _shouldShow(L10n.of(context).ui_show_folder_size, L10n.of(context).msg59a24fcb);
+    final adaptiveNamesVis = _shouldShow(L10n.of(context).ui_adaptive_multiline_names, L10n.of(context).msg1eda8a50);
+    final hideActionButtonsVis = _shouldShow(L10n.of(context).ui_show_action_menu_buttons, L10n.of(context).ui_action_menu_subtitle);
+
+    final browseGroupList = [
       showAddressBarVis,
       showFloatingVis,
       showHiddenVis,
+      autoOpenCreatedVis,
       highlightFolderVis,
       multipleTabsVis,
       splitScreenVis,
       dragDropVis,
       confirmDragVis,
-    ];
-
-    final listLayoutList = [
       folderFileCountVis,
       folderContentsVis,
       folderSizesVis,
-      use24HourVis,
-      hideTimeDateVis,
       adaptiveNamesVis,
       hideActionButtonsVis,
     ];
 
-    final mediaActionsList = [
-      mediaPreviewsVis,
-      skipDialogVis,
-      resetViewersVis,
-    ];
+    // —— 导航栏与底栏：面板入口 + 并入面板的三个开关（隐藏导航标签 /
+    //    隐藏安卓导航栏 / 隐藏操作栏文字）。「隐藏导航标签」与旧版一致，
+    //    不参与过滤、始终展示，故用 true 占位保证分组标题可见性判断正确。
+    // 入口标题已改为「导航栏设置」（issue #42），过滤用的标题必须同步，
+    // 否则在设置里搜索「导航栏」会匹配不到这一项。
+    final navBarVis = _shouldShow(L10n.of(context).ui_nav_bar_settings, L10n.of(context).msg309e2a28);
+    final hideNavBarVis = _shouldShow(L10n.of(context).msga1fbf3c6, L10n.of(context).msg02dddc02);
+    final hideActionTextVis = _shouldShow(L10n.of(context).ui_hide_action_text, L10n.of(context).msg9b7639ac);
+    final navGroupList = [navBarVis, true, hideNavBarVis, hideActionTextVis];
 
-    final selectionActionBarList = [
-      navBarVis,
-      hideActionTextVis,
-    ];
-
-    final accentColorVis = _shouldShow(L10n.of(context).msg1b9633fe, _getAccentColorLabel(context, fileManager.accentColorOption));
-    final folderIconVis = _shouldShow(L10n.of(context).msg64db4c2d, _getFolderIconLabel(context, fileManager.folderIconOption));
-    final menuIconStyleVis = _shouldShow(L10n.of(context).msgece44aa5, _getMenuIconStyleLabel(context, fileManager.menuIconStyle));
-    final amoledVis = _shouldShow(L10n.of(context).amoled1, L10n.of(context).amoled2);
-    final appIconVis = _shouldShow(L10n.of(context).ui_app_icon, _getAppIconLabel(context, fileManager.activeAppIcon));
-    final typographyVis = _shouldShow(L10n.of(context).msg5228b59f, _getFontFamilyLabel(context, fileManager.fontFamilyOption));
-    final appearanceList = [accentColorVis, folderIconVis, menuIconStyleVis, amoledVis, appIconVis, typographyVis];
-
-    final customizeShortcutsVis = _shouldShow(L10n.of(context).msge7d18d73, L10n.of(context).msg036fe6a4);
-    final homeScreenList = [customizeShortcutsVis];
-
-    final hasAnyMatch = generalStartupList.contains(true) ||
-        fileExplorerList.contains(true) ||
-        listLayoutList.contains(true) ||
-        mediaActionsList.contains(true) ||
-        selectionActionBarList.contains(true) ||
-        appearanceList.contains(true) ||
-        homeScreenList.contains(true);
+    final hasAnyMatch = generalGroupList.contains(true) ||
+        categoryGroupList.contains(true) ||
+        browseGroupList.contains(true) ||
+        navGroupList.contains(true);
 
     return PopScope(
       canPop: !_isSearching,
@@ -459,68 +406,56 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
             // 键盘 Insets 动画期间本页（IndexedStack 常驻 tab）会每帧重建全部设置卡片。
             children: [
               if (_searchQuery.isEmpty) ...[
-                SettingsTile(
-                  icon: Broken.language_circle,
-                  title: L10n.of(context).ui_language,
-                  subtitle: _getCurrentLocaleName(context, PreferencesService.getAppLocale()),
-                  trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
-                  onTap: () => _showLanguagePickerDialog(context),
-                ),
+                // ===== 主列表（v2.2 重组后）=====
+                // 四个分区入口 + 原样保留的顶层入口。原「语言」「外观与主题」
+                // 「文件浏览器选项」「列表与布局样式」「媒体偏好」独立入口全部并入
+                // 前三个子页面；「常规与行为」取消（各项分流至通用/分类页/浏览页/
+                // 导航栏与底栏）。
+                // 「APK 安装设置」顶层入口已迁入「通用设置」新手风琴组（主列表
+                // 由 8 个入口减为 7 个），四个设置项与 prefs 读写逻辑原样随迁。
                 _buildCategoryCard(
                   context,
                   theme,
                   icon: Broken.setting_2,
-                  title: L10n.of(context).msgfdae44c3,
-                  subtitle: L10n.of(context).msgeae34685,
+                  title: L10n.of(context).ui_settings_general,
+                  subtitle: L10n.of(context).ui_settings_general_desc,
                   targetScreen: const GeneralSettingsScreen(),
                 ),
                 _buildCategoryCard(
                   context,
                   theme,
-                  icon: Broken.colorfilter,
-                  title: L10n.of(context).ui_appearance_theme,
-                  subtitle: L10n.of(context).msg91b228b8,
-                  targetScreen: const AppearanceSettingsScreen(),
+                  icon: Broken.category,
+                  title: L10n.of(context).ui_settings_category_page,
+                  subtitle: L10n.of(context).ui_settings_category_page_desc,
+                  targetScreen: const CategorySettingsScreen(),
                 ),
                 _buildCategoryCard(
                   context,
                   theme,
                   icon: Broken.folder_open,
-                  title: L10n.of(context).msgad6e8bb8,
-                  subtitle: L10n.of(context).msg8ddc4963,
-                  targetScreen: const ExplorerSettingsScreen(),
-                ),
-                _buildCategoryCard(
-                  context,
-                  theme,
-                  icon: Broken.text,
-                  title: L10n.of(context).ui_list_layout_style,
-                  subtitle: L10n.of(context).msg45db4e2a,
-                  targetScreen: const LayoutSettingsScreen(),
-                ),
-                _buildCategoryCard(
-                  context,
-                  theme,
-                  icon: Broken.image,
-                  title: L10n.of(context).ui_media_preferences,
-                  subtitle: L10n.of(context).msg09ca4d86,
-                  targetScreen: const MediaSettingsScreen(),
-                ),
-                _buildCategoryCard(
-                  context,
-                  theme,
-                  icon: Broken.setting_3,
-                  title: L10n.of(context).ui_file_actions_viewers,
-                  subtitle: L10n.of(context).msgeb3693fb,
-                  targetScreen: const ActionsSettingsScreen(),
+                  title: L10n.of(context).ui_settings_browse_page,
+                  subtitle: L10n.of(context).ui_settings_browse_page_desc,
+                  targetScreen: const BrowseSettingsScreen(),
                 ),
                 SettingsTile(
-                  icon: Icons.install_mobile_rounded,
-                  title: L10n.of(context).vt_install_settings_title,
-                  subtitle: L10n.of(context).vt_install_settings_subtitle,
+                  icon: Broken.menu,
+                  // 顶层「导航栏设置」入口：直接打开统一设置面板
+                  // （NavBarSettingsSheet），面板内含显示/位置/不透明度/常驻 Tab
+                  // 与三个迁移来的文字/标签开关。
+                  title: L10n.of(context).ui_settings_nav_and_bar,
+                  // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
+                  // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
+                  subtitle: !fileManager.bottomNavBarEnabled
+                      ? L10n.of(context).crypt_filename_enc_off
+                      : (fileManager.showBottomActionBar
+                          ? L10n.of(context).msg8c414b06
+                          : L10n.of(context).msge34c23ff),
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApkInstallSettingsScreen())),
+                  onTap: () => NavBarSettingsSheet.show(context),
                 ),
+                // （原「文件操作与查看器」子页已移除：唯一剩余项「删除文件确认」
+                // 迁入「通用设置 → 媒体与默认操作」，见 GeneralSettingsScreen。
+                //  原「APK 安装」顶层入口已迁入「通用设置 → APK 安装」手风琴组。）
                 SettingsTile(
                   icon: Broken.lock,
                   title: L10n.of(context).ui_security_settings,
@@ -573,8 +508,17 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     ),
                   ),
                 ] else ...[
-                  if (_shouldShowHeader(generalStartupList) || _shouldShowHeader(selectionActionBarList) || _shouldShowHeader(homeScreenList)) ...[
-                    _buildSectionHeader(theme, L10n.of(context).msgfdae44c3),
+                  // ===== 搜索态分组一：通用设置 =====
+                  // （原「常规与行为」+「外观与主题」+「媒体与默认操作」合并）
+                  if (_shouldShowHeader(generalGroupList)) ...[
+                    _buildSectionHeader(theme, L10n.of(context).ui_settings_general),
+                    if (languageVis)
+                      SettingsTile(
+                        icon: Broken.language_circle,
+                        title: L10n.of(context).ui_language,
+                        subtitle: _getCurrentLocaleName(context, PreferencesService.getAppLocale()),
+                        onTap: () => _showLanguagePickerDialog(context),
+                      ),
                     if (defaultBrowseVis)
                       SettingsTile(
                         icon: Broken.folder_favorite,
@@ -591,22 +535,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                         onTap: () => _showSwipeModeDialog(context, fileManager),
                       ),
-                    if (navBarVis)
-                      SettingsTile(
-                        icon: Broken.menu,
-                        // issue #42：入口标题由「导航栏」改为「导航栏设置」，
-                        // 副标题仍同时表达「开 / 关」与「位置」。
-                        title: L10n.of(context).ui_nav_bar_settings,
-                        // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
-                        // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
-                        subtitle: !fileManager.bottomNavBarEnabled
-                            ? L10n.of(context).crypt_filename_enc_off
-                            : (fileManager.showBottomActionBar
-                                ? L10n.of(context).msg8c414b06
-                                : L10n.of(context).msge34c23ff),
-                        trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-                        onTap: () => _showNavBarDialog(context),
-                      ),
                     if (rememberLastFolderVis)
                       SettingsTile(
                         icon: Broken.folder_open,
@@ -622,61 +550,37 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                         onTap: () => fileManager.toggleRememberLastFolder(),
                       ),
-                    SettingsTile(
-                      icon: Broken.menu_1,
-                      title: L10n.of(context).ui_hide_nav_labels,
-                      subtitle: L10n.of(context).msgce732d8a,
-                      trailing: Transform.scale(
-                        scale: 0.85,
-                        child: Switch(
-                          value: fileManager.hideNavLabels,
-                          activeColor: theme.colorScheme.primary,
-                          onChanged: (_) => fileManager.toggleHideNavLabels(),
-                        ),
-                      ),
-                      onTap: () => fileManager.toggleHideNavLabels(),
-                    ),
-                    if (hideNavBarVis)
+                    if (use24HourVis || hideTimeDateVis)
                       SettingsTile(
-                        icon: Icons.android,
-                        title: L10n.of(context).msga1fbf3c6,
-                        subtitle: L10n.of(context).msg02dddc02,
+                        icon: Icons.access_time_rounded,
+                        title: L10n.of(context).ui_time_date_format,
+                        subtitle: _getTimeDateSubtitle(context, fileManager),
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
-                            value: fileManager.hideNavigationBar,
+                            // 开启=显示时间/日期（即 !hideTimeAndDate），关闭=隐藏
+                            value: !fileManager.hideTimeAndDate,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleHideNavigationBar(),
+                            // 仅在「开启（显示）」时弹出设置面板；关闭不弹。
+                            onChanged: (val) {
+                              fileManager.setHideTimeAndDate(!val);
+                              if (val) {
+                                _showTimeDateFormatPicker(
+                                  context,
+                                  fileManager,
+                                  theme,
+                                );
+                              }
+                            },
                           ),
                         ),
-                        onTap: () => fileManager.toggleHideNavigationBar(),
-                      ),
-                    if (hideActionTextVis)
-                      SettingsTile(
-                        icon: Icons.label_off_rounded,
-                        title: L10n.of(context).ui_hide_action_text,
-                        subtitle: L10n.of(context).msg9b7639ac,
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            value: fileManager.hideActionText,
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleHideActionText(),
-                          ),
+                        trailingInteractive: true,
+                        onTap: () => _showTimeDateFormatPicker(
+                          context,
+                          fileManager,
+                          theme,
                         ),
-                        onTap: () => fileManager.toggleHideActionText(),
                       ),
-                    if (customizeShortcutsVis)
-                      SettingsTile(
-                        icon: Broken.setting_2,
-                        title: L10n.of(context).msge7d18d73,
-                        subtitle: L10n.of(context).msg036fe6a4,
-                        onTap: () => QuickCategoriesGrid.showCustomizeDialog(context),
-                      ),
-                  ],
-                  if (_shouldShowHeader(appearanceList)) ...[
-                    const SizedBox(height: 24),
-                    _buildSectionHeader(theme, L10n.of(context).ui_appearance_theme),
                     if (accentColorVis)
                       SettingsTile(
                         icon: Broken.colorfilter,
@@ -690,13 +594,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         title: L10n.of(context).msg64db4c2d,
                         subtitle: _getFolderIconLabel(context, fileManager.folderIconOption),
                         onTap: () => _showFolderIconPickerDialog(context, fileManager, theme),
-                      ),
-                    if (menuIconStyleVis)
-                      SettingsTile(
-                        icon: Broken.category,
-                        title: L10n.of(context).msgece44aa5,
-                        subtitle: _getMenuIconStyleLabel(context, fileManager.menuIconStyle),
-                        onTap: () => _showMenuIconStylePickerDialog(context, fileManager, theme),
                       ),
                     if (amoledVis)
                       SettingsTile(
@@ -727,8 +624,166 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         subtitle: _getFontFamilyLabel(context, fileManager.fontFamilyOption),
                         onTap: () => _showFontFamilyPickerDialog(context, fileManager, theme),
                       ),
+                    if (mediaPreviewsVis)
+                      SettingsTile(
+                        icon: Broken.image,
+                        title: L10n.of(context).ui_show_media_previews,
+                        subtitle: L10n.of(context).msg57736228,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: fileManager.showMediaPreviews,
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (_) => fileManager.toggleMediaPreviews(),
+                          ),
+                        ),
+                        onTap: () => fileManager.toggleMediaPreviews(),
+                      ),
+                    if (skipDialogVis)
+                      SettingsTile(
+                        icon: Broken.setting_3,
+                        title: L10n.of(context).msg6fdc09ac,
+                        subtitle: L10n.of(context).msg0a4b0442,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: fileManager.skipOpenWithDialog,
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (_) => fileManager.toggleSkipOpenWithDialog(),
+                          ),
+                        ),
+                        onTap: () => fileManager.toggleSkipOpenWithDialog(),
+                      ),
+                    if (resetViewersVis)
+                      SettingsTile(
+                        icon: Broken.refresh_2,
+                        title: L10n.of(context).ui_reset_default_viewers,
+                        subtitle: L10n.of(context).msg50923c95,
+                        onTap: () async {
+                          await PreferencesService.clearAllDefaultOpenActions();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(L10n.of(context).msg72b1f919),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    // —— APK 安装四项（原独立子页迁入「通用设置」手风琴组，
+                    //    搜索态保留内联条目以便检索；值直接读写
+                    //    PreferencesService 同一份 key，与子页共享落盘）——
+                    if (silentInstallVis)
+                      SettingsTile(
+                        icon: Icons.install_mobile_rounded,
+                        title: L10n.of(context).vt_silent_install,
+                        subtitle: _canSilentInstall ? L10n.of(context).vt_silent_install_ready : L10n.of(context).vt_silent_install_requires,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: PreferencesService.getSilentInstall(),
+                            activeColor: theme.colorScheme.primary,
+                            // 未获取 Root/Shizuku 时开关禁用（与子页 enabled 判定一致）
+                            onChanged: _canSilentInstall
+                                ? (val) {
+                                    PreferencesService.saveSilentInstall(val);
+                                    setState(() {});
+                                  }
+                                : null,
+                          ),
+                        ),
+                        trailingInteractive: true,
+                      ),
+                    if (keepApkVis)
+                      SettingsTile(
+                        icon: Icons.save_alt_rounded,
+                        title: L10n.of(context).vt_keep_apk,
+                        subtitle: L10n.of(context).vt_keep_apk_desc,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: PreferencesService.getKeepApkAfterInstall(),
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (val) {
+                              PreferencesService.saveKeepApkAfterInstall(val);
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                        onTap: () {
+                          PreferencesService.saveKeepApkAfterInstall(!PreferencesService.getKeepApkAfterInstall());
+                          setState(() {});
+                        },
+                      ),
+                    if (securityScanVis)
+                      SettingsTile(
+                        icon: Icons.security_rounded,
+                        title: L10n.of(context).vt_settings_title,
+                        subtitle: L10n.of(context).vt_settings_subtitle,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: PreferencesService.getVirusTotalScanEnabled(),
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (val) async {
+                              if (val) {
+                                // 打开开关：先进配置页，返回后按是否配置 Key 决定启用
+                                await _openVirusTotalConfigAndSync(context);
+                                if (mounted) setState(() {});
+                              } else {
+                                // 关闭开关：只禁用扫描，不清空 API Key
+                                await PreferencesService.saveVirusTotalScanEnabled(false);
+                                if (mounted) setState(() {});
+                              }
+                            },
+                          ),
+                        ),
+                        trailingInteractive: true,
+                        onTap: () async {
+                          // 点击条目本体：进入配置页重新配置 Key（不改开关状态）
+                          await _openVirusTotalConfigAndSync(context);
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    if (apkOpenModeVis)
+                      SettingsTile(
+                        icon: Icons.open_in_new_rounded,
+                        title: L10n.of(context).apk_open_mode_title,
+                        subtitle: L10n.of(context).apk_open_mode_desc,
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: PreferencesService.getApkOpenMode() == 'chooser',
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (val) {
+                              PreferencesService.saveApkOpenMode(val ? 'chooser' : 'builtin');
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                        onTap: () {
+                          PreferencesService.saveApkOpenMode(
+                            PreferencesService.getApkOpenMode() == 'chooser' ? 'builtin' : 'chooser',
+                          );
+                          setState(() {});
+                        },
+                      ),
                   ],
-                  if (_shouldShowHeader(fileExplorerList)) ...[
+                  // ===== 搜索态分组二：分类页设置 =====
+                  if (_shouldShowHeader(categoryGroupList)) ...[
+                    _buildSectionHeader(theme, L10n.of(context).ui_settings_category_page),
+                    if (customizeShortcutsVis)
+                      SettingsTile(
+                        icon: Broken.setting_2,
+                        title: L10n.of(context).msge7d18d73,
+                        subtitle: L10n.of(context).msg036fe6a4,
+                        onTap: () => QuickCategoriesGrid.showCustomizeDialog(context),
+                      ),
+                  ],
+                  // （原「外观与主题」独立分组已并入上方「通用设置」组）
+                  // ===== 搜索态分组三：浏览页设置（文件浏览器与导航）=====
+                  if (_shouldShowHeader(browseGroupList)) ...[
                     const SizedBox(height: 24),
                     _buildSectionHeader(theme, L10n.of(context).msg1cfeaace),
                     if (showAddressBarVis)
@@ -816,10 +871,10 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           child: Switch(
                             value: fileManager.enableMultipleTabs,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => _toggleMultiTabsWithScope(context, fileManager, theme),
+                            onChanged: (_) => toggleMultiTabsWithScope(context, fileManager, theme),
                           ),
                         ),
-                        onTap: () => _toggleMultiTabsWithScope(context, fileManager, theme),
+                        onTap: () => toggleMultiTabsWithScope(context, fileManager, theme),
                       ),
                     if (splitScreenVis)
                       SettingsTile(
@@ -870,7 +925,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                       ),
                   ],
-                  if (_shouldShowHeader(listLayoutList)) ...[
+                  // ===== 搜索态分组三（续）：浏览页设置（列表与布局样式）=====
+                  if (_shouldShowHeader(browseGroupList)) ...[
                     const SizedBox(height: 24),
                     _buildSectionHeader(theme, L10n.of(context).ui_list_layout_style),
                     if (folderFileCountVis)
@@ -918,37 +974,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                         onTap: () => fileManager.toggleShowFolderSizes(),
                       ),
-                    if (use24HourVis || hideTimeDateVis)
-                      SettingsTile(
-                        icon: Icons.access_time_rounded,
-                        title: L10n.of(context).ui_time_date_format,
-                        subtitle: _getTimeDateSubtitle(context, fileManager),
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            // 开启=显示时间/日期（即 !hideTimeAndDate），关闭=隐藏
-                            value: !fileManager.hideTimeAndDate,
-                            activeColor: theme.colorScheme.primary,
-                            // 仅在「开启（显示）」时弹出设置面板；关闭不弹。
-                            onChanged: (val) {
-                              fileManager.setHideTimeAndDate(!val);
-                              if (val) {
-                                _showTimeDateFormatPicker(
-                                  context,
-                                  fileManager,
-                                  theme,
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                        trailingInteractive: true,
-                        onTap: () => _showTimeDateFormatPicker(
-                          context,
-                          fileManager,
-                          theme,
-                        ),
-                      ),
+                    // 「时间与日期显示」已迁往「通用设置」分组（见上方），此处不再重复。
                     if (adaptiveNamesVis)
                       SettingsTile(
                         icon: Broken.text,
@@ -969,7 +995,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         icon: Icons.more_vert_rounded,
                         title: L10n.of(context).ui_show_action_menu_buttons,
                         subtitle: fileManager.showActionMenuButtons
-                            ? _getActionMenuModeLabel(
+                            ? getActionMenuModeLabel(
                                 context,
                                 fileManager.actionMenuDisplayMode,
                               )
@@ -983,7 +1009,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                               fileManager.setShowActionMenuButtons(val);
                               // 开启时弹出显示模式选择；关闭时不弹
                               if (val) {
-                                _showActionMenuModePicker(
+                                showActionMenuModePicker(
                                   context,
                                   fileManager,
                                   theme,
@@ -995,7 +1021,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         trailingInteractive: true,
                         onTap: () {
                           fileManager.setShowActionMenuButtons(true);
-                          _showActionMenuModePicker(
+                          showActionMenuModePicker(
                             context,
                             fileManager,
                             theme,
@@ -1006,59 +1032,77 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     SettingsTile(
                       icon: Icons.info_outline_rounded,
                       title: L10n.of(context).ui_trailing_info_when_hidden,
-                      subtitle: _getTrailingInfoTypeLabel(fileManager.trailingInfoType),
-                      onTap: () => _showTrailingInfoTypePickerDialog(context, fileManager, theme),
+                      subtitle: getTrailingInfoTypeLabel(context, fileManager.trailingInfoType),
+                      onTap: () => showTrailingInfoTypePickerDialog(context, fileManager, theme),
                     ),
                   ],
-                  if (_shouldShowHeader(mediaActionsList)) ...[
+                  // ===== 搜索态分组四：导航栏与底栏 =====
+                  // （原「媒体与默认操作」分组已并入上方「通用设置」组；
+                  //   面板入口与三个开关从「常规与行为」分流至此。）
+                  if (_shouldShowHeader(navGroupList)) ...[
                     const SizedBox(height: 24),
-                    _buildSectionHeader(theme, L10n.of(context).msga4333788),
-                    if (mediaPreviewsVis)
+                    _buildSectionHeader(theme, L10n.of(context).ui_settings_nav_and_bar),
+                    if (navBarVis)
                       SettingsTile(
-                        icon: Broken.image,
-                        title: L10n.of(context).ui_show_media_previews,
-                        subtitle: L10n.of(context).msg57736228,
+                        icon: Broken.menu,
+                        // issue #42：入口标题由「导航栏」改为「导航栏设置」，
+                        // 副标题仍同时表达「开 / 关」与「位置」。
+                        title: L10n.of(context).ui_nav_bar_settings,
+                        // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
+                        // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
+                        subtitle: !fileManager.bottomNavBarEnabled
+                            ? L10n.of(context).crypt_filename_enc_off
+                            : (fileManager.showBottomActionBar
+                                ? L10n.of(context).msg8c414b06
+                                : L10n.of(context).msge34c23ff),
+                        trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+                        onTap: () => NavBarSettingsSheet.show(context),
+                      ),
+                    // 以下三个开关与 NavBarSettingsSheet 面板内是同一份 provider
+                    // 状态（纯 UI 双入口），搜索态保留内联条目以便检索。
+                    SettingsTile(
+                      icon: Broken.menu_1,
+                      title: L10n.of(context).ui_hide_nav_labels,
+                      subtitle: L10n.of(context).msgce732d8a,
+                      trailing: Transform.scale(
+                        scale: 0.85,
+                        child: Switch(
+                          value: fileManager.hideNavLabels,
+                          activeColor: theme.colorScheme.primary,
+                          onChanged: (_) => fileManager.toggleHideNavLabels(),
+                        ),
+                      ),
+                      onTap: () => fileManager.toggleHideNavLabels(),
+                    ),
+                    if (hideNavBarVis)
+                      SettingsTile(
+                        icon: Icons.android,
+                        title: L10n.of(context).msga1fbf3c6,
+                        subtitle: L10n.of(context).msg02dddc02,
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
-                            value: fileManager.showMediaPreviews,
+                            value: fileManager.hideNavigationBar,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleMediaPreviews(),
+                            onChanged: (_) => fileManager.toggleHideNavigationBar(),
                           ),
                         ),
-                        onTap: () => fileManager.toggleMediaPreviews(),
+                        onTap: () => fileManager.toggleHideNavigationBar(),
                       ),
-                    if (skipDialogVis)
+                    if (hideActionTextVis)
                       SettingsTile(
-                        icon: Broken.setting_3,
-                        title: L10n.of(context).msg6fdc09ac,
-                        subtitle: L10n.of(context).msg0a4b0442,
+                        icon: Icons.label_off_rounded,
+                        title: L10n.of(context).ui_hide_action_text,
+                        subtitle: L10n.of(context).msg9b7639ac,
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
-                            value: fileManager.skipOpenWithDialog,
+                            value: fileManager.hideActionText,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleSkipOpenWithDialog(),
+                            onChanged: (_) => fileManager.toggleHideActionText(),
                           ),
                         ),
-                        onTap: () => fileManager.toggleSkipOpenWithDialog(),
-                      ),
-                    if (resetViewersVis)
-                      SettingsTile(
-                        icon: Broken.refresh_2,
-                        title: L10n.of(context).ui_reset_default_viewers,
-                        subtitle: L10n.of(context).msg50923c95,
-                        onTap: () async {
-                          await PreferencesService.clearAllDefaultOpenActions();
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(L10n.of(context).msg72b1f919),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        },
+                        onTap: () => fileManager.toggleHideActionText(),
                       ),
                   ],
                 ],
@@ -1072,39 +1116,43 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildSectionHeader(ThemeData theme, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 8, top: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          color: theme.colorScheme.primary.withValues(alpha: 0.8),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
+/// 分组小标题（原为 State 方法，重组后「通用设置」子页与搜索态都要用，
+/// 提升为顶层私有函数供本文件内多处复用）。
+Widget _buildSectionHeader(ThemeData theme, String title) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 8, bottom: 8, top: 8),
+    child: Text(
+      title.toUpperCase(),
+      style: TextStyle(
+        color: theme.colorScheme.primary.withValues(alpha: 0.8),
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.2,
       ),
-    );
-  }
+    ),
+  );
+}
+
+/// 打开 VirusTotal 配置页，返回后按「是否已配置 API Key」同步扫描开关的落盘值
+///（原 APK 安装子页「安全扫描」逻辑随迁，搜索态与「通用设置」子页共用）。
+/// 返回同步后的启用状态，供调用方刷新各自的界面状态。
+Future<bool> _openVirusTotalConfigAndSync(BuildContext context) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
+  );
+  final key = VirusTotalService.getApiKey();
+  final enabled = key != null && key.isNotEmpty;
+  await PreferencesService.saveVirusTotalScanEnabled(enabled);
+  return enabled;
 }
 
 // ----------------------------------------------------
-// 三点操作按钮显示模式：弹窗单选（顶层函数，供多个设置页面复用）
+// 三点操作按钮显示模式：弹窗单选（已迁至 browse_settings_screen.dart，
+// 此处保留时间与日期副标题等「通用设置」仍在用的顶层工具）
 // ----------------------------------------------------
-
-/// 三点按钮显示模式的当前文案。
-String _getActionMenuModeLabel(BuildContext context, String mode) {
-  final l10n = L10n.of(context);
-  switch (mode) {
-    case 'single':
-      return l10n.ui_action_menu_mode_single;
-    case 'dual':
-      return l10n.ui_action_menu_mode_dual;
-    default:
-      return l10n.ui_action_menu_mode_all;
-  }
-}
 
 /// 时间与日期格式设置的副标题：当前日期格式 + 12/24 小时制。
 String _getTimeDateSubtitle(
@@ -1118,101 +1166,8 @@ String _getTimeDateSubtitle(
   return '${fileManager.dateFormat} · $time';
 }
 
-/// 「显示三点操作按钮」模式选择弹窗：单选即生效并收起。
-Future<void> _showActionMenuModePicker(
-  BuildContext context,
-  FileManagerProvider fileManager,
-  ThemeData theme,
-) async {
-  final l10n = L10n.of(context);
-  final mode = await showModalBottomSheet<String>(
-    context: context,
-    showDragHandle: true,
-    builder: (sheetContext) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-            child: Text(
-              l10n.ui_select_action_menu_mode,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          _buildActionMenuModeOption(
-            sheetContext,
-            fileManager,
-            theme,
-            mode: 'all',
-            title: l10n.ui_action_menu_mode_all,
-            icon: Icons.visibility_rounded,
-          ),
-          _buildActionMenuModeOption(
-            sheetContext,
-            fileManager,
-            theme,
-            mode: 'single',
-            title: l10n.ui_action_menu_mode_single,
-            icon: Icons.looks_one_rounded,
-          ),
-          _buildActionMenuModeOption(
-            sheetContext,
-            fileManager,
-            theme,
-            mode: 'dual',
-            title: l10n.ui_action_menu_mode_dual,
-            icon: Icons.looks_two_rounded,
-          ),
-          const SizedBox(height: 12),
-        ],
-      ),
-    ),
-  );
-  if (mode != null) {
-    fileManager.setActionMenuDisplayMode(mode);
-  }
-}
-
-/// 弹窗内单个显示模式选项：点选即返回该模式并收起。
-Widget _buildActionMenuModeOption(
-  BuildContext sheetContext,
-  FileManagerProvider fileManager,
-  ThemeData theme, {
-  required String mode,
-  required String title,
-  required IconData icon,
-}) {
-  final isSelected = fileManager.actionMenuDisplayMode == mode;
-  return ListTile(
-    leading: Icon(
-      icon,
-      color: isSelected
-          ? theme.colorScheme.primary
-          : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-    ),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-        color: isSelected
-            ? theme.colorScheme.primary
-            : theme.colorScheme.onSurface,
-      ),
-    ),
-    trailing: Icon(
-      isSelected
-          ? Icons.radio_button_checked_rounded
-          : Icons.radio_button_off_rounded,
-      color: isSelected
-          ? theme.colorScheme.primary
-          : theme.colorScheme.onSurface.withValues(alpha: 0.3),
-      size: 22,
-    ),
-    onTap: () => Navigator.pop(sheetContext, mode),
-  );
-}
+// （「显示三点操作按钮」模式选择弹窗及其选项控件已随「浏览页设置」迁至
+// browse_settings_screen.dart 的 showActionMenuModePicker / _buildActionMenuModeOption。）
 
 // ----------------------------------------------------
 // 时间与日期格式选择弹窗（顶层函数，供多个设置页面复用）
@@ -1493,21 +1448,90 @@ class SettingsTile extends StatelessWidget {
   }
 }
 
+/// 设置页「分组入口」卡片（v2.3）：取代原手风琴折叠头 —— 点击经 MaterialPageRoute
+/// 进入对应全屏子页面，不再是下拉展开。
+///
+/// 视觉沿用原 CollapsibleSection 卡片头：圆角 16 描边卡片 + primary 10% 图标方块
+/// + w600 16 标题；行尾箭头为 Icons.chevron_right，用 primary 色高亮（与普通行
+/// 40% 透明度箭头区分，明确「可进入」）。供「通用设置」与「浏览页设置」两组
+/// 入口列表跨文件复用（browse_settings_screen.dart 也 import 本文件使用）。
+class SettingsGroupEntryCard extends StatelessWidget {
+  const SettingsGroupEntryCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  /// 分组建模图标（primary 10% 底圆角 12 方块内 primary 色展示）。
+  final IconData icon;
+
+  /// 分组标题（单行展示，无 subtitle —— 与语言行保持整页行高一致）。
+  final String title;
+
+  /// 点击进入对应全屏子页面。
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      color: theme.colorScheme.surface.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: theme.colorScheme.primary, size: 22),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: 22,
+          color: theme.colorScheme.primary,
+        ),
+      ),
+    );
+  }
+}
+
 // ----------------------------------------------------
 // Sub-Category Settings Screens
 // ----------------------------------------------------
 
+/// 「通用设置」子页面（v2.3 重组）：改为「入口列表」—— 语言行 + 四个分组入口
+/// 卡片，点击经 MaterialPageRoute 进入对应全屏子页面（不再使用手风琴折叠）。
+///
+/// 分组内容拆为四个子页：外观与主题 / 常规与行为 / 媒体与默认操作 / APK 安装
+/// （见下方 _AppearanceGroupScreen 等）。各开关的 prefs key 与 provider 读写
+/// 语义不变，仅从手风琴组迁至子页；原 State 内的缓存清理 / Shizuku 状态等
+/// 字段与方法随迁至对应子页 State。
 class GeneralSettingsScreen extends StatelessWidget {
   const GeneralSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final fileManager = context.watch<FileManagerProvider>();
-
-    return Scaffold(
+    // 「导航栏常驻其他页面」：开启时本页（全屏路由）也显示与首页同款的底部
+    // 4-tab —— 点击经 HomeScreen.pendingTabSwitch 回首页并切换到对应 tab；
+    // 开关关闭时原样返回本页，行为与接入前一致。
+    return PersistentNavBarScope(
+      child: Scaffold(
       appBar: AppBar(
-        title: Text(L10n.of(context).msgfdae44c3),
+        title: Text(L10n.of(context).ui_settings_general),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -1518,98 +1542,73 @@ class GeneralSettingsScreen extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
-            SettingsTile(
-              icon: Broken.folder_favorite,
-              title: L10n.of(context).msga432d127,
-              subtitle: fileManager.defaultToBrowseScreen ? L10n.of(context).msg2c8a394a : L10n.of(context).msg226fc6ae,
-              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-              onTap: () => _showDefaultHomeDialog(context, fileManager),
+            // —— 语言：与下方分组入口卡片同形态（单行标题 + primary 右箭头），
+            // 不再带 subtitle（当前语言名），保证整页行高一致；
+            // 当前语言信息保留在语言选择弹窗与搜索态行里。
+            SettingsGroupEntryCard(
+              icon: Broken.language_circle,
+              title: L10n.of(context).ui_language,
+              onTap: () => _showLanguagePickerDialog(context),
             ),
-            SettingsTile(
-              icon: Broken.arrow_swap,
-              title: L10n.of(context).msgd48a082d,
-              subtitle: fileManager.swipeMode == 'single' ? L10n.of(context).msgaac01f32 : L10n.of(context).msgbc9bf336,
-              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-              onTap: () => _showSwipeModeDialog(context, fileManager),
-            ),
-            SettingsTile(
-              icon: Broken.menu,
-              // issue #42：与内嵌设置页保持一致，入口标题改为「导航栏设置」。
-              title: L10n.of(context).ui_nav_bar_settings,
-              // 副标题同时表达「开 / 关」与「位置」：关闭时复用通用的「关闭 / Off」
-              // 文案（crypt_filename_enc_off，与其 crypt 用途无关），免得为 10 种语言新增键。
-              subtitle: !fileManager.bottomNavBarEnabled
-                  ? L10n.of(context).crypt_filename_enc_off
-                  : (fileManager.showBottomActionBar
-                      ? L10n.of(context).msg8c414b06
-                      : L10n.of(context).msge34c23ff),
-              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-              onTap: () => _showNavBarDialog(context),
-            ),
-            SettingsTile(
-              icon: Broken.folder_open,
-              title: L10n.of(context).msg59c7debc,
-              subtitle: L10n.of(context).msgd1591ba4,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.rememberLastFolder,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleRememberLastFolder(),
-                ),
+            // ===== 外观与主题：入口卡片 → 全屏子页面 =====
+            SettingsGroupEntryCard(
+              icon: Broken.color_swatch,
+              title: L10n.of(context).ui_appearance_theme,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const _AppearanceGroupScreen()),
               ),
-              onTap: () => fileManager.toggleRememberLastFolder(),
             ),
-            SettingsTile(
-              icon: Icons.android,
-              title: L10n.of(context).msga1fbf3c6,
-              subtitle: L10n.of(context).msg02dddc02,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.hideNavigationBar,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleHideNavigationBar(),
-                ),
+            // ===== 常规与行为：入口卡片 → 全屏子页面 =====
+            SettingsGroupEntryCard(
+              icon: Broken.setting,
+              title: L10n.of(context).msgfdae44c3,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const _BehaviorGroupScreen()),
               ),
-              onTap: () => fileManager.toggleHideNavigationBar(),
             ),
-            SettingsTile(
-              icon: Icons.label_off_rounded,
-              title: L10n.of(context).ui_hide_action_text,
-              subtitle: L10n.of(context).msg9b7639ac,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.hideActionText,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleHideActionText(),
-                ),
+            // ===== 媒体与默认操作：入口卡片 → 全屏子页面 =====
+            SettingsGroupEntryCard(
+              icon: Broken.play_circle,
+              title: L10n.of(context).msga4333788,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const _MediaDefaultOpsGroupScreen()),
               ),
-              onTap: () => fileManager.toggleHideActionText(),
             ),
-            SettingsTile(
-              icon: Broken.setting_2,
-              title: L10n.of(context).msge7d18d73,
-              subtitle: L10n.of(context).msg036fe6a4,
-              onTap: () => QuickCategoriesGrid.showCustomizeDialog(context),
+            // ===== APK 安装：入口卡片 → 全屏子页面 =====
+            SettingsGroupEntryCard(
+              icon: Broken.mobile,
+              title: L10n.of(context).vt_install_settings_title,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const _ApkInstallGroupScreen()),
+              ),
             ),
           ],
         ),
+      ),
       ),
     );
   }
 }
 
-class AppearanceSettingsScreen extends StatelessWidget {
-  const AppearanceSettingsScreen({super.key});
+/// 「外观与主题」全屏子页面（原手风琴组 0 内容原样迁入，共 6 项）。
+///
+/// 纯 UI 迁移：仍读写 [FileManagerProvider] 同一份字段并落盘到
+/// [PreferencesService]，视觉与语义不变。
+class _AppearanceGroupScreen extends StatelessWidget {
+  const _AppearanceGroupScreen();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fileManager = context.watch<FileManagerProvider>();
 
-    return Scaffold(
+    // 「导航栏常驻其他页面」接入（详见 GeneralSettingsScreen 同款包装）。
+    return PersistentNavBarScope(
+      child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_appearance_theme),
         leading: IconButton(
@@ -1633,12 +1632,6 @@ class AppearanceSettingsScreen extends StatelessWidget {
               title: L10n.of(context).msg64db4c2d,
               subtitle: _getFolderIconLabel(context, fileManager.folderIconOption),
               onTap: () => _showFolderIconPickerDialog(context, fileManager, theme),
-            ),
-            SettingsTile(
-              icon: Broken.category,
-              title: L10n.of(context).msgece44aa5,
-              subtitle: _getMenuIconStyleLabel(context, fileManager.menuIconStyle),
-              onTap: () => _showMenuIconStylePickerDialog(context, fileManager, theme),
             ),
             SettingsTile(
               icon: Broken.moon,
@@ -1675,21 +1668,28 @@ class AppearanceSettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
 
-class ExplorerSettingsScreen extends StatelessWidget {
-  const ExplorerSettingsScreen({super.key});
+/// 「常规与行为」全屏子页面（原手风琴组 1 内容原样迁入，共 4 项）。
+///
+/// 纯 UI 迁移：默认主页 / 滑动模式 / 记住最后文件夹 / 时间与日期格式，
+/// 读写语义不变。
+class _BehaviorGroupScreen extends StatelessWidget {
+  const _BehaviorGroupScreen();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fileManager = context.watch<FileManagerProvider>();
 
-    return Scaffold(
+    // 「导航栏常驻其他页面」接入（详见 GeneralSettingsScreen 同款包装）。
+    return PersistentNavBarScope(
+      child: Scaffold(
       appBar: AppBar(
-        title: Text(L10n.of(context).msgad6e8bb8),
+        title: Text(L10n.of(context).msgfdae44c3),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -1701,219 +1701,34 @@ class ExplorerSettingsScreen extends StatelessWidget {
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
             SettingsTile(
-              icon: Broken.edit,
-              title: L10n.of(context).msg26e4c5d6,
-              subtitle: L10n.of(context).windows1,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showAddressBar,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleShowAddressBar(),
-                ),
-              ),
-              onTap: () => fileManager.toggleShowAddressBar(),
+              icon: Broken.folder_favorite,
+              title: L10n.of(context).msga432d127,
+              subtitle: fileManager.defaultToBrowseScreen ? L10n.of(context).msg2c8a394a : L10n.of(context).msg226fc6ae,
+              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+              onTap: () => _showDefaultHomeDialog(context, fileManager),
             ),
             SettingsTile(
-              icon: Broken.add_square,
-              title: L10n.of(context).ui_show_action_bar,
-              subtitle: L10n.of(context).msg11b1ec65,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showFloatingAddButton,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleFloatingAddButton(),
-                ),
-              ),
-              onTap: () => fileManager.toggleFloatingAddButton(),
-            ),
-            SettingsTile(
-              icon: Broken.cloud,
-              title: L10n.of(context).ui_show_remote_cloud_badge,
-              subtitle: L10n.of(context).msg_remote_cloud_badge,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showRemoteCloudBadge,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleRemoteCloudBadge(),
-                ),
-              ),
-              onTap: () => fileManager.toggleRemoteCloudBadge(),
+              icon: Broken.arrow_swap,
+              title: L10n.of(context).msgd48a082d,
+              subtitle: fileManager.swipeMode == 'single' ? L10n.of(context).msgaac01f32 : L10n.of(context).msgbc9bf336,
+              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+              onTap: () => _showSwipeModeDialog(context, fileManager),
             ),
             SettingsTile(
               icon: Broken.folder_open,
-              title: L10n.of(context).msg124d9054,
-              subtitle: L10n.of(context).msg7e7765b6,
+              title: L10n.of(context).msg59c7debc,
+              subtitle: L10n.of(context).msgd1591ba4,
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
-                  value: fileManager.showHiddenFiles,
+                  value: fileManager.rememberLastFolder,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleHiddenFiles(),
+                  onChanged: (_) => fileManager.toggleRememberLastFolder(),
                 ),
               ),
-              onTap: () => fileManager.toggleHiddenFiles(),
+              onTap: () => fileManager.toggleRememberLastFolder(),
             ),
-            SettingsTile(
-              icon: Broken.folder_add,
-              title: L10n.of(context).auto_open_created_folder,
-              subtitle: L10n.of(context).auto_open_created_folder_desc,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.autoOpenCreatedFolder,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleAutoOpenCreatedFolder(),
-                ),
-              ),
-              onTap: () => fileManager.toggleAutoOpenCreatedFolder(),
-            ),
-            SettingsTile(
-              icon: Broken.colorfilter,
-              title: L10n.of(context).msgd33e3082,
-              subtitle: L10n.of(context).msgdd69671b,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.enableFolderHighlight,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleEnableFolderHighlight(),
-                ),
-              ),
-              onTap: () => fileManager.toggleEnableFolderHighlight(),
-            ),
-            SettingsTile(
-              icon: Broken.category,
-              title: L10n.of(context).ui_enable_multi_tabs,
-              subtitle: L10n.of(context).msg4b0a7063,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.enableMultipleTabs,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => _toggleMultiTabsWithScope(context, fileManager, theme),
-                ),
-              ),
-              onTap: () => _toggleMultiTabsWithScope(context, fileManager, theme),
-            ),
-            SettingsTile(
-              icon: Icons.splitscreen,
-              title: L10n.of(context).ui_enable_split_screen,
-              subtitle: L10n.of(context).msgf04ac00d,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.enableSplitScreen,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleSplitScreen(),
-                ),
-              ),
-              onTap: () => fileManager.toggleSplitScreen(),
-            ),
-            SettingsTile(
-              icon: Broken.folder_connection,
-              title: L10n.of(context).ui_enable_drag_drop,
-              subtitle: L10n.of(context).msgad54815d,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.enableDragDrop,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleEnableDragDrop(),
-                ),
-              ),
-              onTap: () => fileManager.toggleEnableDragDrop(),
-            ),
-            if (fileManager.enableDragDrop)
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: SettingsTile(
-                  icon: Broken.task_square,
-                  title: L10n.of(context).ui_confirm_drag_drop,
-                  subtitle: L10n.of(context).msg5dff8f2d,
-                  trailing: Transform.scale(
-                    scale: 0.85,
-                    child: Switch(
-                      value: fileManager.showDragDropDialog,
-                      activeColor: theme.colorScheme.primary,
-                      onChanged: (_) => fileManager.toggleShowDragDropDialog(),
-                    ),
-                  ),
-                  onTap: () => fileManager.toggleShowDragDropDialog(),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class LayoutSettingsScreen extends StatelessWidget {
-  const LayoutSettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final fileManager = context.watch<FileManagerProvider>();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(L10n.of(context).ui_list_layout_style),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
-          children: [
-            SettingsTile(
-              icon: Broken.document_text_1,
-              title: L10n.of(context).msg86f3d70f,
-              subtitle: L10n.of(context).msg40e9c325,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showFolderFileCount,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleFolderFileCount(),
-                ),
-              ),
-              onTap: () => fileManager.toggleFolderFileCount(),
-            ),
-            SettingsTile(
-              icon: Broken.folder_open,
-              title: L10n.of(context).ui_show_folder_contents_count,
-              subtitle: L10n.of(context).msga517863e,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showFolderContentsCount,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleFolderContentsCount(),
-                ),
-              ),
-              onTap: () => fileManager.toggleFolderContentsCount(),
-            ),
-            SettingsTile(
-              icon: Broken.document_text_1,
-              title: L10n.of(context).ui_show_folder_size,
-              subtitle: L10n.of(context).msg59a24fcb,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showFolderSizes,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleShowFolderSizes(),
-                ),
-              ),
-              onTap: () => fileManager.toggleShowFolderSizes(),
-            ),
+            // —— 时间与日期显示（原「列表与布局样式」迁入）——
             SettingsTile(
               icon: Icons.access_time_rounded,
               title: L10n.of(context).ui_time_date_format,
@@ -1944,72 +1759,28 @@ class LayoutSettingsScreen extends StatelessWidget {
                 theme,
               ),
             ),
-            SettingsTile(
-              icon: Broken.text,
-              title: L10n.of(context).ui_adaptive_multiline_names,
-              subtitle: L10n.of(context).msg1eda8a50,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.adaptiveMultiLineNames,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleAdaptiveMultiLineNames(),
-                ),
-              ),
-              onTap: () => fileManager.toggleAdaptiveMultiLineNames(),
-            ),
-            SettingsTile(
-              icon: Icons.more_vert_rounded,
-              title: L10n.of(context).ui_show_action_menu_buttons,
-              subtitle: fileManager.showActionMenuButtons
-                  ? _getActionMenuModeLabel(
-                      context,
-                      fileManager.actionMenuDisplayMode,
-                    )
-                  : L10n.of(context).ui_action_menu_subtitle,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showActionMenuButtons,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (val) {
-                    fileManager.setShowActionMenuButtons(val);
-                    // 开启时弹出显示模式选择；关闭时不弹
-                    if (val) {
-                      _showActionMenuModePicker(
-                        context,
-                        fileManager,
-                        theme,
-                      );
-                    }
-                  },
-                ),
-              ),
-              trailingInteractive: true,
-              onTap: () {
-                fileManager.setShowActionMenuButtons(true);
-                _showActionMenuModePicker(
-                  context,
-                  fileManager,
-                  theme,
-                );
-              },
-            ),
           ],
         ),
+      ),
       ),
     );
   }
 }
 
-class MediaSettingsScreen extends StatefulWidget {
-  const MediaSettingsScreen({super.key});
+/// 「媒体与默认操作」全屏子页面（原手风琴组 2 内容原样迁入，共 7 项）。
+///
+/// 纯 UI 迁移：原「媒体偏好」子页的远程缓存清理状态（_autoCleanMinutes /
+/// _remoteThumbnailPreview）随迁至本 State，「删除文件确认」（原「文件操作与
+/// 查看器」子页唯一剩余项）也在此页。读写语义不变。
+class _MediaDefaultOpsGroupScreen extends StatefulWidget {
+  const _MediaDefaultOpsGroupScreen();
 
   @override
-  State<MediaSettingsScreen> createState() => _MediaSettingsScreenState();
+  State<_MediaDefaultOpsGroupScreen> createState() => _MediaDefaultOpsGroupScreenState();
 }
 
-class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
+class _MediaDefaultOpsGroupScreenState extends State<_MediaDefaultOpsGroupScreen> {
+  // —— 以下字段与方法自原 _GeneralSettingsScreenState（「媒体偏好」部分）原样迁移 ——
   int _autoCleanMinutes = 0;
   bool _remoteThumbnailPreview = false;
 
@@ -2355,9 +2126,11 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
     final theme = Theme.of(context);
     final fileManager = context.watch<FileManagerProvider>();
 
-    return Scaffold(
+    // 「导航栏常驻其他页面」接入（详见 GeneralSettingsScreen 同款包装）。
+    return PersistentNavBarScope(
+      child: Scaffold(
       appBar: AppBar(
-        title: Text(L10n.of(context).ui_media_preferences),
+        title: Text(L10n.of(context).msga4333788),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -2381,6 +2154,52 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
                 ),
               ),
               onTap: () => fileManager.toggleMediaPreviews(),
+            ),
+            SettingsTile(
+              icon: Broken.setting_3,
+              title: L10n.of(context).msg6fdc09ac,
+              subtitle: L10n.of(context).msg0a4b0442,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: fileManager.skipOpenWithDialog,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => fileManager.toggleSkipOpenWithDialog(),
+                ),
+              ),
+              onTap: () => fileManager.toggleSkipOpenWithDialog(),
+            ),
+            // 「删除文件确认」（自已移除的「文件操作与查看器」子页迁入）：
+            // 关闭后删除文件不再弹二次确认弹窗。
+            SettingsTile(
+              icon: Broken.trash,
+              title: L10n.of(context).ui_delete_confirm_enabled,
+              subtitle: L10n.of(context).ui_delete_confirm_subtitle,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: fileManager.deleteConfirmEnabled,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => fileManager.toggleDeleteConfirmEnabled(),
+                ),
+              ),
+              onTap: () => fileManager.toggleDeleteConfirmEnabled(),
+            ),
+            SettingsTile(
+              icon: Broken.refresh_2,
+              title: L10n.of(context).ui_reset_default_viewers,
+              subtitle: L10n.of(context).msg50923c95,
+              onTap: () async {
+                await PreferencesService.clearAllDefaultOpenActions();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(L10n.of(context).msg72b1f919),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
             ),
             const SizedBox(height: 8),
             SettingsTile(
@@ -2428,21 +2247,97 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 }
 
-class ActionsSettingsScreen extends StatelessWidget {
-  const ActionsSettingsScreen({super.key});
+/// 「APK 安装」全屏子页面（原手风琴组 3 内容原样迁入，共 4 项）。
+///
+/// 纯 UI 迁移：原「APK 安装设置」子页的安装开关 / Shizuku 状态字段与方法随迁至
+/// 本 State（未获取 Root/Shizuku 时「静默安装」开关为禁用态；「安全扫描」开关
+/// 打开时进配置页、返回后按是否已配置 Key 同步落盘）。读写语义不变。
+class _ApkInstallGroupScreen extends StatefulWidget {
+  const _ApkInstallGroupScreen();
+
+  @override
+  State<_ApkInstallGroupScreen> createState() => _ApkInstallGroupScreenState();
+}
+
+class _ApkInstallGroupScreenState extends State<_ApkInstallGroupScreen> {
+  // —— 以下字段与方法自原 _GeneralSettingsScreenState（「APK 安装」部分）原样迁移 ——
+  bool _silentInstall = false;
+  bool _keepApk = false;
+  bool _securityScan = false;
+  bool _useExternalInstaller = false;
+  RootShizukuStatus? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _silentInstall = PreferencesService.getSilentInstall();
+    _keepApk = PreferencesService.getKeepApkAfterInstall();
+    // 扫描开关独立于 API Key：关闭开关只禁用扫描，不清空 Key
+    _securityScan = PreferencesService.getVirusTotalScanEnabled();
+    // APK 打开方式：'builtin'（内置安装器）/ 'chooser'（系统选择器，交给第三方安装器）
+    _useExternalInstaller = PreferencesService.getApkOpenMode() == 'chooser';
+    _loadStatus();
+  }
+
+  Future<void> _loadStatus() async {
+    final status = await RootShizukuService.checkStatus();
+    if (mounted) setState(() => _status = status);
+  }
+
+  bool get _canSilentInstall {
+    final s = _status;
+    if (s == null) return false;
+    return s.isRootAvailable || (s.isShizukuAvailable && s.shizukuPermissionGranted);
+  }
+
+  Future<void> _setSilentInstall(bool val) async {
+    setState(() => _silentInstall = val);
+    await PreferencesService.saveSilentInstall(val);
+  }
+
+  Future<void> _setKeepApk(bool val) async {
+    setState(() => _keepApk = val);
+    await PreferencesService.saveKeepApkAfterInstall(val);
+  }
+
+  /// 「安全扫描」开关：打开时始终进入配置页（即便已配置过 Key 也能重新配置/
+  /// 修改），返回后按是否配置了 Key 决定是否启用扫描；关闭时只禁用扫描，
+  /// 不清空 API Key（Key 持久化保留）。
+  Future<void> _onSecurityScanChanged(bool val) async {
+    if (val) {
+      final enabled = await _openVirusTotalConfigAndSync(context);
+      if (mounted) setState(() => _securityScan = enabled);
+    } else {
+      await PreferencesService.saveVirusTotalScanEnabled(false);
+      if (mounted) setState(() => _securityScan = false);
+    }
+  }
+
+  /// 点击条目本体：进入配置页重新配置 Key（不改开关状态），返回后同步开关。
+  Future<void> _openSecurityScanConfig() async {
+    final enabled = await _openVirusTotalConfigAndSync(context);
+    if (mounted) setState(() => _securityScan = enabled);
+  }
+
+  Future<void> _setUseExternalInstaller(bool val) async {
+    setState(() => _useExternalInstaller = val);
+    await PreferencesService.saveApkOpenMode(val ? 'chooser' : 'builtin');
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fileManager = context.watch<FileManagerProvider>();
 
-    return Scaffold(
+    // 「导航栏常驻其他页面」接入（详见 GeneralSettingsScreen 同款包装）。
+    return PersistentNavBarScope(
+      child: Scaffold(
       appBar: AppBar(
-        title: Text(L10n.of(context).ui_file_actions_viewers),
+        title: Text(L10n.of(context).vt_install_settings_title),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -2453,56 +2348,75 @@ class ActionsSettingsScreen extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
+            // 静默安装：需 Root 或 Shizuku 权限，未获取时开关为禁用态
+            //（与原子页 enabled: _canSilentInstall 一致），条目本体不可点。
             SettingsTile(
-              icon: Broken.setting_3,
-              title: L10n.of(context).msg6fdc09ac,
-              subtitle: L10n.of(context).msg0a4b0442,
+              icon: Icons.install_mobile_rounded,
+              title: L10n.of(context).vt_silent_install,
+              subtitle: _canSilentInstall ? L10n.of(context).vt_silent_install_ready : L10n.of(context).vt_silent_install_requires,
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
-                  value: fileManager.skipOpenWithDialog,
+                  value: _silentInstall,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleSkipOpenWithDialog(),
+                  onChanged: _canSilentInstall ? _setSilentInstall : null,
                 ),
               ),
-              onTap: () => fileManager.toggleSkipOpenWithDialog(),
+              trailingInteractive: true,
             ),
             SettingsTile(
-              icon: Broken.trash,
-              title: L10n.of(context).ui_delete_confirm_enabled,
-              subtitle: L10n.of(context).ui_delete_confirm_subtitle,
+              icon: Icons.save_alt_rounded,
+              title: L10n.of(context).vt_keep_apk,
+              subtitle: L10n.of(context).vt_keep_apk_desc,
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
-                  value: fileManager.deleteConfirmEnabled,
+                  value: _keepApk,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleDeleteConfirmEnabled(),
+                  onChanged: _setKeepApk,
                 ),
               ),
-              onTap: () => fileManager.toggleDeleteConfirmEnabled(),
+              onTap: () => _setKeepApk(!_keepApk),
+            ),
+            // 安全扫描（VirusTotal）：开关打开始终先进配置页，返回后按是否已配置
+            // Key 决定启用；点条目本体进入配置页重新配置（不改开关状态）。
+            SettingsTile(
+              icon: Icons.security_rounded,
+              title: L10n.of(context).vt_settings_title,
+              subtitle: L10n.of(context).vt_settings_subtitle,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: _securityScan,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: _onSecurityScanChanged,
+                ),
+              ),
+              trailingInteractive: true,
+              onTap: _openSecurityScanConfig,
             ),
             SettingsTile(
-              icon: Broken.refresh_2,
-              title: L10n.of(context).ui_reset_default_viewers,
-              subtitle: L10n.of(context).msg50923c95,
-              onTap: () async {
-                await PreferencesService.clearAllDefaultOpenActions();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(L10n.of(context).msg72b1f919),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
+              icon: Icons.open_in_new_rounded,
+              title: L10n.of(context).apk_open_mode_title,
+              subtitle: L10n.of(context).apk_open_mode_desc,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: _useExternalInstaller,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: _setUseExternalInstaller,
+                ),
+              ),
+              onTap: () => _setUseExternalInstaller(!_useExternalInstaller),
             ),
           ],
         ),
       ),
+      ),
     );
   }
 }
+
 
 // ----------------------------------------------------
 // Global Helper Labels & Dialogs for Themes & Settings
@@ -2536,15 +2450,6 @@ String _getFolderIconLabel(BuildContext context, String option) {
     case 'broken':
     default:
       return L10n.of(context).zenfile4;
-  }
-}
-
-String _getMenuIconStyleLabel(BuildContext context, String option) {
-  switch (option) {
-    case 'category': return L10n.of(context).vuesax;
-    case 'hamburger':
-    default:
-      return L10n.of(context).msg5dc988f4;
   }
 }
 
@@ -2757,109 +2662,8 @@ Widget _buildLanguageOption(BuildContext context, ThemeData theme, String curren
   );
 }
 
-/// 切换多标签页开关时弹出选择适用范围的下拉框。
-void _toggleMultiTabsWithScope(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
-  // 切换开关；仅在切换后为「开启」时弹出范围选择器（关闭时直接生效，不打扰）。
-  fileManager.toggleMultipleTabs();
-  if (!fileManager.enableMultipleTabs) return;
-
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: theme.scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (ctx) {
-      final currentMode = fileManager.multiTabPaneMode;
-      final options = [
-        {
-          'key': MultiTabPaneMode.singleOnly.name,
-          'name': L10n.of(context).ui_multi_tab_scope_single_only,
-          'desc': L10n.of(context).msg4b0a7063,
-          'icon': Broken.grid_1,
-        },
-        {
-          'key': MultiTabPaneMode.splitOnly.name,
-          'name': L10n.of(context).ui_multi_tab_scope_split_only,
-          'desc': L10n.of(context).ui_multi_tab_scope_split_only_desc,
-          'icon': Broken.grid_2,
-        },
-        {
-          'key': MultiTabPaneMode.all.name,
-          'name': L10n.of(context).ui_multi_tab_scope_all,
-          'desc': L10n.of(context).ui_multi_tab_scope_all_desc,
-          'icon': Broken.category,
-        },
-      ];
-
-      return SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(width: 40, height: 4, decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(2),
-                    )),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    L10n.of(context).ui_multi_tab_scope_title,
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    L10n.of(context).ui_multi_tab_scope_subtitle,
-                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13, fontFamily: 'LexendDeca'),
-                  ),
-                  const SizedBox(height: 16),
-                  ...options.map((opt) {
-                    final key = opt['key'] as String;
-                    final name = opt['name'] as String;
-                    final desc = opt['desc'] as String;
-                    final icon = opt['icon'] as IconData;
-                    final isSelected = currentMode.name == key;
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      leading: Icon(icon, size: 24, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                      title: Text(
-                        name,
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                          fontFamily: 'LexendDeca',
-                        ),
-                      ),
-                      subtitle: Text(
-                        desc,
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontFamily: 'LexendDeca'),
-                      ),
-                      trailing: isSelected
-                          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
-                          : null,
-                      onTap: () {
-                        final mode = MultiTabPaneMode.values.firstWhere((m) => m.name == key);
-                        fileManager.setMultiTabPaneMode(mode);
-                        Navigator.pop(ctx);
-                      },
-                    );
-                  }),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
+// （「多标签页」开关的范围选择弹窗已随「浏览页设置」迁至
+// browse_settings_screen.dart 的 toggleMultiTabsWithScope。）
 
 void _showSwipeModeDialog(BuildContext context, FileManagerProvider fileManager) {
   final theme = Theme.of(context);
@@ -2902,15 +2706,8 @@ void _showSwipeModeDialog(BuildContext context, FileManagerProvider fileManager)
   );
 }
 
-/// 「导航栏」设置入口：开关与位置统一交给 [NavBarSettingsSheet]（底部面板）。
-///
-/// 它与「自定义快捷方式」页的「导航栏」开关共用同一份状态
-/// （[FileManagerProvider.bottomNavBarEnabled] 与 `showBottomActionBar`，各自落盘
-/// 到 PreferencesService），所以两处永远一致 —— 面板里改完回到自定义页就是新值，
-/// 反之亦然。
-void _showNavBarDialog(BuildContext context) {
-  NavBarSettingsSheet.show(context);
-}
+// （原「导航栏」入口函数 _showNavBarDialog 已取消：主列表的顶层
+// 「导航栏与底栏」入口与搜索态条目都直接调用 NavBarSettingsSheet.show。）
 
 Widget _buildSelectionTile(
   BuildContext ctx, ThemeData theme, IconData icon, String title, String subtitle, {
@@ -3292,81 +3089,6 @@ void _showFolderIconPickerDialog(BuildContext context, FileManagerProvider fileM
                         trailing: isSelected ? Icon(Icons.radio_button_checked, color: theme.colorScheme.primary) : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
                         onTap: () {
                           fileManager.setFolderIconOption(key);
-                          Navigator.pop(ctx);
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
-
-void _showMenuIconStylePickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: theme.scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (ctx) {
-      final current = fileManager.menuIconStyle;
-      final options = [
-        {'key': 'hamburger', 'name': L10n.of(context).msg5dc988f4, 'icon': Broken.menu},
-        {'key': 'category', 'name': L10n.of(context).vuesax, 'icon': Broken.category},
-      ];
-
-      return SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(L10n.of(context).msgf9224d98, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 16),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: options.length,
-                    itemBuilder: (_, i) {
-                      final opt = options[i];
-                      final key = opt['key'] as String;
-                      final name = opt['name'] as String;
-                      final icon = opt['icon'] as IconData;
-                      final isSelected = current == key;
-
-                      return ListTile(
-                        leading: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(icon, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary, size: 20),
-                        ),
-                        title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-                        trailing: isSelected ? Icon(Icons.radio_button_checked, color: theme.colorScheme.primary) : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
-                        onTap: () {
-                          fileManager.setMenuIconStyle(key);
                           Navigator.pop(ctx);
                         },
                       );

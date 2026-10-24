@@ -5,6 +5,7 @@ import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../models/app_info_model.dart';
 import '../../../services/app_manager_service.dart';
 import '../../../services/preferences_service.dart';
+import '../app_clone_manager_screen.dart';
 import 'widgets/app_list_tab.dart';
 import 'widgets/backup_list_tab.dart';
 import 'widgets/app_options_sheet.dart';
@@ -158,6 +159,8 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      // 解除默认 9/16 屏高限制，让菜单按内容自撑高度，常见屏高下一屏看全不滚动
+      isScrollControlled: true,
       builder: (context) {
         return AppOptionsSheet(
           app: app,
@@ -209,7 +212,16 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
               onPressed: () => _selectAll(processedApps),
               tooltip: L10n.of(context).ui_select_all,
             )
-          else
+          else ...[
+            // 应用分身（Shizuku 多用户克隆）管理入口
+            IconButton(
+              icon: const Icon(Broken.people),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AppCloneManagerScreen()),
+              ),
+              tooltip: L10n.of(context).ui_clone_feature_title,
+            ),
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
               onPressed: () {
@@ -220,6 +232,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
               },
               tooltip: L10n.of(context).msg93bc1f09,
             ),
+          ],
         ],
         bottom: TabBar(
           controller: _tabController,

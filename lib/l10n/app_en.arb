@@ -3632,7 +3632,7 @@
   "ui_invalid_file_type": "Invalid File Type",
   "ui_language": "Language",
   "ui_follow_system": "Auto (Follow System)",
-  "ui_hide_nav_labels": "Hide Bottom Nav Labels",
+  "ui_hide_nav_labels": "Hide Nav Bar Labels",
   "ui_reset_default_viewers": "Reset Default File Viewers",
   "ui_trailing_info_when_hidden": "Trailing Info When Menu Hidden",
   "ui_go_up": "Go Up",
@@ -8842,5 +8842,13 @@
   "ui_clone_launch_failed": "Failed to launch app in profile",
   "ui_clone_to_user": "Clone to profile",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "Hidden"
+  "ui_bottom_tab_slot_disabled": "Hidden",
+  "ui_settings_general": "General",
+  "ui_settings_general_desc": "Language, appearance, date & time and media defaults",
+  "ui_settings_category_page": "Category page",
+  "ui_settings_category_page_desc": "Home screen layout and shortcuts",
+  "ui_settings_browse_page": "Browse page",
+  "ui_settings_browse_page_desc": "Address bar, tabs, drag & drop and list layout",
+  "ui_settings_nav_and_bar": "Navigation Bar Settings",
+  "ui_settings_nav_and_bar_desc": "Show/hide, position, opacity and labels"
 }

@@ -57,3 +57,4 @@ export 'vault_crypt_service.dart';
 export 'vault_import_store.dart';
 export 'crypt_profile.dart';
 export 'crypt_profile_service.dart';
+export 'remote_crypt_auto_assoc.dart';

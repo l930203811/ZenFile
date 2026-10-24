@@ -42,6 +42,22 @@ class CryptAutoEncryptService extends ChangeNotifier {
   static const _channel = MethodChannel('com.sequl.zenfile/crypt_watch');
   static const String _kEnabledKey = 'crypt_auto_encrypt_enabled';
 
+  /// 「自动关联本地加密文件」开关（设置页「自动关联」区）。
+  ///
+  /// 语义（2026-10-24 用户拍板）：**自动识别本地已存在的原地加密文件并登记**
+  /// 进「原地加密目录登记表」（[CryptMountService.addEncryptedDir]），之后浏览
+  /// 与解密即可正常；**不再**启动实时监听去加密新写入的文件（那是旧开关
+  /// `_enabled` 的行为，已从设置页下线，代码保留以便回退）。
+  ///
+  /// 判定发生在**浏览目录时**（该目录的列表已经读出来了，见
+  /// `FileManagerProvider._ephemeralMountForDir`）——不做全盘扫描，零额外 IO。
+  static const String _kAssocLocalKey = 'crypt_auto_assoc_local_enabled';
+
+  /// 「自动关联远程加密文件」开关：浏览远程目录时用**已拉取的列表**判定密文，
+  /// 命中即登记为「关联远程加密目录」（[CryptMountService.addRemoteEncryptedDir]），
+  /// 之后可在保险箱中以明文名打开与解密。同样不额外发起网络请求。
+  static const String _kAssocRemoteKey = 'crypt_auto_assoc_remote_enabled';
+
   /// 事件静默期：最后一次文件事件后等待这么久才动手（相机/下载是渐进写）。
   static const Duration quiescence = Duration(seconds: 5);
 
@@ -65,6 +81,14 @@ class CryptAutoEncryptService extends ChangeNotifier {
   /// 原生监听服务是否已启动
   bool _serviceStarted = false;
   bool get serviceStarted => _serviceStarted;
+
+  /// 见 [_kAssocLocalKey]。默认关闭。
+  bool? _assocLocal;
+  bool get autoAssociateLocal => _assocLocal ?? false;
+
+  /// 见 [_kAssocRemoteKey]。默认关闭。
+  bool? _assocRemote;
+  bool get autoAssociateRemote => _assocRemote ?? false;
 
   bool _initialized = false;
   final Map<String, Timer> _pendingTimers = {};
@@ -141,8 +165,12 @@ class CryptAutoEncryptService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _enabled = prefs.getBool(_kEnabledKey) ?? false;
+      _assocLocal = prefs.getBool(_kAssocLocalKey) ?? false;
+      _assocRemote = prefs.getBool(_kAssocRemoteKey) ?? false;
     } catch (_) {
       _enabled = false;
+      _assocLocal = false;
+      _assocRemote = false;
     }
     _channel.setMethodCallHandler(_handleNativeCall);
     // 登记表变化（新的原地加密完成 / 解密注销）→ 刷新监听表
@@ -167,6 +195,44 @@ class CryptAutoEncryptService extends ChangeNotifier {
   }
 
   // ── 开关与监听表 ──────────────────────────────────────────────────────────
+
+  /// 「自动关联」两个开关的状态发生变化时的回调（供 FileManagerProvider 刷新
+  /// 加密挂载点）。开关**关闭**时会回收此前自动登记的目录，浏览页必须立刻
+  /// 重新按「普通文件」展示，否则用户看到的就是「关了还照样解密显示」。
+  static Future<void> Function()? onAutoAssocChanged;
+
+  /// 「自动关联」两个开关：只落盘开关 + 通知 UI，不做任何扫描/监听。
+  ///
+  /// 实际判定都发生在浏览目录时（列表已经在内存里），因此**开**的代价为 0。
+  /// **关**则要做一件事：回收此前由本开关自动登记进来的目录（本地进
+  /// 「原地加密目录登记表」的、远程进「关联远程加密目录」的）—— 登记表本身
+  /// 不记来源，故另有一本账（见 [CryptMountService.loadAutoAssocLocalDirs] /
+  /// [RemoteCryptDirRecord.source]）。加密操作本身登记的目录不在回收范围内。
+  Future<void> setAutoAssociateLocal(bool value) async {
+    _assocLocal = value;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kAssocLocalKey, value);
+    } catch (_) {}
+    if (!value) {
+      await CryptMountService.purgeAutoAssocLocalDirs();
+    }
+    notifyListeners();
+    await onAutoAssocChanged?.call();
+  }
+
+  Future<void> setAutoAssociateRemote(bool value) async {
+    _assocRemote = value;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kAssocRemoteKey, value);
+    } catch (_) {}
+    if (!value) {
+      await CryptMountService.purgeAutoRemoteEncryptedDirs();
+    }
+    notifyListeners();
+    await onAutoAssocChanged?.call();
+  }
 
   /// 设置页开关
   Future<void> setEnabled(bool value) async {

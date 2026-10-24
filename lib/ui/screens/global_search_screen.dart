@@ -18,6 +18,7 @@ import '../../core/utils.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/feature_search_index.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'app_clone_manager_screen.dart';
 
 class GlobalSearchScreen extends StatefulWidget {
   final String? searchFolderPath;
@@ -659,6 +660,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               provider: provider,
             ),
           );
+        }
+        break;
+      case 'app_clone':
+        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆
+        if (context.mounted) {
+          await AppCloneFlow.cloneApk(context, path);
         }
         break;
       case 'open_with':

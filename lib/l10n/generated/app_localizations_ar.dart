@@ -3341,7 +3341,7 @@ class L10nAr extends L10n {
   String get ui_follow_system => 'تلقائي (اتباع النظام)';
 
   @override
-  String get ui_hide_nav_labels => 'إخفاء تسميات التنقل السفلية';
+  String get ui_hide_nav_labels => 'إخفاء تسميات شريط التنقل';
 
   @override
   String get ui_reset_default_viewers => 'إعادة تعيين العارضات الافتراضية';
@@ -8846,4 +8846,32 @@ class L10nAr extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'مخفي';
+
+  @override
+  String get ui_settings_general => 'عام';
+
+  @override
+  String get ui_settings_general_desc =>
+      'اللغة والمظهر والتاريخ والوقت وإجراءات الوسائط الافتراضية';
+
+  @override
+  String get ui_settings_category_page => 'إعدادات صفحة الفئات';
+
+  @override
+  String get ui_settings_category_page_desc =>
+      'تخطيط الشاشة الرئيسية والاختصارات';
+
+  @override
+  String get ui_settings_browse_page => 'إعدادات صفحة التصفح';
+
+  @override
+  String get ui_settings_browse_page_desc =>
+      'شريط العنوان والتبويبات والسحب والإفلات وتخطيط القائمة';
+
+  @override
+  String get ui_settings_nav_and_bar => 'إعدادات شريط التنقل';
+
+  @override
+  String get ui_settings_nav_and_bar_desc =>
+      'الإظهار/الإخفاء والموضع والشفافية والتسميات';
 }

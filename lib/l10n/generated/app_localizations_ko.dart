@@ -3246,7 +3246,7 @@ class L10nKo extends L10n {
   String get ui_follow_system => '자동 (시스템 따르기)';
 
   @override
-  String get ui_hide_nav_labels => '하단 내비게이션 레이블 숨기기';
+  String get ui_hide_nav_labels => '내비게이션 바 레이블 숨기기';
 
   @override
   String get ui_reset_default_viewers => '기본 파일 뷰어 초기화';
@@ -8609,4 +8609,28 @@ class L10nKo extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => '숨김';
+
+  @override
+  String get ui_settings_general => '일반 설정';
+
+  @override
+  String get ui_settings_general_desc => '언어, 테마 외관, 날짜 및 시간, 미디어 기본 작업';
+
+  @override
+  String get ui_settings_category_page => '카테고리 페이지 설정';
+
+  @override
+  String get ui_settings_category_page_desc => '홈 화면 레이아웃 및 바로가기';
+
+  @override
+  String get ui_settings_browse_page => '탐색 페이지 설정';
+
+  @override
+  String get ui_settings_browse_page_desc => '주소창, 탭, 드래그 앤 드롭, 목록 레이아웃';
+
+  @override
+  String get ui_settings_nav_and_bar => '내비게이션 바 설정';
+
+  @override
+  String get ui_settings_nav_and_bar_desc => '표시/숨기기, 위치, 불투명도, 라벨';
 }

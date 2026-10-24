@@ -6,6 +6,7 @@ import 'wake_on_lan_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'decibel_meter_screen.dart';
 import 'text_editor_screen.dart';
+import 'app_clone_manager_screen.dart';
 
 /// 工具箱子页面：以列表形式聚合「私人保险箱 / 局域网唤醒 / 扫码 / 分贝仪」入口，
 /// 点击进入对应页面。进入/退出本页的动画由调用方（网格/抽屉）统一控制，
@@ -54,6 +55,13 @@ class ToolboxScreen extends StatelessWidget {
             MaterialPageRoute(builder: (_) => const TextEditorScreen()),
           );
         },
+      ),
+      // 应用分身入口：复用 ui_clone_feature_title 文案，进入分身管理页
+      _ToolboxItem(
+        icon: Broken.copy,
+        title: l10n.ui_clone_feature_title,
+        color: Colors.pink.shade600,
+        buildPage: () => const AppCloneManagerScreen(),
       ),
     ];
 

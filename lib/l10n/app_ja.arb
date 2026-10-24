@@ -3629,7 +3629,7 @@
   "ui_invalid_file_type": "無効なファイルタイプ",
   "ui_language": "言語",
   "ui_follow_system": "自動（システムに従う）",
-  "ui_hide_nav_labels": "下部ナビゲーションラベルを隠す",
+  "ui_hide_nav_labels": "ナビゲーションバーのラベルを隠す",
   "ui_reset_default_viewers": "デフォルトファイルビューアをリセット",
   "ui_trailing_info_when_hidden": "三点メニュー無効時の末尾情報",
   "ui_go_up": "上のレベルへ",
@@ -8780,5 +8780,13 @@
   "ui_clone_launch_failed": "分身アプリの起動に失敗しました",
   "ui_clone_to_user": "分身へクローン",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "オフ"
+  "ui_bottom_tab_slot_disabled": "オフ",
+  "ui_settings_general": "一般設定",
+  "ui_settings_general_desc": "言語、外観、日付と時刻、メディアの既定動作",
+  "ui_settings_category_page": "カテゴリページ設定",
+  "ui_settings_category_page_desc": "ホーム画面のレイアウトとショートカット",
+  "ui_settings_browse_page": "ブラウズページ設定",
+  "ui_settings_browse_page_desc": "アドレスバー、タブ、ドラッグ＆ドロップ、リストレイアウト",
+  "ui_settings_nav_and_bar": "ナビゲーションバー設定",
+  "ui_settings_nav_and_bar_desc": "表示/非表示、位置、不透明度、ラベル"
 }

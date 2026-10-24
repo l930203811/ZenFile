@@ -3625,7 +3625,7 @@
   "ui_invalid_file_type": "Tipo de Archivo Inválido",
   "ui_language": "Idioma",
   "ui_follow_system": "Automático (seguir el sistema)",
-  "ui_hide_nav_labels": "Ocultar Etiquetas de Navegación Inferior",
+  "ui_hide_nav_labels": "Ocultar etiquetas de navegación",
   "ui_reset_default_viewers": "Restablecer Visores de Archivos Predeterminados",
   "ui_trailing_info_when_hidden": "Información Final Cuando el Menú Está Oculto",
   "ui_go_up": "Subir",
@@ -8776,5 +8776,13 @@
   "ui_clone_launch_failed": "No se pudo abrir la app en la clona",
   "ui_clone_to_user": "Clonar al perfil",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "Oculto"
+  "ui_bottom_tab_slot_disabled": "Oculto",
+  "ui_settings_general": "General",
+  "ui_settings_general_desc": "Idioma, apariencia, fecha y hora y acciones de medios",
+  "ui_settings_category_page": "Página de categorías",
+  "ui_settings_category_page_desc": "Diseño de la pantalla de inicio y accesos directos",
+  "ui_settings_browse_page": "Página de exploración",
+  "ui_settings_browse_page_desc": "Barra de direcciones, pestañas, arrastrar y soltar y lista",
+  "ui_settings_nav_and_bar": "Ajustes de la barra de navegación",
+  "ui_settings_nav_and_bar_desc": "Mostrar/ocultar, posición, opacidad y etiquetas"
 }

@@ -425,8 +425,9 @@ class VaultCryptService {
     // 持久化挂载点无法表达存储根目录，但「原地加密目录登记表」可以。
     // 缺了这一步，根目录级别的原地加密**连解密都会失败**
     // （直接抛「未找到对应的加密挂载点」）。
+    // ⚠️ 登记表为空**不能**提前返回：清应用数据后登记表就是空的，
+    // 而那正是下面密文探测兜底要接手的场景。
     final dirs = await CryptMountService.loadEncryptedDirs();
-    if (dirs.isEmpty) return null;
     RcloneCryptConfig? master;
     for (final d in dirs) {
       if (!_dirContains(d, path)) continue;
@@ -439,6 +440,34 @@ class VaultCryptService {
         config: master,
         name: p.basename(d),
       );
+    }
+    // 登记表也没命中 —— 典型场景：**清除了应用数据**。登记表存在
+    // SharedPreferences 里随之被清，但磁盘上的密文还在；用户重建保险箱
+    // （相同密码 + 加盐）后浏览页能靠「目录内确有密文」的临时挂载正常
+    // 显示/打开，解密层却因查不到登记而抛「未找到对应的加密挂载点」。
+    // 这里沿父目录向上探测密文（与浏览层临时挂载同判据
+    // [CryptOperations.dirContainsCiphertext]，最多扫到存储根）：
+    // 命中即视为「执行过原地加密的目录」，**自动重新登记**进登记表
+    //（保险箱「原地加密」列表随之恢复），并据此构造挂载点完成解密。
+    master ??= await getMasterConfig(path: path);
+    if (master == null) return null;
+    const storageRoot = '/storage/emulated/0';
+    var dir = p.dirname(path);
+    while (true) {
+      final n = CryptMountService.normalizePosix(dir);
+      final insideRoot = n == storageRoot || n.startsWith('$storageRoot/');
+      if (!insideRoot) break;
+      if (await CryptOperations.dirContainsCiphertext(dir, config: master)) {
+        await CryptMountService.addEncryptedDir(dir);
+        return CryptMountPoint(
+          physicalPath: dir,
+          config: master,
+          name: p.basename(dir),
+        );
+      }
+      final parent = p.dirname(dir);
+      if (parent == dir) break;
+      dir = parent;
     }
     return null;
   }

@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.4';
+  static const String _latestChangelogVersion = 'v3.6.5';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v365,
     _v364,
     _v363,
     _v362,
@@ -952,7 +953,37 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.4 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.5 ────────────────────────────────────────────────
+  static const _Changelog _v365 = _Changelog(
+    version: 'v3.6.5',
+    date: '2026-10-24',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '保险箱「密码配置」页原「自动加密」改为「自动关联」，并拆分为两个独立开关：「自动关联本地加密文件」与「自动关联远程加密文件」，两者默认均关闭',
+        '开启「自动关联本地加密文件」后，浏览本地目录时若发现该目录存在无法解密的密文，会自动登记到「原地加密列表」中，无需手动添加',
+        '开启「自动关联远程加密文件」后，浏览远程目录（SFTP / SMB / FTP / WebDAV 等）时会用已有配置就地判定，命中的加密目录自动登记到「原地加密列表」，不再局限于手动逐个添加',
+        '开关标题下方新增说明：两项开关都只在浏览目录时就地判定，远程侧不会额外发起网络请求，对性能影响极小',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复清除应用数据后，在保险箱中设置相同的密码与加盐，浏览页能识别原地加密文件却无法解密、提示「未找到对应的加密挂载点」的问题：现在识别到原地加密文件会自动重新登记到原地加密列表并正常解密',
+        '修复原地加密文件可以剪切到本地目录、却无法剪切到远程目录、提示「Local file not found」的问题：现在按既定的「复制搬运、不改变加密状态」语义，把密文原样上传到远程目录',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'In the vault "Password settings" page, "Auto-encrypt" is renamed to "Auto-associate" and split into two separate switches: "Auto-associate local encrypted files" and "Auto-associate remote encrypted files", both off by default',
+        'With local association on, browsing a local directory that contains undecryptable ciphertext registers it in the in-place encryption list automatically — no manual step needed',
+        'With remote association on, browsing a remote directory (SFTP / SMB / FTP / WebDAV, etc.) judges it on the spot using the existing configuration, and matching encrypted directories are registered in the in-place encryption list automatically',
+        'A note was added under the section title: both switches only judge while browsing, the remote side issues no extra network requests, and the performance impact is minimal',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed in-place encrypted files being recognised but not decryptable after clearing app data and re-entering the same password and salt ("No matching encryption mount point found"): such files are now re-registered in the in-place encryption list and decrypt normally',
+        'Fixed in-place encrypted files that could be cut to a local folder but failed with "Local file not found" when cut to a remote folder: the ciphertext is now uploaded to the remote directory as-is, following the existing "transfer only, never change encryption state" rule',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.4 ──────────────────────────────────────────────────────────
   static const _Changelog _v364 = _Changelog(
     version: 'v3.6.4',
     date: '2026-10-24',

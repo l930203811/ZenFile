@@ -19,6 +19,7 @@ import '../screens/vault_session_unlock_dialog.dart';
 import '../screens/crypt_mount_edit_screen.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'app_clone_manager_screen.dart';
 import '../widgets/crypt_progress_dialog.dart';
 
 class AllRecentFilesScreen extends StatefulWidget {
@@ -396,6 +397,12 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         break;
       case 'decrypt':
         await _handleDecrypt(context, path);
+        break;
+      case 'app_clone':
+        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆
+        if (context.mounted) {
+          await AppCloneFlow.cloneApk(context, path);
+        }
         break;
     }
   }

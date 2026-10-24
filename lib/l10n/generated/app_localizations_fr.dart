@@ -3416,8 +3416,7 @@ class L10nFr extends L10n {
   String get ui_follow_system => 'Automatique (suivre le système)';
 
   @override
-  String get ui_hide_nav_labels =>
-      'Masquer les étiquettes de navigation inférieure';
+  String get ui_hide_nav_labels => 'Masquer les étiquettes de navigation';
 
   @override
   String get ui_reset_default_viewers =>
@@ -9016,4 +9015,32 @@ class L10nFr extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'Masqué';
+
+  @override
+  String get ui_settings_general => 'Général';
+
+  @override
+  String get ui_settings_general_desc =>
+      'Langue, apparence, date et heure, actions média';
+
+  @override
+  String get ui_settings_category_page => 'Page des catégories';
+
+  @override
+  String get ui_settings_category_page_desc =>
+      'Disposition de l\'écran d\'accueil et raccourcis';
+
+  @override
+  String get ui_settings_browse_page => 'Page de navigation';
+
+  @override
+  String get ui_settings_browse_page_desc =>
+      'Barre d\'adresse, onglets, glisser-déposer et liste';
+
+  @override
+  String get ui_settings_nav_and_bar => 'Paramètres de la barre de navigation';
+
+  @override
+  String get ui_settings_nav_and_bar_desc =>
+      'Affichage, position, opacité et libellés';
 }

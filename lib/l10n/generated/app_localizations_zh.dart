@@ -3233,7 +3233,7 @@ class L10nZh extends L10n {
   String get ui_follow_system => '自动（跟随系统）';
 
   @override
-  String get ui_hide_nav_labels => '隐藏底部导航标签';
+  String get ui_hide_nav_labels => '隐藏导航栏标签';
 
   @override
   String get ui_reset_default_viewers => '重置默认文件查看器';
@@ -8417,6 +8417,30 @@ class L10nZh extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => '已关闭';
+
+  @override
+  String get ui_settings_general => '通用设置';
+
+  @override
+  String get ui_settings_general_desc => '语言、主题外观、时间日期与媒体默认操作';
+
+  @override
+  String get ui_settings_category_page => '分类页设置';
+
+  @override
+  String get ui_settings_category_page_desc => '主屏幕布局与快捷方式自定义';
+
+  @override
+  String get ui_settings_browse_page => '浏览页设置';
+
+  @override
+  String get ui_settings_browse_page_desc => '地址栏、标签页、拖放与列表布局';
+
+  @override
+  String get ui_settings_nav_and_bar => '导航栏设置';
+
+  @override
+  String get ui_settings_nav_and_bar_desc => '显示/隐藏、位置、不透明度与文字标签';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11639,7 +11663,7 @@ class L10nZhTw extends L10nZh {
   String get ui_follow_system => '自動（跟隨系統）';
 
   @override
-  String get ui_hide_nav_labels => '隱藏底部導航標籤';
+  String get ui_hide_nav_labels => '隱藏導覽列標籤';
 
   @override
   String get ui_reset_default_viewers => '重置預設檔案檢視器';
@@ -16802,4 +16826,28 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_bottom_tab_slot_disabled => '已關閉';
+
+  @override
+  String get ui_settings_general => '一般設定';
+
+  @override
+  String get ui_settings_general_desc => '語言、主題外觀、時間日期與媒體預設操作';
+
+  @override
+  String get ui_settings_category_page => '分類頁設定';
+
+  @override
+  String get ui_settings_category_page_desc => '主畫面版面配置與捷徑自訂';
+
+  @override
+  String get ui_settings_browse_page => '瀏覽頁設定';
+
+  @override
+  String get ui_settings_browse_page_desc => '位址列、分頁、拖放與清單版面配置';
+
+  @override
+  String get ui_settings_nav_and_bar => '導覽列設定';
+
+  @override
+  String get ui_settings_nav_and_bar_desc => '顯示/隱藏、位置、不透明度與文字標籤';
 }

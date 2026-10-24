@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+
 import '../../providers/file_manager_provider.dart';
 import '../../services/crypt/crypt_profile.dart';
 import '../../services/crypt/crypt_profile_service.dart';
@@ -110,7 +111,6 @@ class _CryptSettingsScreenState extends State<CryptSettingsScreen> {
     } catch (_) {}
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -152,54 +152,90 @@ class _CryptSettingsScreenState extends State<CryptSettingsScreen> {
                     child: Text(
                       l10n.crypt_profile_empty,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.55,
+                        ),
                       ),
                     ),
                   )
                 else
                   ..._profiles.map((p) => _buildProfileTile(p, theme, l10n)),
                 const SizedBox(height: 12),
-                // ② 自动加密新增文件（原地加密容器目录的实时监听 + 兜底补加密）
+                // ② 自动关联：本地 / 远程加密文件的自动识别与登记
                 _buildSectionHeader(
                   theme,
-                  icon: Icons.enhanced_encryption_outlined,
+                  icon: Icons.link_outlined,
                   title: l10n.crypt_auto_encrypt_section,
                 ),
-                _buildAutoEncryptTile(theme, l10n),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 6),
+                  child: Text(
+                    l10n.crypt_auto_assoc_note,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+                _buildAutoAssocTile(
+                  theme,
+                  icon: Icons.enhanced_encryption_outlined,
+                  title: l10n.crypt_auto_encrypt_title,
+                  subtitle: l10n.crypt_auto_encrypt_desc,
+                  value: CryptAutoEncryptService.instance.autoAssociateLocal,
+                  onChanged: (v) async {
+                    await CryptAutoEncryptService.instance
+                        .setAutoAssociateLocal(v);
+                    if (mounted) setState(() {});
+                  },
+                ),
+                _buildAutoAssocTile(
+                  theme,
+                  icon: Icons.cloud_outlined,
+                  title: l10n.crypt_auto_remote_title,
+                  subtitle: l10n.crypt_auto_remote_desc,
+                  value: CryptAutoEncryptService.instance.autoAssociateRemote,
+                  onChanged: (v) async {
+                    await CryptAutoEncryptService.instance
+                        .setAutoAssociateRemote(v);
+                    if (mounted) setState(() {});
+                  },
+                ),
                 const SizedBox(height: 12),
               ],
             ),
     );
   }
 
-  /// 「自动加密新增文件」开关：对已登记的原地加密容器目录开启
-  /// FileObserver 实时监听（前台服务）+ 启动时兜底补加密。
-  Widget _buildAutoEncryptTile(ThemeData theme, L10n l10n) {
-    final service = CryptAutoEncryptService.instance;
+  /// 「自动关联」开关：把**已经识别到的**加密文件登记进对应登记表 ——
+  /// 本地写进「原地加密目录登记表」（浏览/解密自此有确定性依据），
+  /// 远程写进「关联远程加密目录」登记表（可在保险箱以明文名打开解密）。
+  ///
+  /// 判定都发生在**浏览目录时**（列表已经读出来了），开/关本身零开销；
+  /// 旧版「实时监听 + 新文件自动加密」的开关已下线（默认值仍为关闭）。
+  Widget _buildAutoAssocTile(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: SwitchListTile(
-        value: service.enabled,
-        onChanged: (v) async {
-          await service.setEnabled(v);
-          if (mounted) setState(() {});
-        },
+        value: value,
+        onChanged: (v) async => onChanged(v),
         secondary: Icon(
-          Icons.enhanced_encryption_outlined,
-          color: service.enabled
+          icon,
+          color: value
               ? theme.colorScheme.primary
               : theme.colorScheme.onSurface.withValues(alpha: 0.4),
         ),
-        title: Text(
-          l10n.crypt_auto_encrypt_title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            service.enabled && service.watchedDirs.isNotEmpty
-                ? l10n.crypt_auto_encrypt_watching(service.watchedDirs.length)
-                : l10n.crypt_auto_encrypt_desc,
+            subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
             ),
@@ -324,7 +360,6 @@ class _CryptSettingsScreenState extends State<CryptSettingsScreen> {
       ),
     );
   }
-
 
   Widget _buildChip(String label, ThemeData theme) {
     return Container(

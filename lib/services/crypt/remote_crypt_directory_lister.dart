@@ -59,12 +59,14 @@ class RemoteCryptDirectoryLister {
       final childVirtualPath =
           'cryptremote://${_mount.remoteConnId}|${item.path}';
 
-      var size = 0;
-      if (!item.isDirectory) {
+      var size = item.size;
+      if (!item.isDirectory && decryptionSucceeded) {
+        // 只有密文条目才把服务端字节数换算成解密后大小；普通文件（混合目录里
+        // 与密文共存的明文）直接用服务端报的大小，否则会显示成 0。
         try {
           size = calculateDecryptedSize(item.size);
         } catch (_) {
-          size = 0;
+          size = item.size;
         }
       }
 

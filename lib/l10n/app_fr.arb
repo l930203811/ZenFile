@@ -3625,7 +3625,7 @@
   "ui_invalid_file_type": "Type de fichier invalide",
   "ui_language": "Langue",
   "ui_follow_system": "Automatique (suivre le système)",
-  "ui_hide_nav_labels": "Masquer les étiquettes de navigation inférieure",
+  "ui_hide_nav_labels": "Masquer les étiquettes de navigation",
   "ui_reset_default_viewers": "Réinitialiser les visionneurs par défaut",
   "ui_trailing_info_when_hidden": "Info en fin de ligne quand le menu est masqué",
   "ui_go_up": "Remonter",
@@ -8776,5 +8776,13 @@
   "ui_clone_launch_failed": "Échec du lancement de l'appli dans le clone",
   "ui_clone_to_user": "Cloner vers le profil",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "Masqué"
+  "ui_bottom_tab_slot_disabled": "Masqué",
+  "ui_settings_general": "Général",
+  "ui_settings_general_desc": "Langue, apparence, date et heure, actions média",
+  "ui_settings_category_page": "Page des catégories",
+  "ui_settings_category_page_desc": "Disposition de l'écran d'accueil et raccourcis",
+  "ui_settings_browse_page": "Page de navigation",
+  "ui_settings_browse_page_desc": "Barre d'adresse, onglets, glisser-déposer et liste",
+  "ui_settings_nav_and_bar": "Paramètres de la barre de navigation",
+  "ui_settings_nav_and_bar_desc": "Affichage, position, opacité et libellés"
 }

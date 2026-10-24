@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/file_name_validation.dart';
+import '../../services/apk_installer_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
@@ -686,6 +687,11 @@ class FileActionSheet {
     // 只认真实文件系统路径，对 zip:// 虚拟路径均无效 —— 统一置灰不可点，
     // 避免用户点击无反应误以为是 bug。
     final isZipEntry = filePath?.startsWith('zip://') ?? false;
+    // 仅本地 .apk 文件显示「克隆到分身」：远程/加密/zip 内条目无法直接 pm install
+    // （路径以 / 开头即可排除 zip://、remote://、cryptremote:// 等虚拟路径）。
+    final isLocalApk = filePath != null &&
+        filePath.startsWith('/') &&
+        ApkInstallerService.isApk(filePath);
     final items = <ActionItem>[
       if (isArchive && !isZipEntry)
         ActionItem(
@@ -737,6 +743,13 @@ class FileActionSheet {
           label: L10n.of(context).msg2a4cfb07,
           onTap: () => onAction('open_with'),
           enabled: !isZipEntry,
+        ),
+      // APK 特有动作：克隆到分身（Shizuku/root 多用户多开，见 AppCloneFlow）
+      if (isLocalApk)
+        ActionItem(
+          icon: Broken.people,
+          label: L10n.of(context).ui_clone_clone_to_user,
+          onTap: () => onAction('app_clone'),
         ),
       // 压缩包内条目：压缩 → 解压（extractZipEntriesToParent）；普通条目：压缩
       isZipEntry

@@ -3625,7 +3625,7 @@
   "ui_invalid_file_type": "نوع ملف غير صالح",
   "ui_language": "اللغة",
   "ui_follow_system": "تلقائي (اتباع النظام)",
-  "ui_hide_nav_labels": "إخفاء تسميات التنقل السفلية",
+  "ui_hide_nav_labels": "إخفاء تسميات شريط التنقل",
   "ui_reset_default_viewers": "إعادة تعيين العارضات الافتراضية",
   "ui_trailing_info_when_hidden": "المعلومات النهائية عند إخفاء القائمة",
   "ui_go_up": "أعلى",
@@ -8776,5 +8776,13 @@
   "ui_clone_launch_failed": "فشل تشغيل التطبيق في النسخة",
   "ui_clone_to_user": "نسخ إلى الملف الشخصي",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "مخفي"
+  "ui_bottom_tab_slot_disabled": "مخفي",
+  "ui_settings_general": "عام",
+  "ui_settings_general_desc": "اللغة والمظهر والتاريخ والوقت وإجراءات الوسائط الافتراضية",
+  "ui_settings_category_page": "إعدادات صفحة الفئات",
+  "ui_settings_category_page_desc": "تخطيط الشاشة الرئيسية والاختصارات",
+  "ui_settings_browse_page": "إعدادات صفحة التصفح",
+  "ui_settings_browse_page_desc": "شريط العنوان والتبويبات والسحب والإفلات وتخطيط القائمة",
+  "ui_settings_nav_and_bar": "إعدادات شريط التنقل",
+  "ui_settings_nav_and_bar_desc": "الإظهار/الإخفاء والموضع والشفافية والتسميات"
 }

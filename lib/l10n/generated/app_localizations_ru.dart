@@ -3399,7 +3399,7 @@ class L10nRu extends L10n {
   String get ui_follow_system => 'Авто (следовать системе)';
 
   @override
-  String get ui_hide_nav_labels => 'Скрыть Метки Нижней Навигации';
+  String get ui_hide_nav_labels => 'Скрыть подписи навигации';
 
   @override
   String get ui_reset_default_viewers => 'Сбросить Просмотрщики по Умолчанию';
@@ -8963,4 +8963,31 @@ class L10nRu extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'Скрыт';
+
+  @override
+  String get ui_settings_general => 'Общие';
+
+  @override
+  String get ui_settings_general_desc =>
+      'Язык, оформление, дата и время, действия с медиа';
+
+  @override
+  String get ui_settings_category_page => 'Страница категорий';
+
+  @override
+  String get ui_settings_category_page_desc => 'Макет главного экрана и ярлыки';
+
+  @override
+  String get ui_settings_browse_page => 'Страница просмотра';
+
+  @override
+  String get ui_settings_browse_page_desc =>
+      'Адресная строка, вкладки, перетаскивание и список';
+
+  @override
+  String get ui_settings_nav_and_bar => 'Настройки панели навигации';
+
+  @override
+  String get ui_settings_nav_and_bar_desc =>
+      'Показ, положение, прозрачность и подписи';
 }

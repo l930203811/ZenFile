@@ -3696,7 +3696,7 @@
   "ui_invalid_file_type": "無效的檔案型別",
   "ui_language": "語言",
   "ui_follow_system": "自動（跟隨系統）",
-  "ui_hide_nav_labels": "隱藏底部導航標籤",
+  "ui_hide_nav_labels": "隱藏導覽列標籤",
   "ui_reset_default_viewers": "重置預設檔案檢視器",
   "ui_trailing_info_when_hidden": "三點禁用尾部資訊",
   "ui_go_up": "上一級",
@@ -8924,5 +8924,13 @@
   "ui_clone_launch_failed": "啟動分身應用程式失敗",
   "ui_clone_to_user": "克隆到分身",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "已關閉"
+  "ui_bottom_tab_slot_disabled": "已關閉",
+  "ui_settings_general": "一般設定",
+  "ui_settings_general_desc": "語言、主題外觀、時間日期與媒體預設操作",
+  "ui_settings_category_page": "分類頁設定",
+  "ui_settings_category_page_desc": "主畫面版面配置與捷徑自訂",
+  "ui_settings_browse_page": "瀏覽頁設定",
+  "ui_settings_browse_page_desc": "位址列、分頁、拖放與清單版面配置",
+  "ui_settings_nav_and_bar": "導覽列設定",
+  "ui_settings_nav_and_bar_desc": "顯示/隱藏、位置、不透明度與文字標籤"
 }

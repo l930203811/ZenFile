@@ -175,8 +175,9 @@ class FeatureSearchIndex {
       ),
       FeatureSearchEntry(
         group: FeatureSearchGroup.quick,
-        // 与顶栏同一个图标（断线描边字体）：单窗方框 / 左右双栏。
-        icon: fileManager.enableSplitScreen ? Broken.stop : Broken.grid_4,
+        // 与顶栏同一个图标（断线描边字体）：单/双窗统一圆角方框（无中间竖线），
+        // 模式差异由标题文案（目标态：单窗口/双窗口）表达。
+        icon: Broken.stop,
         title: fileManager.enableSplitScreen
             ? l10n.ui_single_window
             : l10n.ui_dual_window,

@@ -3625,7 +3625,7 @@
   "ui_invalid_file_type": "Недопустимый Тип Файла",
   "ui_language": "Язык",
   "ui_follow_system": "Авто (следовать системе)",
-  "ui_hide_nav_labels": "Скрыть Метки Нижней Навигации",
+  "ui_hide_nav_labels": "Скрыть подписи навигации",
   "ui_reset_default_viewers": "Сбросить Просмотрщики по Умолчанию",
   "ui_trailing_info_when_hidden": "Конечная Информация При Скрытом Меню",
   "ui_go_up": "Вверх",
@@ -8776,5 +8776,13 @@
   "ui_clone_launch_failed": "Не удалось запустить приложение в профиле",
   "ui_clone_to_user": "Клонировать в профиль",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "Скрыт"
+  "ui_bottom_tab_slot_disabled": "Скрыт",
+  "ui_settings_general": "Общие",
+  "ui_settings_general_desc": "Язык, оформление, дата и время, действия с медиа",
+  "ui_settings_category_page": "Страница категорий",
+  "ui_settings_category_page_desc": "Макет главного экрана и ярлыки",
+  "ui_settings_browse_page": "Страница просмотра",
+  "ui_settings_browse_page_desc": "Адресная строка, вкладки, перетаскивание и список",
+  "ui_settings_nav_and_bar": "Настройки панели навигации",
+  "ui_settings_nav_and_bar_desc": "Показ, положение, прозрачность и подписи"
 }

@@ -7,9 +7,9 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
-import '../widgets/liquid_bottom_bar.dart';
 import '../widgets/liquid_pressable.dart';
 import '../widgets/shell_metrics_stable.dart';
+import '../widgets/zenfile_bottom_nav_bar.dart';
 import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
 import '../../services/startup_gate.dart';
@@ -27,6 +27,26 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class HomeScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   const HomeScreen({super.key, required this.toggleTheme});
+
+  // —— 跨路由 tab 切换请求（「导航栏常驻其他页面」）——
+  //
+  // 常驻底栏（PersistentNavBarScope）随设置重组的子页面一起落在**全屏路由**里，
+  // 其上没有本页的 IndexedStack，底栏点击只能经静态通知器转交宿主：State 里的
+  // 监听回调先 popUntil 回首页根路由，再执行既有的切页 / 槽位打开逻辑（见
+  // _onPendingTabSwitch）。编码：0-3 = 内置 tab 序号；
+  // pendingSlotTabBase + 槽位号 = 自定义槽位 tab；-1 = 无请求。
+  static final ValueNotifier<int> pendingTabSwitch = ValueNotifier<int>(-1);
+  static const int pendingSlotTabBase = 100;
+
+  /// 常驻底栏点击**内置 tab**（PersistentNavBarScope 回调，跨路由转交宿主）。
+  static void requestCrossRouteTabSwitch(int tabIndex) {
+    pendingTabSwitch.value = tabIndex;
+  }
+
+  /// 常驻底栏点击**自定义槽位 tab**（PersistentNavBarScope 回调，跨路由转交宿主）。
+  static void requestCrossRouteSlotEntry(int slot) {
+    pendingTabSwitch.value = pendingSlotTabBase + slot;
+  }
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -92,7 +112,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   // 任意入口替换（长按槽位或该页配置区选择）。滑动切页仅保留 左抽屉→分类→浏览→右抽屉：
   // 左滑 分类→浏览、浏览→右抽屉；右滑 浏览→分类、分类→左抽屉；自定义槽位点击进入
   // （push 页面），不参与滑动。
-  static const int _settingsTabIndex = 3;
+  // 序号唯一定义在 zenfile_bottom_nav_bar.dart（底栏槽位映射与常驻底栏高亮共用）。
+  static const int _settingsTabIndex = kZenFileSettingsTabIndex;
 
   @override
   void initState() {
@@ -105,6 +126,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 「圆角（胶囊独立悬浮）」之间切换，同时本页要把它透传给 DirectoryScreen
     // 决定操作栏自己的下沿圆角 —— 两处必须同一帧改，所以监听放在这里。
     DirectoryScreen.browseBarExpanded.addListener(_onBrowseBarExpandedChanged);
+    // 常驻底栏的跨路由切换请求：设置重组子页面（PersistentNavBarScope 包装）盖在
+    // 首页之上时，底栏点击经静态通知器转回本页消费（dispose 时移除）。
+    HomeScreen.pendingTabSwitch.addListener(_onPendingTabSwitch);
     // 应用级一次性初始化（恢复标签页 / 探测存储卷 / 载入首个目录）原先挂在
     // DirectoryScreen.initState 里。浏览页改成惰性构建后它未必会被创建，而
     // `FileManagerProvider.init()` 全项目只有那一个调用点，所以上移到这里。
@@ -159,6 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void dispose() {
     DirectoryScreen.browseBarExpanded.removeListener(_onBrowseBarExpandedChanged);
+    HomeScreen.pendingTabSwitch.removeListener(_onPendingTabSwitch);
     _fmRef?.settingsSearchRequestNotifier
         .removeListener(_onSettingsSearchRequested);
     _fmRef?.quickActionRequestNotifier
@@ -212,6 +237,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     _slotPageStack.clear();
     _activeBottomSlot = -1;
     setState(() => _currentIndex = index);
+  }
+
+  /// 消费常驻底栏的跨路由切换请求：回到首页根路由后再执行切换。
+  ///
+  /// 请求由 PersistentNavBarScope 里的底栏点击发出（内置 tab → 序号；自定义槽位
+  /// → 100+槽位号）。先 popUntil 收起首页之上的全部全屏路由（设置重组页等），
+  /// 再走既有的 [_switchTab] / [_openBottomTabEntry]，保证内置 tab 与自定义
+  /// 槽位 tab 的行为与首页底栏点击**完全一致**。
+  void _onPendingTabSwitch() {
+    final code = HomeScreen.pendingTabSwitch.value;
+    if (code < 0) return;
+    // 先复位再执行：同一目标连续点击第二次也要能再次触发
+    // （ValueNotifier 同值不通知，不复位就只会响应一次）。
+    HomeScreen.pendingTabSwitch.value = -1;
+    if (!mounted) return;
+    // 收起首页之上的全屏路由，露出 HomeScreen（首页即根路由）。
+    Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+    if (code >= HomeScreen.pendingSlotTabBase) {
+      final slot = code - HomeScreen.pendingSlotTabBase;
+      // 与 _switchTab 同款收尾：壳内页面与槽位高亮先清空，再打开目标槽位。
+      // （内置页型槽位配置会转 _switchTab；页面型槽位在首页内开壳内页并占高亮，
+      //  动作型 / 弹窗型入口的后续跳转也都在首页上下文里完成。）
+      if (ShellNavigator.hasPages) ShellNavigator.popAll();
+      if (_activeBottomSlot != -1 || _slotPageStack.isNotEmpty) {
+        _slotPageStack.clear();
+        setState(() => _activeBottomSlot = -1);
+      }
+      _openBottomTabEntry(slot);
+    } else {
+      _switchTab(code);
+    }
   }
 
   /// 全局搜索「在设置中搜索」：切到设置页并把查询词交给它过滤显示。
@@ -924,236 +980,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部导航 5 个槽位全部可自定义（默认 分类/文件/传输/最近/工具箱），可被自定义快捷方式页
-  /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
-  /// 槽位可被「关闭」（自定义入口选择页）：关闭的槽位不进 tab 栏，原配置保留在存储里，
-  /// 重新选择页面即恢复显示；第 5 槽默认关闭。
+  /// 底部导航 4-tab（液态胶囊底栏）：构建已提取为可复用组件
+  /// [ZenFileBottomNavBar] —— 设置重组子页面开启「导航栏常驻其他页面」时，
+  /// PersistentNavBarScope 用同一组件渲染与首页完全同款的底栏。
+  ///
+  /// 本页保留的只有**状态与动作**：高亮由 [_currentIndex] / [_activeBottomSlot]
+  /// 决定，点击（切页 / 开槽位入口）与长按替换沿用既有方法，经回调委托 ——
+  /// 槽位解析、标签显隐订阅、胶囊样式全部内聚在组件里，行为与提取前一致。
   /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
   /// 滑动链路固定为 左抽屉→分类页→浏览页，即使底部 tab 被替换也始终可达。
   Widget _buildBottomTabs({bool atTop = false, bool attachedTop = false}) {
-    final l10n = L10n.of(context);
-    final slot0 = _resolveTabSlot(
-      0,
-      defaultIcon: Broken.category,
-      defaultLabel: l10n.cat_quick_categories,
-      defaultIndex: 0,
-    );
-    final slot1 = _resolveTabSlot(
-      1,
-      defaultIcon: Broken.folder,
-      defaultLabel: l10n.ui_file,
-      defaultIndex: 1,
-    );
-    final slot2 = _resolveTabSlot(
-      2,
-      defaultIcon: Broken.link,
-      defaultLabel: l10n.ui_transfers,
-      defaultIndex: 2,
-    );
-    final slot3 = _resolveTabSlot(
-      3,
-      defaultIcon: Broken.clock,
-      defaultLabel: l10n.cat_recent,
-      defaultIndex: -1,
-    );
-    // 第 5 槽：默认关闭；开启后未配置时默认「工具箱」。
-    final slot4 = _resolveTabSlot(
-      4,
-      defaultIcon: Icons.home_repair_service,
-      defaultLabel: l10n.cat_toolbox,
-      defaultIndex: -1,
-    );
-    // 只把**开启**的槽位放进 tab 栏：itemCount 随之动态变化，
-    // 关闭槽位的配置仍留在存储里（重新选择页面即恢复）。
-    final tabData = <List<Object>>[
-      if (PreferencesService.getBottomTabSlotEnabled(0)) slot0,
-      if (PreferencesService.getBottomTabSlotEnabled(1)) slot1,
-      if (PreferencesService.getBottomTabSlotEnabled(2)) slot2,
-      if (PreferencesService.getBottomTabSlotEnabled(3)) slot3,
-      if (PreferencesService.getBottomTabSlotEnabled(4)) slot4,
-    ];
-    // 兜底：极端情况下 5 个槽位全被关闭时保留第 1 槽，
-    // 避免 itemCount=0 触发 LiquidBottomBar 的 assert 崩溃。
-    if (tabData.isEmpty) tabData.add(slot0);
-
-    // ── 液态玻璃底栏 ──────────────────────────────────────────────────
-    //
-    // 样式与动效参考 Kyant0/AndroidLiquidGlass 的 LiquidBottomTabs
-    // （Ghost Downloader v4.4.0 的 assets/licenses/liquid-bottom-bar.txt 标注了
-    //  该来源为 2.0.0 catalog，经 BiliTools ui/liquidtabs/ 二次适配）。
-    //
-    // 与上一版「每个 tab 各自一块底色」的本质区别：**全程只有一块胶囊指示器**，
-    // 它在 4 个槽位之间弹簧滑移、按压鼓包、被移动速度横向拉长 / 纵向压扁。
-    // 外层的玻璃底板（半透明底 + 模糊 + 描边）已按用户要求去掉（showGlassPlate:
-    // false）—— 只留胶囊浮在页面背景上；浏览页操作栏仍是独立玻璃胶囊。
-    // 具体参数与本文件的分工说明见 lib/ui/widgets/liquid_bottom_bar.dart。
-    //
-    // 命中区仍是 itemCount 个等分的**静止**区域（不随指示器移动），避免「胶囊滑到哪才能点哪」。
-    // 上滑唤起收藏夹的 GestureDetector 在外层，命中范围不受影响。
-    int selectedSlot = -1;
-    for (var i = 0; i < tabData.length; i++) {
-      final tab = tabData[i];
-      final isSelected = (tab[3] as bool)
-          ? _activeBottomSlot == (tab[4] as int)
-          : _activeBottomSlot == -1 && _currentIndex == (tab[2] as int);
-      if (isSelected) {
-        selectedSlot = i;
-        break;
-      }
-    }
-
-    return SafeArea(
-      // 只在**真正落在底栏**时吃底部手势条高度；挂到顶栏槽位时改吃状态栏高度。
-      // 反过来（挂顶栏却吃 bottom）会踩 extendBody 的坑：body 的 padding.bottom
-      // 已被抬升为底栏总高，SafeArea 会把这段高度白垫在胶囊下面 —— 顶部多一条
-      // 同色空带（用户反馈的「背景多出一层」）。
-      top: atTop,
-      bottom: !atTop,
-      child: Padding(
-        // 顶部 kLiquidNavTopGap 悬浮间距：胶囊像浮在内容之上。
-        // 浏览页的操作栏要把这段间距扣掉才能与胶囊「紧贴」（见 DirectoryScreen）。
-        padding: const EdgeInsets.fromLTRB(
-          16,
-          kLiquidNavTopGap,
-          16,
-          kLiquidNavBottomGap,
-        ),
-        child: LiquidBottomBar(
-          itemCount: tabData.length,
-          selectedIndex: selectedSlot,
-          // 与上方浏览操作栏拼成整块时，顶角收成方角（两块留白一致、上下紧贴，
-          // 拼起来是一个连续容器；仍倒圆会在两侧各露一个三角形缺口）。
-          attachedTop: attachedTop,
-          // 去掉外层玻璃底板：只保留滑动的胶囊指示器与 tab 内容，
-          // 观感是「一枚胶囊在 4 个槽位间滑动」，不再有承载它的那块板。
-          showGlassPlate: false,
-          // issue #42：底栏不透明度由用户在「导航栏设置」里调节。
-          // `showGlassPlate:false` 时可见的正是那块实底胶囊（LiquidBarSurface），
-          // 所以这个值必须一路传到它；调到 100% 时连背景模糊一起省掉。
-          opacity: context.select<FileManagerProvider, double>(
-            (p) => p.navBarOpacityFor(Theme.of(context).brightness),
-          ),
-          onSelect: (i) {
-            final tab = tabData[i];
-            if (tab[3] as bool) {
-              _openBottomTabEntry(tab[4] as int);
-            } else {
-              _switchTab(tab[2] as int);
-            }
-          },
-          // 任意槽位长按：不进自定义快捷方式页即可替换入口。
-          onLongPressItem: (i) => _showBottomTabPicker(tabData[i][4] as int),
-          itemBuilder: (context, i, selected) {
-            final tab = tabData[i];
-            return _buildTabItem(
-              tab[0] as IconData,
-              tab[1] as String,
-              selected: selected,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  /// 解析底部导航槽位 0-3 的显示与点击：未自定义返回默认内置页，自定义返回对应入口。
-  List<Object> _resolveTabSlot(
-    int slot, {
-    required IconData defaultIcon,
-    required String defaultLabel,
-    required int defaultIndex,
-  }) {
-    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
-    if (cfg == null) {
-      // v3.4b2：默认第 4 个槽位由「设置」改为「最近」（isCustomEntry 走 _openBottomTabEntry）
-      if (slot == 3) {
-        return [Broken.clock, L10n.of(context).cat_recent, -1, true, slot];
-      }
-      // 第 5 槽默认「工具箱」：isCustomEntry=true，点击走 _openBottomTabEntry
-      // 推入壳内页面（占槽位高亮），与其它分类入口页一致。
-      if (slot == 4) {
-        return [
-          Icons.home_repair_service,
-          L10n.of(context).cat_toolbox,
-          -1,
-          true,
-          slot,
-        ];
-      }
-      return [defaultIcon, defaultLabel, defaultIndex, false, slot];
-    }
-    final type = cfg['type'];
-    final key = cfg['key'];
-    if (type == 'builtin') {
-      switch (key) {
-        case 'tab_categories':
-          return [Broken.category, L10n.of(context).cat_quick_categories, 0, false, slot];
-        case 'tab_files':
-          return [Broken.folder, L10n.of(context).ui_file, 1, false, slot];
-        case 'tab_settings':
-          return [Broken.setting_2, L10n.of(context).cat_settings, _settingsTabIndex, false, slot];
-        case 'tab_recent':
-          // 最近页走壳内导航（与默认 slot3 一致）
-          return [Broken.clock, L10n.of(context).cat_recent, -1, true, slot];
-        default:
-          return [Broken.link, L10n.of(context).ui_transfers, 2, false, slot];
-      }
-    }
-    // custom_entry：打开自定义快捷方式弹窗（isCustomEntry=true → 点击走 _openBottomTabEntry）
-    if (type == 'custom_entry') {
-      return [
-        Broken.edit_2,
-        PreferencesService.getCustomEntryLabel() ??
-            L10n.of(context).ui_show_custom_entry,
-        -1,
-        true,
-        slot,
-      ];
-    }
-    // category / shortcut：从分类页全部入口重建显示与动作（与分类页网格同源）
-    final map = QuickCategoriesGrid.getAllCategoriesMap(
-      context,
-      Theme.of(context).brightness == Brightness.dark,
-      (i) => _switchTab(i),
-    );
-    final entry = map[key];
-    if (entry != null) {
-      return [entry['icon'] as IconData, entry['label'] as String, -1, true, slot];
-    }
-    // 配置失效（快捷方式被删除等）：回退默认内置页
-    return [defaultIcon, defaultLabel, defaultIndex, false, slot];
-  }
-
-  /// 仅渲染底部槽位的**内容**（图标 + 文字）。
-  ///
-  /// 点击 / 长按由 [LiquidBottomBar] 统一接管，选中态的「底」由那块滑动的胶囊
-  /// 指示器负责，因此这里不再画自己的底色，也不再包 InkWell —— 否则会出现
-  /// 「胶囊滑到 A、A 自己又冒出一块底」的双底。
-  Widget _buildTabItem(IconData icon, String label, {required bool selected}) {
-    final theme = Theme.of(context);
-    final idleColor = theme.colorScheme.onSurface.withValues(alpha: 0.55);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          size: 21,
-          color: selected ? theme.colorScheme.primary : idleColor,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10.5,
-            height: 1.05,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? theme.colorScheme.primary : idleColor,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+    return ZenFileBottomNavBar(
+      currentIndex: _currentIndex,
+      activeBottomSlot: _activeBottomSlot,
+      atTop: atTop,
+      attachedTop: attachedTop,
+      onSwitchTab: _switchTab,
+      onOpenSlotEntry: _openBottomTabEntry,
+      onSlotLongPress: _showBottomTabPicker,
     );
   }
 

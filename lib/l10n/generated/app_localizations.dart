@@ -6145,7 +6145,7 @@ abstract class L10n {
   /// No description provided for @ui_hide_nav_labels.
   ///
   /// In zh, this message translates to:
-  /// **'隐藏底部导航标签'**
+  /// **'隐藏导航栏标签'**
   String get ui_hide_nav_labels;
 
   /// No description provided for @ui_reset_default_viewers.
@@ -15771,6 +15771,54 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已关闭'**
   String get ui_bottom_tab_slot_disabled;
+
+  /// more_settings_screen.dart：设置页主列表「通用设置」卡片标题（v2.2 设置页重组新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'通用设置'**
+  String get ui_settings_general;
+
+  /// 「通用设置」卡片副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'语言、主题外观、时间日期与媒体默认操作'**
+  String get ui_settings_general_desc;
+
+  /// 设置页主列表「分类页设置」卡片标题（v2.2 新增子页面）
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页设置'**
+  String get ui_settings_category_page;
+
+  /// 「分类页设置」卡片副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'主屏幕布局与快捷方式自定义'**
+  String get ui_settings_category_page_desc;
+
+  /// 设置页主列表「浏览页设置」卡片标题（v2.2 新增子页面）
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览页设置'**
+  String get ui_settings_browse_page;
+
+  /// 「浏览页设置」卡片副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'地址栏、标签页、拖放与列表布局'**
+  String get ui_settings_browse_page_desc;
+
+  /// 设置页主列表顶层入口「导航栏设置」标题，点击打开 NavBarSettingsSheet（v2.2 新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'导航栏设置'**
+  String get ui_settings_nav_and_bar;
+
+  /// 「导航栏设置」入口副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'显示/隐藏、位置、不透明度与文字标签'**
+  String get ui_settings_nav_and_bar_desc;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

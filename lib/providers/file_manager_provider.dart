@@ -2078,6 +2078,10 @@ class FileManagerProvider extends ChangeNotifier {
       _cryptMountPoints = [];
     }
     _cryptMountsLoaded = true;
+    // 「自动关联」开关变化 ⇒ 回收自动登记的目录后必须刷新挂载点并重列当前
+    // 目录：开关关闭时浏览页要**立刻**变回普通文件视图（密文名），否则用户
+    // 看到的就是「关了开关还照样解密显示」。幂等赋值。
+    CryptAutoEncryptService.onAutoAssocChanged = _onAutoAssocChanged;
     // 导入清单里的加密文件所在目录，按「加密设置」主密码构造临时挂载点，
     // 让浏览页无需整机重启即可解密这些目录（此前只在整机重启时由 import 扫描重建，
     // 表现为「导入/原地加密后浏览页仍是密文，重启才刷新」）。
@@ -2093,6 +2097,21 @@ class FileManagerProvider extends ChangeNotifier {
       await CryptStreamServer.instance.ensureInitialized();
       CryptStreamServer.instance.registerMounts(_cryptMountPoints);
     } catch (_) {}
+  }
+
+  /// 「自动关联」开关变化（[CryptAutoEncryptService.onAutoAssocChanged]）：
+  /// 服务侧已经回收了自动登记的目录，这里负责让**浏览页当场跟上** ——
+  /// 重新加载挂载点 + 重列当前目录。开关打开时同样走这里（重列后新识别的
+  /// 密文目录立刻显示明文名）。
+  Future<void> _onAutoAssocChanged() async {
+    await refreshCryptMountPoints();
+    final path = activeTab.currentPath;
+    if (path.isEmpty) return;
+    try {
+      await loadDirectory(path, showLoading: false, clearCache: true);
+    } catch (e) {
+      debugPrint('[ZenFile] 自动关联开关变化后重列目录失败: $e');
+    }
   }
 
   /// 为「导入清单」里每个**已加密**条目所在目录，按主密码补一个（不持久化的）挂载点。
@@ -2249,6 +2268,94 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 「自动关联远程加密文件」：用**已经拉取到的**远程目录列表判定密文，命中即
+  /// 登记为「关联远程加密目录」，之后该目录会出现在保险箱「原地加密」的远程
+  /// 区域，可以明文名打开与解密（与手动「关联远程加密目录」完全等价）。
+  ///
+  /// ⚠️ 只做**名字级往返校验**（[CryptOperations.isCipherFileName] /
+  /// [CryptOperations.isCipherDirName]）：既不额外发网络请求，也不读文件内容，
+  /// 开销可忽略。代价是 obfuscate 模式（文件名几乎保持明文）识别不出来 ——
+  /// 已在设置页说明文案里讲明，且该模式下 [CryptOperations.isCipherFileName]
+  /// 天然返回 false，不会误判。
+  ///
+  /// 命中门槛（≥2 项命中，**不看占比**）：混合目录（密文 + 普通文件共存）同样
+  /// 关联 —— 名字级往返校验对明文名巧合命中的概率约 1e-5，2 个命中即可定罪，
+  /// 与占比无关。
+  /// [connId] 当前远程连接 id；[serverDir] 服务器上的目录路径；
+  /// [items] 刚列出的条目。返回是否为**新**登记了一个目录。
+  /// 「自动关联远程加密文件」：浏览远程目录时，用**已拉取到的列表**就地判定
+  /// 本目录是否为加密目录；命中即登记进「关联远程加密目录」。
+  ///
+  /// ⚠️ 候选配置必须**遍历**：加密上传（[encryptUploadToRemoteDir]）允许指定
+  /// profileId，用户设备上完全可能「用 B 档案加密、当前默认是 A 档案」。只拿
+  /// [VaultCryptService.getMasterConfig]（默认档案）做往返校验会整体失配，
+  /// 表现为「开关开了却什么都不发生」（2026-10-24 用户报障）。因此默认配置 +
+  /// 全部档案都试一遍（按凭据去重），任一命中即用它登记，并把命中档案的 id
+  /// 一并落下 —— 与 [_buildRemoteMountForPath] 取配置的链路保持一致，
+  /// 之后保险箱里打开该目录才解得出名字。
+  Future<bool> _maybeAutoAssociateRemoteDir(
+    String connId,
+    String serverDir,
+    List<RemoteFileItem> items,
+  ) async {
+    if (!CryptAutoEncryptService.instance.autoAssociateRemote) return false;
+    if (connId.isEmpty || serverDir.isEmpty || items.isEmpty) return false;
+    try {
+      final normalized = CryptMountService.normalizePosix(serverDir);
+      final existing = await CryptMountService.loadRemoteEncryptedDirs();
+      if (existing.any(
+        (r) => r.connId == connId && r.serverPath == normalized,
+      )) {
+        return false;
+      }
+      // 候选配置（顺序即优先级）：默认档案/legacy 优先，其余档案兜底。
+      final candidates = <CryptCandidate>[];
+      final master = await VaultCryptService.instance.getMasterConfig();
+      if (master != null && master.password.isNotEmpty) {
+        candidates.add(CryptCandidate(null, master));
+      }
+      for (final profile in await CryptProfileService.instance.loadProfiles()) {
+        final cfg = profile.toConfig();
+        if (cfg.password.isEmpty) continue;
+        final key = CryptCandidate(profile.id, cfg).configKey;
+        if (candidates.any((c) => c.configKey == key)) continue;
+        candidates.add(CryptCandidate(profile.id, cfg));
+      }
+      if (candidates.isEmpty) {
+        debugPrint('[ZenFile][autoAssocRemote] 无可用加密配置，跳过: $normalized');
+        return false;
+      }
+      final idx = RemoteCryptAutoAssoc.matchConfigIndex(
+        items,
+        serverDir: normalized,
+        configs: candidates.map((c) => c.config).toList(),
+      );
+      if (idx == null) {
+        debugPrint(
+          '[ZenFile][autoAssocRemote] 未命中: $normalized'
+          '（候选 ${candidates.length} 个配置）',
+        );
+        return false;
+      }
+      final hit = candidates[idx];
+      await CryptMountService.addRemoteEncryptedDir(
+        connId,
+        normalized,
+        profileId: hit.profileId,
+        source: 'auto',
+      );
+      await refreshCryptMountPoints();
+      debugPrint(
+        '[ZenFile][autoAssocRemote] 命中并登记: $normalized'
+        '（profile=${hit.profileId ?? 'master'}）',
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile][autoAssocRemote] 判定异常: $e');
+      return false;
+    }
+  }
+
   /// 枚举所有「关联的远程加密目录」的**直接子项**（保险箱「原地加密」区域）。
   ///
   /// 单个关联失败不应拖垮整体：逐条 try/catch 并继续。
@@ -2382,6 +2489,18 @@ class FileManagerProvider extends ChangeNotifier {
         config: config,
       )) {
         return null;
+      }
+      // 「自动关联本地加密文件」：确认目录里确有密文 ⇒ 登记进「原地加密目录
+      // 登记表」。此后浏览/解密都有确定性依据（清应用数据后也能自动恢复），
+      // 且该目录会出现在保险箱「原地加密」列表里。判定用的是**已经列出来的**
+      // 目录内容，零额外 IO。
+      //
+      // 同时在本服务的「自动关联账本」里记一笔：开关关闭时要回收这些登记
+      // （否则「关了开关还照样当加密目录」）。加密操作本身登记的目录不在这本
+      // 账里，不受开关关闭影响。
+      if (CryptAutoEncryptService.instance.autoAssociateLocal) {
+        await CryptMountService.addEncryptedDir(dirPath);
+        await CryptMountService.addAutoAssocLocalDir(dirPath);
       }
       return await _buildMountForDir(dirPath, config);
     } catch (_) {
@@ -3168,14 +3287,32 @@ class FileManagerProvider extends ChangeNotifier {
   ///（相等或为其子目录）。
   ///
   /// 用于远程浏览页自动把密文目录切换成客户端解密视图。
+  ///
+  /// [includeAuto] 是否把「自动关联」产生的记录算进来：
+  /// - 浏览页改写视图时按「自动关联远程加密文件」开关传 —— 开关关闭时这些
+  ///   登记已被回收（见 [CryptAutoEncryptService.setAutoAssociateRemote]），
+  ///   即使有残留也不该再当加密目录显示；
+  /// - 手动关联是用户的显式动作，与开关无关，始终算数。
   Future<bool> _isUnderRemoteCryptDir(
+    String connId,
+    String serverPath, {
+    bool includeAuto = true,
+  }) async {
+    final record = await _remoteCryptRecordFor(connId, serverPath);
+    if (record == null) return false;
+    return includeAuto || !record.isAuto;
+  }
+
+  /// 返回 [serverPath] 所属的「关联远程加密目录」记录（自身即根，或在其子目录
+  /// 内）；未命中返回 null。
+  Future<RemoteCryptDirRecord?> _remoteCryptRecordFor(
     String connId,
     String serverPath,
   ) async {
-    if (connId.isEmpty || serverPath.isEmpty) return false;
+    if (connId.isEmpty || serverPath.isEmpty) return null;
     if (serverPath.startsWith('remote://') ||
         serverPath.startsWith('cryptremote://')) {
-      return false;
+      return null;
     }
     try {
       final records = await CryptMountService.loadRemoteEncryptedDirs();
@@ -3184,11 +3321,11 @@ class FileManagerProvider extends ChangeNotifier {
         if (r.connId != connId) continue;
         if (normalized == r.serverPath ||
             normalized.startsWith('${r.serverPath}/')) {
-          return true;
+          return r;
         }
       }
     } catch (_) {}
-    return false;
+    return null;
   }
 
   /// 按虚拟路径（`cryptremote://{connId}|{serverEncryptedPath}`）解析/构造
@@ -3518,6 +3655,11 @@ class FileManagerProvider extends ChangeNotifier {
   /// [plainNameOverride] 供重名冲突「保留两者 / 重命名」传入最终真实名。
   /// [onFileProgress] 为当前文件的**字节级**进度（已, 总量）：加密与上传各占一半，
   /// 分母是「加密前明文字节 × 2」，保证单调不回退（供双层圆环进度弹窗的内圈）。
+  ///
+  /// [encryptPlain] 为 false 时（**粘贴**进远程加密目录），普通明文条目
+  /// **原样上传、不自动加密**（2026-10-24 用户要求）：加密目录里完全可以
+  /// 密文与普通文件共存，用户把普通文件复制进来时应当保持普通。密文条目的
+  /// 直传语义不受影响。显式的「加密上传」菜单走默认值 true，行为不变。
   Future<void> _encryptUploadEntry(
     String localPath,
     RemoteClient client,
@@ -3527,6 +3669,7 @@ class FileManagerProvider extends ChangeNotifier {
     void Function(String name, double progress)? onProgress, {
     String? plainNameOverride,
     void Function(int bytes, int total)? onFileProgress,
+    bool encryptPlain = true,
   }) async {
     final isDir = await Directory(localPath).exists();
     final base = p.basename(localPath);
@@ -3534,12 +3677,18 @@ class FileManagerProvider extends ChangeNotifier {
     final hasOverride =
         plainNameOverride != null && plainNameOverride.trim().isNotEmpty;
     final plainName = hasOverride ? plainNameOverride.trim() : detectedPlain;
-    // 直传只在「名字未被人为改名」时成立：改名说明上游已经决定这条要换个名字，
-    // 此时按常规重新加密，避免密文内容与名字的含义对不上。
-    final nameMatchesDisk = plainName == detectedPlain;
+    // 本条目按当前挂载点配置是否为密文（名字级往返校验）。
+    final entryIsCipher = isDir
+        ? CryptOperations.isCipherDirName(base, mount)
+        : CryptOperations.isCipherFileName(base, mount);
 
     if (isDir) {
-      final encName = mount.crypt.encryptDirName(plainName);
+      // 目录名：密文目录保留密文名（原样搬运 —— round-trip 下 encryptDirName
+      // (解密名) 与原密文名逐字节相同）；encryptPlain=false 时的普通目录用
+      // 明文名落盘。
+      final encName = entryIsCipher || encryptPlain
+          ? mount.crypt.encryptDirName(plainName)
+          : plainName;
       final serverDir = _joinRemotePath(serverParent, encName);
       await client.createDirectory(serverDir);
       final entries = Directory(localPath).listSync();
@@ -3552,6 +3701,7 @@ class FileManagerProvider extends ChangeNotifier {
           tempDir,
           onProgress,
           onFileProgress: onFileProgress,
+          encryptPlain: encryptPlain,
         );
       }
       onProgress?.call(plainName, 1.0);
@@ -3566,25 +3716,36 @@ class FileManagerProvider extends ChangeNotifier {
     } catch (_) {}
 
     // ① 已加密直传：内容已是真密文 → 原文件直接上传，不做任何再加密。
-    if (nameMatchesDisk &&
-        CryptOperations.isCipherFileName(base, mount) &&
-        await _isEncryptedPhysicalFile(localPath)) {
+    // ⚠️ 这里**不要求**「名字未被人为改名」：rclone crypt 里重命名就是「换个
+    // 真实名再加密」，密文内容原样保留才对。旧写法带 nameMatchesDisk 守卫，
+    // 「改名 + 密文源」组合会把密文内容二次加密，用户拿到的是损坏文件。
+    if (entryIsCipher && await _isEncryptedPhysicalFile(localPath)) {
       debugPrint('[ZenFile] 密文直传（不二次加密）：$base → $serverDest');
-      await client.uploadFile(
-        localPath,
-        serverDest,
-        (prog) {
-          onProgress?.call(plainName, prog);
-          if (plainSize > 0) {
-            onFileProgress?.call((prog * plainSize).round(), plainSize * 2);
-          }
-        },
-      );
+      await client.uploadFile(localPath, serverDest, (prog) {
+        onProgress?.call(plainName, prog);
+        if (plainSize > 0) {
+          onFileProgress?.call((prog * plainSize).round(), plainSize * 2);
+        }
+      });
       if (plainSize > 0) onFileProgress?.call(plainSize * 2, plainSize * 2);
       return;
     }
 
-    // ② 普通明文：加密到临时文件后上传（本地不留残）。
+    // ②-a 粘贴路径的普通明文：**原样上传**（明文名 + 明文字节），不加密。
+    if (!encryptPlain) {
+      final plainDest = _joinRemotePath(serverParent, plainName);
+      debugPrint('[ZenFile] 明文直传（不自动加密）：$base → $plainDest');
+      await client.uploadFile(localPath, plainDest, (prog) {
+        onProgress?.call(plainName, prog);
+        if (plainSize > 0) {
+          onFileProgress?.call((prog * plainSize).round(), plainSize);
+        }
+      });
+      if (plainSize > 0) onFileProgress?.call(plainSize, plainSize);
+      return;
+    }
+
+    // ②-b 普通明文（显式加密上传）：加密到临时文件后上传（本地不留残）。
     // 加密走 CryptOperations.encryptFileTo（流式，不把整文件读进内存），
     // 大文件下比原先的 readAsBytes + CryptFile.write 安全得多。
     final tmp = File('$tempDir/$encName');
@@ -4192,18 +4353,37 @@ class FileManagerProvider extends ChangeNotifier {
       final isDir = (sourceIsDir != null && i < sourceIsDir.length)
           ? sourceIsDir[i]
           : (srcFile?.isDirectory ?? false);
-      final plainBase = _decryptNameSafe(mount, serverOld, isDir: isDir);
-      final encName = isDir
-          ? mount.crypt.encryptDirName(plainBase)
-          : mount.crypt.encryptFileName(plainBase);
-      final destServer =
-          destServerParent.endsWith('/') ? '$destServerParent$encName' : '$destServerParent/$encName';
+      // 混合目录里与密文共存的**普通条目**：名字往返校验不过 ⇒ 保持明文名
+      // 原样搬运。旧写法无条件 encryptFileName(明文名) 会给它套一个密文名，
+      // 结果「名字解得出、内容却是明文」——打开即乱码（2026-10-24 用户要求
+      // 「只关联加密文件，不自动加密普通文件」）。
+      final serverBase = p.basename(serverOld);
+      final srcIsCipher = isDir
+          ? CryptOperations.isCipherDirName(serverBase, mount)
+          : CryptOperations.isCipherFileName(serverBase, mount);
+      final String destName;
+      if (srcIsCipher) {
+        final plainBase = _decryptNameSafe(mount, serverOld, isDir: isDir);
+        destName = isDir
+            ? mount.crypt.encryptDirName(plainBase)
+            : mount.crypt.encryptFileName(plainBase);
+      } else {
+        destName = serverBase;
+      }
+      final destServer = destServerParent.endsWith('/')
+          ? '$destServerParent$destName'
+          : '$destServerParent/$destName';
       if (isCut) {
         await client.rename(serverOld, destServer);
       } else {
         await _cryptRemoteCopyEntry(serverOld, destServer, isDir, client, mount, onProgress);
       }
-      onProgress?.call(plainBase, 1.0);
+      onProgress?.call(
+        srcIsCipher
+            ? _decryptNameSafe(mount, serverOld, isDir: isDir)
+            : serverBase,
+        1.0,
+      );
     }
     await loadDirectory(activeTab.currentPath, showLoading: false, clearCache: true);
   }
@@ -4233,12 +4413,16 @@ class FileManagerProvider extends ChangeNotifier {
       for (final e in entries) {
         final childServerOld = mount.virtualToRemoteServerPath(e.physicalPath);
         final childIsDir = e.isDirectory;
-        final plainBase = e.name;
-        final childEnc = childIsDir
-            ? mount.crypt.encryptDirName(plainBase)
-            : mount.crypt.encryptFileName(plainBase);
-        final childDest =
-            destServer.endsWith('/') ? '$destServer$childEnc' : '$destServer/$childEnc';
+        // 混合目录里的普通条目（[RemoteCryptDirectoryLister] 已按名字做过往返
+        // 校验，isEncrypted=false）保持明文名原样搬运，不套密文名。
+        final childDestName = e.isEncrypted
+            ? (childIsDir
+                ? mount.crypt.encryptDirName(e.name)
+                : mount.crypt.encryptFileName(e.name))
+            : e.name;
+        final childDest = destServer.endsWith('/')
+            ? '$destServer$childDestName'
+            : '$destServer/$childDestName';
         await _cryptRemoteCopyEntry(childServerOld, childDest, childIsDir, client, mount, onProgress);
       }
       return;
@@ -7502,7 +7686,11 @@ class FileManagerProvider extends ChangeNotifier {
       // WebDAV 无超时一直挂起（页面冻结，重进远程目录才恢复）。详见 WORKLOG。
       if (path.startsWith('/') && !path.contains(':') && !path.contains('|')) {
         final connId = activeTab.remoteConnection!.id;
-        if (await _isUnderRemoteCryptDir(connId, path)) {
+        if (await _isUnderRemoteCryptDir(
+          connId,
+          path,
+          includeAuto: CryptAutoEncryptService.instance.autoAssociateRemote,
+        )) {
           await loadDirectory(
             'cryptremote://$connId|$path',
             showLoading: showLoading,
@@ -7638,6 +7826,41 @@ class FileManagerProvider extends ChangeNotifier {
         // 已经保证「目录在前」。此前这里还有一次 `remoteItems.sort`（按 name
         // toLowerCase 比较），对同一份列表等于白排一遍 —— 大目录（数千条）时
         // 纯属白白增加一次 O(n log n) 比较开销，徒增进入目录的延迟。
+        // 「自动关联远程加密文件」：用刚拉取到的列表就地判定（零额外请求），
+        // 命中即登记为「关联远程加密目录」。用 unawaited —— 判定失败/未命中
+        // 都不该影响目录显示，更不能拖慢进入目录的速度。
+        // 「自动关联远程加密文件」：用刚拉取到的列表就地判定（零额外请求），
+        // 命中即登记为「关联远程加密目录」。
+        //
+        // ⚠️ 这里是 **await**（不是 unawaited）：登记成功后必须立刻按加密视图
+        // 重新列一次目录，用户当场就看到明文名。早先是 fire-and-forget，本次
+        // 列表照旧输出密文名，而用户通常不会主动再进一次目录 —— 表现为
+        // 「开关开了却什么都没发生」。
+        //
+        // 判据只读内存里已有的列表，最多 200 次纯 CPU 的往返校验；未命中时
+        // 也只是两次 SharedPreferences / 安全存储读，相对列目录本身的网络
+        // 往返可以忽略。
+        final assocConnId = activeTab.remoteConnection?.id;
+        if (assocConnId != null && assocConnId.isNotEmpty) {
+          final serverDir = _serverPathFromBrowserPath(path);
+          if (serverDir.startsWith('/')) {
+            final newlyAssociated = await _maybeAutoAssociateRemoteDir(
+              assocConnId,
+              serverDir,
+              remoteItems,
+            );
+            if (newlyAssociated) {
+              await loadDirectory(
+                'cryptremote://$assocConnId|$serverDir',
+                showLoading: showLoading,
+                clearCache: clearCache,
+                recordHistory: recordHistory,
+                forceRefresh: forceRefresh,
+              );
+              return;
+            }
+          }
+        }
         activeTab.currentFiles = remoteItems
             .map((r) => FileItemModel.fromRemoteFileItem(r))
             .toList();
@@ -7976,11 +8199,31 @@ class FileManagerProvider extends ChangeNotifier {
       // 优先用持久化挂载点；若没有，则探测「该目录内是否确实存在密文」，
       // 有则临时挂载它 —— 覆盖「原地加密发生在存储根目录」这类
       // 严禁建持久化挂载点、但其中密文又必须显示为原格式的位置。
-      var cryptMount = _findCryptMountForBrowse(path);
+      // 「自动关联本地加密文件」开关是浏览页是否把密文当加密目录处理的**总闸**
+      // （2026-10-24 用户拍板）：关闭时浏览页按普通文件系统展示 —— 加密目录
+      // 显示为密文名，与「尚未识别」的密文一模一样；只有打开开关，浏览时才会
+      // 自动识别并显示明文名。
+      //
+      // ⚠️ 这里只 gate「显示」：`_analyzeCryptSource` / `_needsLocalCryptAccess`
+      // 等操作链路仍照常查挂载点，因此密文文件照样能打开、解密、搬运。
+      final assocLocalOn = CryptAutoEncryptService.instance.autoAssociateLocal;
+      var cryptMount = assocLocalOn ? _findCryptMountForBrowse(path) : null;
       // 虚拟路径（如加密后的子文件夹）在磁盘上并不存在，需逐级上溯祖先目录探测，
       // 否则进入加密文件夹会一片空白。
-      cryptMount ??= await _ephemeralMountForDir(path);
-      cryptMount ??= await _ancestorCryptMountFor(path);
+      if (assocLocalOn) {
+        cryptMount ??= await _ephemeralMountForDir(path);
+        cryptMount ??= await _ancestorCryptMountFor(path);
+      }
+      final dir = Directory(path);
+      final pathExists = await dir.exists();
+      // 开关关闭后的兜底：路径只在加密视图里存在（磁盘上没有）—— 典型是
+      // 「开着开关浏览进加密目录 → 关掉开关 → 重启应用恢复了那个标签页」。
+      // 此时按普通目录枚举只会得到空列表（用户以为文件丢了），仍按加密目录枚举。
+      if (cryptMount == null && !pathExists) {
+        cryptMount =
+            _findCryptMountForBrowse(path) ??
+            await _ancestorCryptMountFor(path);
+      }
       if (cryptMount != null) {
         debugPrint('[ZenFile] Loading encrypted directory via CryptVFS: $path');
         activeTab.currentPath = path;
@@ -8030,9 +8273,8 @@ class FileManagerProvider extends ChangeNotifier {
         return;
       }
 
-      final dir = Directory(path);
       var plainLoaded = false;
-      if (await dir.exists()) {
+      if (pathExists) {
         activeTab.currentPath = path;
         activeTab.currentFiles = await _listPlainDirectory(path);
         plainLoaded = true;
@@ -10380,6 +10622,94 @@ class FileManagerProvider extends ChangeNotifier {
           isDir = st.isDirectory;
         }
 
+        // 原地加密源：剪贴板里是**虚拟明文路径**，磁盘上是密文实体（清应用
+        // 数据 / 未登记目录时尤甚）。与本地「密文 → 明文目标」的既定语义
+        // 一致（见 [_cryptAwareTransferFile]）：**原样上传密文**（磁盘密文名 +
+        // 密文字节），绝不自动解密 —— 远程端没有密钥，「明文名 + 密文内容」
+        // 的假文件谁也打不开，合法密文才能被本应用/ crypt 工具重新识别。
+        // 剪切成功后删除磁盘上的物理源（虚拟路径 typeSync 是 notFound，
+        // 普通删除分支删不到它）。此前该场景直接报
+        // 「Local file not found」。
+        final cryptSrc = await _analyzeCryptSource(srcPath);
+        if (cryptSrc.mount != null && cryptSrc.isEncrypted) {
+          final diskName = p.basename(cryptSrc.physical);
+          destPath = _buildRemotePath(currentPath, diskName);
+          final destEntriesCrypt = await _remoteEntriesForConflict(
+            client,
+            currentPath,
+            remoteEntriesCache,
+          );
+          final decisionCrypt = await _resolveTransferConflict(
+            context: context,
+            fileName: diskName,
+            destPath: destPath,
+            destExists: destEntriesCrypt.containsKey(diskName),
+            sourceFile: File(cryptSrc.physical),
+            destInfo: destEntriesCrypt[diskName],
+            cachedResolution: cachedResolution,
+            onApplyToAll: (r) => cachedResolution = r,
+            uniquePathFor: (desired) {
+              final unique = uniqueNameAgainst(
+                destEntriesCrypt.keys.toSet(),
+                desired,
+              );
+              destEntriesCrypt[unique] =
+                  destEntriesCrypt[diskName] ?? const ConflictFileInfo();
+              return _buildRemotePath(currentPath, unique);
+            },
+          );
+          if (decisionCrypt == null) throw Exception('Cancelled');
+          if (decisionCrypt.shouldProcess) {
+            destPath = decisionCrypt.destPath;
+            if (cryptSrc.isDirectory) {
+              // 密文目录：直接遍历**物理**目录上传 —— 密文名在磁盘上真实
+              // 存在，逐层原样上传即得等价密文目录（与本地分支同语义）。
+              await _uploadLocalDirectory(
+                client,
+                cryptSrc.physical,
+                destPath,
+                onFileProgress: (fileName, fileSize, prog) {
+                  emitProgress(fileName, fileSize, prog);
+                  if (prog >= 1.0) processedFileCount++;
+                },
+              );
+            } else {
+              int fileSize = 0;
+              try {
+                fileSize = File(cryptSrc.physical).lengthSync();
+              } catch (_) {}
+              emitProgress(diskName, fileSize, 0.0);
+              try {
+                await client.uploadFile(cryptSrc.physical, destPath, (prog) {
+                  emitProgress(diskName, fileSize, prog);
+                });
+              } catch (e) {
+                if (client.isCancelled) throw Exception('Cancelled');
+                rethrow;
+              }
+              previousFilesBytes += fileSize;
+              bytesDone = previousFilesBytes;
+              processedFileCount++;
+              lastUploadedName = p.basename(destPath);
+              lastUploadedSize = fileSize;
+            }
+            destEntriesCrypt[p.basename(destPath)] = ConflictFileInfo(
+              modified: DateTime.now(),
+            );
+            if (_isCut) {
+              try {
+                await _deletePhysical(
+                  cryptSrc.physical,
+                  isDir: cryptSrc.isDirectory,
+                );
+              } catch (e) {
+                debugPrint('Failed to delete crypt source after cut: $e');
+              }
+            }
+          }
+          continue;
+        }
+
         // 重名检测：对目标远程目录做一次真实 LIST（按目录缓存），不再只看页面
         // 缓存 activeTab.currentFiles —— 目录未加载 / 列表过期时旧写法判不出重名，
         // 会直接覆盖或又写一份（用户反馈：本地到远程没有弹窗）。
@@ -10540,15 +10870,16 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  /// 本地剪贴板 → 远程加密目录（cryptremote://）粘贴：**自动加密后上传**。
+  /// 本地剪贴板 → 远程加密目录（cryptremote://）粘贴。
   ///
-  /// 与「加密上传」菜单共用 [_encryptUploadEntry]，于是：
-  /// - 明文条目 → 文件名与内容都加密后再上传；
+  /// 与「加密上传」菜单共用 [_encryptUploadEntry]（`encryptPlain: false`），于是：
+  /// - 明文条目 → **原样上传，不自动加密**（2026-10-24 用户要求：加密目录里
+  ///   密文与普通文件可以共存，复制进来的普通文件应当保持普通）；
   /// - **已加密条目**（从本地原地加密目录、或之前下载下来的密文里复制过来）
   ///   → 内容按原字节直传，**不做二次加密**。
   ///
-  /// ⚠️ 绝不能落到 [_pasteLocalToRemote]：那条链路会把明文与明文名直接写进密文
-  /// 目录，下次进入该目录时被按密文解析 → 文件名与内容全乱。
+  /// ⚠️ 绝不能落到 [_pasteLocalToRemote]：那条链路不支持密文直传，且冲突判定
+  /// 发生在密文名空间里，与解密视图的真实名空间对不上。
   ///
   /// 重名按 [_resolveTransferConflict] 统一处理（弹窗里「服务端已有条目」来自对
   /// 目标目录的**真实 LIST**，不是页面缓存）。剪贴板为「剪切」时，只有上传成功
@@ -10612,7 +10943,10 @@ class FileManagerProvider extends ChangeNotifier {
 
       // 先把本地源解析成「磁盘真实路径」：本地加密目录里的条目是**虚拟路径**
       // （磁盘上存的是密文名 + 密文内容），直接 File(src) 读不到。
-      final resolved = <({String src, String physical, bool isDir})>[];
+      // isEncrypted 决定服务端名空间：密文条目走密文名（与直传语义一致），
+      // 明文条目走明文名（原样上传，见 [_encryptUploadEntry] 的 encryptPlain）。
+      final resolved =
+          <({String src, String physical, bool isDir, bool isEncrypted})>[];
       for (final src in sourcePaths) {
         if (src.startsWith('cryptremote://') || src.startsWith('remote://')) {
           // 兜底：远程条目不该走到这里（复制远程条目会置远程剪贴板，走
@@ -10621,7 +10955,12 @@ class FileManagerProvider extends ChangeNotifier {
           continue;
         }
         final a = await _analyzeCryptSource(src);
-        resolved.add((src: src, physical: a.physical, isDir: a.isDirectory));
+        resolved.add((
+          src: src,
+          physical: a.physical,
+          isDir: a.isDirectory,
+          isEncrypted: a.isEncrypted,
+        ));
       }
       if (resolved.isEmpty) return;
 
@@ -10645,6 +10984,7 @@ class FileManagerProvider extends ChangeNotifier {
           final src = resolved[i].src;
           final localPhysical = resolved[i].physical;
           final isDir = resolved[i].isDir;
+          final entryIsCipher = resolved[i].isEncrypted;
           final base = p.basename(src);
           // 单条字节数同样按磁盘真实路径统计，否则加密目录条目的当前文件
           // 大小恒为 0。
@@ -10653,15 +10993,18 @@ class FileManagerProvider extends ChangeNotifier {
             <String>[localPhysical],
           ))[1];
 
-          // 真实名空间里的重名判定（服务端名字由真实名重新加密得到）。
+          // 真实名空间里的重名判定。密文条目的服务端名由真实名重新加密得到；
+          // 明文条目原样上传，服务端名就是明文名本身（不加密）。
           final desiredPlain =
               _plainNameForCryptUpload(base, mount, isDirectory: isDir);
           var finalPlain = desiredPlain;
           String serverPathFor(String plain) => _joinRemotePath(
                 serverParent,
-                isDir
-                    ? mount.crypt.encryptDirName(plain)
-                    : mount.crypt.encryptFileName(plain),
+                entryIsCipher
+                    ? (isDir
+                        ? mount.crypt.encryptDirName(plain)
+                        : mount.crypt.encryptFileName(plain))
+                    : plain,
               );
 
           // 弹窗需要 BuildContext：界面已销毁就把这次粘贴按「取消」处理
@@ -10708,6 +11051,8 @@ class FileManagerProvider extends ChangeNotifier {
               );
             },
             plainNameOverride: finalPlain,
+            // 粘贴语义：明文条目原样上传（不自动加密），密文条目仍直传。
+            encryptPlain: false,
           );
           previousFilesBytes += itemBytes;
           processedFiles++;
@@ -10738,7 +11083,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L10n.of(context).vault_encrypt_upload_done),
+            content: Text(L10n.of(context).quick_transfer_complete),
             behavior: SnackBarBehavior.floating,
           ),
         );

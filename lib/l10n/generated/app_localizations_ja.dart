@@ -3246,7 +3246,7 @@ class L10nJa extends L10n {
   String get ui_follow_system => '自動（システムに従う）';
 
   @override
-  String get ui_hide_nav_labels => '下部ナビゲーションラベルを隠す';
+  String get ui_hide_nav_labels => 'ナビゲーションバーのラベルを隠す';
 
   @override
   String get ui_reset_default_viewers => 'デフォルトファイルビューアをリセット';
@@ -8597,4 +8597,28 @@ class L10nJa extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'オフ';
+
+  @override
+  String get ui_settings_general => '一般設定';
+
+  @override
+  String get ui_settings_general_desc => '言語、外観、日付と時刻、メディアの既定動作';
+
+  @override
+  String get ui_settings_category_page => 'カテゴリページ設定';
+
+  @override
+  String get ui_settings_category_page_desc => 'ホーム画面のレイアウトとショートカット';
+
+  @override
+  String get ui_settings_browse_page => 'ブラウズページ設定';
+
+  @override
+  String get ui_settings_browse_page_desc => 'アドレスバー、タブ、ドラッグ＆ドロップ、リストレイアウト';
+
+  @override
+  String get ui_settings_nav_and_bar => 'ナビゲーションバー設定';
+
+  @override
+  String get ui_settings_nav_and_bar_desc => '表示/非表示、位置、不透明度、ラベル';
 }

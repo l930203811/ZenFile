@@ -7,6 +7,7 @@ import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import '../../../../providers/file_manager_provider.dart';
 import '../../../../core/utils.dart';
+import '../../app_clone_manager_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AppOptionsSheet extends StatelessWidget {
@@ -34,7 +35,8 @@ class AppOptionsSheet extends StatelessWidget {
         ),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      // 紧凑化：减小外边距，为 7 个动作条目留足一屏空间（底部交由 SafeArea 处理）
+      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 4.0),
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -45,22 +47,22 @@ class AppOptionsSheet extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     child: _AppIconWidget(
                       packageName: app.packageName,
                       iconCache: iconCache,
-                      size: 32,
+                      size: 28,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,12 +80,12 @@ class AppOptionsSheet extends StatelessWidget {
                         '${app.packageName} • v${app.version}',
                         style: TextStyle(
                           color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
-                          fontSize: 12,
+                          fontSize: 11.5,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         'Size: ${FileUtils.formatBytes(app.apkSize, 2)} • Installed: ${FileUtils.formatDate(app.installTime, use24Hour: true).split('  ').first}',
                         style: TextStyle(
@@ -97,9 +99,10 @@ class AppOptionsSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
+            // 紧凑化：缩小标题区与分隔线上下间距
             const SizedBox(height: 12),
+            Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
+            const SizedBox(height: 6),
             
             // Actions List
             _buildBottomSheetActionItem(
@@ -240,6 +243,17 @@ class AppOptionsSheet extends StatelessWidget {
                 AppManagerService.shareAppApk(app);
               },
             ),
+            // 克隆到分身：选/建分身用户后毫秒级 install-existing（Shizuku/root 多用户）
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Broken.people,
+              label: L10n.of(context).ui_clone_clone_to_user,
+              color: Colors.deepPurpleAccent,
+              onTap: () {
+                Navigator.pop(context);
+                AppCloneFlow.cloneExistingApp(context, app.packageName);
+              },
+            ),
             if (!app.isSystem)
               _buildBottomSheetActionItem(
                 theme: theme,
@@ -260,6 +274,7 @@ class AppOptionsSheet extends StatelessWidget {
     );
   }
 
+  /// 紧凑化动作条目：压缩图标容器与条目垂直密度，保证 7 个动作一屏显示
   Widget _buildBottomSheetActionItem({
     required ThemeData theme,
     required IconData icon,
@@ -269,19 +284,20 @@ class AppOptionsSheet extends StatelessWidget {
   }) {
     return ListTile(
       onTap: onTap,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: color, size: 20),
+        child: Icon(icon, color: color, size: 18),
       ),
       title: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
       ),
-      trailing: const Icon(Broken.arrow_right_3, size: 16),
+      trailing: const Icon(Broken.arrow_right_3, size: 14),
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
     );
   }

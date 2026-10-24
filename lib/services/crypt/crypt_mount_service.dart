@@ -264,6 +264,95 @@ class CryptMountService {
     } catch (_) {}
   }
 
+  // ── 「自动关联」登记的目录（可被开关关闭时回收）─────────────────────────
+  //
+  // 「自动关联本地加密文件」开关开启时，浏览层每识别出一个「目录内确有密文」
+  // 的目录，就会把它写进 [_kEncryptedDirsKey]（原地加密目录登记表）**并**在此
+  // 记一笔。开关关闭时，只回收这里记下来的目录 —— 加密操作本身登记的目录
+  // （用户确实在那里加密过）不受影响，仍按加密目录处理。
+  //
+  // 为什么需要单独记：登记表本身只有路径、没有来源，无法区分「自动识别」与
+  // 「用户加密」。若开关关闭时不回收，浏览页会继续把这些目录当加密目录显示
+  // 明文 —— 正是用户反馈的「开关关了还照样自动关联」。
+  static const String _kAutoAssocLocalDirsKey = 'crypt_auto_assoc_local_dirs';
+
+  /// 读取所有「自动关联」登记进来的本地目录（已 POSIX 归一）
+  static Future<List<String>> loadAutoAssocLocalDirs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_kAutoAssocLocalDirsKey);
+      if (jsonStr == null || jsonStr.isEmpty) return const [];
+      final list = jsonDecode(jsonStr);
+      if (list is! List) return const [];
+      return list
+          .whereType<String>()
+          .map(normalizePosix)
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// 记一笔「这个目录是自动关联进来的」
+  static Future<void> addAutoAssocLocalDir(String dir) async {
+    try {
+      final normalized = normalizePosix(dir);
+      if (normalized.isEmpty) return;
+      final dirs = (await loadAutoAssocLocalDirs()).toList();
+      if (dirs.contains(normalized)) return;
+      dirs.add(normalized);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kAutoAssocLocalDirsKey, jsonEncode(dirs));
+    } catch (_) {}
+  }
+
+  /// 回收全部「自动关联」登记的本地目录：从原地加密登记表移除并清空记账。
+  ///
+  /// 返回实际移除的目录数（供调用方判断是否需要刷新挂载点）。
+  static Future<int> purgeAutoAssocLocalDirs() async {
+    try {
+      final auto = await loadAutoAssocLocalDirs();
+      if (auto.isEmpty) return 0;
+      final registered = await loadEncryptedDirs();
+      final kept = registered.where((d) => !auto.contains(d)).toList();
+      var removed = registered.length - kept.length;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kEncryptedDirsKey, jsonEncode(kept));
+      await prefs.remove(_kAutoAssocLocalDirsKey);
+      if (removed > 0) {
+        try {
+          await onInPlaceContainerDirsChanged?.call(kept);
+        } catch (_) {}
+      }
+      // 记账里可能有已不在登记表中的陈旧条目，一并清掉
+      removed = auto.length;
+      return removed;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 回收全部「自动关联」登记的远程加密目录（手动关联的记录保留）。
+  ///
+  /// 返回实际移除的记录数。
+  static Future<int> purgeAutoRemoteEncryptedDirs() async {
+    try {
+      final records = await loadRemoteEncryptedDirs();
+      final auto = records.where((r) => r.isAuto).toList();
+      if (auto.isEmpty) return 0;
+      final kept = records.where((r) => !r.isAuto).toList();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _kRemoteEncryptedDirsKey,
+        jsonEncode(kept.map((r) => r.toJson()).toList()),
+      );
+      return auto.length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   /// 「整体原地加密过、但**目录名保持明文**」的容器目录登记表。
   ///
   /// 为什么单独记：`CryptOperations.encryptDirectory` 末尾有一条守卫 —— 目标目录
@@ -375,6 +464,7 @@ class CryptMountService {
           serverPath: normalizePosix(serverPath),
           profileId: map['profileId'] as String?,
           name: map['name'] as String?,
+          source: (map['source'] as String?) ?? 'manual',
         ));
       }
       return out;
@@ -384,24 +474,27 @@ class CryptMountService {
   }
 
   /// 关联一个远程加密目录（同 connId+serverPath 去重）
+  ///
+  /// [source] 见 [RemoteCryptDirRecord.source]：`auto` 的记录在「自动关联远程
+  /// 加密文件」开关关闭时会被回收，`manual` 永久保留。
   static Future<void> addRemoteEncryptedDir(
     String connId,
     String serverPath, {
     String? profileId,
     String? name,
+    String source = 'manual',
   }) async {
     try {
       if (connId.isEmpty || serverPath.isEmpty) return;
       final normalized = normalizePosix(serverPath);
       final list = (await loadRemoteEncryptedDirs()).toList();
-      list.removeWhere(
-        (r) => r.connId == connId && r.serverPath == normalized,
-      );
+      list.removeWhere((r) => r.connId == connId && r.serverPath == normalized);
       list.add(RemoteCryptDirRecord(
         connId: connId,
         serverPath: normalized,
         profileId: profileId,
         name: name,
+        source: source,
       ));
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
@@ -458,17 +551,31 @@ class RemoteCryptDirRecord {
   /// 展示名（可空）
   final String? name;
 
+  /// 来源：`manual` = 用户在保险箱里「关联远程加密目录」显式登记的；
+  /// `auto` = 浏览远程目录时由「自动关联远程加密文件」开关自动识别的。
+  ///
+  /// 为什么必须区分：自动关联是**开关驱动**的 —— 开关关闭时这些登记要被清理
+  /// （否则浏览页仍把它当加密目录，用户看到的就是「关了开关还照样解密显示」）；
+  /// 而手动关联是用户的显式动作，与开关无关，必须保留。
+  /// 旧数据没有该字段，一律按 `manual` 处理（保持既有行为不变）。
+  final String source;
+
   const RemoteCryptDirRecord({
     required this.connId,
     required this.serverPath,
     this.profileId,
     this.name,
+    this.source = 'manual',
   });
 
+  /// 是否为「自动关联」产生（可被开关关闭时回收）
+  bool get isAuto => source == 'auto';
+
   Map<String, dynamic> toJson() => {
-        'connId': connId,
-        'serverPath': serverPath,
-        if (profileId != null) 'profileId': profileId,
-        if (name != null) 'name': name,
-      };
+    'connId': connId,
+    'serverPath': serverPath,
+    if (profileId != null) 'profileId': profileId,
+    if (name != null) 'name': name,
+    'source': source,
+  };
 }

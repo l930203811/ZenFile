@@ -3347,7 +3347,7 @@ class L10nEn extends L10n {
   String get ui_follow_system => 'Auto (Follow System)';
 
   @override
-  String get ui_hide_nav_labels => 'Hide Bottom Nav Labels';
+  String get ui_hide_nav_labels => 'Hide Nav Bar Labels';
 
   @override
   String get ui_reset_default_viewers => 'Reset Default File Viewers';
@@ -8876,4 +8876,32 @@ class L10nEn extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'Hidden';
+
+  @override
+  String get ui_settings_general => 'General';
+
+  @override
+  String get ui_settings_general_desc =>
+      'Language, appearance, date & time and media defaults';
+
+  @override
+  String get ui_settings_category_page => 'Category page';
+
+  @override
+  String get ui_settings_category_page_desc =>
+      'Home screen layout and shortcuts';
+
+  @override
+  String get ui_settings_browse_page => 'Browse page';
+
+  @override
+  String get ui_settings_browse_page_desc =>
+      'Address bar, tabs, drag & drop and list layout';
+
+  @override
+  String get ui_settings_nav_and_bar => 'Navigation Bar Settings';
+
+  @override
+  String get ui_settings_nav_and_bar_desc =>
+      'Show/hide, position, opacity and labels';
 }

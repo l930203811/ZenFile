@@ -138,6 +138,98 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  // ===== 文字与标签（v2.2 设置页重组并入）=====
+                  // 以下三个开关原本在设置页「常规与行为」子页，随重组并入本面板；
+                  // 状态仍是 [FileManagerProvider] 同一份字段（保持共用 prefs 落盘），
+                  // 与设置页搜索态的内联条目天然双向同步。
+                  // key 核对结论：「隐藏安卓导航栏」（hideNavigationBar，隐藏**系统**
+                  // 导航栏 / 沉浸模式，见 main.dart 的 SystemChrome 调用）与上面的
+                  // 「显示导航栏」（bottomNavBarEnabled，应用内 4-tab 底栏）是**两个
+                  // 不同的状态**，并非同一开关的正反面，因此两者都保留、不合并。
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.ui_hide_nav_labels,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: fileManager.hideNavLabels,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (v) => fileManager.toggleHideNavLabels(),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    l10n.msgce732d8a,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.msga1fbf3c6,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: fileManager.hideNavigationBar,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (v) => fileManager.toggleHideNavigationBar(),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    l10n.msg02dddc02,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.ui_hide_action_text,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: fileManager.hideActionText,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (v) => fileManager.toggleHideActionText(),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    l10n.msg9b7639ac,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     l10n.ui_show_bottom_action_bar,
                     style: TextStyle(

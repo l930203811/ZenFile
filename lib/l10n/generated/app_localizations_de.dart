@@ -3396,8 +3396,7 @@ class L10nDe extends L10n {
   String get ui_follow_system => 'Automatisch (System folgen)';
 
   @override
-  String get ui_hide_nav_labels =>
-      'Untere Navigationsbeschriftungen ausblenden';
+  String get ui_hide_nav_labels => 'Navigationsbeschriftungen ausblenden';
 
   @override
   String get ui_reset_default_viewers => 'Standard-Betrachter zurücksetzen';
@@ -8980,4 +8979,32 @@ class L10nDe extends L10n {
 
   @override
   String get ui_bottom_tab_slot_disabled => 'Ausgeblendet';
+
+  @override
+  String get ui_settings_general => 'Allgemein';
+
+  @override
+  String get ui_settings_general_desc =>
+      'Sprache, Erscheinungsbild, Datum & Uhrzeit und Medienaktionen';
+
+  @override
+  String get ui_settings_category_page => 'Kategorieseite';
+
+  @override
+  String get ui_settings_category_page_desc =>
+      'Startbildschirm-Layout und Verknüpfungen';
+
+  @override
+  String get ui_settings_browse_page => 'Durchsuchen-Seite';
+
+  @override
+  String get ui_settings_browse_page_desc =>
+      'Adressleiste, Tabs, Drag & Drop und Listenlayout';
+
+  @override
+  String get ui_settings_nav_and_bar => 'Navigationsleisten-Einstellungen';
+
+  @override
+  String get ui_settings_nav_and_bar_desc =>
+      'Anzeigen/Ausblenden, Position, Deckkraft und Beschriftungen';
 }

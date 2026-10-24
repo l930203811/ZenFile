@@ -3622,7 +3622,7 @@
   "ui_invalid_file_type": "Ungültiger Dateityp",
   "ui_language": "Sprache",
   "ui_follow_system": "Automatisch (System folgen)",
-  "ui_hide_nav_labels": "Untere Navigationsbeschriftungen ausblenden",
+  "ui_hide_nav_labels": "Navigationsbeschriftungen ausblenden",
   "ui_reset_default_viewers": "Standard-Betrachter zurücksetzen",
   "ui_trailing_info_when_hidden": "Nachfolgende Informationen wenn Menü versteckt",
   "ui_go_up": "Nach oben",
@@ -8773,5 +8773,13 @@
   "ui_clone_launch_failed": "App im Profil konnte nicht gestartet werden",
   "ui_clone_to_user": "In Zweitprofil klonen",
   "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
-  "ui_bottom_tab_slot_disabled": "Ausgeblendet"
+  "ui_bottom_tab_slot_disabled": "Ausgeblendet",
+  "ui_settings_general": "Allgemein",
+  "ui_settings_general_desc": "Sprache, Erscheinungsbild, Datum & Uhrzeit und Medienaktionen",
+  "ui_settings_category_page": "Kategorieseite",
+  "ui_settings_category_page_desc": "Startbildschirm-Layout und Verknüpfungen",
+  "ui_settings_browse_page": "Durchsuchen-Seite",
+  "ui_settings_browse_page_desc": "Adressleiste, Tabs, Drag & Drop und Listenlayout",
+  "ui_settings_nav_and_bar": "Navigationsleisten-Einstellungen",
+  "ui_settings_nav_and_bar_desc": "Anzeigen/Ausblenden, Position, Deckkraft und Beschriftungen"
 }
