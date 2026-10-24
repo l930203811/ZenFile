@@ -8308,19 +8308,30 @@ class L10nKo extends L10n {
       '인터넷 공유에는 접근 비밀번호가 필요합니다';
 
   @override
-  String get crypt_auto_encrypt_section => '자동 암호화';
+  String get crypt_auto_encrypt_section => '자동 연결';
 
   @override
-  String get crypt_auto_encrypt_title => '새 파일 자동 암호화';
+  String get crypt_auto_encrypt_title => '로컬 암호화 파일 자동 연결';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      '암호화된 디렉터리를 실시간 감시하여, 새 파일의 쓰기가 완료되면 자동으로 암호화합니다(상시 알림 필요)';
+      '켜면 로컬 폴더를 탐색할 때 암호문을 자동 감지해 금고의 「제자리 암호화」 목록에 등록하고, 탐색 페이지에도 평문 이름으로 표시합니다. 끄면 디스크에 있는 그대로 표시합니다(암호화 파일은 암호문 이름으로 표시되지만, 열어서 복호화하는 것은 정상적으로 가능합니다). 기본값은 꺼짐';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '$count개의 디렉터리를 보호 중입니다. 새 파일은 자동으로 암호화됩니다';
+    return '로컬 암호화 폴더 $count개 연결됨';
   }
+
+  @override
+  String get crypt_auto_remote_title => '원격 암호화 파일 자동 연결';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      '켜면 원격 폴더를 탐색할 때 암호화된 파일을 자동 감지해 등록하고, 현재 폴더를 즉시 평문 이름으로 전환합니다. 이후에는 금고에서 열고 복호화할 수도 있습니다. 끄면 수동으로 연결한 원격 암호화 폴더만 적용됩니다. 기본값은 꺼짐';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      '참고: 두 스위치는 이미 불러온 목록만으로 판단하며(원격은 추가 네트워크 요청 없음) 성능 영향은 매우 작습니다. 「표준」 파일 이름 암호화만 안정적으로 감지할 수 있고, obfuscate 모드는 이름으로 판단할 수 없습니다.';
 
   @override
   String get msg_name_invalid_title => '잘못된 이름';
@@ -8482,4 +8493,120 @@ class L10nKo extends L10n {
 
   @override
   String get lyric_offset_input_hint => '오프셋(초)';
+
+  @override
+  String get ui_clone_feature_title => '앱 분신';
+
+  @override
+  String get ui_clone_feature_desc =>
+      '시스템 멀티 사용자 기능으로 앱을 복제하여 데이터가 완전히 분리된 분신을 여러 개 만들 수 있습니다. Shizuku(또는 Root) 권한이 필요합니다.';
+
+  @override
+  String get ui_clone_need_privileged_title => 'Shizuku 또는 Root 권한 필요';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      '먼저 Shizuku 앱을 실행해 ZenFile에 권한을 부여하세요. Root 기기에서는 바로 사용할 수 있습니다.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Shizuku 권한 부여';
+
+  @override
+  String get ui_clone_users_title => '분신 사용자';
+
+  @override
+  String get ui_clone_primary_user => '기본 사용자(이 기기)';
+
+  @override
+  String get ui_clone_create_user => '분신 만들기';
+
+  @override
+  String get ui_clone_new_user => '분신 사용자 만들기…';
+
+  @override
+  String get ui_clone_user_name_hint => '분신 이름';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return '분신 $n';
+  }
+
+  @override
+  String get ui_clone_running => '실행 중';
+
+  @override
+  String get ui_clone_delete_user => '분신 삭제';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return '분신 \"$name\"을(를) 삭제할까요? 해당 분신 내 모든 앱과 데이터가 삭제됩니다.';
+  }
+
+  @override
+  String get ui_clone_user_created => '분신이 생성되었습니다';
+
+  @override
+  String get ui_clone_user_removed => '분신이 삭제되었습니다';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      '생성 실패: 시스템 사용자 수 제한에 도달했습니다(ROM에 따라 제한될 수 있음)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return '분신 작업 실패: $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => '명령 실행 시간이 초과되었습니다. 다시 시도하세요';
+
+  @override
+  String get ui_clone_install_host_apps => '기기의 앱을 이 분신에 설치';
+
+  @override
+  String get ui_clone_no_missing_apps => '기기의 서드파티 앱이 모두 이 분신에 설치되어 있습니다';
+
+  @override
+  String get ui_clone_apps_empty => '이 분신에는 서드파티 앱이 아직 없습니다';
+
+  @override
+  String get ui_clone_launch => '실행';
+
+  @override
+  String get ui_clone_uninstall => '제거';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return '이 분신에서 \"$name\"을(를) 제거할까요? 이 분신에만 영향을 주며 기기에는 영향이 없습니다.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => '분신에서 제거되었습니다';
+
+  @override
+  String get ui_clone_installed_existing => '분신에 설치되었습니다';
+
+  @override
+  String get ui_clone_clone_to_user => '분신으로 복제';
+
+  @override
+  String get ui_clone_select_user => '분신 사용자 선택';
+
+  @override
+  String get ui_clone_installing => '복제 중…';
+
+  @override
+  String get ui_clone_install_success => '복제 성공';
+
+  @override
+  String get ui_clone_launch_now => '지금 실행';
+
+  @override
+  String get ui_clone_launch_failed => '분신 앱 실행 실패';
+
+  @override
+  String get ui_clone_to_user => '분신으로 복제';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => '숨김';
 }

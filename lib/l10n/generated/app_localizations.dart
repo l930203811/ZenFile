@@ -15217,26 +15217,44 @@ abstract class L10n {
   /// Auto-encrypt new files feature: crypt_auto_encrypt_section
   ///
   /// In zh, this message translates to:
-  /// **'自动加密'**
+  /// **'自动关联'**
   String get crypt_auto_encrypt_section;
 
   /// Auto-encrypt new files feature: crypt_auto_encrypt_title
   ///
   /// In zh, this message translates to:
-  /// **'自动加密新增文件'**
+  /// **'自动关联本地加密文件'**
   String get crypt_auto_encrypt_title;
 
   /// Auto-encrypt new files feature: crypt_auto_encrypt_desc
   ///
   /// In zh, this message translates to:
-  /// **'对已原地加密的目录开启实时监听，新文件写入完成后自动加密（需常驻通知）'**
+  /// **'开启后，浏览本地目录时会自动识别其中的密文并登记到保险箱「原地加密」列表，浏览页同步显示为明文名；关闭时浏览页按普通文件展示（加密文件显示为密文名，打开后仍可正常解密）；默认关闭'**
   String get crypt_auto_encrypt_desc;
 
   /// Auto-encrypt new files feature: crypt_auto_encrypt_watching
   ///
   /// In zh, this message translates to:
-  /// **'正在保护 {count} 个目录，新文件将自动加密'**
+  /// **'已关联 {count} 个本地加密目录'**
   String crypt_auto_encrypt_watching(Object count);
+
+  /// Auto-associate remote encrypted files: crypt_auto_remote_title
+  ///
+  /// In zh, this message translates to:
+  /// **'自动关联远程加密文件'**
+  String get crypt_auto_remote_title;
+
+  /// Auto-associate remote encrypted files: crypt_auto_remote_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，浏览远程目录时会自动识别其中的加密文件并登记，当前目录立即切换为明文名显示，之后也可在保险箱中打开与解密；关闭时仅手动关联的远程加密目录生效；默认关闭'**
+  String get crypt_auto_remote_desc;
+
+  /// Auto-associate performance note: crypt_auto_assoc_note
+  ///
+  /// In zh, this message translates to:
+  /// **'说明：两项开关都只在浏览目录时就地判定（远程侧不会额外发起网络请求），对性能影响极小；仅「标准」文件名加密模式可可靠识别，obfuscate 模式的文件名接近明文，无法从名称判定。'**
+  String get crypt_auto_assoc_note;
 
   /// Warning dialog title shown when a user-entered file/folder name is invalid
   ///
@@ -15543,6 +15561,216 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'偏移值（秒）'**
   String get lyric_offset_input_hint;
+
+  /// app_clone_manager_screen.dart：应用分身（Shizuku 多用户克隆）功能标题
+  ///
+  /// In zh, this message translates to:
+  /// **'应用分身'**
+  String get ui_clone_feature_title;
+
+  /// app_clone_manager_screen.dart：分身功能说明
+  ///
+  /// In zh, this message translates to:
+  /// **'基于系统多用户把应用克隆为多个分身，数据完全隔离、可多开。需要 Shizuku（或 Root）权限。'**
+  String get ui_clone_feature_desc;
+
+  /// app_clone_manager_screen.dart：无特权通道时的引导标题
+  ///
+  /// In zh, this message translates to:
+  /// **'需要 Shizuku 或 Root 权限'**
+  String get ui_clone_need_privileged_title;
+
+  /// app_clone_manager_screen.dart：无特权通道时的引导说明
+  ///
+  /// In zh, this message translates to:
+  /// **'请先启动 Shizuku 应用并授权 ZenFile；已 Root 的设备也可直接使用。'**
+  String get ui_clone_need_privileged_desc;
+
+  /// app_clone_manager_screen.dart：请求 Shizuku 授权按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'授权 Shizuku'**
+  String get ui_clone_grant_shizuku;
+
+  /// app_clone_manager_screen.dart：分身用户列表区块标题
+  ///
+  /// In zh, this message translates to:
+  /// **'分身用户'**
+  String get ui_clone_users_title;
+
+  /// app_clone_manager_screen.dart：主用户（id 0）条目名称
+  ///
+  /// In zh, this message translates to:
+  /// **'主用户（本机）'**
+  String get ui_clone_primary_user;
+
+  /// app_clone_manager_screen.dart：新建分身用户动作/对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'新建分身'**
+  String get ui_clone_create_user;
+
+  /// app_clone_manager_screen.dart：选用户对话框里的新建入口
+  ///
+  /// In zh, this message translates to:
+  /// **'新建分身用户…'**
+  String get ui_clone_new_user;
+
+  /// app_clone_manager_screen.dart：分身命名输入框提示
+  ///
+  /// In zh, this message translates to:
+  /// **'分身名称'**
+  String get ui_clone_user_name_hint;
+
+  /// app_clone_manager_screen.dart：分身默认命名（分身 1/2/…）
+  ///
+  /// In zh, this message translates to:
+  /// **'分身 {n}'**
+  String ui_clone_default_user_name(int n);
+
+  /// app_clone_manager_screen.dart：分身用户在线状态
+  ///
+  /// In zh, this message translates to:
+  /// **'运行中'**
+  String get ui_clone_running;
+
+  /// app_clone_manager_screen.dart：删除分身用户动作
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分身'**
+  String get ui_clone_delete_user;
+
+  /// app_clone_manager_screen.dart：删除分身的确认文案
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分身「{name}」？该分身内所有应用及其数据都将被清除。'**
+  String ui_clone_delete_user_confirm(Object name);
+
+  /// app_clone_manager_screen.dart：create-user 成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'分身创建成功'**
+  String get ui_clone_user_created;
+
+  /// app_clone_manager_screen.dart：remove-user 成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'分身已删除'**
+  String get ui_clone_user_removed;
+
+  /// app_clone_manager_screen.dart：create-user 因 ROM 用户数限制失败
+  ///
+  /// In zh, this message translates to:
+  /// **'创建失败：已达系统用户数量上限（部分 ROM 限制可创建的分身数）'**
+  String get ui_clone_create_failed_limit;
+
+  /// app_clone_manager_screen.dart：分身操作通用失败提示（携带原始输出）
+  ///
+  /// In zh, this message translates to:
+  /// **'分身操作失败：{e}'**
+  String ui_clone_op_failed(Object e);
+
+  /// app_clone_manager_screen.dart：pm/am 命令超时提示
+  ///
+  /// In zh, this message translates to:
+  /// **'命令执行超时，请重试'**
+  String get ui_clone_cmd_timeout;
+
+  /// app_clone_manager_screen.dart：把本机已装应用 install-existing 到分身
+  ///
+  /// In zh, this message translates to:
+  /// **'安装本机应用到该分身'**
+  String get ui_clone_install_host_apps;
+
+  /// app_clone_manager_screen.dart：无可再克隆的应用时提示
+  ///
+  /// In zh, this message translates to:
+  /// **'本机的第三方应用均已在此分身中'**
+  String get ui_clone_no_missing_apps;
+
+  /// app_clone_manager_screen.dart：分身应用列表为空
+  ///
+  /// In zh, this message translates to:
+  /// **'该分身暂无第三方应用'**
+  String get ui_clone_apps_empty;
+
+  /// app_clone_manager_screen.dart：启动分身内应用
+  ///
+  /// In zh, this message translates to:
+  /// **'启动'**
+  String get ui_clone_launch;
+
+  /// app_clone_manager_screen.dart：卸载分身内应用
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载'**
+  String get ui_clone_uninstall;
+
+  /// app_clone_manager_screen.dart：卸载分身内应用的确认文案
+  ///
+  /// In zh, this message translates to:
+  /// **'从该分身卸载「{name}」？仅影响此分身，不影响本机。'**
+  String ui_clone_uninstall_confirm(Object name);
+
+  /// app_clone_manager_screen.dart：分身内卸载成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已从分身卸载'**
+  String get ui_clone_uninstall_done;
+
+  /// app_clone_manager_screen.dart：install-existing 成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已安装到分身'**
+  String get ui_clone_installed_existing;
+
+  /// APK/已装应用长按菜单：克隆到分身动作项
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆到分身'**
+  String get ui_clone_clone_to_user;
+
+  /// app_clone_manager_screen.dart：选/建分身用户对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分身用户'**
+  String get ui_clone_select_user;
+
+  /// app_clone_manager_screen.dart：克隆进度对话框文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在克隆…'**
+  String get ui_clone_installing;
+
+  /// app_clone_manager_screen.dart：pm install --user 成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆成功'**
+  String get ui_clone_install_success;
+
+  /// app_clone_manager_screen.dart：克隆成功后立即启动按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'立即启动'**
+  String get ui_clone_launch_now;
+
+  /// app_clone_manager_screen.dart：am start/monkey 启动失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'启动分身应用失败'**
+  String get ui_clone_launch_failed;
+
+  /// app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆到分身'**
+  String get ui_clone_to_user;
+
+  /// quick_categories_grid.dart：底部导航槽位被「关闭」后配置行上的状态文案
+  ///
+  /// In zh, this message translates to:
+  /// **'已关闭'**
+  String get ui_bottom_tab_slot_disabled;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

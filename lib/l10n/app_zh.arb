@@ -8977,23 +8977,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "自动加密",
+  "crypt_auto_encrypt_section": "自动关联",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "自动加密新增文件",
+  "crypt_auto_encrypt_title": "自动关联本地加密文件",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "对已原地加密的目录开启实时监听，新文件写入完成后自动加密（需常驻通知）",
+  "crypt_auto_encrypt_desc": "开启后，浏览本地目录时会自动识别其中的密文并登记到保险箱「原地加密」列表，浏览页同步显示为明文名；关闭时浏览页按普通文件展示（加密文件显示为密文名，打开后仍可正常解密）；默认关闭",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "正在保护 {count} 个目录，新文件将自动加密",
+  "crypt_auto_encrypt_watching": "已关联 {count} 个本地加密目录",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "自动关联远程加密文件",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "开启后，浏览远程目录时会自动识别其中的加密文件并登记，当前目录立即切换为明文名显示，之后也可在保险箱中打开与解密；关闭时仅手动关联的远程加密目录生效；默认关闭",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "说明：两项开关都只在浏览目录时就地判定（远程侧不会额外发起网络请求），对性能影响极小；仅「标准」文件名加密模式可可靠识别，obfuscate 模式的文件名接近明文，无法从名称判定。",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "名称不合法",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -9065,5 +9076,87 @@
   "lyric_offset_reset": "重置",
   "lyric_offset_clear_current": "清除本曲偏移",
   "lyric_offset_input_title": "输入偏移值",
-  "lyric_offset_input_hint": "偏移值（秒）"
+  "lyric_offset_input_hint": "偏移值（秒）",
+  "ui_clone_feature_title": "应用分身",
+  "@ui_clone_feature_title": {"description": "app_clone_manager_screen.dart：应用分身（Shizuku 多用户克隆）功能标题"},
+  "ui_clone_feature_desc": "基于系统多用户把应用克隆为多个分身，数据完全隔离、可多开。需要 Shizuku（或 Root）权限。",
+  "@ui_clone_feature_desc": {"description": "app_clone_manager_screen.dart：分身功能说明"},
+  "ui_clone_need_privileged_title": "需要 Shizuku 或 Root 权限",
+  "@ui_clone_need_privileged_title": {"description": "app_clone_manager_screen.dart：无特权通道时的引导标题"},
+  "ui_clone_need_privileged_desc": "请先启动 Shizuku 应用并授权 ZenFile；已 Root 的设备也可直接使用。",
+  "@ui_clone_need_privileged_desc": {"description": "app_clone_manager_screen.dart：无特权通道时的引导说明"},
+  "ui_clone_grant_shizuku": "授权 Shizuku",
+  "@ui_clone_grant_shizuku": {"description": "app_clone_manager_screen.dart：请求 Shizuku 授权按钮"},
+  "ui_clone_users_title": "分身用户",
+  "@ui_clone_users_title": {"description": "app_clone_manager_screen.dart：分身用户列表区块标题"},
+  "ui_clone_primary_user": "主用户（本机）",
+  "@ui_clone_primary_user": {"description": "app_clone_manager_screen.dart：主用户（id 0）条目名称"},
+  "ui_clone_create_user": "新建分身",
+  "@ui_clone_create_user": {"description": "app_clone_manager_screen.dart：新建分身用户动作/对话框标题"},
+  "ui_clone_new_user": "新建分身用户…",
+  "@ui_clone_new_user": {"description": "app_clone_manager_screen.dart：选用户对话框里的新建入口"},
+  "ui_clone_user_name_hint": "分身名称",
+  "@ui_clone_user_name_hint": {"description": "app_clone_manager_screen.dart：分身命名输入框提示"},
+  "ui_clone_default_user_name": "分身 {n}",
+  "@ui_clone_default_user_name": {
+    "description": "app_clone_manager_screen.dart：分身默认命名（分身 1/2/…）",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "ui_clone_running": "运行中",
+  "@ui_clone_running": {"description": "app_clone_manager_screen.dart：分身用户在线状态"},
+  "ui_clone_delete_user": "删除分身",
+  "@ui_clone_delete_user": {"description": "app_clone_manager_screen.dart：删除分身用户动作"},
+  "ui_clone_delete_user_confirm": "删除分身「{name}」？该分身内所有应用及其数据都将被清除。",
+  "@ui_clone_delete_user_confirm": {
+    "description": "app_clone_manager_screen.dart：删除分身的确认文案",
+    "placeholders": { "name": { "type": "Object" } }
+  },
+  "ui_clone_user_created": "分身创建成功",
+  "@ui_clone_user_created": {"description": "app_clone_manager_screen.dart：create-user 成功提示"},
+  "ui_clone_user_removed": "分身已删除",
+  "@ui_clone_user_removed": {"description": "app_clone_manager_screen.dart：remove-user 成功提示"},
+  "ui_clone_create_failed_limit": "创建失败：已达系统用户数量上限（部分 ROM 限制可创建的分身数）",
+  "@ui_clone_create_failed_limit": {"description": "app_clone_manager_screen.dart：create-user 因 ROM 用户数限制失败"},
+  "ui_clone_op_failed": "分身操作失败：{e}",
+  "@ui_clone_op_failed": {
+    "description": "app_clone_manager_screen.dart：分身操作通用失败提示（携带原始输出）",
+    "placeholders": { "e": { "type": "Object" } }
+  },
+  "ui_clone_cmd_timeout": "命令执行超时，请重试",
+  "@ui_clone_cmd_timeout": {"description": "app_clone_manager_screen.dart：pm/am 命令超时提示"},
+  "ui_clone_install_host_apps": "安装本机应用到该分身",
+  "@ui_clone_install_host_apps": {"description": "app_clone_manager_screen.dart：把本机已装应用 install-existing 到分身"},
+  "ui_clone_no_missing_apps": "本机的第三方应用均已在此分身中",
+  "@ui_clone_no_missing_apps": {"description": "app_clone_manager_screen.dart：无可再克隆的应用时提示"},
+  "ui_clone_apps_empty": "该分身暂无第三方应用",
+  "@ui_clone_apps_empty": {"description": "app_clone_manager_screen.dart：分身应用列表为空"},
+  "ui_clone_launch": "启动",
+  "@ui_clone_launch": {"description": "app_clone_manager_screen.dart：启动分身内应用"},
+  "ui_clone_uninstall": "卸载",
+  "@ui_clone_uninstall": {"description": "app_clone_manager_screen.dart：卸载分身内应用"},
+  "ui_clone_uninstall_confirm": "从该分身卸载「{name}」？仅影响此分身，不影响本机。",
+  "@ui_clone_uninstall_confirm": {
+    "description": "app_clone_manager_screen.dart：卸载分身内应用的确认文案",
+    "placeholders": { "name": { "type": "Object" } }
+  },
+  "ui_clone_uninstall_done": "已从分身卸载",
+  "@ui_clone_uninstall_done": {"description": "app_clone_manager_screen.dart：分身内卸载成功提示"},
+  "ui_clone_installed_existing": "已安装到分身",
+  "@ui_clone_installed_existing": {"description": "app_clone_manager_screen.dart：install-existing 成功提示"},
+  "ui_clone_clone_to_user": "克隆到分身",
+  "@ui_clone_clone_to_user": {"description": "APK/已装应用长按菜单：克隆到分身动作项"},
+  "ui_clone_select_user": "选择分身用户",
+  "@ui_clone_select_user": {"description": "app_clone_manager_screen.dart：选/建分身用户对话框标题"},
+  "ui_clone_installing": "正在克隆…",
+  "@ui_clone_installing": {"description": "app_clone_manager_screen.dart：克隆进度对话框文案"},
+  "ui_clone_install_success": "克隆成功",
+  "@ui_clone_install_success": {"description": "app_clone_manager_screen.dart：pm install --user 成功提示"},
+  "ui_clone_launch_now": "立即启动",
+  "@ui_clone_launch_now": {"description": "app_clone_manager_screen.dart：克隆成功后立即启动按钮"},
+  "ui_clone_launch_failed": "启动分身应用失败",
+  "@ui_clone_launch_failed": {"description": "app_clone_manager_screen.dart：am start/monkey 启动失败提示"},
+  "ui_clone_to_user": "克隆到分身",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "已关闭",
+  "@ui_bottom_tab_slot_disabled": {"description": "quick_categories_grid.dart：底部导航槽位被「关闭」后配置行上的状态文案"}
 }

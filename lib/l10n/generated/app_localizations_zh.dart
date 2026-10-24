@@ -8124,18 +8124,30 @@ class L10nZh extends L10n {
   String get ui_web_share_password_required_for_tunnel => '公网分享必须设置访问口令';
 
   @override
-  String get crypt_auto_encrypt_section => '自动加密';
+  String get crypt_auto_encrypt_section => '自动关联';
 
   @override
-  String get crypt_auto_encrypt_title => '自动加密新增文件';
+  String get crypt_auto_encrypt_title => '自动关联本地加密文件';
 
   @override
-  String get crypt_auto_encrypt_desc => '对已原地加密的目录开启实时监听，新文件写入完成后自动加密（需常驻通知）';
+  String get crypt_auto_encrypt_desc =>
+      '开启后，浏览本地目录时会自动识别其中的密文并登记到保险箱「原地加密」列表，浏览页同步显示为明文名；关闭时浏览页按普通文件展示（加密文件显示为密文名，打开后仍可正常解密）；默认关闭';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '正在保护 $count 个目录，新文件将自动加密';
+    return '已关联 $count 个本地加密目录';
   }
+
+  @override
+  String get crypt_auto_remote_title => '自动关联远程加密文件';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      '开启后，浏览远程目录时会自动识别其中的加密文件并登记，当前目录立即切换为明文名显示，之后也可在保险箱中打开与解密；关闭时仅手动关联的远程加密目录生效；默认关闭';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      '说明：两项开关都只在浏览目录时就地判定（远程侧不会额外发起网络请求），对性能影响极小；仅「标准」文件名加密模式可可靠识别，obfuscate 模式的文件名接近明文，无法从名称判定。';
 
   @override
   String get msg_name_invalid_title => '名称不合法';
@@ -8289,6 +8301,122 @@ class L10nZh extends L10n {
 
   @override
   String get lyric_offset_input_hint => '偏移值（秒）';
+
+  @override
+  String get ui_clone_feature_title => '应用分身';
+
+  @override
+  String get ui_clone_feature_desc =>
+      '基于系统多用户把应用克隆为多个分身，数据完全隔离、可多开。需要 Shizuku（或 Root）权限。';
+
+  @override
+  String get ui_clone_need_privileged_title => '需要 Shizuku 或 Root 权限';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      '请先启动 Shizuku 应用并授权 ZenFile；已 Root 的设备也可直接使用。';
+
+  @override
+  String get ui_clone_grant_shizuku => '授权 Shizuku';
+
+  @override
+  String get ui_clone_users_title => '分身用户';
+
+  @override
+  String get ui_clone_primary_user => '主用户（本机）';
+
+  @override
+  String get ui_clone_create_user => '新建分身';
+
+  @override
+  String get ui_clone_new_user => '新建分身用户…';
+
+  @override
+  String get ui_clone_user_name_hint => '分身名称';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return '分身 $n';
+  }
+
+  @override
+  String get ui_clone_running => '运行中';
+
+  @override
+  String get ui_clone_delete_user => '删除分身';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return '删除分身「$name」？该分身内所有应用及其数据都将被清除。';
+  }
+
+  @override
+  String get ui_clone_user_created => '分身创建成功';
+
+  @override
+  String get ui_clone_user_removed => '分身已删除';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      '创建失败：已达系统用户数量上限（部分 ROM 限制可创建的分身数）';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return '分身操作失败：$e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => '命令执行超时，请重试';
+
+  @override
+  String get ui_clone_install_host_apps => '安装本机应用到该分身';
+
+  @override
+  String get ui_clone_no_missing_apps => '本机的第三方应用均已在此分身中';
+
+  @override
+  String get ui_clone_apps_empty => '该分身暂无第三方应用';
+
+  @override
+  String get ui_clone_launch => '启动';
+
+  @override
+  String get ui_clone_uninstall => '卸载';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return '从该分身卸载「$name」？仅影响此分身，不影响本机。';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => '已从分身卸载';
+
+  @override
+  String get ui_clone_installed_existing => '已安装到分身';
+
+  @override
+  String get ui_clone_clone_to_user => '克隆到分身';
+
+  @override
+  String get ui_clone_select_user => '选择分身用户';
+
+  @override
+  String get ui_clone_installing => '正在克隆…';
+
+  @override
+  String get ui_clone_install_success => '克隆成功';
+
+  @override
+  String get ui_clone_launch_now => '立即启动';
+
+  @override
+  String get ui_clone_launch_failed => '启动分身应用失败';
+
+  @override
+  String get ui_clone_to_user => '克隆到分身';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => '已关闭';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -16381,18 +16509,30 @@ class L10nZhTw extends L10nZh {
   String get ui_web_share_password_required_for_tunnel => '網際網路分享必須設定存取密碼';
 
   @override
-  String get crypt_auto_encrypt_section => '自動加密';
+  String get crypt_auto_encrypt_section => '自動關聯';
 
   @override
-  String get crypt_auto_encrypt_title => '自動加密新增檔案';
+  String get crypt_auto_encrypt_title => '自動關聯本機加密檔案';
 
   @override
-  String get crypt_auto_encrypt_desc => '對已原地加密的目錄開啟即時監聽，新檔案寫入完成後自動加密（需常駐通知）';
+  String get crypt_auto_encrypt_desc =>
+      '開啟後，瀏覽本機目錄時會自動識別其中的密文並登錄到保險箱「原地加密」清單，瀏覽頁同步顯示為明文名稱；關閉時瀏覽頁按普通檔案展示（加密檔案顯示為密文名稱，開啟後仍可正常解密）；預設關閉';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '正在保護 $count 個目錄，新檔案將自動加密';
+    return '已關聯 $count 個本機加密目錄';
   }
+
+  @override
+  String get crypt_auto_remote_title => '自動關聯遠端加密檔案';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      '開啟後，瀏覽遠端目錄時會自動識別其中的加密檔案並登錄，目前目錄立即切換為明文名稱顯示，之後也可在保險箱中開啟與解密；關閉時僅手動關聯的遠端加密目錄生效；預設關閉';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      '說明：兩項開關都只在瀏覽目錄時就地判定（遠端不會額外發出網路請求），效能影響極小；僅「標準」檔名加密模式可可靠識別，obfuscate 模式的檔名接近明文，無法從名稱判定。';
 
   @override
   String get msg_name_invalid_title => '名稱不合法';
@@ -16546,4 +16686,120 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get lyric_offset_input_hint => '偏移值（秒）';
+
+  @override
+  String get ui_clone_feature_title => '應用分身';
+
+  @override
+  String get ui_clone_feature_desc =>
+      '基於系統多使用者把應用程式複製為多個分身，資料完全隔離、可多開。需要 Shizuku（或 Root）權限。';
+
+  @override
+  String get ui_clone_need_privileged_title => '需要 Shizuku 或 Root 權限';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      '請先啟動 Shizuku 應用程式並授權 ZenFile；已 Root 的裝置也可直接使用。';
+
+  @override
+  String get ui_clone_grant_shizuku => '授權 Shizuku';
+
+  @override
+  String get ui_clone_users_title => '分身使用者';
+
+  @override
+  String get ui_clone_primary_user => '主使用者（本機）';
+
+  @override
+  String get ui_clone_create_user => '新增分身';
+
+  @override
+  String get ui_clone_new_user => '新增分身使用者…';
+
+  @override
+  String get ui_clone_user_name_hint => '分身名稱';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return '分身 $n';
+  }
+
+  @override
+  String get ui_clone_running => '執行中';
+
+  @override
+  String get ui_clone_delete_user => '刪除分身';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return '刪除分身「$name」？該分身內所有應用程式及其資料都將被清除。';
+  }
+
+  @override
+  String get ui_clone_user_created => '分身建立成功';
+
+  @override
+  String get ui_clone_user_removed => '分身已刪除';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      '建立失敗：已達系統使用者數量上限（部分 ROM 限制可建立的分身數）';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return '分身操作失敗：$e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => '指令執行逾時，請重試';
+
+  @override
+  String get ui_clone_install_host_apps => '安裝本機應用程式到此分身';
+
+  @override
+  String get ui_clone_no_missing_apps => '本機的第三方應用程式均已在此分身中';
+
+  @override
+  String get ui_clone_apps_empty => '此分身尚無第三方應用程式';
+
+  @override
+  String get ui_clone_launch => '啟動';
+
+  @override
+  String get ui_clone_uninstall => '解除安裝';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return '從此分身解除安裝「$name」？僅影響此分身，不影響本機。';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => '已從分身解除安裝';
+
+  @override
+  String get ui_clone_installed_existing => '已安裝到分身';
+
+  @override
+  String get ui_clone_clone_to_user => '複製到分身';
+
+  @override
+  String get ui_clone_select_user => '選擇分身使用者';
+
+  @override
+  String get ui_clone_installing => '正在複製…';
+
+  @override
+  String get ui_clone_install_success => '複製成功';
+
+  @override
+  String get ui_clone_launch_now => '立即啟動';
+
+  @override
+  String get ui_clone_launch_failed => '啟動分身應用程式失敗';
+
+  @override
+  String get ui_clone_to_user => '克隆到分身';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => '已關閉';
 }

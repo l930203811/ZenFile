@@ -8299,19 +8299,30 @@ class L10nJa extends L10n {
       'インターネット共有にはアクセスパスワードが必要です';
 
   @override
-  String get crypt_auto_encrypt_section => '自動暗号化';
+  String get crypt_auto_encrypt_section => '自動関連付け';
 
   @override
-  String get crypt_auto_encrypt_title => '新規ファイルを自動暗号化';
+  String get crypt_auto_encrypt_title => 'ローカルの暗号化ファイルを自動関連付け';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      '暗号化済みディレクトリを監視し、書き込み完了した新規ファイルを自動的に暗号化します（常駐通知が必要）';
+      'オンにすると、ローカルフォルダーの閲覧時に暗号化された内容を検出して金庫の「インプレース暗号化」一覧に登録し、閲覧ページも平文名で表示します。オフの場合はディスク上の実体どおりに表示します（暗号化ファイルは密文名で表示されますが、開いての復号は通常どおり行えます）。既定はオフ';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '$count 個のディレクトリを保護中。新規ファイルは自動的に暗号化されます';
+    return 'ローカルの暗号化フォルダー $count 件を関連付け済み';
   }
+
+  @override
+  String get crypt_auto_remote_title => 'リモートの暗号化ファイルを自動関連付け';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'オンにすると、リモートフォルダーの閲覧時に暗号化ファイルを検出して登録し、現在のフォルダーを即座に平文名表示に切り替えます。その後は金庫から開いて復号することもできます。オフの場合は手動で関連付けた遠端暗号化フォルダーのみが対象になります。既定はオフ';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      '説明: どちらのスイッチも読み込み済みのディレクトリ一覧から判定するだけで（リモート側で追加の通信は行いません）、性能への影響はごくわずかです。識別できるのは「標準」ファイル名暗号化のみで、obfuscate モードは名前からは判定できません。';
 
   @override
   String get msg_name_invalid_title => '無効な名前';
@@ -8470,4 +8481,120 @@ class L10nJa extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'オフセット（秒）';
+
+  @override
+  String get ui_clone_feature_title => 'アプリ分身';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'システムのマルチユーザー機能でアプリを複製し、データを完全に分離した分身を複数作成できます。Shizuku（または Root）権限が必要です。';
+
+  @override
+  String get ui_clone_need_privileged_title => 'Shizuku または Root 権限が必要です';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'まず Shizuku アプリを起動して ZenFile に許可を与えてください。Root 化済みの端末ならそのまま使用できます。';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Shizuku に許可する';
+
+  @override
+  String get ui_clone_users_title => '分身ユーザー';
+
+  @override
+  String get ui_clone_primary_user => 'メインユーザー（本体）';
+
+  @override
+  String get ui_clone_create_user => '分身を作成';
+
+  @override
+  String get ui_clone_new_user => '分身ユーザーを作成…';
+
+  @override
+  String get ui_clone_user_name_hint => '分身の名前';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return '分身 $n';
+  }
+
+  @override
+  String get ui_clone_running => '実行中';
+
+  @override
+  String get ui_clone_delete_user => '分身を削除';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return '分身「$name」を削除しますか？その分身内のすべてのアプリとデータが消去されます。';
+  }
+
+  @override
+  String get ui_clone_user_created => '分身を作成しました';
+
+  @override
+  String get ui_clone_user_removed => '分身を削除しました';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      '作成に失敗しました：システムのユーザー数上限に達しました（ROM により制限される場合があります）';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return '分身操作に失敗しました：$e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => 'コマンドがタイムアウトしました。再試行してください';
+
+  @override
+  String get ui_clone_install_host_apps => '端末のアプリをこの分身にインストール';
+
+  @override
+  String get ui_clone_no_missing_apps => '本体のサードパーティ製アプリはすべてこの分身にインストール済みです';
+
+  @override
+  String get ui_clone_apps_empty => 'この分身にはサードパーティ製アプリがまだありません';
+
+  @override
+  String get ui_clone_launch => '起動';
+
+  @override
+  String get ui_clone_uninstall => 'アンインストール';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return 'この分身から「$name」をアンインストールしますか？本体には影響しません。';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => '分身からアンインストールしました';
+
+  @override
+  String get ui_clone_installed_existing => '分身にインストールしました';
+
+  @override
+  String get ui_clone_clone_to_user => '分身に複製';
+
+  @override
+  String get ui_clone_select_user => '分身ユーザーを選択';
+
+  @override
+  String get ui_clone_installing => '複製中…';
+
+  @override
+  String get ui_clone_install_success => '複製に成功しました';
+
+  @override
+  String get ui_clone_launch_now => '今すぐ起動';
+
+  @override
+  String get ui_clone_launch_failed => '分身アプリの起動に失敗しました';
+
+  @override
+  String get ui_clone_to_user => '分身へクローン';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'オフ';
 }

@@ -2190,6 +2190,8 @@ class PreferencesService {
   static const String _keyBottomTabSlot1 = 'bottom_tab_slot1';
   static const String _keyBottomTabSlot2 = 'bottom_tab_slot2';
   static const String _keyBottomTabSlot3 = 'bottom_tab_slot3';
+  // 第 5 槽（index 4）：默认关闭；开启后未配置时显示「工具箱」。
+  static const String _keyBottomTabSlot4 = 'bottom_tab_slot4';
 
   static String _bottomTabSlotKey(int slot) {
     switch (slot) {
@@ -2199,6 +2201,8 @@ class PreferencesService {
         return _keyBottomTabSlot1;
       case 3:
         return _keyBottomTabSlot3;
+      case 4:
+        return _keyBottomTabSlot4;
       default:
         return _keyBottomTabSlot2;
     }
@@ -2231,6 +2235,33 @@ class PreferencesService {
     } else {
       await _prefs?.setString(key, jsonEncode(config));
     }
+  }
+
+  /// 槽位是否显示在底部导航栏（「自定义入口」选择页可选「关闭」）。
+  ///
+  /// 「槽位开关」与「槽位配置了哪个页面」是两个正交维度：关闭只影响可见性，
+  /// 不清空原配置；重新选择页面即视为重新开启（覆盖配置 + 置 true）。
+  /// 这里用独立 bool key 而不是把「关闭」编码成槽位配置的哨兵值：
+  /// [getBottomTabSlotConfig] 返回 null 的语义是「未配置 = 默认内置页」，
+  /// 混入哨兵会让所有按 null 判断默认页的调用点都要加特判。
+  ///
+  /// 默认：槽位 1-4（index 0-3）开启，第 5 槽（index 4）关闭 —— 老用户没有
+  /// 该 key，读到的默认值即旧行为（原 4 槽原样显示），无需任何迁移。
+  static String _bottomTabSlotEnabledKey(int slot) =>
+      'bottom_tab_slot${slot}_enabled';
+
+  static bool getBottomTabSlotEnabled(int slot) {
+    // 只有第 5 槽默认关闭，其余默认开启。
+    return _prefs?.getBool(_bottomTabSlotEnabledKey(slot)) ?? slot != 4;
+  }
+
+  static Future<void> saveBottomTabSlotEnabled(int slot, bool enabled) async {
+    await _prefs?.setBool(_bottomTabSlotEnabledKey(slot), enabled);
+  }
+
+  /// 清除槽位开关的自定义值，回到默认（1-4 开、5 关）。选择页「恢复默认」时调用。
+  static Future<void> clearBottomTabSlotEnabled(int slot) async {
+    await _prefs?.remove(_bottomTabSlotEnabledKey(slot));
   }
 
   /// 底部导航栏总开关（自定义快捷方式页配置）：关闭时底部 4-tab 折叠隐藏，默认开启。

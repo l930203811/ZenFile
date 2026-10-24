@@ -8789,23 +8789,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "自動加密",
+  "crypt_auto_encrypt_section": "自動關聯",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "自動加密新增檔案",
+  "crypt_auto_encrypt_title": "自動關聯本機加密檔案",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "對已原地加密的目錄開啟即時監聽，新檔案寫入完成後自動加密（需常駐通知）",
+  "crypt_auto_encrypt_desc": "開啟後，瀏覽本機目錄時會自動識別其中的密文並登錄到保險箱「原地加密」清單，瀏覽頁同步顯示為明文名稱；關閉時瀏覽頁按普通檔案展示（加密檔案顯示為密文名稱，開啟後仍可正常解密）；預設關閉",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "正在保護 {count} 個目錄，新檔案將自動加密",
+  "crypt_auto_encrypt_watching": "已關聯 {count} 個本機加密目錄",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "自動關聯遠端加密檔案",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "開啟後，瀏覽遠端目錄時會自動識別其中的加密檔案並登錄，目前目錄立即切換為明文名稱顯示，之後也可在保險箱中開啟與解密；關閉時僅手動關聯的遠端加密目錄生效；預設關閉",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "說明：兩項開關都只在瀏覽目錄時就地判定（遠端不會額外發出網路請求），效能影響極小；僅「標準」檔名加密模式可可靠識別，obfuscate 模式的檔名接近明文，無法從名稱判定。",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "名稱不合法",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8877,5 +8888,41 @@
   "lyric_offset_reset": "重設",
   "lyric_offset_clear_current": "清除本曲偏移",
   "lyric_offset_input_title": "輸入偏移值",
-  "lyric_offset_input_hint": "偏移值（秒）"
+  "lyric_offset_input_hint": "偏移值（秒）",
+  "ui_clone_feature_title": "應用分身",
+  "ui_clone_feature_desc": "基於系統多使用者把應用程式複製為多個分身，資料完全隔離、可多開。需要 Shizuku（或 Root）權限。",
+  "ui_clone_need_privileged_title": "需要 Shizuku 或 Root 權限",
+  "ui_clone_need_privileged_desc": "請先啟動 Shizuku 應用程式並授權 ZenFile；已 Root 的裝置也可直接使用。",
+  "ui_clone_grant_shizuku": "授權 Shizuku",
+  "ui_clone_users_title": "分身使用者",
+  "ui_clone_primary_user": "主使用者（本機）",
+  "ui_clone_create_user": "新增分身",
+  "ui_clone_new_user": "新增分身使用者…",
+  "ui_clone_user_name_hint": "分身名稱",
+  "ui_clone_default_user_name": "分身 {n}",
+  "ui_clone_running": "執行中",
+  "ui_clone_delete_user": "刪除分身",
+  "ui_clone_delete_user_confirm": "刪除分身「{name}」？該分身內所有應用程式及其資料都將被清除。",
+  "ui_clone_user_created": "分身建立成功",
+  "ui_clone_user_removed": "分身已刪除",
+  "ui_clone_create_failed_limit": "建立失敗：已達系統使用者數量上限（部分 ROM 限制可建立的分身數）",
+  "ui_clone_op_failed": "分身操作失敗：{e}",
+  "ui_clone_cmd_timeout": "指令執行逾時，請重試",
+  "ui_clone_install_host_apps": "安裝本機應用程式到此分身",
+  "ui_clone_no_missing_apps": "本機的第三方應用程式均已在此分身中",
+  "ui_clone_apps_empty": "此分身尚無第三方應用程式",
+  "ui_clone_launch": "啟動",
+  "ui_clone_uninstall": "解除安裝",
+  "ui_clone_uninstall_confirm": "從此分身解除安裝「{name}」？僅影響此分身，不影響本機。",
+  "ui_clone_uninstall_done": "已從分身解除安裝",
+  "ui_clone_installed_existing": "已安裝到分身",
+  "ui_clone_clone_to_user": "複製到分身",
+  "ui_clone_select_user": "選擇分身使用者",
+  "ui_clone_installing": "正在複製…",
+  "ui_clone_install_success": "複製成功",
+  "ui_clone_launch_now": "立即啟動",
+  "ui_clone_launch_failed": "啟動分身應用程式失敗",
+  "ui_clone_to_user": "克隆到分身",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "已關閉"
 }

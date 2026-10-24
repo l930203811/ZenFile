@@ -8701,20 +8701,32 @@ class L10nFr extends L10n {
       'Un mot de passe d\'accès est requis pour le partage Internet';
 
   @override
-  String get crypt_auto_encrypt_section => 'Chiffrement automatique';
+  String get crypt_auto_encrypt_section => 'Association automatique';
 
   @override
   String get crypt_auto_encrypt_title =>
-      'Chiffrer automatiquement les nouveaux fichiers';
+      'Associer automatiquement les fichiers chiffrés locaux';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      'Surveille les dossiers chiffrés sur place et chiffre automatiquement les nouveaux fichiers une fois écrits (notification persistante requise)';
+      'Si activé, le parcours des dossiers locaux détecte le chiffrement, l\'enregistre dans la liste « chiffrement sur place » du coffre et affiche immédiatement les noms en clair ; si désactivé, le navigateur affiche les fichiers tels qu\'ils sont sur le disque (les fichiers chiffrés apparaissent sous leur nom chiffré, mais s\'ouvrent et se déchiffrent normalement) ; désactivé par défaut';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '$count dossier(s) protégé(s) ; les nouveaux fichiers seront chiffrés automatiquement';
+    return '$count dossier(s) chiffré(s) local(aux) associé(s)';
   }
+
+  @override
+  String get crypt_auto_remote_title =>
+      'Associer automatiquement les fichiers chiffrés distants';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'Si activé, le parcours des dossiers distants détecte les fichiers chiffrés, les enregistre et fait passer immédiatement le dossier courant à l\'affichage en clair ; vous pourrez ensuite aussi les ouvrir et les déchiffrer depuis le coffre. Si désactivé, seuls les dossiers distants chiffrés liés manuellement s\'appliquent ; désactivé par défaut';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      'Remarque : les deux interrupteurs se basent uniquement sur la liste déjà chargée (aucune requête réseau supplémentaire côté distant), l’impact sur les performances est négligeable. Seul le chiffrement des noms « standard » est détectable de façon fiable ; le mode obfuscate ne peut pas être identifié à partir des noms.';
 
   @override
   String get msg_name_invalid_title => 'Nom invalide';
@@ -8883,4 +8895,125 @@ class L10nFr extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'Décalage (secondes)';
+
+  @override
+  String get ui_clone_feature_title => 'Clones d\'applis';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Clonez des applications dans des profils système distincts, avec des données totalement isolées et un vrai multi-instance. Nécessite Shizuku (ou Root).';
+
+  @override
+  String get ui_clone_need_privileged_title =>
+      'Autorisation Shizuku ou Root requise';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'Lancez d\'abord l\'appli Shizuku et autorisez ZenFile ; sur un appareil rooté, l\'accès direct fonctionne aussi.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Autoriser Shizuku';
+
+  @override
+  String get ui_clone_users_title => 'Profils clones';
+
+  @override
+  String get ui_clone_primary_user => 'Utilisateur principal (cet appareil)';
+
+  @override
+  String get ui_clone_create_user => 'Nouveau clone';
+
+  @override
+  String get ui_clone_new_user => 'Nouveau profil clone…';
+
+  @override
+  String get ui_clone_user_name_hint => 'Nom du clone';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return 'Clone $n';
+  }
+
+  @override
+  String get ui_clone_running => 'En cours d\'exécution';
+
+  @override
+  String get ui_clone_delete_user => 'Supprimer le clone';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return 'Supprimer le profil clone « $name » ? Toutes ses applis et données seront effacées.';
+  }
+
+  @override
+  String get ui_clone_user_created => 'Clone créé';
+
+  @override
+  String get ui_clone_user_removed => 'Clone supprimé';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      'Échec de la création : limite d\'utilisateurs système atteinte (certaines ROM la limitent)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return 'Échec de l\'opération de clonage : $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => 'La commande a expiré, veuillez réessayer';
+
+  @override
+  String get ui_clone_install_host_apps =>
+      'Installer des applis de l\'appareil dans ce clone';
+
+  @override
+  String get ui_clone_no_missing_apps =>
+      'Toutes les applis tierces de l\'appareil sont déjà dans ce clone';
+
+  @override
+  String get ui_clone_apps_empty =>
+      'Ce clone ne contient pas encore d\'applis tierces';
+
+  @override
+  String get ui_clone_launch => 'Lancer';
+
+  @override
+  String get ui_clone_uninstall => 'Désinstaller';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return 'Désinstaller « $name » de ce clone ? Seul ce clone est concerné, pas l\'appareil.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => 'Désinstallé du clone';
+
+  @override
+  String get ui_clone_installed_existing => 'Installé dans le clone';
+
+  @override
+  String get ui_clone_clone_to_user => 'Cloner vers un profil';
+
+  @override
+  String get ui_clone_select_user => 'Choisir un profil clone';
+
+  @override
+  String get ui_clone_installing => 'Clonage…';
+
+  @override
+  String get ui_clone_install_success => 'Clonage réussi';
+
+  @override
+  String get ui_clone_launch_now => 'Lancer maintenant';
+
+  @override
+  String get ui_clone_launch_failed =>
+      'Échec du lancement de l\'appli dans le clone';
+
+  @override
+  String get ui_clone_to_user => 'Cloner vers le profil';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'Masqué';
 }

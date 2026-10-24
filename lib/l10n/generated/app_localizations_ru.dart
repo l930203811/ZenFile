@@ -8647,19 +8647,32 @@ class L10nRu extends L10n {
       'Для общего доступа через интернет требуется пароль доступа';
 
   @override
-  String get crypt_auto_encrypt_section => 'Автошифрование';
+  String get crypt_auto_encrypt_section => 'Автоматическая привязка';
 
   @override
-  String get crypt_auto_encrypt_title => 'Автошифрование новых файлов';
+  String get crypt_auto_encrypt_title =>
+      'Автоматически связывать локальные зашифрованные файлы';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      'Отслеживает зашифрованные на месте каталоги и автоматически шифрует новые файлы после записи (требуется постоянное уведомление)';
+      'Если включено, при просмотре локальных папок шифрование распознаётся, добавляется в список «Шифрование на месте» в сейфе, а имена сразу отображаются в открытом виде. Если выключено, браузер показывает файлы как есть на диске (зашифрованные файлы отображаются под своими шифроименами, но открываются и расшифровываются нормально); по умолчанию выключено';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return 'Защищено каталогов: $count; новые файлы будут шифроваться автоматически';
+    return 'Привязано локальных зашифрованных папок: $count';
   }
+
+  @override
+  String get crypt_auto_remote_title =>
+      'Автоматически связывать удалённые зашифрованные файлы';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'Если включено, при просмотре удалённых папок зашифрованные файлы распознаются и регистрируются, а текущая папка немедленно переключается на отображение открытых имён; позже их можно открыть и расшифровать из сейфа. Если выключено, действуют только вручную связанные удалённые папки шифрования; по умолчанию выключено';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      'Примечание: оба переключателя принимают решение по уже загруженному списку каталога (без дополнительных сетевых запросов), влияние на производительность минимально. Надёжно определяется только «стандартное» шифрование имён; режим obfuscate по имени определить нельзя.';
 
   @override
   String get msg_name_invalid_title => 'Недопустимое имя';
@@ -8828,4 +8841,126 @@ class L10nRu extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'Смещение (секунды)';
+
+  @override
+  String get ui_clone_feature_title => 'Клоны приложений';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Клонируйте приложения в отдельные профили системы с полностью изолированными данными. Требуется Shizuku (или Root).';
+
+  @override
+  String get ui_clone_need_privileged_title =>
+      'Требуется разрешение Shizuku или Root';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'Сначала запустите приложение Shizuku и выдайте разрешение ZenFile; на устройствах с Root можно использовать напрямую.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Разрешить Shizuku';
+
+  @override
+  String get ui_clone_users_title => 'Профили-клоны';
+
+  @override
+  String get ui_clone_primary_user => 'Основной пользователь (это устройство)';
+
+  @override
+  String get ui_clone_create_user => 'Создать клон';
+
+  @override
+  String get ui_clone_new_user => 'Новый профиль-клон…';
+
+  @override
+  String get ui_clone_user_name_hint => 'Имя клона';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return 'Клон $n';
+  }
+
+  @override
+  String get ui_clone_running => 'Запущен';
+
+  @override
+  String get ui_clone_delete_user => 'Удалить клон';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return 'Удалить профиль-клон «$name»? Все приложения и данные в нём будут удалены.';
+  }
+
+  @override
+  String get ui_clone_user_created => 'Клон создан';
+
+  @override
+  String get ui_clone_user_removed => 'Клон удалён';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      'Не удалось создать: достигнут лимит системных пользователей (некоторые прошивки ограничивают их количество)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return 'Ошибка операции с клоном: $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout =>
+      'Время ожидания команды истекло, повторите попытку';
+
+  @override
+  String get ui_clone_install_host_apps =>
+      'Установить приложения устройства в этот профиль';
+
+  @override
+  String get ui_clone_no_missing_apps =>
+      'Все сторонние приложения устройства уже есть в этом профиле';
+
+  @override
+  String get ui_clone_apps_empty =>
+      'В этом профиле пока нет сторонних приложений';
+
+  @override
+  String get ui_clone_launch => 'Запустить';
+
+  @override
+  String get ui_clone_uninstall => 'Удалить';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return 'Удалить «$name» из этого профиля? Пострадает только этот профиль, устройство не затронется.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => 'Удалено из профиля';
+
+  @override
+  String get ui_clone_installed_existing => 'Установлено в профиль';
+
+  @override
+  String get ui_clone_clone_to_user => 'Клонировать в профиль';
+
+  @override
+  String get ui_clone_select_user => 'Выберите профиль-клон';
+
+  @override
+  String get ui_clone_installing => 'Клонирование…';
+
+  @override
+  String get ui_clone_install_success => 'Клонирование выполнено';
+
+  @override
+  String get ui_clone_launch_now => 'Запустить сейчас';
+
+  @override
+  String get ui_clone_launch_failed =>
+      'Не удалось запустить приложение в профиле';
+
+  @override
+  String get ui_clone_to_user => 'Клонировать в профиль';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'Скрыт';
 }

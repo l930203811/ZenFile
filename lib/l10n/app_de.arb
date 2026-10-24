@@ -8638,23 +8638,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "Auto-Verschlüsselung",
+  "crypt_auto_encrypt_section": "Automatische Verknüpfung",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "Neue Dateien automatisch verschlüsseln",
+  "crypt_auto_encrypt_title": "Lokale verschlüsselte Dateien automatisch verknüpfen",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "Überwacht direk-verschlüsselte Verzeichnisse und verschlüsselt neue Dateien automatisch nach dem Schreiben (dauerhafte Benachrichtigung erforderlich)",
+  "crypt_auto_encrypt_desc": "Wenn aktiviert, werden beim Durchsuchen lokaler Ordner Verschlüsselungen erkannt, in die Liste „Direkte Verschlüsselung“ des Tresors eingetragen und im Browser sofort mit Klartextnamen angezeigt. Wenn deaktiviert, zeigt der Browser die Dateien so an, wie sie auf dem Datenträger liegen (verschlüsselte Dateien erscheinen unter ihrem Chiffrenamen, lassen sich aber weiterhin normal öffnen und entschlüsseln); standardmäßig aus",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "{count} Verzeichnis(se) werden geschützt; neue Dateien werden automatisch verschlüsselt",
+  "crypt_auto_encrypt_watching": "{count} lokale verschlüsselte Ordner verknüpft",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "Entfernte verschlüsselte Dateien automatisch verknüpfen",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "Wenn aktiviert, werden beim Durchsuchen entfernter Ordner verschlüsselte Dateien erkannt und registriert, und der aktuelle Ordner wechselt sofort zur Anzeige mit Klartextnamen; später können sie auch aus dem Tresor geöffnet und entschlüsselt werden. Wenn deaktiviert, gelten nur manuell verknüpfte entfernte Verschlüsselungsordner; standardmäßig aus",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "Hinweis: Beide Schalter entscheiden anhand der bereits geladenen Verzeichnisliste (keine zusätzlichen Netzwerkanfragen beim Remote-Zugriff), der Leistungseinfluss ist minimal. Nur die „Standard“-Dateinamensverschlüsselung ist zuverlässig erkennbar; der obfuscate-Modus ist an Namen nicht erkennbar.",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "Ungültiger Name",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8726,5 +8737,41 @@
   "lyric_offset_reset": "Zurücksetzen",
   "lyric_offset_clear_current": "Titel-Versatz entfernen",
   "lyric_offset_input_title": "Versatz eingeben",
-  "lyric_offset_input_hint": "Versatz (Sekunden)"
+  "lyric_offset_input_hint": "Versatz (Sekunden)",
+  "ui_clone_feature_title": "App-Zwillinge",
+  "ui_clone_feature_desc": "Klone Apps in separate Systembenutzerprofile – mit vollständig isolierten Daten und echtem Multi-Instance. Erfordert Shizuku (oder Root).",
+  "ui_clone_need_privileged_title": "Shizuku- oder Root-Berechtigung erforderlich",
+  "ui_clone_need_privileged_desc": "Starte zuerst die Shizuku-App und autorisiere ZenFile; auf gerooteten Geräten funktioniert es auch direkt.",
+  "ui_clone_grant_shizuku": "Shizuku autorisieren",
+  "ui_clone_users_title": "Zwillingsprofile",
+  "ui_clone_primary_user": "Hauptbenutzer (dieses Gerät)",
+  "ui_clone_create_user": "Neues Zwillingsprofil",
+  "ui_clone_new_user": "Neuer Zwillingsbenutzer…",
+  "ui_clone_user_name_hint": "Name des Zwillings",
+  "ui_clone_default_user_name": "Zwilling {n}",
+  "ui_clone_running": "Läuft",
+  "ui_clone_delete_user": "Zwillingsprofil löschen",
+  "ui_clone_delete_user_confirm": "Zwillingsprofil „{name}“ löschen? Alle Apps und Daten darin werden entfernt.",
+  "ui_clone_user_created": "Zwillingsprofil erstellt",
+  "ui_clone_user_removed": "Zwillingsprofil entfernt",
+  "ui_clone_create_failed_limit": "Erstellen fehlgeschlagen: Systemgrenze der Benutzerzahl erreicht (manche ROMs beschränken diese)",
+  "ui_clone_op_failed": "Zwilling-Operation fehlgeschlagen: {e}",
+  "ui_clone_cmd_timeout": "Befehlslaufzeit überschritten, bitte erneut versuchen",
+  "ui_clone_install_host_apps": "Geräte-Apps in diesem Profil installieren",
+  "ui_clone_no_missing_apps": "Alle Drittanbieter-Apps des Geräts sind bereits in diesem Profil",
+  "ui_clone_apps_empty": "Dieses Profil enthält noch keine Drittanbieter-Apps",
+  "ui_clone_launch": "Starten",
+  "ui_clone_uninstall": "Deinstallieren",
+  "ui_clone_uninstall_confirm": "„{name}“ aus diesem Profil deinstallieren? Betrifft nur dieses Profil, nicht das Gerät.",
+  "ui_clone_uninstall_done": "Aus dem Profil deinstalliert",
+  "ui_clone_installed_existing": "Im Profil installiert",
+  "ui_clone_clone_to_user": "In Zwilling klonen",
+  "ui_clone_select_user": "Zwillingsprofil wählen",
+  "ui_clone_installing": "Klonen…",
+  "ui_clone_install_success": "Klonen erfolgreich",
+  "ui_clone_launch_now": "Jetzt starten",
+  "ui_clone_launch_failed": "App im Profil konnte nicht gestartet werden",
+  "ui_clone_to_user": "In Zweitprofil klonen",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "Ausgeblendet"
 }

@@ -499,6 +499,9 @@ class QuickCategoriesGrid extends StatefulWidget {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     // 两列布局：中间纵向分割线，避免单列过长需要滚动。
+                    // 末尾跟两个灰字动作项：「恢复默认」（仅已配置时出现）与
+                    // 「关闭」（隐藏该槽位，tab 不再显示在底部导航栏；原配置保留，
+                    // 重新选择页面即恢复显示）。
                     final all = [
                       ...options,
                       if (current != null)
@@ -509,15 +512,33 @@ class QuickCategoriesGrid extends StatefulWidget {
                           'icon': Broken.refresh,
                           'isReset': true,
                         },
+                      {
+                        'type': 'disabled',
+                        'key': '',
+                        'label': l10n.ui_close,
+                        'icon': Broken.close_circle,
+                        'isDisable': true,
+                      },
                     ];
                     final half = (all.length / 2).ceil();
                     final left = all.sublist(0, half);
                     final right = all.sublist(half);
                     Widget buildCell(Map<String, dynamic> opt) {
                       final isReset = opt['isReset'] == true;
-                      final selected = !isReset &&
-                          currentType == opt['type'] &&
-                          currentKey == opt['key'];
+                      final isDisable = opt['isDisable'] == true;
+                      // 「关闭」与「恢复默认」同为动作项，但颜色区分语义：
+                      // 关闭 = 红（危险动作），恢复默认 = 黄（警示/重置）。
+                      final isAction = isReset || isDisable;
+                      final Color actionColor = isDisable
+                          ? theme.colorScheme.error
+                          : Colors.orange.shade600;
+                      // 「关闭」的选中态看槽位启用开关（已关闭时打勾），
+                      // 其余项看当前页面配置。
+                      final selected = isDisable
+                          ? !PreferencesService.getBottomTabSlotEnabled(slot)
+                          : !isReset &&
+                              currentType == opt['type'] &&
+                              currentKey == opt['key'];
                       return InkWell(
                         onTap: () => Navigator.pop(sheetContext, {
                           'type': opt['type'] as String,
@@ -533,9 +554,8 @@ class QuickCategoriesGrid extends StatefulWidget {
                               Icon(
                                 opt['icon'] as IconData,
                                 size: 20,
-                                color: isReset
-                                    ? theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.6)
+                                color: isAction
+                                    ? actionColor
                                     : theme.colorScheme.primary,
                               ),
                               const SizedBox(width: 10),
@@ -544,11 +564,8 @@ class QuickCategoriesGrid extends StatefulWidget {
                                   opt['label'] as String,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: isReset
-                                      ? TextStyle(
-                                          color: theme.colorScheme.onSurface
-                                              .withValues(alpha: 0.7),
-                                        )
+                                  style: isAction
+                                      ? TextStyle(color: actionColor)
                                       : null,
                                 ),
                               ),
@@ -2173,15 +2190,20 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     );
   }
 
-  /// 底部导航槽位 2/3 配置行：显示当前入口，点击弹出选择器。
+  /// 底部导航槽位 1-5 配置行：显示当前入口，点击弹出选择器；
+  /// 关闭态的槽位显示「已关闭」（灰字），点击仍可进选择页改选页面 / 重新开启。
   Widget _buildBottomSlotRow(
     BuildContext context,
     int slot,
     StateSetter setModalState,
   ) {
     final theme = Theme.of(context);
+    final l10n = L10n.of(context);
     final cfg = PreferencesService.getBottomTabSlotConfig(slot);
-    final label = _bottomSlotLabel(context, slot, cfg);
+    final enabled = PreferencesService.getBottomTabSlotEnabled(slot);
+    final label = enabled
+        ? _bottomSlotLabel(context, slot, cfg)
+        : l10n.ui_bottom_tab_slot_disabled;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
       child: Material(
@@ -2196,13 +2218,20 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               current: cfg,
             );
             if (picked == null) return;
-            if (picked['type'] == 'reset') {
+            if (picked['type'] == 'disabled') {
+              // 关闭：只隐藏槽位，原配置保留（重新选择页面即恢复显示）。
+              await PreferencesService.saveBottomTabSlotEnabled(slot, false);
+            } else if (picked['type'] == 'reset') {
               await PreferencesService.saveBottomTabSlotConfig(slot, null);
+              // 恢复默认同时清掉开关的自定义值（1-4 默认开、5 默认关）。
+              await PreferencesService.clearBottomTabSlotEnabled(slot);
             } else {
               await PreferencesService.saveBottomTabSlotConfig(slot, picked);
+              // 选择具体页面 = 重新开启该槽位。
+              await PreferencesService.saveBottomTabSlotEnabled(slot, true);
             }
             if (mounted) setModalState(() {});
-            // 触发 HomeScreen 重建：底部 4-tab 即时刷新为新入口
+            // 触发 HomeScreen 重建：底部 tab 栏即时刷新为新入口 / 槽位数
             // （HomeScreen watch FileManagerProvider，MediaProvider 不触发其重建）
             context.read<FileManagerProvider>().notifyListeners();
           },
@@ -2228,7 +2257,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13,
-                      color: theme.colorScheme.primary,
+                      // 关闭态灰字弱化，与「已选择页面」的主题色区分开。
+                      color: enabled
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -2261,6 +2293,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
         case 3:
           // v3.4b2 起第 4 槽默认「最近」（原「设置」已被替换）
           return l10n.cat_recent;
+        case 4:
+          // 第 5 槽默认「工具箱」（开启后未配置时）。
+          return l10n.cat_toolbox;
         default:
           return l10n.ui_transfers;
       }
@@ -2290,6 +2325,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     );
     final entry = map[cfg['key']];
     if (entry != null) return entry['label'] as String;
+    // 配置失效（快捷方式被删除等）时的兜底：按槽位默认内置页显示。
+    if (slot == 4) return l10n.cat_toolbox;
     return slot == 3 ? l10n.cat_recent : l10n.ui_transfers;
   }
 
@@ -2551,7 +2588,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ),
                           ),
                         ),
-                        // 槽位配置区：4 个槽位的长按切换与排序（并入上方总开关条件）。
+                        // 槽位配置区：5 个槽位的长按切换与排序（并入上方总开关条件）。
+                        // 第 5 槽默认关闭（行上显示「已关闭」），在「自定义入口」
+                        // 选择页选页面即开启、选「关闭」即隐藏。
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20.0,
@@ -2570,6 +2609,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           _buildBottomSlotRow(context, 1, setModalState),
                           _buildBottomSlotRow(context, 2, setModalState),
                           _buildBottomSlotRow(context, 3, setModalState),
+                          _buildBottomSlotRow(context, 4, setModalState),
                         ],
                         const SizedBox(height: 8),
                         const Divider(),

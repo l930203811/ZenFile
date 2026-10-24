@@ -8537,19 +8537,30 @@ class L10nAr extends L10n {
       'مطلوب كلمة مرور وصول للمشاركة عبر الإنترنت';
 
   @override
-  String get crypt_auto_encrypt_section => 'التشفير التلقائي';
+  String get crypt_auto_encrypt_section => 'الربط التلقائي';
 
   @override
-  String get crypt_auto_encrypt_title => 'تشفير الملفات الجديدة تلقائيًا';
+  String get crypt_auto_encrypt_title => 'ربط الملفات المشفرة المحلية تلقائيًا';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      'يراقب المجلدات المشفرة في مكانها ويشفّر الملفات الجديدة تلقائيًا بعد اكتمال كتابتها (يتطلب إشعارًا دائمًا)';
+      'عند التشغيل، يكتشف تصفح المجلدات المحلية المحتوى المشفَّر ويسجله في قائمة «التشفير في مكانه» بالخزنة، وتُعرض الأسماء بصيغتها الأصلية فورًا؛ وعند الإيقاف يعرض المتصفح الملفات كما هي على القرص (تظهر الملفات المشفَّرة بأسمائها المشفَّرة، لكنها تفتح وتفك تشفيرها بشكل طبيعي)؛ معطّل افتراضيًا';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return 'حماية $count مجلد(ات)؛ سيتم تشفير الملفات الجديدة تلقائيًا';
+    return 'تم ربط $count مجلدًا مشفرًا محليًا';
   }
+
+  @override
+  String get crypt_auto_remote_title => 'ربط الملفات المشفرة البعيدة تلقائيًا';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'عند التشغيل، يكتشف تصفح المجلدات البعيدة الملفات المشفَّرة ويسجلها، وتتحول المجلد الحالي إلى عرض الأسماء الأصلية فورًا، ويمكن فتحها وفك تشفيرها من الخزنة لاحقًا؛ وعند الإيقاف لا تُطبَّق إلا مجلدات التشفير البعيدة المرتبطة يدويًا؛ معطّل افتراضيًا';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      'ملاحظة: يعتمد كلا المفتاحين على قائمة المجلد التي تم تحميلها بالفعل (بدون طلبات شبكة إضافية)، لذا فإن التأثير على الأداء ضئيل جدًا. يمكن اكتشاف تشفير الأسماء «القياسي» فقط بشكل موثوق؛ ولا يمكن تمييز وضع obfuscate من الأسماء.';
 
   @override
   String get msg_name_invalid_title => 'اسم غير صالح';
@@ -8717,4 +8728,122 @@ class L10nAr extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'الإزاحة (بالثواني)';
+
+  @override
+  String get ui_clone_feature_title => 'نسخ التطبيقات (التوائم)';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'استنسخ التطبيقات إلى ملفات مستخدمين منفصلة في النظام مع بيانات معزولة تماماً وتشغيل متعدد. يتطلب Shizuku (أو Root).';
+
+  @override
+  String get ui_clone_need_privileged_title => 'مطلوب إذن Shizuku أو Root';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'شغّل تطبيق Shizuku أولاً وامنح الإذن لـ ZenFile؛ على الأجهزة المروتة يمكن الاستخدام مباشرة.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'منح إذن Shizuku';
+
+  @override
+  String get ui_clone_users_title => 'مستخدمو النسخ';
+
+  @override
+  String get ui_clone_primary_user => 'المستخدم الأساسي (هذا الجهاز)';
+
+  @override
+  String get ui_clone_create_user => 'إنشاء نسخة';
+
+  @override
+  String get ui_clone_new_user => 'مستخدم نسخة جديد…';
+
+  @override
+  String get ui_clone_user_name_hint => 'اسم النسخة';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return 'نسخة $n';
+  }
+
+  @override
+  String get ui_clone_running => 'قيد التشغيل';
+
+  @override
+  String get ui_clone_delete_user => 'حذف النسخة';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return 'حذف نسخة المستخدم «$name»؟ سيتم حذف جميع تطبيقاتها وبياناتها.';
+  }
+
+  @override
+  String get ui_clone_user_created => 'تم إنشاء النسخة';
+
+  @override
+  String get ui_clone_user_removed => 'تم حذف النسخة';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      'فشل الإنشاء: تم بلوغ حد عدد المستخدمين في النظام (بعض الأنظمة تقيّد ذلك)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return 'فشلت عملية النسخ: $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => 'انتهت مهلة تنفيذ الأمر، أعد المحاولة';
+
+  @override
+  String get ui_clone_install_host_apps => 'تثبيت تطبيقات الجهاز في هذه النسخة';
+
+  @override
+  String get ui_clone_no_missing_apps =>
+      'جميع تطبيقات الطرف الثالث في الجهاز موجودة بالفعل في هذه النسخة';
+
+  @override
+  String get ui_clone_apps_empty =>
+      'لا توجد تطبيقات طرف ثالث في هذه النسخة بعد';
+
+  @override
+  String get ui_clone_launch => 'تشغيل';
+
+  @override
+  String get ui_clone_uninstall => 'إزالة التثبيت';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return 'إزالة «$name» من هذه النسخة؟ يؤثر على هذه النسخة فقط ولا يمس الجهاز.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => 'تمت الإزالة من النسخة';
+
+  @override
+  String get ui_clone_installed_existing => 'تم التثبيت في النسخة';
+
+  @override
+  String get ui_clone_clone_to_user => 'استنساخ إلى نسخة';
+
+  @override
+  String get ui_clone_select_user => 'اختر نسخة مستخدم';
+
+  @override
+  String get ui_clone_installing => 'جارٍ الاستنساخ…';
+
+  @override
+  String get ui_clone_install_success => 'تم الاستنساخ بنجاح';
+
+  @override
+  String get ui_clone_launch_now => 'تشغيل الآن';
+
+  @override
+  String get ui_clone_launch_failed => 'فشل تشغيل التطبيق في النسخة';
+
+  @override
+  String get ui_clone_to_user => 'نسخ إلى الملف الشخصي';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'مخفي';
 }

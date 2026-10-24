@@ -8641,23 +8641,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "Автошифрование",
+  "crypt_auto_encrypt_section": "Автоматическая привязка",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "Автошифрование новых файлов",
+  "crypt_auto_encrypt_title": "Автоматически связывать локальные зашифрованные файлы",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "Отслеживает зашифрованные на месте каталоги и автоматически шифрует новые файлы после записи (требуется постоянное уведомление)",
+  "crypt_auto_encrypt_desc": "Если включено, при просмотре локальных папок шифрование распознаётся, добавляется в список «Шифрование на месте» в сейфе, а имена сразу отображаются в открытом виде. Если выключено, браузер показывает файлы как есть на диске (зашифрованные файлы отображаются под своими шифроименами, но открываются и расшифровываются нормально); по умолчанию выключено",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "Защищено каталогов: {count}; новые файлы будут шифроваться автоматически",
+  "crypt_auto_encrypt_watching": "Привязано локальных зашифрованных папок: {count}",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "Автоматически связывать удалённые зашифрованные файлы",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "Если включено, при просмотре удалённых папок зашифрованные файлы распознаются и регистрируются, а текущая папка немедленно переключается на отображение открытых имён; позже их можно открыть и расшифровать из сейфа. Если выключено, действуют только вручную связанные удалённые папки шифрования; по умолчанию выключено",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "Примечание: оба переключателя принимают решение по уже загруженному списку каталога (без дополнительных сетевых запросов), влияние на производительность минимально. Надёжно определяется только «стандартное» шифрование имён; режим obfuscate по имени определить нельзя.",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "Недопустимое имя",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8729,5 +8740,41 @@
   "lyric_offset_reset": "Сбросить",
   "lyric_offset_clear_current": "Убрать смещение трека",
   "lyric_offset_input_title": "Введите смещение",
-  "lyric_offset_input_hint": "Смещение (секунды)"
+  "lyric_offset_input_hint": "Смещение (секунды)",
+  "ui_clone_feature_title": "Клоны приложений",
+  "ui_clone_feature_desc": "Клонируйте приложения в отдельные профили системы с полностью изолированными данными. Требуется Shizuku (или Root).",
+  "ui_clone_need_privileged_title": "Требуется разрешение Shizuku или Root",
+  "ui_clone_need_privileged_desc": "Сначала запустите приложение Shizuku и выдайте разрешение ZenFile; на устройствах с Root можно использовать напрямую.",
+  "ui_clone_grant_shizuku": "Разрешить Shizuku",
+  "ui_clone_users_title": "Профили-клоны",
+  "ui_clone_primary_user": "Основной пользователь (это устройство)",
+  "ui_clone_create_user": "Создать клон",
+  "ui_clone_new_user": "Новый профиль-клон…",
+  "ui_clone_user_name_hint": "Имя клона",
+  "ui_clone_default_user_name": "Клон {n}",
+  "ui_clone_running": "Запущен",
+  "ui_clone_delete_user": "Удалить клон",
+  "ui_clone_delete_user_confirm": "Удалить профиль-клон «{name}»? Все приложения и данные в нём будут удалены.",
+  "ui_clone_user_created": "Клон создан",
+  "ui_clone_user_removed": "Клон удалён",
+  "ui_clone_create_failed_limit": "Не удалось создать: достигнут лимит системных пользователей (некоторые прошивки ограничивают их количество)",
+  "ui_clone_op_failed": "Ошибка операции с клоном: {e}",
+  "ui_clone_cmd_timeout": "Время ожидания команды истекло, повторите попытку",
+  "ui_clone_install_host_apps": "Установить приложения устройства в этот профиль",
+  "ui_clone_no_missing_apps": "Все сторонние приложения устройства уже есть в этом профиле",
+  "ui_clone_apps_empty": "В этом профиле пока нет сторонних приложений",
+  "ui_clone_launch": "Запустить",
+  "ui_clone_uninstall": "Удалить",
+  "ui_clone_uninstall_confirm": "Удалить «{name}» из этого профиля? Пострадает только этот профиль, устройство не затронется.",
+  "ui_clone_uninstall_done": "Удалено из профиля",
+  "ui_clone_installed_existing": "Установлено в профиль",
+  "ui_clone_clone_to_user": "Клонировать в профиль",
+  "ui_clone_select_user": "Выберите профиль-клон",
+  "ui_clone_installing": "Клонирование…",
+  "ui_clone_install_success": "Клонирование выполнено",
+  "ui_clone_launch_now": "Запустить сейчас",
+  "ui_clone_launch_failed": "Не удалось запустить приложение в профиле",
+  "ui_clone_to_user": "Клонировать в профиль",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "Скрыт"
 }

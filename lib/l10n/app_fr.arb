@@ -8641,23 +8641,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "Chiffrement automatique",
+  "crypt_auto_encrypt_section": "Association automatique",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "Chiffrer automatiquement les nouveaux fichiers",
+  "crypt_auto_encrypt_title": "Associer automatiquement les fichiers chiffrés locaux",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "Surveille les dossiers chiffrés sur place et chiffre automatiquement les nouveaux fichiers une fois écrits (notification persistante requise)",
+  "crypt_auto_encrypt_desc": "Si activé, le parcours des dossiers locaux détecte le chiffrement, l'enregistre dans la liste « chiffrement sur place » du coffre et affiche immédiatement les noms en clair ; si désactivé, le navigateur affiche les fichiers tels qu'ils sont sur le disque (les fichiers chiffrés apparaissent sous leur nom chiffré, mais s'ouvrent et se déchiffrent normalement) ; désactivé par défaut",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "{count} dossier(s) protégé(s) ; les nouveaux fichiers seront chiffrés automatiquement",
+  "crypt_auto_encrypt_watching": "{count} dossier(s) chiffré(s) local(aux) associé(s)",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "Associer automatiquement les fichiers chiffrés distants",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "Si activé, le parcours des dossiers distants détecte les fichiers chiffrés, les enregistre et fait passer immédiatement le dossier courant à l'affichage en clair ; vous pourrez ensuite aussi les ouvrir et les déchiffrer depuis le coffre. Si désactivé, seuls les dossiers distants chiffrés liés manuellement s'appliquent ; désactivé par défaut",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "Remarque : les deux interrupteurs se basent uniquement sur la liste déjà chargée (aucune requête réseau supplémentaire côté distant), l’impact sur les performances est négligeable. Seul le chiffrement des noms « standard » est détectable de façon fiable ; le mode obfuscate ne peut pas être identifié à partir des noms.",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "Nom invalide",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8729,5 +8740,41 @@
   "lyric_offset_reset": "Réinitialiser",
   "lyric_offset_clear_current": "Effacer le décalage du morceau",
   "lyric_offset_input_title": "Saisir le décalage",
-  "lyric_offset_input_hint": "Décalage (secondes)"
+  "lyric_offset_input_hint": "Décalage (secondes)",
+  "ui_clone_feature_title": "Clones d'applis",
+  "ui_clone_feature_desc": "Clonez des applications dans des profils système distincts, avec des données totalement isolées et un vrai multi-instance. Nécessite Shizuku (ou Root).",
+  "ui_clone_need_privileged_title": "Autorisation Shizuku ou Root requise",
+  "ui_clone_need_privileged_desc": "Lancez d'abord l'appli Shizuku et autorisez ZenFile ; sur un appareil rooté, l'accès direct fonctionne aussi.",
+  "ui_clone_grant_shizuku": "Autoriser Shizuku",
+  "ui_clone_users_title": "Profils clones",
+  "ui_clone_primary_user": "Utilisateur principal (cet appareil)",
+  "ui_clone_create_user": "Nouveau clone",
+  "ui_clone_new_user": "Nouveau profil clone…",
+  "ui_clone_user_name_hint": "Nom du clone",
+  "ui_clone_default_user_name": "Clone {n}",
+  "ui_clone_running": "En cours d'exécution",
+  "ui_clone_delete_user": "Supprimer le clone",
+  "ui_clone_delete_user_confirm": "Supprimer le profil clone « {name} » ? Toutes ses applis et données seront effacées.",
+  "ui_clone_user_created": "Clone créé",
+  "ui_clone_user_removed": "Clone supprimé",
+  "ui_clone_create_failed_limit": "Échec de la création : limite d'utilisateurs système atteinte (certaines ROM la limitent)",
+  "ui_clone_op_failed": "Échec de l'opération de clonage : {e}",
+  "ui_clone_cmd_timeout": "La commande a expiré, veuillez réessayer",
+  "ui_clone_install_host_apps": "Installer des applis de l'appareil dans ce clone",
+  "ui_clone_no_missing_apps": "Toutes les applis tierces de l'appareil sont déjà dans ce clone",
+  "ui_clone_apps_empty": "Ce clone ne contient pas encore d'applis tierces",
+  "ui_clone_launch": "Lancer",
+  "ui_clone_uninstall": "Désinstaller",
+  "ui_clone_uninstall_confirm": "Désinstaller « {name} » de ce clone ? Seul ce clone est concerné, pas l'appareil.",
+  "ui_clone_uninstall_done": "Désinstallé du clone",
+  "ui_clone_installed_existing": "Installé dans le clone",
+  "ui_clone_clone_to_user": "Cloner vers un profil",
+  "ui_clone_select_user": "Choisir un profil clone",
+  "ui_clone_installing": "Clonage…",
+  "ui_clone_install_success": "Clonage réussi",
+  "ui_clone_launch_now": "Lancer maintenant",
+  "ui_clone_launch_failed": "Échec du lancement de l'appli dans le clone",
+  "ui_clone_to_user": "Cloner vers le profil",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "Masqué"
 }

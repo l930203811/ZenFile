@@ -8664,20 +8664,32 @@ class L10nDe extends L10n {
       'Für das Internet-Sharing ist ein Zugriffspasswort erforderlich';
 
   @override
-  String get crypt_auto_encrypt_section => 'Auto-Verschlüsselung';
+  String get crypt_auto_encrypt_section => 'Automatische Verknüpfung';
 
   @override
   String get crypt_auto_encrypt_title =>
-      'Neue Dateien automatisch verschlüsseln';
+      'Lokale verschlüsselte Dateien automatisch verknüpfen';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      'Überwacht direk-verschlüsselte Verzeichnisse und verschlüsselt neue Dateien automatisch nach dem Schreiben (dauerhafte Benachrichtigung erforderlich)';
+      'Wenn aktiviert, werden beim Durchsuchen lokaler Ordner Verschlüsselungen erkannt, in die Liste „Direkte Verschlüsselung“ des Tresors eingetragen und im Browser sofort mit Klartextnamen angezeigt. Wenn deaktiviert, zeigt der Browser die Dateien so an, wie sie auf dem Datenträger liegen (verschlüsselte Dateien erscheinen unter ihrem Chiffrenamen, lassen sich aber weiterhin normal öffnen und entschlüsseln); standardmäßig aus';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return '$count Verzeichnis(se) werden geschützt; neue Dateien werden automatisch verschlüsselt';
+    return '$count lokale verschlüsselte Ordner verknüpft';
   }
+
+  @override
+  String get crypt_auto_remote_title =>
+      'Entfernte verschlüsselte Dateien automatisch verknüpfen';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'Wenn aktiviert, werden beim Durchsuchen entfernter Ordner verschlüsselte Dateien erkannt und registriert, und der aktuelle Ordner wechselt sofort zur Anzeige mit Klartextnamen; später können sie auch aus dem Tresor geöffnet und entschlüsselt werden. Wenn deaktiviert, gelten nur manuell verknüpfte entfernte Verschlüsselungsordner; standardmäßig aus';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      'Hinweis: Beide Schalter entscheiden anhand der bereits geladenen Verzeichnisliste (keine zusätzlichen Netzwerkanfragen beim Remote-Zugriff), der Leistungseinfluss ist minimal. Nur die „Standard“-Dateinamensverschlüsselung ist zuverlässig erkennbar; der obfuscate-Modus ist an Namen nicht erkennbar.';
 
   @override
   String get msg_name_invalid_title => 'Ungültiger Name';
@@ -8846,4 +8858,126 @@ class L10nDe extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'Versatz (Sekunden)';
+
+  @override
+  String get ui_clone_feature_title => 'App-Zwillinge';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Klone Apps in separate Systembenutzerprofile – mit vollständig isolierten Daten und echtem Multi-Instance. Erfordert Shizuku (oder Root).';
+
+  @override
+  String get ui_clone_need_privileged_title =>
+      'Shizuku- oder Root-Berechtigung erforderlich';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'Starte zuerst die Shizuku-App und autorisiere ZenFile; auf gerooteten Geräten funktioniert es auch direkt.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Shizuku autorisieren';
+
+  @override
+  String get ui_clone_users_title => 'Zwillingsprofile';
+
+  @override
+  String get ui_clone_primary_user => 'Hauptbenutzer (dieses Gerät)';
+
+  @override
+  String get ui_clone_create_user => 'Neues Zwillingsprofil';
+
+  @override
+  String get ui_clone_new_user => 'Neuer Zwillingsbenutzer…';
+
+  @override
+  String get ui_clone_user_name_hint => 'Name des Zwillings';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return 'Zwilling $n';
+  }
+
+  @override
+  String get ui_clone_running => 'Läuft';
+
+  @override
+  String get ui_clone_delete_user => 'Zwillingsprofil löschen';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return 'Zwillingsprofil „$name“ löschen? Alle Apps und Daten darin werden entfernt.';
+  }
+
+  @override
+  String get ui_clone_user_created => 'Zwillingsprofil erstellt';
+
+  @override
+  String get ui_clone_user_removed => 'Zwillingsprofil entfernt';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      'Erstellen fehlgeschlagen: Systemgrenze der Benutzerzahl erreicht (manche ROMs beschränken diese)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return 'Zwilling-Operation fehlgeschlagen: $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout =>
+      'Befehlslaufzeit überschritten, bitte erneut versuchen';
+
+  @override
+  String get ui_clone_install_host_apps =>
+      'Geräte-Apps in diesem Profil installieren';
+
+  @override
+  String get ui_clone_no_missing_apps =>
+      'Alle Drittanbieter-Apps des Geräts sind bereits in diesem Profil';
+
+  @override
+  String get ui_clone_apps_empty =>
+      'Dieses Profil enthält noch keine Drittanbieter-Apps';
+
+  @override
+  String get ui_clone_launch => 'Starten';
+
+  @override
+  String get ui_clone_uninstall => 'Deinstallieren';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return '„$name“ aus diesem Profil deinstallieren? Betrifft nur dieses Profil, nicht das Gerät.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => 'Aus dem Profil deinstalliert';
+
+  @override
+  String get ui_clone_installed_existing => 'Im Profil installiert';
+
+  @override
+  String get ui_clone_clone_to_user => 'In Zwilling klonen';
+
+  @override
+  String get ui_clone_select_user => 'Zwillingsprofil wählen';
+
+  @override
+  String get ui_clone_installing => 'Klonen…';
+
+  @override
+  String get ui_clone_install_success => 'Klonen erfolgreich';
+
+  @override
+  String get ui_clone_launch_now => 'Jetzt starten';
+
+  @override
+  String get ui_clone_launch_failed =>
+      'App im Profil konnte nicht gestartet werden';
+
+  @override
+  String get ui_clone_to_user => 'In Zweitprofil klonen';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'Ausgeblendet';
 }

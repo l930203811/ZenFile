@@ -8641,23 +8641,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "التشفير التلقائي",
+  "crypt_auto_encrypt_section": "الربط التلقائي",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "تشفير الملفات الجديدة تلقائيًا",
+  "crypt_auto_encrypt_title": "ربط الملفات المشفرة المحلية تلقائيًا",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "يراقب المجلدات المشفرة في مكانها ويشفّر الملفات الجديدة تلقائيًا بعد اكتمال كتابتها (يتطلب إشعارًا دائمًا)",
+  "crypt_auto_encrypt_desc": "عند التشغيل، يكتشف تصفح المجلدات المحلية المحتوى المشفَّر ويسجله في قائمة «التشفير في مكانه» بالخزنة، وتُعرض الأسماء بصيغتها الأصلية فورًا؛ وعند الإيقاف يعرض المتصفح الملفات كما هي على القرص (تظهر الملفات المشفَّرة بأسمائها المشفَّرة، لكنها تفتح وتفك تشفيرها بشكل طبيعي)؛ معطّل افتراضيًا",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "حماية {count} مجلد(ات)؛ سيتم تشفير الملفات الجديدة تلقائيًا",
+  "crypt_auto_encrypt_watching": "تم ربط {count} مجلدًا مشفرًا محليًا",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "ربط الملفات المشفرة البعيدة تلقائيًا",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "عند التشغيل، يكتشف تصفح المجلدات البعيدة الملفات المشفَّرة ويسجلها، وتتحول المجلد الحالي إلى عرض الأسماء الأصلية فورًا، ويمكن فتحها وفك تشفيرها من الخزنة لاحقًا؛ وعند الإيقاف لا تُطبَّق إلا مجلدات التشفير البعيدة المرتبطة يدويًا؛ معطّل افتراضيًا",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "ملاحظة: يعتمد كلا المفتاحين على قائمة المجلد التي تم تحميلها بالفعل (بدون طلبات شبكة إضافية)، لذا فإن التأثير على الأداء ضئيل جدًا. يمكن اكتشاف تشفير الأسماء «القياسي» فقط بشكل موثوق؛ ولا يمكن تمييز وضع obfuscate من الأسماء.",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "اسم غير صالح",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8729,5 +8740,41 @@
   "lyric_offset_reset": "إعادة تعيين",
   "lyric_offset_clear_current": "إزالة إزاحة الأغنية",
   "lyric_offset_input_title": "أدخل قيمة الإزاحة",
-  "lyric_offset_input_hint": "الإزاحة (بالثواني)"
+  "lyric_offset_input_hint": "الإزاحة (بالثواني)",
+  "ui_clone_feature_title": "نسخ التطبيقات (التوائم)",
+  "ui_clone_feature_desc": "استنسخ التطبيقات إلى ملفات مستخدمين منفصلة في النظام مع بيانات معزولة تماماً وتشغيل متعدد. يتطلب Shizuku (أو Root).",
+  "ui_clone_need_privileged_title": "مطلوب إذن Shizuku أو Root",
+  "ui_clone_need_privileged_desc": "شغّل تطبيق Shizuku أولاً وامنح الإذن لـ ZenFile؛ على الأجهزة المروتة يمكن الاستخدام مباشرة.",
+  "ui_clone_grant_shizuku": "منح إذن Shizuku",
+  "ui_clone_users_title": "مستخدمو النسخ",
+  "ui_clone_primary_user": "المستخدم الأساسي (هذا الجهاز)",
+  "ui_clone_create_user": "إنشاء نسخة",
+  "ui_clone_new_user": "مستخدم نسخة جديد…",
+  "ui_clone_user_name_hint": "اسم النسخة",
+  "ui_clone_default_user_name": "نسخة {n}",
+  "ui_clone_running": "قيد التشغيل",
+  "ui_clone_delete_user": "حذف النسخة",
+  "ui_clone_delete_user_confirm": "حذف نسخة المستخدم «{name}»؟ سيتم حذف جميع تطبيقاتها وبياناتها.",
+  "ui_clone_user_created": "تم إنشاء النسخة",
+  "ui_clone_user_removed": "تم حذف النسخة",
+  "ui_clone_create_failed_limit": "فشل الإنشاء: تم بلوغ حد عدد المستخدمين في النظام (بعض الأنظمة تقيّد ذلك)",
+  "ui_clone_op_failed": "فشلت عملية النسخ: {e}",
+  "ui_clone_cmd_timeout": "انتهت مهلة تنفيذ الأمر، أعد المحاولة",
+  "ui_clone_install_host_apps": "تثبيت تطبيقات الجهاز في هذه النسخة",
+  "ui_clone_no_missing_apps": "جميع تطبيقات الطرف الثالث في الجهاز موجودة بالفعل في هذه النسخة",
+  "ui_clone_apps_empty": "لا توجد تطبيقات طرف ثالث في هذه النسخة بعد",
+  "ui_clone_launch": "تشغيل",
+  "ui_clone_uninstall": "إزالة التثبيت",
+  "ui_clone_uninstall_confirm": "إزالة «{name}» من هذه النسخة؟ يؤثر على هذه النسخة فقط ولا يمس الجهاز.",
+  "ui_clone_uninstall_done": "تمت الإزالة من النسخة",
+  "ui_clone_installed_existing": "تم التثبيت في النسخة",
+  "ui_clone_clone_to_user": "استنساخ إلى نسخة",
+  "ui_clone_select_user": "اختر نسخة مستخدم",
+  "ui_clone_installing": "جارٍ الاستنساخ…",
+  "ui_clone_install_success": "تم الاستنساخ بنجاح",
+  "ui_clone_launch_now": "تشغيل الآن",
+  "ui_clone_launch_failed": "فشل تشغيل التطبيق في النسخة",
+  "ui_clone_to_user": "نسخ إلى الملف الشخصي",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "مخفي"
 }

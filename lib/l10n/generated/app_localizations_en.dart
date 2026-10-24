@@ -8565,19 +8565,30 @@ class L10nEn extends L10n {
       'An access password is required for internet sharing';
 
   @override
-  String get crypt_auto_encrypt_section => 'Auto encryption';
+  String get crypt_auto_encrypt_section => 'Auto associate';
 
   @override
-  String get crypt_auto_encrypt_title => 'Auto-encrypt new files';
+  String get crypt_auto_encrypt_title => 'Auto-associate local encrypted files';
 
   @override
   String get crypt_auto_encrypt_desc =>
-      'Watch in-place encrypted directories and encrypt new files automatically after they are written (requires a persistent notification)';
+      'When on, browsing a local folder detects ciphertext, registers it in the vault \"In-place encryption\" list and shows plaintext names right away; when off, the browser shows files exactly as they are on disk (encrypted files appear under their ciphertext names, but still open and decrypt normally); off by default';
 
   @override
   String crypt_auto_encrypt_watching(Object count) {
-    return 'Protecting $count directory(ies); new files will be encrypted automatically';
+    return '$count local encrypted folder(s) associated';
   }
+
+  @override
+  String get crypt_auto_remote_title => 'Auto-associate remote encrypted files';
+
+  @override
+  String get crypt_auto_remote_desc =>
+      'When on, browsing a remote folder detects encrypted files, registers them and immediately switches the current folder to plaintext names; they can also be opened and decrypted from the vault later. When off, only manually linked remote encrypted folders apply; off by default';
+
+  @override
+  String get crypt_auto_assoc_note =>
+      'Note: both switches decide from the directory listing that is already loaded (no extra network requests on the remote side), so the performance impact is negligible. Only \"standard\" filename encryption can be detected reliably; obfuscate mode leaves names almost plain and cannot be identified from names.';
 
   @override
   String get msg_name_invalid_title => 'Invalid name';
@@ -8746,4 +8757,123 @@ class L10nEn extends L10n {
 
   @override
   String get lyric_offset_input_hint => 'Offset (seconds)';
+
+  @override
+  String get ui_clone_feature_title => 'App twins';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Clone apps into separate system user profiles with fully isolated data and true multi-instance. Requires Shizuku (or Root) access.';
+
+  @override
+  String get ui_clone_need_privileged_title =>
+      'Shizuku or Root permission required';
+
+  @override
+  String get ui_clone_need_privileged_desc =>
+      'Start the Shizuku app and authorize ZenFile first; rooted devices can also be used directly.';
+
+  @override
+  String get ui_clone_grant_shizuku => 'Authorize Shizuku';
+
+  @override
+  String get ui_clone_users_title => 'Twin profiles';
+
+  @override
+  String get ui_clone_primary_user => 'Primary user (this device)';
+
+  @override
+  String get ui_clone_create_user => 'New twin profile';
+
+  @override
+  String get ui_clone_new_user => 'New twin user…';
+
+  @override
+  String get ui_clone_user_name_hint => 'Twin profile name';
+
+  @override
+  String ui_clone_default_user_name(int n) {
+    return 'Twin $n';
+  }
+
+  @override
+  String get ui_clone_running => 'Running';
+
+  @override
+  String get ui_clone_delete_user => 'Delete twin profile';
+
+  @override
+  String ui_clone_delete_user_confirm(Object name) {
+    return 'Delete twin profile \"$name\"? All apps and data inside it will be removed.';
+  }
+
+  @override
+  String get ui_clone_user_created => 'Twin profile created';
+
+  @override
+  String get ui_clone_user_removed => 'Twin profile removed';
+
+  @override
+  String get ui_clone_create_failed_limit =>
+      'Failed to create: the system user limit has been reached (some ROMs restrict how many users can be created)';
+
+  @override
+  String ui_clone_op_failed(Object e) {
+    return 'Twin operation failed: $e';
+  }
+
+  @override
+  String get ui_clone_cmd_timeout => 'Command timed out, please retry';
+
+  @override
+  String get ui_clone_install_host_apps =>
+      'Install device apps into this profile';
+
+  @override
+  String get ui_clone_no_missing_apps =>
+      'All third-party apps on this device are already in this profile';
+
+  @override
+  String get ui_clone_apps_empty => 'No third-party apps in this profile yet';
+
+  @override
+  String get ui_clone_launch => 'Launch';
+
+  @override
+  String get ui_clone_uninstall => 'Uninstall';
+
+  @override
+  String ui_clone_uninstall_confirm(Object name) {
+    return 'Uninstall \"$name\" from this profile? Only this profile is affected, not the device.';
+  }
+
+  @override
+  String get ui_clone_uninstall_done => 'Uninstalled from profile';
+
+  @override
+  String get ui_clone_installed_existing => 'Installed to profile';
+
+  @override
+  String get ui_clone_clone_to_user => 'Clone to twin profile';
+
+  @override
+  String get ui_clone_select_user => 'Select a twin profile';
+
+  @override
+  String get ui_clone_installing => 'Cloning…';
+
+  @override
+  String get ui_clone_install_success => 'Clone successful';
+
+  @override
+  String get ui_clone_launch_now => 'Launch now';
+
+  @override
+  String get ui_clone_launch_failed => 'Failed to launch app in profile';
+
+  @override
+  String get ui_clone_to_user => 'Clone to profile';
+
+  @override
+  String get ui_bottom_tab_slot_disabled => 'Hidden';
 }

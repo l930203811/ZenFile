@@ -19,6 +19,7 @@ import '../widgets/sort_modal.dart';
 import 'directory_screen.dart';
 import 'transfers_screen.dart';
 import 'more_settings_screen.dart';
+import 'toolbox_screen.dart';
 import 'global_search_screen.dart';
 import '../navigation/shell_navigator.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -875,17 +876,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         : L10n.of(context).ui_dark_mode,
                     onPressed: widget.toggleTheme,
                   ),
-                  // 常用功能：单/双窗口（目标态图标：当前双窗→单窗方框；当前单窗→左右双栏）
+                  // 常用功能：单/双窗口（语义为「显示切换目标」：单窗模式 → 图标
+                  // 数字 2 + 长按提示「双窗口」；双窗模式 → 数字 1 + 提示「单窗口」）
                   //
                   // ⚠️ 必须用 Broken 图标字体：顶栏其它按钮（抽屉 / 搜索 / 刷新 /
                   // 排序 / 主题 / 设置）全是这套「断线描边」风格，换成 Material 的
                   // outlined 图标笔触偏实、圆角也不一样，一眼能看出是外来户。
-                  // Broken.stop = 单个圆角方框（单窗口），Broken.grid_4 = 圆角方框
-                  // 中间一道竖线（左右双窗口），两者笔触与其它按钮完全同源。
+                  // 单/双窗统一用 Broken.stop 圆角方框（无中间竖线），仅靠数字区分。
                   IconButton(
-                    // 单/双窗口：在原有方框底子上叠一个数字徽标——单窗是「1」，
-                    // 双窗是「2」。纯图形（方框 / 左右双栏）在 24dp 下几乎分不出
-                    // 差别，数字一眼可辨，且不破坏顶栏的断线描边风格。
+                    // 单/双窗口：在圆角方框底子上叠一个数字徽标——单窗显「2」、
+                    // 双窗显「1」，表示点按后将切换到的目标模式。纯图形在 24dp 下
+                    // 几乎分不出差别，数字一眼可辨，且不破坏顶栏的断线描边风格。
                     icon: _SplitWindowBadge(
                       isDual:
                           context.read<FileManagerProvider>().enableSplitScreen,
@@ -923,8 +924,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
-  /// 底部导航 4 个槽位全部可自定义（默认 分类/文件/传输/最近），可被自定义快捷方式页
+  /// 底部导航 5 个槽位全部可自定义（默认 分类/文件/传输/最近/工具箱），可被自定义快捷方式页
   /// 中的任意入口替换（长按槽位或在该页配置区选择），替换后点击打开对应入口（push 页面）。
+  /// 槽位可被「关闭」（自定义入口选择页）：关闭的槽位不进 tab 栏，原配置保留在存储里，
+  /// 重新选择页面即恢复显示；第 5 槽默认关闭。
   /// 滑动切页与底部 tab 解耦：IndexedStack 第 0/1 页恒为分类页/浏览页（滑动轴心），
   /// 滑动链路固定为 左抽屉→分类页→浏览页，即使底部 tab 被替换也始终可达。
   Widget _buildBottomTabs({bool atTop = false, bool attachedTop = false}) {
@@ -953,7 +956,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       defaultLabel: l10n.cat_recent,
       defaultIndex: -1,
     );
-    final tabData = <List<Object>>[slot0, slot1, slot2, slot3];
+    // 第 5 槽：默认关闭；开启后未配置时默认「工具箱」。
+    final slot4 = _resolveTabSlot(
+      4,
+      defaultIcon: Icons.home_repair_service,
+      defaultLabel: l10n.cat_toolbox,
+      defaultIndex: -1,
+    );
+    // 只把**开启**的槽位放进 tab 栏：itemCount 随之动态变化，
+    // 关闭槽位的配置仍留在存储里（重新选择页面即恢复）。
+    final tabData = <List<Object>>[
+      if (PreferencesService.getBottomTabSlotEnabled(0)) slot0,
+      if (PreferencesService.getBottomTabSlotEnabled(1)) slot1,
+      if (PreferencesService.getBottomTabSlotEnabled(2)) slot2,
+      if (PreferencesService.getBottomTabSlotEnabled(3)) slot3,
+      if (PreferencesService.getBottomTabSlotEnabled(4)) slot4,
+    ];
+    // 兜底：极端情况下 5 个槽位全被关闭时保留第 1 槽，
+    // 避免 itemCount=0 触发 LiquidBottomBar 的 assert 崩溃。
+    if (tabData.isEmpty) tabData.add(slot0);
 
     // ── 液态玻璃底栏 ──────────────────────────────────────────────────
     //
@@ -967,7 +988,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // false）—— 只留胶囊浮在页面背景上；浏览页操作栏仍是独立玻璃胶囊。
     // 具体参数与本文件的分工说明见 lib/ui/widgets/liquid_bottom_bar.dart。
     //
-    // 命中区仍是 4 个等分的**静止**区域（不随指示器移动），避免「胶囊滑到哪才能点哪」。
+    // 命中区仍是 itemCount 个等分的**静止**区域（不随指示器移动），避免「胶囊滑到哪才能点哪」。
     // 上滑唤起收藏夹的 GestureDetector 在外层，命中范围不受影响。
     int selectedSlot = -1;
     for (var i = 0; i < tabData.length; i++) {
@@ -1047,6 +1068,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       // v3.4b2：默认第 4 个槽位由「设置」改为「最近」（isCustomEntry 走 _openBottomTabEntry）
       if (slot == 3) {
         return [Broken.clock, L10n.of(context).cat_recent, -1, true, slot];
+      }
+      // 第 5 槽默认「工具箱」：isCustomEntry=true，点击走 _openBottomTabEntry
+      // 推入壳内页面（占槽位高亮），与其它分类入口页一致。
+      if (slot == 4) {
+        return [
+          Icons.home_repair_service,
+          L10n.of(context).cat_toolbox,
+          -1,
+          true,
+          slot,
+        ];
       }
       return [defaultIcon, defaultLabel, defaultIndex, false, slot];
     }
@@ -1159,6 +1191,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           () => AllRecentFilesScreen(onNavigateTab: (i) => _switchTab(i)),
         );
       }
+      // 第 5 槽默认「工具箱」：壳内页面 + 占槽位高亮。
+      if (slot == 4) {
+        _pushSlotPage(slot, () => const ToolboxScreen());
+      }
       return;
     }
     final type = cfg['type'];
@@ -1226,10 +1262,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       current: current,
     );
     if (cfg == null) return;
-    if (cfg['type'] == 'reset') {
+    if (cfg['type'] == 'disabled') {
+      // 关闭：只隐藏槽位，原配置保留（重新选择页面即恢复显示）。
+      await PreferencesService.saveBottomTabSlotEnabled(slot, false);
+    } else if (cfg['type'] == 'reset') {
       await PreferencesService.saveBottomTabSlotConfig(slot, null);
+      // 恢复默认同时清掉开关的自定义值（1-4 默认开、5 默认关）。
+      await PreferencesService.clearBottomTabSlotEnabled(slot);
     } else {
       await PreferencesService.saveBottomTabSlotConfig(slot, cfg);
+      // 选择具体页面 = 重新开启该槽位。
+      await PreferencesService.saveBottomTabSlotEnabled(slot, true);
     }
     if (mounted) setState(() {});
   }
@@ -1331,13 +1374,13 @@ class _VerticalDotsPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-/// 单 / 双窗口切换按钮：方框底 + 数字徽标。
+/// 单 / 双窗口切换按钮：圆角方框底 + 数字徽标（语义为「显示切换目标」）。
 ///
-/// 单窗口 = Broken.stop（单个圆角方框）中央一个 1；
-/// 双窗口 = Broken.grid_4（左右双栏）中央一个 2。
+/// 单 / 双窗统一用 Broken.stop（单个圆角方框，无中间竖线）：
+/// 单窗口模式中央一个 2（点按切到双窗）；双窗口模式中央一个 1（点按切回单窗）。
 ///
-/// 数字必须带一圈与顶栏同色的描边阴影：方框的笔触和双栏中间那道竖线都会
-/// 从数字上穿过，直接叠字会被线条切花。
+/// 数字必须带一圈与顶栏同色的描边阴影：方框的笔触会从数字上穿过，
+/// 直接叠字会被线条切花。
 class _SplitWindowBadge extends StatelessWidget {
   final bool isDual;
   final Color color;
@@ -1374,13 +1417,17 @@ class _SplitWindowBadge extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // 单/双窗统一用 Broken.stop（圆角矩形轮廓）：去掉 grid_4 的中间竖线，
+          // 两种模式底子一致，仅靠中间数字区分（与顶栏其它断线描边按钮同风格）。
           Icon(
-            isDual ? Broken.grid_4 : Broken.stop,
+            Broken.stop,
             size: 24,
             color: color,
           ),
+          // 语义为「显示切换目标」：单窗模式下数字 2（点按切到双窗），
+          // 双窗模式下数字 1（点按切回单窗），与长按 tooltip 的目标态文案一致。
           Text(
-            isDual ? '2' : '1',
+            isDual ? '1' : '2',
             style: TextStyle(
               color: color,
               fontSize: 11,

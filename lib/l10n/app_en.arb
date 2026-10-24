@@ -8707,23 +8707,34 @@
   "@ui_web_share_password_required_for_tunnel": {
     "description": "Security setting: ui_web_share_password_required_for_tunnel"
   },
-  "crypt_auto_encrypt_section": "Auto encryption",
+  "crypt_auto_encrypt_section": "Auto associate",
   "@crypt_auto_encrypt_section": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_section"
   },
-  "crypt_auto_encrypt_title": "Auto-encrypt new files",
+  "crypt_auto_encrypt_title": "Auto-associate local encrypted files",
   "@crypt_auto_encrypt_title": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_title"
   },
-  "crypt_auto_encrypt_desc": "Watch in-place encrypted directories and encrypt new files automatically after they are written (requires a persistent notification)",
+  "crypt_auto_encrypt_desc": "When on, browsing a local folder detects ciphertext, registers it in the vault \"In-place encryption\" list and shows plaintext names right away; when off, the browser shows files exactly as they are on disk (encrypted files appear under their ciphertext names, but still open and decrypt normally); off by default",
   "@crypt_auto_encrypt_desc": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_desc"
   },
-  "crypt_auto_encrypt_watching": "Protecting {count} directory(ies); new files will be encrypted automatically",
+  "crypt_auto_encrypt_watching": "{count} local encrypted folder(s) associated",
   "@crypt_auto_encrypt_watching": {
     "description": "Auto-encrypt new files feature: crypt_auto_encrypt_watching"
-  }
-,
+  },
+  "crypt_auto_remote_title": "Auto-associate remote encrypted files",
+  "@crypt_auto_remote_title": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_title"
+  },
+  "crypt_auto_remote_desc": "When on, browsing a remote folder detects encrypted files, registers them and immediately switches the current folder to plaintext names; they can also be opened and decrypted from the vault later. When off, only manually linked remote encrypted folders apply; off by default",
+  "@crypt_auto_remote_desc": {
+    "description": "Auto-associate remote encrypted files: crypt_auto_remote_desc"
+  },
+  "crypt_auto_assoc_note": "Note: both switches decide from the directory listing that is already loaded (no extra network requests on the remote side), so the performance impact is negligible. Only \"standard\" filename encryption can be detected reliably; obfuscate mode leaves names almost plain and cannot be identified from names.",
+  "@crypt_auto_assoc_note": {
+    "description": "Auto-associate performance note: crypt_auto_assoc_note"
+  },
   "msg_name_invalid_title": "Invalid name",
   "@msg_name_invalid_title": {
     "description": "Warning dialog title shown when a user-entered file/folder name is invalid"
@@ -8795,5 +8806,41 @@
   "lyric_offset_reset": "Reset",
   "lyric_offset_clear_current": "Clear song offset",
   "lyric_offset_input_title": "Enter offset",
-  "lyric_offset_input_hint": "Offset (seconds)"
+  "lyric_offset_input_hint": "Offset (seconds)",
+  "ui_clone_feature_title": "App twins",
+  "ui_clone_feature_desc": "Clone apps into separate system user profiles with fully isolated data and true multi-instance. Requires Shizuku (or Root) access.",
+  "ui_clone_need_privileged_title": "Shizuku or Root permission required",
+  "ui_clone_need_privileged_desc": "Start the Shizuku app and authorize ZenFile first; rooted devices can also be used directly.",
+  "ui_clone_grant_shizuku": "Authorize Shizuku",
+  "ui_clone_users_title": "Twin profiles",
+  "ui_clone_primary_user": "Primary user (this device)",
+  "ui_clone_create_user": "New twin profile",
+  "ui_clone_new_user": "New twin user…",
+  "ui_clone_user_name_hint": "Twin profile name",
+  "ui_clone_default_user_name": "Twin {n}",
+  "ui_clone_running": "Running",
+  "ui_clone_delete_user": "Delete twin profile",
+  "ui_clone_delete_user_confirm": "Delete twin profile \"{name}\"? All apps and data inside it will be removed.",
+  "ui_clone_user_created": "Twin profile created",
+  "ui_clone_user_removed": "Twin profile removed",
+  "ui_clone_create_failed_limit": "Failed to create: the system user limit has been reached (some ROMs restrict how many users can be created)",
+  "ui_clone_op_failed": "Twin operation failed: {e}",
+  "ui_clone_cmd_timeout": "Command timed out, please retry",
+  "ui_clone_install_host_apps": "Install device apps into this profile",
+  "ui_clone_no_missing_apps": "All third-party apps on this device are already in this profile",
+  "ui_clone_apps_empty": "No third-party apps in this profile yet",
+  "ui_clone_launch": "Launch",
+  "ui_clone_uninstall": "Uninstall",
+  "ui_clone_uninstall_confirm": "Uninstall \"{name}\" from this profile? Only this profile is affected, not the device.",
+  "ui_clone_uninstall_done": "Uninstalled from profile",
+  "ui_clone_installed_existing": "Installed to profile",
+  "ui_clone_clone_to_user": "Clone to twin profile",
+  "ui_clone_select_user": "Select a twin profile",
+  "ui_clone_installing": "Cloning…",
+  "ui_clone_install_success": "Clone successful",
+  "ui_clone_launch_now": "Launch now",
+  "ui_clone_launch_failed": "Failed to launch app in profile",
+  "ui_clone_to_user": "Clone to profile",
+  "@ui_clone_to_user": {"description": "app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作"},
+  "ui_bottom_tab_slot_disabled": "Hidden"
 }
