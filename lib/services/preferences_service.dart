@@ -2271,11 +2271,12 @@ class PreferencesService {
   /// 一个是外观，互不牵连，升级时也不会互相覆盖。
   static const String _keyNavBarOpacity = 'nav_bar_opacity';
 
-  /// 深色主题下底栏玻璃的默认不透明度（与 v3.5.9 的玻璃配方逐位一致）。
-  static const double kNavBarDefaultOpacityDark = 0.42;
-
-  /// 浅色主题下底栏玻璃的默认不透明度（主题色混白的比例）。
-  static const double kNavBarDefaultOpacityLight = 0.90;
+  /// 底栏默认不透明度：100%（完全实底）。
+  ///
+  /// v3.6.5 起默认改为实底（用户反馈实底在深色 / 浅色下都可读性更好，
+  /// 且实底会整层跳过 BackdropFilter，滚动性能也更好）；想要玻璃观感的
+  /// 用户可通过滑杆自行调低。
+  static const double kNavBarDefaultOpacity = 1.0;
 
   /// 滑杆下限：再低就几乎全透明，底栏文字会与内容糊在一起，失去可读性。
   static const double kNavBarMinOpacity = 0.20;

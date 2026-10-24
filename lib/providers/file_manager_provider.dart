@@ -1430,23 +1430,20 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 「导航栏不透明度」（issue #42）：null = 未自定义，按主题默认值渲染。
+  // 「导航栏不透明度」（issue #42）：null = 未自定义，按默认值渲染。
   // 「设置 → 常规与行为 → 导航栏设置」面板与「自定义快捷方式」页共用这一份字段，
   // 所以两处滑杆天然双向同步（与导航栏开关 / 位置的做法一致）。
   double? _navBarOpacity;
 
-  /// 用户自定义的底栏不透明度；`null` 表示尚未自定义（用主题默认）。
+  /// 用户自定义的底栏不透明度；`null` 表示尚未自定义（用默认值）。
   double? get navBarOpacity => _navBarOpacity;
 
-  /// 实际用于渲染的不透明度：未自定义时回退到主题默认值。
+  /// 实际用于渲染的不透明度：未自定义时回退到默认值 100%（完全实底）。
   ///
-  /// 深色 0.42 / 浅色 0.90，与 v3.5.9 起的玻璃配方逐位一致 ——
-  /// 新增滑杆不会改变老用户的默认观感。
+  /// 实底使 [navBarOpacityIsOpaque] 恒为真，底栏整层跳过背景模糊；
+  /// 想要玻璃观感的用户可通过滑杆自行调低。
   double navBarOpacityFor(Brightness brightness) =>
-      _navBarOpacity ??
-      (brightness == Brightness.dark
-          ? PreferencesService.kNavBarDefaultOpacityDark
-          : PreferencesService.kNavBarDefaultOpacityLight);
+      _navBarOpacity ?? PreferencesService.kNavBarDefaultOpacity;
 
   /// 是否处于「完全实底」（不透明 = 1.0）。
   ///

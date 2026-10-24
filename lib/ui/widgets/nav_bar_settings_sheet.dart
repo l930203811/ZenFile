@@ -333,7 +333,8 @@ class _NavBarPositionTile extends StatelessWidget {
 ///
 /// 取值语义：左端 [PreferencesService.kNavBarMinOpacity]（最透明）→ 右端 1.0
 /// （**纯实底**，此时底栏跳过背景模糊，见 [LiquidGlassPanel.surfaceOpacity]）。
-/// 未自定义时（provider 为 null）按主题默认值渲染，因此老用户升级后观感不变。
+/// 未自定义时（provider 为 null）按 [PreferencesService.kNavBarDefaultOpacity]
+/// （100% 实底）渲染。
 ///
 /// 「恢复默认」按钮只在用户真的拖动过之后才出现：没改过时显示它反而让人以为
 /// 当前值是错的。
