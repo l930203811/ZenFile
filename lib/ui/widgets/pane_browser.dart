@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_avif/flutter_avif.dart';
 import '../../providers/file_manager_provider.dart';
+import '../screens/app_clone_manager_screen.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
 import '../../models/folder_tab_model.dart';
@@ -408,6 +409,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
               provider: provider,
             ),
           );
+        }
+        break;
+      case 'app_clone':
+        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆（选/建分身 → pm install --user）
+        if (context.mounted) {
+          await AppCloneFlow.cloneApk(context, path);
         }
         break;
       case 'share':

@@ -13,6 +13,7 @@ import '../widgets/file_grid_item.dart';
 import '../widgets/folder_grid_item.dart';
 import '../widgets/drag_drop_handler.dart';
 import '../widgets/file_action_dialogs.dart';
+import 'app_clone_manager_screen.dart';
 import '../../services/crypt/crypt.dart';
 import 'crypt_mount_edit_screen.dart';
 import 'vault_session_unlock_dialog.dart';
@@ -958,6 +959,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               provider: provider,
             ),
           );
+        }
+        break;
+      case 'app_clone':
+        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆（选/建分身 → pm install --user）
+        if (context.mounted) {
+          await AppCloneFlow.cloneApk(context, path);
         }
         break;
     }
