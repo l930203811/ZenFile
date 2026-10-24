@@ -356,6 +356,7 @@ class BrowseSettingsScreen extends StatelessWidget {
             SettingsGroupEntryCard(
               icon: Broken.folder,
               title: L10n.of(context).msg1cfeaace,
+              subtitle: L10n.of(context).ui_settings_browser_nav_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _BrowserNavGroupScreen()),
@@ -365,6 +366,7 @@ class BrowseSettingsScreen extends StatelessWidget {
             SettingsGroupEntryCard(
               icon: Broken.row_vertical,
               title: L10n.of(context).ui_list_layout_style,
+              subtitle: L10n.of(context).ui_settings_list_layout_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _ListLayoutGroupScreen()),

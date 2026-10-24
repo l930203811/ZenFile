@@ -9043,4 +9043,28 @@ class L10nFr extends L10n {
   @override
   String get ui_settings_nav_and_bar_desc =>
       'Affichage, position, opacité et libellés';
+
+  @override
+  String get ui_settings_appearance_desc =>
+      'Couleur d\'accent, icônes, police et mode noir AMOLED';
+
+  @override
+  String get ui_settings_behavior_desc =>
+      'Page d\'accueil, mode de balayage et format de l\'heure';
+
+  @override
+  String get ui_settings_media_ops_desc =>
+      'Miniatures, ouverture des fichiers et cache des visionneuses';
+
+  @override
+  String get ui_settings_apk_install_desc =>
+      'Installation silencieuse, conservation de l\'APK et analyse de sécurité';
+
+  @override
+  String get ui_settings_browser_nav_desc =>
+      'Barre d\'adresse, onglets, écran scindé et glisser-déposer';
+
+  @override
+  String get ui_settings_list_layout_desc =>
+      'Compteurs, tailles et boutons de menu';
 }

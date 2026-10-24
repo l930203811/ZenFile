@@ -8784,5 +8784,11 @@
   "ui_settings_browse_page": "إعدادات صفحة التصفح",
   "ui_settings_browse_page_desc": "شريط العنوان والتبويبات والسحب والإفلات وتخطيط القائمة",
   "ui_settings_nav_and_bar": "إعدادات شريط التنقل",
-  "ui_settings_nav_and_bar_desc": "الإظهار/الإخفاء والموضع والشفافية والتسميات"
+  "ui_settings_nav_and_bar_desc": "الإظهار/الإخفاء والموضع والشفافية والتسميات",
+  "ui_settings_appearance_desc": "لون التمييز والأيقونات والخط والوضع الأسود",
+  "ui_settings_behavior_desc": "الصفحة الرئيسية الافتراضية ووضع التمرير وتنسيق الوقت",
+  "ui_settings_media_ops_desc": "الصور المصغرة وطريقة الفتح وذاكرة العارض المؤقتة",
+  "ui_settings_apk_install_desc": "التثبيت الصامت والاحتفاظ بحزمة APK وفحص الأمان",
+  "ui_settings_browser_nav_desc": "شريط العنوان والتبويبات وتقسيم الشاشة والسحب والإفلات",
+  "ui_settings_list_layout_desc": "العدّادات والأحجام وأزرار القائمة"
 }

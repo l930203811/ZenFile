@@ -8932,5 +8932,11 @@
   "ui_settings_browse_page": "瀏覽頁設定",
   "ui_settings_browse_page_desc": "位址列、分頁、拖放與清單版面配置",
   "ui_settings_nav_and_bar": "導覽列設定",
-  "ui_settings_nav_and_bar_desc": "顯示/隱藏、位置、不透明度與文字標籤"
+  "ui_settings_nav_and_bar_desc": "顯示/隱藏、位置、不透明度與文字標籤",
+  "ui_settings_appearance_desc": "強調色、圖示、字體與純黑模式",
+  "ui_settings_behavior_desc": "預設主頁、滑動模式與時間格式",
+  "ui_settings_media_ops_desc": "縮圖、開啟方式與檢視器快取",
+  "ui_settings_apk_install_desc": "靜默安裝、安裝檔保留與安全掃描",
+  "ui_settings_browser_nav_desc": "網址列、分頁、分割畫面與拖放",
+  "ui_settings_list_layout_desc": "計數、大小與選單按鈕"
 }

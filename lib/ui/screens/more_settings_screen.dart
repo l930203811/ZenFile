@@ -1460,14 +1460,20 @@ class SettingsGroupEntryCard extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.onTap,
   });
 
   /// 分组建模图标（primary 10% 底圆角 12 方块内 primary 色展示）。
   final IconData icon;
 
-  /// 分组标题（单行展示，无 subtitle —— 与语言行保持整页行高一致）。
+  /// 分组标题。
   final String title;
+
+  /// 可选副标题：一句话概括本组包含的设置项。null 时不渲染 subtitle（ListTile
+  /// 保持单行行高）；有值时行高随文案自然变高 —— 样式与 [SettingsTile] 的
+  /// subtitle 完全一致（13px、onSurface 60%），保证同页行观感统一。
+  final String? subtitle;
 
   /// 点击进入对应全屏子页面。
   final VoidCallback onTap;
@@ -1499,6 +1505,17 @@ class SettingsGroupEntryCard extends StatelessWidget {
           title,
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
+        // subtitle 为 null 时 ListTile 保持单行；有值时行高自然变高，
+        // 文字样式与 SettingsTile 的 subtitle 一致（13px、60% 透明度）。
+        subtitle: subtitle == null
+            ? null
+            : Text(
+                subtitle!,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
         trailing: Icon(
           Icons.chevron_right,
           size: 22,
@@ -1542,18 +1559,21 @@ class GeneralSettingsScreen extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
           children: [
-            // —— 语言：与下方分组入口卡片同形态（单行标题 + primary 右箭头），
-            // 不再带 subtitle（当前语言名），保证整页行高一致；
-            // 当前语言信息保留在语言选择弹窗与搜索态行里。
+            // —— 语言：恢复为「带 subtitle」形态 —— 副标题实时显示当前选中的
+            // 语言名（复用语言选择弹窗同一取值逻辑 _getCurrentLocaleName；
+            // 切换语言经 appStateKey 全局重建后本行自动刷新）。入口卡也有
+            // subtitle，整页行高保持一致。
             SettingsGroupEntryCard(
               icon: Broken.language_circle,
               title: L10n.of(context).ui_language,
+              subtitle: _getCurrentLocaleName(context, PreferencesService.getAppLocale()),
               onTap: () => _showLanguagePickerDialog(context),
             ),
             // ===== 外观与主题：入口卡片 → 全屏子页面 =====
             SettingsGroupEntryCard(
               icon: Broken.color_swatch,
               title: L10n.of(context).ui_appearance_theme,
+              subtitle: L10n.of(context).ui_settings_appearance_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _AppearanceGroupScreen()),
@@ -1563,6 +1583,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             SettingsGroupEntryCard(
               icon: Broken.setting,
               title: L10n.of(context).msgfdae44c3,
+              subtitle: L10n.of(context).ui_settings_behavior_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _BehaviorGroupScreen()),
@@ -1572,6 +1593,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             SettingsGroupEntryCard(
               icon: Broken.play_circle,
               title: L10n.of(context).msga4333788,
+              subtitle: L10n.of(context).ui_settings_media_ops_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _MediaDefaultOpsGroupScreen()),
@@ -1581,6 +1603,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             SettingsGroupEntryCard(
               icon: Broken.mobile,
               title: L10n.of(context).vt_install_settings_title,
+              subtitle: L10n.of(context).ui_settings_apk_install_desc,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const _ApkInstallGroupScreen()),

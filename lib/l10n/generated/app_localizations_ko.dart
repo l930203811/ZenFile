@@ -8633,4 +8633,22 @@ class L10nKo extends L10n {
 
   @override
   String get ui_settings_nav_and_bar_desc => '표시/숨기기, 위치, 불투명도, 라벨';
+
+  @override
+  String get ui_settings_appearance_desc => '강조 색상, 아이콘, 글꼴 및 AMOLED 모드';
+
+  @override
+  String get ui_settings_behavior_desc => '기본 홈, 스와이프 모드 및 시간 형식';
+
+  @override
+  String get ui_settings_media_ops_desc => '썸네일, 열기 방식 및 뷰어 캐시';
+
+  @override
+  String get ui_settings_apk_install_desc => '자동 설치, APK 보존 및 보안 검사';
+
+  @override
+  String get ui_settings_browser_nav_desc => '주소 표시줄, 탭, 분할 화면 및 드래그 앤 드롭';
+
+  @override
+  String get ui_settings_list_layout_desc => '개수, 크기 및 메뉴 버튼';
 }

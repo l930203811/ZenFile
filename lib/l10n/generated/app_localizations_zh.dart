@@ -8441,6 +8441,24 @@ class L10nZh extends L10n {
 
   @override
   String get ui_settings_nav_and_bar_desc => '显示/隐藏、位置、不透明度与文字标签';
+
+  @override
+  String get ui_settings_appearance_desc => '强调色、图标、字体与纯黑模式';
+
+  @override
+  String get ui_settings_behavior_desc => '默认主页、滑动模式与时间格式';
+
+  @override
+  String get ui_settings_media_ops_desc => '缩略图、打开方式与查看器缓存';
+
+  @override
+  String get ui_settings_apk_install_desc => '静默安装、安装包保留与安全扫描';
+
+  @override
+  String get ui_settings_browser_nav_desc => '地址栏、标签页、分屏与拖拽';
+
+  @override
+  String get ui_settings_list_layout_desc => '计数、大小与菜单按钮';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -16850,4 +16868,22 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_settings_nav_and_bar_desc => '顯示/隱藏、位置、不透明度與文字標籤';
+
+  @override
+  String get ui_settings_appearance_desc => '強調色、圖示、字體與純黑模式';
+
+  @override
+  String get ui_settings_behavior_desc => '預設主頁、滑動模式與時間格式';
+
+  @override
+  String get ui_settings_media_ops_desc => '縮圖、開啟方式與檢視器快取';
+
+  @override
+  String get ui_settings_apk_install_desc => '靜默安裝、安裝檔保留與安全掃描';
+
+  @override
+  String get ui_settings_browser_nav_desc => '網址列、分頁、分割畫面與拖放';
+
+  @override
+  String get ui_settings_list_layout_desc => '計數、大小與選單按鈕';
 }

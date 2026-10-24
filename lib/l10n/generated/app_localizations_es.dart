@@ -9024,4 +9024,28 @@ class L10nEs extends L10n {
   @override
   String get ui_settings_nav_and_bar_desc =>
       'Mostrar/ocultar, posición, opacidad y etiquetas';
+
+  @override
+  String get ui_settings_appearance_desc =>
+      'Color de acento, iconos, fuente y modo AMOLED';
+
+  @override
+  String get ui_settings_behavior_desc =>
+      'Página de inicio, modo de deslizamiento y formato de hora';
+
+  @override
+  String get ui_settings_media_ops_desc =>
+      'Miniaturas, apertura de archivos y caché de visores';
+
+  @override
+  String get ui_settings_apk_install_desc =>
+      'Instalación silenciosa, conservación del APK y análisis de seguridad';
+
+  @override
+  String get ui_settings_browser_nav_desc =>
+      'Barra de direcciones, pestañas, pantalla dividida y arrastrar y soltar';
+
+  @override
+  String get ui_settings_list_layout_desc =>
+      'Recuentos, tamaños y botones de menú';
 }

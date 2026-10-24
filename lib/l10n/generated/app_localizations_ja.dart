@@ -8621,4 +8621,22 @@ class L10nJa extends L10n {
 
   @override
   String get ui_settings_nav_and_bar_desc => '表示/非表示、位置、不透明度、ラベル';
+
+  @override
+  String get ui_settings_appearance_desc => 'アクセントカラー、アイコン、フォントと純黒モード';
+
+  @override
+  String get ui_settings_behavior_desc => 'デフォルトのホーム、スワイプモードと時刻形式';
+
+  @override
+  String get ui_settings_media_ops_desc => 'サムネイル、開き方とビューアーのキャッシュ';
+
+  @override
+  String get ui_settings_apk_install_desc => 'サイレントインストール、APKの保持とセキュリティスキャン';
+
+  @override
+  String get ui_settings_browser_nav_desc => 'アドレスバー、タブ、分割画面とドラッグ＆ドロップ';
+
+  @override
+  String get ui_settings_list_layout_desc => '件数、サイズとメニューボタン';
 }

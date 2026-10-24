@@ -9174,5 +9174,17 @@
   "ui_settings_nav_and_bar": "导航栏设置",
   "@ui_settings_nav_and_bar": {"description": "设置页主列表顶层入口「导航栏设置」标题，点击打开 NavBarSettingsSheet（v2.2 新增）"},
   "ui_settings_nav_and_bar_desc": "显示/隐藏、位置、不透明度与文字标签",
-  "@ui_settings_nav_and_bar_desc": {"description": "「导航栏设置」入口副标题"}
+  "@ui_settings_nav_and_bar_desc": {"description": "「导航栏设置」入口副标题"},
+  "ui_settings_appearance_desc": "强调色、图标、字体与纯黑模式",
+  "@ui_settings_appearance_desc": {"description": "「通用设置 → 外观与主题」入口卡副标题（v2.3 分组子页新增）"},
+  "ui_settings_behavior_desc": "默认主页、滑动模式与时间格式",
+  "@ui_settings_behavior_desc": {"description": "「通用设置 → 常规与行为」入口卡副标题（v2.3 分组子页新增）"},
+  "ui_settings_media_ops_desc": "缩略图、打开方式与查看器缓存",
+  "@ui_settings_media_ops_desc": {"description": "「通用设置 → 媒体与默认操作」入口卡副标题（v2.3 分组子页新增）"},
+  "ui_settings_apk_install_desc": "静默安装、安装包保留与安全扫描",
+  "@ui_settings_apk_install_desc": {"description": "「通用设置 → APK 安装设置」入口卡副标题（v2.3 分组子页新增）"},
+  "ui_settings_browser_nav_desc": "地址栏、标签页、分屏与拖拽",
+  "@ui_settings_browser_nav_desc": {"description": "「浏览页设置 → 文件浏览器与导航」入口卡副标题（v2.3 分组子页新增）"},
+  "ui_settings_list_layout_desc": "计数、大小与菜单按钮",
+  "@ui_settings_list_layout_desc": {"description": "「浏览页设置 → 列表与布局样式」入口卡副标题（v2.3 分组子页新增）"}
 }

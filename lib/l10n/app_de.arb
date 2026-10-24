@@ -8781,5 +8781,11 @@
   "ui_settings_browse_page": "Durchsuchen-Seite",
   "ui_settings_browse_page_desc": "Adressleiste, Tabs, Drag & Drop und Listenlayout",
   "ui_settings_nav_and_bar": "Navigationsleisten-Einstellungen",
-  "ui_settings_nav_and_bar_desc": "Anzeigen/Ausblenden, Position, Deckkraft und Beschriftungen"
+  "ui_settings_nav_and_bar_desc": "Anzeigen/Ausblenden, Position, Deckkraft und Beschriftungen",
+  "ui_settings_appearance_desc": "Akzentfarbe, Symbole, Schriftart und AMOLED-Modus",
+  "ui_settings_behavior_desc": "Standard-Startseite, Wischmodus und Zeitformat",
+  "ui_settings_media_ops_desc": "Miniaturen, Öffnen mit und Viewer-Cache",
+  "ui_settings_apk_install_desc": "Stille Installation, APK-Aufbewahrung und Sicherheitsprüfung",
+  "ui_settings_browser_nav_desc": "Adressleiste, Tabs, geteilte Ansicht und Drag & Drop",
+  "ui_settings_list_layout_desc": "Anzahlen, Größen und Menüschaltflächen"
 }

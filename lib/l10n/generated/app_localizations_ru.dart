@@ -8990,4 +8990,27 @@ class L10nRu extends L10n {
   @override
   String get ui_settings_nav_and_bar_desc =>
       'Показ, положение, прозрачность и подписи';
+
+  @override
+  String get ui_settings_appearance_desc =>
+      'Акцентный цвет, значки, шрифт и чёрный режим AMOLED';
+
+  @override
+  String get ui_settings_behavior_desc =>
+      'Главная страница, режим свайпов и формат времени';
+
+  @override
+  String get ui_settings_media_ops_desc =>
+      'Миниатюры, открытие файлов и кэш просмотрщиков';
+
+  @override
+  String get ui_settings_apk_install_desc =>
+      'Тихая установка, сохранение APK и проверка безопасности';
+
+  @override
+  String get ui_settings_browser_nav_desc =>
+      'Адресная строка, вкладки, разделение экрана и перетаскивание';
+
+  @override
+  String get ui_settings_list_layout_desc => 'Счётчики, размеры и кнопки меню';
 }

@@ -8874,4 +8874,28 @@ class L10nAr extends L10n {
   @override
   String get ui_settings_nav_and_bar_desc =>
       'الإظهار/الإخفاء والموضع والشفافية والتسميات';
+
+  @override
+  String get ui_settings_appearance_desc =>
+      'لون التمييز والأيقونات والخط والوضع الأسود';
+
+  @override
+  String get ui_settings_behavior_desc =>
+      'الصفحة الرئيسية الافتراضية ووضع التمرير وتنسيق الوقت';
+
+  @override
+  String get ui_settings_media_ops_desc =>
+      'الصور المصغرة وطريقة الفتح وذاكرة العارض المؤقتة';
+
+  @override
+  String get ui_settings_apk_install_desc =>
+      'التثبيت الصامت والاحتفاظ بحزمة APK وفحص الأمان';
+
+  @override
+  String get ui_settings_browser_nav_desc =>
+      'شريط العنوان والتبويبات وتقسيم الشاشة والسحب والإفلات';
+
+  @override
+  String get ui_settings_list_layout_desc =>
+      'العدّادات والأحجام وأزرار القائمة';
 }

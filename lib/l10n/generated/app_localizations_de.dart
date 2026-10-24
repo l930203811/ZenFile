@@ -9007,4 +9007,28 @@ class L10nDe extends L10n {
   @override
   String get ui_settings_nav_and_bar_desc =>
       'Anzeigen/Ausblenden, Position, Deckkraft und Beschriftungen';
+
+  @override
+  String get ui_settings_appearance_desc =>
+      'Akzentfarbe, Symbole, Schriftart und AMOLED-Modus';
+
+  @override
+  String get ui_settings_behavior_desc =>
+      'Standard-Startseite, Wischmodus und Zeitformat';
+
+  @override
+  String get ui_settings_media_ops_desc =>
+      'Miniaturen, Öffnen mit und Viewer-Cache';
+
+  @override
+  String get ui_settings_apk_install_desc =>
+      'Stille Installation, APK-Aufbewahrung und Sicherheitsprüfung';
+
+  @override
+  String get ui_settings_browser_nav_desc =>
+      'Adressleiste, Tabs, geteilte Ansicht und Drag & Drop';
+
+  @override
+  String get ui_settings_list_layout_desc =>
+      'Anzahlen, Größen und Menüschaltflächen';
 }

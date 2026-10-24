@@ -8784,5 +8784,11 @@
   "ui_settings_browse_page": "Page de navigation",
   "ui_settings_browse_page_desc": "Barre d'adresse, onglets, glisser-déposer et liste",
   "ui_settings_nav_and_bar": "Paramètres de la barre de navigation",
-  "ui_settings_nav_and_bar_desc": "Affichage, position, opacité et libellés"
+  "ui_settings_nav_and_bar_desc": "Affichage, position, opacité et libellés",
+  "ui_settings_appearance_desc": "Couleur d'accent, icônes, police et mode noir AMOLED",
+  "ui_settings_behavior_desc": "Page d'accueil, mode de balayage et format de l'heure",
+  "ui_settings_media_ops_desc": "Miniatures, ouverture des fichiers et cache des visionneuses",
+  "ui_settings_apk_install_desc": "Installation silencieuse, conservation de l'APK et analyse de sécurité",
+  "ui_settings_browser_nav_desc": "Barre d'adresse, onglets, écran scindé et glisser-déposer",
+  "ui_settings_list_layout_desc": "Compteurs, tailles et boutons de menu"
 }

@@ -8784,5 +8784,11 @@
   "ui_settings_browse_page": "Página de exploración",
   "ui_settings_browse_page_desc": "Barra de direcciones, pestañas, arrastrar y soltar y lista",
   "ui_settings_nav_and_bar": "Ajustes de la barra de navegación",
-  "ui_settings_nav_and_bar_desc": "Mostrar/ocultar, posición, opacidad y etiquetas"
+  "ui_settings_nav_and_bar_desc": "Mostrar/ocultar, posición, opacidad y etiquetas",
+  "ui_settings_appearance_desc": "Color de acento, iconos, fuente y modo AMOLED",
+  "ui_settings_behavior_desc": "Página de inicio, modo de deslizamiento y formato de hora",
+  "ui_settings_media_ops_desc": "Miniaturas, apertura de archivos y caché de visores",
+  "ui_settings_apk_install_desc": "Instalación silenciosa, conservación del APK y análisis de seguridad",
+  "ui_settings_browser_nav_desc": "Barra de direcciones, pestañas, pantalla dividida y arrastrar y soltar",
+  "ui_settings_list_layout_desc": "Recuentos, tamaños y botones de menú"
 }

@@ -8850,5 +8850,11 @@
   "ui_settings_browse_page": "Browse page",
   "ui_settings_browse_page_desc": "Address bar, tabs, drag & drop and list layout",
   "ui_settings_nav_and_bar": "Navigation Bar Settings",
-  "ui_settings_nav_and_bar_desc": "Show/hide, position, opacity and labels"
+  "ui_settings_nav_and_bar_desc": "Show/hide, position, opacity and labels",
+  "ui_settings_appearance_desc": "Accent color, icons, font and AMOLED mode",
+  "ui_settings_behavior_desc": "Default home, swipe mode and time format",
+  "ui_settings_media_ops_desc": "Thumbnails, open-with and viewer cache",
+  "ui_settings_apk_install_desc": "Silent install, APK retention and security scan",
+  "ui_settings_browser_nav_desc": "Address bar, tabs, split screen and drag & drop",
+  "ui_settings_list_layout_desc": "Counts, sizes and menu buttons"
 }

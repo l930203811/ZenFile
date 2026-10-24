@@ -15819,6 +15819,42 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'显示/隐藏、位置、不透明度与文字标签'**
   String get ui_settings_nav_and_bar_desc;
+
+  /// 「通用设置 → 外观与主题」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'强调色、图标、字体与纯黑模式'**
+  String get ui_settings_appearance_desc;
+
+  /// 「通用设置 → 常规与行为」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'默认主页、滑动模式与时间格式'**
+  String get ui_settings_behavior_desc;
+
+  /// 「通用设置 → 媒体与默认操作」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'缩略图、打开方式与查看器缓存'**
+  String get ui_settings_media_ops_desc;
+
+  /// 「通用设置 → APK 安装设置」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'静默安装、安装包保留与安全扫描'**
+  String get ui_settings_apk_install_desc;
+
+  /// 「浏览页设置 → 文件浏览器与导航」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'地址栏、标签页、分屏与拖拽'**
+  String get ui_settings_browser_nav_desc;
+
+  /// 「浏览页设置 → 列表与布局样式」入口卡副标题（v2.3 分组子页新增）
+  ///
+  /// In zh, this message translates to:
+  /// **'计数、大小与菜单按钮'**
+  String get ui_settings_list_layout_desc;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
