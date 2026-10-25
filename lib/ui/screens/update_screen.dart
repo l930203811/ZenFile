@@ -970,6 +970,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
       ]),
       _ChangeSection('🐛 问题修复', [
         '修复 .m3u / .m3u8 / .pls 等播放列表与 .srt / .ass / .vtt / .lrc / .cue 等字幕歌词文件的 MIME 被误判成音频、点开只能进播放器、且「打开方式」里也选不到文本编辑器的问题：现在这类文件直接用内置文本编辑器打开，无需先把后缀改成 .txt（GitHub issue #43）',
+        '修复上述文件在文件列表里显示音符图标与音频配色、还会被归入音频分类的问题：现在统一按文本文档显示（文档图标 + 扩展名角标 + 文本配色），不再对文本文件做音频封面提取',
       ]),
     ],
     en: [
@@ -984,6 +985,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
       ]),
       _ChangeSection('🐛 Fixes', [
         'Fixed playlists (.m3u / .m3u8 / .pls) and subtitle / lyric files (.srt / .ass / .vtt / .lrc / .cue) being misdetected as audio by their MIME type: they used to open in the audio player with no way to pick the text editor from "Open with". They now open in the built-in text editor directly, without renaming the extension to .txt first (GitHub issue #43)',
+        'Fixed the same files showing a music-note icon with audio colours and being counted under the audio category in file lists: they are now displayed consistently as text documents (document icon + extension badge + text colour), and no audio cover art is extracted from these plain-text files',
       ]),
     ],
   );

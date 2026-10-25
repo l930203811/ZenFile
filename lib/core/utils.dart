@@ -209,7 +209,12 @@ class FileUtils {
     // IM 追加后缀（`note.txt.1`）先归一化：否则扩展名判定与 MIME 嗅探都会失配。
     final normalized = stripImAppendedSuffix(path);
     final lower = normalized.toLowerCase();
-    
+
+    // 「内容是文本、MIME 却像音视频」的格式（.m3u / .srt / .lrc …）：它们点开
+    // 走的就是内置文本编辑器，类型系统必须一视同仁地算文本——否则图标会是
+    // 音符、颜色是音频色、还会被算进音频分类（GitHub issue #43 的同类后遗）。
+    if (isTextDespiteMediaMime(path)) return true;
+
     // Fallback for files without extension (e.g. hosts)
     final filename = _lastSegment(normalized);
     if (!filename.contains('.') && filename.isNotEmpty) {
@@ -348,6 +353,11 @@ class FileUtils {
   }
 
   static bool isAudio(String path) {
+    // 「内容是文本、MIME 却像音视频」的格式必须先排除：`.m3u` 的 MIME 是
+    // `audio/x-mpegurl`，不排除就会带着一串下游一起歪——列表图标变成音符 +
+    // 音频色、对文本文件做音频封面提取、还被算进音频分类/过滤
+    // （GitHub issue #43 的同类：MIME 误判渗进 UI 各层）。
+    if (isTextDespiteMediaMime(path)) return false;
     final normalized = stripImAppendedSuffix(path);
     final mimeType = lookupMimeType(normalized);
     if (mimeType != null && mimeType.startsWith('audio/')) return true;
@@ -369,6 +379,9 @@ class FileUtils {
   /// 判断是否为文档文件（非图片/视频/音频/压缩包/APK）
   static bool isDocument(String path) {
     if (isImage(path) || isVideo(path) || isAudio(path) || isArchive(path)) return false;
+    // 播放列表 / 字幕 / 歌词：内容是纯文本，归入文档（与「点开用文本编辑器打开」一致）。
+    // 必须写在 isAudio 排除之后——isAudio 已对这些扩展名返回 false。
+    if (isTextDespiteMediaMime(path)) return true;
     final ext = effectiveExtension(path);
     const docExts = [
       'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',

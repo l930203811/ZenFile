@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zenfile/core/utils.dart';
 
@@ -97,6 +98,76 @@ void main() {
       expect(FileUtils.canOpenAsText('a.m3u.1'), isTrue);
       expect(FileUtils.canOpenAsText('a.mp3.1'), isFalse);
       expect(FileUtils.canOpenAsText('a.jpg.2'), isFalse);
+    });
+  });
+
+  group('类型系统一致性：播放列表 / 字幕是文本，不是音频', () {
+    // 这组锁住「MIME 误判渗进 UI 各层」的修复（issue #43 的同族后遗）：
+    // 点开走文本编辑器，那图标、颜色、分类、缩略图提取也必须按文本算。
+
+    test('isAudio → false（.m3u 的 MIME 是 audio/x-mpegurl，曾因此显示音符图标）', () {
+      expect(FileUtils.isAudio('a.m3u'), isFalse);
+      expect(FileUtils.isAudio('a.m3u8'), isFalse);
+      expect(FileUtils.isAudio('a.pls'), isFalse);
+      expect(FileUtils.isAudio('a.srt'), isFalse);
+      expect(FileUtils.isAudio('a.lrc'), isFalse);
+      expect(FileUtils.isAudio('a.cue'), isFalse);
+      expect(FileUtils.isAudio('MyList.M3U'), isFalse);
+      expect(FileUtils.isAudio('a.m3u.1'), isFalse);
+    });
+
+    test('isAudio 不误伤真音频', () {
+      expect(FileUtils.isAudio('a.mp3'), isTrue);
+      expect(FileUtils.isAudio('a.flac'), isTrue);
+      expect(FileUtils.isAudio('a.wav'), isTrue);
+      expect(FileUtils.isAudio('a.m4a'), isTrue);
+      expect(FileUtils.isAudio('a.ogg'), isTrue);
+      expect(FileUtils.isAudio('a.aac'), isTrue);
+      expect(FileUtils.isAudio('a.opus'), isTrue);
+      expect(FileUtils.isAudio('a.wma'), isTrue);
+      expect(FileUtils.isAudio('a.amr'), isTrue);
+      expect(FileUtils.isAudio('a.mid'), isTrue);
+      expect(FileUtils.isAudio('a.midi'), isTrue);
+    });
+
+    test('isTextOrCode → true（图标/颜色走文本通路）', () {
+      expect(FileUtils.isTextOrCode('a.m3u'), isTrue);
+      expect(FileUtils.isTextOrCode('a.m3u8'), isTrue);
+      expect(FileUtils.isTextOrCode('a.ass'), isTrue);
+      expect(FileUtils.isTextOrCode('a.vtt'), isTrue);
+    });
+
+    test('isDocument → true（列表走文档图标分支，不再掉进问号兜底）', () {
+      expect(FileUtils.isDocument('a.m3u'), isTrue);
+      expect(FileUtils.isDocument('a.m3u8'), isTrue);
+      expect(FileUtils.isDocument('a.srt'), isTrue);
+      expect(FileUtils.isDocument('a.lrc'), isTrue);
+    });
+
+    test('isDocument 不误收图音视 / 压缩包 / 安装包', () {
+      expect(FileUtils.isDocument('a.mp3'), isFalse);
+      expect(FileUtils.isDocument('a.mp4'), isFalse);
+      expect(FileUtils.isDocument('a.jpg'), isFalse);
+      expect(FileUtils.isDocument('a.zip'), isFalse);
+      expect(FileUtils.isDocument('a.apk'), isFalse);
+    });
+
+    test('图标与 .txt 同源（文本图标，不是音符）', () {
+      expect(FileUtils.getIconForFile('a.m3u'), Icons.description_outlined);
+      expect(
+        FileUtils.getIconForFile('a.m3u'),
+        FileUtils.getIconForFile('a.txt'),
+      );
+      expect(
+        FileUtils.getIconForFile('a.m3u'),
+        isNot(FileUtils.getIconForFile('a.mp3')),
+      );
+    });
+
+    test('角标显示扩展名（M3U / M3U8 / SRT）', () {
+      expect(FileUtils.getDocumentTypeLabel('a.m3u'), 'M3U');
+      expect(FileUtils.getDocumentTypeLabel('a.m3u8'), 'M3U8');
+      expect(FileUtils.getDocumentTypeLabel('a.srt'), 'SRT');
     });
   });
 }
