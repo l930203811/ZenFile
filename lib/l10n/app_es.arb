@@ -3831,6 +3831,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "Cerrar pestaña actual",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "¿Cerrar todas las pestañas abiertas? Esta acción no se puede deshacer.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

@@ -2190,145 +2190,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     );
   }
 
-  /// 底部导航槽位 1-5 配置行：显示当前入口，点击弹出选择器；
-  /// 关闭态的槽位显示「已关闭」（灰字），点击仍可进选择页改选页面 / 重新开启。
-  Widget _buildBottomSlotRow(
-    BuildContext context,
-    int slot,
-    StateSetter setModalState,
-  ) {
-    final theme = Theme.of(context);
-    final l10n = L10n.of(context);
-    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
-    final enabled = PreferencesService.getBottomTabSlotEnabled(slot);
-    final label = enabled
-        ? _bottomSlotLabel(context, slot, cfg)
-        : l10n.ui_bottom_tab_slot_disabled;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
-      child: Material(
-        color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () async {
-            final picked = await QuickCategoriesGrid.showBottomTabPicker(
-              context,
-              slot: slot,
-              current: cfg,
-            );
-            if (picked == null) return;
-            if (picked['type'] == 'disabled') {
-              // 关闭：只隐藏槽位，原配置保留（重新选择页面即恢复显示）。
-              await PreferencesService.saveBottomTabSlotEnabled(slot, false);
-            } else if (picked['type'] == 'reset') {
-              await PreferencesService.saveBottomTabSlotConfig(slot, null);
-              // 恢复默认同时清掉开关的自定义值（1-4 默认开、5 默认关）。
-              await PreferencesService.clearBottomTabSlotEnabled(slot);
-            } else {
-              await PreferencesService.saveBottomTabSlotConfig(slot, picked);
-              // 选择具体页面 = 重新开启该槽位。
-              await PreferencesService.saveBottomTabSlotEnabled(slot, true);
-            }
-            if (mounted) setModalState(() {});
-            // 触发 HomeScreen 重建：底部 tab 栏即时刷新为新入口 / 槽位数
-            // （HomeScreen watch FileManagerProvider，MediaProvider 不触发其重建）
-            context.read<FileManagerProvider>().notifyListeners();
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    L10n.of(context).ui_bottom_tab_slot(slot + 1),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.end,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      // 关闭态灰字弱化，与「已选择页面」的主题色区分开。
-                      color: enabled
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 槽位当前显示名：默认内置页 / 分类页入口 / 快捷方式名。
-  String _bottomSlotLabel(
-    BuildContext context,
-    int slot,
-    Map<String, String>? cfg,
-  ) {
-    final l10n = L10n.of(context);
-    if (cfg == null) {
-      switch (slot) {
-        case 0:
-          return l10n.cat_quick_categories;
-        case 1:
-          return l10n.ui_file;
-        case 3:
-          // v3.4b2 起第 4 槽默认「最近」（原「设置」已被替换）
-          return l10n.cat_recent;
-        case 4:
-          // 第 5 槽默认「工具箱」（开启后未配置时）。
-          return l10n.cat_toolbox;
-        default:
-          return l10n.ui_transfers;
-      }
-    }
-    if (cfg['type'] == 'builtin') {
-      switch (cfg['key']) {
-        case 'tab_categories':
-          return l10n.cat_quick_categories;
-        case 'tab_files':
-          return l10n.ui_file;
-        case 'tab_settings':
-          return l10n.cat_settings;
-        case 'tab_recent':
-          return l10n.cat_recent;
-        default:
-          return l10n.ui_transfers;
-      }
-    }
-    if (cfg['type'] == 'custom_entry') {
-      return PreferencesService.getCustomEntryLabel() ??
-          l10n.ui_show_custom_entry;
-    }
-    final map = QuickCategoriesGrid.getAllCategoriesMap(
-      context,
-      Theme.of(context).brightness == Brightness.dark,
-      (index) {},
-    );
-    final entry = map[cfg['key']];
-    if (entry != null) return entry['label'] as String;
-    // 配置失效（快捷方式被删除等）时的兜底：按槽位默认内置页显示。
-    if (slot == 4) return l10n.cat_toolbox;
-    return slot == 3 ? l10n.cat_recent : l10n.ui_transfers;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -2605,11 +2466,11 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               ),
                             ),
                           ),
-                          _buildBottomSlotRow(context, 0, setModalState),
-                          _buildBottomSlotRow(context, 1, setModalState),
-                          _buildBottomSlotRow(context, 2, setModalState),
-                          _buildBottomSlotRow(context, 3, setModalState),
-                          _buildBottomSlotRow(context, 4, setModalState),
+                          BottomTabSlotRow(slot: 0),
+                          BottomTabSlotRow(slot: 1),
+                          BottomTabSlotRow(slot: 2),
+                          BottomTabSlotRow(slot: 3),
+                          BottomTabSlotRow(slot: 4),
                         ],
                         const SizedBox(height: 8),
                         const Divider(),
@@ -3013,5 +2874,164 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
         ),
       ],
     );
+  }
+}
+/// 底部导航单个槽位（1-5）的配置行。
+///
+/// 「自定义快捷方式」页的槽位配置区与「设置 → 导航栏设置」面板**共用**这一个
+/// 组件：两边读写同一份 [PreferencesService] 键（`bottom_tab_slot_<n>` 与
+/// `_enabled`），因此天然同步；变更后调用
+/// [FileManagerProvider.notifyListeners]，两处的 `watch` / `Consumer` 都会
+/// 即时刷新（本组件自身也 `watch` 了一份，不依赖祖先是否订阅）。
+///
+/// 行内语义：标题「位置 N」+ 当前入口名（开启=主题色 / 已关闭=灰字）+ 右箭头。
+/// 点击弹出 [QuickCategoriesGrid.showBottomTabPicker]：选页面 = 开启该槽位，
+/// 选「关闭」= 只隐藏（原配置保留），选「恢复默认」= 清掉自定义配置与开关值。
+class BottomTabSlotRow extends StatelessWidget {
+  const BottomTabSlotRow({super.key, required this.slot, this.margin});
+
+  /// 槽位下标（0..4）。
+  final int slot;
+
+  /// 外边距。默认与「自定义快捷方式」页一致（左右各 20）；
+  /// 「导航栏设置」面板自身已有 24 的左右 padding，传 0 避免双重缩进。
+  final EdgeInsetsGeometry? margin;
+
+  @override
+  Widget build(BuildContext context) {
+    // 自身订阅 provider：变更后不依赖祖先是否 watch，都能即时刷新。
+    context.watch<FileManagerProvider>();
+    final theme = Theme.of(context);
+    final l10n = L10n.of(context);
+    final cfg = PreferencesService.getBottomTabSlotConfig(slot);
+    final enabled = PreferencesService.getBottomTabSlotEnabled(slot);
+    final label = enabled
+        ? _slotLabel(context, slot, cfg)
+        : l10n.ui_bottom_tab_slot_disabled;
+    return Padding(
+      padding: margin ?? const EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
+      child: Material(
+        color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () async {
+            final picked = await QuickCategoriesGrid.showBottomTabPicker(
+              context,
+              slot: slot,
+              current: cfg,
+            );
+            if (picked == null) return;
+            if (picked['type'] == 'disabled') {
+              // 关闭：只隐藏槽位，原配置保留（重新选择页面即恢复显示）。
+              await PreferencesService.saveBottomTabSlotEnabled(slot, false);
+            } else if (picked['type'] == 'reset') {
+              await PreferencesService.saveBottomTabSlotConfig(slot, null);
+              // 恢复默认同时清掉开关的自定义值（1-4 默认开、5 默认关）。
+              await PreferencesService.clearBottomTabSlotEnabled(slot);
+            } else {
+              await PreferencesService.saveBottomTabSlotConfig(slot, picked);
+              // 选择具体页面 = 重新开启该槽位。
+              await PreferencesService.saveBottomTabSlotEnabled(slot, true);
+            }
+            // 触发 HomeScreen 重建：底部 tab 栏即时刷新为新入口 / 槽位数
+            // （HomeScreen watch FileManagerProvider，MediaProvider 不触发其重建）
+            if (context.mounted) {
+              context.read<FileManagerProvider>().notifyListeners();
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.ui_bottom_tab_slot(slot + 1),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      // 关闭态灰字弱化，与「已选择页面」的主题色区分开。
+                      color: enabled
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 槽位当前显示名：默认内置页 / 分类页入口 / 快捷方式名。
+  static String _slotLabel(
+    BuildContext context,
+    int slot,
+    Map<String, String>? cfg,
+  ) {
+    final l10n = L10n.of(context);
+    if (cfg == null) {
+      switch (slot) {
+        case 0:
+          return l10n.cat_quick_categories;
+        case 1:
+          return l10n.ui_file;
+        case 3:
+          // v3.4b2 起第 4 槽默认「最近」（原「设置」已被替换）
+          return l10n.cat_recent;
+        case 4:
+          // 第 5 槽默认「工具箱」（开启后未配置时）。
+          return l10n.cat_toolbox;
+        default:
+          return l10n.ui_transfers;
+      }
+    }
+    if (cfg['type'] == 'builtin') {
+      switch (cfg['key']) {
+        case 'tab_categories':
+          return l10n.cat_quick_categories;
+        case 'tab_files':
+          return l10n.ui_file;
+        case 'tab_settings':
+          return l10n.cat_settings;
+        case 'tab_recent':
+          return l10n.cat_recent;
+        default:
+          return l10n.ui_transfers;
+      }
+    }
+    if (cfg['type'] == 'custom_entry') {
+      return PreferencesService.getCustomEntryLabel() ??
+          l10n.ui_show_custom_entry;
+    }
+    final map = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      (index) {},
+    );
+    final entry = map[cfg['key']];
+    if (entry != null) return entry['label'] as String;
+    // 配置失效（快捷方式被删除等）时的兜底：按槽位默认内置页显示。
+    if (slot == 4) return l10n.cat_toolbox;
+    return slot == 3 ? l10n.cat_recent : l10n.ui_transfers;
   }
 }

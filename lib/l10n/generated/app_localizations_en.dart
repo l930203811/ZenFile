@@ -3500,6 +3500,9 @@ class L10nEn extends L10n {
   String get ui_close_all_tabs => 'Close All Tabs';
 
   @override
+  String get ui_close_current_tab => 'Close current tab';
+
+  @override
   String get ui_close_all_tabs_message =>
       'Close all open tabs? This action cannot be undone.';
 

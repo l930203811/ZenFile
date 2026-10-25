@@ -887,13 +887,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // 抽屉入口：纵向三个空心圆点（断线描边风格，与其它按钮同源）。
-                  //
-                  // 不用 Broken.sidebar_left（那是「侧边栏」的象形，读作展开/收起
-                  // 面板而不是「打开抽屉」），也不直接用 Broken.more（横向三点且
-                  // 字形偏实）。这里自绘三个描边圆点，笔触与其它 Broken 按钮一致。
+                  // 抽屉入口：三横线图标（Broken.menu）。与顶栏其它按钮同一套
+                  // 风格——Broken 图标集的断线描边字形 + 主题高亮色，不再自绘。
                   IconButton(
-                    icon: _VerticalDotsIcon(color: theme.colorScheme.primary),
+                    icon: Icon(Broken.menu, color: theme.colorScheme.primary),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   // 全局搜索：图标样式，点击进入全局搜索页
@@ -1169,53 +1166,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       },
     );
   }
-}
-
-/// 纵向排列的三个空心圆点（断线描边风格）。
-///
-/// Broken 图标集里没有「竖排三点」的字形：横向的 Broken.more 语义是「更多」，
-/// 且字形偏实。抽屉入口要的是「打开菜单」的抽象三点，这里直接用 Canvas 画三个
-/// 等大描边圆——笔触粗细与圆角同顶栏其它 Broken 按钮保持同一套断线观感。
-class _VerticalDotsIcon extends StatelessWidget {
-  final Color color;
-
-  const _VerticalDotsIcon({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: CustomPaint(painter: _VerticalDotsPainter(color)),
-    );
-  }
-}
-
-class _VerticalDotsPainter extends CustomPainter {
-  final Color color;
-
-  const _VerticalDotsPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 笔触与 Broken 的 24dp 图标同重量；round cap 让断口也是圆的。
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..strokeCap = StrokeCap.round;
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    const r = 2.0;
-    const gap = 5.0; // 相邻圆心距（总高 22dp，落在 24dp 盒内不溢出）
-    for (var i = -1; i <= 1; i++) {
-      canvas.drawCircle(Offset(cx, cy + i * gap), r, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_VerticalDotsPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 /// 单 / 双窗口切换按钮：圆角方框底 + 数字徽标（语义为「显示切换目标」）。

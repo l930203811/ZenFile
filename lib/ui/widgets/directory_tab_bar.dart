@@ -275,14 +275,77 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
               ),
             ],
           ),
-          // 关闭所有标签页按钮：点击弹出多语言确认，确认后
-          // 单窗口保留 1 个、双窗口新建 2 个本地根目录标签。
-          IconButton(
+          // 关闭标签页菜单：「关闭当前 / 关闭所有」合并成一个按钮（与旁边加号
+          // 的新建 / 复制同款就地弹出样式）。
+          //
+          // 「关闭当前」关的是**当前激活**的标签页，走与长按标签菜单同一个
+          // provider.closeTab；只剩 1 个标签或当前标签被 pin 住时该选项不出现
+          // （与长按菜单的 canClose 判定一致，pin 的语义是「关不掉」）。
+          // 「关闭所有」**不再二次弹窗确认**：closeAllTabs 本身是「重置回本地
+          // 根目录标签」（单窗口留 1 个、双窗口新建 2 个）而不是「全关成空」，
+          // 误触代价低，不值得再拦一道对话框。
+          PopupMenuButton<String>(
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             icon: const Icon(Broken.close_circle, size: 18),
-            tooltip: L10n.of(context).ui_close_all_tabs,
-            onPressed: () => _confirmCloseAllTabs(context, widget.provider),
+            tooltip: L10n.of(context).ui_close_tab,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            // 就地向下展开：菜单锚在这个按钮正下方，而不是飘到屏幕边缘。
+            position: PopupMenuPosition.under,
+            elevation: 8,
+            onSelected: (value) {
+              final provider = widget.provider;
+              if (value == 'current') {
+                provider.closeTab(provider.activeTabIndex);
+              } else {
+                provider.closeAllTabs();
+              }
+            },
+            itemBuilder: (context) {
+              final provider = widget.provider;
+              final tabs = provider.tabs;
+              final canCloseCurrent = tabs.length > 1 &&
+                  !tabs[provider.activeTabIndex].isPinned;
+              return [
+                if (canCloseCurrent)
+                  PopupMenuItem<String>(
+                    value: 'current',
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Broken.close_circle,
+                          size: 20,
+                          color: Colors.redAccent,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          L10n.of(context).ui_close_current_tab,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                PopupMenuItem<String>(
+                  value: 'all',
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Broken.trash,
+                        size: 20,
+                        color: Colors.redAccent,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        L10n.of(context).ui_close_all_tabs,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
           ),
         ],
       ),
@@ -490,36 +553,6 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
     }
     final IconData base = isRoot ? Broken.home_1 : Broken.folder;
     return Icon(base, size: size, color: baseColor);
-  }
-
-  void _confirmCloseAllTabs(BuildContext context, FileManagerProvider provider) {
-    final l10n = L10n.of(context);
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.ui_close_all_tabs),
-          content: Text(l10n.ui_close_all_tabs_message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.ui_cancel),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                provider.closeAllTabs();
-              },
-              child: Text(l10n.ui_confirm),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   /// 长按标签页 → 「关闭标签页」菜单。

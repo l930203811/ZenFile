@@ -3828,6 +3828,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "Aktuellen Tab schließen",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "Alle geöffneten Tabs schließen? Dies kann nicht rückgängig gemacht werden.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

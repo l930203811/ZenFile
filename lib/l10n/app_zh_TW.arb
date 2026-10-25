@@ -3902,6 +3902,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "關閉當前標籤頁",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "確定要關閉所有開啟的標籤頁嗎？此操作不可撤銷。",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

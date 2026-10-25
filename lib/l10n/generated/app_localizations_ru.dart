@@ -3554,6 +3554,9 @@ class L10nRu extends L10n {
   String get ui_close_all_tabs => 'Закрыть все вкладки';
 
   @override
+  String get ui_close_current_tab => 'Закрыть текущую вкладку';
+
+  @override
   String get ui_close_all_tabs_message =>
       'Закрыть все открытые вкладки? Это действие необратимо.';
 

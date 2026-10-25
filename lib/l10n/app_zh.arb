@@ -3946,6 +3946,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "关闭当前标签页",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "确定要关闭所有打开的标签页吗？此操作不可撤销。",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

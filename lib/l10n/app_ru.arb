@@ -3831,6 +3831,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "Закрыть текущую вкладку",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "Закрыть все открытые вкладки? Это действие необратимо.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

@@ -6,6 +6,11 @@ import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+// ⚠️ 与 quick_categories_grid.dart 形成 import 环（那边也 import 本文件取
+// NavBarPositionDropdown / NavBarOpacitySlider）—— Dart 允许环，运行时按符号
+// 解析，无初始化顺序问题。BottomTabSlotRow 定义在那边，本面板复用同一个组件
+// 才能保证「设置面板」与「自定义快捷方式」页的 5 个槽位入口始终同步。
+import 'quick_categories_grid.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 统一的「导航栏」设置面板：设置页与「自定义快捷方式」页共用同一份实现。
@@ -230,32 +235,51 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // ===== 导航栏位置（顶部 / 底部）=====
+                  // 样式与「自定义快捷方式」页**完全一致**：标题行 + 行内下拉框
+                  // （[NavBarPositionDropdown]，读写同一份 provider 字段，双向同步）。
+                  // 位置两选刻意在「导航栏已隐藏」时**不禁用**：隐不隐藏与摆哪儿是
+                  // 两件独立的事，允许先设好位置再打开开关，少一次来回。
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.ui_show_bottom_action_bar,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                      const NavBarPositionDropdown(),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   Text(
-                    l10n.ui_show_bottom_action_bar,
+                    l10n.ui_bottom_tab_custom_hint,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // 位置两选。刻意在「导航栏已隐藏」时**不禁用**：隐不隐藏与摆哪儿是
-                  // 两件独立的事，允许先设好位置再打开开关，少一次来回。
-                  _NavBarPositionTile(
-                    icon: Broken.arrow_square_up,
-                    title: l10n.msge34c23ff,
-                    subtitle: l10n.msg3341e3ed,
-                    selected: !fileManager.showBottomActionBar,
-                    onTap: () => fileManager.setBottomActionBar(false),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.ui_long_press_switch,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  _NavBarPositionTile(
-                    icon: Broken.arrow_square_down,
-                    title: l10n.msg8c414b06,
-                    subtitle: l10n.msg5d2c8e7f,
-                    selected: fileManager.showBottomActionBar,
-                    onTap: () => fileManager.setBottomActionBar(true),
-                  ),
+                  // ===== 5 个槽位入口 =====
+                  // 与「自定义快捷方式」页的槽位配置区共用 [BottomTabSlotRow]
+                  // （同一份 PreferencesService 键，两边改动即时同步）。
+                  // 刻意**不随「显示导航栏」开关收起**：与上面的位置一样，
+                  // 关着导航栏时也能先把槽位配好，打开即生效。
+                  // 面板自身已有 24 左右 padding，槽位行 margin 传 0 避免双重缩进。
+                  for (var slot = 0; slot < 5; slot++)
+                    BottomTabSlotRow(slot: slot, margin: EdgeInsets.zero),
                 ],
               ),
             );
@@ -305,113 +329,12 @@ class NavBarPositionDropdown extends StatelessWidget {
           color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
         ),
         items: [
-          DropdownMenuItem(
-            value: false,
-            child: Text(l10n.msge34c23ff),
-          ),
-          DropdownMenuItem(
-            value: true,
-            child: Text(l10n.msg8c414b06),
-          ),
+          DropdownMenuItem(value: false, child: Text(l10n.msge34c23ff)),
+          DropdownMenuItem(value: true, child: Text(l10n.msg8c414b06)),
         ],
         onChanged: (val) {
           if (val != null) fileManager.setBottomActionBar(val);
         },
-      ),
-    );
-  }
-}
-
-/// 位置选项卡片。样式与 `more_settings_screen.dart` 里的 `_buildSelectionTile`
-/// 保持一致（那边是顶层私有函数、被多个对话框复用，故这里不抽公共组件，
-/// 免得动到其它调用点）。
-class _NavBarPositionTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _NavBarPositionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected
-              ? theme.colorScheme.primary.withValues(alpha: 0.08)
-              : theme.colorScheme.surface.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: selected
-                ? theme.colorScheme.primary.withValues(alpha: 0.4)
-                : theme.colorScheme.outline.withValues(alpha: 0.1),
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: selected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: selected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: selected
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (selected)
-              Icon(
-                Broken.tick_circle,
-                size: 22,
-                color: theme.colorScheme.primary,
-              ),
-          ],
-        ),
       ),
     );
   }

@@ -3398,6 +3398,9 @@ class L10nKo extends L10n {
   String get ui_close_all_tabs => '모든 탭 닫기';
 
   @override
+  String get ui_close_current_tab => '현재 탭 닫기';
+
+  @override
   String get ui_close_all_tabs_message => '열려 있는 모든 탭을 닫을까요? 이 작업은 취소할 수 없습니다.';
 
   @override

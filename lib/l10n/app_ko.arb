@@ -3831,6 +3831,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "현재 탭 닫기",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "열려 있는 모든 탭을 닫을까요? 이 작업은 취소할 수 없습니다.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

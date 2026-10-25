@@ -6433,6 +6433,12 @@ abstract class L10n {
   /// ui widgets
   ///
   /// In zh, this message translates to:
+  /// **'关闭当前标签页'**
+  String get ui_close_current_tab;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
   /// **'确定要关闭所有打开的标签页吗？此操作不可撤销。'**
   String get ui_close_all_tabs_message;
 

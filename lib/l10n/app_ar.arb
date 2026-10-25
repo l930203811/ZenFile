@@ -3831,6 +3831,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "إغلاق علامة التبويب الحالية",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "هل تريد إغلاق جميع التبويبات المفتوحة؟ لا يمكن التراجع.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

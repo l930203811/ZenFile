@@ -3838,6 +3838,10 @@
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },
+  "ui_close_current_tab": "Close current tab",
+  "@ui_close_current_tab": {
+    "description": "ui widgets"
+  },
   "ui_close_all_tabs_message": "Close all open tabs? This action cannot be undone.",
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"

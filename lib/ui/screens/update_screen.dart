@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.5';
+  static const String _latestChangelogVersion = 'v3.6.6';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v366,
     _v365,
     _v364,
     _v363,
@@ -953,7 +954,27 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.5 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.6 ────────────────────────────────────────────────
+  static const _Changelog _v366 = _Changelog(
+    version: 'v3.6.6',
+    date: '2026-10-25',
+    zh: [
+      _ChangeSection('✨ 界面焕新', [
+        '浏览页标签栏右侧的「关闭所有标签页」按钮改为弹出菜单，提供「关闭当前标签页」与「关闭所有标签页」两个选项；选择「关闭所有标签页」时不再二次确认，直接关闭全部标签页',
+        '设置—导航栏设置中的「导航栏位置」选项改为与「自定义快捷方式」页面同款的下拉选择器，并在下方新增 5 个底部导航槽位入口；两处槽位共用同一份配置，改动实时同步',
+        '顶栏最左侧的抽屉入口图标由三点改为三横线，采用与顶栏其他按钮一致的高亮色断线描边风格',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Interface', [
+        'The "Close all tabs" button on the browse page\'s tab bar now opens a menu offering "Close current tab" and "Close all tabs"; choosing "Close all tabs" closes every tab immediately with no extra confirmation',
+        'The "Nav bar position" option in Settings → Nav bar settings now uses the same dropdown picker as the custom shortcuts page, and five bottom-nav slot entries were added below it — both places share one configuration and update in sync',
+        'The drawer button at the far left of the top bar changed from three dots to a hamburger icon, matching the other top-bar buttons\' highlighted outline style',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.5 ──────────────────────────────────────────────────────────
   static const _Changelog _v365 = _Changelog(
     version: 'v3.6.5',
     date: '2026-10-24',
