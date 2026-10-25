@@ -3942,7 +3942,7 @@
   "@ui_close_tab_hint": {
     "description": "ui widgets"
   },
-  "ui_close_all_tabs": "关闭所有标签",
+  "ui_close_all_tabs": "关闭所有标签页",
   "@ui_close_all_tabs": {
     "description": "ui widgets"
   },

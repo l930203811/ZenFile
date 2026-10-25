@@ -278,12 +278,15 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
           // 关闭标签页菜单：「关闭当前 / 关闭所有」合并成一个按钮（与旁边加号
           // 的新建 / 复制同款就地弹出样式）。
           //
-          // 「关闭当前」关的是**当前激活**的标签页，走与长按标签菜单同一个
-          // provider.closeTab；只剩 1 个标签或当前标签被 pin 住时该选项不出现
-          // （与长按菜单的 canClose 判定一致，pin 的语义是「关不掉」）。
-          // 「关闭所有」**不再二次弹窗确认**：closeAllTabs 本身是「重置回本地
-          // 根目录标签」（单窗口留 1 个、双窗口新建 2 个）而不是「全关成空」，
-          // 误触代价低，不值得再拦一道对话框。
+          // 「关闭当前」**始终显示**：
+          // - 多标签 → 关掉当前激活的标签页（provider.closeTab）；
+          // - 只剩 1 个标签 → 不能删空列表（activeTab / pane 映射都依赖至少
+          //   1 个），走 closeAllTabs 的「重置回本地根目录标签」语义：关掉
+          //   当前这个会话、重开一个干净的本页。
+          // 「关闭所有」只在多标签时出现：单标签时它和「关闭当前」是同一个
+          // 动作，给两个入口反而容易点错。且**不再二次弹窗确认**：closeAllTabs
+          // 本身是「重置回本地根目录标签」（单窗口留 1 个、双窗口新建 2 个）而不是
+          // 「全关成空」，误触代价低，不值得再拦一道对话框。
           PopupMenuButton<String>(
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -297,7 +300,9 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
             elevation: 8,
             onSelected: (value) {
               final provider = widget.provider;
-              if (value == 'current') {
+              // 单标签时「关闭当前」与「关闭所有」同归 closeAllTabs：重置回
+              // 本地根目录标签（关掉当前会话、重开一个干净的本页）。
+              if (value == 'current' && provider.tabs.length > 1) {
                 provider.closeTab(provider.activeTabIndex);
               } else {
                 provider.closeAllTabs();
@@ -305,45 +310,45 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
             },
             itemBuilder: (context) {
               final provider = widget.provider;
-              final tabs = provider.tabs;
-              final canCloseCurrent = tabs.length > 1 &&
-                  !tabs[provider.activeTabIndex].isPinned;
+              final multi = provider.tabs.length > 1;
               return [
-                if (canCloseCurrent)
-                  PopupMenuItem<String>(
-                    value: 'current',
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Broken.close_circle,
-                          size: 20,
-                          color: Colors.redAccent,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          L10n.of(context).ui_close_current_tab,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
+                // 「关闭当前」始终在菜单首位：单标签时它是唯一入口。
                 PopupMenuItem<String>(
-                  value: 'all',
+                  value: 'current',
                   child: Row(
                     children: [
                       const Icon(
-                        Broken.trash,
+                        Broken.close_circle,
                         size: 20,
                         color: Colors.redAccent,
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        L10n.of(context).ui_close_all_tabs,
+                        L10n.of(context).ui_close_current_tab,
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                 ),
+                // 「关闭所有」只在多标签时出现。
+                if (multi)
+                  PopupMenuItem<String>(
+                    value: 'all',
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Broken.trash,
+                          size: 20,
+                          color: Colors.redAccent,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          L10n.of(context).ui_close_all_tabs,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
               ];
             },
           ),

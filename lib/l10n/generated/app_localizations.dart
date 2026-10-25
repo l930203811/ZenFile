@@ -6427,7 +6427,7 @@ abstract class L10n {
   /// ui widgets
   ///
   /// In zh, this message translates to:
-  /// **'关闭所有标签'**
+  /// **'关闭所有标签页'**
   String get ui_close_all_tabs;
 
   /// ui widgets
