@@ -617,6 +617,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       context,
       title: L10n.of(context).msgcd0b9aca,
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
+      items: FileActionDialogs.itemsFromPaths(_selectedPaths),
     );
 
     if (confirm) {
@@ -733,6 +734,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           content: isMulti
               ? L10n.of(context).ui_delete_items_confirm(_selectedPaths.length)
               : L10n.of(context).ui_delete_item_confirm,
+          items: FileActionDialogs.itemsFromPaths(
+            isMulti ? _selectedPaths : [path],
+          ),
         );
         if (confirm) {
           try {

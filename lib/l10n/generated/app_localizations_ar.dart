@@ -8334,6 +8334,14 @@ class L10nAr extends L10n {
       'عرض مربع تأكيد قبل حذف الملفات. عند إيقاف التشغيل يتم الحذف مباشرة.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'و$count أخرى';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'فتح باستخدام محرر النصوص';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'لا تسأل مرة أخرى';
 
   @override

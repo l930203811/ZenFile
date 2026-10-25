@@ -229,6 +229,57 @@ class FileUtils {
     return mime != null && mime.startsWith('text/');
   }
 
+  /// 内容确定是纯文本、但 MIME 会被 mime 库误判成 `audio/*` / `application/*`
+  /// 的扩展名（播放列表 / 字幕 / 歌词 / cuesheet）。
+  ///
+  /// 典型陷阱：`.m3u` → `audio/x-mpegurl`。若只按 MIME 分派，点开一个播放
+  /// 列表会掉进音频播放器；而「打开方式 → 本应用打开」这条路也因为
+  /// `_tryOpenBuiltInDirectly` 已经「成功打开」而不再弹类型选择器 ⇒ 用户
+  /// 再也点不进内置文本编辑器，只能先把后缀改成 `.txt` 再改回来
+  /// （GitHub issue #43）。
+  ///
+  /// ⚠️ 调用方必须在 image / video / audio 的 MIME 分支**之前**判它，
+  /// 否则等于没判。
+  static const List<String> textDespiteMediaMimeExtensions = <String>[
+    // 播放列表（MIME 多为 audio/* 或 application/*）
+    '.m3u',
+    '.m3u8',
+    '.pls',
+    '.asx',
+    '.ram',
+    '.xspf',
+    '.wpl',
+    // 字幕 / 歌词 / cuesheet
+    '.srt',
+    '.vtt',
+    '.sbv',
+    '.ass',
+    '.ssa',
+    '.lrc',
+    '.cue',
+  ];
+
+  /// 是否为「内容是文本、MIME 却像音视频」的格式。已忽略 IM 追加后缀。
+  static bool isTextDespiteMediaMime(String path) {
+    final lower = stripImAppendedSuffix(path).toLowerCase();
+    return textDespiteMediaMimeExtensions.any((ext) => lower.endsWith(ext));
+  }
+
+  /// 是否值得在文件菜单里给出「用文本编辑器打开」入口。
+  ///
+  /// 压缩包与图音视排除——它们有更强的专用查看器，再挂一个文本入口只是噪音。
+  /// 其余一律给：内置编辑器本来就声明「任何文件都能当文本看」，而用户要的
+  /// 正是「不用把 .m3u 改成 .txt 也能编辑」（GitHub issue #43）。
+  ///
+  /// ⚠️ `isTextDespiteMediaMime` 必须排在 `isAudio` 等之前：`.m3u` 的 MIME 是
+  /// `audio/x-mpegurl`，先判媒体类会把它误杀。
+  static bool canOpenAsText(String path) {
+    if (isArchive(path)) return false;
+    if (isTextDespiteMediaMime(path)) return true;
+    if (isImage(path) || isVideo(path) || isAudio(path)) return false;
+    return true;
+  }
+
   static bool isImage(String path) {
     // `photo.jpg.1` → `photo.jpg`：不加这一步，MIME 嗅探与后缀判断都会失配。
     final normalized = stripImAppendedSuffix(path);

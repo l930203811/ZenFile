@@ -8433,6 +8433,19 @@
   "msg_background_play_active": "バックグラウンド再生中です。通知から操作できます",
   "ui_delete_confirm_enabled": "削除確認",
   "ui_delete_confirm_subtitle": "ファイル削除前に確認ダイアログを表示します。オフにすると直接削除します。",
+  "ui_delete_more_items": "他に {count} 件",
+  "@ui_delete_more_items": {
+    "description": "Trailing row of the delete confirmation preview: number of items hidden because they exceed the preview limit",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_open_with_text_editor": "テキストエディタで開く",
+  "@ui_open_with_text_editor": {
+    "description": "File action menu: open (and edit) any file with the built-in text editor"
+  },
   "ui_delete_confirm_dont_ask": "今後確認しない",
   "video_auto_fallback_soft": "ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。",
   "video_vo_compat": "動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。",

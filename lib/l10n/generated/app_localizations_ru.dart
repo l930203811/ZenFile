@@ -8443,6 +8443,14 @@ class L10nRu extends L10n {
       'Показывать подтверждение перед удалением файлов. Выкл. = удалять сразу.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'и ещё $count';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'Открыть в текстовом редакторе';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'Больше не спрашивать';
 
   @override

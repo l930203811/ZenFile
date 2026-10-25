@@ -8429,6 +8429,19 @@
   "msg_background_play_active": "Reproduciendo en segundo plano, controla desde la notificación",
   "ui_delete_confirm_enabled": "Confirmación de eliminación",
   "ui_delete_confirm_subtitle": "Mostrar confirmación antes de eliminar archivos. Desactivado = eliminar directamente.",
+  "ui_delete_more_items": "y {count} más",
+  "@ui_delete_more_items": {
+    "description": "Trailing row of the delete confirmation preview: number of items hidden because they exceed the preview limit",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_open_with_text_editor": "Abrir con editor de texto",
+  "@ui_open_with_text_editor": {
+    "description": "File action menu: open (and edit) any file with the built-in text editor"
+  },
   "ui_delete_confirm_dont_ask": "No preguntar de nuevo",
   "video_auto_fallback_soft": "Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.",
   "video_vo_compat": "Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad.",

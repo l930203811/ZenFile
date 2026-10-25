@@ -8457,6 +8457,14 @@ class L10nDe extends L10n {
       'Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'und $count weitere';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'Mit Texteditor öffnen';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'Nicht erneut fragen';
 
   @override

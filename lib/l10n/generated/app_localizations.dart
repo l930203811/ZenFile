@@ -14854,6 +14854,18 @@ abstract class L10n {
   /// **'删除文件时显示二次确认弹窗，关闭后直接删除'**
   String get ui_delete_confirm_subtitle;
 
+  /// 删除确认弹窗条目预览区末尾，因超出预览上限而未逐条展示的剩余数量
+  ///
+  /// In zh, this message translates to:
+  /// **'还有 {count} 项'**
+  String ui_delete_more_items(int count);
+
+  /// 文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件
+  ///
+  /// In zh, this message translates to:
+  /// **'用文本编辑器打开'**
+  String get ui_open_with_text_editor;
+
   /// No description provided for @ui_delete_confirm_dont_ask.
   ///
   /// In zh, this message translates to:

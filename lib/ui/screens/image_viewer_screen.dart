@@ -995,6 +995,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       context,
       title: l10n.ui_delete,
       content: l10n.ui_delete_file_confirm,
+      // 名称复用标题栏的 [_titleOf]：加密条目拿的是解密后的真实文件名，
+      // 流式 URL 也已还原，与用户此刻看到的界面文字对得上。
+      items: DeleteConfirmItems.from([
+        DeleteConfirmItem(
+          name: _titleOf(_currentIndex),
+          isDirectory: false,
+        ),
+      ]),
     );
 
     if (confirmed != true) return;

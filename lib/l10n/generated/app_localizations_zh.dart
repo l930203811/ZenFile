@@ -7935,6 +7935,14 @@ class L10nZh extends L10n {
   String get ui_delete_confirm_subtitle => '删除文件时显示二次确认弹窗，关闭后直接删除';
 
   @override
+  String ui_delete_more_items(int count) {
+    return '还有 $count 项';
+  }
+
+  @override
+  String get ui_open_with_text_editor => '用文本编辑器打开';
+
+  @override
   String get ui_delete_confirm_dont_ask => '删除不再提示';
 
   @override
@@ -16363,6 +16371,14 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_delete_confirm_subtitle => '刪除檔案時顯示二次確認彈窗，關閉後直接刪除';
+
+  @override
+  String ui_delete_more_items(int count) {
+    return '還有 $count 項';
+  }
+
+  @override
+  String get ui_open_with_text_editor => '用文字編輯器開啟';
 
   @override
   String get ui_delete_confirm_dont_ask => '刪除不再提示';

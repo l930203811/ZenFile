@@ -8491,6 +8491,14 @@ class L10nFr extends L10n {
       'Afficher une confirmation avant de supprimer des fichiers. Désactivé = suppression directe.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'et $count de plus';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'Ouvrir avec l\'éditeur de texte';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'Ne plus demander';
 
   @override

@@ -350,6 +350,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
           content: isMulti
               ? L10n.of(context).count1(provider.selectedPaths.length)
               : L10n.of(context).msgee14ee27,
+          items: FileActionDialogs.itemsFromPaths(
+            isMulti ? provider.selectedPaths : [path],
+          ),
         );
         if (confirm) {
           try {

@@ -1065,10 +1065,30 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     final count = _selectedFilePaths.length + _selectedAssetIds.length;
     if (count == 0) return;
 
+    // 删除前预览条目：文件路径直接用 basename；相册条目取 AssetEntity.title
+    // （PhotoManager 的 title 就是文件名，同步可得，不必像确认后那样 await
+    // file 打盘）。用 Map 建索引，避免「选中数 × 媒体库总数」的平方级匹配。
+    final previewAssets = <String, AssetEntity>{};
+    if (_selectedAssetIds.isNotEmpty) {
+      final mp = context.read<MediaProvider>();
+      for (final a in [...mp.images, ...mp.videos, ...mp.screenshots]) {
+        previewAssets[a.id] = a;
+      }
+    }
+    final previewItems = <DeleteConfirmItem>[
+      ...FileActionDialogs.itemsFromPaths(_selectedFilePaths).items,
+      for (final id in _selectedAssetIds)
+        DeleteConfirmItem(
+          name: previewAssets[id]?.title ?? id,
+          isDirectory: false,
+        ),
+    ];
+
     final confirm = await FileActionDialogs.showDeleteConfirmDialog(
       context,
       title: L10n.of(context).msg631cd220,
       content: L10n.of(context).count1(count),
+      items: DeleteConfirmItems.from(previewItems),
     );
 
     if (confirm == true && mounted) {
@@ -1495,6 +1515,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               context,
               title: L10n.of(context).msg631cd220,
               content: L10n.of(context).ui_permanently_delete_name(name),
+              items: DeleteConfirmItems.from([
+                DeleteConfirmItem(name: name, isDirectory: false),
+              ]),
             );
             if (confirm == true && mounted) {
               final mediaProvider = context.read<MediaProvider>();

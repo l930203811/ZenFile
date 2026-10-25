@@ -13231,6 +13231,19 @@ class FileManagerProvider extends ChangeNotifier {
       return true;
     }
 
+    // 「内容是文本、MIME 却像音视频」的格式（.m3u / .srt / .lrc …）必须在下面
+    // 的 image / video / audio MIME 分支**之前**拦下：`.m3u` 的 MIME 是
+    // `audio/x-mpegurl`，不拦就会掉进音频播放器，而「打开方式 → 本应用打开」
+    // 又会因为本方法已经返回 true 而不再弹类型选择器 ⇒ 用户只能先把后缀改成
+    // .txt（GitHub issue #43）。
+    // 加密文件用解密出的真实名再判一次：流式 URL 的后缀不可信。
+    if (FileUtils.isTextDespiteMediaMime(path) ||
+        (realName != null && FileUtils.isTextDespiteMediaMime(realName))) {
+      if (!context.mounted) return true;
+      Navigator.push(context, MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: path)));
+      return true;
+    }
+
     if (mimeType.startsWith('image/')) {
       if (!context.mounted) return true;
       // path 可能已是流式解密 URL（加密图片），直接交给查看器渲染
@@ -13418,6 +13431,24 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     await _openBuiltInByType(context, path, builtInType);
+  }
+
+  /// 用内置文本编辑器打开（并可编辑）任意文件。
+  ///
+  /// 「打开方式 → 本应用打开」对 `.m3u` / `.srt` 这类「MIME 像音视频、内容
+  /// 其实是文本」的文件会被 [_tryOpenBuiltInDirectly] 直接接管（判成音频），
+  /// 用户没有机会指定「我就是想编辑文本」；本入口显式给出这个选择，并绕开
+  /// 已保存的默认打开方式偏好（GitHub issue #43）。
+  Future<void> openFileWithTextEditor(
+    BuildContext context,
+    String path,
+  ) async {
+    final target = await _decryptCryptFileIfNeeded(path);
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: target)),
+    );
   }
 
   /// 显示「本应用打开 / 外部系统选择器」BottomSheet，并执行对应打开流程。

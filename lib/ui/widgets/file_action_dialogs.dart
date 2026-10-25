@@ -1,12 +1,54 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/file_name_validation.dart';
+import '../../core/utils.dart';
 import '../../services/apk_installer_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
 import 'package:path/path.dart' as p;
+
+/// 删除确认弹窗中展示的单个待删条目（文件图标 + 文件名）。
+class DeleteConfirmItem {
+  const DeleteConfirmItem({required this.name, this.isDirectory = false});
+
+  /// 显示名（不含路径）。
+  final String name;
+
+  /// 是否目录：决定图标用文件夹还是按扩展名判定的文件图标。
+  final bool isDirectory;
+}
+
+/// 待删条目集合：自带「预览上限 + 隐藏计数」。
+///
+/// 用户一次选中上千个文件时，弹窗只列前 [FileActionDialogs.maxPreviewItems]
+/// 条，剩余合并成一行「还有 N 项」——既保住「看清删的是什么」的预览意义，
+/// 又不让弹窗首帧去 build 几千个行。
+class DeleteConfirmItems {
+  /// 从完整条目列表构造（内部自行截断到预览上限）。
+  factory DeleteConfirmItems.from(Iterable<DeleteConfirmItem> all) {
+    final preview = all
+        .take(FileActionDialogs.maxPreviewItems)
+        .toList(growable: false);
+    return DeleteConfirmItems._(preview, all.length);
+  }
+
+  const DeleteConfirmItems._(this.items, this.totalCount);
+
+  /// 实际参与预览的条目（已截断）。
+  final List<DeleteConfirmItem> items;
+
+  /// 待删条目真实总数。
+  final int totalCount;
+
+  /// 因超上限而未逐条展示的条数。
+  int get hiddenCount => totalCount - items.length;
+
+  bool get isNotEmpty => totalCount > 0;
+}
 
 class FileActionDialogs {
   static Future<String?> showTextInputDialog(
@@ -84,10 +126,14 @@ class FileActionDialogs {
   /// 删除确认的统一入口：
   /// 设置中「删除文件确认」开关关闭时直接返回 true（跳过弹窗），
   /// 开启时弹出带「删除不再提示」复选框的确认对话框。
+  ///
+  /// [items] 非空时，弹窗会附带一块「待删条目预览」（图标 + 文件名），
+  /// 高度随条数自适应，让用户在点下删除前看清到底删了哪些东西。
   static Future<bool> showDeleteConfirmDialog(
     BuildContext context, {
     required String title,
     required String content,
+    DeleteConfirmItems? items,
   }) async {
     // 开关关闭 → 直接删除，不再弹窗
     if (!PreferencesService.getDeleteConfirmEnabled()) return true;
@@ -96,7 +142,55 @@ class FileActionDialogs {
       title: title,
       content: content,
       showSkipCheckbox: true,
+      items: items,
     );
+  }
+
+  /// 预览区最多逐条列出的条数（超出合并为「还有 N 项」）。
+  static const int maxPreviewItems = 50;
+
+  /// 预览区最多同时可见的行数（超出部分在预览区内部滚动）。
+  static const int maxVisibleRows = 5;
+
+  /// 单行高度（含留白），用于按条数推算预览区高度。
+  static const double previewRowExtent = 52.0;
+
+  /// 由路径列表构造 [DeleteConfirmItems]：各删除入口共用同一套取名 / 判目录
+  /// 逻辑，避免每个调用点各写一份 `p.basename` + `existsSync`。
+  ///
+  /// - 名称走 [FileUtils.zipEntryDisplayName]：zip:// 的目录条目带尾斜杠，
+  ///   `p.basename` 会拿到空串；
+  /// - 是否目录：zip 条目看尾斜杠，本地条目 `Directory.existsSync()`，
+  ///   远程条目（`remote://`）判不出，按文件处理（只影响图标）；
+  /// - 先 `toList()` 做纯 O(n) 计数，**截断之后**才做同步 stat —— 不会为
+  ///   上千个选中项各打一次盘。
+  static DeleteConfirmItems itemsFromPaths(Iterable<String> paths) {
+    final all = paths.toList(growable: false);
+    final preview = all
+        .take(maxPreviewItems)
+        .map(
+          (path) => DeleteConfirmItem(
+            name: _displayNameForPath(path),
+            isDirectory: _isDirectoryPathSync(path),
+          ),
+        )
+        .toList(growable: false);
+    return DeleteConfirmItems._(preview, all.length);
+  }
+
+  static String _displayNameForPath(String path) {
+    final name = FileUtils.zipEntryDisplayName(path) ?? p.posix.basename(path);
+    return name.isEmpty ? path : name;
+  }
+
+  static bool _isDirectoryPathSync(String path) {
+    if (path.endsWith('/')) return true; // zip:// 目录条目
+    if (path.startsWith('remote://') || path.startsWith('zip://')) return false;
+    try {
+      return Directory(path).existsSync();
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<bool> showConfirmDialog(
@@ -104,6 +198,7 @@ class FileActionDialogs {
     required String title,
     required String content,
     bool showSkipCheckbox = false,
+    DeleteConfirmItems? items,
   }) async {
     var dontAskAgain = false;
     final result = await showDialog<bool>(
@@ -118,6 +213,10 @@ class FileActionDialogs {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(content),
+                  if (items != null && items.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _DeleteItemsPreview(items: items),
+                  ],
                   if (showSkipCheckbox) ...[
                     const SizedBox(height: 8),
                     CheckboxListTile(
@@ -804,6 +903,109 @@ class FileActionSheet {
       context,
       items: items,
       title: filePath != null ? p.basename(filePath) : null,
+    );
+  }
+}
+
+/// 删除确认弹窗的「待删条目预览」：图标 + 文件名，高度随条数自适应。
+///
+/// 高度算法：可见行数 = min(条数, [FileActionDialogs.maxVisibleRows])，
+/// 超出的条数在预览区**内部**滚动；若还有因超上限被合并的条目，末尾再补
+/// 一行「还有 N 项」并占掉一行高度。这样 1 个文件时是一行紧凑小条，
+/// 几十个文件时是五屏高的可滚动列表，都不会把对话框顶出屏幕。
+class _DeleteItemsPreview extends StatelessWidget {
+  const _DeleteItemsPreview({required this.items});
+
+  final DeleteConfirmItems items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = L10n.of(context);
+    final hidden = items.hiddenCount;
+    final rows = items.items.length > FileActionDialogs.maxVisibleRows
+        ? FileActionDialogs.maxVisibleRows
+        : items.items.length;
+    // 「还有 N 项」也按一行计高度，避免它把列表顶出约束。
+    final visibleRows = rows + (hidden > 0 ? 1 : 0);
+    // 高度随条数自适应，但**再取一道屏高上限**：AlertDialog 的内容不会自动
+    // 滚动（Flutter 官方注释明确要求「有放不下的风险就该自己套
+    // SingleChildScrollView」），小屏上 6 行 + 标题 + 复选框 + 按钮会把
+    // 对话框顶出屏幕。上限取屏高 40%，超出的行在预览区内部滚动。
+    final targetHeight = visibleRows * FileActionDialogs.previewRowExtent;
+    final screenCap = MediaQuery.sizeOf(context).height * 0.4;
+    final maxHeight = targetHeight <= screenCap ? targetHeight : screenCap;
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.12),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final item in items.items) _DeleteItemRow(item: item),
+              if (hidden > 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 15,
+                  ),
+                  child: Text(
+                    l10n.ui_delete_more_items(hidden),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 预览区单行：左侧按类型着色的图标，右侧文件名（超长省略）。
+class _DeleteItemRow extends StatelessWidget {
+  const _DeleteItemRow({required this.item});
+
+  final DeleteConfirmItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // 目录统一用主题色文件夹；文件走 FileUtils 的扩展名判定，
+    // 与列表页图标同源（用户在看到弹窗时能对上号）。
+    final icon = item.isDirectory
+        ? Broken.folder
+        : FileUtils.getIconForFile(item.name);
+    final color = item.isDirectory
+        ? theme.colorScheme.primary
+        : FileUtils.getColorForFile(item.name, context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

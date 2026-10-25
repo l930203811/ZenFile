@@ -8426,6 +8426,19 @@
   "msg_background_play_active": "Wiedergabe im Hintergrund. Steuerung über die Benachrichtigung",
   "ui_delete_confirm_enabled": "Löschbestätigung",
   "ui_delete_confirm_subtitle": "Vor dem Löschen von Dateien einen Bestätigungsdialog anzeigen. Aus = direkt löschen.",
+  "ui_delete_more_items": "und {count} weitere",
+  "@ui_delete_more_items": {
+    "description": "Trailing row of the delete confirmation preview: number of items hidden because they exceed the preview limit",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_open_with_text_editor": "Mit Texteditor öffnen",
+  "@ui_open_with_text_editor": {
+    "description": "File action menu: open (and edit) any file with the built-in text editor"
+  },
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
   "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
   "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.",

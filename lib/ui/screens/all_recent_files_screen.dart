@@ -346,6 +346,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
           context,
           title: L10n.of(context).msg53518c22,
           content: L10n.of(context).msgee14ee27,
+          items: FileActionDialogs.itemsFromPaths([path]),
         );
         if (confirm) {
           try {

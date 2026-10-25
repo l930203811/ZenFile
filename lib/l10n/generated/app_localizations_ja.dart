@@ -8106,6 +8106,14 @@ class L10nJa extends L10n {
       'ファイル削除前に確認ダイアログを表示します。オフにすると直接削除します。';
 
   @override
+  String ui_delete_more_items(int count) {
+    return '他に $count 件';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'テキストエディタで開く';
+
+  @override
   String get ui_delete_confirm_dont_ask => '今後確認しない';
 
   @override

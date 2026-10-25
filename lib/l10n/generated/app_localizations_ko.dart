@@ -8114,6 +8114,14 @@ class L10nKo extends L10n {
       '파일 삭제 전에 확인 대화상자를 표시합니다. 끄면 바로 삭제합니다.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return '$count개 더 있음';
+  }
+
+  @override
+  String get ui_open_with_text_editor => '텍스트 편집기로 열기';
+
+  @override
   String get ui_delete_confirm_dont_ask => '다시 묻지 않음';
 
   @override

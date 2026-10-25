@@ -8362,6 +8362,14 @@ class L10nEn extends L10n {
       'Show a confirmation dialog before deleting files. Turn off to delete directly.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'and $count more';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'Open with text editor';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'Don\'t ask again';
 
   @override

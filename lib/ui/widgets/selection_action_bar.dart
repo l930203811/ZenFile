@@ -154,6 +154,9 @@ class SelectionActionBar extends StatelessWidget {
                             content: L10n.of(
                               context,
                             ).selectedcount2(provider.selectedPaths.length),
+                            items: FileActionDialogs.itemsFromPaths(
+                              provider.selectedPaths,
+                            ),
                           );
                       if (confirm) {
                         try {

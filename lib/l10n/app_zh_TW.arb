@@ -8577,6 +8577,19 @@
   "msg_background_play_active": "已進入背景播放，可透過通知欄控制",
   "ui_delete_confirm_enabled": "刪除檔案確認",
   "ui_delete_confirm_subtitle": "刪除檔案時顯示二次確認彈窗，關閉後直接刪除",
+  "ui_delete_more_items": "還有 {count} 項",
+  "@ui_delete_more_items": {
+    "description": "删除确认弹窗条目预览区末尾，因超出预览上限而未逐条展示的剩余数量",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_open_with_text_editor": "用文字編輯器開啟",
+  "@ui_open_with_text_editor": {
+    "description": "文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件"
+  },
   "ui_delete_confirm_dont_ask": "刪除不再提示",
   "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
   "video_vo_compat": "影片渲染異常，已切換為相容渲染模式",

@@ -8474,6 +8474,14 @@ class L10nEs extends L10n {
       'Mostrar confirmación antes de eliminar archivos. Desactivado = eliminar directamente.';
 
   @override
+  String ui_delete_more_items(int count) {
+    return 'y $count más';
+  }
+
+  @override
+  String get ui_open_with_text_editor => 'Abrir con editor de texto';
+
+  @override
   String get ui_delete_confirm_dont_ask => 'No preguntar de nuevo';
 
   @override

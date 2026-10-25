@@ -959,17 +959,31 @@ class _UpdateScreenState extends State<UpdateScreen> {
     version: 'v3.6.6',
     date: '2026-10-25',
     zh: [
+      _ChangeSection('✨ 新功能', [
+        '删除文件确认弹窗现在会列出待删条目：每项显示文件类型图标与文件名，弹窗高度随条目数量自适应——条目少时是一行紧凑小条，条目多时是限高可滚动的列表；超过 50 项时末尾汇总显示「还有 N 项」',
+        '文件操作菜单新增「用文本编辑器打开」：任意非图音视、非压缩包的文件都能直接用内置文本编辑器打开并编辑，不必再靠改后缀名绕过',
+      ]),
       _ChangeSection('✨ 界面焕新', [
         '浏览页标签栏右侧的「关闭所有标签页」按钮改为弹出菜单，提供「关闭当前标签页」与「关闭所有标签页」两个选项；选择「关闭所有标签页」时不再二次确认，直接关闭全部标签页',
         '设置—导航栏设置中的「导航栏位置」选项改为与「自定义快捷方式」页面同款的下拉选择器，并在下方新增 5 个底部导航槽位入口；两处槽位共用同一份配置，改动实时同步',
         '顶栏最左侧的抽屉入口图标由三点改为三横线，采用与顶栏其他按钮一致的高亮色断线描边风格',
       ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复 .m3u / .m3u8 / .pls 等播放列表与 .srt / .ass / .vtt / .lrc / .cue 等字幕歌词文件的 MIME 被误判成音频、点开只能进播放器、且「打开方式」里也选不到文本编辑器的问题：现在这类文件直接用内置文本编辑器打开，无需先把后缀改成 .txt（GitHub issue #43）',
+      ]),
     ],
     en: [
+      _ChangeSection('✨ New Features', [
+        'The delete confirmation dialog now lists the items to be deleted: each row shows a file-type icon and the file name, and the dialog height adapts to the item count — a single compact row for one file, a height-limited scrollable list for many; when more than 50 items are selected the remainder is summarised as "and N more"',
+        'A new "Open with text editor" entry in the file action menu: any file that is not an image / audio / video or an archive can be opened and edited in the built-in text editor directly, no extension renaming needed',
+      ]),
       _ChangeSection('✨ Interface', [
         'The "Close all tabs" button on the browse page\'s tab bar now opens a menu offering "Close current tab" and "Close all tabs"; choosing "Close all tabs" closes every tab immediately with no extra confirmation',
         'The "Nav bar position" option in Settings → Nav bar settings now uses the same dropdown picker as the custom shortcuts page, and five bottom-nav slot entries were added below it — both places share one configuration and update in sync',
         'The drawer button at the far left of the top bar changed from three dots to a hamburger icon, matching the other top-bar buttons\' highlighted outline style',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed playlists (.m3u / .m3u8 / .pls) and subtitle / lyric files (.srt / .ass / .vtt / .lrc / .cue) being misdetected as audio by their MIME type: they used to open in the audio player with no way to pick the text editor from "Open with". They now open in the built-in text editor directly, without renaming the extension to .txt first (GitHub issue #43)',
       ]),
     ],
   );

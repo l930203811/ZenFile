@@ -246,6 +246,9 @@ class SelectionContextBottomSheet extends StatelessWidget {
                   effectiveContext,
                   title: L10n.of(context).msgcd0b9aca,
                   content: L10n.of(context).selectedcount2(selectedCount),
+                  items: FileActionDialogs.itemsFromPaths(
+                    provider.selectedPaths,
+                  ),
                 );
                 if (confirm) {
                   try {
@@ -269,6 +272,23 @@ class SelectionContextBottomSheet extends StatelessWidget {
                   final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
                   provider.showOpenWithSheet(effectiveContext, targetPath);
+                },
+              ),
+            // 「用文本编辑器打开」：任意非图音视 / 非压缩包文件都能编辑。
+            // .m3u / .srt / .lrc 这类「MIME 像音视频、内容是文本」的格式
+            // 走这里，用户不必先把后缀改成 .txt（issue #43）。
+            if (isSingle && !isFolder && FileUtils.canOpenAsText(targetPath))
+              _buildMenuItem(
+                context: context,
+                icon: Broken.text,
+                label: L10n.of(context).ui_open_with_text_editor,
+                onTap: () {
+                  final effectiveContext = outerContext ?? context;
+                  Navigator.pop(context);
+                  provider.openFileWithTextEditor(
+                    effectiveContext,
+                    targetPath,
+                  );
                 },
               ),
             if (isSingle && !isFolder && FileUtils.isArchive(targetPath))
