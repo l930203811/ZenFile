@@ -672,8 +672,7 @@ class L10nAr extends L10n {
   String get msgcd0b9aca => 'حذف المحدد';
 
   @override
-  String get msgee14ee27 =>
-      'هل أنت متأكد أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.';
+  String get msgee14ee27 => 'هل أنت متأكد أنك تريد حذف هذا العنصر؟';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1044,7 +1043,7 @@ class L10nAr extends L10n {
 
   @override
   String count1(Object count) {
-    return 'هل أنت متأكد أنك تريد حذف $count عنصر محدد بشكل دائم؟';
+    return 'هل أنت متأكد أنك تريد حذف $count عنصر محدد؟';
   }
 
   @override

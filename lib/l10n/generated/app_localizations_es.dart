@@ -692,7 +692,7 @@ class L10nEs extends L10n {
 
   @override
   String get msgee14ee27 =>
-      '¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.';
+      '¿Estás seguro de que deseas eliminar este elemento?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1067,7 +1067,7 @@ class L10nEs extends L10n {
 
   @override
   String count1(Object count) {
-    return '¿Estás seguro de que deseas eliminar permanentemente $count elementos seleccionados?';
+    return '¿Estás seguro de que deseas eliminar $count elementos seleccionados?';
   }
 
   @override

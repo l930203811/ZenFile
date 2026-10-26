@@ -641,7 +641,7 @@ class L10nJa extends L10n {
   String get msgcd0b9aca => '選択を削除';
 
   @override
-  String get msgee14ee27 => 'このアイテムを削除しますか？この操作は元に戻せません。';
+  String get msgee14ee27 => 'このアイテムを削除しますか？';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1006,7 +1006,7 @@ class L10nJa extends L10n {
 
   @override
   String count1(Object count) {
-    return '選択した$count個のアイテムを完全に削除しますか？';
+    return '選択した$count個のアイテムを削除しますか？';
   }
 
   @override

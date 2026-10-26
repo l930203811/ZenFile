@@ -727,7 +727,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+  "msgee14ee27": "¿Estás seguro de que deseas eliminar este elemento?",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1197,7 +1197,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "¿Estás seguro de que deseas eliminar permanentemente {count} elementos seleccionados?",
+  "count1": "¿Estás seguro de que deseas eliminar {count} elementos seleccionados?",
   "@count2": {
     "type": "text"
   },

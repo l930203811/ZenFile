@@ -727,7 +727,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+  "msgee14ee27": "이 항목을 삭제하시겠습니까?",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1197,7 +1197,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "선택한 {count}개 항목을 영구적으로 삭제하시겠습니까?",
+  "count1": "선택한 {count}개 항목을 삭제하시겠습니까?",
   "@count2": {
     "type": "text"
   },

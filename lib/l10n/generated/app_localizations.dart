@@ -1297,7 +1297,7 @@ abstract class L10n {
   /// ui\screens\directory_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'确定要删除此项目吗？此操作无法撤销。'**
+  /// **'确定要删除该项目吗？'**
   String get msgee14ee27;
 
   /// ui\screens\directory_screen.dart
@@ -1993,7 +1993,7 @@ abstract class L10n {
   /// ui\screens\media_category_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'确定要永久删除选中的 {count} 个项目吗？'**
+  /// **'确定要删除选中的 {count} 个项目吗？'**
   String count1(Object count);
 
   /// ui\screens\media_category_screen.dart

@@ -639,7 +639,7 @@ class L10nZh extends L10n {
   String get msgcd0b9aca => '删除选中';
 
   @override
-  String get msgee14ee27 => '确定要删除此项目吗？此操作无法撤销。';
+  String get msgee14ee27 => '确定要删除该项目吗？';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1004,7 +1004,7 @@ class L10nZh extends L10n {
 
   @override
   String count1(Object count) {
-    return '确定要永久删除选中的 $count 个项目吗？';
+    return '确定要删除选中的 $count 个项目吗？';
   }
 
   @override
@@ -9115,7 +9115,7 @@ class L10nZhTw extends L10nZh {
   String get msgcd0b9aca => '刪除選中';
 
   @override
-  String get msgee14ee27 => '確定要刪除此專案嗎？此操作無法撤銷。';
+  String get msgee14ee27 => '確定要刪除該專案嗎？';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -9480,7 +9480,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String count1(Object count) {
-    return '確定要永久刪除選中的 $count 個專案嗎？';
+    return '確定要刪除選中的 $count 個專案嗎？';
   }
 
   @override

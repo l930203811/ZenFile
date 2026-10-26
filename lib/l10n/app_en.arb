@@ -734,7 +734,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "Are you sure you want to delete this item? This action cannot be undone.",
+  "msgee14ee27": "Are you sure you want to delete this item?",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1204,7 +1204,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "Are you sure you want to permanently delete {count} selected items?",
+  "count1": "Are you sure you want to delete {count} selected items?",
   "@count2": {
     "type": "text"
   },

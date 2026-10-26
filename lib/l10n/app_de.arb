@@ -724,7 +724,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "Sind Sie sicher, dass Sie dieses Element löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+  "msgee14ee27": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1194,7 +1194,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "Sind Sie sicher, dass Sie {count} ausgewählte Elemente dauerhaft löschen möchten?",
+  "count1": "Sind Sie sicher, dass Sie {count} ausgewählte Elemente löschen möchten?",
   "@count2": {
     "type": "text"
   },

@@ -1513,7 +1513,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
             }
             final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
               context,
-              content: L10n.of(context).ui_permanently_delete_name(name),
+              content: L10n.of(context).msgee14ee27,
               items: DeleteConfirmItems.from([
                 DeleteConfirmItem(name: name, isDirectory: false),
               ]),

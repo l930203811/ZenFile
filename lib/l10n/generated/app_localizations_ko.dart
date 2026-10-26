@@ -641,7 +641,7 @@ class L10nKo extends L10n {
   String get msgcd0b9aca => '선택 삭제';
 
   @override
-  String get msgee14ee27 => '이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
+  String get msgee14ee27 => '이 항목을 삭제하시겠습니까?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1006,7 +1006,7 @@ class L10nKo extends L10n {
 
   @override
   String count1(Object count) {
-    return '선택한 $count개 항목을 영구적으로 삭제하시겠습니까?';
+    return '선택한 $count개 항목을 삭제하시겠습니까?';
   }
 
   @override

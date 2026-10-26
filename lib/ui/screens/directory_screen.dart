@@ -850,7 +850,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           content: isMulti
-              ? L10n.of(context).selectedcount2(provider.selectedPaths.length)
+              ? L10n.of(context).count1(provider.selectedPaths.length)
               : L10n.of(context).msgee14ee27,
           items: FileActionDialogs.itemsFromPaths(
             isMulti ? provider.selectedPaths : [path],

@@ -688,8 +688,7 @@ class L10nRu extends L10n {
   String get msgcd0b9aca => 'Удалить Выбранные';
 
   @override
-  String get msgee14ee27 =>
-      'Вы уверены, что хотите удалить этот элемент? Это действие нельзя отменить.';
+  String get msgee14ee27 => 'Вы уверены, что хотите удалить этот элемент?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1063,7 +1062,7 @@ class L10nRu extends L10n {
 
   @override
   String count1(Object count) {
-    return 'Вы уверены, что хотите окончательно удалить $count выбранных элементов?';
+    return 'Вы уверены, что хотите удалить $count выбранных элементов?';
   }
 
   @override

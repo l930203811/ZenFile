@@ -388,22 +388,8 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   color: isNewer ? theme.colorScheme.primary : theme.colorScheme.onSurface,
                 ),
               ),
-              if (isNewer)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    L10n.of(context).msg_newer,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
+              // （原「较新」文字徽标已移除：只有较新卡片有徽标，导致左右两卡
+              // 高度不一致；哪张卡更新由主色边框 + 标题主色高亮表达，高度恒等。）
             ],
           ),
           const SizedBox(height: 8),

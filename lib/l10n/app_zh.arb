@@ -763,7 +763,7 @@
   "@msgcd0b9aca": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "确定要删除此项目吗？此操作无法撤销。",
+  "msgee14ee27": "确定要删除该项目吗？",
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1239,7 +1239,7 @@
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },
-  "count1": "确定要永久删除选中的 {count} 个项目吗？",
+  "count1": "确定要删除选中的 {count} 个项目吗？",
   "@count1": {
     "description": "ui\\screens\\media_category_screen.dart",
     "type": "text"

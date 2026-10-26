@@ -690,8 +690,7 @@ class L10nFr extends L10n {
   String get msgcd0b9aca => 'Supprimer la sélection';
 
   @override
-  String get msgee14ee27 =>
-      'Êtêtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.';
+  String get msgee14ee27 => 'Êtes-vous sûr de vouloir supprimer cet élément ?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1065,7 +1064,7 @@ class L10nFr extends L10n {
 
   @override
   String count1(Object count) {
-    return 'Êtêtes-vous sûr de vouloir supprimer définitivement $count éléments sélectionnés ?';
+    return 'Êtes-vous sûr de vouloir supprimer les $count éléments sélectionnés ?';
   }
 
   @override

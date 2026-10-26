@@ -560,7 +560,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       builder: (ctx) {
         return AlertDialog(
           // 删除确认弹窗不渲染标题，只保留正文与操作按钮（远程文件只能永久删除）
-          content: Text('从服务器永久删除"${item.name}"？'),
+          content: Text(L10n.of(ctx).msgee14ee27),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
             ElevatedButton(
@@ -1492,7 +1492,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(L10n.of(context).msg50eaf94d),
-        content: Text(L10n.of(context).selectedcount2(_selectedPaths.length)),
+        content: Text(L10n.of(context).count1(_selectedPaths.length)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           TextButton(

@@ -731,7 +731,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "このアイテムを削除しますか？この操作は元に戻せません。",
+  "msgee14ee27": "このアイテムを削除しますか？",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1201,7 +1201,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "選択した{count}個のアイテムを完全に削除しますか？",
+  "count1": "選択した{count}個のアイテムを削除しますか？",
   "@count2": {
     "type": "text"
   },

@@ -676,8 +676,7 @@ class L10nEn extends L10n {
   String get msgcd0b9aca => 'Delete Selected';
 
   @override
-  String get msgee14ee27 =>
-      'Are you sure you want to delete this item? This action cannot be undone.';
+  String get msgee14ee27 => 'Are you sure you want to delete this item?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1049,7 +1048,7 @@ class L10nEn extends L10n {
 
   @override
   String count1(Object count) {
-    return 'Are you sure you want to permanently delete $count selected items?';
+    return 'Are you sure you want to delete $count selected items?';
   }
 
   @override

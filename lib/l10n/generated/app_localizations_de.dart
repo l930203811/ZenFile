@@ -689,7 +689,7 @@ class L10nDe extends L10n {
 
   @override
   String get msgee14ee27 =>
-      'Sind Sie sicher, dass Sie dieses Element löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.';
+      'Sind Sie sicher, dass Sie dieses Element löschen möchten?';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
@@ -1064,7 +1064,7 @@ class L10nDe extends L10n {
 
   @override
   String count1(Object count) {
-    return 'Sind Sie sicher, dass Sie $count ausgewählte Elemente dauerhaft löschen möchten?';
+    return 'Sind Sie sicher, dass Sie $count ausgewählte Elemente löschen möchten?';
   }
 
   @override

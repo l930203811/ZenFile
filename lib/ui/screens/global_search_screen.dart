@@ -615,7 +615,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (_selectedPaths.isEmpty) return;
     final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
       context,
-      content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
+      content: L10n.of(context).count1(_selectedPaths.length),
       items: FileActionDialogs.itemsFromPaths(_selectedPaths),
     );
 
@@ -730,8 +730,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           content: isMulti
-              ? L10n.of(context).ui_delete_items_confirm(_selectedPaths.length)
-              : L10n.of(context).ui_delete_item_confirm,
+              ? L10n.of(context).count1(_selectedPaths.length)
+              : L10n.of(context).msgee14ee27,
           items: FileActionDialogs.itemsFromPaths(
             isMulti ? _selectedPaths : [path],
           ),

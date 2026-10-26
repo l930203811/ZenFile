@@ -244,7 +244,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 Navigator.pop(context);
                 final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
                   effectiveContext,
-                  content: L10n.of(context).selectedcount2(selectedCount),
+                  content: L10n.of(context).count1(selectedCount),
                   items: FileActionDialogs.itemsFromPaths(
                     provider.selectedPaths,
                   ),

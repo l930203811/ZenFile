@@ -727,7 +727,7 @@
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "Êtêtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+  "msgee14ee27": "Êtes-vous sûr de vouloir supprimer cet élément ?",
   "@filenamecreatedname": {
     "type": "text"
   },
@@ -1197,7 +1197,7 @@
   "@count1": {
     "type": "text"
   },
-  "count1": "Êtêtes-vous sûr de vouloir supprimer définitivement {count} éléments sélectionnés ?",
+  "count1": "Êtes-vous sûr de vouloir supprimer les {count} éléments sélectionnés ?",
   "@count2": {
     "type": "text"
   },
