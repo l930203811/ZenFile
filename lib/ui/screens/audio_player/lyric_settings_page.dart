@@ -322,6 +322,8 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
             theme,
           ),
           // ── 在线搜索歌词 ────────────────────────────────────────────────
+          // （歌词搜索源入口已移除：源选择统一收敛到「在线搜索歌词」弹窗顶部
+          // 的 ChoiceChip 行 —— 两处入口维护成本高，且搜索时才需要切源。）
           _bordered(
             ListTile(
               leading: const Icon(Icons.search_rounded),

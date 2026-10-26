@@ -1119,6 +1119,37 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     List<LyricSearchResult> results = [];
     var view = 'form'; // form | results | notFound
 
+    // 当前搜索源（弹窗顶部紧凑选择行；切源即写盘并自动重搜当前关键词）。
+    var currentSource = lyricSearchSourceFromName(
+      PreferencesService.getLyricSearchSource(),
+    );
+
+    // 源显示名（与歌词设置页同一组 ui_lyric_source_* 文案）。
+    String sourceLabel(L10n l10n, LyricSearchSource s) {
+      switch (s) {
+        case LyricSearchSource.auto:
+          return l10n.ui_lyric_source_auto;
+        case LyricSearchSource.qq:
+          return l10n.ui_lyric_source_qq;
+        case LyricSearchSource.kugou:
+          return l10n.ui_lyric_source_kugou;
+        case LyricSearchSource.lrclib:
+          return l10n.ui_lyric_source_lrclib;
+      }
+    }
+
+    // 搜索结果的来源 id → 源选项（结果徽标取显示名用）。
+    LyricSearchSource sourceOf(LyricSourceId id) {
+      switch (id) {
+        case LyricSourceId.qq:
+          return LyricSearchSource.qq;
+        case LyricSourceId.kugou:
+          return LyricSearchSource.kugou;
+        case LyricSourceId.lrclib:
+          return LyricSearchSource.lrclib;
+      }
+    }
+
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -1136,19 +1167,52 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               isSearching = true;
               errorMessage = null;
             });
-            // 先按 歌名+歌手 搜，结果少则仅按歌名搜
-            var list = await LyricSearchService.search('$title $artist');
-            if (list.isEmpty) list = await LyricSearchService.search(title);
+            // 多源聚合搜索：auto=三源并发、结果合并为一个列表；指定源=只搜该源
+            final multi = await LyricSearchService.searchAll(
+              title: title,
+              artist: artist,
+            );
             if (!ctx.mounted) return;
             setDialogState(() {
               isSearching = false;
-              if (list.isEmpty) {
+              if (multi.results.isEmpty) {
+                // 本次请求过的源全部落空（auto=三源并发都空）
                 view = 'notFound';
               } else {
-                results = list;
+                results = multi.results;
                 view = 'results';
               }
             });
+          }
+
+          // 弹窗顶部源选择行：一行紧凑 chips（自动 / QQ音乐 / 酷狗 / LRCLIB），
+          // 不占大卡片。切源后：结果 / 未找到视图直接用当前关键词自动重搜
+          //（体验闭环），表单视图不打断输入（点「在线搜索」时生效）。
+          Widget buildSourceSelector() {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final s in LyricSearchSource.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(sourceLabel(l10n, s)),
+                        selected: s == currentSource,
+                        visualDensity: VisualDensity.compact,
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onSelected: (sel) {
+                          if (!sel || s == currentSource) return;
+                          PreferencesService.saveLyricSearchSource(s.name);
+                          setDialogState(() => currentSource = s);
+                          if (view != 'form') doSearch();
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
           }
 
           // 用户手动选择某一首后下载
@@ -1187,14 +1251,35 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   ];
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    title: Text(
-                      song.title,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : theme.colorScheme.onSurface,
-                        fontSize: 15,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    title: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            song.title,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : theme.colorScheme.onSurface,
+                              fontSize: 15,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // 「逐字 / 逐句」徽标：标记该条目预计可下载到的歌词形态
+                        //（下载后播放器仍按内容自动识别增强）。
+                        _LyricTypeTag(
+                          label: song.enhanced
+                              ? l10n.ui_lyric_enhanced_tag
+                              : l10n.ui_lyric_plain_tag,
+                          enhanced: song.enhanced,
+                        ),
+                        const SizedBox(width: 4),
+                        // 来源徽标：auto 模式三源结果合并展示，标注条目来自哪个源
+                        //（复用歌词设置页的 ui_lyric_source_* 文案）。
+                        _LyricSourceTag(
+                          label: sourceLabel(l10n, sourceOf(song.source)),
+                        ),
+                      ],
                     ),
                     subtitle: subParts.isNotEmpty
                         ? Text(
@@ -1226,9 +1311,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   Icon(Icons.search_off_rounded, color: Colors.orange.shade400, size: 40),
                   const SizedBox(height: 12),
                   Text(
-                    l10n.ui_lyrics_not_found_online,
+                    // 本次请求过的源全部落空（auto=三源并发都空）：提示所有源均已尝试
+                    l10n.ui_lyric_no_result_all_sources,
                     style: TextStyle(
                       color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.ui_lyrics_not_found_online,
+                    style: TextStyle(
+                      color: isDark ? Colors.white54 : theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                      fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -1366,7 +1461,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 ),
               ],
             ),
-            content: body,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 顶部源选择行：紧凑 chips，切换即写盘并在结果视图自动重搜
+                buildSourceSelector(),
+                const SizedBox(height: 12),
+                body,
+              ],
+            ),
             actions: actions,
           );
         },
@@ -3391,6 +3495,64 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 搜索结果列表的「逐字 / 逐句」小徽标：圆角描边 + 细字，颜色按形态区分
+///（逐字 = 强调色，逐句 = 中性灰）。
+class _LyricTypeTag extends StatelessWidget {
+  final String label;
+  final bool enhanced;
+
+  const _LyricTypeTag({required this.label, required this.enhanced});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = enhanced ? Colors.deepPurpleAccent : Colors.white38;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.55), width: 1),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+/// 搜索结果的来源徽标（条目来自哪个歌词源；auto 模式合并列表中用于区分）。
+/// 配色沿用本弹窗结果列表的既有约定（白系半透明，见上方 subtitle）。
+class _LyricSourceTag extends StatelessWidget {
+  final String label;
+
+  const _LyricSourceTag({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white24, width: 1),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white54,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          height: 1.2,
+        ),
+      ),
     );
   }
 }

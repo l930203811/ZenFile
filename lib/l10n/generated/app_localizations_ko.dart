@@ -2003,13 +2003,13 @@ class L10nKo extends L10n {
   String get msg753cdb55 => '앱 실행';
 
   @override
-  String get apk3 => 'APK 백업';
+  String get apk3 => 'APK 추출';
 
   @override
-  String get apk4 => 'APK 백업 중...';
+  String get apk4 => 'APK 추출 중…';
 
   @override
-  String get apk5 => 'APK 백업 실패';
+  String get apk5 => 'APK 추출 실패';
 
   @override
   String get apk6 => 'APK 파일 공유';
@@ -4609,6 +4609,30 @@ class L10nKo extends L10n {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_source => '가사 검색 소스';
+
+  @override
+  String get ui_lyric_source_auto => '자동';
+
+  @override
+  String get ui_lyric_source_qq => 'QQ음악';
+
+  @override
+  String get ui_lyric_source_kugou => '쿠고우';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => '글자 단위';
+
+  @override
+  String get ui_lyric_plain_tag => '행 단위';
+
+  @override
+  String get ui_lyric_no_result_all_sources => '모든 가사 소스에서 찾을 수 없습니다';
 
   @override
   String get ui_lyric_search_song_title => '곡 제목';
@@ -8509,119 +8533,6 @@ class L10nKo extends L10n {
   String get lyric_offset_input_hint => '오프셋(초)';
 
   @override
-  String get ui_clone_feature_title => '앱 분신';
-
-  @override
-  String get ui_clone_feature_desc =>
-      '시스템 멀티 사용자 기능으로 앱을 복제하여 데이터가 완전히 분리된 분신을 여러 개 만들 수 있습니다. Shizuku(또는 Root) 권한이 필요합니다.';
-
-  @override
-  String get ui_clone_need_privileged_title => 'Shizuku 또는 Root 권한 필요';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      '먼저 Shizuku 앱을 실행해 ZenFile에 권한을 부여하세요. Root 기기에서는 바로 사용할 수 있습니다.';
-
-  @override
-  String get ui_clone_grant_shizuku => 'Shizuku 권한 부여';
-
-  @override
-  String get ui_clone_users_title => '분신 사용자';
-
-  @override
-  String get ui_clone_primary_user => '기본 사용자(이 기기)';
-
-  @override
-  String get ui_clone_create_user => '분신 만들기';
-
-  @override
-  String get ui_clone_new_user => '분신 사용자 만들기…';
-
-  @override
-  String get ui_clone_user_name_hint => '분신 이름';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return '분신 $n';
-  }
-
-  @override
-  String get ui_clone_running => '실행 중';
-
-  @override
-  String get ui_clone_delete_user => '분신 삭제';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return '분신 \"$name\"을(를) 삭제할까요? 해당 분신 내 모든 앱과 데이터가 삭제됩니다.';
-  }
-
-  @override
-  String get ui_clone_user_created => '분신이 생성되었습니다';
-
-  @override
-  String get ui_clone_user_removed => '분신이 삭제되었습니다';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      '생성 실패: 시스템 사용자 수 제한에 도달했습니다(ROM에 따라 제한될 수 있음)';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return '분신 작업 실패: $e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout => '명령 실행 시간이 초과되었습니다. 다시 시도하세요';
-
-  @override
-  String get ui_clone_install_host_apps => '기기의 앱을 이 분신에 설치';
-
-  @override
-  String get ui_clone_no_missing_apps => '기기의 서드파티 앱이 모두 이 분신에 설치되어 있습니다';
-
-  @override
-  String get ui_clone_apps_empty => '이 분신에는 서드파티 앱이 아직 없습니다';
-
-  @override
-  String get ui_clone_launch => '실행';
-
-  @override
-  String get ui_clone_uninstall => '제거';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return '이 분신에서 \"$name\"을(를) 제거할까요? 이 분신에만 영향을 주며 기기에는 영향이 없습니다.';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => '분신에서 제거되었습니다';
-
-  @override
-  String get ui_clone_installed_existing => '분신에 설치되었습니다';
-
-  @override
-  String get ui_clone_clone_to_user => '분신으로 복제';
-
-  @override
-  String get ui_clone_select_user => '분신 사용자 선택';
-
-  @override
-  String get ui_clone_installing => '복제 중…';
-
-  @override
-  String get ui_clone_install_success => '복제 성공';
-
-  @override
-  String get ui_clone_launch_now => '지금 실행';
-
-  @override
-  String get ui_clone_launch_failed => '분신 앱 실행 실패';
-
-  @override
-  String get ui_clone_to_user => '분신으로 복제';
-
-  @override
   String get ui_bottom_tab_slot_disabled => '숨김';
 
   @override
@@ -8665,4 +8576,99 @@ class L10nKo extends L10n {
 
   @override
   String get ui_settings_list_layout_desc => '개수, 크기 및 메뉴 버튼';
+
+  @override
+  String get ui_clone_feature_title => '앱 클론';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'APK를 다른 패키지 이름으로 다시 패키징하여 원본 앱과 공존 설치하고 동시에 실행할 수 있습니다. 클론 패키지는 Backups/Apps에 저장되며 직접 설치해야 합니다.';
+
+  @override
+  String get ui_clone_menu => '앱 클론';
+
+  @override
+  String get ui_clone_limit_note =>
+      '클론 패키지는 내장된 독립 서명으로 서명되어 원본 앱과 서명이 다릅니다. 은행, 결제 등 서명을 엄격히 검사하는 앱은 클론 후 실행되지 않을 수 있습니다.';
+
+  @override
+  String get ui_clone_count_title => '클론 개수';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return '패키지 이름이 서로 다른 $n개의 설치 파일을 생성하여 Backups/Apps에 저장합니다. 모두 원본 앱과 공존 설치할 수 있습니다.';
+  }
+
+  @override
+  String get ui_clone_working => '클론 패키지 생성 중…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return '클론 패키지 생성 중($done/$total)…';
+  }
+
+  @override
+  String get ui_clone_done_one => '클론 패키지가 생성되었습니다';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return '클론 패키지 $n개가 생성되었습니다';
+  }
+
+  @override
+  String get ui_clone_view => '보기';
+
+  @override
+  String get ui_clone_split_unsupported =>
+      '이 앱은 분할 APK(App Bundle)이므로 아직 클론을 지원하지 않습니다.';
+
+  @override
+  String get ui_clone_read_failed => '이 APK를 읽을 수 없습니다. 파일이 손상되었을 수 있습니다.';
+
+  @override
+  String ui_clone_failed(String e) {
+    return '클론 실패: $e';
+  }
+
+  @override
+  String get ui_clone_list_title => '생성된 클론 패키지';
+
+  @override
+  String get ui_clone_list_empty_title => '아직 클론 패키지가 없습니다';
+
+  @override
+  String get ui_clone_list_empty_desc => 'APK 파일 또는 설치된 앱의 「앱 클론」 메뉴에서 생성하세요';
+
+  @override
+  String get ui_clone_install => '설치';
+
+  @override
+  String get ui_clone_share => '공유';
+
+  @override
+  String get ui_clone_delete => '삭제';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return '\"$name\"을(를) 삭제할까요?';
+  }
+
+  @override
+  String get ui_clone_deleted => '삭제되었습니다';
+
+  @override
+  String get ui_clone_install_failed => '설치에 실패했습니다. 수동으로 설치해 주세요';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return '$n개 생성';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return '$path에 저장됨. 위치를 열까요?';
+  }
+
+  @override
+  String get ui_clone_open_ask => '이 앱을 열까요?';
 }

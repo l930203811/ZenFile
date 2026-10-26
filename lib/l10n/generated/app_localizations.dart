@@ -3859,19 +3859,19 @@ abstract class L10n {
   /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
   ///
   /// In zh, this message translates to:
-  /// **'备份APK'**
+  /// **'提取APK'**
   String get apk3;
 
   /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
   ///
   /// In zh, this message translates to:
-  /// **'正在备份APK...'**
+  /// **'正在提取APK…'**
   String get apk4;
 
   /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
   ///
   /// In zh, this message translates to:
-  /// **'备份APK失败'**
+  /// **'提取APK失败'**
   String get apk5;
 
   /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
@@ -8577,6 +8577,54 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'未找到匹配的歌词，试试调整歌曲信息后重试'**
   String get ui_lyrics_not_found_online;
+
+  /// Setting row title for choosing the preferred online lyric search source
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词搜索源'**
+  String get ui_lyric_search_source;
+
+  /// Auto mode: try preferred source first, then fall back to the others in order
+  ///
+  /// In zh, this message translates to:
+  /// **'自动'**
+  String get ui_lyric_source_auto;
+
+  /// QQ Music lyric source name
+  ///
+  /// In zh, this message translates to:
+  /// **'QQ音乐'**
+  String get ui_lyric_source_qq;
+
+  /// Kugou lyric source name
+  ///
+  /// In zh, this message translates to:
+  /// **'酷狗'**
+  String get ui_lyric_source_kugou;
+
+  /// LRCLIB lyric source name
+  ///
+  /// In zh, this message translates to:
+  /// **'LRCLIB'**
+  String get ui_lyric_source_lrclib;
+
+  /// Badge on a search result whose source provides word-by-word (enhanced) lyrics
+  ///
+  /// In zh, this message translates to:
+  /// **'逐字'**
+  String get ui_lyric_enhanced_tag;
+
+  /// Badge on a search result whose source provides line-by-line (plain) lyrics
+  ///
+  /// In zh, this message translates to:
+  /// **'逐句'**
+  String get ui_lyric_plain_tag;
+
+  /// Shown in the lyric search dialog after every configured source returned no results
+  ///
+  /// In zh, this message translates to:
+  /// **'所有歌词源均未找到'**
+  String get ui_lyric_no_result_all_sources;
 
   /// Label for song title input field in lyric search dialog
   ///
@@ -14869,7 +14917,7 @@ abstract class L10n {
   /// No description provided for @ui_delete_confirm_dont_ask.
   ///
   /// In zh, this message translates to:
-  /// **'删除不再提示'**
+  /// **'不再提示'**
   String get ui_delete_confirm_dont_ask;
 
   /// 删除确认弹窗中的「移入回收站」勾选框：勾选后本次删除移入回收站而非直接删除；回收站未开启时勾选并确认会自动开启回收站
@@ -15586,210 +15634,6 @@ abstract class L10n {
   /// **'偏移值（秒）'**
   String get lyric_offset_input_hint;
 
-  /// app_clone_manager_screen.dart：应用分身（Shizuku 多用户克隆）功能标题
-  ///
-  /// In zh, this message translates to:
-  /// **'应用分身'**
-  String get ui_clone_feature_title;
-
-  /// app_clone_manager_screen.dart：分身功能说明
-  ///
-  /// In zh, this message translates to:
-  /// **'基于系统多用户把应用克隆为多个分身，数据完全隔离、可多开。需要 Shizuku（或 Root）权限。'**
-  String get ui_clone_feature_desc;
-
-  /// app_clone_manager_screen.dart：无特权通道时的引导标题
-  ///
-  /// In zh, this message translates to:
-  /// **'需要 Shizuku 或 Root 权限'**
-  String get ui_clone_need_privileged_title;
-
-  /// app_clone_manager_screen.dart：无特权通道时的引导说明
-  ///
-  /// In zh, this message translates to:
-  /// **'请先启动 Shizuku 应用并授权 ZenFile；已 Root 的设备也可直接使用。'**
-  String get ui_clone_need_privileged_desc;
-
-  /// app_clone_manager_screen.dart：请求 Shizuku 授权按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'授权 Shizuku'**
-  String get ui_clone_grant_shizuku;
-
-  /// app_clone_manager_screen.dart：分身用户列表区块标题
-  ///
-  /// In zh, this message translates to:
-  /// **'分身用户'**
-  String get ui_clone_users_title;
-
-  /// app_clone_manager_screen.dart：主用户（id 0）条目名称
-  ///
-  /// In zh, this message translates to:
-  /// **'主用户（本机）'**
-  String get ui_clone_primary_user;
-
-  /// app_clone_manager_screen.dart：新建分身用户动作/对话框标题
-  ///
-  /// In zh, this message translates to:
-  /// **'新建分身'**
-  String get ui_clone_create_user;
-
-  /// app_clone_manager_screen.dart：选用户对话框里的新建入口
-  ///
-  /// In zh, this message translates to:
-  /// **'新建分身用户…'**
-  String get ui_clone_new_user;
-
-  /// app_clone_manager_screen.dart：分身命名输入框提示
-  ///
-  /// In zh, this message translates to:
-  /// **'分身名称'**
-  String get ui_clone_user_name_hint;
-
-  /// app_clone_manager_screen.dart：分身默认命名（分身 1/2/…）
-  ///
-  /// In zh, this message translates to:
-  /// **'分身 {n}'**
-  String ui_clone_default_user_name(int n);
-
-  /// app_clone_manager_screen.dart：分身用户在线状态
-  ///
-  /// In zh, this message translates to:
-  /// **'运行中'**
-  String get ui_clone_running;
-
-  /// app_clone_manager_screen.dart：删除分身用户动作
-  ///
-  /// In zh, this message translates to:
-  /// **'删除分身'**
-  String get ui_clone_delete_user;
-
-  /// app_clone_manager_screen.dart：删除分身的确认文案
-  ///
-  /// In zh, this message translates to:
-  /// **'删除分身「{name}」？该分身内所有应用及其数据都将被清除。'**
-  String ui_clone_delete_user_confirm(Object name);
-
-  /// app_clone_manager_screen.dart：create-user 成功提示
-  ///
-  /// In zh, this message translates to:
-  /// **'分身创建成功'**
-  String get ui_clone_user_created;
-
-  /// app_clone_manager_screen.dart：remove-user 成功提示
-  ///
-  /// In zh, this message translates to:
-  /// **'分身已删除'**
-  String get ui_clone_user_removed;
-
-  /// app_clone_manager_screen.dart：create-user 因 ROM 用户数限制失败
-  ///
-  /// In zh, this message translates to:
-  /// **'创建失败：已达系统用户数量上限（部分 ROM 限制可创建的分身数）'**
-  String get ui_clone_create_failed_limit;
-
-  /// app_clone_manager_screen.dart：分身操作通用失败提示（携带原始输出）
-  ///
-  /// In zh, this message translates to:
-  /// **'分身操作失败：{e}'**
-  String ui_clone_op_failed(Object e);
-
-  /// app_clone_manager_screen.dart：pm/am 命令超时提示
-  ///
-  /// In zh, this message translates to:
-  /// **'命令执行超时，请重试'**
-  String get ui_clone_cmd_timeout;
-
-  /// app_clone_manager_screen.dart：把本机已装应用 install-existing 到分身
-  ///
-  /// In zh, this message translates to:
-  /// **'安装本机应用到该分身'**
-  String get ui_clone_install_host_apps;
-
-  /// app_clone_manager_screen.dart：无可再克隆的应用时提示
-  ///
-  /// In zh, this message translates to:
-  /// **'本机的第三方应用均已在此分身中'**
-  String get ui_clone_no_missing_apps;
-
-  /// app_clone_manager_screen.dart：分身应用列表为空
-  ///
-  /// In zh, this message translates to:
-  /// **'该分身暂无第三方应用'**
-  String get ui_clone_apps_empty;
-
-  /// app_clone_manager_screen.dart：启动分身内应用
-  ///
-  /// In zh, this message translates to:
-  /// **'启动'**
-  String get ui_clone_launch;
-
-  /// app_clone_manager_screen.dart：卸载分身内应用
-  ///
-  /// In zh, this message translates to:
-  /// **'卸载'**
-  String get ui_clone_uninstall;
-
-  /// app_clone_manager_screen.dart：卸载分身内应用的确认文案
-  ///
-  /// In zh, this message translates to:
-  /// **'从该分身卸载「{name}」？仅影响此分身，不影响本机。'**
-  String ui_clone_uninstall_confirm(Object name);
-
-  /// app_clone_manager_screen.dart：分身内卸载成功提示
-  ///
-  /// In zh, this message translates to:
-  /// **'已从分身卸载'**
-  String get ui_clone_uninstall_done;
-
-  /// app_clone_manager_screen.dart：install-existing 成功提示
-  ///
-  /// In zh, this message translates to:
-  /// **'已安装到分身'**
-  String get ui_clone_installed_existing;
-
-  /// APK/已装应用长按菜单：克隆到分身动作项
-  ///
-  /// In zh, this message translates to:
-  /// **'克隆到分身'**
-  String get ui_clone_clone_to_user;
-
-  /// app_clone_manager_screen.dart：选/建分身用户对话框标题
-  ///
-  /// In zh, this message translates to:
-  /// **'选择分身用户'**
-  String get ui_clone_select_user;
-
-  /// app_clone_manager_screen.dart：克隆进度对话框文案
-  ///
-  /// In zh, this message translates to:
-  /// **'正在克隆…'**
-  String get ui_clone_installing;
-
-  /// app_clone_manager_screen.dart：pm install --user 成功提示
-  ///
-  /// In zh, this message translates to:
-  /// **'克隆成功'**
-  String get ui_clone_install_success;
-
-  /// app_clone_manager_screen.dart：克隆成功后立即启动按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'立即启动'**
-  String get ui_clone_launch_now;
-
-  /// app_clone_manager_screen.dart：am start/monkey 启动失败提示
-  ///
-  /// In zh, this message translates to:
-  /// **'启动分身应用失败'**
-  String get ui_clone_launch_failed;
-
-  /// app_options_sheet.dart / file_action_dialogs.dart：把应用克隆到分身用户的动作
-  ///
-  /// In zh, this message translates to:
-  /// **'克隆到分身'**
-  String get ui_clone_to_user;
-
   /// quick_categories_grid.dart：底部导航槽位被「关闭」后配置行上的状态文案
   ///
   /// In zh, this message translates to:
@@ -15879,6 +15723,162 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'计数、大小与菜单按钮'**
   String get ui_settings_list_layout_desc;
+
+  /// 克隆应用功能标题（工具箱/抽屉/管理页 AppBar）
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆应用'**
+  String get ui_clone_feature_title;
+
+  /// app_clone_manager_screen.dart：克隆应用功能说明
+  ///
+  /// In zh, this message translates to:
+  /// **'把 APK 重打包为不同包名的克隆安装包，可与原应用共存安装、多开同时运行。克隆包保存到 Backups/Apps，需自行安装。'**
+  String get ui_clone_feature_desc;
+
+  /// APK/已装应用长按菜单：克隆应用动作项
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆应用'**
+  String get ui_clone_menu;
+
+  /// app_clone_manager_screen.dart：克隆局限说明（签名校验类应用不可用）
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆包使用内置独立签名，与原应用签名不同；银行、支付等强校验类应用克隆后可能无法运行。'**
+  String get ui_clone_limit_note;
+
+  /// app_clone_manager_screen.dart：克隆份数选择对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆份数'**
+  String get ui_clone_count_title;
+
+  /// app_clone_manager_screen.dart：克隆份数说明（n = 份数）
+  ///
+  /// In zh, this message translates to:
+  /// **'将生成 {n} 个不同包名的安装包，保存到 Backups/Apps，均可与原应用共存安装。'**
+  String ui_clone_count_desc(int n);
+
+  /// app_clone_manager_screen.dart：生成克隆包进度文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在生成克隆安装包…'**
+  String get ui_clone_working;
+
+  /// app_clone_manager_screen.dart：多份克隆进度（done 已完成 / total 总数）
+  ///
+  /// In zh, this message translates to:
+  /// **'正在生成克隆安装包（{done}/{total}）…'**
+  String ui_clone_count_progress(int done, int total);
+
+  /// app_clone_manager_screen.dart：单份克隆成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已生成克隆安装包'**
+  String get ui_clone_done_one;
+
+  /// app_clone_manager_screen.dart：多份克隆成功提示（n = 生成的份数）
+  ///
+  /// In zh, this message translates to:
+  /// **'已生成 {n} 个克隆安装包'**
+  String ui_clone_done_many(int n);
+
+  /// app_clone_manager_screen.dart：成功提示上跳转克隆管理页的动作
+  ///
+  /// In zh, this message translates to:
+  /// **'查看'**
+  String get ui_clone_view;
+
+  /// app_clone_manager_screen.dart：拆分 APK（App Bundle）不支持克隆提示
+  ///
+  /// In zh, this message translates to:
+  /// **'该应用为拆分 APK（App Bundle），暂不支持克隆。'**
+  String get ui_clone_split_unsupported;
+
+  /// app_clone_manager_screen.dart：源 APK 读取/解析失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取该 APK，文件可能已损坏。'**
+  String get ui_clone_read_failed;
+
+  /// app_clone_manager_screen.dart：克隆通用失败提示（e = 错误信息）
+  ///
+  /// In zh, this message translates to:
+  /// **'克隆失败：{e}'**
+  String ui_clone_failed(String e);
+
+  /// app_clone_manager_screen.dart：克隆包列表区块标题
+  ///
+  /// In zh, this message translates to:
+  /// **'已生成的克隆安装包'**
+  String get ui_clone_list_title;
+
+  /// app_clone_manager_screen.dart：克隆包列表空态标题
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无克隆安装包'**
+  String get ui_clone_list_empty_title;
+
+  /// app_clone_manager_screen.dart：克隆包列表空态说明
+  ///
+  /// In zh, this message translates to:
+  /// **'在 APK 文件或已装应用的「克隆应用」菜单中生成'**
+  String get ui_clone_list_empty_desc;
+
+  /// app_clone_manager_screen.dart：安装克隆包动作
+  ///
+  /// In zh, this message translates to:
+  /// **'安装'**
+  String get ui_clone_install;
+
+  /// app_clone_manager_screen.dart：分享克隆包动作
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get ui_clone_share;
+
+  /// app_clone_manager_screen.dart：删除克隆包动作
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get ui_clone_delete;
+
+  /// app_clone_manager_screen.dart：删除克隆包确认（name = 文件名）
+  ///
+  /// In zh, this message translates to:
+  /// **'删除「{name}」？'**
+  String ui_clone_delete_confirm(String name);
+
+  /// app_clone_manager_screen.dart：删除成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已删除'**
+  String get ui_clone_deleted;
+
+  /// app_clone_manager_screen.dart：克隆包安装失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'安装失败，请手动安装'**
+  String get ui_clone_install_failed;
+
+  /// Clone count dropdown item: generate N clones
+  ///
+  /// In zh, this message translates to:
+  /// **'生成 {n} 个'**
+  String ui_clone_count_item(int n);
+
+  /// Clone saved to path, ask to open location
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存到 {path}，是否打开所在位置？'**
+  String ui_clone_saved_ask(String path);
+
+  /// After clone install, ask to open the app
+  ///
+  /// In zh, this message translates to:
+  /// **'是否打开该应用？'**
+  String get ui_clone_open_ask;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

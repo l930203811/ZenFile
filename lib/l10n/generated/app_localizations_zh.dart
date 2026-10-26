@@ -1999,13 +1999,13 @@ class L10nZh extends L10n {
   String get msg753cdb55 => '启动应用';
 
   @override
-  String get apk3 => '备份APK';
+  String get apk3 => '提取APK';
 
   @override
-  String get apk4 => '正在备份APK...';
+  String get apk4 => '正在提取APK…';
 
   @override
-  String get apk5 => '备份APK失败';
+  String get apk5 => '提取APK失败';
 
   @override
   String get apk6 => '分享APK文件';
@@ -4568,6 +4568,30 @@ class L10nZh extends L10n {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_source => '歌词搜索源';
+
+  @override
+  String get ui_lyric_source_auto => '自动';
+
+  @override
+  String get ui_lyric_source_qq => 'QQ音乐';
+
+  @override
+  String get ui_lyric_source_kugou => '酷狗';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => '逐字';
+
+  @override
+  String get ui_lyric_plain_tag => '逐句';
+
+  @override
+  String get ui_lyric_no_result_all_sources => '所有歌词源均未找到';
 
   @override
   String get ui_lyric_search_song_title => '歌曲名';
@@ -7943,7 +7967,7 @@ class L10nZh extends L10n {
   String get ui_open_with_text_editor => '用文本编辑器打开';
 
   @override
-  String get ui_delete_confirm_dont_ask => '删除不再提示';
+  String get ui_delete_confirm_dont_ask => '不再提示';
 
   @override
   String get ui_move_to_recycle_bin => '移入回收站';
@@ -8317,119 +8341,6 @@ class L10nZh extends L10n {
   String get lyric_offset_input_hint => '偏移值（秒）';
 
   @override
-  String get ui_clone_feature_title => '应用分身';
-
-  @override
-  String get ui_clone_feature_desc =>
-      '基于系统多用户把应用克隆为多个分身，数据完全隔离、可多开。需要 Shizuku（或 Root）权限。';
-
-  @override
-  String get ui_clone_need_privileged_title => '需要 Shizuku 或 Root 权限';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      '请先启动 Shizuku 应用并授权 ZenFile；已 Root 的设备也可直接使用。';
-
-  @override
-  String get ui_clone_grant_shizuku => '授权 Shizuku';
-
-  @override
-  String get ui_clone_users_title => '分身用户';
-
-  @override
-  String get ui_clone_primary_user => '主用户（本机）';
-
-  @override
-  String get ui_clone_create_user => '新建分身';
-
-  @override
-  String get ui_clone_new_user => '新建分身用户…';
-
-  @override
-  String get ui_clone_user_name_hint => '分身名称';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return '分身 $n';
-  }
-
-  @override
-  String get ui_clone_running => '运行中';
-
-  @override
-  String get ui_clone_delete_user => '删除分身';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return '删除分身「$name」？该分身内所有应用及其数据都将被清除。';
-  }
-
-  @override
-  String get ui_clone_user_created => '分身创建成功';
-
-  @override
-  String get ui_clone_user_removed => '分身已删除';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      '创建失败：已达系统用户数量上限（部分 ROM 限制可创建的分身数）';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return '分身操作失败：$e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout => '命令执行超时，请重试';
-
-  @override
-  String get ui_clone_install_host_apps => '安装本机应用到该分身';
-
-  @override
-  String get ui_clone_no_missing_apps => '本机的第三方应用均已在此分身中';
-
-  @override
-  String get ui_clone_apps_empty => '该分身暂无第三方应用';
-
-  @override
-  String get ui_clone_launch => '启动';
-
-  @override
-  String get ui_clone_uninstall => '卸载';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return '从该分身卸载「$name」？仅影响此分身，不影响本机。';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => '已从分身卸载';
-
-  @override
-  String get ui_clone_installed_existing => '已安装到分身';
-
-  @override
-  String get ui_clone_clone_to_user => '克隆到分身';
-
-  @override
-  String get ui_clone_select_user => '选择分身用户';
-
-  @override
-  String get ui_clone_installing => '正在克隆…';
-
-  @override
-  String get ui_clone_install_success => '克隆成功';
-
-  @override
-  String get ui_clone_launch_now => '立即启动';
-
-  @override
-  String get ui_clone_launch_failed => '启动分身应用失败';
-
-  @override
-  String get ui_clone_to_user => '克隆到分身';
-
-  @override
   String get ui_bottom_tab_slot_disabled => '已关闭';
 
   @override
@@ -8473,6 +8384,100 @@ class L10nZh extends L10n {
 
   @override
   String get ui_settings_list_layout_desc => '计数、大小与菜单按钮';
+
+  @override
+  String get ui_clone_feature_title => '克隆应用';
+
+  @override
+  String get ui_clone_feature_desc =>
+      '把 APK 重打包为不同包名的克隆安装包，可与原应用共存安装、多开同时运行。克隆包保存到 Backups/Apps，需自行安装。';
+
+  @override
+  String get ui_clone_menu => '克隆应用';
+
+  @override
+  String get ui_clone_limit_note =>
+      '克隆包使用内置独立签名，与原应用签名不同；银行、支付等强校验类应用克隆后可能无法运行。';
+
+  @override
+  String get ui_clone_count_title => '克隆份数';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return '将生成 $n 个不同包名的安装包，保存到 Backups/Apps，均可与原应用共存安装。';
+  }
+
+  @override
+  String get ui_clone_working => '正在生成克隆安装包…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return '正在生成克隆安装包（$done/$total）…';
+  }
+
+  @override
+  String get ui_clone_done_one => '已生成克隆安装包';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return '已生成 $n 个克隆安装包';
+  }
+
+  @override
+  String get ui_clone_view => '查看';
+
+  @override
+  String get ui_clone_split_unsupported => '该应用为拆分 APK（App Bundle），暂不支持克隆。';
+
+  @override
+  String get ui_clone_read_failed => '无法读取该 APK，文件可能已损坏。';
+
+  @override
+  String ui_clone_failed(String e) {
+    return '克隆失败：$e';
+  }
+
+  @override
+  String get ui_clone_list_title => '已生成的克隆安装包';
+
+  @override
+  String get ui_clone_list_empty_title => '暂无克隆安装包';
+
+  @override
+  String get ui_clone_list_empty_desc => '在 APK 文件或已装应用的「克隆应用」菜单中生成';
+
+  @override
+  String get ui_clone_install => '安装';
+
+  @override
+  String get ui_clone_share => '分享';
+
+  @override
+  String get ui_clone_delete => '删除';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String get ui_clone_deleted => '已删除';
+
+  @override
+  String get ui_clone_install_failed => '安装失败，请手动安装';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return '生成 $n 个';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return '已保存到 $path，是否打开所在位置？';
+  }
+
+  @override
+  String get ui_clone_open_ask => '是否打开该应用？';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -10471,13 +10476,13 @@ class L10nZhTw extends L10nZh {
   String get msg753cdb55 => '啟動應用';
 
   @override
-  String get apk3 => '備份APK';
+  String get apk3 => '提取APK';
 
   @override
-  String get apk4 => '正在備份APK...';
+  String get apk4 => '正在提取APK…';
 
   @override
-  String get apk5 => '備份APK失敗';
+  String get apk5 => '提取APK失敗';
 
   @override
   String get apk6 => '分享APK檔案';
@@ -12991,6 +12996,30 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌詞，試試調整歌曲資訊後重試';
+
+  @override
+  String get ui_lyric_search_source => '歌詞搜尋來源';
+
+  @override
+  String get ui_lyric_source_auto => '自動';
+
+  @override
+  String get ui_lyric_source_qq => 'QQ音樂';
+
+  @override
+  String get ui_lyric_source_kugou => '酷狗';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => '逐字';
+
+  @override
+  String get ui_lyric_plain_tag => '逐句';
+
+  @override
+  String get ui_lyric_no_result_all_sources => '所有歌詞來源皆未找到';
 
   @override
   String get ui_lyric_search_song_title => '歌曲名稱';
@@ -16384,7 +16413,7 @@ class L10nZhTw extends L10nZh {
   String get ui_open_with_text_editor => '用文字編輯器開啟';
 
   @override
-  String get ui_delete_confirm_dont_ask => '刪除不再提示';
+  String get ui_delete_confirm_dont_ask => '不再提示';
 
   @override
   String get ui_move_to_recycle_bin => '移到回收站';
@@ -16758,119 +16787,6 @@ class L10nZhTw extends L10nZh {
   String get lyric_offset_input_hint => '偏移值（秒）';
 
   @override
-  String get ui_clone_feature_title => '應用分身';
-
-  @override
-  String get ui_clone_feature_desc =>
-      '基於系統多使用者把應用程式複製為多個分身，資料完全隔離、可多開。需要 Shizuku（或 Root）權限。';
-
-  @override
-  String get ui_clone_need_privileged_title => '需要 Shizuku 或 Root 權限';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      '請先啟動 Shizuku 應用程式並授權 ZenFile；已 Root 的裝置也可直接使用。';
-
-  @override
-  String get ui_clone_grant_shizuku => '授權 Shizuku';
-
-  @override
-  String get ui_clone_users_title => '分身使用者';
-
-  @override
-  String get ui_clone_primary_user => '主使用者（本機）';
-
-  @override
-  String get ui_clone_create_user => '新增分身';
-
-  @override
-  String get ui_clone_new_user => '新增分身使用者…';
-
-  @override
-  String get ui_clone_user_name_hint => '分身名稱';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return '分身 $n';
-  }
-
-  @override
-  String get ui_clone_running => '執行中';
-
-  @override
-  String get ui_clone_delete_user => '刪除分身';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return '刪除分身「$name」？該分身內所有應用程式及其資料都將被清除。';
-  }
-
-  @override
-  String get ui_clone_user_created => '分身建立成功';
-
-  @override
-  String get ui_clone_user_removed => '分身已刪除';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      '建立失敗：已達系統使用者數量上限（部分 ROM 限制可建立的分身數）';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return '分身操作失敗：$e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout => '指令執行逾時，請重試';
-
-  @override
-  String get ui_clone_install_host_apps => '安裝本機應用程式到此分身';
-
-  @override
-  String get ui_clone_no_missing_apps => '本機的第三方應用程式均已在此分身中';
-
-  @override
-  String get ui_clone_apps_empty => '此分身尚無第三方應用程式';
-
-  @override
-  String get ui_clone_launch => '啟動';
-
-  @override
-  String get ui_clone_uninstall => '解除安裝';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return '從此分身解除安裝「$name」？僅影響此分身，不影響本機。';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => '已從分身解除安裝';
-
-  @override
-  String get ui_clone_installed_existing => '已安裝到分身';
-
-  @override
-  String get ui_clone_clone_to_user => '複製到分身';
-
-  @override
-  String get ui_clone_select_user => '選擇分身使用者';
-
-  @override
-  String get ui_clone_installing => '正在複製…';
-
-  @override
-  String get ui_clone_install_success => '複製成功';
-
-  @override
-  String get ui_clone_launch_now => '立即啟動';
-
-  @override
-  String get ui_clone_launch_failed => '啟動分身應用程式失敗';
-
-  @override
-  String get ui_clone_to_user => '克隆到分身';
-
-  @override
   String get ui_bottom_tab_slot_disabled => '已關閉';
 
   @override
@@ -16914,4 +16830,98 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_settings_list_layout_desc => '計數、大小與選單按鈕';
+
+  @override
+  String get ui_clone_feature_title => '應用程式克隆';
+
+  @override
+  String get ui_clone_feature_desc =>
+      '把 APK 重新打包為不同套件名的克隆安裝包，可與原應用程式共存安裝、多開同時執行。克隆安裝包儲存到 Backups/Apps，需自行安裝。';
+
+  @override
+  String get ui_clone_menu => '應用程式克隆';
+
+  @override
+  String get ui_clone_limit_note =>
+      '克隆套件使用內建獨立簽名，與原應用程式簽名不同；銀行、支付等強校驗類應用程式克隆後可能無法執行。';
+
+  @override
+  String get ui_clone_count_title => '克隆份數';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return '將產生 $n 個不同套件名的安裝包，儲存到 Backups/Apps，均可與原應用程式共存安裝。';
+  }
+
+  @override
+  String get ui_clone_working => '正在產生克隆安裝包…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return '正在產生克隆安裝包（$done/$total）…';
+  }
+
+  @override
+  String get ui_clone_done_one => '已產生克隆安裝包';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return '已產生 $n 個克隆安裝包';
+  }
+
+  @override
+  String get ui_clone_view => '檢視';
+
+  @override
+  String get ui_clone_split_unsupported => '該應用程式為拆分 APK（App Bundle），暫不支援克隆。';
+
+  @override
+  String get ui_clone_read_failed => '無法讀取該 APK，檔案可能已損壞。';
+
+  @override
+  String ui_clone_failed(String e) {
+    return '克隆失敗：$e';
+  }
+
+  @override
+  String get ui_clone_list_title => '已產生的克隆安裝包';
+
+  @override
+  String get ui_clone_list_empty_title => '尚無克隆安裝包';
+
+  @override
+  String get ui_clone_list_empty_desc => '在 APK 檔案或已安裝應用程式的「應用程式克隆」選單中產生';
+
+  @override
+  String get ui_clone_install => '安裝';
+
+  @override
+  String get ui_clone_share => '分享';
+
+  @override
+  String get ui_clone_delete => '刪除';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return '刪除「$name」？';
+  }
+
+  @override
+  String get ui_clone_deleted => '已刪除';
+
+  @override
+  String get ui_clone_install_failed => '安裝失敗，請手動安裝';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return '生成 $n 個';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return '已儲存到 $path，是否開啟所在位置？';
+  }
+
+  @override
+  String get ui_clone_open_ask => '是否開啟此應用程式？';
 }

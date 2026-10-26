@@ -1640,6 +1640,18 @@ class PreferencesService {
     }
   }
 
+  // --- Lyric Search Source ---
+  /// 在线歌词搜索首选源（auto / qq / kugou / lrclib；auto 为默认）。
+  /// 只存字符串，避免 preferences_service 反向依赖歌词源枚举。
+  /// 选定源搜不到时由 LyricSearchService 自动依次回退其余源。
+  static const String _keyLyricSearchSource = 'lyric_search_source';
+
+  static String? getLyricSearchSource() =>
+      _prefs?.getString(_keyLyricSearchSource);
+
+  static Future<void> saveLyricSearchSource(String sourceName) async =>
+      _prefs?.setString(_keyLyricSearchSource, sourceName) ?? Future.value();
+
   // --- Lyric Animation Style ---
   /// 歌词动画风格名（classic / typewriter / meteor / pv / echo / mixed；
   /// 见 LyricAnimationStyle；mixed 为默认）。

@@ -234,21 +234,8 @@ class FileActionDialogs {
                     const SizedBox(height: 12),
                     _DeleteItemsPreview(items: items),
                   ],
-                  if (showSkipCheckbox) ...[
-                    const SizedBox(height: 8),
-                    CheckboxListTile(
-                      value: dontAskAgain,
-                      onChanged: (v) =>
-                          setState(() => dontAskAgain = v ?? false),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        L10n.of(context).ui_delete_confirm_dont_ask,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                  ],
+                  // 勾选框顺序：「移入回收站」在上（本次动作的即时选择）、
+                  // 「不再提示」在下（持久化偏好，使用频率更低）。
                   if (showRecycleBinCheckbox) ...[
                     const SizedBox(height: 8),
                     CheckboxListTile(
@@ -260,6 +247,21 @@ class FileActionDialogs {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         L10n.of(context).ui_move_to_recycle_bin,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                  if (showSkipCheckbox) ...[
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: dontAskAgain,
+                      onChanged: (v) =>
+                          setState(() => dontAskAgain = v ?? false),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        L10n.of(context).ui_delete_confirm_dont_ask,
                         style: const TextStyle(fontSize: 13),
                       ),
                     ),

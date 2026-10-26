@@ -129,7 +129,8 @@ class _StyleProfile {
 
   /// 「当前字」放倍数（>1 生效）。
   /// 唱到的字随字内进度做 sin 弹放：字中最大、首尾为 1，无切换硬切。
-  /// 普通 LRC 的均分时间线同样生效——所有歌词都走逐字，不再有行放大兜底。
+  /// 普通 LRC 的均分时间线同样生效（classic 除外：classic 对无真实字级
+  /// 时间轴的行走逐句扫过，不做假逐字弹放，见 _buildLineItem / 单行视图）。
   final double charZoom;
 
   /// 打字机模式：当前字右侧画一道随节奏闪烁的光标竖线，无辉光、不缩放。
@@ -289,6 +290,12 @@ class _MeasuredLine {
   final String colorSig;
   final TextPainter base;
   final TextPainter highlight;
+
+  /// 「当前播放」色整行 painter：仅 classic+逐句（无字级时间轴）的行需要
+  /// （行级三态着色时当前行整行用当前色，见 [_SweepPainter.lineStatePainter]）。
+  /// 其余风格为 null——当前色由「当前字弹放」承担，不浪费一份布局。
+  final TextPainter? currentLine;
+
   final List<ui.LineMetrics> metrics;
 
   /// 与 [metrics] 对齐：每个视觉行的上下边界（由 height 累计推导，本 SDK 的
@@ -310,6 +317,7 @@ class _MeasuredLine {
     required this.colorSig,
     required this.base,
     required this.highlight,
+    this.currentLine,
     required this.metrics,
     required this.lineTops,
     required this.lineBottoms,
@@ -2080,11 +2088,27 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       boundaries.add(_Boundary(lastX, lastLine));
     }
 
+    // classic+逐句（无字级时间轴）：额外布局一份「当前播放」色整行 painter，
+    // 供行级三态着色用（当前行整行 = 当前色，用户设置生效）。逐字行不需要
+    // （当前色由当前字弹放承担），其余风格也不需要。
+    // 缓存安全性：本分支只依赖 (style, 本行 hasWordTimestamps)，而风格或歌词
+    // 变化都会清空 _measureCache，不存在「同签名但 painter 缺失」的脏缓存。
+    TextPainter? lineCurrentPainter;
+    if (widget.style == LyricAnimationStyle.classic &&
+        !timeline.hasWordTimestamps) {
+      lineCurrentPainter = TextPainter(
+        text: TextSpan(text: timeline.text, style: _currentTextStyle(profile)),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: math.max(1.0, maxWidth));
+    }
+
     return _MeasuredLine(
       text: timeline.text,
       colorSig: colorSig,
       base: base,
       highlight: highlight,
+      currentLine: lineCurrentPainter,
       metrics: metrics,
       lineTops: lineTops,
       lineBottoms: lineBottoms,
@@ -2378,9 +2402,32 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       final position = _interpolatedPosition();
       // 取当前唱到的字，交给绘制器做弹放放大：
       // 带词时间戳的歌词用真实逐字时间；普通 LRC 用均分时间线，同样逐字。
+      //
+      // classic（经典扫过）分流修正：行只有逐句时间轴（无真实 WordTiming）
+      // 时走逐句扫过（填充层本就整句变色），不再做「均分时间 = 假逐字」的
+      // 当前字弹放；只有行带真实字级时间轴（A2 增强 LRC）才逐字弹放。
+      // 其余风格保持原行为——mixed 内部抽到 classic 的句子同样不动
+      //（按 widget.style 而非 lineStyle 判定，避免误伤混合模式）。
+      final classicFakeWordLine =
+          widget.style == LyricAnimationStyle.classic &&
+          !timeline.hasWordTimestamps;
+      // classic+逐句的行级三态着色：填充层的整句填充只认「已播放」色，当前
+      // 行拿不到「当前播放」色。按行状态直接指定整行颜色——当前行=当前播放
+      // 色（用户设置生效）、已播行=已播放色、未播行=null（保持未播放色）。
+      // 播放推进时随 _currentLineIndex 逐句切换；逐字（A2）行不受影响。
+      TextPainter? lineStatePainter;
+      if (classicFakeWordLine) {
+        if (isActive) {
+          lineStatePainter = measured.currentLine ?? measured.highlight;
+        } else if (dist < 0) {
+          lineStatePainter = measured.highlight;
+        }
+      }
       var charZoom = 1.0;
       TextPainter? zoomGlyph;
-      if (isActive && profile.charZoom > 1.0) {
+      if (isActive &&
+          profile.charZoom > 1.0 &&
+          !classicFakeWordLine) {
         final fill = graphemeFillAt(timeline, position);
         if (fill.index >= 0 && fill.index < timeline.graphemes.length) {
           charZoom = profile.charZoom;
@@ -2431,6 +2478,7 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
                 originX: measured.originX,
                 typewriter: profile.typewriter,
                 cursorColor: _currentColor,
+                lineStatePainter: lineStatePainter,
               ),
       );
     }
@@ -2525,6 +2573,13 @@ class _SweepPainter extends CustomPainter {
   /// 光标颜色（打字机模式）；null 时回退到当前播放色由调用方传入。
   final Color? cursorColor;
 
+  /// 行级三态着色（classic+逐句专用）：非空时整行直接用该 painter 着色
+  /// （当前行=「当前播放」色 painter、已播行=「已播放」色 painter），不再走
+  /// 逐字填充裁剪——无字级时间轴时整句填充只认「已播放」色，当前行拿不到
+  /// 「当前播放」色。null = 未播行或非该场景，保持原有填充逻辑（未播行
+  /// fill.index < 0，同样只画 base，两条路径结果一致）。
+  final TextPainter? lineStatePainter;
+
   const _SweepPainter({
     required this.base,
     required this.highlight,
@@ -2539,12 +2594,34 @@ class _SweepPainter extends CustomPainter {
     this.originX = 0,
     this.typewriter = false,
     this.cursorColor,
+    this.lineStatePainter,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (timeline.isEmpty) return;
     final dy = math.max(0.0, (size.height - base.height) / 2);
+
+    // 0) 行级三态着色（classic+逐句）：整句换色的呈现保留，颜色按行状态取。
+    //    已播行 position 远超行尾 → ramp 恒 1 直绘；当前行行首 ~90ms 内做
+    //    交叉淡入（base 垫底 + 带 alpha 图层），避免换行瞬间硬跳变。
+    final linePainter = lineStatePainter;
+    if (linePainter != null) {
+      final ramp = _lineColorRamp(timeline, position);
+      if (ramp >= 1) {
+        linePainter.paint(canvas, Offset(originX, dy));
+        return;
+      }
+      base.paint(canvas, Offset(originX, dy));
+      canvas.save();
+      canvas.saveLayer(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Paint()..color = Colors.white.withValues(alpha: ramp),
+      );
+      linePainter.paint(canvas, Offset(originX, dy));
+      canvas.restore();
+      return;
+    }
 
     // 1) 整行中性色（未唱部分）
     base.paint(canvas, Offset(originX, dy));
@@ -2681,7 +2758,8 @@ class _SweepPainter extends CustomPainter {
       old.zoomGlyph != zoomGlyph ||
       old.typewriter != typewriter ||
       old.cursorColor != cursorColor ||
-      old.originX != originX;
+      old.originX != originX ||
+      old.lineStatePainter != lineStatePainter;
 }
 
 // ── PV 画布 ──────────────────────────────────────────────────────────────
@@ -4371,11 +4449,27 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
       boundaries.add(_Boundary(lastX, 0));
     }
 
+    // classic+逐句（无字级时间轴）：整行「当前播放」色 painter，供行级三态
+    // 着色用（单行槽位只显示当前播放行，恒为当前行 → 整行当前色）。其余
+    // 风格不需要——当前色由当前字弹放承担。sig 含 style 名，换风格即重测。
+    TextPainter? lineCurrentPainter;
+    if (widget.style == LyricAnimationStyle.classic &&
+        !_timeline!.hasWordTimestamps) {
+      lineCurrentPainter = TextPainter(
+        text: TextSpan(text: text, style: _currentTextStyle(p)),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+        ellipsis: '…',
+      )..layout(maxWidth: math.max(1.0, maxWidth));
+    }
+
     final m = _MeasuredLine(
       text: text,
       colorSig: sig,
       base: base,
       highlight: highlight,
+      currentLine: lineCurrentPainter,
       metrics: metrics,
       lineTops: lineTops,
       lineBottoms: lineBottoms,
@@ -4546,11 +4640,19 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
         final lineStyle = _styleForLine(idx);
         final measured = _measure(maxWidth, lineStyle);
         // 当前唱到的字弹放放大（普通 LRC 均分时间线同样逐字生效）。
+        //
+        // classic 分流修正与列表视图一致：行只有逐句时间轴时走逐句扫过、
+        // 不做假逐字弹放；只有带真实字级时间轴（A2）的行才逐字。其余风格
+        // 保持原行为（mixed 不动）。
         final p = _profileFor(lineStyle);
         final fill = graphemeFillAt(timeline, pos);
+        final classicFakeWordLine =
+            widget.style == LyricAnimationStyle.classic &&
+            !timeline.hasWordTimestamps;
         var charZoom = 1.0;
         TextPainter? zoomGlyph;
         if (p.charZoom > 1.0 &&
+            !classicFakeWordLine &&
             fill.index >= 0 &&
             fill.index < timeline.graphemes.length) {
           charZoom = p.charZoom;
@@ -4589,6 +4691,11 @@ class _SingleLineLyricSweepState extends State<SingleLineLyricSweep>
                   originX: measured.originX,
                   typewriter: p.typewriter,
                   cursorColor: _currentColor,
+                  // classic+逐句：单行槽位只呈现当前播放行，整行走
+                  // 「当前播放」色（行级三态着色，与列表视图同一套语义）。
+                  lineStatePainter: classicFakeWordLine
+                      ? (measured.currentLine ?? measured.highlight)
+                      : null,
                 ),
         );
         // PV / ECHO：唱字即时特效铺在歌词上层（与主视图一致的层级）。

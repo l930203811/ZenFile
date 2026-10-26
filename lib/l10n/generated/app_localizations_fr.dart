@@ -2131,13 +2131,13 @@ class L10nFr extends L10n {
   String get msg753cdb55 => 'Lancer l\'application';
 
   @override
-  String get apk3 => 'Sauvegarder l\'APK';
+  String get apk3 => 'Extraire l\'APK';
 
   @override
-  String get apk4 => 'Sauvegarde de l\'APK...';
+  String get apk4 => 'Extraction de l\'APK…';
 
   @override
-  String get apk5 => 'Échec de la sauvegarde de l\'APK';
+  String get apk5 => 'Échec de l\'extraction de l\'APK';
 
   @override
   String get apk6 => 'Partager le fichier APK';
@@ -4829,6 +4829,31 @@ class L10nFr extends L10n {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_source => 'Source des paroles';
+
+  @override
+  String get ui_lyric_source_auto => 'Auto';
+
+  @override
+  String get ui_lyric_source_qq => 'QQ Music';
+
+  @override
+  String get ui_lyric_source_kugou => 'Kugou';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => 'Mot';
+
+  @override
+  String get ui_lyric_plain_tag => 'Ligne';
+
+  @override
+  String get ui_lyric_no_result_all_sources =>
+      'Aucune source n\'a trouvé de paroles';
 
   @override
   String get ui_lyric_search_song_title => 'Titre';
@@ -8910,124 +8935,6 @@ class L10nFr extends L10n {
   String get lyric_offset_input_hint => 'Décalage (secondes)';
 
   @override
-  String get ui_clone_feature_title => 'Clones d\'applis';
-
-  @override
-  String get ui_clone_feature_desc =>
-      'Clonez des applications dans des profils système distincts, avec des données totalement isolées et un vrai multi-instance. Nécessite Shizuku (ou Root).';
-
-  @override
-  String get ui_clone_need_privileged_title =>
-      'Autorisation Shizuku ou Root requise';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      'Lancez d\'abord l\'appli Shizuku et autorisez ZenFile ; sur un appareil rooté, l\'accès direct fonctionne aussi.';
-
-  @override
-  String get ui_clone_grant_shizuku => 'Autoriser Shizuku';
-
-  @override
-  String get ui_clone_users_title => 'Profils clones';
-
-  @override
-  String get ui_clone_primary_user => 'Utilisateur principal (cet appareil)';
-
-  @override
-  String get ui_clone_create_user => 'Nouveau clone';
-
-  @override
-  String get ui_clone_new_user => 'Nouveau profil clone…';
-
-  @override
-  String get ui_clone_user_name_hint => 'Nom du clone';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return 'Clone $n';
-  }
-
-  @override
-  String get ui_clone_running => 'En cours d\'exécution';
-
-  @override
-  String get ui_clone_delete_user => 'Supprimer le clone';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return 'Supprimer le profil clone « $name » ? Toutes ses applis et données seront effacées.';
-  }
-
-  @override
-  String get ui_clone_user_created => 'Clone créé';
-
-  @override
-  String get ui_clone_user_removed => 'Clone supprimé';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      'Échec de la création : limite d\'utilisateurs système atteinte (certaines ROM la limitent)';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return 'Échec de l\'opération de clonage : $e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout => 'La commande a expiré, veuillez réessayer';
-
-  @override
-  String get ui_clone_install_host_apps =>
-      'Installer des applis de l\'appareil dans ce clone';
-
-  @override
-  String get ui_clone_no_missing_apps =>
-      'Toutes les applis tierces de l\'appareil sont déjà dans ce clone';
-
-  @override
-  String get ui_clone_apps_empty =>
-      'Ce clone ne contient pas encore d\'applis tierces';
-
-  @override
-  String get ui_clone_launch => 'Lancer';
-
-  @override
-  String get ui_clone_uninstall => 'Désinstaller';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return 'Désinstaller « $name » de ce clone ? Seul ce clone est concerné, pas l\'appareil.';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => 'Désinstallé du clone';
-
-  @override
-  String get ui_clone_installed_existing => 'Installé dans le clone';
-
-  @override
-  String get ui_clone_clone_to_user => 'Cloner vers un profil';
-
-  @override
-  String get ui_clone_select_user => 'Choisir un profil clone';
-
-  @override
-  String get ui_clone_installing => 'Clonage…';
-
-  @override
-  String get ui_clone_install_success => 'Clonage réussi';
-
-  @override
-  String get ui_clone_launch_now => 'Lancer maintenant';
-
-  @override
-  String get ui_clone_launch_failed =>
-      'Échec du lancement de l\'appli dans le clone';
-
-  @override
-  String get ui_clone_to_user => 'Cloner vers le profil';
-
-  @override
   String get ui_bottom_tab_slot_disabled => 'Masqué';
 
   @override
@@ -9081,4 +8988,102 @@ class L10nFr extends L10n {
   @override
   String get ui_settings_list_layout_desc =>
       'Compteurs, tailles et boutons de menu';
+
+  @override
+  String get ui_clone_feature_title => 'Cloner des applis';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Reconditionne un APK sous un autre nom de paquet afin que le clone puisse être installé aux côtés de l\'original et exécuté en parallèle. Les clons sont enregistrés dans Backups/Apps pour installation manuelle.';
+
+  @override
+  String get ui_clone_menu => 'Cloner l\'appli';
+
+  @override
+  String get ui_clone_limit_note =>
+      'Les clons sont signés avec une clé intégrée différente de celle de l\'appli d\'origine ; les applis à vérification stricte de signature (banque, paiement) peuvent ne pas fonctionner après clonage.';
+
+  @override
+  String get ui_clone_count_title => 'Nombre de clons';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return 'Génère $n fichier(s) d\'installation avec des noms de paquet distincts, enregistrés dans Backups/Apps. Chacun peut être installé aux côtés de l\'appli d\'origine.';
+  }
+
+  @override
+  String get ui_clone_working => 'Génération du clone…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return 'Génération des clons ($done/$total)…';
+  }
+
+  @override
+  String get ui_clone_done_one => 'Clone généré';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return '$n clons générés';
+  }
+
+  @override
+  String get ui_clone_view => 'Voir';
+
+  @override
+  String get ui_clone_split_unsupported =>
+      'Cette appli est un APK fractionné (App Bundle), le clonage n\'est pas encore pris en charge.';
+
+  @override
+  String get ui_clone_read_failed =>
+      'Impossible de lire cet APK ; le fichier est peut-être corrompu.';
+
+  @override
+  String ui_clone_failed(String e) {
+    return 'Échec du clonage : $e';
+  }
+
+  @override
+  String get ui_clone_list_title => 'Clons générés';
+
+  @override
+  String get ui_clone_list_empty_title => 'Aucun clone pour le moment';
+
+  @override
+  String get ui_clone_list_empty_desc =>
+      'Générez depuis le menu « Cloner l\'appli » d\'un fichier APK ou d\'une appli installée';
+
+  @override
+  String get ui_clone_install => 'Installer';
+
+  @override
+  String get ui_clone_share => 'Partager';
+
+  @override
+  String get ui_clone_delete => 'Supprimer';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return 'Supprimer « $name » ?';
+  }
+
+  @override
+  String get ui_clone_deleted => 'Supprimé';
+
+  @override
+  String get ui_clone_install_failed =>
+      'Échec de l\'installation, veuillez installer manuellement';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return 'Générer $n';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return 'Enregistré dans $path. Ouvrir l\'emplacement ?';
+  }
+
+  @override
+  String get ui_clone_open_ask => 'Ouvrir cette application ?';
 }

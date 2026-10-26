@@ -87,6 +87,23 @@ String lyricStyleDesc(L10n l10n, LyricAnimationStyle style) {
   }
 }
 
+/// 「歌词动画风格」菜单的展示顺序：混合模式排最前（默认风格、表现力最强、
+/// 用户最常选），其余按枚举定义顺序跟在后面。仅影响菜单展示顺序，
+/// 不影响枚举定义与持久化（按 name 存取）。
+const List<LyricAnimationStyle> kLyricStyleDisplayOrder = [
+  LyricAnimationStyle.mixed,
+  LyricAnimationStyle.classic,
+  LyricAnimationStyle.typewriter,
+  LyricAnimationStyle.meteor,
+  LyricAnimationStyle.pv,
+  LyricAnimationStyle.echo,
+  LyricAnimationStyle.drop,
+  LyricAnimationStyle.burst,
+  LyricAnimationStyle.cube,
+  LyricAnimationStyle.punch,
+  LyricAnimationStyle.wave,
+];
+
 /// 歌词动画风格下拉框（与「音效与均衡器」页的下拉框同一套观感）。
 ///
 /// 收起态**只显示当前选中的风格**（图标 + 名称），点击展开全部 11 项；
@@ -146,7 +163,8 @@ class LyricStyleDropdown extends StatelessWidget {
             // 380dp 能同时看到 7~8 项，滚一下就能到「波纹漂浮」。
             menuMaxHeight: 380,
             selectedItemBuilder: (ctx) => [
-              for (final s in LyricAnimationStyle.values)
+              // 按展示顺序渲染（混合模式在最前）
+              for (final s in kLyricStyleDisplayOrder)
                 Row(
                   children: [
                     Icon(lyricStyleIcon(s), size: 18, color: accent),
@@ -167,7 +185,8 @@ class LyricStyleDropdown extends StatelessWidget {
                 ),
             ],
             items: [
-              for (final s in LyricAnimationStyle.values)
+              // 与 selectedItemBuilder 同序（混合模式在最前）
+              for (final s in kLyricStyleDisplayOrder)
                 DropdownMenuItem<LyricAnimationStyle>(
                   value: s,
                   child: Row(

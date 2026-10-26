@@ -2119,13 +2119,13 @@ class L10nDe extends L10n {
   String get msg753cdb55 => 'App starten';
 
   @override
-  String get apk3 => 'APK sichern';
+  String get apk3 => 'APK extrahieren';
 
   @override
-  String get apk4 => 'APK wird gesichert...';
+  String get apk4 => 'APK wird extrahiert…';
 
   @override
-  String get apk5 => 'APK-Sicherung fehlgeschlagen';
+  String get apk5 => 'APK-Extraktion fehlgeschlagen';
 
   @override
   String get apk6 => 'APK-Datei teilen';
@@ -4801,6 +4801,30 @@ class L10nDe extends L10n {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_source => 'Songtext-Quelle';
+
+  @override
+  String get ui_lyric_source_auto => 'Automatisch';
+
+  @override
+  String get ui_lyric_source_qq => 'QQ Music';
+
+  @override
+  String get ui_lyric_source_kugou => 'Kugou';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => 'Wort';
+
+  @override
+  String get ui_lyric_plain_tag => 'Zeile';
+
+  @override
+  String get ui_lyric_no_result_all_sources => 'In keiner Quelle gefunden';
 
   @override
   String get ui_lyric_search_song_title => 'Songtitel';
@@ -8873,125 +8897,6 @@ class L10nDe extends L10n {
   String get lyric_offset_input_hint => 'Versatz (Sekunden)';
 
   @override
-  String get ui_clone_feature_title => 'App-Zwillinge';
-
-  @override
-  String get ui_clone_feature_desc =>
-      'Klone Apps in separate Systembenutzerprofile – mit vollständig isolierten Daten und echtem Multi-Instance. Erfordert Shizuku (oder Root).';
-
-  @override
-  String get ui_clone_need_privileged_title =>
-      'Shizuku- oder Root-Berechtigung erforderlich';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      'Starte zuerst die Shizuku-App und autorisiere ZenFile; auf gerooteten Geräten funktioniert es auch direkt.';
-
-  @override
-  String get ui_clone_grant_shizuku => 'Shizuku autorisieren';
-
-  @override
-  String get ui_clone_users_title => 'Zwillingsprofile';
-
-  @override
-  String get ui_clone_primary_user => 'Hauptbenutzer (dieses Gerät)';
-
-  @override
-  String get ui_clone_create_user => 'Neues Zwillingsprofil';
-
-  @override
-  String get ui_clone_new_user => 'Neuer Zwillingsbenutzer…';
-
-  @override
-  String get ui_clone_user_name_hint => 'Name des Zwillings';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return 'Zwilling $n';
-  }
-
-  @override
-  String get ui_clone_running => 'Läuft';
-
-  @override
-  String get ui_clone_delete_user => 'Zwillingsprofil löschen';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return 'Zwillingsprofil „$name“ löschen? Alle Apps und Daten darin werden entfernt.';
-  }
-
-  @override
-  String get ui_clone_user_created => 'Zwillingsprofil erstellt';
-
-  @override
-  String get ui_clone_user_removed => 'Zwillingsprofil entfernt';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      'Erstellen fehlgeschlagen: Systemgrenze der Benutzerzahl erreicht (manche ROMs beschränken diese)';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return 'Zwilling-Operation fehlgeschlagen: $e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout =>
-      'Befehlslaufzeit überschritten, bitte erneut versuchen';
-
-  @override
-  String get ui_clone_install_host_apps =>
-      'Geräte-Apps in diesem Profil installieren';
-
-  @override
-  String get ui_clone_no_missing_apps =>
-      'Alle Drittanbieter-Apps des Geräts sind bereits in diesem Profil';
-
-  @override
-  String get ui_clone_apps_empty =>
-      'Dieses Profil enthält noch keine Drittanbieter-Apps';
-
-  @override
-  String get ui_clone_launch => 'Starten';
-
-  @override
-  String get ui_clone_uninstall => 'Deinstallieren';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return '„$name“ aus diesem Profil deinstallieren? Betrifft nur dieses Profil, nicht das Gerät.';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => 'Aus dem Profil deinstalliert';
-
-  @override
-  String get ui_clone_installed_existing => 'Im Profil installiert';
-
-  @override
-  String get ui_clone_clone_to_user => 'In Zwilling klonen';
-
-  @override
-  String get ui_clone_select_user => 'Zwillingsprofil wählen';
-
-  @override
-  String get ui_clone_installing => 'Klonen…';
-
-  @override
-  String get ui_clone_install_success => 'Klonen erfolgreich';
-
-  @override
-  String get ui_clone_launch_now => 'Jetzt starten';
-
-  @override
-  String get ui_clone_launch_failed =>
-      'App im Profil konnte nicht gestartet werden';
-
-  @override
-  String get ui_clone_to_user => 'In Zweitprofil klonen';
-
-  @override
   String get ui_bottom_tab_slot_disabled => 'Ausgeblendet';
 
   @override
@@ -9045,4 +8950,102 @@ class L10nDe extends L10n {
   @override
   String get ui_settings_list_layout_desc =>
       'Anzahlen, Größen und Menüschaltflächen';
+
+  @override
+  String get ui_clone_feature_title => 'Apps klonen';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'Packt eine APK unter einem anderen Paketnamen neu, sodass der Klon zusammen mit der Original-App installiert und parallel ausgeführt werden kann. Klone werden unter Backups/Apps gespeichert und müssen manuell installiert werden.';
+
+  @override
+  String get ui_clone_menu => 'App klonen';
+
+  @override
+  String get ui_clone_limit_note =>
+      'Klone werden mit einem integrierten Schlüssel signiert, der sich vom Original unterscheidet; Apps mit strenger Signaturprüfung (Banking, Bezahlung) funktionieren nach dem Klonen ggf. nicht.';
+
+  @override
+  String get ui_clone_count_title => 'Anzahl der Klone';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return 'Erzeugt $n Installationspaket(e) mit unterschiedlichen Paketnamen, gespeichert unter Backups/Apps. Jedes kann zusammen mit der Original-App installiert werden.';
+  }
+
+  @override
+  String get ui_clone_working => 'Klon-Paket wird erstellt…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return 'Klone werden erstellt ($done/$total)…';
+  }
+
+  @override
+  String get ui_clone_done_one => 'Klon-Paket erstellt';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return '$n Klon-Pakete erstellt';
+  }
+
+  @override
+  String get ui_clone_view => 'Ansehen';
+
+  @override
+  String get ui_clone_split_unsupported =>
+      'Diese App ist eine Split-APK (App Bundle) und kann noch nicht geklont werden.';
+
+  @override
+  String get ui_clone_read_failed =>
+      'Diese APK kann nicht gelesen werden; die Datei ist möglicherweise beschädigt.';
+
+  @override
+  String ui_clone_failed(String e) {
+    return 'Klonen fehlgeschlagen: $e';
+  }
+
+  @override
+  String get ui_clone_list_title => 'Erstellte Klon-Pakete';
+
+  @override
+  String get ui_clone_list_empty_title => 'Noch keine Klon-Pakete';
+
+  @override
+  String get ui_clone_list_empty_desc =>
+      'Über das Menü „App klonen\" einer APK-Datei oder installierten App erstellen';
+
+  @override
+  String get ui_clone_install => 'Installieren';
+
+  @override
+  String get ui_clone_share => 'Teilen';
+
+  @override
+  String get ui_clone_delete => 'Löschen';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return '„$name\" löschen?';
+  }
+
+  @override
+  String get ui_clone_deleted => 'Gelöscht';
+
+  @override
+  String get ui_clone_install_failed =>
+      'Installation fehlgeschlagen, bitte manuell installieren';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return '$n erzeugen';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return 'In $path gespeichert. Ort öffnen?';
+  }
+
+  @override
+  String get ui_clone_open_ask => 'Diese App öffnen?';
 }

@@ -2080,13 +2080,13 @@ class L10nAr extends L10n {
   String get msg753cdb55 => 'تشغيل التطبيق';
 
   @override
-  String get apk3 => 'نسخ APK احتياطياً';
+  String get apk3 => 'استخراج APK';
 
   @override
-  String get apk4 => 'جارٍ النسخ الاحتياطي لـ APK...';
+  String get apk4 => 'جارٍ استخراج APK…';
 
   @override
-  String get apk5 => 'فشل النسخ الاحتياطي لـ APK';
+  String get apk5 => 'فشل استخراج APK';
 
   @override
   String get apk6 => 'مشاركة ملف APK';
@@ -4738,6 +4738,31 @@ class L10nAr extends L10n {
 
   @override
   String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_source => 'مصدر كلمات الأغاني';
+
+  @override
+  String get ui_lyric_source_auto => 'تلقائي';
+
+  @override
+  String get ui_lyric_source_qq => 'موسيقى QQ';
+
+  @override
+  String get ui_lyric_source_kugou => 'كوغو';
+
+  @override
+  String get ui_lyric_source_lrclib => 'LRCLIB';
+
+  @override
+  String get ui_lyric_enhanced_tag => 'كلمة بكلمة';
+
+  @override
+  String get ui_lyric_plain_tag => 'سطر بسطر';
+
+  @override
+  String get ui_lyric_no_result_all_sources =>
+      'لم يتم العثور على كلمات في أي مصدر';
 
   @override
   String get ui_lyric_search_song_title => 'اسم الأغنية';
@@ -8744,121 +8769,6 @@ class L10nAr extends L10n {
   String get lyric_offset_input_hint => 'الإزاحة (بالثواني)';
 
   @override
-  String get ui_clone_feature_title => 'نسخ التطبيقات (التوائم)';
-
-  @override
-  String get ui_clone_feature_desc =>
-      'استنسخ التطبيقات إلى ملفات مستخدمين منفصلة في النظام مع بيانات معزولة تماماً وتشغيل متعدد. يتطلب Shizuku (أو Root).';
-
-  @override
-  String get ui_clone_need_privileged_title => 'مطلوب إذن Shizuku أو Root';
-
-  @override
-  String get ui_clone_need_privileged_desc =>
-      'شغّل تطبيق Shizuku أولاً وامنح الإذن لـ ZenFile؛ على الأجهزة المروتة يمكن الاستخدام مباشرة.';
-
-  @override
-  String get ui_clone_grant_shizuku => 'منح إذن Shizuku';
-
-  @override
-  String get ui_clone_users_title => 'مستخدمو النسخ';
-
-  @override
-  String get ui_clone_primary_user => 'المستخدم الأساسي (هذا الجهاز)';
-
-  @override
-  String get ui_clone_create_user => 'إنشاء نسخة';
-
-  @override
-  String get ui_clone_new_user => 'مستخدم نسخة جديد…';
-
-  @override
-  String get ui_clone_user_name_hint => 'اسم النسخة';
-
-  @override
-  String ui_clone_default_user_name(int n) {
-    return 'نسخة $n';
-  }
-
-  @override
-  String get ui_clone_running => 'قيد التشغيل';
-
-  @override
-  String get ui_clone_delete_user => 'حذف النسخة';
-
-  @override
-  String ui_clone_delete_user_confirm(Object name) {
-    return 'حذف نسخة المستخدم «$name»؟ سيتم حذف جميع تطبيقاتها وبياناتها.';
-  }
-
-  @override
-  String get ui_clone_user_created => 'تم إنشاء النسخة';
-
-  @override
-  String get ui_clone_user_removed => 'تم حذف النسخة';
-
-  @override
-  String get ui_clone_create_failed_limit =>
-      'فشل الإنشاء: تم بلوغ حد عدد المستخدمين في النظام (بعض الأنظمة تقيّد ذلك)';
-
-  @override
-  String ui_clone_op_failed(Object e) {
-    return 'فشلت عملية النسخ: $e';
-  }
-
-  @override
-  String get ui_clone_cmd_timeout => 'انتهت مهلة تنفيذ الأمر، أعد المحاولة';
-
-  @override
-  String get ui_clone_install_host_apps => 'تثبيت تطبيقات الجهاز في هذه النسخة';
-
-  @override
-  String get ui_clone_no_missing_apps =>
-      'جميع تطبيقات الطرف الثالث في الجهاز موجودة بالفعل في هذه النسخة';
-
-  @override
-  String get ui_clone_apps_empty =>
-      'لا توجد تطبيقات طرف ثالث في هذه النسخة بعد';
-
-  @override
-  String get ui_clone_launch => 'تشغيل';
-
-  @override
-  String get ui_clone_uninstall => 'إزالة التثبيت';
-
-  @override
-  String ui_clone_uninstall_confirm(Object name) {
-    return 'إزالة «$name» من هذه النسخة؟ يؤثر على هذه النسخة فقط ولا يمس الجهاز.';
-  }
-
-  @override
-  String get ui_clone_uninstall_done => 'تمت الإزالة من النسخة';
-
-  @override
-  String get ui_clone_installed_existing => 'تم التثبيت في النسخة';
-
-  @override
-  String get ui_clone_clone_to_user => 'استنساخ إلى نسخة';
-
-  @override
-  String get ui_clone_select_user => 'اختر نسخة مستخدم';
-
-  @override
-  String get ui_clone_installing => 'جارٍ الاستنساخ…';
-
-  @override
-  String get ui_clone_install_success => 'تم الاستنساخ بنجاح';
-
-  @override
-  String get ui_clone_launch_now => 'تشغيل الآن';
-
-  @override
-  String get ui_clone_launch_failed => 'فشل تشغيل التطبيق في النسخة';
-
-  @override
-  String get ui_clone_to_user => 'نسخ إلى الملف الشخصي';
-
-  @override
   String get ui_bottom_tab_slot_disabled => 'مخفي';
 
   @override
@@ -8912,4 +8822,101 @@ class L10nAr extends L10n {
   @override
   String get ui_settings_list_layout_desc =>
       'العدّادات والأحجام وأزرار القائمة';
+
+  @override
+  String get ui_clone_feature_title => 'استنساخ التطبيقات';
+
+  @override
+  String get ui_clone_feature_desc =>
+      'يعيد تجميع APK باسم حزمة مختلفة بحيث يمكن تثبيت النسخة المستنسخة مع التطبيق الأصلي وتشغيلها معاً. تُحفظ الحزم في Backups/Apps للتثبيت اليدوي.';
+
+  @override
+  String get ui_clone_menu => 'استنساخ التطبيق';
+
+  @override
+  String get ui_clone_limit_note =>
+      'يتم توقيع الحزم المستنسخة بمفتاح مدمج مختلف عن توقيع التطبيق الأصلي؛ قد لا تعمل التطبيقات ذات التحقق الصارم من التوقيع (البنوك، الدفع) بعد الاستنساخ.';
+
+  @override
+  String get ui_clone_count_title => 'عدد النسخ';
+
+  @override
+  String ui_clone_count_desc(int n) {
+    return 'سيتم إنشاء $n من حزم التثبيت بأسماء حزم مختلفة، وتُحفظ في Backups/Apps، ويمكن تثبيت كل منها مع التطبيق الأصلي.';
+  }
+
+  @override
+  String get ui_clone_working => 'جارٍ إنشاء حزمة الاستنساخ…';
+
+  @override
+  String ui_clone_count_progress(int done, int total) {
+    return 'جارٍ إنشاء النسخ ($done/$total)…';
+  }
+
+  @override
+  String get ui_clone_done_one => 'تم إنشاء حزمة الاستنساخ';
+
+  @override
+  String ui_clone_done_many(int n) {
+    return 'تم إنشاء $n من حزم الاستنساخ';
+  }
+
+  @override
+  String get ui_clone_view => 'عرض';
+
+  @override
+  String get ui_clone_split_unsupported =>
+      'هذا التطبيق عبارة عن APK مقسم (App Bundle) ولا يدعم الاستنساخ بعد.';
+
+  @override
+  String get ui_clone_read_failed =>
+      'تعذّر قراءة ملف APK؛ قد يكون الملف تالفاً.';
+
+  @override
+  String ui_clone_failed(String e) {
+    return 'فشل الاستنساخ: $e';
+  }
+
+  @override
+  String get ui_clone_list_title => 'حزم الاستنساخ التي تم إنشاؤها';
+
+  @override
+  String get ui_clone_list_empty_title => 'لا توجد حزم استنساخ بعد';
+
+  @override
+  String get ui_clone_list_empty_desc =>
+      'أنشئ من قائمة «استنساخ التطبيق» لملف APK أو تطبيق مثبت';
+
+  @override
+  String get ui_clone_install => 'تثبيت';
+
+  @override
+  String get ui_clone_share => 'مشاركة';
+
+  @override
+  String get ui_clone_delete => 'حذف';
+
+  @override
+  String ui_clone_delete_confirm(String name) {
+    return 'حذف \"$name\"؟';
+  }
+
+  @override
+  String get ui_clone_deleted => 'تم الحذف';
+
+  @override
+  String get ui_clone_install_failed => 'فشل التثبيت، يرجى التثبيت يدوياً';
+
+  @override
+  String ui_clone_count_item(int n) {
+    return 'إنشاء $n';
+  }
+
+  @override
+  String ui_clone_saved_ask(String path) {
+    return 'تم الحفظ في $path. فتح الموقع؟';
+  }
+
+  @override
+  String get ui_clone_open_ask => 'فتح هذا التطبيق؟';
 }
