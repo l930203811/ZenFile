@@ -41,6 +41,15 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
   double? _pendingPositionPercentage;
   DateTime? _pendingSetTime;
 
+  /// 正在按压 / 拖动波形条的指针 id（只跟踪第一个按下的指针，避免多指互相打断）。
+  ///
+  /// 这里用 Listener 而不是 GestureDetector：后者若同时挂 tap 与 pan，两者会进
+  /// 手势竞技场互相竞争 —— 慢点 / 长按时手指微动超过 touch slop，pan 抢占导致
+  /// tap 被 cancel，而 cancel 回调会把共享的拖动值清空，抬起时无值可提交
+  /// ⇒ 表现为「必须快按，慢按或长按进度条会弹回原点」。Listener 不参与竞技场，
+  /// 快按 / 慢按 / 长按 / 拖动走同一条路径，行为一致。
+  int? _seekPointerId;
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +100,10 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
         _pendingSetTime = DateTime.now();
         _dragPercentage = null;
       });
+    } else {
+      // 没有落到有效拖动值时也必须给调用方一个出口，否则它那边置真的
+      // 「正在拖动」标志会永久卡住，进度流被整段丢弃（见下方注释里的旧坑）。
+      widget.onSeekCancel?.call();
     }
   }
 
@@ -217,32 +230,27 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
 
             return MouseRegion(
               cursor: SystemMouseCursors.click,
-              child: GestureDetector(
+              child: Listener(
                 behavior: HitTestBehavior.opaque,
-                onPanDown: (details) {
+                onPointerDown: (e) {
+                  // 已有手指在处理就忽略额外指针，避免多指互相打断。
+                  if (_seekPointerId != null) return;
+                  _seekPointerId = e.pointer;
                   widget.onSeekStart?.call();
-                  _updateDragPercentage(details.localPosition, constraints.maxWidth);
+                  _updateDragPercentage(e.localPosition, constraints.maxWidth);
                 },
-                onPanUpdate: (details) {
-                  _updateDragPercentage(details.localPosition, constraints.maxWidth);
+                onPointerMove: (e) {
+                  if (_seekPointerId != e.pointer) return;
+                  _updateDragPercentage(e.localPosition, constraints.maxWidth);
                 },
-                onPanEnd: (_) {
+                onPointerUp: (e) {
+                  if (_seekPointerId != e.pointer) return;
+                  _seekPointerId = null;
                   _finalizeSeek(safeDur);
                 },
-                onPanCancel: () {
-                  setState(() {
-                    _dragPercentage = null;
-                  });
-                  widget.onSeekCancel?.call();
-                },
-                onTapDown: (details) {
-                  widget.onSeekStart?.call();
-                  _updateDragPercentage(details.localPosition, constraints.maxWidth);
-                },
-                onTapUp: (_) {
-                  _finalizeSeek(safeDur);
-                },
-                onTapCancel: () {
+                onPointerCancel: (e) {
+                  if (_seekPointerId != e.pointer) return;
+                  _seekPointerId = null;
                   setState(() {
                     _dragPercentage = null;
                   });

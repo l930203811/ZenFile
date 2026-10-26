@@ -44,6 +44,14 @@ class _NativePdfViewerState extends State<NativePdfViewer> {
   /// 最近一次缩放手势的倍率（仅在 onInteractionUpdate 里记录，**不触发重建**）。
   double _lastScale = 1.0;
 
+  /// 当前按下的指针数量（用来识别双指缩放手势）。
+  int _activePointers = 0;
+
+  /// 是否检测到双指按下（≥2 个指针）。为 true 时立刻关掉 ListView 的
+  /// 竖向滚动，让 InteractiveViewer 的缩放独占手势 —— 否则第二根手指按慢
+  /// 一点时，外层滚动识别器已经先接管、竞技场关闭，缩放再也起不来。
+  bool _multiTouchZoom = false;
+
   @override
   void initState() {
     super.initState();
@@ -143,7 +151,9 @@ class _NativePdfViewerState extends State<NativePdfViewer> {
       );
     }
 
-    return Stack(
+    // ⚠️ 先赋局部变量再 return：外层要套 Listener，直接内联会让整棵子树缩进 +2，
+    // diff 变成整篇重写、掩盖真实改动（见备忘「套新父 widget」铁律）。
+    final pages = Stack(
       children: [
         NotificationListener<ScrollNotification>(
           onNotification: (n) {
@@ -162,7 +172,9 @@ class _NativePdfViewerState extends State<NativePdfViewer> {
           child: ListView.builder(
             // 放大时（_isZoomed）禁用竖向滚动，避免和 InteractiveViewer 的平移冲突；
             // 缩回原倍率后恢复滚动以便翻页。
-            physics: _isZoomed ? const NeverScrollableScrollPhysics() : null,
+            physics: (_isZoomed || _multiTouchZoom)
+                ? const NeverScrollableScrollPhysics()
+                : null,
             itemCount: _pageCount,
             itemBuilder: (ctx, i) {
               final p = _rendered[i];
@@ -196,6 +208,36 @@ class _NativePdfViewerState extends State<NativePdfViewer> {
         ),
       ],
     );
+
+    // 双指捏合优先：一旦检测到 ≥2 个指针按下，立刻关掉 ListView 的竖向滚动。
+    // 否则第二根手指按慢一点时，外层滚动识别器已经先接管、竞技场关闭，
+    // 缩放再也起不来，表现为「必须双指快速滑动才放大，双指长按滑动失效」。
+    // 指针全部抬起后恢复滚动以便翻页。
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _onPointerDown,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerCancel,
+      child: pages,
+    );
+  }
+
+  void _onPointerDown(PointerDownEvent _) {
+    _activePointers++;
+    if (_activePointers >= 2 && !_multiTouchZoom) {
+      setState(() => _multiTouchZoom = true);
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent _) => _releasePointer();
+
+  void _onPointerCancel(PointerCancelEvent _) => _releasePointer();
+
+  void _releasePointer() {
+    if (_activePointers > 0) _activePointers--;
+    if (_activePointers < 2 && _multiTouchZoom) {
+      setState(() => _multiTouchZoom = false);
+    }
   }
 
   Widget _placeholder() => Container(
