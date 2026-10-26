@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +33,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   // Connection parameters
   String _selectedType = '';
+
+  /// 编辑的是 SAF 连接（issue #44）：SAF 来自 Android 存储访问框架，
+  /// 没有 host/port/凭据概念，编辑页仅提供改名。
+  bool _isEditingSaf = false;
+
   final _nameController = TextEditingController();
   final _hostController = TextEditingController();
   final _portController = TextEditingController();
@@ -99,14 +103,21 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       if (existing.type == 'WebDav') {
         _webdavProtocol = existing.protocol;
       }
-      // 编辑模式: 跳过协议选择步骤，直接进入凭据输入页，
-      // 避免用户再次点击协议时触发 _selectProtocol() 重置端口/名称。
-      _currentStep = 1;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _pageController.hasClients) {
-          _pageController.jumpToPage(1);
-        }
-      });
+      if (existing.type.toLowerCase() == 'saf') {
+        // SAF 连接（issue #44）：没有 host/port 等连接参数，编辑页只提供
+        // 改名 —— 复用完整向导会强制要求主机地址，导致 SAF 远程无法编辑。
+        _isEditingSaf = true;
+        _currentStep = 0;
+      } else {
+        // 编辑模式: 跳过协议选择步骤，直接进入凭据输入页，
+        // 避免用户再次点击协议时触发 _selectProtocol() 重置端口/名称。
+        _currentStep = 1;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _pageController.hasClients) {
+            _pageController.jumpToPage(1);
+          }
+        });
+      }
     }
   }
 
@@ -586,6 +597,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   @override
   Widget build(BuildContext context) {
+    if (_isEditingSaf) return _buildSafRenameScreen(context);
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -661,6 +674,133 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         ],
       ),
     );
+  }
+
+  // --- SAF 连接编辑（issue #44）：仅支持改名，不涉及 host/port/凭据 ---
+  Widget _buildSafRenameScreen(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = L10n.of(context);
+    final existing = widget.existingConnection!;
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          l10n.ui_remote_connection,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        children: [
+          Row(
+            children: [
+              _buildProtocolIcon('SAF Folder', size: 30),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.androidsd,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'LexendDeca',
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      existing.rootPath,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildTextField(
+            controller: _nameController,
+            label: l10n.ui_connection_name,
+            hint: l10n.nas,
+            icon: Broken.tag,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+              ),
+              onPressed: _saveSafConnection,
+              icon: const Icon(Icons.save_rounded, size: 18, color: Colors.white),
+              label: Text(l10n.ui_save,
+                style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveSafConnection() async {
+    final l10n = L10n.of(context);
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.msg65c7ecb6)));
+      return;
+    }
+    final existing = widget.existingConnection!;
+    // 仅更新名称，SAF 的其余字段（content URI 等）原样保留。
+    final connection = NetworkConnectionModel(
+      id: existing.id,
+      name: name,
+      type: existing.type,
+      host: existing.host,
+      port: existing.port,
+      username: existing.username,
+      password: existing.password,
+      rootPath: existing.rootPath,
+      protocol: existing.protocol,
+      sshKeyPath: existing.sshKeyPath,
+      sshKeyPassword: existing.sshKeyPassword,
+      authMethod: existing.authMethod,
+    );
+    await NetworkConnectionsService.deleteConnection(existing.id);
+    await NetworkConnectionsService.saveConnection(connection);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Broken.tick_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '"${connection.name}" ${l10n.ui_save}！',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
+    Navigator.pop(context, true);
   }
 
   // --- Step 1: Protocol Grid Selection ---
@@ -847,7 +987,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     return ScrollConfiguration(
       behavior: const ScrollBehavior().copyWith(overscroll: false),
       child: ListView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
           // Header
           Row(
@@ -879,109 +1019,109 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               ),
             ],
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 18),
 
           // Connection Nickname
-          _buildInputLabel(l10n.ui_connection_name),
           _buildTextField(
             controller: _nameController,
+            label: l10n.ui_connection_name,
             hint: l10n.nas,
             icon: Broken.tag,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel(l10n.ui_protocol),
+            // 一体分段控件（内嵌「协议」标题，HTTP / HTTPS 竖线分隔）
             _buildProtocolToggle(theme),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
           ],
 
           if (_isSmbSelected) ...[
             _buildLanScanSection(theme),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
           ],
-          _buildInputLabel(l10n.msg5d57821d),
           _buildTextField(
             controller: _hostController,
+            label: l10n.msg5d57821d,
             hint: _selectedType == 'WebDav' ? l10n.dav : l10n.naslocal,
             icon: Broken.global,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
-          _buildInputLabel(l10n.ui_port),
           _buildTextField(
             controller: _portController,
+            label: l10n.ui_port,
             hint: _selectedType == 'WebDav' ? '80' : '21',
             icon: Broken.hashtag,
             keyboardType: TextInputType.number,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel(l10n.ui_path_label),
             _buildTextField(
               controller: _pathController,
+              label: '${l10n.ui_path_label} (${l10n.ui_optional})',
               hint: l10n.dav1,
               icon: Broken.folder_open,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
           ] else if (_isSmbSelected) ...[
             _buildSmbShareField(theme),
+            const SizedBox(height: 12),
           ],
 
-          // SMB：标签行右侧放「匿名登录」勾选框（勾选后用户名/密码置灰不可输入）
+          // SMB：「匿名登录」勾选框（勾选后用户名/密码置灰不可输入）
           if (_isSmbSelected) ...[
-            Row(
-              children: [
-                Expanded(child: _buildInputLabel(l10n.ui_username_optional)),
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => setState(() => _anonymousLogin = !_anonymousLogin),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: Checkbox(
-                            value: _anonymousLogin,
-                            onChanged: (v) => setState(() => _anonymousLogin = v ?? false),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                          ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => setState(() => _anonymousLogin = !_anonymousLogin),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Checkbox(
+                          value: _anonymousLogin,
+                          onChanged: (v) => setState(() => _anonymousLogin = v ?? false),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const SizedBox(width: 5),
-                        Text(
-                          l10n.ui_anonymous_login,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: _anonymousLogin
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        l10n.ui_anonymous_login,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: _anonymousLogin
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ] else
-            _buildInputLabel(l10n.ui_username_optional),
+            const SizedBox(height: 4),
+          ],
           _buildTextField(
             controller: _usernameController,
+            label: l10n.ui_username_optional,
             hint: l10n.anonymousadmin,
             icon: Broken.user,
             enabled: !(_anonymousLogin && _isSmbSelected),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
-          _buildInputLabel(l10n.msgeec70cd2),
           _buildTextField(
             controller: _passwordController,
+            label: l10n.msgeec70cd2,
             hint: '••••••••',
             icon: Broken.lock,
             obscure: _obscurePassword,
@@ -991,11 +1131,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
           // SFTP SSH 密钥认证选项
           if (_selectedType == 'SFTP') ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             _buildSshKeySection(theme),
           ],
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
 
           // Three-button action bar: BACK (left) · TEST (center) · SAVE (right, primary)
           Row(
@@ -1240,13 +1380,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInputLabel(l10n.ui_share_name_optional),
         _buildTextField(
           controller: _pathController,
+          label: l10n.ui_share_name_optional,
           hint: l10n.ui_share_name_hint,
           icon: Broken.folder_open,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Text(
           l10n.ui_lan_scan_hint,
           style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
@@ -1399,33 +1539,26 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 认证方式切换
-        Row(
-          children: [
-            Expanded(
-              child: _buildAuthMethodButton(
-                theme: theme,
-                label: l10n.ui_password_auth,
-                isSelected: _sshKeyPath == null,
-                onTap: () => setState(() => _sshKeyPath = null),
-              ),
+        // 认证方式切换：一体分段控件（竖线分隔）
+        _buildSegmentPill(
+          theme,
+          segments: [
+            (
+              label: l10n.ui_password_auth,
+              selected: _sshKeyPath == null,
+              onTap: () => setState(() => _sshKeyPath = null),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildAuthMethodButton(
-                theme: theme,
-                label: l10n.ui_ssh_key_auth,
-                isSelected: _sshKeyPath != null,
-                onTap: () => _selectSshKey(),
-              ),
+            (
+              label: l10n.ui_ssh_key_auth,
+              selected: _sshKeyPath != null,
+              onTap: _selectSshKey,
             ),
           ],
         ),
-        const SizedBox(height: 16),
 
         // 密钥文件选择
         if (_sshKeyPath != null) ...[
-          _buildInputLabel(l10n.ui_private_key_file),
+          const SizedBox(height: 12),
           InkWell(
             onTap: _selectSshKey,
             borderRadius: BorderRadius.circular(12),
@@ -1457,14 +1590,14 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               ),
             ),
           ),
-          const SizedBox(height: 12),
         ],
 
         // 密钥密码短语（可选）
         if (_sshKeyPath != null) ...[
-          _buildInputLabel('${l10n.ui_passphrase} (${l10n.ui_optional})'),
+          const SizedBox(height: 12),
           _buildTextField(
             controller: _sshKeyPasswordController,
+            label: '${l10n.ui_passphrase} (${l10n.ui_optional})',
             hint: '••••••••',
             icon: Broken.lock,
             obscure: _obscureSshKeyPassword,
@@ -1488,39 +1621,84 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     );
   }
 
-  Widget _buildAuthMethodButton({
-    required ThemeData theme,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
+  /// 一体分段控件：所有选项共用一个容器，选项之间用竖线分隔。
+  /// 边框/填充样式与输入框一致（16dp 圆角描边）。
+  /// [title] 为内嵌在容器左侧的非交互标题（如「协议」）。
+  Widget _buildSegmentPill(
+    ThemeData theme, {
+    String? title,
+    required List<({String label, bool selected, VoidCallback onTap})> segments,
   }) {
     final isDark = theme.brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.12)
-              : (isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withValues(alpha: 0.1),
-            width: isSelected ? 1.5 : 1,
+    final Widget divider = Container(
+      width: 1,
+      height: 18,
+      color: theme.colorScheme.outline.withValues(alpha: 0.25),
+    );
+
+    final List<Widget> children = [];
+    if (title != null) {
+      children
+        ..add(Padding(
+          padding: const EdgeInsets.only(left: 16, right: 10),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ))
+        ..add(divider);
+    }
+
+    for (var i = 0; i < segments.length; i++) {
+      final seg = segments[i];
+      children.add(
+        Expanded(
+          child: InkWell(
+            onTap: seg.onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.all(4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: seg.selected
+                    ? theme.colorScheme.primary.withValues(alpha: 0.14)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                seg.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: seg.selected ? FontWeight.w700 : FontWeight.w500,
+                  color: seg.selected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                ),
+              ),
+            ),
           ),
         ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
+      );
+      if (i < segments.length - 1) children.add(divider);
+    }
+
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF1E293B)
+            : theme.colorScheme.primary.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
       ),
+      child: Row(children: children),
     );
   }
 
@@ -1538,23 +1716,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     }
   }
 
-  Widget _buildInputLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0, left: 4.0),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.2,
-        ),
-      ),
-    );
-  }
-
   Widget _buildTextField({
     required TextEditingController controller,
-    required String hint,
+    required String label,
+    String? hint,
     required IconData icon,
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
@@ -1571,8 +1736,25 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       enabled: enabled,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
+        // 标题固定在输入框左上角边框（始终浮动，不进入框内）；
+        // 提示文本留在框内，两者颜色区分：标题更深，提示更浅。
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
         hintText: hint,
-        hintStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
+        hintStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
+          fontSize: 13.5,
+        ),
         prefixIcon: Icon(icon, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
         suffixIcon: suffix,
         filled: true,
@@ -1630,78 +1812,36 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   Widget _buildProtocolToggle(ThemeData theme) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildProtocolButton(
-            theme: theme,
-            label: 'HTTP',
-            isSelected: _webdavProtocol == 'http',
-            onTap: () {
-              setState(() {
-                _webdavProtocol = 'http';
-                if (_portController.text == '443' || _portController.text.isEmpty) {
-                  _portController.text = '80';
-                }
-              });
-            },
-          ),
+    // 一体分段控件：内嵌「协议」标题，HTTP / HTTPS 竖线分隔
+    return _buildSegmentPill(
+      theme,
+      title: L10n.of(context).ui_protocol,
+      segments: [
+        (
+          label: 'HTTP',
+          selected: _webdavProtocol == 'http',
+          onTap: () {
+            setState(() {
+              _webdavProtocol = 'http';
+              if (_portController.text == '443' || _portController.text.isEmpty) {
+                _portController.text = '80';
+              }
+            });
+          },
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildProtocolButton(
-            theme: theme,
-            label: 'HTTPS (Secure)',
-            isSelected: _webdavProtocol == 'https',
-            onTap: () {
-              setState(() {
-                _webdavProtocol = 'https';
-                if (_portController.text == '80' || _portController.text.isEmpty) {
-                  _portController.text = '443';
-                }
-              });
-            },
-          ),
+        (
+          label: 'HTTPS',
+          selected: _webdavProtocol == 'https',
+          onTap: () {
+            setState(() {
+              _webdavProtocol = 'https';
+              if (_portController.text == '80' || _portController.text.isEmpty) {
+                _portController.text = '443';
+              }
+            });
+          },
         ),
       ],
-    );
-  }
-
-  Widget _buildProtocolButton({
-    required ThemeData theme,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final isDark = theme.brightness == Brightness.dark;
-    final activeColor = theme.colorScheme.primary;
-    
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? activeColor.withValues(alpha: 0.12)
-              : (isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? activeColor : theme.colorScheme.outline.withValues(alpha: 0.1),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? activeColor : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-      ),
     );
   }
 
