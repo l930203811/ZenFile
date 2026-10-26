@@ -1073,7 +1073,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           // SMB：「匿名登录」勾选框（勾选后用户名/密码置灰不可输入）
           if (_isSmbSelected) ...[
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: () => setState(() => _anonymousLogin = !_anonymousLogin),
@@ -1197,22 +1197,26 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FilledButton.icon(
-          onPressed: _isScanningLan ? null : _scanLanDevices,
-          icon: _isScanningLan
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                )
-              : const Icon(Icons.wifi_find_rounded, size: 20),
-          label: Text(
-            _isScanningLan ? l10n.ui_scanning_lan : l10n.ui_scan_lan_devices,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        // 与其他输入框等宽
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: _isScanningLan ? null : _scanLanDevices,
+            icon: _isScanningLan
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                  )
+                : const Icon(Icons.wifi_find_rounded, size: 20),
+            label: Text(
+              _isScanningLan ? l10n.ui_scanning_lan : l10n.ui_scan_lan_devices,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -1642,7 +1646,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       final seg = segments[i];
       final isFirst = i == 0;
       final isLast = i == segments.length - 1;
-      // 选中高亮铺满半边：圆角只保留容器外侧两个角
+      // 水波纹贴合外侧圆角（高亮块本身为直角，由外层 ClipRRect 统一裁出圆角，
+      // 保证选中色铺满到左右两侧边框）
       final segRadius = BorderRadius.only(
         topLeft: Radius.circular(isFirst ? 16 : 0),
         bottomLeft: Radius.circular(isFirst ? 16 : 0),
@@ -1657,12 +1662,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: seg.selected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.14)
-                    : Colors.transparent,
-                borderRadius: segRadius,
-              ),
+              color: seg.selected
+                  ? theme.colorScheme.primary.withValues(alpha: 0.14)
+                  : Colors.transparent,
               child: Text(
                 seg.label,
                 maxLines: 1,
@@ -1714,7 +1716,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
         ),
       ),
-      child: SizedBox(height: 48, child: Row(children: children)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(height: 48, child: Row(children: children)),
+      ),
     );
   }
 
