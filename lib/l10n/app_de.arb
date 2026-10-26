@@ -8805,5 +8805,15 @@
   "ui_clone_install_failed": "Installation fehlgeschlagen, bitte manuell installieren",
   "ui_clone_count_item": "{n} erzeugen",
   "ui_clone_saved_ask": "In {path} gespeichert. Ort öffnen?",
-  "ui_clone_open_ask": "Diese App öffnen?"
+  "ui_clone_open_ask": "Diese App öffnen?",
+  "ui_clone_hardened_title": "App-Härtung / Packing erkannt",
+  "ui_clone_hardened_warn": "Diese App ist durch Code-Härtung (eine zur Laufzeit entschlüsselte Hülle) geschützt. Ihr Paketname und die Provider-Autoritäten sind in geschütztem Code oder nativen Bibliotheken eingebettet. Das Klonen überschreibt nur das Manifest und die Ressourcen, daher lässt sich der Klon zwar parallel installieren, wird aber zur Laufzeit voraussichtlich abstürzen oder nicht korrekt funktionieren.",
+  "ui_clone_hardened_continue": "Trotzdem klonen",
+  "ui_proxy_settings": "Proxy",
+  "ui_proxy_direct": "Direkt",
+  "ui_proxy_host": "Proxy-Host",
+  "ui_proxy_port": "Proxy-Port",
+  "ui_proxy_username": "Proxy-Benutzername",
+  "ui_proxy_password": "Proxy-Passwort",
+  "ui_proxy_hint": "Verbindungen werden über den SOCKS5-Proxy geleitet, um Server in virtuellen Intranets zu erreichen."
 }

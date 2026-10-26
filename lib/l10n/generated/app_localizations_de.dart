@@ -9048,4 +9048,36 @@ class L10nDe extends L10n {
 
   @override
   String get ui_clone_open_ask => 'Diese App öffnen?';
+
+  @override
+  String get ui_clone_hardened_title => 'App-Härtung / Packing erkannt';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'Diese App ist durch Code-Härtung (eine zur Laufzeit entschlüsselte Hülle) geschützt. Ihr Paketname und die Provider-Autoritäten sind in geschütztem Code oder nativen Bibliotheken eingebettet. Das Klonen überschreibt nur das Manifest und die Ressourcen, daher lässt sich der Klon zwar parallel installieren, wird aber zur Laufzeit voraussichtlich abstürzen oder nicht korrekt funktionieren.';
+
+  @override
+  String get ui_clone_hardened_continue => 'Trotzdem klonen';
+
+  @override
+  String get ui_proxy_settings => 'Proxy';
+
+  @override
+  String get ui_proxy_direct => 'Direkt';
+
+  @override
+  String get ui_proxy_host => 'Proxy-Host';
+
+  @override
+  String get ui_proxy_port => 'Proxy-Port';
+
+  @override
+  String get ui_proxy_username => 'Proxy-Benutzername';
+
+  @override
+  String get ui_proxy_password => 'Proxy-Passwort';
+
+  @override
+  String get ui_proxy_hint =>
+      'Verbindungen werden über den SOCKS5-Proxy geleitet, um Server in virtuellen Intranets zu erreichen.';
 }

@@ -412,7 +412,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         }
         break;
       case 'app_clone':
-        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆（选/建分身 → pm install --user）
+        // APK 长按菜单「克隆应用」：改包名重打包生成可共存安装的克隆安装包
         if (context.mounted) {
           await AppCloneFlow.cloneApk(context, path);
         }

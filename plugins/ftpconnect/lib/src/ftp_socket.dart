@@ -4,6 +4,7 @@ import 'dart:io';
 
 import '/src/ftp_reply.dart';
 import '../ftpconnect.dart';
+import 'socks5_socket.dart';
 
 class FTPSocket {
   final String host;
@@ -19,6 +20,21 @@ class FTPSocket {
   /// 等于对中间人攻击完全敞开。现改为显式 opt-in：仅当调用方明确传入
   /// `insecureSkipVerify: true`（并自行承担自签名证书风险）时才跳过校验。
   final bool insecureSkipVerify;
+
+  // ── ZenFile 本地补丁（2026-10-26）──────────────────────────────────────
+  // 逐连接 SOCKS5 代理（访问虚拟内网里的 FTP 服务器）。
+  final String? proxyType;
+  final String? proxyHost;
+  final int? proxyPort;
+  final String? proxyUsername;
+  final String? proxyPassword;
+
+  bool get _useProxy =>
+      proxyType == 'socks5' &&
+      proxyHost != null &&
+      proxyHost!.isNotEmpty &&
+      proxyPort != null &&
+      proxyPort! > 0;
 
   late RawSocket _socket;
   TransferMode transferMode = TransferMode.passive;
@@ -54,9 +70,58 @@ class FTPSocket {
   /// 数据连接是本地可立即判定的连接（同机房/局域网），8s 已非常宽裕。
   Duration dataConnectTimeout;
 
-  FTPSocket(this.host, this.port, this.securityType, this.logger, this.timeout, {this.insecureSkipVerify = false})
+  FTPSocket(this.host, this.port, this.securityType, this.logger, this.timeout,
+      {this.insecureSkipVerify = false,
+      this.proxyType,
+      this.proxyHost,
+      this.proxyPort,
+      this.proxyUsername,
+      this.proxyPassword})
       : dataConnectTimeout =
             Duration(seconds: timeout < 8 ? timeout : 8);
+
+  /// 控制连接建建入口（RawSocket 形态）。
+  ///
+  /// 开启 SOCKS5 代理（[_useProxy]）时，经由代理建立透明 TCP 通道（出口主机名
+  /// 交给代理解析，适配「内网主机只在代理侧可解析」的虚拟内网场景）；否则直连。
+  /// ⚠️ Dart 里 RawSocket 不是 Socket 的子类型，控制通道的 read()/write()
+  /// 原始缓冲 API 需要 RawSocket，故走 `connectRawViaSocks5`。
+  Future<RawSocket> _connectRawSocket(String targetHost, int targetPort,
+      {required Duration timeout}) async {
+    if (_useProxy) {
+      return Socks5Socket.connectRawViaSocks5(
+        proxyHost: proxyHost!,
+        proxyPort: proxyPort!,
+        targetHost: targetHost,
+        targetPort: targetPort,
+        username: proxyUsername,
+        password: proxyPassword,
+        timeout: timeout,
+      );
+    }
+    return RawSocket.connect(targetHost, targetPort, timeout: timeout);
+  }
+
+  /// 数据连接（PASV/EPSV 通告端口）建连，返回 [Socket] 供上层按 [Socket] 处理。
+  ///
+  /// 数据端口与控制连接同主机（[host]），故目标主机固定为 [host]；当启用代理时
+  /// 走 `Socks5Socket.connectViaSocks5` 经 SOCKS5 出网（返回的包装类实现
+  /// Socket，其 stream 为广播流 —— 数据通道只用一次 `await for`/listen，
+  /// 语义与直连 Socket 一致）。
+  Future<Socket> connectDataSocket(int targetPort, Duration timeout) {
+    if (_useProxy) {
+      return Socks5Socket.connectViaSocks5(
+        proxyHost: proxyHost!,
+        proxyPort: proxyPort!,
+        targetHost: host,
+        targetPort: targetPort,
+        username: proxyUsername,
+        password: proxyPassword,
+        timeout: timeout,
+      );
+    }
+    return Socket.connect(host, targetPort, timeout: timeout);
+  }
 
   /// Set current transfer type of socket
   ///
@@ -244,18 +309,26 @@ class FTPSocket {
     try {
       // FTPS starts secure
       if (securityType == SecurityType.ftps) {
-        _socket = await RawSecureSocket.connect(
-          host,
-          port,
-          timeout: timeout,
-          onBadCertificate: insecureSkipVerify ? (certificate) => true : null,
-        );
+        if (_useProxy) {
+          // SOCKS5 透明通道之上再做 TLS 握手（FTPS over SOCKS5）。
+          _socket = await _connectRawSocket(host, port, timeout: timeout);
+          // 必须显式传 host：代理通道的远端是代理服务器，缺省会拿代理地址
+          // 做 SNI/证书校验，导致 FTPS over SOCKS5 证书名不匹配。
+          _socket = await RawSecureSocket.secure(
+            _socket,
+            host: host,
+            onBadCertificate: insecureSkipVerify ? (certificate) => true : null,
+          );
+        } else {
+          _socket = await RawSecureSocket.connect(
+            host,
+            port,
+            timeout: timeout,
+            onBadCertificate: insecureSkipVerify ? (certificate) => true : null,
+          );
+        }
       } else {
-        _socket = await RawSocket.connect(
-          host,
-          port,
-          timeout: timeout,
-        );
+        _socket = await _connectRawSocket(host, port, timeout: timeout);
       }
     } catch (e) {
       throw FTPConnectException(
@@ -277,7 +350,10 @@ class FTPSocket {
         }
       }
 
+      // 显式传 host：直连时与远端一致（无行为变化），走 SOCKS5 代理时避免
+      // 用代理地址做 SNI/证书校验。
       _socket = await RawSecureSocket.secure(_socket,
+          host: host,
           onBadCertificate: insecureSkipVerify ? (certificate) => true : null);
     }
 

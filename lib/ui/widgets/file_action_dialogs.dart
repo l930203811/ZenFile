@@ -889,11 +889,11 @@ class FileActionSheet {
           onTap: () => onAction('open_with'),
           enabled: !isZipEntry,
         ),
-      // APK 特有动作：克隆到分身（Shizuku/root 多用户多开，见 AppCloneFlow）
+      // APK 特有动作：克隆应用（改包名重打包多开共存，见 AppCloneFlow）
       if (isLocalApk)
         ActionItem(
-          icon: Broken.people,
-          label: L10n.of(context).ui_clone_clone_to_user,
+          icon: Broken.copy,
+          label: L10n.of(context).ui_clone_menu,
           onTap: () => onAction('app_clone'),
         ),
       // 压缩包内条目：压缩 → 解压（extractZipEntriesToParent）；普通条目：压缩

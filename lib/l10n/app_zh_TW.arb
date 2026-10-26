@@ -8956,5 +8956,15 @@
   "ui_clone_install_failed": "安裝失敗，請手動安裝",
   "ui_clone_count_item": "生成 {n} 個",
   "ui_clone_saved_ask": "已儲存到 {path}，是否開啟所在位置？",
-  "ui_clone_open_ask": "是否開啟此應用程式？"
+  "ui_clone_open_ask": "是否開啟此應用程式？",
+  "ui_clone_hardened_title": "偵測到應用程式加固 / 加殼",
+  "ui_clone_hardened_warn": "此應用程式使用了程式碼加固（執行時才解密的殼），其套件名稱、內容提供方等身分被寫入受保護的程式碼或原生函式庫。複製僅改寫清單與資源，無法涵蓋這些身分，安裝可共存但執行期很可能崩潰或無法使用。",
+  "ui_clone_hardened_continue": "仍要複製",
+  "ui_proxy_settings": "代理設定",
+  "ui_proxy_direct": "直連",
+  "ui_proxy_host": "代理位址",
+  "ui_proxy_port": "代理連接埠",
+  "ui_proxy_username": "代理使用者名稱",
+  "ui_proxy_password": "代理密碼",
+  "ui_proxy_hint": "透過 SOCKS5 代理轉發連線，可存取虛擬內網中的伺服器。"
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
+import 'socks5_socket.dart';
 import '../http_range_proxy_service.dart';
 import '../webdav_debug_log.dart';
 
@@ -29,7 +30,21 @@ class WebDavRemoteClient extends RemoteClient {
   final String password;
   final String protocol;
   final String rootPath;
-  
+
+  // 逐连接 SOCKS5 代理（访问虚拟内网里的 WebDAV 服务器）。
+  final String? proxyType;
+  final String? proxyHost;
+  final int? proxyPort;
+  final String? proxyUsername;
+  final String? proxyPassword;
+
+  bool get _useProxy =>
+      proxyType == 'socks5' &&
+      proxyHost != null &&
+      proxyHost!.isNotEmpty &&
+      proxyPort != null &&
+      proxyPort! > 0;
+
   late HttpClient _httpClient;
 
   /// 是否支持直接流式播放（无 302 重定向）。
@@ -51,9 +66,50 @@ class WebDavRemoteClient extends RemoteClient {
     required this.password,
     this.protocol = 'http',
     this.rootPath = '/',
+    this.proxyType,
+    this.proxyHost,
+    this.proxyPort,
+    this.proxyUsername,
+    this.proxyPassword,
   }) {
-    _httpClient = HttpClient();
-    _httpClient.connectionTimeout = const Duration(seconds: 15);
+    _httpClient = _createHttpClient();
+  }
+
+  /// 构造 HttpClient：若本连接配置了 SOCKS5 代理，则把底层 TCP 连接拦截、
+  /// 经由代理服务器建立（用于访问虚拟内网里的 WebDAV）。
+  ///
+  /// ⚠️ 设置了自定义 `connectionFactory` 后，HttpClient **不会**再对 "https"
+  /// 自动做 TLS 握手 —— 必须在工厂里对返回的 socket 自行升级（与 socks5_proxy
+  /// 包同思路），否则 HTTPS 请求会以明文 HTTP 打到 443 端口直接失败。
+  ///
+  /// 注意：`connectionFactory` 的 `proxyHost`/`proxyPort` 参数来自 dart:io
+  /// 自带的 `findProxy`，此处【一律忽略】，强制使用本连接独立的 SOCKS5 配置，
+  /// 避免被设备环境变量里的 HTTP_PROXY 干扰。
+  HttpClient _createHttpClient() {
+    final client = HttpClient();
+    client.connectionTimeout = const Duration(seconds: 15);
+    if (_useProxy) {
+      client.connectionFactory = (uri, _, __) async {
+        final sock = await Socks5Socket.connectViaSocks5(
+          proxyHost: proxyHost!,
+          proxyPort: proxyPort!,
+          targetHost: uri.host,
+          targetPort: uri.port,
+          username: proxyUsername,
+          password: proxyPassword,
+        );
+        if (uri.scheme == 'https') {
+          final secure = sock.secureForTLS(host: uri.host);
+          return ConnectionTask.fromSocket(secure, () async {
+            try {
+              (await secure).destroy();
+            } catch (_) {}
+          });
+        }
+        return ConnectionTask.fromSocket(Future.value(sock), () => sock.destroy());
+      };
+    }
+    return client;
   }
 
   String get _baseUrl {
@@ -103,7 +159,7 @@ class WebDavRemoteClient extends RemoteClient {
     // 使用单独的 HttpClient（followRedirects: false）发送 HEAD 请求，
     // 避免影响主 _httpClient 的连接池。
     try {
-      final detectClient = HttpClient();
+      final detectClient = _createHttpClient();
       detectClient.connectionTimeout = const Duration(seconds: 5);
       final detectUrl = Uri.parse('$_baseUrl$normalizedRoot');
       final detectRequest = await detectClient.openUrl('HEAD', detectUrl);
@@ -697,7 +753,7 @@ class WebDavRemoteClient extends RemoteClient {
   /// - `_StreamTarget.redirect(url)`：发生重定向且最终直链支持 Range(206)；
   /// - `_StreamTarget.redirect(null)`：重定向但直链不可用 → 调用方走本地代理。
   Future<_StreamTarget> _resolveStreamTarget(Uri start, String? auth) async {
-    final client = HttpClient();
+    final client = _createHttpClient();
     // OpenList 需先向网盘申请临时直链才返回 302，耗时可能数秒，放宽到 15s。
     client.connectionTimeout = const Duration(seconds: 15);
     var sawRedirect = false;

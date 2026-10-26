@@ -32,6 +32,11 @@ class FTPConnect {
     Logger? logger,
     int timeout = 30,
     bool insecureSkipVerify = false,
+    String? proxyType,
+    String? proxyHost,
+    int? proxyPort,
+    String? proxyUsername,
+    String? proxyPassword,
   })  : _user = user,
         _pass = pass {
     port ??= securityType == SecurityType.ftps ? 990 : 21;
@@ -42,6 +47,11 @@ class FTPConnect {
       logger ?? Logger(isEnabled: showLog),
       timeout,
       insecureSkipVerify: insecureSkipVerify,
+      proxyType: proxyType,
+      proxyHost: proxyHost,
+      proxyPort: proxyPort,
+      proxyUsername: proxyUsername,
+      proxyPassword: proxyPassword,
     );
   }
 

@@ -209,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       DirectoryScreen.browseBarExpanded.value &&
       provider.showFloatingAddButton &&
       provider.bottomNavBarEnabled &&
+      provider.persistentTabBar &&
       provider.showBottomActionBar;
 
   void _switchTab(int index) {
@@ -432,8 +433,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           // 在此不再切换标签页或弹出路由，避免双 PopScope 叠加导致返回键跳到
           // 分类页。抽屉/编辑态/选中态已在上方单独处理。
           return;
-        } else {
+        }
+        // 非浏览 tab 的返回键处理：
+        //  · 分类页（首页, index 0）→ 触发「再按一次退出应用」提示；
+        //  · 其余 tab（设置 / 传输 / 自定义槽位承载的内置页等）→ 先回到分类页，
+        //    而不是直接退出应用。符合底部 tab 应用的惯例：从任意次级页返回首页，
+        //    仅首页按返回才退出。
+        if (_currentIndex == 0) {
           _handleBackPress(context);
+        } else {
+          _switchTab(0);
         }
       },
       child: ShellMetricsStable(
@@ -747,16 +756,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
+  /// 连接 / 设置页处于「全屏显示」：这两页不是文件浏览页，顶栏
+  /// （抽屉 / 搜索 / 常用功能的工具按钮行）整条隐藏，观感对齐它们的子页面
+  /// 进入全屏时的状态。返回分类页靠系统返回键（_currentIndex != 0 → _switchTab(0)），
+  /// 搜索 / 抽屉回到分类页后仍可用。
+  ///
+  /// 注意只针对**工具按钮行**：4-tab（无论落在顶栏还是底栏）的显隐仍由
+  /// 「导航栏总开关 + 导航栏常驻其他页面」两条规则管辖（见 _buildNav*Bar 其余分支）。
+  bool get _fullScreenChromeHidden =>
+      _currentIndex == 2 || _currentIndex == _settingsTabIndex;
+
   /// 顶栏：位置=底部时显示工具按钮行（左抽屉 / 全局搜索 / 常用功能 5 项 / 设置），
   /// 位置=顶部时显示 4-tab 导航。
   ///
   /// 「导航栏」总开关只隐藏 **4-tab 那条** —— 工具按钮行永远保留，它是抽屉 /
   /// 搜索 / 刷新等操作的唯一入口。原实现只按底栏判开关，于是「位置=顶部 + 关闭
   /// 导航栏」会把底栏的工具按钮行藏掉、4-tab 反而留在顶部。
+  /// （例外：连接 / 设置页全屏显示，工具按钮行也隐藏，见 [_fullScreenChromeHidden]。）
   Widget _buildNavTopBar(bool bottomTabs) {
     // atTop：本栏落在顶栏槽位 —— 不能吃底部安全区（body 在 extendBody 下的
     // padding.bottom 等于底栏总高，吃掉会在栏底多铺一条同色空带）。
-    if (bottomTabs) return _buildTopBarRow(atTop: true);
+    if (bottomTabs) {
+      // 连接 / 设置页全屏显示：工具按钮行整条隐藏，只留状态栏高度的安全区。
+      if (_fullScreenChromeHidden) {
+        return SizedBox(height: MediaQuery.paddingOf(context).top);
+      }
+      return _buildTopBarRow(atTop: true);
+    }
     // 多选操作栏覆盖 4-tab：选择模式（长按多选）时隐藏顶栏 4-tab，
     // 与底栏行为保持一致；壳内页面（媒体分类页等）的局部多选态同理。
     if (ShellNavigator.childSelectionMode.value ||
@@ -767,6 +793,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 4-tab 在顶栏：关闭时整条收起，只留状态栏高度的空白，
     // 免得下面的内容被状态栏压住。
     if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
+      return SizedBox(height: MediaQuery.paddingOf(context).top);
+    }
+    // 「导航栏常驻其他页面」关闭时，除分类页（index 0）外的所有 home tab
+    // （浏览 / 连接 / 设置）作为「其他页面」不显示导航栏（4-tab），与深层 /
+    // 全屏页一致，呈全屏显示；仅分类页始终显示（无论常驻开关）。
+    if (_currentIndex != 0 &&
+        !context.select<FileManagerProvider, bool>((p) => p.persistentTabBar)) {
       return SizedBox(height: MediaQuery.paddingOf(context).top);
     }
     return _buildBottomTabs(atTop: true);
@@ -798,6 +831,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 位置=顶部：4-tab 在顶栏，底栏固定是工具按钮行。它不受总开关影响，
     // 否则「关掉导航栏」会把工具按钮行一起藏掉（它没有第二入口）。
     if (!bottomTabs) {
+      // 连接 / 设置页全屏显示：工具按钮行（此刻挂在底栏槽位）同样整条隐藏，
+      // 只留系统手势条高度，与顶栏槽位的处理对齐。
+      if (_fullScreenChromeHidden) {
+        return SizedBox(height: MediaQuery.paddingOf(context).bottom);
+      }
       final bar = _buildTopBarRow(atTop: false);
       if (!navEnabled) return bar;
       return GestureDetector(
@@ -807,6 +845,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       );
     }
     if (!navEnabled) {
+      return SizedBox(height: MediaQuery.paddingOf(context).bottom);
+    }
+    // 「导航栏常驻其他页面」关闭时，除分类页（index 0）外的所有 home tab
+    // （浏览 / 连接 / 设置）作为「其他页面」不显示导航栏（4-tab），与深层 /
+    // 全屏页一致，呈全屏显示；仅分类页始终显示（无论常驻开关）。这些页返回到
+    // 分类页靠返回键逻辑（_currentIndex != 0 → _switchTab(0)），不靠底栏切回。
+    if (_currentIndex != 0 &&
+        !context.select<FileManagerProvider, bool>((p) => p.persistentTabBar)) {
       return SizedBox(height: MediaQuery.paddingOf(context).bottom);
     }
     // 浏览页的操作栏与 4-tab 拼成一整块「底部控制台」：操作栏由 DirectoryScreen

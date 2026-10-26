@@ -8946,4 +8946,36 @@ class L10nEn extends L10n {
 
   @override
   String get ui_clone_open_ask => 'Open this app?';
+
+  @override
+  String get ui_clone_hardened_title => 'App hardening / packing detected';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'This app is protected by code hardening (a runtime-decrypted shell). Its package name and provider authorities are embedded in protected code or native libraries. Cloning only rewrites the manifest and resources, so the clone may install side-by-side but will likely crash or malfunction at runtime.';
+
+  @override
+  String get ui_clone_hardened_continue => 'Clone anyway';
+
+  @override
+  String get ui_proxy_settings => 'Proxy';
+
+  @override
+  String get ui_proxy_direct => 'Direct';
+
+  @override
+  String get ui_proxy_host => 'Proxy host';
+
+  @override
+  String get ui_proxy_port => 'Proxy port';
+
+  @override
+  String get ui_proxy_username => 'Proxy username';
+
+  @override
+  String get ui_proxy_password => 'Proxy password';
+
+  @override
+  String get ui_proxy_hint =>
+      'Connections are tunneled through the SOCKS5 proxy, so servers inside a virtual intranet can be reached.';
 }

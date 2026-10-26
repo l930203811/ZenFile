@@ -8808,5 +8808,15 @@
   "ui_clone_install_failed": "설치에 실패했습니다. 수동으로 설치해 주세요",
   "ui_clone_count_item": "{n}개 생성",
   "ui_clone_saved_ask": "{path}에 저장됨. 위치를 열까요?",
-  "ui_clone_open_ask": "이 앱을 열까요?"
+  "ui_clone_open_ask": "이 앱을 열까요?",
+  "ui_clone_hardened_title": "앱 난독화/패킹 감지됨",
+  "ui_clone_hardened_warn": "이 앱은 코드 난독화(실행 시 복호화되는 셸)로 보호됩니다. 패키지 이름과 프로바이더 권한은 보호된 코드나 네이티브 라이브러리에 포함되어 있습니다. 복제는 매니페스트와 리소스만 다시 쓰므로 복제본을 원본과 함께 설치할 수 있지만 실행 시 충돌하거나 제대로 작동하지 않을 수 있습니다.",
+  "ui_clone_hardened_continue": "그래도 복제",
+  "ui_proxy_settings": "프록시 설정",
+  "ui_proxy_direct": "직접 연결",
+  "ui_proxy_host": "프록시 호스트",
+  "ui_proxy_port": "프록시 포트",
+  "ui_proxy_username": "프록시 사용자 이름",
+  "ui_proxy_password": "프록시 비밀번호",
+  "ui_proxy_hint": "SOCKS5 프록시를 통해 연결을 전달하여 가상 내부망의 서버에 접근할 수 있습니다."
 }

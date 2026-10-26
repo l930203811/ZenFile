@@ -243,15 +243,24 @@ class AppOptionsSheet extends StatelessWidget {
                 AppManagerService.shareAppApk(app);
               },
             ),
-            // 克隆到分身：选/建分身用户后毫秒级 install-existing（Shizuku/root 多用户）
+            // 克隆应用：改包名重打包生成可共存安装的克隆安装包（不直接安装）
             _buildBottomSheetActionItem(
               theme: theme,
-              icon: Broken.people,
-              label: L10n.of(context).ui_clone_clone_to_user,
+              icon: Broken.copy,
+              label: L10n.of(context).ui_clone_menu,
               color: Colors.deepPurpleAccent,
               onTap: () {
+                // 与上方「提取APK」条目同理：先在 sheet 销毁前捕获根
+                // Navigator 的 Overlay context 再关 sheet —— sheet 自身的
+                // context 关闭后即失效，直接传给克隆流程会导致后续
+                // showDialog 静默无效（「点了没反应」）。
+                  final rootNavigator = Navigator.of(
+                    context,
+                    rootNavigator: true,
+                  );
+                  final rootContext = rootNavigator.overlay?.context ?? context;
                 Navigator.pop(context);
-                AppCloneFlow.cloneExistingApp(context, app.packageName);
+                AppCloneFlow.cloneExistingApp(rootContext, app);
               },
             ),
             if (!app.isSystem)

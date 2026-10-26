@@ -146,9 +146,21 @@ class SmbService {
      *
      * @return a freshly generated sessionId that must be passed to subsequent calls.
      */
-    fun connect(host: String, port: Int, username: String, password: String?, domain: String?): String {
+    fun connect(
+        host: String,
+        port: Int,
+        username: String,
+        password: String?,
+        domain: String?,
+        proxyHost: String? = null,
+        proxyPort: Int? = null,
+        proxyUsername: String? = null,
+        proxyPassword: String? = null,
+    ): String {
         if (username.isNotEmpty()) {
-            return connectInternal(host, port, username, password, domain, smb2Only = false)
+            return connectInternal(host, port, username, password, domain, smb2Only = false,
+                proxyHost = proxyHost, proxyPort = proxyPort,
+                proxyUsername = proxyUsername, proxyPassword = proxyPassword)
         }
         // 匿名（空用户名）：smbj 0.14.0 走 NTLMSSP_NEGOTIATE_ANONYMOUS 规范握手，
         // 合规服务器会在 SESSION_SETUP 响应里打 IS_NULL 标志，SMB3 下跳过会话密钥
@@ -157,11 +169,15 @@ class SmbService {
         // SMB2 方言根本不派生会话密钥，因此命中该 NPE 时用 SMB2-only 方言重试，
         // 把「依赖服务器合规」变成确定性成功。
         return try {
-            connectInternal(host, port, username, password, domain, smb2Only = false)
+            connectInternal(host, port, username, password, domain, smb2Only = false,
+                proxyHost = proxyHost, proxyPort = proxyPort,
+                proxyUsername = proxyUsername, proxyPassword = proxyPassword)
         } catch (e: Exception) {
             if (!isAnonymousSessionKeyNpe(e)) throw e
             Log.w("SmbService", "anonymous SMB3 session-key NPE against ${host}:${port}, retrying with SMB2-only dialects")
-            connectInternal(host, port, username, password, domain, smb2Only = true)
+            connectInternal(host, port, username, password, domain, smb2Only = true,
+                proxyHost = proxyHost, proxyPort = proxyPort,
+                proxyUsername = proxyUsername, proxyPassword = proxyPassword)
         }
     }
 
@@ -175,7 +191,18 @@ class SmbService {
         return false
     }
 
-    private fun connectInternal(host: String, port: Int, username: String, password: String?, domain: String?, smb2Only: Boolean): String {
+    private fun connectInternal(
+        host: String,
+        port: Int,
+        username: String,
+        password: String?,
+        domain: String?,
+        smb2Only: Boolean,
+        proxyHost: String? = null,
+        proxyPort: Int? = null,
+        proxyUsername: String? = null,
+        proxyPassword: String? = null,
+    ): String {
         try {
             val builder = SmbConfig.builder()
                 .withSoTimeout(60, TimeUnit.SECONDS)
@@ -188,6 +215,20 @@ class SmbService {
                 .withNegotiatedBufferSize()
             if (smb2Only) {
                 builder.withDialects(SMB2Dialect.SMB_2_1, SMB2Dialect.SMB_2_0_2)
+            }
+            // 逐连接 SOCKS5 代理（访问虚拟内网里的 SMB 服务器）。
+            // SMB 是纯 TCP（445），无法走 HTTP-CONNECT 这类 HTTP 代理；SOCKS5 才能
+            // 隧道任意 TCP。仅当代理主机非空且端口有效时注入自建 Socks5SocketFactory
+            // （JDK 内建 SOCKS 不支持用户名/口令鉴权，故自实现）。
+            if (!proxyHost.isNullOrEmpty() && proxyPort != null && proxyPort > 0) {
+                builder.withSocketFactory(
+                    Socks5SocketFactory(
+                        proxyHost,
+                        proxyPort,
+                        proxyUser = if (proxyUsername.isNullOrEmpty()) null else proxyUsername,
+                        proxyPass = proxyPassword,
+                    )
+                )
             }
             val config = builder.build()
             val client = SMBClient(config)

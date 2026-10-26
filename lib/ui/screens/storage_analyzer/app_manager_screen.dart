@@ -213,9 +213,9 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
               tooltip: L10n.of(context).ui_select_all,
             )
           else ...[
-            // 应用分身（Shizuku 多用户克隆）管理入口
+            // 克隆应用（改包名重打包）管理入口
             IconButton(
-              icon: const Icon(Broken.people),
+              icon: const Icon(Broken.copy),
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AppCloneManagerScreen()),

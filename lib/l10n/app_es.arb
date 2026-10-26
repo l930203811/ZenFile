@@ -8808,5 +8808,15 @@
   "ui_clone_install_failed": "Error al instalar; instale manualmente",
   "ui_clone_count_item": "Generar {n}",
   "ui_clone_saved_ask": "Guardado en {path}. ¿Abrir la ubicación?",
-  "ui_clone_open_ask": "¿Abrir esta aplicación?"
+  "ui_clone_open_ask": "¿Abrir esta aplicación?",
+  "ui_clone_hardened_title": "Se detectó endurecimiento o empaquetado de la app",
+  "ui_clone_hardened_warn": "Esta aplicación está protegida por endurecimiento de código (una capa que se descifra en tiempo de ejecución). Su nombre de paquete y las autoridades del proveedor están incrustadas en código protegido o bibliotecas nativas. El clonado solo reescribe el manifest y los recursos, por lo que el clon puede instalarse junto a la original, pero probablemente falle o funcione mal en tiempo de ejecución.",
+  "ui_clone_hardened_continue": "Clonar de todos modos",
+  "ui_proxy_settings": "Proxy",
+  "ui_proxy_direct": "Directo",
+  "ui_proxy_host": "Host del proxy",
+  "ui_proxy_port": "Puerto del proxy",
+  "ui_proxy_username": "Usuario del proxy",
+  "ui_proxy_password": "Contraseña del proxy",
+  "ui_proxy_hint": "Las conexiones se tunelizan a través del proxy SOCKS5 para acceder a servidores de una intranet virtual."
 }

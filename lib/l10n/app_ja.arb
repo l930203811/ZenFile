@@ -8812,5 +8812,15 @@
   "ui_clone_install_failed": "インストールに失敗しました。手動でインストールしてください",
   "ui_clone_count_item": "{n} 個生成",
   "ui_clone_saved_ask": "{path} に保存しました。場所を開きますか？",
-  "ui_clone_open_ask": "このアプリを開きますか？"
+  "ui_clone_open_ask": "このアプリを開きますか？",
+  "ui_clone_hardened_title": "アプリの難読化・パッキングを検出",
+  "ui_clone_hardened_warn": "このアプリはコード難読化（実行時に復号されるシェル）で保護されています。パッケージ名とプロバイダ権限は保護されたコードやネイティブライブラリに埋め込まれています。クローン作成はマニフェストとリソースのみを書き換えるため、クローンは共存インストールできますが、実行時にクラッシュしたり正常に動作しない可能性があります。",
+  "ui_clone_hardened_continue": "それでもクローン作成",
+  "ui_proxy_settings": "プロキシ設定",
+  "ui_proxy_direct": "直接接続",
+  "ui_proxy_host": "プロキシホスト",
+  "ui_proxy_port": "プロキシポート",
+  "ui_proxy_username": "プロキシユーザー名",
+  "ui_proxy_password": "プロキシパスワード",
+  "ui_proxy_hint": "SOCKS5 プロキシ経由で接続を転送し、仮想内部ネットワークのサーバーへアクセスできます。"
 }

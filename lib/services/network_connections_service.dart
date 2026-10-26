@@ -73,6 +73,7 @@ class NetworkConnectionsService {
             _secrets[id] = {
               'password': (decoded['password'] as String?) ?? '',
               'sshKeyPassword': (decoded['sshKeyPassword'] as String?) ?? '',
+              'proxyPassword': (decoded['proxyPassword'] as String?) ?? '',
             };
           }
         } catch (_) {
@@ -125,6 +126,7 @@ class NetworkConnectionsService {
       sshKeyPath: conn.sshKeyPath,
       sshKeyPassword: conn.sshKeyPassword ?? secrets['sshKeyPassword'],
       authMethod: conn.authMethod,
+      proxyPassword: conn.proxyPassword ?? secrets['proxyPassword'],
     );
   }
 
@@ -132,6 +134,7 @@ class NetworkConnectionsService {
     _secrets[conn.id] = {
       'password': conn.password,
       'sshKeyPassword': conn.sshKeyPassword ?? '',
+      'proxyPassword': conn.proxyPassword ?? '',
     };
     try {
       await _secure.write(key: _credKey(conn.id), value: json.encode(_secrets[conn.id]));
@@ -195,14 +198,22 @@ class NetworkConnectionsService {
         if (id == null) continue;
         final password = (map['password'] as String?) ?? '';
         final sshKeyPassword = map['sshKeyPassword'] as String?;
-        final hasPlaintext = password.isNotEmpty || (sshKeyPassword != null && sshKeyPassword.isNotEmpty);
+        final proxyPassword = map['proxyPassword'] as String?;
+        final hasPlaintext = password.isNotEmpty ||
+            (sshKeyPassword != null && sshKeyPassword.isNotEmpty) ||
+            (proxyPassword != null && proxyPassword.isNotEmpty);
         if (hasPlaintext) {
-          _secrets[id] = {'password': password, 'sshKeyPassword': sshKeyPassword ?? ''};
+          _secrets[id] = {
+            'password': password,
+            'sshKeyPassword': sshKeyPassword ?? '',
+            'proxyPassword': proxyPassword ?? '',
+          };
           try {
             await _secure.write(key: _credKey(id), value: json.encode(_secrets[id]));
           } catch (_) {}
           map['password'] = '';
           map['sshKeyPassword'] = null;
+          map['proxyPassword'] = null;
           migrated = true;
         }
       }
@@ -221,6 +232,7 @@ class NetworkConnectionsService {
       final map = e.toJson();
       map['password'] = '';
       map['sshKeyPassword'] = null;
+      map['proxyPassword'] = null;
       return map;
     }).toList());
   }
@@ -305,6 +317,11 @@ class NetworkConnectionsService {
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     }
     if (kind == RemoteProtocolKind.sftp) {
@@ -316,6 +333,11 @@ class NetworkConnectionsService {
         sshKeyPath: conn.sshKeyPath,
         sshKeyPassword: conn.sshKeyPassword,
         authMethod: conn.authMethod,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     }
     if (kind == RemoteProtocolKind.webdav) {
@@ -326,6 +348,11 @@ class NetworkConnectionsService {
         password: conn.password,
         protocol: conn.protocol,
         rootPath: conn.rootPath,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     }
     if (kind == RemoteProtocolKind.smb) {
@@ -334,6 +361,11 @@ class NetworkConnectionsService {
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     }
     if (kind == RemoteProtocolKind.saf) {

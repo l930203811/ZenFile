@@ -1870,7 +1870,16 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val username = call.argument<String>("username") ?: ""
                             val password = call.argument<String>("password") ?: ""
                             val domain = call.argument<String>("domain") ?: ""
-                            val sessionId = smb.connect(host, port, username, password, domain)
+                            // 逐连接 SOCKS5 代理（访问虚拟内网里的 SMB 服务器）
+                            val proxyHost = call.argument<String>("proxyHost")
+                            val proxyPort = call.argument<Int>("proxyPort")
+                            val proxyUsername = call.argument<String>("proxyUsername")
+                            val proxyPassword = call.argument<String>("proxyPassword")
+                            val sessionId = smb.connect(
+                                host, port, username, password, domain,
+                                proxyHost = proxyHost, proxyPort = proxyPort,
+                                proxyUsername = proxyUsername, proxyPassword = proxyPassword,
+                            )
                             runOnUiThread { result.success(sessionId) }
                         }
                         "listDirectory" -> {
@@ -2003,7 +2012,16 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val password = call.argument<String>("password") ?: ""
                             val sshKeyPath = call.argument<String>("sshKeyPath")
                             val sshKeyPassword = call.argument<String>("sshKeyPassword")
-                            val id = ssh.connect(host, port, username, password, sshKeyPath, sshKeyPassword)
+                            // 逐连接 SOCKS5 代理（访问虚拟内网里的 SFTP 服务器）。
+                            val proxyHost = call.argument<String>("proxyHost")
+                            val proxyPort = call.argument<Int>("proxyPort")
+                            val proxyUsername = call.argument<String>("proxyUsername")
+                            val proxyPassword = call.argument<String>("proxyPassword")
+                            val id = ssh.connect(
+                                host, port, username, password, sshKeyPath, sshKeyPassword,
+                                proxyHost = proxyHost, proxyPort = proxyPort,
+                                proxyUsername = proxyUsername, proxyPassword = proxyPassword,
+                            )
                             runOnUiThread { result.success(id) }
                         }
                         "listDirectory" -> {

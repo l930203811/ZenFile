@@ -92,6 +92,20 @@ class LanClient extends RemoteClient {
   final String password;
   final String domain;
 
+  // 逐连接 SOCKS5 代理（访问虚拟内网里的 SMB 服务器）。
+  final String? proxyType;
+  final String? proxyHost;
+  final int? proxyPort;
+  final String? proxyUsername;
+  final String? proxyPassword;
+
+  bool get _useProxy =>
+      proxyType == 'socks5' &&
+      proxyHost != null &&
+      proxyHost!.isNotEmpty &&
+      proxyPort != null &&
+      proxyPort! > 0;
+
   String? _sessionId;
   bool _isConnected = false;
 
@@ -105,6 +119,11 @@ class LanClient extends RemoteClient {
     required this.username,
     required this.password,
     this.domain = '',
+    this.proxyType,
+    this.proxyHost,
+    this.proxyPort,
+    this.proxyUsername,
+    this.proxyPassword,
   });
 
   static Future<List<String>> getLocalIps() async {
@@ -469,6 +488,12 @@ class LanClient extends RemoteClient {
           'username': candidate,
           'password': password,
           'domain': domain,
+          if (_useProxy) ...<String, Object?>{
+            'proxyHost': proxyHost,
+            'proxyPort': proxyPort,
+            'proxyUsername': proxyUsername,
+            'proxyPassword': proxyPassword,
+          },
         }).timeout(timeout);
         if (result == null || result.isEmpty) {
           throw Exception('Native SMB client returned empty session id');

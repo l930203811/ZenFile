@@ -8808,5 +8808,15 @@
   "ui_clone_install_failed": "Échec de l'installation, veuillez installer manuellement",
   "ui_clone_count_item": "Générer {n}",
   "ui_clone_saved_ask": "Enregistré dans {path}. Ouvrir l'emplacement ?",
-  "ui_clone_open_ask": "Ouvrir cette application ?"
+  "ui_clone_open_ask": "Ouvrir cette application ?",
+  "ui_clone_hardened_title": "Renforcement ou packing de l'app détecté",
+  "ui_clone_hardened_warn": "Cette application est protégée par un renforcement du code (une coque déchiffrée à l'exécution). Son nom de package et les autorités du fournisseur sont intégrés dans du code protégé ou des bibliothèques natives. Le clonage ne réécrit que le manifest et les ressources, donc le clone peut être installé en parallèle mais risque de planter ou de mal fonctionner à l'exécution.",
+  "ui_clone_hardened_continue": "Cloner quand même",
+  "ui_proxy_settings": "Proxy",
+  "ui_proxy_direct": "Direct",
+  "ui_proxy_host": "Hôte du proxy",
+  "ui_proxy_port": "Port du proxy",
+  "ui_proxy_username": "Nom d'utilisateur du proxy",
+  "ui_proxy_password": "Mot de passe du proxy",
+  "ui_proxy_hint": "Les connexions passent par le proxy SOCKS5 pour atteindre les serveurs d'un intranet virtuel."
 }

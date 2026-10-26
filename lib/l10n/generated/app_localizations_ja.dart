@@ -8660,4 +8660,35 @@ class L10nJa extends L10n {
 
   @override
   String get ui_clone_open_ask => 'このアプリを開きますか？';
+
+  @override
+  String get ui_clone_hardened_title => 'アプリの難読化・パッキングを検出';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'このアプリはコード難読化（実行時に復号されるシェル）で保護されています。パッケージ名とプロバイダ権限は保護されたコードやネイティブライブラリに埋め込まれています。クローン作成はマニフェストとリソースのみを書き換えるため、クローンは共存インストールできますが、実行時にクラッシュしたり正常に動作しない可能性があります。';
+
+  @override
+  String get ui_clone_hardened_continue => 'それでもクローン作成';
+
+  @override
+  String get ui_proxy_settings => 'プロキシ設定';
+
+  @override
+  String get ui_proxy_direct => '直接接続';
+
+  @override
+  String get ui_proxy_host => 'プロキシホスト';
+
+  @override
+  String get ui_proxy_port => 'プロキシポート';
+
+  @override
+  String get ui_proxy_username => 'プロキシユーザー名';
+
+  @override
+  String get ui_proxy_password => 'プロキシパスワード';
+
+  @override
+  String get ui_proxy_hint => 'SOCKS5 プロキシ経由で接続を転送し、仮想内部ネットワークのサーバーへアクセスできます。';
 }

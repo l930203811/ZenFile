@@ -663,7 +663,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         }
         break;
       case 'app_clone':
-        // APK 长按菜单「克隆到分身」：Shizuku/root 多用户克隆
+        // APK 长按菜单「克隆应用」：改包名重打包生成可共存安装的克隆安装包
         if (context.mounted) {
           await AppCloneFlow.cloneApk(context, path);
         }

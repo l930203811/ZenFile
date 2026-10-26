@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ftpconnect/ftpconnect.dart';
 import 'package:path/path.dart' as p;
 import 'remote_client.dart';
+import 'socks5_socket.dart';
 
 class FtpRemoteClient extends RemoteClient {
   // FTP 的 downloadRange 走 REST 命令做服务端偏移随机读，支持按需区间流式播放。
@@ -14,6 +15,20 @@ class FtpRemoteClient extends RemoteClient {
   final int port;
   final String username;
   final String password;
+
+  // 逐连接 SOCKS5 代理（访问虚拟内网里的 FTP 服务器）。
+  final String? proxyType;
+  final String? proxyHost;
+  final int? proxyPort;
+  final String? proxyUsername;
+  final String? proxyPassword;
+
+  bool get _useProxy =>
+      proxyType == 'socks5' &&
+      proxyHost != null &&
+      proxyHost!.isNotEmpty &&
+      proxyPort != null &&
+      proxyPort! > 0;
 
   FTPConnect? _ftpConnect;
   Socket? _activeUploadControlSocket;
@@ -81,6 +96,11 @@ class FtpRemoteClient extends RemoteClient {
       user: username.isEmpty ? 'anonymous' : username,
       pass: password.isEmpty ? 'anonymous@' : password,
       timeout: commandTimeout.inSeconds,
+      proxyType: proxyType,
+      proxyHost: proxyHost,
+      proxyPort: proxyPort,
+      proxyUsername: proxyUsername,
+      proxyPassword: proxyPassword,
     );
     conn.dataConnectTimeout = const Duration(seconds: 6);
     return conn;
@@ -252,7 +272,33 @@ class FtpRemoteClient extends RemoteClient {
     required this.port,
     required this.username,
     required this.password,
+    this.proxyType,
+    this.proxyHost,
+    this.proxyPort,
+    this.proxyUsername,
+    this.proxyPassword,
   });
+
+  /// 控制/数据连接统一建连入口。
+  ///
+  /// 开启 SOCKS5 代理时经由代理建立透明 TCP 通道（出口主机名交给代理解析，
+  /// 适配「内网主机只在代理侧可解析」的虚拟内网场景）；否则直连。
+  /// 返回 [Socket]（代理时为 [Socks5Socket] 的透传包装类，stream 为广播流）。
+  Future<Socket> _connectViaProxy(String targetHost, int targetPort,
+      {Duration timeout = const Duration(seconds: 15)}) async {
+    if (_useProxy) {
+      return Socks5Socket.connectViaSocks5(
+        proxyHost: proxyHost!,
+        proxyPort: proxyPort!,
+        targetHost: targetHost,
+        targetPort: targetPort,
+        username: proxyUsername,
+        password: proxyPassword,
+        timeout: timeout,
+      );
+    }
+    return Socket.connect(targetHost, targetPort, timeout: timeout);
+  }
 
   @override
   Future<void> connect() async {
@@ -620,7 +666,7 @@ class FtpRemoteClient extends RemoteClient {
 
     try {
       // Connect control connection
-      controlSocket = await Socket.connect(host, port,
+      controlSocket = await _connectViaProxy(host, port,
           timeout: const Duration(seconds: 15));
       _activeDownloadControlSocket = controlSocket;
 
@@ -710,7 +756,7 @@ class FtpRemoteClient extends RemoteClient {
       final pasvPort = _parsePasvPort(pasvResp);
 
       // Connect data socket
-      dataSocket = await Socket.connect(host, pasvPort,
+      dataSocket = await _connectViaProxy(host, pasvPort,
           timeout: const Duration(seconds: 15));
       _activeDownloadDataSocket = dataSocket;
 
@@ -835,7 +881,7 @@ class FtpRemoteClient extends RemoteClient {
       // 独立建立控制连接：ftpconnect 的 uploadFile 用 dataSocket.addStream，
       // 无法响应取消且默认 ASCII 传输会破坏二进制文件。这里手动实现 STOR，
       // 分块读取本地文件并检查 isCancelled，取消时立即销毁 socket。
-      controlSocket = await Socket.connect(host, port,
+      controlSocket = await _connectViaProxy(host, port,
           timeout: const Duration(seconds: 15));
       _activeUploadControlSocket = controlSocket;
 
@@ -909,7 +955,7 @@ class FtpRemoteClient extends RemoteClient {
       final pasvPort = _parsePasvPort(pasvResp);
 
       // Connect data socket
-      dataSocket = await Socket.connect(host, pasvPort,
+      dataSocket = await _connectViaProxy(host, pasvPort,
           timeout: const Duration(seconds: 15));
       _activeUploadDataSocket = dataSocket;
 
@@ -1027,6 +1073,11 @@ class FtpRemoteClient extends RemoteClient {
             user: username.isEmpty ? 'anonymous' : username,
             pass: password.isEmpty ? 'anonymous@' : password,
             timeout: 15,
+            proxyType: proxyType,
+            proxyHost: proxyHost,
+            proxyPort: proxyPort,
+            proxyUsername: proxyUsername,
+            proxyPassword: proxyPassword,
           );
           final ok = await cleanupConn!.connect().timeout(const Duration(seconds: 15));
           if (!ok) throw Exception('cleanup connect failed');

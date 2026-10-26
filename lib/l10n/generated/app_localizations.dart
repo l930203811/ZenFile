@@ -15879,6 +15879,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'是否打开该应用？'**
   String get ui_clone_open_ask;
+
+  /// app_clone_manager_screen.dart：加固/加壳应用克隆警告标题
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到应用加固 / 加壳'**
+  String get ui_clone_hardened_title;
+
+  /// app_clone_manager_screen.dart：加固/加壳应用克隆警告正文
+  ///
+  /// In zh, this message translates to:
+  /// **'该应用使用了代码加固（运行时解密的壳），其包名、内容提供方等身份被写进受保护的代码或原生库。克隆仅改写清单与资源，无法覆盖这些身份，安装可共存但运行期很可能崩溃或无法使用。'**
+  String get ui_clone_hardened_warn;
+
+  /// app_clone_manager_screen.dart：仍要克隆按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'仍要克隆'**
+  String get ui_clone_hardened_continue;
+
+  /// network_connection_wizard_screen.dart：代理设置分段控件标题
+  ///
+  /// In zh, this message translates to:
+  /// **'代理设置'**
+  String get ui_proxy_settings;
+
+  /// 代理分段控件「直连（不使用代理）」选项
+  ///
+  /// In zh, this message translates to:
+  /// **'直连'**
+  String get ui_proxy_direct;
+
+  /// 代理服务器地址输入框
+  ///
+  /// In zh, this message translates to:
+  /// **'代理地址'**
+  String get ui_proxy_host;
+
+  /// 代理服务器端口输入框
+  ///
+  /// In zh, this message translates to:
+  /// **'代理端口'**
+  String get ui_proxy_port;
+
+  /// 代理认证用户名（可选）
+  ///
+  /// In zh, this message translates to:
+  /// **'代理用户名'**
+  String get ui_proxy_username;
+
+  /// 代理认证密码（可选）
+  ///
+  /// In zh, this message translates to:
+  /// **'代理密码'**
+  String get ui_proxy_password;
+
+  /// SOCKS5 代理说明文字
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 SOCKS5 代理转发连接，可访问虚拟内网中的服务器。'**
+  String get ui_proxy_hint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

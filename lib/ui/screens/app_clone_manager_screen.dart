@@ -1,19 +1,30 @@
-import 'dart:typed_data';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/app_info_model.dart';
+import '../../providers/file_manager_provider.dart';
+import '../../services/apk_clone/apk_clone_engine.dart';
 import '../../services/app_clone_service.dart';
 import '../../services/app_manager_service.dart';
-import '../widgets/file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────────
-/// 应用分身（Shizuku 多用户克隆）
+/// 克隆应用（改包名重打包，多开共存）
 ///
 /// 两个入口共用 [AppCloneFlow] 的流程组件：
-///  1. APK 长按菜单「克隆到分身」→ [AppCloneFlow.cloneApk]（pm install --user）
-///  2. 已装应用菜单「克隆到分身」→ [AppCloneFlow.cloneExistingApp]（毫秒级 install-existing）
-///  3. 本页（分身管理）：列系统用户、管理分身内应用、建/删分身。
+///  1. APK 长按菜单「克隆应用」→ [AppCloneFlow.cloneApk]（生成克隆安装包）
+///  2. 已装应用菜单「克隆应用」→ [AppCloneFlow.cloneExistingApp]（取已装 APK 生成）
+///  3. 本页（克隆管理）：列出 [AppCloneService.cloneDirPath] 下已生成的克隆包，
+///     支持安装 / 分享 / 删除。
+///
+/// 克隆包不直接安装 —— 引擎改写包名（`.zcloneN`）并以内置固定密钥重新签名，
+/// 生成的新 APK 保存到 Backups/Apps，由用户自行安装，可与原应用共存多开。
 /// ─────────────────────────────────────────────────────────────────────────────
 class AppCloneManagerScreen extends StatefulWidget {
   const AppCloneManagerScreen({super.key});
@@ -24,8 +35,7 @@ class AppCloneManagerScreen extends StatefulWidget {
 
 class _AppCloneManagerScreenState extends State<AppCloneManagerScreen> {
   bool _loading = true;
-  bool _hasPrivilege = false;
-  List<CloneUserInfo> _users = [];
+  List<File> _files = const [];
 
   @override
   void initState() {
@@ -35,794 +45,403 @@ class _AppCloneManagerScreenState extends State<AppCloneManagerScreen> {
 
   Future<void> _refresh() async {
     setState(() => _loading = true);
-    _hasPrivilege = await AppCloneService.hasPrivilege();
-    List<CloneUserInfo> users = [];
-    if (_hasPrivilege) {
-      try {
-        users = await AppCloneService.listUsers();
-      } catch (_) {}
-    }
+    List<File> files = const [];
+    try {
+      files = await AppCloneService.listCloneFiles();
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
-      _users = users;
+      _files = files;
       _loading = false;
     });
   }
 
-  /// 新建分身：默认命名「分身 1/2/…」（编号 = 当前用户总数，主用户占 1 个），
-  /// 允许自定义名称。
-  Future<void> _createUser() async {
+  /// 单个克隆包的动作菜单：安装 / 分享 / 删除。
+  Future<void> _showFileMenu(File file) async {
     final l10n = L10n.of(context);
-    final defaultName = l10n.ui_clone_default_user_name(_users.length);
-    final name = await FileActionDialogs.showTextInputDialog(
-      context,
-      title: l10n.ui_clone_create_user,
-      hint: l10n.ui_clone_user_name_hint,
-      initialValue: defaultName,
-      actionText: l10n.ui_save,
-    );
-    if (name == null || !mounted) return;
-    try {
-      await AppCloneService.createUser(name.trim().isEmpty ? defaultName : name.trim());
-      if (!mounted) return;
-      AppCloneFlow.showSnack(context, L10n.of(context).ui_clone_user_created);
-      await _refresh();
-    } catch (e) {
-      if (!mounted) return;
-      AppCloneFlow.showOpError(context, e);
-    }
-  }
-
-  /// 删除分身用户（连同其内全部应用数据），需二次确认。
-  Future<void> _deleteUser(CloneUserInfo user) async {
-    final l10n = L10n.of(context);
-    final confirmed = await showDialog<bool>(
+    final name = p.basename(file.path);
+    final action = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.ui_clone_delete_user),
-        content: Text(l10n.ui_clone_delete_user_confirm(user.name)),
+        title: Text(name, style: const TextStyle(fontSize: 16)),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
+                Icons.install_mobile_rounded,
+                color: Theme.of(ctx).colorScheme.primary,
+              ),
+              title: Text(l10n.ui_clone_install),
+              onTap: () => Navigator.pop(ctx, 'install'),
+            ),
+            ListTile(
+              leading: const Icon(Broken.export_1, color: Colors.teal),
+              title: Text(l10n.ui_clone_share),
+              onTap: () => Navigator.pop(ctx, 'share'),
+            ),
+            ListTile(
+              leading: const Icon(Broken.trash, color: Colors.redAccent),
+              title: Text(l10n.ui_clone_delete),
+              onTap: () => Navigator.pop(ctx, 'delete'),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx),
             child: Text(l10n.ui_cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.ui_confirm),
           ),
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-    try {
-      await AppCloneService.removeUser(user.id);
-      if (!mounted) return;
-      AppCloneFlow.showSnack(context, L10n.of(context).ui_clone_user_removed);
-    } catch (e) {
-      if (!mounted) return;
-      AppCloneFlow.showOpError(context, e);
+    if (action == null || !mounted) return;
+    switch (action) {
+      case 'install':
+        final ok = await AppManagerService.installApk(file.path);
+        if (!mounted) return;
+        if (!ok) {
+          AppCloneFlow.showSnack(
+            context,
+            L10n.of(context).ui_clone_install_failed,
+          );
+          break;
+        }
+        // 安装成功：解析克隆包名，提示「是否打开该应用」（避免依赖系统
+        // 安装器的打开按钮，确保打开的是克隆包而非原应用）。
+        final pkg = await _parseClonePackage(file.path);
+        if (!mounted) return;
+        final open = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(l10n.vt_install_success),
+            content: Text(l10n.ui_clone_open_ask),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.ui_cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.ui_backup_apk_open),
+              ),
+            ],
+          ),
+        );
+        if (open == true && mounted && pkg != null) {
+          await AppManagerService.launchApp(pkg);
+        }
+        break;
+      case 'share':
+        try {
+          await Share.shareXFiles([XFile(file.path)]);
+        } catch (_) {}
+        break;
+      case 'delete':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(l10n.ui_clone_delete),
+            content: Text(l10n.ui_clone_delete_confirm(name)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.ui_cancel),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.ui_confirm),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+        try {
+          await file.delete();
+          if (!mounted) return;
+          AppCloneFlow.showSnack(context, L10n.of(context).ui_clone_deleted);
+        } catch (e) {
+          if (!mounted) return;
+          AppCloneFlow.showSnack(
+            context,
+            L10n.of(context).ui_clone_failed('$e'),
+          );
+        }
+        await _refresh();
+        break;
     }
-    if (mounted) await _refresh();
   }
 
-  void _openUser(CloneUserInfo user) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => _UserAppsPage(user: user)),
-    );
+  /// 从克隆 APK 解析其（新）包名，供安装后「打开应用」使用。
+  Future<String?> _parseClonePackage(String path) async {
+    try {
+      final bytes = await File(path).readAsBytes();
+      return ApkCloneEngine.parsePackageName(bytes);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _fileSizeText(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
-    final cloneUsers = _users.where((u) => u.id != 0).toList();
-    final primary = _users.where((u) => u.id == 0).toList();
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          l10n.ui_clone_feature_title,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
+        title: Text(l10n.ui_clone_feature_title),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
+            tooltip: l10n.ui_refresh,
             onPressed: _refresh,
-            tooltip: l10n.msg93bc1f09,
           ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                // ── 功能说明 ──────────────────────────────────────────────
-                _bordered(
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                // 功能说明卡：原理 + 局限
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer.withOpacity(
+                      0.35,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Broken.copy,
+                            size: 18,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              l10n.ui_clone_feature_title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.ui_clone_feature_desc,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.5,
+                          color: theme.colorScheme.onSurface.withOpacity(0.75),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.ui_clone_limit_note,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.5,
+                          color: theme.colorScheme.onSurface.withOpacity(0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  l10n.ui_clone_list_title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_files.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 32,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withOpacity(0.35),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
                       children: [
-                        Icon(Broken.info_circle, size: 20, color: theme.colorScheme.primary),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            l10n.ui_clone_feature_desc,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              height: 1.4,
-                              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                        Icon(
+                          Broken.document,
+                          size: 36,
+                          color: theme.colorScheme.onSurface.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          l10n.ui_clone_list_empty_title,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.ui_clone_list_empty_desc,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.5,
+                            color: theme.colorScheme.onSurface.withOpacity(
+                              0.55,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  theme,
-                ),
-                // ── 无特权引导（Shizuku 未运行 / 未授权且无 root）──────────
-                if (!_hasPrivilege) _buildPrivilegeBanner(theme),
-                // ── 分身用户列表 ──────────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  child: Text(
-                    l10n.ui_clone_users_title,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                for (final u in primary)
-                  _bordered(
-                    ListTile(
-                      leading: const Icon(Broken.mobile),
-                      title: Text(
-                        l10n.ui_clone_primary_user,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text('ID 0'),
-                      onTap: () => _openUser(u),
-                      trailing: const Icon(Broken.arrow_right_3, size: 16),
-                    ),
-                    theme,
-                  ),
-                for (final u in cloneUsers)
-                  _bordered(
-                    ListTile(
-                      leading: const Icon(Broken.people),
-                      title: Text(
-                        u.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        u.isRunning ? 'ID ${u.id} · ${l10n.ui_clone_running}' : 'ID ${u.id}',
-                      ),
-                      onTap: () => _openUser(u),
-                      trailing: IconButton(
-                        icon: Icon(Broken.trash, size: 20, color: theme.colorScheme.error),
-                        tooltip: l10n.ui_clone_delete_user,
-                        onPressed: () => _deleteUser(u),
-                      ),
-                    ),
-                    theme,
-                  ),
-                _bordered(
-                  ListTile(
-                    leading: Icon(Icons.add_circle_outline_rounded, color: theme.colorScheme.primary),
-                    title: Text(
-                      l10n.ui_clone_create_user,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
+                  )
+                else
+                  ..._files.map((f) {
+                    final name = p.basename(f.path);
+                    int size = 0;
+                    String timeText = '';
+                    try {
+                      size = f.lengthSync();
+                      final m = f.lastModifiedSync();
+                      timeText =
+                          '${m.year}-${m.month.toString().padLeft(2, '0')}-${m.day.toString().padLeft(2, '0')} '
+                          '${m.hour.toString().padLeft(2, '0')}:${m.minute.toString().padLeft(2, '0')}';
+                    } catch (_) {}
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                      leading: Icon(
+                        Broken.copy,
                         color: theme.colorScheme.primary,
                       ),
-                    ),
-                    onTap: _createUser,
-                  ),
-                  theme,
-                ),
-                const SizedBox(height: 12),
+                      title: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        timeText.isEmpty
+                            ? _fileSizeText(size)
+                            : '${_fileSizeText(size)} · $timeText',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.55),
+                        ),
+                      ),
+                      onTap: () => _showFileMenu(f),
+                    );
+                  }),
               ],
             ),
     );
   }
-
-  /// 无 Shizuku/root 时的引导横幅：样式与 AppManagerScreen 的权限横幅一致。
-  Widget _buildPrivilegeBanner(ThemeData theme) {
-    final l10n = L10n.of(context);
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.15),
-          width: 1.2,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  l10n.ui_clone_need_privileged_title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.ui_clone_need_privileged_desc,
-            style: TextStyle(
-              fontSize: 12.5,
-              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                elevation: 0,
-              ),
-              onPressed: () async {
-                await AppCloneService.requestPrivilege();
-                if (mounted) await _refresh();
-              },
-              child: Text(
-                l10n.ui_clone_grant_shizuku,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 条目统一样式（与 lyric_settings_page._bordered 同源）：12dp 圆角 +
-  /// onSurface 12% 描边，本页不画分隔线。
-  Widget _bordered(Widget child, ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
-        ),
-      ),
-      child: child,
-    );
-  }
 }
 
-/// 分身内应用列表页：展示该用户的第三方应用，支持启动 / 卸载分身内应用，
-/// 以及把本机已装应用毫秒级装进该分身（pm install-existing）。
-class _UserAppsPage extends StatefulWidget {
-  final CloneUserInfo user;
-  const _UserAppsPage({required this.user});
-
-  @override
-  State<_UserAppsPage> createState() => _UserAppsPageState();
-}
-
-class _UserAppsPageState extends State<_UserAppsPage> {
-  bool _loading = true;
-  List<String> _pkgs = [];
-  // 本机（主用户）已装应用：包名 → 信息，用于显示应用名与图标。
-  Map<String, AppInfoModel> _hostApps = {};
-  final Map<String, Uint8List> _iconCache = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() => _loading = true);
-    List<String> pkgs = [];
-    try {
-      pkgs = await AppCloneService.listThirdPartyPackages(widget.user.id);
-    } catch (_) {}
-    try {
-      final host = await AppManagerService.getInstalledApps(includeSystem: false);
-      if (mounted) {
-        setState(() => _hostApps = {for (final a in host) a.packageName: a});
-      }
-    } catch (_) {}
-    if (!mounted) return;
-    setState(() {
-      _pkgs = pkgs;
-      _loading = false;
-    });
-  }
-
-  void _launch(String pkg) async {
-    final l10n = L10n.of(context);
-    final ok = await AppCloneService.launchAppForUser(widget.user.id, pkg).catchError((_) => false);
-    if (!ok && mounted) {
-      AppCloneFlow.showSnack(context, l10n.ui_clone_launch_failed);
-    }
-  }
-
-  void _uninstall(String pkg) async {
-    final l10n = L10n.of(context);
-    final displayName = _hostApps[pkg]?.name ?? pkg;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.ui_clone_uninstall),
-        content: Text(l10n.ui_clone_uninstall_confirm(displayName)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.ui_cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.ui_confirm),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-    try {
-      await AppCloneService.uninstallForUser(widget.user.id, pkg);
-      if (!mounted) return;
-      AppCloneFlow.showSnack(context, l10n.ui_clone_uninstall_done);
-    } catch (e) {
-      if (!mounted) return;
-      AppCloneFlow.showOpError(context, e);
-    }
-    if (mounted) await _load();
-  }
-
-  /// 「安装本机应用到该分身」选择器：列出本机有而该分身没有的第三方应用，
-  /// 点击即毫秒级 install-existing。
-  void _showInstallPicker() {
-    final l10n = L10n.of(context);
-    final theme = Theme.of(context);
-    final missing =
-        _hostApps.values.where((a) => !_pkgs.contains(a.packageName)).toList()
-          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    if (missing.isEmpty) {
-      AppCloneFlow.showSnack(context, l10n.ui_clone_no_missing_apps);
-      return;
-    }
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(sheetCtx).size.height * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                child: Text(
-                  l10n.ui_clone_install_host_apps,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              Divider(height: 1, thickness: 1, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: missing.length,
-                  itemBuilder: (ctx, i) {
-                    final app = missing[i];
-                    return ListTile(
-                      leading: _UserAppIcon(
-                        packageName: app.packageName,
-                        iconCache: _iconCache,
-                      ),
-                      title: Text(app.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(
-                        app.packageName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      trailing: Icon(
-                        Icons.add_circle_outline_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      onTap: () async {
-                        final navigator = Navigator.of(sheetCtx);
-                        try {
-                          await AppCloneService.installExistingForUser(
-                            widget.user.id,
-                            app.packageName,
-                          );
-                          navigator.pop();
-                          if (!mounted) return;
-                          AppCloneFlow.showSnack(context, l10n.ui_clone_installed_existing);
-                          await _load();
-                        } catch (e) {
-                          if (!ctx.mounted) return;
-                          AppCloneFlow.showOpError(ctx, e);
-                        }
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = L10n.of(context);
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.user.name,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: _load,
-            tooltip: l10n.msg93bc1f09,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 头部操作条：把本机已装应用装进该分身
-          Container(
-            margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
-              ),
-            ),
-            child: ListTile(
-              leading: Icon(Icons.install_mobile_rounded, color: theme.colorScheme.primary),
-              title: Text(
-                l10n.ui_clone_install_host_apps,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-              trailing: const Icon(Broken.arrow_right_3, size: 16),
-              onTap: _showInstallPicker,
-            ),
-          ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _pkgs.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.ui_clone_apps_empty,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        itemCount: _pkgs.length,
-                        itemBuilder: (ctx, i) {
-                          final pkg = _pkgs[i];
-                          final displayName = _hostApps[pkg]?.name ?? pkg;
-                          return ListTile(
-                            leading: _UserAppIcon(packageName: pkg, iconCache: _iconCache),
-                            title: Text(
-                              displayName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 14.5),
-                            ),
-                            subtitle: Text(
-                              pkg,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Broken.play, size: 19),
-                                  color: theme.colorScheme.primary,
-                                  tooltip: l10n.ui_clone_launch,
-                                  onPressed: () => _launch(pkg),
-                                ),
-                                IconButton(
-                                  icon: Icon(Broken.trash, size: 19, color: theme.colorScheme.error),
-                                  tooltip: l10n.ui_clone_uninstall,
-                                  onPressed: () => _uninstall(pkg),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 应用图标（带缓存）：分身内只拿得到包名，名称/图标从本机已装应用信息匹配；
-/// 本机没有的包（例如直接装进分身的应用）显示默认图标。
-class _UserAppIcon extends StatelessWidget {
-  final String packageName;
-  final Map<String, Uint8List> iconCache;
-  const _UserAppIcon({required this.packageName, required this.iconCache});
-
-  @override
-  Widget build(BuildContext context) {
-    final cached = iconCache[packageName];
-    if (cached != null) {
-      return _img(cached);
-    }
-    return FutureBuilder<Uint8List?>(
-      future: AppManagerService.getAppIcon(packageName),
-      builder: (context, snapshot) {
-        final data = snapshot.data;
-        if (data != null) {
-          iconCache[packageName] = data;
-          return _img(data);
-        }
-        return Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            Broken.mobile,
-            size: 20,
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _img(Uint8List data) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Image.memory(data, width: 40, height: 40, fit: BoxFit.cover),
-    );
-  }
-}
-
-/// 「克隆到分身」流程组件：供 APK 长按菜单 / 已装应用菜单复用。
+/// ─────────────────────────────────────────────────────────────────────────────
+/// 克隆流程组件：菜单入口 → 份数选择 → 进度 → 完成提示。
+/// ─────────────────────────────────────────────────────────────────────────────
 class AppCloneFlow {
   AppCloneFlow._();
 
-  /// 统一 Snackbar 样式。
-  static void showSnack(BuildContext context, String msg) {
+  static void showSnack(
+    BuildContext context,
+    String msg, {
+    SnackBarAction? action,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
-    );
-  }
-
-  /// 统一错误提示：userLimit / timeout 等映射为可读文案，其余带原始输出。
-  static void showOpError(BuildContext context, Object e) {
-    final l10n = L10n.of(context);
-    final String msg;
-    if (e is AppCloneException) {
-      switch (e.code) {
-        case AppCloneError.userLimit:
-          msg = l10n.ui_clone_create_failed_limit;
-          break;
-        case AppCloneError.timeout:
-          msg = l10n.ui_clone_cmd_timeout;
-          break;
-        case AppCloneError.noPrivilege:
-          msg = l10n.ui_clone_need_privileged_title;
-          break;
-        case AppCloneError.failed:
-          msg = e.raw.isEmpty ? l10n.ui_clone_op_failed('') : l10n.ui_clone_op_failed(e.raw);
-          break;
-      }
-    } else {
-      msg = l10n.ui_clone_op_failed('$e');
-    }
-    showSnack(context, msg);
-  }
-
-  /// 确保 Shizuku/root 特权可用：不可用时弹引导对话框并可一键请求 Shizuku 授权。
-  static Future<bool> ensurePrivilege(BuildContext context) async {
-    if (await AppCloneService.hasPrivilege()) return true;
-    if (!context.mounted) return false;
-    final l10n = L10n.of(context);
-    final go = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        icon: Icon(Icons.admin_panel_settings_outlined,
-            color: Theme.of(ctx).colorScheme.primary, size: 40),
-        title: Text(l10n.ui_clone_need_privileged_title),
-        content: Text(l10n.ui_clone_need_privileged_desc),
-        actionsAlignment: MainAxisAlignment.spaceEvenly,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.ui_cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.ui_clone_grant_shizuku),
-          ),
-        ],
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        action: action,
       ),
     );
-    if (go != true) return false;
-    await AppCloneService.requestPrivilege();
-    return AppCloneService.hasPrivilege();
   }
 
-  /// 选择/新建分身用户：列出全部分身（不含主用户 0），底部提供「新建分身用户…」，
-  /// 创建成功直接返回新 uid。用户取消返回 null。
-  static Future<int?> pickOrCreateUser(BuildContext context, List<CloneUserInfo> users) async {
+  /// 选择克隆份数（1–5 份，每份包名不同）。下拉框默认 1 份。用户取消返回 null。
+  static Future<int?> pickCopyCount(BuildContext context) async {
     final l10n = L10n.of(context);
-    final theme = Theme.of(context);
-    var creating = false;
+    var selected = 1;
     return showDialog<int>(
       context: context,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(l10n.ui_clone_select_user),
-          contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: users.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Text(
-                      l10n.ui_clone_need_privileged_desc,
-                      style: const TextStyle(fontSize: 13, height: 1.4),
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: users.length + 1,
-                    itemBuilder: (listCtx, i) {
-                      // 末项：新建分身用户入口
-                      if (i == users.length) {
-                        return ListTile(
-                          leading: Icon(Icons.add_circle_outline_rounded,
-                              color: theme.colorScheme.primary),
-                          title: Text(
-                            l10n.ui_clone_new_user,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                          enabled: !creating,
-                          onTap: () async {
-                            final navigator = Navigator.of(dialogCtx);
-                            final messenger = ScaffoldMessenger.of(ctx);
-                            final defaultName =
-                                l10n.ui_clone_default_user_name(users.length + 1);
-                            final name = await FileActionDialogs.showTextInputDialog(
-                              dialogCtx,
-                              title: l10n.ui_clone_create_user,
-                              hint: l10n.ui_clone_user_name_hint,
-                              initialValue: defaultName,
-                              actionText: l10n.ui_save,
-                            );
-                            setDialogState(() => creating = true);
-                            try {
-                              final user = await AppCloneService.createUser(
-                                (name == null || name.trim().isEmpty) ? defaultName : name.trim(),
-                              );
-                              navigator.pop(user.id);
-                            } catch (e) {
-                              setDialogState(() => creating = false);
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    e is AppCloneException &&
-                                            e.code == AppCloneError.userLimit
-                                        ? l10n.ui_clone_create_failed_limit
-                                        : l10n.ui_clone_op_failed('$e'),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      }
-                      final u = users[i];
-                      return ListTile(
-                        leading: const Icon(Broken.people),
-                        title: Text(
-                          u.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          u.isRunning
-                              ? 'ID ${u.id} · ${l10n.ui_clone_running}'
-                              : 'ID ${u.id}',
-                        ),
-                        onTap: creating ? null : () => Navigator.pop(dialogCtx, u.id),
-                      );
-                    },
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(l10n.ui_clone_count_title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.ui_clone_count_desc(selected),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                value: selected,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                ),
+                items: [
+                  for (var n = 1; n <= 5; n++)
+                    DropdownMenuItem(
+                      value: n,
+                      child: Text(l10n.ui_clone_count_item(n)),
+                    ),
+                ],
+                onChanged: (v) => setState(() => selected = v ?? 1),
+              ),
+            ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
+              onPressed: () => Navigator.pop(ctx),
               child: Text(l10n.ui_cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, selected),
+              child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
             ),
           ],
         ),
@@ -831,7 +450,12 @@ class AppCloneFlow {
   }
 
   /// 带进度对话框执行任务：成功/失败都确保进度框被关闭。
-  static Future<T?> runWithProgress<T>(BuildContext context, Future<T> Function() task) async {
+  /// [message] 非空时用于动态更新进度文案（如「(2/3)」）。
+  static Future<T?> runWithProgress<T>(
+    BuildContext context,
+    Future<T> Function() task, {
+    ValueListenable<String>? message,
+  }) async {
     final l10n = L10n.of(context);
     showDialog(
       context: context,
@@ -841,7 +465,14 @@ class AppCloneFlow {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 20),
-            Expanded(child: Text(l10n.ui_clone_installing)),
+            Expanded(
+              child: message == null
+                  ? Text(l10n.ui_clone_working)
+                  : ValueListenableBuilder<String>(
+                      valueListenable: message,
+                      builder: (_, v, __) => Text(v),
+                    ),
+            ),
           ],
         ),
       ),
@@ -855,133 +486,153 @@ class AppCloneFlow {
     }
   }
 
-  /// APK 长按菜单「克隆到分身」：选/建分身用户 → `pm install --user <uid> <apk>`。
-  /// 成功后若能定位到新装包（安装前后 -3 包列表差集），提供「立即启动」。
-  static Future<void> cloneApk(BuildContext context, String apkPath) async {
-    if (!await ensurePrivilege(context)) return;
+  /// APK 长按菜单「克隆应用」：选份数 → 生成不同包名的克隆安装包到
+  /// Backups/Apps（不直接安装）。成功后提供「查看」入口跳转克隆管理页。
+  static Future<void> cloneApk(
+    BuildContext context,
+    String apkPath, {
+    String? displayName,
+  }) async {
     if (!context.mounted) return;
-    List<CloneUserInfo> users;
-    try {
-      users = (await AppCloneService.listUsers()).where((u) => u.id != 0).toList();
-    } catch (e) {
-      if (context.mounted) showOpError(context, e);
-      return;
+
+    // 加固 / 加壳预检：克隆只改写清单与资源，覆盖不到受保护代码里写死的
+    // 身份引用，克隆后很可能运行期崩溃。命中时弹出警告，用户可取消或仍克隆。
+    final l10n0 = L10n.of(context);
+    final markers = await AppCloneService.detectHardening(apkPath);
+    if (markers.isNotEmpty && context.mounted) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(l10n0.ui_clone_hardened_title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n0.ui_clone_hardened_warn),
+              const SizedBox(height: 12),
+              Text(
+                markers.join('、'),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(ctx).colorScheme.error,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n0.ui_cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n0.ui_clone_hardened_continue),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true) return;
     }
-    if (!context.mounted) return;
-    final uid = await pickOrCreateUser(context, users);
-    if (uid == null || !context.mounted) return;
+
+    final count = await pickCopyCount(context);
+    if (count == null || !context.mounted) return;
 
     final l10n = L10n.of(context);
+    // 关键：进度跑完再弹的结果对话框**不能**用 ScaffoldMessenger 的 context
+    //（它在 Navigator 之上，showDialog 会因找不到 Navigator 抛异常且被吞，
+    // 表现为「克隆成功但没有任何提示」）。这里提前捕获 navigator / provider /
+    // messenger 三个对象，后续一律依赖它们，不依赖任何可失效的 BuildContext。
     final messenger = ScaffoldMessenger.of(context);
-    // 安装前快照：pm install 不回传包名，靠 -3 包列表前后差集定位新装包。
-    Set<String> before = {};
-    try {
-      before = (await AppCloneService.listThirdPartyPackages(uid)).toSet();
-    } catch (_) {}
-    if (!context.mounted) return;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final provider = context.read<FileManagerProvider>();
+    final progressMsg = ValueNotifier<String>(l10n.ui_clone_working);
 
-    Object? installError;
+    AppCloneOutput? output;
+    Object? error;
     await runWithProgress(context, () async {
       try {
-        await AppCloneService.installApkForUser(apkPath, uid);
+        output = await AppCloneService.cloneApk(
+          sourceApkPath: apkPath,
+          copies: count,
+          displayName: displayName,
+          onProgress: (done, total) {
+            progressMsg.value = total > 1
+                ? l10n.ui_clone_count_progress(done, total)
+                : l10n.ui_clone_working;
+          },
+        );
       } catch (e) {
-        installError = e;
+        error = e;
       }
       return true;
-    });
-    if (installError != null) {
-      if (context.mounted) showOpError(context, installError!);
+    }, message: progressMsg);
+    final err = error;
+    if (err != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            err is AppCloneException && err.code == AppCloneError.readFailed
+                ? l10n.ui_clone_read_failed
+                : l10n.ui_clone_failed('$err'),
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
+    final paths = output?.paths ?? const <String>[];
+    final dirPath = paths.isNotEmpty ? p.dirname(paths.first) : '';
     if (!context.mounted) return;
-
-    String? newPkg;
-    try {
-      final after = (await AppCloneService.listThirdPartyPackages(uid)).toSet();
-      final diff = after.difference(before).toList();
-      if (diff.isNotEmpty) newPkg = diff.first;
-    } catch (_) {}
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.ui_clone_install_success),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 5),
-        action: newPkg == null
-            ? null
-            : SnackBarAction(
-                label: l10n.ui_clone_launch_now,
-                onPressed: () async {
-                  final ok = await AppCloneService
-                      .launchAppForUser(uid, newPkg!)
-                      .catchError((_) => false);
-                  if (!ok) {
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.ui_clone_launch_failed),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
-              ),
+    // 提示克隆成功并保存在所在位置，询问是否打开所在位置（跳转到
+    // Backups/Apps 目录），而非仅给一个「查看」入口。
+    final openLocation = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          paths.length <= 1
+              ? l10n.ui_clone_done_one
+              : l10n.ui_clone_done_many(paths.length),
+        ),
+        content: Text(l10n.ui_clone_saved_ask(dirPath)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.ui_app_open_location),
+          ),
+        ],
       ),
     );
+    if (openLocation == true && dirPath.isNotEmpty) {
+      navigator.popUntil((route) => route.isFirst);
+      Future.delayed(const Duration(milliseconds: 200), () {
+        try {
+          provider.setPendingBrowseNavigation(dirPath, paths);
+          provider.setNavigateToBrowseTab(true);
+        } catch (_) {}
+      });
+    }
   }
 
-  /// 已装应用菜单「克隆到分身」：选/建分身用户 → 毫秒级 install-existing →
-  /// 可「立即启动」。
-  static Future<void> cloneExistingApp(BuildContext context, String packageName) async {
-    if (!await ensurePrivilege(context)) return;
-    if (!context.mounted) return;
-    List<CloneUserInfo> users;
-    try {
-      users = (await AppCloneService.listUsers()).where((u) => u.id != 0).toList();
-    } catch (e) {
-      if (context.mounted) showOpError(context, e);
+  /// 已装应用菜单「克隆应用」：取已装 base APK 生成克隆安装包。
+  /// 拆分 APK（App Bundle）暂不支持，提前拦截提示。
+  static Future<void> cloneExistingApp(
+    BuildContext context,
+    AppInfoModel app,
+  ) async {
+    if (app.splitSourceDirs.isNotEmpty) {
+      showSnack(context, L10n.of(context).ui_clone_split_unsupported);
       return;
     }
-    if (!context.mounted) return;
-    final uid = await pickOrCreateUser(context, users);
-    if (uid == null || !context.mounted) return;
-
-    final l10n = L10n.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    Object? installError;
-    await runWithProgress(context, () async {
-      try {
-        await AppCloneService.installExistingForUser(uid, packageName);
-      } catch (e) {
-        installError = e;
-      }
-      return true;
-    });
-    if (installError != null) {
-      if (context.mounted) showOpError(context, installError!);
-      return;
-    }
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.ui_clone_installed_existing),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: l10n.ui_clone_launch_now,
-          onPressed: () async {
-            final ok = await AppCloneService
-                .launchAppForUser(uid, packageName)
-                .catchError((_) => false);
-            if (!ok) {
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text(l10n.ui_clone_launch_failed),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
-        ),
-      ),
-    );
+    await cloneApk(context, app.sourceDir, displayName: app.name);
   }
 }

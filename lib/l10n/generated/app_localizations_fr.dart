@@ -9085,4 +9085,37 @@ class L10nFr extends L10n {
 
   @override
   String get ui_clone_open_ask => 'Ouvrir cette application ?';
+
+  @override
+  String get ui_clone_hardened_title =>
+      'Renforcement ou packing de l\'app détecté';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'Cette application est protégée par un renforcement du code (une coque déchiffrée à l\'exécution). Son nom de package et les autorités du fournisseur sont intégrés dans du code protégé ou des bibliothèques natives. Le clonage ne réécrit que le manifest et les ressources, donc le clone peut être installé en parallèle mais risque de planter ou de mal fonctionner à l\'exécution.';
+
+  @override
+  String get ui_clone_hardened_continue => 'Cloner quand même';
+
+  @override
+  String get ui_proxy_settings => 'Proxy';
+
+  @override
+  String get ui_proxy_direct => 'Direct';
+
+  @override
+  String get ui_proxy_host => 'Hôte du proxy';
+
+  @override
+  String get ui_proxy_port => 'Port du proxy';
+
+  @override
+  String get ui_proxy_username => 'Nom d\'utilisateur du proxy';
+
+  @override
+  String get ui_proxy_password => 'Mot de passe du proxy';
+
+  @override
+  String get ui_proxy_hint =>
+      'Les connexions passent par le proxy SOCKS5 pour atteindre les serveurs d\'un intranet virtuel.';
 }

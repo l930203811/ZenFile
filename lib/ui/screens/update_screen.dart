@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.6';
+  static const String _latestChangelogVersion = 'v3.6.7';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v367,
     _v366,
     _v365,
     _v364,
@@ -954,7 +955,47 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.6.6 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.6.7 ────────────────────────────────────────────────
+  static const _Changelog _v367 = _Changelog(
+    version: 'v3.6.7',
+    date: '2026-10-26',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '新增 SOCKS5 代理：FTP / SFTP / WebDAV / SMB 远程连接可按连接单独配置 SOCKS5 代理（支持用户名 / 口令鉴权），经代理访问虚拟内网中的网盘；在添加 / 编辑连接向导的「代理设置」中开启',
+        '「应用克隆」替代原「应用分身」：APK 长按菜单与操作面板新增「克隆应用」，自动改包名并重新签名，生成可与原应用共存安装的克隆安装包，无需 Shizuku / root；克隆管理入口移至「应用管理」页顶栏',
+        '歌词在线搜索升级：自动模式同时并发搜索 QQ 音乐 / 酷狗 / LRCLIB 三个歌词源，结果合并展示并标注来源；原「歌词搜索源」设置入口移除，统一收敛到在线搜索弹窗',
+        '删除确认弹窗新增「移入回收站」勾选框：勾选后本次删除改为移入系统回收站',
+      ]),
+      _ChangeSection('✨ 界面优化', [
+        '「连接」与「设置」页改为全屏显示：自动隐藏顶栏（抽屉 / 搜索 / 常用功能行），内容更沉浸；按返回键可从这两页回到分类页',
+        '关闭「导航栏常驻其他页面」时，「浏览」「连接」「设置」页不再显示底部导航栏，仅分类页常显（开启常驻时行为不变）',
+        '歌词 classic 风格按「已播放 / 当前播放 / 未播放」三态着色',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复 SAF 远程连接无法编辑的问题：现在可以直接重命名（GitHub issue #44）',
+        '修复浏览页波形进度条与 PDF 双指缩放场景下，慢速点击 / 长按因手势竞争而失效的问题',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'New SOCKS5 proxy: each FTP / SFTP / WebDAV / SMB remote connection can be configured with its own SOCKS5 proxy (username / password auth supported), letting you reach intranet-only network drives through the proxy; enable it under "Proxy settings" in the connection wizard',
+        '"App clone" replaces the previous "App clones": the APK long-press menu and action sheet gain "Clone app" — the APK is repacked with a new package name and signature so the clone can be installed alongside the original, no Shizuku / root required; the clone manager entry moves to the top bar of the App management page',
+        'Lyrics online search upgraded: auto mode now queries QQ Music / Kugou / LRCLIB in parallel, merging the results with their sources labelled; the separate "lyrics search source" setting is removed and folded into the online search dialog',
+        'The delete confirmation dialog gains a "Move to recycle bin" checkbox: when checked, the deletion becomes a move to the system recycle bin',
+      ]),
+      _ChangeSection('✨ Interface', [
+        'The Connections and Settings pages are now full-screen: the top bar (drawer / search / quick actions) hides automatically for a more immersive view; press back to return to the category page from either',
+        'When "Keep the nav bar on other pages" is off, the Browse / Connections / Settings pages no longer show the bottom nav bar — only the category page keeps it (unchanged when the toggle is on)',
+        'The classic lyric style now colours lines by state — played / current / unplayed',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed SAF remote connections being impossible to edit: they can now be renamed directly (GitHub issue #44)',
+        'Fixed slow taps / long presses failing on the browse waveform seekbar and in PDF two-finger zoom due to gesture competition',
+      ]),
+    ],
+  );
+
+  /// ── v3.6.6 ──────────────────────────────────────────────────────────
   static const _Changelog _v366 = _Changelog(
     version: 'v3.6.6',
     date: '2026-10-25',

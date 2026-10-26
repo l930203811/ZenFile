@@ -8874,5 +8874,15 @@
   "ui_clone_install_failed": "Install failed, please install manually",
   "ui_clone_count_item": "Generate {n}",
   "ui_clone_saved_ask": "Saved to {path}. Open the location?",
-  "ui_clone_open_ask": "Open this app?"
+  "ui_clone_open_ask": "Open this app?",
+  "ui_clone_hardened_title": "App hardening / packing detected",
+  "ui_clone_hardened_warn": "This app is protected by code hardening (a runtime-decrypted shell). Its package name and provider authorities are embedded in protected code or native libraries. Cloning only rewrites the manifest and resources, so the clone may install side-by-side but will likely crash or malfunction at runtime.",
+  "ui_clone_hardened_continue": "Clone anyway",
+  "ui_proxy_settings": "Proxy",
+  "ui_proxy_direct": "Direct",
+  "ui_proxy_host": "Proxy host",
+  "ui_proxy_port": "Proxy port",
+  "ui_proxy_username": "Proxy username",
+  "ui_proxy_password": "Proxy password",
+  "ui_proxy_hint": "Connections are tunneled through the SOCKS5 proxy, so servers inside a virtual intranet can be reached."
 }

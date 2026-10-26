@@ -21,7 +21,11 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class NetworkConnectionWizardScreen extends StatefulWidget {
   final NetworkConnectionModel? existingConnection;
   final Function(int)? onNavigateTab;
-  const NetworkConnectionWizardScreen({super.key, this.existingConnection, this.onNavigateTab});
+  const NetworkConnectionWizardScreen({
+    super.key,
+    this.existingConnection,
+    this.onNavigateTab,
+  });
 
   @override
   State<NetworkConnectionWizardScreen> createState() => _NetworkConnectionWizardScreenState();
@@ -60,6 +64,17 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   // SMB 匿名登录：勾选后用户名/密码不可输入，连接时以空凭据走 guest 匿名会话
   bool _anonymousLogin = false;
+
+  // 逐连接 SOCKS5 代理（issue #83：访问虚拟内网里的网盘/服务器）。
+  // _proxyType：'none'（直连）| 'socks5'。
+  String _proxyType = 'none';
+  final _proxyHostController = TextEditingController();
+  final _proxyPortController = TextEditingController();
+  final _proxyUsernameController = TextEditingController();
+  final _proxyPasswordController = TextEditingController();
+  bool _obscureProxyPassword = true;
+
+  bool get _proxyEnabled => _proxyType == 'socks5';
 
   // SMB 共享名扫描状态
   bool _isScanningLan = false;
@@ -100,6 +115,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       _pathController.text = existing.rootPath;
       _sshKeyPath = existing.sshKeyPath;
       _sshKeyPasswordController.text = existing.sshKeyPassword ?? '';
+      // 代理设置回填
+      _proxyType = existing.proxyType == 'socks5' ? 'socks5' : 'none';
+      _proxyHostController.text = existing.proxyHost ?? '';
+      _proxyPortController.text = existing.proxyPort?.toString() ?? '';
+      _proxyUsernameController.text = existing.proxyUsername ?? '';
+      _proxyPasswordController.text = existing.proxyPassword ?? '';
       if (existing.type == 'WebDav') {
         _webdavProtocol = existing.protocol;
       }
@@ -131,6 +152,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     _passwordController.dispose();
     _pathController.dispose();
     _sshKeyPasswordController.dispose();
+    _proxyHostController.dispose();
+    _proxyPortController.dispose();
+    _proxyUsernameController.dispose();
+    _proxyPasswordController.dispose();
     super.dispose();
   }
 
@@ -279,7 +304,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         );
         // Auto-open the remote server after successful connection
         if (widget.onNavigateTab != null) {
-          final remoteClient = FileManagerProvider.createRemoteClient(connection);
+          final remoteClient = FileManagerProvider.createRemoteClient(
+            connection,
+          );
           try {
             await remoteClient.connect();
             if (mounted) {
@@ -303,14 +330,20 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Row(
                 children: [
                   const Icon(Icons.warning_amber_rounded, color: Colors.orange),
                   const SizedBox(width: 8),
                   Text(
                     L10n.of(ctx).msgdf434415,
-                    style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontFamily: 'LexendDeca',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -346,9 +379,17 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   // Build a valid RemoteClient from current form inputs (or null if missing required fields).
-  RemoteClient? _buildCurrentClient({String? outHost, int? outPort, String? outUser, String? outPwd, String? outPath}) {
+  RemoteClient? _buildCurrentClient({
+    String? outHost,
+    int? outPort,
+    String? outUser,
+    String? outPwd,
+    String? outPath,
+  }) {
     final host = (outHost ?? _hostController.text).trim();
-    final port = int.tryParse((outPort != null ? outPort.toString() : _portController.text).trim());
+    final port = int.tryParse(
+      (outPort != null ? outPort.toString() : _portController.text).trim(),
+    );
     if (host.isEmpty || port == null) return null;
     // SMB 匿名登录：忽略输入框内容，空凭据 → 原生层走 guest 匿名会话
     final isSmb = _isSmbSelected;
@@ -359,10 +400,29 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         : '/';
 
     // 确定认证方式
-    final authMethod = (_selectedType == 'SFTP' && _sshKeyPath != null) ? 'key' : 'password';
+    final authMethod = (_selectedType == 'SFTP' && _sshKeyPath != null)
+        ? 'key'
+        : 'password';
+
+    // 逐连接 SOCKS5 代理
+    final proxyType = _proxyEnabled ? 'socks5' : null;
+    final proxyHost = _proxyHostController.text.trim();
+    final proxyPort = int.tryParse(_proxyPortController.text.trim());
+    final proxyUser = _proxyUsernameController.text.trim();
+    final proxyPass = _proxyPasswordController.text;
 
     if (_selectedType == 'FTP') {
-      return FtpRemoteClient(host: host, port: port, username: username, password: password);
+      return FtpRemoteClient(
+        host: host,
+        port: port,
+        username: username,
+        password: password,
+        proxyType: proxyType,
+        proxyHost: proxyHost.isEmpty ? null : proxyHost,
+        proxyPort: proxyPort,
+        proxyUsername: proxyUser.isEmpty ? null : proxyUser,
+        proxyPassword: proxyPass.isEmpty ? null : proxyPass,
+      );
     } else if (_selectedType == 'SFTP') {
       return SftpRemoteClient(
         host: host,
@@ -372,6 +432,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         sshKeyPath: _sshKeyPath,
         sshKeyPassword: _sshKeyPasswordController.text.trim().isEmpty ? null : _sshKeyPasswordController.text,
         authMethod: authMethod,
+        proxyType: proxyType,
+        proxyHost: proxyHost.isEmpty ? null : proxyHost,
+        proxyPort: proxyPort,
+        proxyUsername: proxyUser.isEmpty ? null : proxyUser,
+        proxyPassword: proxyPass.isEmpty ? null : proxyPass,
       );
     } else if (_selectedType == 'WebDav') {
       return WebDavRemoteClient(
@@ -381,9 +446,24 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         password: password,
         protocol: _webdavProtocol,
         rootPath: path,
+        proxyType: proxyType,
+        proxyHost: proxyHost.isEmpty ? null : proxyHost,
+        proxyPort: proxyPort,
+        proxyUsername: proxyUser.isEmpty ? null : proxyUser,
+        proxyPassword: proxyPass.isEmpty ? null : proxyPass,
       );
     } else if (_isSmbSelected) {
-      return LanClient(host: host, port: port, username: username, password: password);
+      return LanClient(
+        host: host,
+        port: port,
+        username: username,
+        password: password,
+        proxyType: proxyType,
+        proxyHost: proxyHost.isEmpty ? null : proxyHost,
+        proxyPort: proxyPort,
+        proxyUsername: proxyUser.isEmpty ? null : proxyUser,
+        proxyPassword: proxyPass.isEmpty ? null : proxyPass,
+      );
     }
     return null;
   }
@@ -410,14 +490,16 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     if (_selectedType == 'WebDav') _sanitizeWebdavFields();
     final basicErr = _validateBasicForm();
     if (basicErr != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(basicErr)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(basicErr)));
       return;
     }
     final client = _buildCurrentClient();
     if (client == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(L10n.of(context).msg69e3963c)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(L10n.of(context).msg69e3963c)));
       return;
     }
     final l10n = L10n.of(context);
@@ -433,9 +515,14 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 22, height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary)),
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
             const SizedBox(width: 14),
             Text(l10n.msg3005ba4d, style: const TextStyle(fontSize: 14)),
@@ -459,22 +546,37 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Row(
               children: [
                 const Icon(Icons.check_circle, color: Colors.green, size: 24),
                 const SizedBox(width: 8),
-                Text(l10n.ui_test_success,
-                  style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  l10n.ui_test_success,
+                  style: const TextStyle(
+                    fontFamily: 'LexendDeca',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-            content: Text(l10n.ui_test_success_desc, style: const TextStyle(fontSize: 14)),
+            content: Text(
+              l10n.ui_test_success_desc,
+              style: const TextStyle(fontSize: 14),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
-                child: Text(MaterialLocalizations.of(context).okButtonLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                ),
+                child: Text(
+                  MaterialLocalizations.of(context).okButtonLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -483,13 +585,21 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Row(
               children: [
                 const Icon(Icons.error, color: Colors.redAccent, size: 24),
                 const SizedBox(width: 8),
-                Text(l10n.ui_test_failed,
-                  style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  l10n.ui_test_failed,
+                  style: const TextStyle(
+                    fontFamily: 'LexendDeca',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             content: Column(
@@ -497,12 +607,22 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 本地化友好提示（按错误类型映射，10 语言）
-                Text(localizeRemoteError(errReason, l10n),
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(
+                  localizeRemoteError(errReason, l10n),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 // 原始英文异常，仅供排查
-                Text('${l10n.ui_test_failed_reason}：',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  '${l10n.ui_test_failed_reason}：',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Container(
                   width: double.infinity,
@@ -511,18 +631,29 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                     color: Colors.redAccent.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(errReason!,
-                    style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
-                      fontFamily: 'monospace')),
+                  child: Text(
+                    errReason!,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.85,
+                      ),
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
-                child: Text(MaterialLocalizations.of(context).okButtonLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                ),
+                child: Text(
+                  MaterialLocalizations.of(context).okButtonLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -536,7 +667,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     if (_selectedType == 'WebDav') _sanitizeWebdavFields();
     final basicErr = _validateBasicForm();
     if (basicErr != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(basicErr)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(basicErr)));
       return;
     }
     final port = int.tryParse(_portController.text.trim()) ?? 21;
@@ -565,10 +698,26 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       sshKeyPath: _sshKeyPath,
       sshKeyPassword: _sshKeyPasswordController.text.trim().isEmpty ? null : _sshKeyPasswordController.text,
       authMethod: authMethod,
+      proxyType: _proxyEnabled ? 'socks5' : null,
+      proxyHost: _proxyEnabled && _proxyHostController.text.trim().isNotEmpty
+          ? _proxyHostController.text.trim()
+          : null,
+      proxyPort: _proxyEnabled
+          ? int.tryParse(_proxyPortController.text.trim())
+          : null,
+      proxyUsername:
+          _proxyEnabled && _proxyUsernameController.text.trim().isNotEmpty
+          ? _proxyUsernameController.text.trim()
+          : null,
+      proxyPassword: _proxyEnabled && _proxyPasswordController.text.isNotEmpty
+          ? _proxyPasswordController.text
+          : null,
     );
 
     if (widget.existingConnection != null) {
-      await NetworkConnectionsService.deleteConnection(widget.existingConnection!.id);
+      await NetworkConnectionsService.deleteConnection(
+        widget.existingConnection!.id,
+      );
     }
     await NetworkConnectionsService.saveConnection(connection);
 
@@ -717,7 +866,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       existing.rootPath,
                       style: TextStyle(
                         fontSize: 12,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -742,13 +893,24 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 4,
               ),
               onPressed: _saveSafConnection,
-              icon: const Icon(Icons.save_rounded, size: 18, color: Colors.white),
-              label: Text(l10n.ui_save,
-                style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+              icon: const Icon(
+                Icons.save_rounded,
+                size: 18,
+                color: Colors.white,
+              ),
+              label: Text(
+                l10n.ui_save,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ],
@@ -760,7 +922,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final l10n = L10n.of(context);
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.msg65c7ecb6)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.msg65c7ecb6)));
       return;
     }
     final existing = widget.existingConnection!;
@@ -806,11 +970,31 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // --- Step 1: Protocol Grid Selection ---
   Widget _buildProtocolSelectionStep(ThemeData theme) {
     final protocols = [
-      {'name': L10n.of(context).smb, 'desc': L10n.of(context).ui_smb_desc, 'color': Color(0xFF5B21B6)},
-      {'name': 'FTP', 'desc': L10n.of(context).msg25557d1f, 'color': Color(0xFFF97316)},
-      {'name': 'SFTP', 'desc': L10n.of(context).ssh, 'color': Color(0xFF0D9488)},
-      {'name': 'WebDav', 'desc': L10n.of(context).http, 'color': Color(0xFFE11D48)},
-      {'name': 'SAF Folder', 'desc': L10n.of(context).androidsd, 'color': Color(0xFF0284C7)},
+      {
+        'name': L10n.of(context).smb,
+        'desc': L10n.of(context).ui_smb_desc,
+        'color': Color(0xFF5B21B6),
+      },
+      {
+        'name': 'FTP',
+        'desc': L10n.of(context).msg25557d1f,
+        'color': Color(0xFFF97316),
+      },
+      {
+        'name': 'SFTP',
+        'desc': L10n.of(context).ssh,
+        'color': Color(0xFF0D9488),
+      },
+      {
+        'name': 'WebDav',
+        'desc': L10n.of(context).http,
+        'color': Color(0xFFE11D48),
+      },
+      {
+        'name': 'SAF Folder',
+        'desc': L10n.of(context).androidsd,
+        'color': Color(0xFF0284C7),
+      },
     ];
 
     return ScrollConfiguration(
@@ -820,12 +1004,19 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         children: [
           Text(
             L10n.of(context).ui_choose_network_service,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'LexendDeca',
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             L10n.of(context).naszenfile,
-            style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           const SizedBox(height: 24),
           // 协议选择：单行卡片样式（图标 + 标题 + 描述 + 右箭头）
@@ -914,7 +1105,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.08)),
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.08),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -950,7 +1143,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                         subtitle,
                         style: TextStyle(
                           fontSize: 11.5,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                           height: 1.2,
                         ),
                         maxLines: 2,
@@ -984,10 +1179,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       splashRadius: 20,
     );
 
-    return ScrollConfiguration(
+    final fieldList = ScrollConfiguration(
       behavior: const ScrollBehavior().copyWith(overscroll: false),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
         children: [
           // Header
           Row(
@@ -1011,7 +1206,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       l10n.msg5c808d9a,
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                   ],
@@ -1078,7 +1275,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 borderRadius: BorderRadius.circular(8),
                 onTap: () => setState(() => _anonymousLogin = !_anonymousLogin),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1100,7 +1300,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                           fontWeight: FontWeight.w600,
                           color: _anonymousLogin
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                         ),
                       ),
                     ],
@@ -1135,37 +1337,63 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             _buildSshKeySection(theme),
           ],
 
+          // 逐连接 SOCKS5 代理（issue #83）
           const SizedBox(height: 20),
+          _buildProxySection(theme),
 
-          // Three-button action bar: BACK (left) · TEST (center) · SAVE (right, primary)
-          Row(
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+
+    // 三按钮操作栏（返回 · 测试 · 保存）钉在页面底部，不随字段内容长度浮动：
+    // SMB 内容长、原本就贴近屏底（观感刚好），短内容的 WebDAV / FTP / SFTP
+    // 则悬在半空；统一钉底（下边距 24 = SMB 现状）后各协议按钮位置一致。
+    return Column(
+      children: [
+        Expanded(child: fieldList),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.35)),
+                    side: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     foregroundColor: theme.colorScheme.onSurface,
                   ),
                   onPressed: _prevStep,
-                  child: Text(l10n.ui_back,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    l10n.ui_back,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.55)),
+                    side: BorderSide(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.55),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     foregroundColor: theme.colorScheme.primary,
                   ),
                   onPressed: _testConnection,
                   icon: const Icon(Broken.shield_tick, size: 18),
-                  label: Text(l10n.ui_test,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                  label: Text(
+                    l10n.ui_test,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1175,19 +1403,30 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 4,
                   ),
                   onPressed: _saveConnection,
-                  icon: const Icon(Icons.save_rounded, size: 18, color: Colors.white),
-                  label: Text(l10n.ui_save,
-                    style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                  icon: const Icon(
+                    Icons.save_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    l10n.ui_save,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1206,7 +1445,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
                   )
                 : const Icon(Icons.wifi_find_rounded, size: 20),
             label: Text(
@@ -1215,7 +1457,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             ),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
         ),
@@ -1254,7 +1498,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.15)),
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.15),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1269,7 +1515,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   },
                   child: Row(
                     children: [
-                      Icon(Broken.global, size: 18, color: theme.colorScheme.primary),
+                      Icon(
+                        Broken.global,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -1297,8 +1547,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                           ],
                         ),
                       ),
-                      Icon(Icons.arrow_forward_ios_rounded,
-                          size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.4,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1309,7 +1564,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       l10n.ui_no_shares_found,
                       style: TextStyle(
                         fontSize: 12,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                   )
@@ -1326,7 +1583,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
-                          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          backgroundColor: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           onPressed: () {
                             setState(() {
                               _hostController.text = host;
@@ -1393,7 +1652,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         const SizedBox(height: 8),
         Text(
           l10n.ui_lan_scan_hint,
-          style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
         ),
       ],
     );
@@ -1416,7 +1678,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withValues(alpha: 0.04),
                   shape: BoxShape.circle,
-                  border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1), width: 1.5),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    width: 1.5,
+                  ),
                 ),
               ),
               SizedBox(
@@ -1424,8 +1689,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 width: 100,
                 child: CircularProgressIndicator(
                   strokeWidth: 4,
-                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    theme.colorScheme.primary,
+                  ),
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.1,
+                  ),
                 ),
               ),
               Icon(
@@ -1464,7 +1733,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             color: isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withValues(alpha: 0.02),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.08)),
+              side: BorderSide(
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -1490,7 +1761,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                     itemColor = theme.colorScheme.primary;
                     icon = Icons.circle_outlined;
                   } else {
-                    itemColor = theme.colorScheme.onSurface.withValues(alpha: 0.25);
+                    itemColor = theme.colorScheme.onSurface.withValues(
+                      alpha: 0.25,
+                    );
                     icon = Icons.radio_button_off_outlined;
                   }
 
@@ -1507,8 +1780,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                               fontSize: 13,
                               fontWeight: active ? FontWeight.bold : FontWeight.normal,
                               color: active
-                                  ? theme.colorScheme.onSurface.withValues(alpha: 0.9)
-                                  : theme.colorScheme.onSurface.withValues(alpha: done ? 0.6 : 0.35),
+                                  ? theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.9,
+                                    )
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: done ? 0.6 : 0.35,
+                                    ),
                             ),
                           ),
                         ),
@@ -1516,9 +1793,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                           const SizedBox(
                             width: 14,
                             height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                       ],
                     ),
@@ -1571,7 +1846,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
@@ -1611,14 +1888,100 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 size: 18,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
-              onPressed: () => setState(() => _obscureSshKeyPassword = !_obscureSshKeyPassword),
+              onPressed: () => setState(
+                () => _obscureSshKeyPassword = !_obscureSshKeyPassword,
+              ),
               splashRadius: 20,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             l10n.ui_ssh_key_password_hint,
-            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+            style: TextStyle(
+              fontSize: 11,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 逐连接 SOCKS5 代理设置（issue #83）：
+  /// 直连 / SOCKS5 分段切换；选择 SOCKS5 后展开地址、端口与可选认证字段。
+  /// SOCKS5 能转发任意 TCP（含 SMB 的 445 端口），是四种协议唯一通用的代理方案。
+  Widget _buildProxySection(ThemeData theme) {
+    final l10n = L10n.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSegmentPill(
+          theme,
+          title: l10n.ui_proxy_settings,
+          segments: [
+            (
+              label: l10n.ui_proxy_direct,
+              selected: !_proxyEnabled,
+              onTap: () => setState(() => _proxyType = 'none'),
+            ),
+            (
+              label: 'SOCKS5',
+              selected: _proxyEnabled,
+              onTap: () => setState(() => _proxyType = 'socks5'),
+            ),
+          ],
+        ),
+
+        if (_proxyEnabled) ...[
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _proxyHostController,
+            label: l10n.ui_proxy_host,
+            hint: '127.0.0.1',
+            icon: Broken.global,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _proxyPortController,
+            label: l10n.ui_proxy_port,
+            hint: '1080',
+            icon: Broken.hashtag,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _proxyUsernameController,
+            label: '${l10n.ui_proxy_username} (${l10n.ui_optional})',
+            hint: l10n.anonymousadmin,
+            icon: Broken.user,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _proxyPasswordController,
+            label: '${l10n.ui_proxy_password} (${l10n.ui_optional})',
+            hint: '••••••••',
+            icon: Broken.lock,
+            obscure: _obscureProxyPassword,
+            suffix: IconButton(
+              icon: Icon(
+                _obscureProxyPassword ? Broken.eye_slash : Broken.eye,
+                size: 18,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              onPressed: () => setState(
+                () => _obscureProxyPassword = !_obscureProxyPassword,
+              ),
+              splashRadius: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.ui_proxy_hint,
+            style: TextStyle(
+              fontSize: 11,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
           ),
         ],
       ],
@@ -1719,18 +2082,27 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   fontWeight: FontWeight.w500,
                 ),
                 filled: false,
-                contentPadding: EdgeInsets.zero,
+                // 浮动标题的横坐标由 contentPadding.left 决定：zero 会让「协议 /
+                // 代理设置」贴到边框左缘，比普通输入框标题偏左 —— 与字段标题
+                // 一致取 16，对齐同一基线；竖向保持 0，不挤压 48dp 内容高度。
+                contentPadding: const EdgeInsets.only(left: 16, right: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                  ),
                 ),
               ),
               child: const SizedBox.expand(),
@@ -1794,28 +2166,46 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
           fontSize: 13.5,
         ),
-        prefixIcon: Icon(icon, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+        prefixIcon: Icon(
+          icon,
+          size: 18,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
         suffixIcon: suffix,
         filled: true,
-        fillColor: isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withValues(alpha: 0.04),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        fillColor: isDark
+            ? const Color(0xFF1E293B)
+            : theme.colorScheme.primary.withValues(alpha: 0.04),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.8), width: 1.5),
+          borderSide: BorderSide(
+            color: theme.colorScheme.primary.withValues(alpha: 0.8),
+            width: 1.5,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProtocolIcon(String name, {required double size, Color? customColor}) {
+  Widget _buildProtocolIcon(
+    String name, {
+    required double size,
+    Color? customColor,
+  }) {
     IconData iconData;
     Color color;
     // 容错：历史连接类型可能存成 'SMB'/'Samba'/'CIFS'，不只等于本地化标签
@@ -1843,11 +2233,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       color = Colors.blue;
     }
 
-    return Icon(
-      iconData,
-      size: size,
-      color: customColor ?? color,
-    );
+    return Icon(iconData, size: size, color: customColor ?? color);
   }
 
   Widget _buildProtocolToggle(ThemeData theme) {

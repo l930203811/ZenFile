@@ -4,6 +4,7 @@ import android.util.Log
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
+import com.jcraft.jsch.ProxySOCKS5
 import com.jcraft.jsch.Session
 import com.jcraft.jsch.SftpATTRS
 import com.jcraft.jsch.SftpProgressMonitor
@@ -95,6 +96,10 @@ class SshSftpService {
         password: String,
         sshKeyPath: String? = null,
         sshKeyPassword: String? = null,
+        proxyHost: String? = null,
+        proxyPort: Int? = null,
+        proxyUsername: String? = null,
+        proxyPassword: String? = null,
     ): String {
         val jsch = JSch()
         val useKey = !sshKeyPath.isNullOrEmpty()
@@ -113,6 +118,17 @@ class SshSftpService {
         val session = jsch.getSession(username, host, if (port > 0) port else 22)
         if (!useKey) {
             session.setPassword(password)
+        }
+        // 逐连接 SOCKS5 代理（访问虚拟内网里的 SFTP 服务器）。
+        // ProxySOCKS5 让 JSch 先把 TCP 连到代理，再由代理建到目标的隧道，
+        // 出口主机名解析由代理完成（适配「内网主机只在代理侧可解析」的场景）。
+        // 仅在代理主机非空且端口有效时启用；其余场景走直连（与旧行为一致）。
+        if (!proxyHost.isNullOrEmpty() && proxyPort != null && proxyPort > 0) {
+            val proxy = ProxySOCKS5(proxyHost, proxyPort)
+            if (!proxyUsername.isNullOrEmpty()) {
+                proxy.setUserPasswd(proxyUsername, proxyPassword ?: "")
+            }
+            session.setProxy(proxy)
         }
         val config = Properties().apply {
             // TOFU 主机密钥校验（2026-10-02）：首次连接记录指纹并信任，之后

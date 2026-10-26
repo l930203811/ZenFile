@@ -78,8 +78,8 @@ class FTPFile {
     // ZenFile 补丁（2026-09-16）：改用数据连接专用超时，避免复用 15s 控制超时。
     int lPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $lPort');
-    final Socket dataSocket = await Socket.connect(_socket.host, lPort,
-        timeout: _socket.dataConnectTimeout);
+    final Socket dataSocket = await _socket.connectDataSocket(lPort,
+        _socket.dataConnectTimeout);
     // Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
@@ -146,8 +146,8 @@ class FTPFile {
     // 表现为「上传卡住不动」。补上专用超时。
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $iPort');
-    final Socket dataSocket = await Socket.connect(_socket.host, iPort,
-        timeout: _socket.dataConnectTimeout);
+    final Socket dataSocket = await _socket.connectDataSocket(iPort,
+        _socket.dataConnectTimeout);
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished

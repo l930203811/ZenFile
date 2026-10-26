@@ -8478,6 +8478,37 @@ class L10nZh extends L10n {
 
   @override
   String get ui_clone_open_ask => '是否打开该应用？';
+
+  @override
+  String get ui_clone_hardened_title => '检测到应用加固 / 加壳';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      '该应用使用了代码加固（运行时解密的壳），其包名、内容提供方等身份被写进受保护的代码或原生库。克隆仅改写清单与资源，无法覆盖这些身份，安装可共存但运行期很可能崩溃或无法使用。';
+
+  @override
+  String get ui_clone_hardened_continue => '仍要克隆';
+
+  @override
+  String get ui_proxy_settings => '代理设置';
+
+  @override
+  String get ui_proxy_direct => '直连';
+
+  @override
+  String get ui_proxy_host => '代理地址';
+
+  @override
+  String get ui_proxy_port => '代理端口';
+
+  @override
+  String get ui_proxy_username => '代理用户名';
+
+  @override
+  String get ui_proxy_password => '代理密码';
+
+  @override
+  String get ui_proxy_hint => '通过 SOCKS5 代理转发连接，可访问虚拟内网中的服务器。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -16924,4 +16955,35 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_clone_open_ask => '是否開啟此應用程式？';
+
+  @override
+  String get ui_clone_hardened_title => '偵測到應用程式加固 / 加殼';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      '此應用程式使用了程式碼加固（執行時才解密的殼），其套件名稱、內容提供方等身分被寫入受保護的程式碼或原生函式庫。複製僅改寫清單與資源，無法涵蓋這些身分，安裝可共存但執行期很可能崩潰或無法使用。';
+
+  @override
+  String get ui_clone_hardened_continue => '仍要複製';
+
+  @override
+  String get ui_proxy_settings => '代理設定';
+
+  @override
+  String get ui_proxy_direct => '直連';
+
+  @override
+  String get ui_proxy_host => '代理位址';
+
+  @override
+  String get ui_proxy_port => '代理連接埠';
+
+  @override
+  String get ui_proxy_username => '代理使用者名稱';
+
+  @override
+  String get ui_proxy_password => '代理密碼';
+
+  @override
+  String get ui_proxy_hint => '透過 SOCKS5 代理轉發連線，可存取虛擬內網中的伺服器。';
 }

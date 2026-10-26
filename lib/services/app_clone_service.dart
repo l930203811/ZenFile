@@ -1,232 +1,155 @@
-import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
-import 'root_shizuku_service.dart';
+import 'package:path/path.dart' as p;
 
-/// 分身操作失败类型：UI 层据此映射为可读的错误提示文案。
+import 'apk_clone/apk_clone_engine.dart';
+
+/// 克隆失败类型：UI 层据此映射为可读的错误提示文案。
 enum AppCloneError {
-  /// 无可用特权通道（Shizuku 未运行/未授权，且无 root）
-  noPrivilege,
+  /// 源 APK 读取失败或无法解析（文件损坏 / 非 APK）。
+  readFailed,
 
-  /// 命令执行超时
-  timeout,
-
-  /// 达到系统用户数量上限（部分 ROM 限制可创建的用户数）
-  userLimit,
-
-  /// 其他失败（[AppCloneException.raw] 携带命令原始输出便于排查）
-  failed,
+  /// 写盘失败（磁盘满 / 无权限等）。
+  ioFailed,
 }
 
-/// 分身操作异常：统一携带错误码与原始输出。
+/// 克隆操作异常：统一携带错误码与原始信息。
 class AppCloneException implements Exception {
   final AppCloneError code;
   final String raw;
-  AppCloneException(this.code, [this.raw = '']);
+  const AppCloneException(this.code, [this.raw = '']);
 
   @override
   String toString() => 'AppCloneException($code, $raw)';
 }
 
-/// 系统用户（分身）条目：id + 名称 + 是否在线。
-class CloneUserInfo {
-  final int id;
-  final String name;
-  final bool isRunning;
-  const CloneUserInfo({required this.id, required this.name, required this.isRunning});
+/// 克隆结果：原包名 + 生成的克隆安装包路径列表。
+class AppCloneOutput {
+  final String originalPackage;
+  final List<String> paths;
+  const AppCloneOutput({required this.originalPackage, required this.paths});
 }
 
-/// 应用分身服务：基于 Android 系统多用户机制，经 Shizuku（shell 特权）或 root
-/// 执行 pm/am 命令，把同一应用以分身形式多开、数据完全隔离。
-/// 不重打包 APK、不引第三方库、零体积增量。
+/// 单份克隆任务（跨 isolate 传给引擎；字段均为可传输的基础类型）。
+class _CloneTask {
+  final Uint8List source;
+  final String newPackage;
+  final String originalPackage;
+  const _CloneTask(this.source, this.newPackage, this.originalPackage);
+}
+
+/// compute 入口：克隆引擎为纯 Dart 实现（无平台通道），可安全跑在后台 isolate。
+Uint8List _cloneInIsolate(_CloneTask task) {
+  return ApkCloneEngine.cloneToBytes(
+    sourceApk: task.source,
+    newPackage: task.newPackage,
+    originalPackage: task.originalPackage,
+  );
+}
+
+/// 应用克隆服务：把一个 APK 重打包为**不同包名**的克隆安装包（改包名 +
+/// 内置固定密钥独立签名），克隆包与原应用可共存安装、多开同时运行。
+/// 不直接安装 —— 生成新 APK 落盘到 [cloneDirPath]，由用户自行安装。
 ///
-/// 命令链路概览：
-///  - 列用户      `pm list users`
-///  - 建分身      `pm create-user <name>`（成功行 `Success: created user id <n>`）
-///  - 删分身      `pm remove-user <uid>`
-///  - 装新 APK    `pm install --user <uid> <apk路径>`（shell 具备 INSTALL_PACKAGES）
-///  - 毫秒级克隆  `pm install-existing --user <uid> <pkg>`（把本机已装应用装进分身）
-///  - 卸载分身内  `pm uninstall --user <uid> <pkg>`（只影响该用户）
-///  - 启动        `cmd package resolve-activity --brief --user <uid> <pkg>` 拿组件
-///                → `am start --user <uid> -n <comp>`；失败回退
-///                `monkey -p <pkg> --user <uid> 1`
+/// 每份克隆包：包名 = 原包名 + `.zcloneN`（N 从 1 起），
+/// 输出文件名 `<原名>_zclone<N>.apk`，同名直接覆盖。
 class AppCloneService {
   AppCloneService._();
 
-  /// 常规 pm/am 命令超时：list/install-existing 等毫秒级到秒级，留足余量。
-  static const _genericTimeout = Duration(seconds: 20);
+  /// 克隆安装包输出目录（与备份 APK 同目录，备份功能不受影响）。
+  static const cloneDirPath = '/storage/emulated/0/ZenFile/Backups/Apps';
 
-  /// `pm install --user` 装完整 APK 的超时：大包在低端机上可能要数十秒。
-  static const _installTimeout = Duration(seconds: 300);
+  /// 克隆产物文件名模式（管理页据此筛选列表，与普通备份 `<名>_v<版本>.apk` 区分）。
+  static const cloneFileNamePattern = r'_zclone\d+\.apk$';
 
-  /// 是否具备执行分身命令的特权通道（root 优先，其次已授权的 Shizuku）。
-  static Future<bool> hasPrivilege() async {
-    final s = await RootShizukuService.checkStatus();
-    return s.isRootAvailable || (s.isShizukuAvailable && s.shizukuPermissionGranted);
-  }
-
-  /// 请求 Shizuku 授权（会弹出 Shizuku 的授权对话框）。
-  static Future<bool> requestPrivilege() => RootShizukuService.requestShizukuPermission();
-
-  /// 执行一条 pm/am 命令并返回完整 stdout（stderr 已重定向合并，便于解析错误原因）。
+  /// 把 [sourceApkPath] 克隆出 [copies] 份不同包名的安装包。
   ///
-  /// 与 RootShizukuService._writeWithFallback 的经验一致：**不要在 shell 里用
-  /// `||` 串接回退**（部分 ROM 假 exit 0 会吞掉回退），回退统一在 Dart 层逐条尝试。
-  /// root 优先（su 环境 pm 权限更全），否则走 Shizuku shell（uid 2000，具备
-  /// INSTALL_PACKAGES 等 shell 特权）。
-  static Future<String> _exec(
-    String command, {
-    Duration timeout = _genericTimeout,
+  /// [displayName] 用于输出文件命名（默认取源文件名，不含扩展名）。
+  /// [onProgress] 每完成一份回调一次（done 从 1 起）。
+  static Future<AppCloneOutput> cloneApk({
+    required String sourceApkPath,
+    required int copies,
+    String? displayName,
+    void Function(int done, int total)? onProgress,
   }) async {
-    final s = await RootShizukuService.checkStatus();
-    final useRoot = s.isRootAvailable;
-    final allowed = useRoot || (s.isShizukuAvailable && s.shizukuPermissionGranted);
-    if (!allowed) throw AppCloneException(AppCloneError.noPrivilege);
+    final source = File(sourceApkPath);
+    final Uint8List bytes;
     try {
-      final out = await RootShizukuService.runCommand('$command 2>&1', useRoot: useRoot)
-          .timeout(timeout);
-      return out ?? '';
-    } on TimeoutException {
-      throw AppCloneException(AppCloneError.timeout);
+      bytes = await source.readAsBytes();
+    } catch (_) {
+      throw const AppCloneException(
+        AppCloneError.readFailed,
+        'cannot read source apk',
+      );
+    }
+    final origPkg = ApkCloneEngine.parsePackageName(bytes);
+    if (origPkg == null || origPkg.isEmpty) {
+      throw const AppCloneException(
+        AppCloneError.readFailed,
+        'cannot parse package name',
+      );
+    }
+
+    final dir = Directory(cloneDirPath);
+    try {
+      if (!dir.existsSync()) dir.createSync(recursive: true);
     } catch (e) {
-      // 通道层异常（native 抛错等）按普通失败处理，携带原因。
-      throw AppCloneException(AppCloneError.failed, e.toString());
+      throw AppCloneException(AppCloneError.ioFailed, e.toString());
     }
-  }
+    final baseName = (displayName ?? p.basenameWithoutExtension(sourceApkPath))
+        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
 
-  /// 列出系统全部用户（含主用户 id 0，由调用方自行过滤）。
-  ///
-  /// `pm list users` 在不同 ROM 上有两种输出形态，逐行解析需同时兼容：
-  ///   - 长格式：`UserInfo{id:10, name:分身 1, flags:[...]} running`
-  ///   - 短格式：`UserInfo{10:分身 1:4100} running`
-  static Future<List<CloneUserInfo>> listUsers() async {
-    final out = await _exec('pm list users');
-    final users = <CloneUserInfo>[];
-    for (final rawLine in out.split('\n')) {
-      final line = rawLine.trim();
-      if (!line.contains('UserInfo')) continue;
-      final running = line.contains('running');
-      final long = RegExp(r'UserInfo\{id:(\d+),\s*name:([^,}]*)').firstMatch(line);
-      final short = RegExp(r'UserInfo\{(\d+):(.+?):\d+\}').firstMatch(line);
-      final m = long ?? short;
-      if (m == null) continue;
-      final id = int.tryParse(m.group(1)!);
-      if (id == null) continue;
-      var name = (m.group(2) ?? '').trim();
-      if (name.isEmpty) name = 'U$id';
-      users.add(CloneUserInfo(id: id, name: name, isRunning: running));
-    }
-    return users;
-  }
-
-  /// 创建分身用户，返回新用户条目。失败抛 [AppCloneException]：
-  /// ROM 限制用户数时错误码为 [AppCloneError.userLimit]。
-  static Future<CloneUserInfo> createUser(String name) async {
-    final out = await _exec('pm create-user "$name"');
-    final m = RegExp(r'created user id:?\s*(\d+)').firstMatch(out);
-    if (m != null) {
-      final id = int.tryParse(m.group(1)!);
-      if (id != null) {
-        debugPrint('[ZenFile] app_clone: created user $id ($name)');
-        return CloneUserInfo(id: id, name: name, isRunning: false);
+    final outputs = <String>[];
+    for (var i = 1; i <= copies; i++) {
+      // 克隆是 CPU 密集型（AXML/ARSC 改写 + ZIP 重排 + v2 签名），丢后台 isolate。
+      final cloned = await compute(
+        _cloneInIsolate,
+        _CloneTask(bytes, '$origPkg.zclone$i', origPkg),
+      );
+      final destPath = p.join(dir.path, '${baseName}_zclone$i.apk');
+      try {
+        await File(destPath).writeAsBytes(cloned, flush: true);
+      } catch (e) {
+        throw AppCloneException(AppCloneError.ioFailed, e.toString());
       }
+      outputs.add(destPath);
+      onProgress?.call(i, copies);
     }
-    throw AppCloneException(_classifyCreateUserError(out), out.trim());
+    return AppCloneOutput(originalPackage: origPkg, paths: outputs);
   }
 
-  /// 归类 create-user 失败原因：各家 ROM 的限制文案不一，按关键词覆盖常见写法。
-  static AppCloneError _classifyCreateUserError(String out) {
-    final lower = out.toLowerCase();
-    if (lower.contains('maximum') ||
-        lower.contains("can't create") ||
-        lower.contains('cannot create') ||
-        lower.contains('user limit') ||
-        lower.contains('too many users') ||
-        lower.contains('exceed')) {
-      return AppCloneError.userLimit;
-    }
-    return AppCloneError.failed;
-  }
-
-  /// 删除分身用户（连同其内全部应用数据）。
-  static Future<void> removeUser(int uid) async {
-    final out = await _exec('pm remove-user $uid');
-    if (!out.toLowerCase().contains('success')) {
-      throw AppCloneException(AppCloneError.failed, out.trim());
+  /// 命中加固 / 加壳特征：克隆仅改写 manifest + arsc，无法覆盖受保护代码里
+  /// 写死的包名 / provider authority，克隆后可共存安装但运行期很可能崩溃。
+  /// 返回命中标签；空列表表示未识别到加固。读取失败返回空列表（不阻断）。
+  static Future<List<String>> detectHardening(String sourceApkPath) async {
+    try {
+      final bytes = await File(sourceApkPath).readAsBytes();
+      return ApkCloneEngine.detectHardening(bytes);
+    } catch (_) {
+      return const [];
     }
   }
 
-  /// 列出指定用户安装的第三方包（`-3`），包名升序。
-  static Future<List<String>> listThirdPartyPackages(int uid) async {
-    final out = await _exec('pm list packages --user $uid -3');
-    return out
-        .split('\n')
-        .map((l) => l.trim())
-        .where((l) => l.startsWith('package:'))
-        .map((l) => l.substring('package:'.length).trim())
-        .where((s) => s.isNotEmpty)
-        .toList()
-      ..sort();
-  }
-
-  /// 把本机（主用户）已装应用毫秒级装进分身（pm install-existing）。
-  static Future<void> installExistingForUser(int uid, String pkg) async {
-    final out = await _exec(
-      'pm install-existing --user $uid "$pkg"',
-      timeout: const Duration(seconds: 60),
-    );
-    if (!out.toLowerCase().contains('success')) {
-      throw AppCloneException(AppCloneError.failed, out.trim());
+  /// 列出已生成的克隆安装包（文件名匹配克隆产物模式），按修改时间倒序。
+  static Future<List<File>> listCloneFiles() async {
+    final dir = Directory(cloneDirPath);
+    if (!dir.existsSync()) return const [];
+    final re = RegExp(cloneFileNamePattern);
+    final files = <File>[];
+    await for (final e in dir.list()) {
+      if (e is! File) continue;
+      if (!re.hasMatch(p.basename(e.path))) continue;
+      files.add(e);
     }
-  }
-
-  /// 从指定分身卸载应用（只影响该用户，本机安装不受影响）。
-  static Future<void> uninstallForUser(int uid, String pkg) async {
-    final out = await _exec(
-      'pm uninstall --user $uid "$pkg"',
-      timeout: const Duration(seconds: 60),
-    );
-    if (!out.toLowerCase().contains('success')) {
-      throw AppCloneException(AppCloneError.failed, out.trim());
-    }
-  }
-
-  /// 把一个 .apk 文件安装到指定分身（pm install --user）。
-  ///
-  /// 降级安装（-d）需要 INSTALL_ALLOW_DOWNGRADE 权限、部分 ROM 的 shell 不具备，
-  /// 与 RootShizukuService.installApkSilently 的策略一致：仅在明确报 downgrade
-  /// 时补 -d 重试一次。
-  static Future<void> installApkForUser(String apkPath, int uid) async {
-    var out = await _exec('pm install --user $uid -r "$apkPath"', timeout: _installTimeout);
-    if (out.toLowerCase().contains('success')) return;
-    if (out.toLowerCase().contains('downgrade')) {
-      out = await _exec('pm install --user $uid -r -d "$apkPath"', timeout: _installTimeout);
-      if (out.toLowerCase().contains('success')) return;
-    }
-    throw AppCloneException(AppCloneError.failed, out.trim());
-  }
-
-  /// 在指定分身内启动应用。
-  ///
-  /// ① `cmd package resolve-activity --brief` 拿 launcher 组件 → `am start -n`；
-  /// ② 失败回退 `monkey`（对 ROM 差异更宽容）。
-  static Future<bool> launchAppForUser(int uid, String pkg) async {
-    final resolveOut = await _exec(
-      'cmd package resolve-activity --brief --user $uid -c android.intent.category.LAUNCHER "$pkg"',
-    );
-    // --brief 输出里形如 `pkg/Activity` 的行即组件（可能先有一行裸包名，取最后一条匹配）。
-    String? component;
-    for (final line in resolveOut.split('\n')) {
-      final l = line.trim();
-      if (RegExp(r'^[\w.]+/[\w.$]+$').hasMatch(l)) component = l;
-    }
-    if (component != null) {
-      final out = await _exec('am start --user $uid -n "$component"');
-      final lower = out.toLowerCase();
-      if (lower.contains('starting') && !lower.contains('error')) return true;
-    }
-    // 兜底：monkey 注入一个 launcher 启动事件。
-    final monkeyOut = await _exec('monkey -p "$pkg" --user $uid 1');
-    final mLower = monkeyOut.toLowerCase();
-    return mLower.contains('events injected: 1') && !mLower.contains('error');
+    files.sort((a, b) {
+      try {
+        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+      } catch (_) {
+        return b.path.compareTo(a.path);
+      }
+    });
+    return files;
   }
 }

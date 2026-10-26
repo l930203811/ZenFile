@@ -8918,4 +8918,36 @@ class L10nAr extends L10n {
 
   @override
   String get ui_clone_open_ask => 'فتح هذا التطبيق؟';
+
+  @override
+  String get ui_clone_hardened_title => 'تم اكتشاف تقوية أو تغليف التطبيق';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'هذا التطبيق محمي بتقوية الكود (غلاف يُفك تشفيره أثناء التشغيل). اسم الحزمة وصلاحيات المزوّد مضمّنة في كود محمي أو مكتبات أصلية. الاستنساخ يعيد كتابة البيان والموارد فقط، لذا يمكن تثبيت النسخة المستنسخة بجانب الأصلية لكنها غالباً ما تتعطل أو لا تعمل بشكل صحيح أثناء التشغيل.';
+
+  @override
+  String get ui_clone_hardened_continue => 'استنساخ على أي حال';
+
+  @override
+  String get ui_proxy_settings => 'إعدادات الوسيط';
+
+  @override
+  String get ui_proxy_direct => 'اتصال مباشر';
+
+  @override
+  String get ui_proxy_host => 'عنوان الوسيط';
+
+  @override
+  String get ui_proxy_port => 'منفذ الوسيط';
+
+  @override
+  String get ui_proxy_username => 'اسم مستخدم الوسيط';
+
+  @override
+  String get ui_proxy_password => 'كلمة مرور الوسيط';
+
+  @override
+  String get ui_proxy_hint =>
+      'يتم تمرير الاتصالات عبر الوسيط SOCKS5 للوصول إلى الخوادم داخل الشبكة الافتراضية.';
 }

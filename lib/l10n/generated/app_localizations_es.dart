@@ -9068,4 +9068,37 @@ class L10nEs extends L10n {
 
   @override
   String get ui_clone_open_ask => '¿Abrir esta aplicación?';
+
+  @override
+  String get ui_clone_hardened_title =>
+      'Se detectó endurecimiento o empaquetado de la app';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'Esta aplicación está protegida por endurecimiento de código (una capa que se descifra en tiempo de ejecución). Su nombre de paquete y las autoridades del proveedor están incrustadas en código protegido o bibliotecas nativas. El clonado solo reescribe el manifest y los recursos, por lo que el clon puede instalarse junto a la original, pero probablemente falle o funcione mal en tiempo de ejecución.';
+
+  @override
+  String get ui_clone_hardened_continue => 'Clonar de todos modos';
+
+  @override
+  String get ui_proxy_settings => 'Proxy';
+
+  @override
+  String get ui_proxy_direct => 'Directo';
+
+  @override
+  String get ui_proxy_host => 'Host del proxy';
+
+  @override
+  String get ui_proxy_port => 'Puerto del proxy';
+
+  @override
+  String get ui_proxy_username => 'Usuario del proxy';
+
+  @override
+  String get ui_proxy_password => 'Contraseña del proxy';
+
+  @override
+  String get ui_proxy_hint =>
+      'Las conexiones se tunelizan a través del proxy SOCKS5 para acceder a servidores de una intranet virtual.';
 }

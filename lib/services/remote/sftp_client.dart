@@ -6,6 +6,34 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../ssh_host_key_store.dart';
 import 'remote_client.dart';
+import 'socks5_socket.dart';
+
+/// 把 SOCKS5 隧道 Socket 桥接成 dartssh2 的 [SSHSocket]。
+///
+/// [SSHSocket] 的三个核心成员（stream / sink / done）在 dart:io 的 [Socket]
+/// 上天然存在（Socket implements Stream<Uint8List>, IOSink），直接透传即可。
+class _TunnelSSHSocket implements SSHSocket {
+  final Socket _s;
+  _TunnelSSHSocket(this._s);
+
+  @override
+  Stream<Uint8List> get stream => _s;
+
+  @override
+  StreamSink<List<int>> get sink => _s;
+
+  @override
+  Future<void> get done => _s.done;
+
+  @override
+  Future<void> close() => _s.close();
+
+  @override
+  void destroy() => _s.destroy();
+
+  @override
+  Future<void> flush() => _s.flush();
+}
 
 /// 原生 SSH/SFTP 通道：在 Android 上用 Java JSch 实现（加解密走系统硬件加速），
 /// 突破 dartssh2 纯 Dart 加密的速率天花板（详见 SshSftpService.kt）。
@@ -24,6 +52,20 @@ class SftpRemoteClient extends RemoteClient {
   final String? sshKeyPath;
   final String? sshKeyPassword;
   final String authMethod; // 'password' or 'key'
+
+  // 逐连接 SOCKS5 代理（访问虚拟内网里的 SFTP 服务器）。
+  final String? proxyType;
+  final String? proxyHost;
+  final int? proxyPort;
+  final String? proxyUsername;
+  final String? proxyPassword;
+
+  bool get _useProxy =>
+      proxyType == 'socks5' &&
+      proxyHost != null &&
+      proxyHost!.isNotEmpty &&
+      proxyPort != null &&
+      proxyPort! > 0;
 
   SSHClient? _sshClient;
   SftpClient? _sftpClient;
@@ -80,6 +122,11 @@ class SftpRemoteClient extends RemoteClient {
     this.sshKeyPath,
     this.sshKeyPassword,
     this.authMethod = 'password',
+    this.proxyType,
+    this.proxyHost,
+    this.proxyPort,
+    this.proxyUsername,
+    this.proxyPassword,
   });
 
   @override
@@ -97,6 +144,15 @@ class SftpRemoteClient extends RemoteClient {
         if (authMethod == 'key' && sshKeyPath != null) {
           nativeParams['sshKeyPath'] = sshKeyPath;
           nativeParams['sshKeyPassword'] = sshKeyPassword ?? '';
+        }
+        // 逐连接 SOCKS5 代理：原生 JSch 会据 proxyHost/proxyPort 设置
+        // ProxySOCKS5（见 SshSftpService.kt）。dartssh2 回退路径同样支持：
+        // 经 SOCKS5 隧道建连后桥接为 SSHSocket（见 _TunnelSSHSocket）。
+        if (_useProxy) {
+          nativeParams['proxyHost'] = proxyHost;
+          nativeParams['proxyPort'] = proxyPort;
+          nativeParams['proxyUsername'] = proxyUsername ?? '';
+          nativeParams['proxyPassword'] = proxyPassword ?? '';
         }
         _nativeSessionId = await const MethodChannel(_kSftpNativeChannel).invokeMethod<String>(
           'connect',
@@ -121,10 +177,37 @@ class SftpRemoteClient extends RemoteClient {
     // —— 以下为纯 Dart dartssh2 实现（非 Android 平台 / 原生不可用时的回退）——
     SSHSocket socket;
     try {
-      socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
+      if (_useProxy) {
+        // SOCKS5 隧道：出口主机名交给代理解析，适配「虚拟内网」中的 SSH 服务器。
+        final tunnel = await Socks5Socket.connectViaSocks5(
+          proxyHost: proxyHost!,
+          proxyPort: proxyPort!,
+          targetHost: host,
+          targetPort: port,
+          username: proxyUsername,
+          password: proxyPassword,
+          timeout: const Duration(seconds: 15),
+        );
+        socket = _TunnelSSHSocket(tunnel);
+      } else {
+        socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
+      }
     } catch (e) {
       // Retry once if connection fails
-      socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
+      if (_useProxy) {
+        final tunnel = await Socks5Socket.connectViaSocks5(
+          proxyHost: proxyHost!,
+          proxyPort: proxyPort!,
+          targetHost: host,
+          targetPort: port,
+          username: proxyUsername,
+          password: proxyPassword,
+          timeout: const Duration(seconds: 15),
+        );
+        socket = _TunnelSSHSocket(tunnel);
+      } else {
+        socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
+      }
     }
 
     // 构建身份验证身份列表

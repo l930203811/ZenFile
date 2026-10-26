@@ -9030,4 +9030,37 @@ class L10nRu extends L10n {
 
   @override
   String get ui_clone_open_ask => 'Открыть это приложение?';
+
+  @override
+  String get ui_clone_hardened_title =>
+      'Обнаружено усиление защиты или упаковка приложения';
+
+  @override
+  String get ui_clone_hardened_warn =>
+      'Это приложение защищено усилением кода (оболочкой, расшифровываемой во время выполнения). Его имя пакета и полномочия провайдера встроены в защищённый код или нативные библиотеки. Клонирование перезаписывает только манифест и ресурсы, поэтому клон можно установить вместе с оригиналом, но во время выполнения он, скорее всего, аварийно завершится или будет работать некорректно.';
+
+  @override
+  String get ui_clone_hardened_continue => 'Всё равно клонировать';
+
+  @override
+  String get ui_proxy_settings => 'Прокси';
+
+  @override
+  String get ui_proxy_direct => 'Напрямую';
+
+  @override
+  String get ui_proxy_host => 'Адрес прокси';
+
+  @override
+  String get ui_proxy_port => 'Порт прокси';
+
+  @override
+  String get ui_proxy_username => 'Имя пользователя прокси';
+
+  @override
+  String get ui_proxy_password => 'Пароль прокси';
+
+  @override
+  String get ui_proxy_hint =>
+      'Подключения туннелируются через прокси SOCKS5 — доступ к серверам в виртуальной интрасети.';
 }

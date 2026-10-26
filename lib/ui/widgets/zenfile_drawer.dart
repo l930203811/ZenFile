@@ -5,7 +5,6 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
 import '../screens/wake_on_lan_screen.dart';
-import '../screens/app_clone_manager_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
@@ -334,21 +333,6 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             );
                           },
                         ),
-                        // 应用分身入口：与工具箱页同款（Broken.copy + ui_clone_feature_title）
-                        _buildDrawerTile(
-                          context,
-                          icon: Broken.copy,
-                          title: L10n.of(context).ui_clone_feature_title,
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const AppCloneManagerScreen(),
-                              ),
-                            );
-                          },
-                        ),
                       ],
                     ),
 
@@ -404,7 +388,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v3.6.6',
+                'ZenFile v3.6.7',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600),
               ),
             ),

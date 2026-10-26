@@ -57,8 +57,8 @@ class FTPDirectory {
     // ZenFile 补丁（2026-09-16）：数据连接改用更短的专用超时（默认 min(命令超时, 8s)）。
     // 上游复用 _socket.timeout（15~30s），被动模式下端口被防火墙丢弃时要白等很久。
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
-    Socket dataSocket = await Socket.connect(_socket.host, iPort,
-        timeout: _socket.dataConnectTimeout);
+    Socket dataSocket = await _socket.connectDataSocket(iPort,
+        _socket.dataConnectTimeout);
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
