@@ -1031,7 +1031,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 12),
 
           if (_selectedType == 'WebDav') ...[
-            // 一体分段控件（内嵌「协议」标题，HTTP / HTTPS 竖线分隔）
+            // 一体分段控件（「协议」标题位于左上角边框，HTTP / HTTPS 竖线分隔）
             _buildProtocolToggle(theme),
             const SizedBox(height: 12),
           ],
@@ -1622,8 +1622,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   /// 一体分段控件：所有选项共用一个容器，选项之间用竖线分隔。
-  /// 边框/填充样式与输入框一致（16dp 圆角描边）。
-  /// [title] 为内嵌在容器左侧的非交互标题（如「协议」）。
+  /// 借助 InputDecorator 呈现与输入框一致的 16dp 圆角描边 + 填充；
+  /// [title]（如「协议」）与字段标题一样固定在左上角边框缺口处。
   Widget _buildSegmentPill(
     ThemeData theme, {
     String? title,
@@ -1637,22 +1637,6 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     );
 
     final List<Widget> children = [];
-    if (title != null) {
-      children
-        ..add(Padding(
-          padding: const EdgeInsets.only(left: 16, right: 10),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-        ))
-        ..add(divider);
-    }
-
     for (var i = 0; i < segments.length; i++) {
       final seg = segments[i];
       children.add(
@@ -1689,16 +1673,39 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       if (i < segments.length - 1) children.add(divider);
     }
 
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: isDark
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: title,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        filled: true,
+        fillColor: isDark
             ? const Color(0xFF1E293B)
             : theme.colorScheme.primary.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        ),
       ),
-      child: Row(children: children),
+      child: SizedBox(height: 44, child: Row(children: children)),
     );
   }
 
@@ -1812,7 +1819,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   Widget _buildProtocolToggle(ThemeData theme) {
-    // 一体分段控件：内嵌「协议」标题，HTTP / HTTPS 竖线分隔
+    // 一体分段控件：「协议」标题位于左上角边框，HTTP / HTTPS 竖线分隔
     return _buildSegmentPill(
       theme,
       title: L10n.of(context).ui_protocol,
