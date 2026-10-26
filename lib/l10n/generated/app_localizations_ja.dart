@@ -8117,6 +8117,9 @@ class L10nJa extends L10n {
   String get ui_delete_confirm_dont_ask => '今後確認しない';
 
   @override
+  String get ui_move_to_recycle_bin => 'ごみ箱へ移動';
+
+  @override
   String get video_auto_fallback_soft =>
       'ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。';
 

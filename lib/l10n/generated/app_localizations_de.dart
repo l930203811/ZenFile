@@ -8468,6 +8468,9 @@ class L10nDe extends L10n {
   String get ui_delete_confirm_dont_ask => 'Nicht erneut fragen';
 
   @override
+  String get ui_move_to_recycle_bin => 'In den Papierkorb verschieben';
+
+  @override
   String get video_auto_fallback_soft =>
       'Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.';
 

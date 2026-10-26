@@ -342,15 +342,14 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         }
         break;
       case 'delete':
-        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+        final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
-          title: L10n.of(context).msg53518c22,
           content: L10n.of(context).msgee14ee27,
           items: FileActionDialogs.itemsFromPaths([path]),
         );
         if (confirm) {
           try {
-            await provider.deleteFile(path);
+            await provider.deleteFile(path, toTrash: toTrash);
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(

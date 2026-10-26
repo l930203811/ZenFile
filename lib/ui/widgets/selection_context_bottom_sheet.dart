@@ -242,9 +242,8 @@ class SelectionContextBottomSheet extends StatelessWidget {
               onTap: () async {
                 final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
-                final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+                final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
                   effectiveContext,
-                  title: L10n.of(context).msgcd0b9aca,
                   content: L10n.of(context).selectedcount2(selectedCount),
                   items: FileActionDialogs.itemsFromPaths(
                     provider.selectedPaths,
@@ -252,7 +251,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 );
                 if (confirm) {
                   try {
-                    await provider.deleteSelected();
+                    await provider.deleteSelected(toTrash: toTrash);
                   } catch (e) {
                     if (effectiveContext.mounted) {
                       ScaffoldMessenger.of(effectiveContext).showSnackBar(

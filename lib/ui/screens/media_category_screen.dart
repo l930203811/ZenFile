@@ -1084,9 +1084,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
         ),
     ];
 
-    final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+    final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
       context,
-      title: L10n.of(context).msg631cd220,
       content: L10n.of(context).count1(count),
       items: DeleteConfirmItems.from(previewItems),
     );
@@ -1124,6 +1123,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
         await mediaProvider.deleteMediaItems(
           filePaths: filePaths,
           assetIds: assetIds,
+          toTrash: toTrash,
         );
       }
       // 本地删除后即时裁剪列表（无需全量重扫），远程删除后强制重扫自定义远程路径
@@ -1511,9 +1511,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               }
               return;
             }
-            final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+            final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
               context,
-              title: L10n.of(context).msg631cd220,
               content: L10n.of(context).ui_permanently_delete_name(name),
               items: DeleteConfirmItems.from([
                 DeleteConfirmItem(name: name, isDirectory: false),
@@ -1540,6 +1539,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               await mediaProvider.deleteMediaItems(
                 filePaths: files,
                 assetIds: assetId != null ? [assetId] : [],
+                toTrash: toTrash,
               );
               if (files.isNotEmpty) {
                 mediaProvider.pruneDeletedMediaPaths(files);

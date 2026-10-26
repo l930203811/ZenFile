@@ -8509,6 +8509,7 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "Don't ask again",
+  "ui_move_to_recycle_bin": "Move to recycle bin",
   "video_auto_fallback_soft": "Hardware decoding issue detected. Switched to software decoding automatically.",
   "video_vo_compat": "Video rendering issue detected. Switched to compatibility rendering mode.",
   "audio_opensles_title": "Audio Output (AO) Mode",

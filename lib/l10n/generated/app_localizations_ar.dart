@@ -8345,6 +8345,9 @@ class L10nAr extends L10n {
   String get ui_delete_confirm_dont_ask => 'لا تسأل مرة أخرى';
 
   @override
+  String get ui_move_to_recycle_bin => 'نقل إلى سلة المحذوفات';
+
+  @override
   String get video_auto_fallback_soft =>
       'تم اكتشاف مشكلة في فك التشفير بالأجهزة. تم التبديل تلقائيًا إلى فك التشفير البرمجي.';
 

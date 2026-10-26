@@ -8502,6 +8502,9 @@ class L10nFr extends L10n {
   String get ui_delete_confirm_dont_ask => 'Ne plus demander';
 
   @override
+  String get ui_move_to_recycle_bin => 'Déplacer vers la corbeille';
+
+  @override
   String get video_auto_fallback_soft =>
       'Problème de décodage matériel détecté. Bascule automatique en décodage logiciel.';
 

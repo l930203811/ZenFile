@@ -147,10 +147,9 @@ class SelectionActionBar extends StatelessWidget {
                     color: Colors.redAccent,
                     hideLabel: provider.hideActionText,
                     onTap: () async {
-                      final confirm =
+                      final (confirm, toTrash) =
                           await FileActionDialogs.showDeleteConfirmDialog(
                             context,
-                            title: L10n.of(context).msgcd0b9aca,
                             content: L10n.of(
                               context,
                             ).selectedcount2(provider.selectedPaths.length),
@@ -160,7 +159,7 @@ class SelectionActionBar extends StatelessWidget {
                           );
                       if (confirm) {
                         try {
-                          await provider.deleteSelected();
+                          await provider.deleteSelected(toTrash: toTrash);
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

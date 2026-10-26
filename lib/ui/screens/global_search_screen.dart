@@ -613,9 +613,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   Future<void> _handleDeleteSelected() async {
     if (_selectedPaths.isEmpty) return;
-    final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+    final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
       context,
-      title: L10n.of(context).msgcd0b9aca,
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
       items: FileActionDialogs.itemsFromPaths(_selectedPaths),
     );
@@ -625,7 +624,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       final toDelete = _selectedPaths.toList();
       try {
         for (final path in toDelete) {
-          await provider.deleteFile(path);
+          await provider.deleteFile(path, toTrash: toTrash);
           setState(() {
             _results.removeWhere((e) => e.path == path);
           });
@@ -728,9 +727,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         break;
       case 'delete':
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
-        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+        final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
-          title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg53518c22,
           content: isMulti
               ? L10n.of(context).ui_delete_items_confirm(_selectedPaths.length)
               : L10n.of(context).ui_delete_item_confirm,
@@ -743,14 +741,14 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             if (isMulti) {
               final toDelete = _selectedPaths.toList();
               for (final p in toDelete) {
-                await provider.deleteFile(p);
+                await provider.deleteFile(p, toTrash: toTrash);
                 setState(() {
                   _results.removeWhere((e) => e.path == p);
                 });
               }
               _clearSelection();
             } else {
-              await provider.deleteFile(path);
+              await provider.deleteFile(path, toTrash: toTrash);
               setState(() {
                 _results.removeWhere((e) => e.path == path);
               });

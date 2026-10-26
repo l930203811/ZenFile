@@ -22,6 +22,7 @@ import '../../services/image_edit_service.dart';
 import '../../services/preferences_service.dart';
 import '../../services/image_metadata_service.dart';
 import '../../services/folder_share_service.dart';
+import '../../services/recycle_bin_service.dart';
 import 'image_editor_screen.dart';
 import '../navigation/shell_navigator.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -991,9 +992,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
     if (file == null && asset == null) return;
 
-    final confirmed = await FileActionDialogs.showDeleteConfirmDialog(
+    final (confirmed, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
       context,
-      title: l10n.ui_delete,
       content: l10n.ui_delete_file_confirm,
       // 名称复用标题栏的 [_titleOf]：加密条目拿的是解密后的真实文件名，
       // 流式 URL 也已还原，与用户此刻看到的界面文字对得上。
@@ -1014,10 +1014,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           currentPath != null && currentPath.startsWith('remote://');
 
       if (asset != null) {
-        // 相册图片通过 PhotoManager 删除
+        // 相册图片通过 PhotoManager 删除（系统相册语义，不走应用回收站）
         await PhotoManager.editor.deleteWithIds([asset.id]);
       } else if (file != null && file.existsSync()) {
-        await file.delete();
+        // 勾选「移入回收站」→ 移入应用回收站；否则直接删除
+        if (toTrash == true) {
+          await RecycleBinService.moveToTrash(file.path);
+        } else {
+          await file.delete();
+        }
       }
       if (!mounted) return;
 

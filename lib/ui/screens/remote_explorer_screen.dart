@@ -559,7 +559,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text(L10n.of(context).msg4b342999, style: TextStyle(fontFamily: 'LexendDeca', fontWeight: FontWeight.bold)),
+          // 删除确认弹窗不渲染标题，只保留正文与操作按钮（远程文件只能永久删除）
           content: Text('从服务器永久删除"${item.name}"？'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),

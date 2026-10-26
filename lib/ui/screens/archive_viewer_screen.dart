@@ -414,7 +414,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(L10n.of(context).msg765d1698, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        // 删除确认弹窗不渲染标题，只保留正文与操作按钮
         content: Text(L10n.of(context).ui_delete_items_confirm(_selectedInternalPaths.length)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(L10n.of(context).ui_cancel)),

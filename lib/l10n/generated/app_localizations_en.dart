@@ -8373,6 +8373,9 @@ class L10nEn extends L10n {
   String get ui_delete_confirm_dont_ask => 'Don\'t ask again';
 
   @override
+  String get ui_move_to_recycle_bin => 'Move to recycle bin';
+
+  @override
   String get video_auto_fallback_soft =>
       'Hardware decoding issue detected. Switched to software decoding automatically.';
 

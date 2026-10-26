@@ -8443,6 +8443,7 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "No preguntar de nuevo",
+  "ui_move_to_recycle_bin": "Mover a la papelera",
   "video_auto_fallback_soft": "Se detectó un problema de decodificación por hardware. Cambio automático a decodificación por software.",
   "video_vo_compat": "Se detectó un problema de renderizado de video. Cambio a modo de renderizado de compatibilidad.",
   "audio_opensles_title": "Modo de salida de audio (AO)",

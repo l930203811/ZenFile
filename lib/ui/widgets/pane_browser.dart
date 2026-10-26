@@ -342,11 +342,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isMulti =
             provider.selectedPaths.isNotEmpty &&
             provider.selectedPaths.contains(path);
-        final confirm = await FileActionDialogs.showDeleteConfirmDialog(
+        final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
-          title: isMulti
-              ? L10n.of(context).msgcd0b9aca
-              : L10n.of(context).msg4b342999,
           content: isMulti
               ? L10n.of(context).count1(provider.selectedPaths.length)
               : L10n.of(context).msgee14ee27,
@@ -357,9 +354,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (confirm) {
           try {
             if (isMulti) {
-              await provider.deleteSelected();
+              await provider.deleteSelected(toTrash: toTrash);
             } else {
-              await provider.deleteFile(path);
+              await provider.deleteFile(path, toTrash: toTrash);
             }
           } catch (e) {
             if (context.mounted) {

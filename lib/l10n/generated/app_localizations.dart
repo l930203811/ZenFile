@@ -14872,6 +14872,12 @@ abstract class L10n {
   /// **'删除不再提示'**
   String get ui_delete_confirm_dont_ask;
 
+  /// 删除确认弹窗中的「移入回收站」勾选框：勾选后本次删除移入回收站而非直接删除；回收站未开启时勾选并确认会自动开启回收站
+  ///
+  /// In zh, this message translates to:
+  /// **'移入回收站'**
+  String get ui_move_to_recycle_bin;
+
   /// No description provided for @video_auto_fallback_soft.
   ///
   /// In zh, this message translates to:

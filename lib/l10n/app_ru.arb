@@ -8443,6 +8443,7 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "Больше не спрашивать",
+  "ui_move_to_recycle_bin": "Переместить в корзину",
   "video_auto_fallback_soft": "Обнаружена проблема аппаратного декодирования. Автоматически переключено на программное.",
   "video_vo_compat": "Обнаружена проблема рендеринга видео. Переключено в режим совместимости.",
   "audio_opensles_title": "Режим аудиовыхода (AO)",

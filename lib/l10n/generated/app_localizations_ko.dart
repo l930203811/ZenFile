@@ -8125,6 +8125,9 @@ class L10nKo extends L10n {
   String get ui_delete_confirm_dont_ask => '다시 묻지 않음';
 
   @override
+  String get ui_move_to_recycle_bin => '휴지통으로 이동';
+
+  @override
   String get video_auto_fallback_soft =>
       '하드웨어 디코딩 오류가 감지되어 소프트웨어 디코딩으로 자동 전환했습니다.';
 

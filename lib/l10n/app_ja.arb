@@ -8447,6 +8447,7 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "今後確認しない",
+  "ui_move_to_recycle_bin": "ごみ箱へ移動",
   "video_auto_fallback_soft": "ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。",
   "video_vo_compat": "動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。",
   "audio_opensles_title": "音声出力（AO）モード",

@@ -9,6 +9,7 @@ import '../../services/apk_installer_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/recycle_bin_service.dart';
 import 'package:path/path.dart' as p;
 
 /// 删除确认弹窗中展示的单个待删条目（文件图标 + 文件名）。
@@ -124,24 +125,30 @@ class FileActionDialogs {
   }
 
   /// 删除确认的统一入口：
-  /// 设置中「删除文件确认」开关关闭时直接返回 true（跳过弹窗），
-  /// 开启时弹出带「删除不再提示」复选框的确认对话框。
+  /// 设置中「删除文件确认」开关关闭时直接返回 (true, null)（跳过弹窗，
+  /// 回收站与否交由调用方按回收站设置的既有默认行为处理）；
+  /// 开启时弹出带「删除不再提示」「移入回收站」复选框的确认对话框。
   ///
   /// [items] 非空时，弹窗会附带一块「待删条目预览」（图标 + 文件名），
   /// 高度随条数自适应，让用户在点下删除前看清到底删了哪些东西。
-  static Future<bool> showDeleteConfirmDialog(
+  ///
+  /// 返回 `(confirmed, moveToTrash)`：
+  /// - confirmed：用户是否确认删除；
+  /// - moveToTrash：本次删除是否移入回收站。仅「弹出了弹窗且用户确认」时
+  ///   非空（勾选框状态）；弹窗被跳过或用户取消时为 null，调用方应回退到
+  ///   回收站设置的默认行为。
+  static Future<(bool, bool?)> showDeleteConfirmDialog(
     BuildContext context, {
-    required String title,
     required String content,
     DeleteConfirmItems? items,
   }) async {
     // 开关关闭 → 直接删除，不再弹窗
-    if (!PreferencesService.getDeleteConfirmEnabled()) return true;
+    if (!PreferencesService.getDeleteConfirmEnabled()) return (true, null);
     return showConfirmDialog(
       context,
-      title: title,
       content: content,
       showSkipCheckbox: true,
+      showRecycleBinCheckbox: true,
       items: items,
     );
   }
@@ -193,21 +200,31 @@ class FileActionDialogs {
     }
   }
 
-  static Future<bool> showConfirmDialog(
+  /// 通用确认弹窗（删除确认本体）。
+  ///
+  /// 返回 `(confirmed, moveToTrash)`，语义见 [showDeleteConfirmDialog]：
+  /// - [showRecycleBinCheckbox] 为 true 时展示「移入回收站」勾选框，确认后
+  ///   第二个元素为勾选状态；为 false 时恒为 null。
+  /// - [showRecycleBinCheckbox] 为 true 且用户勾选但回收站功能未开启时，
+  ///   确认删除会**自动开启回收站**（写入 prefs，唯一写设置的场景）；
+  ///   取消勾选不回写任何设置。
+  static Future<(bool, bool?)> showConfirmDialog(
     BuildContext context, {
-    required String title,
     required String content,
     bool showSkipCheckbox = false,
+    bool showRecycleBinCheckbox = false,
     DeleteConfirmItems? items,
   }) async {
     var dontAskAgain = false;
-    final result = await showDialog<bool>(
+    // 勾选框初始态跟随回收站设置：已开启默认勾选，未开启默认不勾选。
+    final recycleBinWasEnabled = RecycleBinService.isEnabled();
+    var moveToTrash = recycleBinWasEnabled;
+    final result = await showDialog<(bool, bool)>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(title),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,6 +249,21 @@ class FileActionDialogs {
                       ),
                     ),
                   ],
+                  if (showRecycleBinCheckbox) ...[
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: moveToTrash,
+                      onChanged: (v) =>
+                          setState(() => moveToTrash = v ?? false),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        L10n.of(context).ui_move_to_recycle_bin,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               shape: RoundedRectangleBorder(
@@ -239,11 +271,12 @@ class FileActionDialogs {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context, false),
+                  onPressed: () => Navigator.pop(context, (false, false)),
                   child: Text(L10n.of(context).ui_cancel),
                 ),
                 FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
+                  onPressed: () =>
+                      Navigator.pop(context, (true, moveToTrash)),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(
@@ -258,14 +291,25 @@ class FileActionDialogs {
         );
       },
     );
+    final confirmed = result?.$1 ?? false;
     // 勾选了"删除不再提示"且确认删除 → 持久化关闭删除确认
-    if (result == true && dontAskAgain) {
+    if (confirmed && dontAskAgain) {
       PreferencesService.saveDeleteConfirmEnabled(false);
       try {
         context.read<FileManagerProvider>().setDeleteConfirmEnabled(false);
       } catch (_) {}
     }
-    return result ?? false;
+    // 勾选了「移入回收站」但回收站功能未开启 → 确认删除时自动开启
+    // （写入 prefs，下次弹窗默认勾选；取消勾选绝不关闭回收站设置）。
+    if (confirmed && showRecycleBinCheckbox && moveToTrash && !recycleBinWasEnabled) {
+      try {
+        await RecycleBinService.setEnabled(true);
+      } catch (_) {}
+    }
+    return (
+      confirmed,
+      confirmed && showRecycleBinCheckbox ? moveToTrash : null,
+    );
   }
 
   /// 显示重命名输入对话框，并在检测到文件后缀名变更时提示用户确认。

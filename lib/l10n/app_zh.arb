@@ -8761,6 +8761,10 @@
     "description": "文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件"
   },
   "ui_delete_confirm_dont_ask": "删除不再提示",
+  "ui_move_to_recycle_bin": "移入回收站",
+  "@ui_move_to_recycle_bin": {
+    "description": "删除确认弹窗中的「移入回收站」勾选框：勾选后本次删除移入回收站而非直接删除；回收站未开启时勾选并确认会自动开启回收站"
+  },
   "video_auto_fallback_soft": "检测到硬解异常，已自动切换为软解",
   "video_vo_compat": "视频渲染异常，已切换为兼容渲染模式",
   "audio_opensles_title": "音频输出（AO）模式",

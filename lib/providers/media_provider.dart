@@ -13,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../services/preferences_service.dart';
+import '../services/recycle_bin_service.dart';
 import '../services/startup_gate.dart';
 import '../services/network_connections_service.dart';
 import '../services/media_thumbnail_service.dart';
@@ -4476,6 +4477,7 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   Future<void> deleteMediaItems({
     required List<String> filePaths,
     List<String>? assetIds,
+    bool? toTrash,
   }) async {
     // 登记本会话删除黑名单：MediaStore/系统索引有滞后，刷新（querySongs）会把
     // 刚删掉的音频重新带回，导致「删了又出现」。与 pruneDeletedMediaPaths 同源
@@ -4488,9 +4490,15 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     }
     for (final path in filePaths) {
       try {
-        final f = File(path);
-        if (await f.exists()) {
-          await f.delete();
+        if (toTrash == true) {
+          // 删除确认弹窗勾选「移入回收站」：移入应用回收站目录并登记索引
+          // （普通媒体文件均在公共存储，无需 root 提权）。
+          await RecycleBinService.moveToTrash(path);
+        } else {
+          final f = File(path);
+          if (await f.exists()) {
+            await f.delete();
+          }
         }
       } catch (_) {}
     }

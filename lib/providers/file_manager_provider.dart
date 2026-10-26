@@ -8640,7 +8640,9 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteSelected() async {
+  /// [toTrash] 为 null（删除确认弹窗被跳过）时沿用回收站设置的既有默认
+  /// 行为；非 null 时以本次弹窗勾选状态为准（勾选=进回收站，不勾=直接删除）。
+  Future<void> deleteSelected({bool? toTrash}) async {
     if (selectedPaths.isEmpty) return;
     // zip:// 条目（zip 视图内多选）：走 zip 重写删除（v2）。
     if (selectedPaths.any((p) => p.startsWith('zip://'))) {
@@ -8671,7 +8673,7 @@ class FileManagerProvider extends ChangeNotifier {
           final remotePath = file.remoteSource?.path ?? file.path;
           await client.delete(remotePath, file.isDirectory);
         }
-      } else if (RecycleBinService.isEnabled()) {
+      } else if (toTrash ?? RecycleBinService.isEnabled()) {
         for (final path in selectedPaths) {
           await RecycleBinService.moveToTrash(path, useRoot: useRootMode);
         }
@@ -12301,7 +12303,10 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteFile(String path) async {
+  /// [toTrash] 为 null（删除确认弹窗被跳过）时沿用回收站设置的既有默认
+  /// 行为；非 null 时以本次弹窗勾选状态为准（勾选=进回收站，不勾=直接删除）。
+  /// zip:// / 远程 / 加密实体等分支不支持回收站，不受该参数影响。
+  Future<void> deleteFile(String path, {bool? toTrash}) async {
     // zip:// 条目删除：从所属 zip 重写移除并刷新（v2）。
     if (path.startsWith('zip://')) {
       await deleteZipEntries([path]);
@@ -12354,7 +12359,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     // Local file deletion
     try {
-      if (RecycleBinService.isEnabled()) {
+      if (toTrash ?? RecycleBinService.isEnabled()) {
         await RecycleBinService.moveToTrash(path, useRoot: useRootMode);
       } else {
         if (isRestrictedPath(path)) {

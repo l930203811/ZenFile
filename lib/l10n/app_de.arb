@@ -8440,6 +8440,7 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "Nicht erneut fragen",
+  "ui_move_to_recycle_bin": "In den Papierkorb verschieben",
   "video_auto_fallback_soft": "Problem mit Hardware-Dekodierung erkannt. Automatisch auf Software-Dekodierung gewechselt.",
   "video_vo_compat": "Problem bei der Videodarstellung erkannt. Auf Kompatibilitätsmodus umgeschaltet.",
   "audio_opensles_title": "Audioausgabe (AO)-Modus",

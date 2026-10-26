@@ -7946,6 +7946,9 @@ class L10nZh extends L10n {
   String get ui_delete_confirm_dont_ask => '删除不再提示';
 
   @override
+  String get ui_move_to_recycle_bin => '移入回收站';
+
+  @override
   String get video_auto_fallback_soft => '检测到硬解异常，已自动切换为软解';
 
   @override
@@ -16382,6 +16385,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_delete_confirm_dont_ask => '刪除不再提示';
+
+  @override
+  String get ui_move_to_recycle_bin => '移到回收站';
 
   @override
   String get video_auto_fallback_soft => '偵測到硬解異常，已自動切換為軟解';

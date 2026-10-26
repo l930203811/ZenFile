@@ -8591,6 +8591,7 @@
     "description": "文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件"
   },
   "ui_delete_confirm_dont_ask": "刪除不再提示",
+  "ui_move_to_recycle_bin": "移到回收站",
   "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
   "video_vo_compat": "影片渲染異常，已切換為相容渲染模式",
   "audio_opensles_title": "音訊輸出（AO）模式",

@@ -8454,6 +8454,9 @@ class L10nRu extends L10n {
   String get ui_delete_confirm_dont_ask => 'Больше не спрашивать';
 
   @override
+  String get ui_move_to_recycle_bin => 'Переместить в корзину';
+
+  @override
   String get video_auto_fallback_soft =>
       'Обнаружена проблема аппаратного декодирования. Автоматически переключено на программное.';
 
