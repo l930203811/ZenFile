@@ -1684,42 +1684,60 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       if (i < segments.length - 1) children.add(divider);
     }
 
-    return InputDecorator(
-      decoration: InputDecoration(
-        labelText: title,
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        floatingLabelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        filled: true,
-        fillColor: isDark
-            ? const Color(0xFF1E293B)
-            : theme.colorScheme.primary.withValues(alpha: 0.04),
-        contentPadding: EdgeInsets.zero,
-        border: OutlineInputBorder(
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // 底层：基础填充 + 分段高亮 + 贯穿上下边框的竖线分隔。
+        // 不经 InputDecorator 承载（其 child 区域存在内缩），用直角色块绘制、
+        // 由 ClipRRect 统一裁出 16dp 圆角 —— 选中高亮必然铺满到左右边框。
+        ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          child: Container(
+            height: 48,
+            color: isDark
+                ? const Color(0xFF1E293B)
+                : theme.colorScheme.primary.withValues(alpha: 0.04),
+            child: Row(children: children),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        // 顶层：仅绘制 16dp 描边与「协议」标题（与字段标题一致，固定在左上角边框缺口处）
+        IgnorePointer(
+          child: SizedBox(
+            height: 48,
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: title,
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                labelStyle: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                floatingLabelStyle: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                ),
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: SizedBox(height: 48, child: Row(children: children)),
-      ),
+      ],
     );
   }
 
