@@ -1621,8 +1621,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     );
   }
 
-  /// 一体分段控件：所有选项共用一个容器，选项之间用竖线分隔。
-  /// 借助 InputDecorator 呈现与输入框一致的 16dp 圆角描边 + 填充；
+  /// 一体分段控件：所有选项共用一个容器，选项之间用贯穿上下边框的竖线分隔；
+  /// 选中项以主色铺满所在半边（外侧跟随容器 16dp 圆角）。
+  /// 借助 InputDecorator 呈现与输入框一致的描边 + 填充；
   /// [title]（如「协议」）与字段标题一样固定在左上角边框缺口处。
   Widget _buildSegmentPill(
     ThemeData theme, {
@@ -1632,27 +1633,35 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final isDark = theme.brightness == Brightness.dark;
     final Widget divider = Container(
       width: 1,
-      height: 18,
+      height: double.infinity,
       color: theme.colorScheme.outline.withValues(alpha: 0.25),
     );
 
     final List<Widget> children = [];
     for (var i = 0; i < segments.length; i++) {
       final seg = segments[i];
+      final isFirst = i == 0;
+      final isLast = i == segments.length - 1;
+      // 选中高亮铺满半边：圆角只保留容器外侧两个角
+      final segRadius = BorderRadius.only(
+        topLeft: Radius.circular(isFirst ? 16 : 0),
+        bottomLeft: Radius.circular(isFirst ? 16 : 0),
+        topRight: Radius.circular(isLast ? 16 : 0),
+        bottomRight: Radius.circular(isLast ? 16 : 0),
+      );
       children.add(
         Expanded(
           child: InkWell(
             onTap: seg.onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: segRadius,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.all(4),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: seg.selected
                     ? theme.colorScheme.primary.withValues(alpha: 0.14)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: segRadius,
               ),
               child: Text(
                 seg.label,
@@ -1691,7 +1700,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         fillColor: isDark
             ? const Color(0xFF1E293B)
             : theme.colorScheme.primary.withValues(alpha: 0.04),
-        contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+        contentPadding: EdgeInsets.zero,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -1705,7 +1714,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
         ),
       ),
-      child: SizedBox(height: 44, child: Row(children: children)),
+      child: SizedBox(height: 48, child: Row(children: children)),
     );
   }
 
