@@ -229,8 +229,13 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
           // 两个选项；腾出来的操作栏槽位给了双窗口的「互换左右窗口」。
           PopupMenuButton<String>(
             constraints: const BoxConstraints(),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            icon: const Icon(Broken.add, size: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            icon: _tabActionIcon(
+              context,
+              Broken.add,
+              theme.colorScheme.primary,
+              19,
+            ),
             tooltip: L10n.of(context).msgb52d4a73,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -289,8 +294,13 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
           // 「全关成空」，误触代价低，不值得再拦一道对话框。
           PopupMenuButton<String>(
             constraints: const BoxConstraints(),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            icon: const Icon(Broken.close_circle, size: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            icon: _tabActionIcon(
+              context,
+              Broken.close_circle,
+              Colors.redAccent,
+              17,
+            ),
             tooltip: L10n.of(context).ui_close_tab,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -354,6 +364,27 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
           ),
         ],
       ),
+    );
+  }
+
+  /// 标签栏右侧动作入口（加号新建/复制、叉号关闭）的高亮图标：
+  /// 圆形淡底 + 彩色图标，让用户一眼看出这两个是可点的菜单入口，
+  /// 而不是和标签文字一样的装饰。淡底透明度 12%，在明暗主题下都不刺眼。
+  Widget _tabActionIcon(
+    BuildContext context,
+    IconData data,
+    Color color,
+    double size,
+  ) {
+    return Container(
+      width: 26,
+      height: 26,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(data, size: size, color: color),
     );
   }
 
