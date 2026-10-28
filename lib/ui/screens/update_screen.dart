@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.7';
+  static const String _latestChangelogVersion = 'v3.6.8';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v368,
     _v367,
     _v366,
     _v365,
@@ -954,6 +955,40 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v330,
     _v320,
   ];
+
+  /// ── 当前版本：v3.6.8 ────────────────────────────────────────────────
+  static const _Changelog _v368 = _Changelog(
+    version: 'v3.6.8',
+    date: '2026-10-28',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '新增「自动下载歌词」：本地没有歌词时自动在线搜索并下载，优先支持逐字显示的歌词（歌词设置中可关闭）',
+        '新增崩溃自动收集与「问题反馈」：应用闪退后下次启动会弹窗提示，可直接描述问题并一键上报崩溃日志（含完整堆栈），无需再手动发送；也可在「关于 ZenFile → 联系与分享 → 问题反馈」主动提交问题并自愿附带日志',
+      ]),
+      _ChangeSection('🐛 问题修复', [
+        '修复其他应用分享文件到本应用时，冷启动后只停留在首页的问题：现在「打开」直接打开文件、「打开所在位置」直接定位到文件位置（已授权的 Android/data 等受限目录同样生效），普通目录的文件不再被复制到应用缓存',
+        '修复音乐后台播放时，反复进出视频播放页导致应用闪退的问题',
+        '修复在线搜索歌词时歌名与歌手未正确拆分、歌手框被填入「未知艺术家」的问题：现在会按「歌名 - 歌手」命名规范自动识别填入',
+      ]),
+      _ChangeSection('✨ 其他', [
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'New "auto-download lyrics": when no local lyrics are found, they are searched and downloaded online automatically, preferring word-by-word (enhanced) lyrics; can be turned off in the lyric settings',
+        'Automatic crash collection and a new "Feedback" channel: after a crash, the app prompts on next launch so you can describe the problem and report the crash log (with full stack trace) in one tap — no more sending logs manually; you can also submit feedback with optional logs under "About ZenFile → Contact & share → Feedback"',
+      ]),
+      _ChangeSection('🐛 Fixes', [
+        'Fixed files shared from other apps only landing on the home page on cold start: "Open" now opens the file directly and "Open containing folder" jumps straight to its location (also for restricted directories like Android/data when already authorized), and files in normal directories are no longer copied to the app cache',
+        'Fixed a crash when repeatedly entering and leaving the video player while music keeps playing in the background',
+        'Fixed online lyric search filling the artist box with an "Unknown artist" placeholder: title and artist are now split automatically from common "title - artist" file names',
+      ]),
+      _ChangeSection('✨ Others', [
+        'Other minor improvements',
+      ]),
+    ],
+  );
 
   /// ── 当前版本：v3.6.7 ────────────────────────────────────────────────
   static const _Changelog _v367 = _Changelog(
