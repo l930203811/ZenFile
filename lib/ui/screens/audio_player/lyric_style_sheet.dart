@@ -5,6 +5,134 @@ import '../../../services/preferences_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'lyric_style_dropdown.dart';
 
+/// 歌词动画风格**直选弹窗**（歌词设置页专用）。
+///
+/// 与 [showLyricStyleSheet] 的区别：底部弹窗里还嵌了一个下拉框，要点两次才能
+/// 选到风格；本弹窗直接平铺全部 11 项，点一项即选中并关闭 —— 少一步。
+///
+/// 宽度**铺满屏幕**：`showDialog` 的 `insetPadding` 归零 + `Dialog.margin` 归零。
+/// 11 项在矮屏上可能超出可视高度，列表包在 `Flexible` 里滚动。
+/// 选中即持久化并经 [onSelected] 通知调用方刷新。
+Future<void> showLyricStyleDialog(
+  BuildContext context, {
+  required LyricAnimationStyle current,
+  required ValueChanged<LyricAnimationStyle> onSelected,
+}) {
+  final l10n = L10n.of(context);
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final theme = Theme.of(ctx);
+      final isDark = theme.brightness == Brightness.dark;
+      final surface = isDark
+          ? const Color(0xFF1E1E2E)
+          : theme.colorScheme.surface;
+      final titleColor = isDark ? Colors.white : theme.colorScheme.onSurface;
+      var selected = current;
+
+      return StatefulBuilder(
+        builder: (ctx, setDialog) {
+          return Dialog(
+            insetPadding: EdgeInsets.zero,
+            elevation: 0,
+            backgroundColor: surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 12, 4),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.animation_rounded,
+                          color: Colors.deepPurpleAccent,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l10n.lyric_animation_style,
+                            style: TextStyle(
+                              color: titleColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: MaterialLocalizations.of(
+                            ctx,
+                          ).closeButtonLabel,
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: titleColor.withValues(alpha: 0.6),
+                            size: 20,
+                          ),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      children: [
+                        for (final s in kLyricStyleDisplayOrder)
+                          ListTile(
+                            leading: Icon(
+                              lyricStyleIcon(s),
+                              size: 20,
+                              color: s == selected
+                                  ? Colors.deepPurpleAccent
+                                  : titleColor.withValues(alpha: 0.6),
+                            ),
+                            title: Text(
+                              lyricStyleName(l10n, s),
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: s == selected
+                                    ? Colors.deepPurpleAccent
+                                    : titleColor,
+                                fontWeight: s == selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                            trailing: s == selected
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Colors.deepPurpleAccent,
+                                    size: 20,
+                                  )
+                                : null,
+                            onTap: () {
+                              setDialog(() => selected = s);
+                              PreferencesService.saveLyricAnimationStyleName(
+                                s.name,
+                              );
+                              onSelected(s);
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
 /// 歌词动画风格选择弹窗（下拉框单选）。
 ///
 /// 播放页三点菜单、歌词设置页、全屏歌词页共用同一弹窗；

@@ -4705,6 +4705,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "自動下載歌詞",
+  "ui_auto_download_lyrics_desc": "本機沒有歌詞時自動線上搜尋，優先逐字歌詞",
+  "ui_lyrics_auto_downloaded": "已自動下載歌詞",
   "msg_overlay_permission_required": "需要懸浮窗許可權才能顯示桌面歌詞，請前往設定授權後重試",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

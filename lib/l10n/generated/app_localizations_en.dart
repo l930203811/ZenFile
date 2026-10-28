@@ -4714,6 +4714,16 @@ class L10nEn extends L10n {
   String get ui_desktop_lyric => 'Desktop Lyric';
 
   @override
+  String get ui_auto_download_lyrics => 'Auto-download Lyrics';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'Search online automatically when no local lyrics are found, preferring word-by-word lyrics';
+
+  @override
+  String get ui_lyrics_auto_downloaded => 'Lyrics downloaded automatically';
+
+  @override
   String get msg_overlay_permission_required =>
       'Overlay permission is required to show desktop lyrics. Please grant it in Settings and retry.';
 

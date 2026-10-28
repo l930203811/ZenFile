@@ -4635,6 +4635,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "Автоматически загружать текст",
+  "ui_auto_download_lyrics_desc": "Если локального текста нет — автоматический онлайн-поиск, приоритет у текста с отображением по словам",
+  "ui_lyrics_auto_downloaded": "Текст песни загружен автоматически",
   "msg_overlay_permission_required": "Для отображения текста на рабочем столе требуется разрешение на плавающее окно. Предоставьте его в Настройках и повторите попытку.",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

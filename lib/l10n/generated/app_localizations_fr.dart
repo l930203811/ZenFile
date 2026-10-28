@@ -4788,6 +4788,18 @@ class L10nFr extends L10n {
   String get ui_desktop_lyric => 'Paroles de bureau';
 
   @override
+  String get ui_auto_download_lyrics =>
+      'Téléchargement automatique des paroles';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'Recherche automatique en ligne si aucune parole locale n’est trouvée, en privilégiant l’affichage mot à mot';
+
+  @override
+  String get ui_lyrics_auto_downloaded =>
+      'Paroles téléchargées automatiquement';
+
+  @override
   String get msg_overlay_permission_required =>
       'L\'autorisation de fenêtre flottante est requise pour afficher les paroles de bureau. Veuillez l\'accorder dans les Paramètres et réessayer.';
 

@@ -9,6 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../services/remote/netdisk/netdisk_log.dart';
 import '../../services/remote/netdisk/netdisk_ua.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 网盘网页登录页。
 ///
@@ -170,10 +171,7 @@ class _NetdiskLoginScreenState extends State<NetdiskLoginScreen> {
     final l10n = L10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           widget.provider == 'quark'
               ? l10n.netdisk_quark

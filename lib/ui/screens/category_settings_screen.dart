@@ -5,6 +5,7 @@ import '../widgets/persistent_nav_bar_scope.dart';
 import '../widgets/quick_categories_grid.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'more_settings_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 「分类页设置」子页面：只收纳作用于主屏幕（分类页）的设置项。
 ///
@@ -25,10 +26,7 @@ class CategorySettingsScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_settings_category_page),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(

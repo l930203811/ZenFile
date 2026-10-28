@@ -193,6 +193,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         SystemFilePickerBridge.onLaunchIntent(this, intent, notifyDart = true)
+        // 分享目标（SEND / VIEW）：后台复用时主动推给 Dart，见 ShareIntentBridge.kt。
+        ShareIntentBridge.onLaunchIntent(intent, notifyDart = true)
     }
 
     /**
@@ -214,6 +216,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         // 系统文件选择器入口：必须在 super.onCreate() **之前**读取 intent —— Dart 侧
         // 启动后会异步查询该状态（getPickerInfo），晚于 onCreate 返回。
         SystemFilePickerBridge.onLaunchIntent(this, intent)
+        // 分享目标入口：同样在 super 之前记下原始 URI（Dart 权限就绪后补查）。
+        ShareIntentBridge.onLaunchIntent(intent, notifyDart = false)
         super.onCreate(savedInstanceState)
         try {
             Shizuku.addBinderReceivedListenerSticky {
@@ -392,6 +396,7 @@ class MainActivity : AudioServiceFragmentActivity() {
         super.configureFlutterEngine(flutterEngine)
         storageEventChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
         SystemFilePickerBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
+        ShareIntentBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         pdfRendererChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PDF_RENDERER_CHANNEL)
         pdfRendererChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -706,10 +711,10 @@ class MainActivity : AudioServiceFragmentActivity() {
                         try {
                             val uri = Uri.parse(uriString)
                             val contentResolver = applicationContext.contentResolver
-                            
+
                             var fileName = "temp_file"
                             var mimeType = contentResolver.getType(uri) ?: ""
-                            
+
                             contentResolver.query(uri, null, null, null, null)?.use { cursor ->
                                 val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                                 if (nameIndex != -1 && cursor.moveToFirst()) {
@@ -724,17 +729,30 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 }
                             }
 
-                            // 优先解析文件原始真实路径，避免复制到应用私有缓存（占用额外空间、且“打开所在位置”会错乱）
+                            // 优先解析文件原始真实路径，避免复制到应用私有缓存（占用额外空间、且“打开所在位置”会错乱）。
+                            // 两条解析路径：
+                            //  ① DocumentsContract：外部存储文档 URI（其它文件管理器分享的
+                            //     content://com.android.externalstorage.documents/...）可从
+                            //     document id 精确反解出 /storage/emulated/0/... 路径，
+                            //     MediaStore 的 DATA 列对这类 provider 常返回 null；
+                            //  ② MediaStore DATA 列：媒体库 URI 的经典路径。
+                            // 解析结果可读 ⇒ 直接用；不可读但路径明确（典型：Android/data，
+                            // MANAGE_EXTERNAL_STORAGE 也过不了 FUSE）⇒ 标记 restricted，
+                            // 由 Dart 决定「定位」走受限目录通道、「打开」才按需复制；
+                            // 解析不到（WhatsApp 等私有 provider）⇒ 复制进 cache。
                             var realPath: String? = null
                             try {
-                                val proj = arrayOf(MediaStore.MediaColumns.DATA)
-                                contentResolver.query(uri, proj, null, null, null)?.use { cursor ->
-                                    if (cursor.moveToFirst()) {
-                                        val dataIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
-                                        if (dataIndex != -1) {
-                                            val p = cursor.getString(dataIndex)
-                                            if (!p.isNullOrEmpty() && File(p).canRead()) {
-                                                realPath = p
+                                realPath = resolveExternalStorageDocument(uri)
+                                if (realPath == null) {
+                                    val proj = arrayOf(MediaStore.MediaColumns.DATA)
+                                    contentResolver.query(uri, proj, null, null, null)?.use { cursor ->
+                                        if (cursor.moveToFirst()) {
+                                            val dataIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
+                                            if (dataIndex != -1) {
+                                                val p = cursor.getString(dataIndex)
+                                                if (!p.isNullOrEmpty() && File(p).exists()) {
+                                                    realPath = p
+                                                }
                                             }
                                         }
                                     }
@@ -744,42 +762,29 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
 
                             if (realPath != null) {
-                                // 直接使用原始文件路径：不复制、不占用额外存储空间
+                                val readable = File(realPath!!).canRead()
                                 val res = mapOf(
                                     "success" to true,
-                                    "path" to realPath,
+                                    "path" to realPath!!,
                                     "isCache" to false,
+                                    "restricted" to !readable,
                                     "fileName" to fileName,
                                     "mimeType" to mimeType
                                 )
                                 runOnUiThread { result.success(res) }
                             } else {
-                                // 无法解析真实路径（如 WhatsApp 等私有 content provider）时，回退复制到缓存
-                                val cacheDir = applicationContext.cacheDir
-                                val prefix = "incoming_" + System.currentTimeMillis() + "_"
-                                val ext = if (fileName.contains(".")) {
-                                    "." + fileName.substringAfterLast(".")
-                                } else {
-                                    ""
-                                }
-
-                                val tempFile = File.createTempFile(prefix, ext, cacheDir)
-
-                                val inputStream = contentResolver.openInputStream(uri)
-                                if (inputStream == null) {
-                                    runOnUiThread { result.error("RESOLVE_ERROR", "Unable to open input stream", null) }
-                                    return@execute
-                                }
-                                inputStream.use { stream ->
-                                    FileOutputStream(tempFile).use { outputStream ->
-                                        stream.copyTo(outputStream)
+                                val tempFile = copyContentUriToCache(uri, fileName)
+                                    ?: run {
+                                        runOnUiThread {
+                                            result.error("RESOLVE_ERROR", "Unable to open input stream", null)
+                                        }
+                                        return@execute
                                     }
-                                }
-
                                 val res = mapOf(
                                     "success" to true,
                                     "path" to tempFile.absolutePath,
                                     "isCache" to true,
+                                    "restricted" to false,
                                     "fileName" to fileName,
                                     "mimeType" to mimeType
                                 )
@@ -787,6 +792,42 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
                         } catch (se: SecurityException) {
                             // 分享方未授予读取权限：无需尝试复制，直接提示用户
+                            runOnUiThread { result.error("NO_PERMISSION", se.message, null) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("RESOLVE_ERROR", e.message, null) }
+                        }
+                    }
+                }
+
+                // 受限目录（Android/data 等）下用户选择「打开」时的按需复制：
+                // resolveContentUri 对 restricted 路径不落盘，只有真正要打开内容时才复制。
+                "copyContentUriToCache" -> {
+                    val uriString = call.argument<String>("uri") ?: ""
+                    executor.execute {
+                        try {
+                            val uri = Uri.parse(uriString)
+                            val contentResolver = applicationContext.contentResolver
+                            var fileName = "temp_file"
+                            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                                if (nameIndex != -1 && cursor.moveToFirst()) {
+                                    fileName = cursor.getString(nameIndex)
+                                }
+                            }
+                            val tempFile = copyContentUriToCache(uri, fileName)
+                                ?: run {
+                                    runOnUiThread {
+                                        result.error("RESOLVE_ERROR", "Unable to open input stream", null)
+                                    }
+                                    return@execute
+                                }
+                            val res = mapOf(
+                                "success" to true,
+                                "path" to tempFile.absolutePath
+                            )
+                            runOnUiThread { result.success(res) }
+                        } catch (se: SecurityException) {
                             runOnUiThread { result.error("NO_PERMISSION", se.message, null) }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -3403,5 +3444,53 @@ class MainActivity : AudioServiceFragmentActivity() {
         decibelThread = null
         decibelRecord = null
         decibelChannel = null
+    }
+
+    /// 从外部存储文档 URI 反解真实文件路径。
+    ///
+    /// 只处理 `com.android.externalstorage.documents`（系统文件选择器 / 其它文件
+    /// 管理器分享外部存储文件时的标准 authority）：document id 形如
+    /// `primary:Download/foo.txt` ⇒ `/storage/emulated/0/Download/foo.txt`。
+    /// 树 URI（ACTION_OPEN_DOCUMENT_TREE）与其它 authority 一律返回 null，
+    /// 交回 MediaStore DATA 列 / 缓存复制兜底。任何解析异常都吞掉返回 null。
+    private fun resolveExternalStorageDocument(uri: Uri): String? {
+        try {
+            if (uri.authority != "com.android.externalstorage.documents") return null
+            val docId = try {
+                DocumentsContract.getDocumentId(uri)
+            } catch (_: IllegalArgumentException) {
+                DocumentsContract.getTreeDocumentId(uri)
+            }
+            val split = docId.split(":")
+            if (split.size != 2) return null
+            if (split[0] != "primary") return null
+            val root = Environment.getExternalStorageDirectory().absolutePath
+            val rel = split[1]
+            return if (rel.isEmpty()) root else "$root/$rel"
+        } catch (_: Exception) {
+            return null
+        }
+    }
+
+    /// 把 content URI 的内容复制进应用 cache，返回临时文件。
+    /// 供「私有 provider 分享」与「受限目录分享后选择打开」两条路径复用。
+    /// 输入流打不开时返回 null（调用方回报 RESOLVE_ERROR）。
+    private fun copyContentUriToCache(uri: Uri, fileName: String): File? {
+        val cacheDir = applicationContext.cacheDir
+        val prefix = "incoming_" + System.currentTimeMillis() + "_"
+        val ext = if (fileName.contains(".")) {
+            "." + fileName.substringAfterLast(".")
+        } else {
+            ""
+        }
+        val tempFile = File.createTempFile(prefix, ext, cacheDir)
+        val inputStream = applicationContext.contentResolver.openInputStream(uri)
+            ?: return null
+        inputStream.use { stream ->
+            FileOutputStream(tempFile).use { outputStream ->
+                stream.copyTo(outputStream)
+            }
+        }
+        return tempFile
     }
 }

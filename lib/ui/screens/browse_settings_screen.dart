@@ -6,6 +6,7 @@ import '../../providers/file_manager_provider.dart';
 import '../widgets/persistent_nav_bar_scope.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'more_settings_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 // ----------------------------------------------------
 // 浏览页设置：子页面私有 + 跨页复用的顶层工具（自 more_settings_screen.dart
@@ -342,10 +343,7 @@ class BrowseSettingsScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_settings_browse_page),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -398,10 +396,7 @@ class _BrowserNavGroupScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).msg1cfeaace),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -577,10 +572,7 @@ class _ListLayoutGroupScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_list_layout_style),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(

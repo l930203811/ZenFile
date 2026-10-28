@@ -4635,6 +4635,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "Téléchargement automatique des paroles",
+  "ui_auto_download_lyrics_desc": "Recherche automatique en ligne si aucune parole locale n’est trouvée, en privilégiant l’affichage mot à mot",
+  "ui_lyrics_auto_downloaded": "Paroles téléchargées automatiquement",
   "msg_overlay_permission_required": "L'autorisation de fenêtre flottante est requise pour afficher les paroles de bureau. Veuillez l'accorder dans les Paramètres et réessayer.",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

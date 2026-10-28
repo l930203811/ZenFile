@@ -4567,6 +4567,16 @@ class L10nJa extends L10n {
   String get ui_desktop_lyric => 'デスクトップ歌詞';
 
   @override
+  String get ui_auto_download_lyrics => '歌詞を自動ダウンロード';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'ローカルに歌詞がない場合は自動でオンライン検索し、逐字表示に対応した歌詞を優先します';
+
+  @override
+  String get ui_lyrics_auto_downloaded => '歌詞を自動でダウンロードしました';
+
+  @override
   String get msg_overlay_permission_required =>
       'デスクトップ歌詞を表示するにはオーバーレイ権限が必要です。設定で許可してから再試行してください。';
 

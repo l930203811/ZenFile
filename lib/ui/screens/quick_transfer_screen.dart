@@ -12,6 +12,7 @@ import '../../services/quick_transfer_service.dart';
 import '../../services/preferences_service.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/internal_file_picker_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 快传页面：基于 WiFi Direct (P2P) 的点对点直传，参考 ES 快传 / QQ 面对面快传。
 ///
@@ -672,6 +673,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const CircledBackButton(),
         title: Text(L10n.of(context).quick_transfer),
         actions: [
           // 传输进行中不可断开；等待对方点击 / 接收等待（未收到清单）阶段允许断开

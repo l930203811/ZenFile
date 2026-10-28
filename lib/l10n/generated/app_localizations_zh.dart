@@ -4531,6 +4531,15 @@ class L10nZh extends L10n {
   String get ui_desktop_lyric => '桌面歌词';
 
   @override
+  String get ui_auto_download_lyrics => '自动下载歌词';
+
+  @override
+  String get ui_auto_download_lyrics_desc => '本地没有歌词时自动在线搜索，优先逐字歌词';
+
+  @override
+  String get ui_lyrics_auto_downloaded => '已自动下载歌词';
+
+  @override
   String get msg_overlay_permission_required => '需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试';
 
   @override
@@ -12986,6 +12995,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_desktop_lyric => '桌面歌詞';
+
+  @override
+  String get ui_auto_download_lyrics => '自動下載歌詞';
+
+  @override
+  String get ui_auto_download_lyrics_desc => '本機沒有歌詞時自動線上搜尋，優先逐字歌詞';
+
+  @override
+  String get ui_lyrics_auto_downloaded => '已自動下載歌詞';
 
   @override
   String get msg_overlay_permission_required => '需要懸浮窗許可權才能顯示桌面歌詞，請前往設定授權後重試';

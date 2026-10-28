@@ -9,6 +9,7 @@ import '../../services/preferences_service.dart';
 import 'internal_file_picker_screen.dart';
 import 'dart:math' as math;
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class WebSharingScreen extends StatefulWidget {
   const WebSharingScreen({super.key});
@@ -447,10 +448,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           L10n.of(context).ui_web_sharing_center,
           style: TextStyle(fontWeight: FontWeight.bold),

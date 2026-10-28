@@ -7,7 +7,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 // dynamic_color 2.x 的 DynamicColorBuilder 回调返回 material_ui 的 ColorScheme（M3 Expressive 生态），
@@ -30,7 +29,7 @@ import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
 import 'services/crash_forensics_service.dart';
 import 'services/network_connections_service.dart';
-import 'services/intent_handler_service.dart';
+import 'services/share_intent_service.dart';
 import 'services/pin_service.dart';
 import 'services/recycle_bin_service.dart';
 import 'services/audio_background_handler.dart';
@@ -496,11 +495,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   bool _appLockChecked = false;
   bool _isPermanentlyDenied = false;
   bool _isMediaOnlyPermission = false;
-  bool _sharingObserverSetup = false;
   bool _isResolvingIntent = false;
   // 首次启动标志：未选择语言时为 true，用于延迟权限申请直到语言选择完成
   bool _isFirstLaunch = false;
-  StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
   // 音频通知栏点击跳转：监听 AudioService.notificationClicked，点击时打开音频播放页并恢复当前播放
   StreamSubscription<bool>? _audioNotificationClickSub;
   // 防抖：避免同一通知点击事件被重复处理
@@ -565,6 +562,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     _loadSystemPickerInfo();
     // ZenFile 已在后台时第三方再次调起选文件不会走 onCreate，靠原生主动推送。
     SystemFilePickerService.setIntentHandler(_onSystemPickerIntent);
+    // 分享目标（SEND / VIEW）同理：后台复用靠原生 onNewIntent 推送 + resumed 补查。
+    ShareIntentService.setIntentHandler(_onShareIntentPush);
+    // 闸门 → _isResolvingIntent（处理外部分享期间不插更新弹窗）。
+    ShareIntentGate.pending.addListener(_syncShareIntentResolving);
   }
 
   /// 切换到「选文件」界面并开启一个新的选择器会话。
@@ -680,6 +681,8 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       // 被第三方 App 调起选文件时，回到前台补查一次（缓存引擎下 Dart 不重启，
       // 只靠 initState 那次查询会漏掉，详见 _refreshPickerInfoOnResume 注释）。
       unawaited(_refreshPickerInfoOnResume());
+      // 分享目标同理：Activity 重建（无 onNewIntent）时靠这次补查兜底。
+      unawaited(_checkPendingShareIntent());
       // 用户可能刚在系统安装器里装了 / 卸载了应用 ⇒ 安装包的「已安装」状态会变，
       // 清掉缓存让列表在下次构建时重新查询。
       InstallStatusCache.instance.invalidateAll();
@@ -694,7 +697,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   void dispose() {
     _cancelAutoCleanTimer();
     WidgetsBinding.instance.removeObserver(this);
-    _sharingIntentSubscription?.cancel();
+    ShareIntentGate.pending.removeListener(_syncShareIntentResolving);
     _audioNotificationClickSub?.cancel();
     super.dispose();
   }
@@ -1121,14 +1124,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           _migrateOldCacheDir();
           _startAutoCleanTimer();
         }
-        _setupSharingIntentObserver();
+        _checkPendingShareIntent();
         _loadMediaAfterPermission();
       } else if (manageStorageGranted && _isMediaOnlyPermission) {
         // 此前处于「仅媒体权限」状态（缺全部文件权限），现已升级为「所有文件管理」权限，
         // 需重新加载媒体——之前因缺权限媒体扫描为空。
         _migrateOldCacheDir();
         _startAutoCleanTimer();
-        _setupSharingIntentObserver();
+        _checkPendingShareIntent();
         _loadMediaAfterPermission();
       }
     } else {
@@ -1411,7 +1414,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
             _migrateOldCacheDir();
             _startAutoCleanTimer();
           }
-          _setupSharingIntentObserver();
+          _checkPendingShareIntent();
           _loadMediaAfterPermission();
         }
       } catch (e) {
@@ -1443,84 +1446,49 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     }
   }
 
-  void _setupSharingIntentObserver() {
-    if (_sharingObserverSetup) return;
-    _sharingObserverSetup = true;
-    _sharingIntentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
-      (List<SharedMediaFile> incomingFiles) {
-        if (incomingFiles.isNotEmpty) {
-          _dispatchExternalMediaOpen(incomingFiles.first.path);
-        }
-      },
-      onError: (_) {},
-    );
-
-    ReceiveSharingIntent.instance.getInitialMedia().then(
-      (List<SharedMediaFile> initialFiles) {
-        if (initialFiles.isNotEmpty) {
-          setState(() {
-            _isResolvingIntent = true;
-          });
-          _dispatchExternalMediaOpen(initialFiles.first.path);
-          ReceiveSharingIntent.instance.reset();
-        }
-      },
-      onError: (_) {},
-    );
+  /// 分享目标就绪后的补查入口（原 receive_sharing_intent 观察者的替代）：
+  /// 查询原生 ShareIntentBridge 的 pending URI，有则交给 [_dispatchShareIntent]。
+  /// 在「权限确认完成」与「回到前台（resumed）」两个时机调用（后者是
+  /// Activity 被系统销毁重建、无 onNewIntent 推送时的唯一通路）。
+  Future<void> _checkPendingShareIntent() async {
+    final info = await ShareIntentService.getPendingUris();
+    if (info == null || !mounted) return;
+    await _dispatchShareIntent(info.uris);
   }
 
-  void _dispatchExternalMediaOpen(String absoluteFilePath) {
-    if (absoluteFilePath.isEmpty) {
-      if (mounted && _isResolvingIntent) {
-        setState(() => _isResolvingIntent = false);
-      }
-      return;
-    }
+  /// 原生 onNewIntent 主动推送的分享请求（ZenFile 仍在后台、Activity 实例存活时）。
+  void _onShareIntentPush(ShareIntentInfo info) {
+    if (!mounted) return;
+    unawaited(_dispatchShareIntent(info.uris));
+  }
 
-    // Guard: don't attempt to open files before storage permission is confirmed
+  /// 分发外部分享的文件：消费掉原生 pending 状态后，把**原始 URI**投到
+  /// [ShareIntentGate]，由首页（HomeScreen）在自己挂载后用自己的 context 处理。
+  /// 与旧实现的差异：
+  ///  · 传给原生的是**原始 URI**（旧实现经 receive_sharing_intent 已被复制进
+  ///    cache，普通目录的文件也躲不掉）；是否复制由对话框选择后按需决定；
+  ///  · 冷启动修复：旧实现拿 navigatorKey 的 context（= Navigator 自己）去
+  ///    `Navigator.of(ctx)`，release 下取不到 NavigatorState，处理链断在
+  ///    popUntil；且处理期间首页被换成加载页，HomeScreen 被卸载，切 tab /
+  ///    定位通道一起失效 —— 表现为「分享进来只停在分类页」。现在交给首页
+  ///    自己处理，权限闸门 / 应用锁期间闸门会一直挂着，首页出现即被消费。
+  Future<void> _dispatchShareIntent(List<String> uris) async {
+    if (uris.isEmpty) return;
+    // 权限未就绪：不消费 pending，等 resumed / 权限完成后的补查再处理。
     if (_hasPermission != true) {
-      debugPrint('[ZenFile] Skipping external media open: no storage permission');
-      if (mounted) {
-        setState(() => _isResolvingIntent = false);
-      }
+      debugPrint('[ZenFile] Defer external share: permission not ready yet');
       return;
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final primaryContext = navigatorKey.currentContext;
-      if (primaryContext != null && primaryContext.mounted) {
-        try {
-          await IntentHandlerService.handleIncomingIntent(primaryContext, absoluteFilePath);
-        } finally {
-          if (mounted) {
-            setState(() {
-              _isResolvingIntent = false;
-            });
-          }
-        }
-      } else {
-        Future.delayed(const Duration(milliseconds: 300), () async {
-          final fallbackContext = navigatorKey.currentContext;
-          if (fallbackContext != null && fallbackContext.mounted) {
-            try {
-              await IntentHandlerService.handleIncomingIntent(fallbackContext, absoluteFilePath);
-            } finally {
-              if (mounted) {
-                setState(() {
-                  _isResolvingIntent = false;
-                });
-              }
-            }
-          } else {
-            if (mounted) {
-              setState(() {
-                _isResolvingIntent = false;
-              });
-            }
-          }
-        });
-      }
-    });
+    await ShareIntentService.consume();
+    ShareIntentGate.publish(uris.first);
+  }
+
+  /// 闸门状态 → [_isResolvingIntent]（仅用于「处理外部分享期间不要插更新弹窗」）。
+  void _syncShareIntentResolving() {
+    final resolving = ShareIntentGate.pending.value != null;
+    if (!mounted || resolving == _isResolvingIntent) return;
+    setState(() => _isResolvingIntent = resolving);
   }
 
   void _toggleTheme() {
@@ -1697,27 +1665,38 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                   child: child!,
                 );
               },
-              home: _isResolvingIntent
-                  ? const _IntentLoadingScreen()
-                  : (!_pickerInfoChecked || _hasPermission == null || !_appLockChecked
-                      ? const Scaffold()
-                      : (_hasPermission == true
-                      ? (_appLockEnabled && !_appUnlocked
-                          ? RemoteGuardScreen(
-                              mode: RemoteGuardMode.appLock,
-                              onUnlocked: _onAppUnlocked,
-                            )
-                          : (_pickerInfo.isPicker
-                              ? _SystemFilePickerHost(
-                                  key: ValueKey('picker-session-$_pickerSession'),
-                                  info: _pickerInfo)
-                              : HomeScreen(toggleTheme: _toggleTheme)))
-                      : _StoragePermissionShield(
-                              onRequestPermission: _requestStoragePermission,
-                              onOpenSettings: _openManageExternalStorageSettings,
-                              isPermanentlyDenied: _isPermanentlyDenied,
-                              isMediaOnly: _isMediaOnlyPermission,
-                            ))),
+              // ⚠️ 首页**不能**在处理外部分享时被换成别的页面：HomeScreen 一旦
+              // 卸载，它持有的切 tab / 定位通道就没了，分享处理完也回不到该去的
+              // 页面（历史 bug：分享进来只停在分类页）。分享统一走
+              // ShareIntentGate，由挂载后的 HomeScreen 自己消费。
+              home:
+                  (!_pickerInfoChecked ||
+                      _hasPermission == null ||
+                      !_appLockChecked
+                  ? const Scaffold()
+                  : (_hasPermission == true
+                        ? (_appLockEnabled && !_appUnlocked
+                              ? RemoteGuardScreen(
+                                  mode: RemoteGuardMode.appLock,
+                                  onUnlocked: _onAppUnlocked,
+                                )
+                              : (_pickerInfo.isPicker
+                                    ? _SystemFilePickerHost(
+                                        key: ValueKey(
+                                          'picker-session-$_pickerSession',
+                                        ),
+                                        info: _pickerInfo,
+                                      )
+                                    : HomeScreen(
+                                        toggleTheme: _toggleTheme,
+                                      )))
+                        : _StoragePermissionShield(
+                            onRequestPermission: _requestStoragePermission,
+                            onOpenSettings:
+                                _openManageExternalStorageSettings,
+                            isPermanentlyDenied: _isPermanentlyDenied,
+                            isMediaOnly: _isMediaOnlyPermission,
+                          ))),
             );
           },
         );
@@ -1783,64 +1762,6 @@ class _SystemFilePickerHostState extends State<_SystemFilePickerHost> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
-
-class _IntentLoadingScreen extends StatelessWidget {
-  const _IntentLoadingScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Broken.document,
-                size: 48,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: 48,
-              child: LinearProgressIndicator(
-                minHeight: 3,
-                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                color: theme.colorScheme.primary,
-                borderRadius: const BorderRadius.all(Radius.circular(2)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              L10n.of(context).msg6f3e533a,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              L10n.of(context).msgbca59325,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

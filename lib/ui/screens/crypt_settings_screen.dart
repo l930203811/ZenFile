@@ -7,6 +7,7 @@ import '../../services/crypt/crypt_profile.dart';
 import '../../services/crypt/crypt_profile_service.dart';
 import '../../services/crypt_auto_encrypt_service.dart';
 import 'crypt_mount_edit_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 加密设置页面
 ///
@@ -118,6 +119,7 @@ class _CryptSettingsScreenState extends State<CryptSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const CircledBackButton(),
         title: Text(l10n.crypt_settings_title),
         actions: [
           IconButton(

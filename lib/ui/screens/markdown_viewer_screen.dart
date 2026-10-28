@@ -4,6 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class MarkdownViewerScreen extends StatefulWidget {
   final String filePath;
@@ -51,10 +52,7 @@ class _MarkdownViewerScreenState extends State<MarkdownViewerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

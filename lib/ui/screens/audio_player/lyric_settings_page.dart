@@ -49,11 +49,13 @@ class LyricSettingsPage extends StatefulWidget {
 
 class _LyricSettingsPageState extends State<LyricSettingsPage> {
   late bool _desktopLyricEnabled;
+  late bool _autoDownloadLyrics;
 
   @override
   void initState() {
     super.initState();
     _desktopLyricEnabled = widget.desktopLyricEnabled;
+    _autoDownloadLyrics = PreferencesService.getAutoDownloadLyrics();
   }
 
   /// 当前歌词动画风格（弹窗选中后会自己落盘，这里只读不写）。
@@ -191,6 +193,26 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
             ),
             theme,
           ),
+          // ── 自动下载歌词 ────────────────────────────────────────────────
+          // 本地没有歌词时自动在线搜索（逐字优先）。默认开启。
+          _bordered(
+            SwitchListTile(
+              secondary: const Icon(Icons.download_for_offline_outlined),
+              title: Text(
+                l10n.ui_auto_download_lyrics,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(l10n.ui_auto_download_lyrics_desc),
+              value: _autoDownloadLyrics,
+              activeThumbColor: theme.colorScheme.primary,
+              onChanged: (v) async {
+                await PreferencesService.saveAutoDownloadLyrics(v);
+                if (!mounted) return;
+                setState(() => _autoDownloadLyrics = v);
+              },
+            ),
+            theme,
+          ),
           // ── 歌词动画风格 ────────────────────────────────────────────────
           _bordered(
             ListTile(
@@ -201,11 +223,56 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
               ),
               subtitle: Text(lyricStyleName(l10n, _style)),
               trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () => showLyricStyleSheet(
+              onTap: () => showLyricStyleDialog(
                 context,
                 current: _style,
                 onSelected: (_) => setState(() {}),
               ),
+            ),
+            theme,
+          ),
+          // ── 在线搜索歌词 ────────────────────────────────────────────────
+          // （歌词搜索源入口已移除：源选择统一收敛到「在线搜索歌词」弹窗顶部
+          // 的 ChoiceChip 行 —— 两处入口维护成本高，且搜索时才需要切源。）
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.search_rounded),
+              title: Text(
+                l10n.ui_search_lyrics_online,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onSearchOnlineLyrics();
+              },
+            ),
+            theme,
+          ),
+          // ── 本地导入歌词 ────────────────────────────────────────────────
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.folder_open_rounded),
+              title: Text(
+                l10n.ui_select_lyrics_file,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onImportLocalLyrics();
+              },
+            ),
+            theme,
+          ),
+          // ── 歌词整体偏移 ────────────────────────────────────────────────
+          _bordered(
+            ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: Text(l10n.lyric_offset),
+              subtitle: Text(_offsetSubtitle()),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: _showOffsetDialog,
             ),
             theme,
           ),
@@ -307,51 +374,6 @@ class _LyricSettingsPageState extends State<LyricSettingsPage> {
                 custom: _played,
                 save: PreferencesService.saveLyricColorPlayed,
               ),
-            ),
-            theme,
-          ),
-          // ── 歌词整体偏移 ────────────────────────────────────────────────
-          _bordered(
-            ListTile(
-              leading: const Icon(Icons.timer_outlined),
-              title: Text(l10n.lyric_offset),
-              subtitle: Text(_offsetSubtitle()),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: _showOffsetDialog,
-            ),
-            theme,
-          ),
-          // ── 在线搜索歌词 ────────────────────────────────────────────────
-          // （歌词搜索源入口已移除：源选择统一收敛到「在线搜索歌词」弹窗顶部
-          // 的 ChoiceChip 行 —— 两处入口维护成本高，且搜索时才需要切源。）
-          _bordered(
-            ListTile(
-              leading: const Icon(Icons.search_rounded),
-              title: Text(
-                l10n.ui_search_lyrics_online,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(context);
-                widget.onSearchOnlineLyrics();
-              },
-            ),
-            theme,
-          ),
-          // ── 本地导入歌词 ────────────────────────────────────────────────
-          _bordered(
-            ListTile(
-              leading: const Icon(Icons.folder_open_rounded),
-              title: Text(
-                l10n.ui_select_lyrics_file,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(context);
-                widget.onImportLocalLyrics();
-              },
             ),
             theme,
           ),

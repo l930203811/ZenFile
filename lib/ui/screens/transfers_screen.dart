@@ -73,24 +73,14 @@ class TransfersScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-            child: Text(
-              l10n.ui_transfers,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
+          // 页面大标题已上移至 home_screen 的全屏头部（圆圈返回 + 标题），
+          // 这里不再重复渲染；列表顶距对齐设置页（8 → 16）。
           Expanded(
             child: ListView.builder(
               // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高。
               padding: EdgeInsets.fromLTRB(
                 16,
-                8,
+                16,
                 16,
                 MediaQuery.paddingOf(context).bottom + 16,
               ),

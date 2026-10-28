@@ -4635,6 +4635,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "تنزيل الكلمات تلقائيًا",
+  "ui_auto_download_lyrics_desc": "البحث تلقائيًا عبر الإنترنت عند عدم وجود كلمات محلية، مع إعطاء الأولوية للكلمات التي تدعم العرض حرفًا بحرف",
+  "ui_lyrics_auto_downloaded": "تم تنزيل الكلمات تلقائيًا",
   "msg_overlay_permission_required": "يلزم إذن النافذة العائمة لعرض كلمات سطح المكتب. يرجى منحه في الإعدادات وإعادة المحاولة.",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

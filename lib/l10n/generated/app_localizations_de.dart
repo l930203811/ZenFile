@@ -4761,6 +4761,16 @@ class L10nDe extends L10n {
   String get ui_desktop_lyric => 'Desktop-Text';
 
   @override
+  String get ui_auto_download_lyrics => 'Lyrics automatisch herunterladen';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'Wenn keine lokalen Lyrics vorhanden sind, automatisch online suchen – bevorzugt mit Wort-für-Wort-Anzeige';
+
+  @override
+  String get ui_lyrics_auto_downloaded => 'Lyrics automatisch heruntergeladen';
+
+  @override
   String get msg_overlay_permission_required =>
       'Für die Anzeige des Desktop-Textes ist die Berechtigung für schwebende Fenster erforderlich. Bitte erteilen Sie sie in den Einstellungen und versuchen Sie es erneut.';
 

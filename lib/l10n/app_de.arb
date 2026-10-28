@@ -4632,6 +4632,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "Lyrics automatisch herunterladen",
+  "ui_auto_download_lyrics_desc": "Wenn keine lokalen Lyrics vorhanden sind, automatisch online suchen – bevorzugt mit Wort-für-Wort-Anzeige",
+  "ui_lyrics_auto_downloaded": "Lyrics automatisch heruntergeladen",
   "msg_overlay_permission_required": "Für die Anzeige des Desktop-Textes ist die Berechtigung für schwebende Fenster erforderlich. Bitte erteilen Sie sie in den Einstellungen und versuchen Sie es erneut.",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

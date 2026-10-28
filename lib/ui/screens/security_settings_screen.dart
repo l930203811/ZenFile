@@ -8,6 +8,7 @@ import '../../services/biometric_auth_helper.dart';
 import '../../services/preferences_service.dart';
 import 'remote_guard_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 安全设置页面：保险箱 / 远程守卫 / 启动应用保护 / 修改密码 / 指纹解锁。
 ///
@@ -274,7 +275,10 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final l10n = L10n.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ui_security_settings)),
+      appBar: AppBar(
+        leading: const CircledBackButton(),
+        title: Text(l10n.ui_security_settings),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 12),
         children: [

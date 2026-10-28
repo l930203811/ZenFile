@@ -4766,6 +4766,16 @@ class L10nRu extends L10n {
   String get ui_desktop_lyric => 'Текст на рабочем столе';
 
   @override
+  String get ui_auto_download_lyrics => 'Автоматически загружать текст';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'Если локального текста нет — автоматический онлайн-поиск, приоритет у текста с отображением по словам';
+
+  @override
+  String get ui_lyrics_auto_downloaded => 'Текст песни загружен автоматически';
+
+  @override
   String get msg_overlay_permission_required =>
       'Для отображения текста на рабочем столе требуется разрешение на плавающее окно. Предоставьте его в Настройках и повторите попытку.';
 

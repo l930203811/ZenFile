@@ -13,6 +13,7 @@ import '../media_category_screen.dart';
 import '../../../models/media_type.dart';
 import 'app_manager_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../../widgets/circled_back_button.dart';
 
 class StorageAnalyzerScreen extends StatefulWidget {
   final String? initialVolumePath;
@@ -374,10 +375,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
       appBar: AppBar(
         elevation: 0,
         backgroundColor: theme.colorScheme.surface,
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           L10n.of(context).msga22ddaae,
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),

@@ -9,6 +9,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../models/media_type.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/remote_path_picker.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 单个媒体分类的「类别设置」页。
 /// 从 MediaCategoryScreen 右上角设置按钮进入，包含三大板块：
@@ -192,10 +193,7 @@ class _MediaCategorySettingsScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.ui_category_settings_title),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(

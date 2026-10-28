@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'lyric_parser.dart';
 import 'preferences_service.dart';
 
@@ -881,6 +882,57 @@ class LyricSearchService {
   //  搜索 + 下载 — 面向 UI 的入口
   // ================================================================
 
+  // ================================================================
+  //  歌词落盘
+  // ================================================================
+
+  /// 歌词保存目录候选：优先与音频同目录（用户可见、便于自行管理）；同目录不可写
+  /// （受限目录 / 只读挂载）或路径不是本地真实路径（远程流）时，退回应用私有
+  /// lyrics 目录 —— 否则「自动下载歌词」会因为写不进去而静默失败，用户只看到
+  /// 「没有歌词」却不知道为什么。
+  static Future<List<String>> _lyricSaveDirs(
+    String audioPath,
+    String? saveDir,
+  ) async {
+    final dirs = <String>[];
+    if (saveDir != null && saveDir.isNotEmpty) dirs.add(saveDir);
+    // 只有本地绝对路径才谈得上「与音频同目录」；远程（remote:// / http）跳过。
+    if (audioPath.startsWith('/')) dirs.add(p.dirname(audioPath));
+    try {
+      final support = await getApplicationSupportDirectory();
+      dirs.add(p.join(support.path, 'lyrics'));
+    } catch (_) {}
+    return dirs;
+  }
+
+  /// 把歌词内容写到第一个可写目录，解析并登记映射。全部失败返回 null。
+  static Future<({List<LyricLine> lyrics, String sourcePath})?> _writeLrcFile({
+    required String content,
+    required String baseName,
+    required List<String> dirs,
+    required String audioPath,
+  }) async {
+    if (baseName.isEmpty) return null;
+    // 各源歌词换行符不一，统一处理
+    final fixed = content.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    for (final dir in dirs) {
+      try {
+        final target = Directory(dir);
+        if (!target.existsSync()) target.createSync(recursive: true);
+        final file = File(p.join(dir, '$baseName.lrc'));
+        await file.writeAsString(fixed, flush: true);
+        final lyrics = LyricParser.parse(fixed);
+        if (lyrics.isEmpty) continue;
+        // 保存映射
+        await PreferencesService.saveLyricMapping(audioPath, file.path);
+        return (lyrics: lyrics, sourcePath: file.path);
+      } catch (e) {
+        debugPrint('[LyricSearch] Save lyric to $dir failed: $e');
+      }
+    }
+    return null;
+  }
+
   /// 多源搜索并自动下载第一首可用歌词，保存为 .lrc 文件。
   ///
   /// 返回解析后的歌词和文件路径，失败返回 null。
@@ -945,36 +997,23 @@ class LyricSearchService {
     final lrcContent = bestResult.best;
     if (lrcContent == null) return null;
 
-    // 保存为 .lrc 文件
-    final dir = saveDir ?? p.dirname(audioPath);
-    final baseName = p.basenameWithoutExtension(audioPath);
-    final lrcPath = p.join(dir, '$baseName.lrc');
-
-    try {
-      final file = File(lrcPath);
-      // 各源歌词换行符不一，统一处理
-      final fixedContent =
-          lrcContent.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-      await file.writeAsString(fixedContent, flush: true);
-
-      // 解析歌词
-      final lyrics = LyricParser.parse(fixedContent);
-      if (lyrics.isEmpty) {
-        debugPrint('[LyricSearch] Parsed lyrics empty');
-        return null;
-      }
-
-      // 保存映射
-      await PreferencesService.saveLyricMapping(audioPath, lrcPath);
-
-      debugPrint(
-          '[LyricSearch] Downloaded: ${bestSong?.title ?? "?"} - ${bestResult.hasEnhanced ? "enhancedLRC" : "plainLRC"} (${lyrics.length} lines, ${lyrics.where((l) => l.hasWordTimestamps).length} word-by-word)');
-
-      return (lyrics: lyrics, sourcePath: lrcPath);
-    } catch (e) {
-      debugPrint('[LyricSearch] Save file error: $e');
+    // 保存为 .lrc 文件（同目录优先，不可写时退回应用私有 lyrics 目录）
+    final saved = await _writeLrcFile(
+      content: lrcContent,
+      baseName: p.basenameWithoutExtension(audioPath),
+      dirs: await _lyricSaveDirs(audioPath, saveDir),
+      audioPath: audioPath,
+    );
+    if (saved == null) {
+      debugPrint('[LyricSearch] Save file error: no writable lyric dir');
       return null;
     }
+
+    debugPrint(
+      '[LyricSearch] Downloaded: ${bestSong?.title ?? "?"} - ${bestResult.hasEnhanced ? "enhancedLRC" : "plainLRC"} (${saved.lyrics.length} lines, ${saved.lyrics.where((l) => l.hasWordTimestamps).length} word-by-word)',
+    );
+
+    return saved;
   }
 
   /// 下载指定歌曲的歌词（用户从搜索结果列表中手动选择后调用）。
@@ -995,26 +1034,20 @@ class LyricSearchService {
     final lrcContent = lyricResult.best;
     if (lrcContent == null) return null;
 
-    final dir = saveDir ?? p.dirname(audioPath);
-    final baseName = p.basenameWithoutExtension(audioPath);
-    final lrcPath = p.join(dir, '$baseName.lrc');
-
-    try {
-      final file = File(lrcPath);
-      final fixedContent =
-          lrcContent.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-      await file.writeAsString(fixedContent, flush: true);
-
-      final lyrics = LyricParser.parse(fixedContent);
-      if (lyrics.isEmpty) return null;
-
-      await PreferencesService.saveLyricMapping(audioPath, lrcPath);
-
-      debugPrint('[LyricSearch] Saved selected lyric: ${song.title} (${lyrics.length} lines)');
-      return (lyrics: lyrics, sourcePath: lrcPath);
-    } catch (e) {
-      debugPrint('[LyricSearch] Save selected lyric error: $e');
+    final saved = await _writeLrcFile(
+      content: lrcContent,
+      baseName: p.basenameWithoutExtension(audioPath),
+      dirs: await _lyricSaveDirs(audioPath, saveDir),
+      audioPath: audioPath,
+    );
+    if (saved == null) {
+      debugPrint('[LyricSearch] Save selected lyric error: no writable dir');
       return null;
     }
+
+    debugPrint(
+      '[LyricSearch] Saved selected lyric: ${song.title} (${saved.lyrics.length} lines)',
+    );
+    return saved;
   }
 }

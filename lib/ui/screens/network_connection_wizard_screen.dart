@@ -17,6 +17,7 @@ import '../../services/remote/lan_client.dart';
 import '../../services/remote/remote_error_localizer.dart';
 // import 'netdisk_login_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class NetworkConnectionWizardScreen extends StatefulWidget {
   final NetworkConnectionModel? existingConnection;
@@ -753,10 +754,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: _prevStep,
-        ),
+        leading: CircledBackButton(onPressed: _prevStep),
         title: Text(
           L10n.of(context).ui_remote_connection,
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -833,10 +831,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           l10n.ui_remote_connection,
           style: const TextStyle(fontWeight: FontWeight.bold),

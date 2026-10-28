@@ -8,6 +8,7 @@ import '../../services/settings_backup_service.dart';
 import 'internal_file_picker_screen.dart';
 import 'remote_directory_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class BackupSettingsScreen extends StatefulWidget {
   const BackupSettingsScreen({super.key});
@@ -398,6 +399,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: AppBar(
+        leading: const CircledBackButton(),
         title: Text(l10n.msgb4fbc92c),
         backgroundColor: scaffoldBg,
         elevation: 0,

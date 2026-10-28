@@ -1137,6 +1137,19 @@ class PreferencesService {
     await _prefs?.setBool(_keyDesktopLyricEnabled, val);
   }
 
+  // --- 自动下载歌词 ---
+  /// 本地找不到歌词时自动在线搜索（默认**开启**：用户要的是「打开就有歌词」）。
+  /// 只控制「自动」这一路；手动「在线搜索歌词」不受此开关影响。
+  static const String _keyAutoDownloadLyrics = 'auto_download_lyrics';
+
+  static bool getAutoDownloadLyrics() {
+    return _prefs?.getBool(_keyAutoDownloadLyrics) ?? true;
+  }
+
+  static Future<void> saveAutoDownloadLyrics(bool val) async {
+    await _prefs?.setBool(_keyAutoDownloadLyrics, val);
+  }
+
   // --- Audio Playback Mode (0=sequential, 1=list loop, 2=single loop, 3=shuffle) ---
   static const String _keyAudioPlaybackMode = 'audio_playback_mode';
 

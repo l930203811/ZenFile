@@ -13,6 +13,7 @@ import '../../providers/file_manager_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 import 'netdisk_login_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 /// 聚合网盘主页：列出已登录的网盘连接，提供添加入口。
 ///
@@ -152,10 +153,7 @@ class _NetdiskHomeScreenState extends State<NetdiskHomeScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           l10n.netdisk,
           style: const TextStyle(fontWeight: FontWeight.bold),

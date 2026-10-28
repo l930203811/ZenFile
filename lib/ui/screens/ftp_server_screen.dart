@@ -5,6 +5,7 @@ import '../../services/ftp_server_service.dart';
 import '../../services/preferences_service.dart';
 import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class FtpServerScreen extends StatefulWidget {
   const FtpServerScreen({super.key});
@@ -267,10 +268,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           L10n.of(context).ftp2,
           style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 20),

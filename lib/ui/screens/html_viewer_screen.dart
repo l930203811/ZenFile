@@ -4,6 +4,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../widgets/circled_back_button.dart';
 
 class HtmlViewerScreen extends StatefulWidget {
   final String filePath;
@@ -51,10 +52,7 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

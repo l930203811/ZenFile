@@ -7,12 +7,15 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import '../widgets/circled_back_button.dart';
 import '../widgets/liquid_pressable.dart';
 import '../widgets/shell_metrics_stable.dart';
 import '../widgets/zenfile_bottom_nav_bar.dart';
 import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
+import '../../services/share_intent_service.dart';
 import '../../services/startup_gate.dart';
+import '../../services/intent_handler_service.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/favorites_sheet.dart';
 import '../widgets/sort_modal.dart';
@@ -129,6 +132,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 常驻底栏的跨路由切换请求：设置重组子页面（PersistentNavBarScope 包装）盖在
     // 首页之上时，底栏点击经静态通知器转回本页消费（dispose 时移除）。
     HomeScreen.pendingTabSwitch.addListener(_onPendingTabSwitch);
+    // 外部分享（第三方「用其他应用打开」）：main.dart 只把原始 URI 投到闸门，
+    // 由首页用**自己的 context** 处理 —— 这样 Navigator / provider / 切 tab
+    // 通道都在，冷启动也不会「只停在分类页」。
+    ShareIntentGate.pending.addListener(_onPendingShareIntent);
+    if (ShareIntentGate.pending.value != null) {
+      // 冷启动：闸门在首页挂载前就置位了（权限闸门 / 应用锁之后才轮到首页），
+      // 挂载完成后立刻消费，用户不用再触发任何操作。
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _onPendingShareIntent(),
+      );
+    }
     // 应用级一次性初始化（恢复标签页 / 探测存储卷 / 载入首个目录）原先挂在
     // DirectoryScreen.initState 里。浏览页改成惰性构建后它未必会被创建，而
     // `FileManagerProvider.init()` 全项目只有那一个调用点，所以上移到这里。
@@ -171,12 +185,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       fileManager.quickActionRequestNotifier
           .addListener(_onQuickActionRequested);
     }
-    // 检查是否需要从设置页面跳转到浏览标签
+    // 检查是否需要从设置页面跳转到浏览标签。
+    // ⚠️ 不要在这里复位布尔：ValueListenableBuilder 那条链才是唯一会消费
+    // pending 目标目录的通道（这里复位后，本帧 build 读到 false，就变成
+    // 「切了 tab 但没加载目标目录」）。只补一次强制通知，让监听器一定被触发。
     if (fileManager.navigateToBrowseTab) {
-      fileManager.setNavigateToBrowseTab(false);
-      if (_currentIndex != 1) {
-        _switchTab(1);
-      }
+      fileManager.setNavigateToBrowseTab(true);
     }
   }
 
@@ -184,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   void dispose() {
     DirectoryScreen.browseBarExpanded.removeListener(_onBrowseBarExpandedChanged);
     HomeScreen.pendingTabSwitch.removeListener(_onPendingTabSwitch);
+    ShareIntentGate.pending.removeListener(_onPendingShareIntent);
     _fmRef?.settingsSearchRequestNotifier
         .removeListener(_onSettingsSearchRequested);
     _fmRef?.quickActionRequestNotifier
@@ -269,6 +284,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     } else {
       _switchTab(code);
     }
+  }
+
+  /// 消费外部分享（第三方「用其他应用打开」）。
+  ///
+  /// 只在这里处理、而且必须用**本页的 context**：
+  ///  · main.dart 那边的 navigatorKey context 是 Navigator 自己，
+  ///    `Navigator.of(它)`（非 root）取不到 NavigatorState，处理链会断在
+  ///    popUntil（release 下空指针）—— 压缩包被加载进了浏览页、界面却停在
+  ///    分类页，就是这个原因；
+  ///  · 本页挂载后才有「切 tab / 定位目录」通道，分享处理完才能落到该去的页面。
+  void _onPendingShareIntent() {
+    final uri = ShareIntentGate.take();
+    if (uri == null || !mounted) return;
+    unawaited(IntentHandlerService.handleIncomingIntent(context, uri));
   }
 
   /// 全局搜索「在设置中搜索」：切到设置页并把查询词交给它过滤显示。
@@ -766,6 +795,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   bool get _fullScreenChromeHidden =>
       _currentIndex == 2 || _currentIndex == _settingsTabIndex;
 
+  /// 连接 / 设置页的全屏头部：圆圈返回按钮（回分类页）+ 页面标题。
+  ///
+  /// 样式对齐设置子页面的 AppBar：标题位置与字号取全局 [appBarTheme] 的
+  /// titleTextStyle（20 / w600），返回按钮为带圆形底的 [CircledBackButton]
+  /// ——设置子页面里仍以裸 IconButton 呈现的，统一替换为同款组件。
+  /// 本头部挂在顶栏槽位（或 4-tab 上方），状态栏安全区在这里自己吃掉。
+  Widget _buildFullScreenHeader() {
+    final title = _currentIndex == _settingsTabIndex
+        ? L10n.of(context).ui_personalize_settings
+        : L10n.of(context).ui_transfers;
+    final titleStyle =
+        Theme.of(context).appBarTheme.titleTextStyle ??
+        TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        );
+    return Padding(
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      child: SizedBox(
+        height: kToolbarHeight,
+        child: Row(
+          children: [
+            CircledBackButton(onPressed: () => _switchTab(0)),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title, style: titleStyle)),
+            const SizedBox(width: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 顶栏：位置=底部时显示工具按钮行（左抽屉 / 全局搜索 / 常用功能 5 项 / 设置），
   /// 位置=顶部时显示 4-tab 导航。
   ///
@@ -777,9 +839,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // atTop：本栏落在顶栏槽位 —— 不能吃底部安全区（body 在 extendBody 下的
     // padding.bottom 等于底栏总高，吃掉会在栏底多铺一条同色空带）。
     if (bottomTabs) {
-      // 连接 / 设置页全屏显示：工具按钮行整条隐藏，只留状态栏高度的安全区。
+      // 连接 / 设置页全屏显示：工具按钮行整条隐藏，替换为「圆圈返回 + 页面标题」
+      // 头部（样式对齐设置子页面的 AppBar，见 [_buildFullScreenHeader]）。
       if (_fullScreenChromeHidden) {
-        return SizedBox(height: MediaQuery.paddingOf(context).top);
+        return _buildFullScreenHeader();
       }
       return _buildTopBarRow(atTop: true);
     }
@@ -800,7 +863,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 全屏页一致，呈全屏显示；仅分类页始终显示（无论常驻开关）。
     if (_currentIndex != 0 &&
         !context.select<FileManagerProvider, bool>((p) => p.persistentTabBar)) {
+      // 连接 / 设置页：4-tab 隐藏 ⇒ 顶部只放全屏头部。
+      if (_fullScreenChromeHidden) {
+        return _buildFullScreenHeader();
+      }
       return SizedBox(height: MediaQuery.paddingOf(context).top);
+    }
+    // 4-tab 在顶栏 + 常驻开：连接 / 设置页在 4-tab 下方再补全屏头部
+    // （返回 + 标题），分类页维持原样。
+    if (_fullScreenChromeHidden) {
+      return Column(
+        children: [_buildFullScreenHeader(), _buildBottomTabs(atTop: true)],
+      );
     }
     return _buildBottomTabs(atTop: true);
   }

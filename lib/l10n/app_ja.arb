@@ -4639,6 +4639,9 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "歌詞を自動ダウンロード",
+  "ui_auto_download_lyrics_desc": "ローカルに歌詞がない場合は自動でオンライン検索し、逐字表示に対応した歌詞を優先します",
+  "ui_lyrics_auto_downloaded": "歌詞を自動でダウンロードしました",
   "msg_overlay_permission_required": "デスクトップ歌詞を表示するにはオーバーレイ権限が必要です。設定で許可してから再試行してください。",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

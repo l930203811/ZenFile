@@ -4856,6 +4856,18 @@
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
   },
+  "ui_auto_download_lyrics": "自动下载歌词",
+  "@ui_auto_download_lyrics": {
+    "description": "Auto-download lyrics switch in lyric settings page"
+  },
+  "ui_auto_download_lyrics_desc": "本地没有歌词时自动在线搜索，优先逐字歌词",
+  "@ui_auto_download_lyrics_desc": {
+    "description": "Subtitle of the auto-download lyrics switch"
+  },
+  "ui_lyrics_auto_downloaded": "已自动下载歌词",
+  "@ui_lyrics_auto_downloaded": {
+    "description": "SnackBar shown when lyrics were downloaded automatically"
+  },
   "msg_overlay_permission_required": "需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试",
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"

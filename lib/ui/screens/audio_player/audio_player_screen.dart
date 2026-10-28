@@ -164,6 +164,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
   bool _lyricsWerePlaceholder = false; // 检测歌词为占位文本时显示多语言提示
 
+  /// 已尝试过「自动在线下载歌词」的歌曲路径：本次会话内每首歌只试一次，
+  /// 避免切歌来回切时反复打搜索接口（也避免搜不到的歌每切一次都重试）。
+  final Set<String> _autoLyricTried = <String>{};
+
   /// 生效的歌词整体偏移（毫秒）：单曲覆盖优先，否则全局值。
   /// 正值 = 歌词延后，负值 = 歌词提前；见 [_lyricPosition]。
   int _lyricOffsetMs = 0;
@@ -975,6 +979,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     final generation = ++_lyricsLoadGeneration;
     final title = _currentTitle;
     final artist = _getDisplayArtist();
+    // 在线搜索用的歌名 / 歌手（有艺术家元数据就用，没有则按文件名拆分）。
+    // 在异步之前算好：里面用到了 context（L10n），跨 await 后再取就不安全了。
+    final searchMeta = _lyricSearchMeta();
 
     // 切歌：按新歌曲重算歌词整体偏移（单曲覆盖 / 全局）。
     _refreshLyricOffset();
@@ -1007,19 +1014,72 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
 
-      // 2. 本地未找到歌词 — 不再自动在线搜索，保持无歌词状态
-      //    用户可通过歌词面板的「在线搜索」按钮手动触发搜索
-      debugPrint('[LyricSearch] 本地未找到歌词，跳过自动在线搜索: $title - $artist');
+      // 2. 本地未找到歌词：「自动下载歌词」开关打开时在线搜索（逐字优先）。
+      //    每首歌本次会话只试一次；关闭开关则保持无歌词状态（用户仍可手动搜）。
+      final canAutoDownload =
+          PreferencesService.getAutoDownloadLyrics() &&
+          audioPath.startsWith('/') &&
+          searchMeta.title.isNotEmpty &&
+          _autoLyricTried.add(audioPath);
+
+      if (canAutoDownload) {
+        debugPrint(
+          '[LyricSearch] 本地无歌词，自动在线搜索: ${searchMeta.title} - ${searchMeta.artist}',
+        );
+        final auto = await LyricSearchService.searchAndDownload(
+          title: searchMeta.title,
+          artist: searchMeta.artist,
+          audioPath: audioPath,
+        );
+        if (auto != null && mounted && generation == _lyricsLoadGeneration) {
+          final sanitized = _sanitizeLyrics(auto.lyrics);
+          setState(() {
+            _lyrics = sanitized;
+            _isLoadingLyrics = false;
+          });
+          if (_desktopLyricEnabled) {
+            DesktopLyricController.instance.setLyrics(sanitized);
+          }
+          _showAutoLyricToast();
+          return;
+        }
+      } else {
+        debugPrint('[LyricSearch] 本地未找到歌词，跳过自动在线搜索: $title - $artist');
+      }
+
       if (mounted && generation == _lyricsLoadGeneration) {
         setState(() {
           _lyrics = null;
-              _isLoadingLyrics = false;
+          _isLoadingLyrics = false;
         });
         if (_desktopLyricEnabled) {
           DesktopLyricController.instance.setLyrics(null);
         }
       }
     });
+  }
+
+  /// 自动下载到歌词时给一句轻提示，否则用户不知道歌词是哪来的。
+  void _showAutoLyricToast() {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          L10n.of(context).ui_lyrics_auto_downloaded,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Colors.deepPurpleAccent,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   /// 手动选择歌词文件
@@ -1067,45 +1127,127 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  /// 从完整文件名中智能分离歌曲名和歌手名。
-  /// 支持分隔符: " - ", " – ", " — ", "-", "–", "—", "丨", "|"
-  /// 返回 null 表示无法分离。
+  /// 「歌名 + 分隔符 + 歌手」这类命名里用于切分的分隔符（按优先级排列）。
+  ///
+  /// 带空格的破折号优先（"歌名 - 歌手" 是最常见写法），其次各种破折号变体，
+  /// 最后是下划线 / 竖线 —— 用户约定：**歌名后面只要出现符号，后面一律视作
+  /// 歌手名**。每种分隔符取**最后一次**出现（"歌名 - 歌手 - 专辑" 也能正确）。
+  static const List<String> _kTitleArtistSeparators = <String>[
+    ' - ',
+    ' – ',
+    ' — ',
+    ' -',
+    '- ',
+    '-',
+    '–',
+    '—',
+    '−',
+    '－',
+    '‐',
+    '_',
+    '丨',
+    '｜',
+    '|',
+  ];
+
+  /// 音质/格式标签：出现在分隔符后面时**不是**歌手名（"歌名_320k" 之类），
+  /// 命中则不切分，避免把 "320k" 当歌手填进搜索框。
+  static const Set<String> _kNotArtistTokens = <String>{
+    'mp3',
+    'flac',
+    'wav',
+    'ape',
+    'aac',
+    'm4a',
+    'ogg',
+    'opus',
+    'wma',
+    'dsd',
+    '320k',
+    '192k',
+    '128k',
+    '256k',
+    'hq',
+    'sq',
+    '无损',
+    '标准',
+    '高品质',
+  };
+
+  /// 从完整文件名（或标题）中智能分离歌曲名和歌手名，返回 null 表示无法分离。
   List<String>? _trySplitTitleAndArtist(String raw) {
     if (raw.isEmpty) return null;
-    final separators = [' - ', ' – ', ' — ', '-', '–', '—', '丨', '|'];
-    for (final sep in separators) {
+    for (final sep in _kTitleArtistSeparators) {
       final idx = raw.lastIndexOf(sep);
-      if (idx > 0 && idx < raw.length - sep.length) {
-        final title = raw.substring(0, idx).trim();
-        final artist = raw.substring(idx + sep.length).trim();
-        // 去除文件名中常见的后缀/标签
-        final cleanArtist = artist
-            .replaceAll(RegExp(r'\s*[（(][^)）]*[)）]\s*$'), '')
-            .replaceAll(RegExp(r'\s*\[[^\]]*\]\s*$'), '')
-            .trim();
-        if (title.isNotEmpty && cleanArtist.isNotEmpty && cleanArtist.length > 1) {
-          return [title, cleanArtist];
-        }
-      }
+      if (idx <= 0 || idx >= raw.length - sep.length) continue;
+      final title = raw.substring(0, idx).trim();
+      final artist = raw.substring(idx + sep.length).trim();
+      // 去除文件名中常见的后缀/标签
+      final cleanArtist = artist
+          .replaceAll(RegExp(r'\s*[（(][^)）]*[)）]\s*$'), '')
+          .replaceAll(RegExp(r'\s*\[[^\]]*\]\s*$'), '')
+          .trim();
+      if (title.isEmpty || cleanArtist.length <= 1) continue;
+      // 纯数字（"歌名_01" 的曲目号）与音质标签都不是歌手
+      if (RegExp(r'^\d+$').hasMatch(cleanArtist)) continue;
+      if (_kNotArtistTokens.contains(cleanArtist.toLowerCase())) continue;
+      return [title, cleanArtist];
     }
     return null;
+  }
+
+  /// 本地音频的文件名（不含扩展名）；远程路径（非 '/' 开头）返回 null。
+  String? get _localBaseName {
+    final path = _currentPath;
+    if (!path.startsWith('/')) return null;
+    return p.basenameWithoutExtension(path);
+  }
+
+  /// 在线歌词搜索用的「歌名 / 歌手」。
+  ///
+  /// 规则：
+  ///  · 音频自带艺术家信息 ⇒ 歌手框用它（不再填「未知艺术家」这类占位文案）；
+  ///  · 没有艺术家信息 ⇒ 歌手框**留空**，改用文件名里拆出来的歌手
+  ///    （"歌名-歌手" / "歌名 - 歌手"）；拆不出来就真的留空，让用户自己填；
+  ///  · 标题里带分隔符时，**歌名框只留前半段**（否则会把整串「歌名-歌手」
+  ///    当成歌名去搜，基本搜不到）。
+  ({String title, String artist}) _lyricSearchMeta() {
+    final rawArtist = _currentArtist.trim();
+    // 从类别页进来时 artist 可能已被替换成界面占位文案，这里一并识别为「无」。
+    final unknownLabel = L10n.of(context).msg5e32276d;
+    final artistKnown =
+        !FileUtils.isUnknownArtist(rawArtist) && rawArtist != unknownLabel;
+
+    var title = _currentTitle.trim();
+    // MediaStore 标题偶尔带扩展名，去掉再参与拆分。
+    title = title
+        .replaceAll(
+          RegExp(
+            r'\.(mp3|flac|wav|m4a|aac|ogg|opus|ape|wma)$',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .trim();
+
+    final fromTitle = _trySplitTitleAndArtist(title);
+    final base = _localBaseName;
+    final fromName = base == null ? null : _trySplitTitleAndArtist(base);
+
+    return (
+      title: fromTitle != null ? fromTitle[0] : title,
+      artist: artistKnown ? rawArtist : (fromTitle?[1] ?? fromName?[1] ?? ''),
+    );
   }
 
   /// 弹出在线歌词搜索对话框：先搜索，列出候选结果，由用户手动选择，
   /// 避免同名不同歌手时自动匹配错误。
   Future<void> _showLyricSearchDialog() async {
-    // 使用原始歌手名（空字符串），而非界面显示的"未知艺术家"翻译
-    String songTitle = _currentTitle;
-    String artistForSearch = _currentArtist;
-
-    // 如果歌手名为空/unknown，尝试从标题中分离
-    if (FileUtils.isUnknownArtist(artistForSearch) && songTitle.isNotEmpty) {
-      final split = _trySplitTitleAndArtist(songTitle);
-      if (split != null) {
-        songTitle = split[0];
-        artistForSearch = split[1];
-      }
-    }
+    // 歌名 / 歌手统一由 [_lyricSearchMeta] 决定：有艺术家元数据就用它，
+    // 没有则按文件名「歌名-歌手」拆分；两者都没有时歌手框留空（不再填占位文案）。
+    final meta = _lyricSearchMeta();
+    final songTitle = meta.title;
+    final artistForSearch = meta.artist;
 
     final titleController = TextEditingController(text: songTitle);
     final artistController = TextEditingController(text: artistForSearch);

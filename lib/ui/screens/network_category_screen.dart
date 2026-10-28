@@ -10,6 +10,7 @@ import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'network_connection_wizard_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 class NetworkCategoryScreen extends StatefulWidget {
   final Function(int)? onNavigateTab;
@@ -127,10 +128,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
         title: Text(
           L10n.of(context).ui_network,
           style: TextStyle(fontWeight: FontWeight.bold),

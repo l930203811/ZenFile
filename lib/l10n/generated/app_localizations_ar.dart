@@ -4697,6 +4697,16 @@ class L10nAr extends L10n {
   String get ui_desktop_lyric => 'كلمات سطح المكتب';
 
   @override
+  String get ui_auto_download_lyrics => 'تنزيل الكلمات تلقائيًا';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'البحث تلقائيًا عبر الإنترنت عند عدم وجود كلمات محلية، مع إعطاء الأولوية للكلمات التي تدعم العرض حرفًا بحرف';
+
+  @override
+  String get ui_lyrics_auto_downloaded => 'تم تنزيل الكلمات تلقائيًا';
+
+  @override
   String get msg_overlay_permission_required =>
       'يلزم إذن النافذة العائمة لعرض كلمات سطح المكتب. يرجى منحه في الإعدادات وإعادة المحاولة.';
 

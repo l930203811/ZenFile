@@ -22,6 +22,7 @@ import 'virus_total_settings_screen.dart';
 import 'security_settings_screen.dart';
 import 'category_settings_screen.dart';
 import 'browse_settings_screen.dart';
+import '../widgets/circled_back_button.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   /// 是否作为首页 IndexedStack 的**内嵌页面**（底部导航第 4 项）渲染。
@@ -384,24 +385,12 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 内嵌页（第 4 页）标题：与传输页同款大字标题（AppBar 已收缩为 0 高）。
-              if (widget.embedded && !_isSearching)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                  child: Text(
-                    L10n.of(context).ui_personalize_settings,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
+              // 内嵌页（第 4 页）大标题已上移至 home_screen 的全屏头部
+              // （圆圈返回 + 标题），这里不再重复渲染（搜索态不受影响）。
               Expanded(
                 child: ListView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(top: (widget.embedded && !_isSearching) ? 8 : 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
+            padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.paddingOf(context).bottom + 16),
             // ↑ paddingOf（按 aspect 订阅）：整取 MediaQuery.of 会订阅整份 MediaQueryData，
             // 键盘 Insets 动画期间本页（IndexedStack 常驻 tab）会每帧重建全部设置卡片。
             children: [
@@ -1549,10 +1538,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_settings_general),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -1634,10 +1620,7 @@ class _AppearanceGroupScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).ui_appearance_theme),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -1713,10 +1696,7 @@ class _BehaviorGroupScreen extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).msgfdae44c3),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -2154,10 +2134,7 @@ class _MediaDefaultOpsGroupScreenState extends State<_MediaDefaultOpsGroupScreen
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).msga4333788),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(
@@ -2361,10 +2338,7 @@ class _ApkInstallGroupScreenState extends State<_ApkInstallGroupScreen> {
       child: Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).vt_install_settings_title),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CircledBackButton(),
       ),
       body: SafeArea(
         child: ListView(

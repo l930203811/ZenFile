@@ -4569,6 +4569,16 @@ class L10nKo extends L10n {
   String get ui_desktop_lyric => '데스크톱 가사';
 
   @override
+  String get ui_auto_download_lyrics => '가사 자동 다운로드';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      '로컬 가사가 없으면 자동으로 온라인 검색하며, 글자 단위 가사를 우선합니다';
+
+  @override
+  String get ui_lyrics_auto_downloaded => '가사를 자동으로 다운로드했습니다';
+
+  @override
   String get msg_overlay_permission_required =>
       '데스크톱 가사를 표시하려면 오버레이 권한이 필요합니다. 설정에서 권한을 부여한 후 다시 시도하세요.';
 

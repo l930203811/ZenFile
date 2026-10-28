@@ -8506,6 +8506,24 @@ abstract class L10n {
   /// **'桌面歌词'**
   String get ui_desktop_lyric;
 
+  /// Auto-download lyrics switch in lyric settings page
+  ///
+  /// In zh, this message translates to:
+  /// **'自动下载歌词'**
+  String get ui_auto_download_lyrics;
+
+  /// Subtitle of the auto-download lyrics switch
+  ///
+  /// In zh, this message translates to:
+  /// **'本地没有歌词时自动在线搜索，优先逐字歌词'**
+  String get ui_auto_download_lyrics_desc;
+
+  /// SnackBar shown when lyrics were downloaded automatically
+  ///
+  /// In zh, this message translates to:
+  /// **'已自动下载歌词'**
+  String get ui_lyrics_auto_downloaded;
+
   /// Shown when overlay permission is denied while enabling desktop lyric
   ///
   /// In zh, this message translates to:

@@ -4788,6 +4788,16 @@ class L10nEs extends L10n {
   String get ui_desktop_lyric => 'Letra de escritorio';
 
   @override
+  String get ui_auto_download_lyrics => 'Descargar letras automáticamente';
+
+  @override
+  String get ui_auto_download_lyrics_desc =>
+      'Buscar en línea automáticamente cuando no haya letras locales, priorizando las letras palabra por palabra';
+
+  @override
+  String get ui_lyrics_auto_downloaded => 'Letras descargadas automáticamente';
+
+  @override
   String get msg_overlay_permission_required =>
       'Se requiere permiso de ventana flotante para mostrar la letra de escritorio. Concédelo en Configuración y vuelve a intentarlo.';
 
