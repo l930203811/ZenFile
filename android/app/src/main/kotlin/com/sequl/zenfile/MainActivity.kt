@@ -218,6 +218,9 @@ class MainActivity : AudioServiceFragmentActivity() {
         SystemFilePickerBridge.onLaunchIntent(this, intent)
         // 分享目标入口：同样在 super 之前记下原始 URI（Dart 权限就绪后补查）。
         ShareIntentBridge.onLaunchIntent(intent, notifyDart = false)
+        // Bugly 异常上报：越早初始化，引擎加载阶段的崩溃越可能被捕获。
+        // APP_ID 未填时内部直接跳过（见 BuglyBridge.kt）。
+        BuglyBridge.init(this)
         super.onCreate(savedInstanceState)
         try {
             Shizuku.addBinderReceivedListenerSticky {
@@ -397,6 +400,7 @@ class MainActivity : AudioServiceFragmentActivity() {
         storageEventChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
         SystemFilePickerBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         ShareIntentBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
+        BuglyBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         pdfRendererChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PDF_RENDERER_CHANNEL)
         pdfRendererChannel?.setMethodCallHandler { call, result ->
             when (call.method) {

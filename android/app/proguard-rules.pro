@@ -7,6 +7,14 @@
 -keep class io.flutter.plugins.**  { *; }
 -keep class com.media_kit.** { *; }
 -keep class com.open_filex.** { *; }
+
+# Bugly — release 开了 R8 混淆，官方要求保留 SDK 类避免上报链路被裁剪
+-keep public class com.tencent.bugly.** { *; }
+
+# xCrash — 本地 native 崩溃 tombstone 捕获
+-keep public class xcrash.** { *; }
+-dontwarn xcrash.**
+-dontwarn com.tencent.bugly.**
 -keep class com.receive_sharing_intent.** { *; }
 -dontwarn io.flutter.embedding.**
 -dontwarn com.media_kit.**

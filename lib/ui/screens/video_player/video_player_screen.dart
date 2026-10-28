@@ -366,9 +366,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       if (platform is NativePlayer) {
         // 音频输出（AO 候选链 + 音频会话 id）配置：必须在 open 之前完成，
         // mpv 只在初始化音频输出链时读这些选项；档位语义见服务内注释。
+        //
+        // ⚠️ 视频页**强制 OpenSL ES**，绝不跟随用户档位（含默认 auto/audiotrack）：
+        // ao_audiotrack 的 JNI 方法缓存是 libmpv 全进程 static + 引用计数，
+        // 「后台音乐（audiotrack）+ 视频页 Player 反复进出」会让计数归零时清空缓存，
+        // 而另一条 audiotrack 线程还活着 ⇒ `CallIntMethod` 拿到已删除的 mid
+        // ⇒ ART abort（SIGABRT，tombstone 实锤 "JNI DETECTED ERROR: mid == null"）。
+        // 视频走 opensles 后 audiotrack 缓存只归音乐侧，时序串行安全。
+        // 代价：RootlessJamesDSP 类音效软件在视频页不生效（opensles 无法广播会话号）。
         await MpvAudioOutputService.configureBeforeOpen(
           player,
-          mode: PreferencesService.getAudioOutputMode(),
+          mode: MpvAoMode.openSlEs,
           tag: 'video',
         );
         await platform.setProperty('network-timeout', '60');
@@ -1919,9 +1927,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       if (platform is NativePlayer) {
         // 切换解码方式后同样要重设音频输出选项 —— 这里会重建 Player，
         // 新 Player 的 AO 还没初始化，是补设的唯一时机。
+        // ⚠️ 与 video-init 同理强制 OpenSL ES（ao_audiotrack 共享 JNI 缓存竞态，
+        // 详见 init 路径注释），不跟随用户档位。
         await MpvAudioOutputService.configureBeforeOpen(
           player,
-          mode: PreferencesService.getAudioOutputMode(),
+          mode: MpvAoMode.openSlEs,
           tag: 'video-switch',
         );
         await platform.setProperty('network-timeout', '60');

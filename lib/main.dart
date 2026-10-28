@@ -27,6 +27,7 @@ import 'services/startup_gate.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
+import 'services/bugly_report_service.dart';
 import 'services/crash_forensics_service.dart';
 import 'services/network_connections_service.dart';
 import 'services/share_intent_service.dart';
@@ -101,6 +102,14 @@ void main() {
       // recordError 内部全程 try/catch，绝不会反过来影响这里。
       CrashForensicsService.recordError(
           'FlutterError', details.exception, details.stack);
+      // 同步上报 Bugly（非致命异常面板可查）；内部吞异常，绝不影响主流程。
+      unawaited(
+        BuglyReportService.recordError(
+          details.exception,
+          details.stack,
+          tag: 'FlutterError',
+        ),
+      );
     };
 
     // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
@@ -248,6 +257,9 @@ void main() {
     // 捕获所有未处理的异步错误，防止 release 模式闪退
     debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
     CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
+    unawaited(
+      BuglyReportService.recordError(error, stackTrace, tag: 'AsyncError'),
+    );
   });
 }
 

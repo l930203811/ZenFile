@@ -110,6 +110,12 @@ dependencies {
     }
     implementation("com.google.guava:guava:33.5.0-android")
     implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+    // 腾讯 Bugly 异常上报（国内直连）：crashreport 捕获 Java/Kotlin 崩溃与 ANR，
+    // nativecrashreport 捕获 NDK 崩溃；Dart 层异常经 BuglyBridge 转发为非致命异常。
+    implementation("com.tencent.bugly:crashreport:4.1.9.3")
+    implementation("com.tencent.bugly:nativecrashreport:3.9.2")
+    // xCrash：进程内 native 崩溃捕获，本地 tombstone 供无 USB 环境（云电脑）分析
+    implementation("com.iqiyi.xcrash:xcrash-android-lib:3.1.0")
     // 原生 SSH/SFTP（JSch）：加解密走 Android JCE/OpenSSL 硬件加速，突破纯 Dart 加密速率上限
     //
     // 重要：官方 com.jcraft:jsch 停在 0.1.55（2018-11），既不支持 rsa-sha2-256/512，
