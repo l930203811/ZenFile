@@ -219,9 +219,14 @@ double _glyphRightX(
   int i,
 ) {
   final b = boundaries[i];
-  final b2 = boundaries[i + 1];
-  if (b2.line == b.line) return b2.x;
-  return metrics[b.line].left + metrics[b.line].width;
+  // 末字没有下一个 boundary：直接取所在视觉行右缘，避免 i+1 越界
+  // （歌词唱到句末最末一字时 fill.index == length-1 会触发 RangeError）。
+  if (i + 1 < boundaries.length) {
+    final b2 = boundaries[i + 1];
+    if (b2.line == b.line) return b2.x;
+  }
+  final line = b.line.clamp(0, metrics.length - 1);
+  return metrics[line].left + metrics[line].width;
 }
 
 /// 第 [i] 个字的中心 x（paragraph 坐标，未加 originX）。
