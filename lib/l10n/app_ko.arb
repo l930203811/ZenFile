@@ -8821,5 +8821,16 @@
   "ui_proxy_port": "프록시 포트",
   "ui_proxy_username": "프록시 사용자 이름",
   "ui_proxy_password": "프록시 비밀번호",
-  "ui_proxy_hint": "SOCKS5 프록시를 통해 연결을 전달하여 가상 내부망의 서버에 접근할 수 있습니다."
+  "ui_proxy_hint": "SOCKS5 프록시를 통해 연결을 전달하여 가상 내부망의 서버에 접근할 수 있습니다.",
+  "ui_feedback_title": "피드백 보내기",
+  "ui_crash_dialog_title": "비정상 종료 감지됨",
+  "ui_crash_dialog_body": "지난번에 앱이 비정상 종료되어 진단 보고서가 생성되었습니다. 문제를 설명하여 개발자에게 보내주시면 원인 파악에 큰 도움이 됩니다.",
+  "ui_feedback_dialog_body": "문제나 제안을 설명해 주세요. 기기 정보 및 진단 로그와 함께 개발자에게 전송됩니다.",
+  "ui_feedback_hint": "문제나 제안을 입력하세요(선택 사항)",
+  "ui_crash_attach_logs": "진단 로그 첨부({count}개)",
+  "ui_feedback_send": "보내기",
+  "ui_feedback_later": "나중에",
+  "ui_feedback_sent": "피드백이 전송되었습니다. 감사합니다!",
+  "ui_feedback_failed": "전송에 실패했습니다. 네트워크를 확인한 후 다시 시도해 주세요",
+  "ui_feedback_no_logs": "첨부할 진단 로그가 없습니다"
 }

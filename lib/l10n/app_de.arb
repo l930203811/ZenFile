@@ -8818,5 +8818,16 @@
   "ui_proxy_port": "Proxy-Port",
   "ui_proxy_username": "Proxy-Benutzername",
   "ui_proxy_password": "Proxy-Passwort",
-  "ui_proxy_hint": "Verbindungen werden über den SOCKS5-Proxy geleitet, um Server in virtuellen Intranets zu erreichen."
+  "ui_proxy_hint": "Verbindungen werden über den SOCKS5-Proxy geleitet, um Server in virtuellen Intranets zu erreichen.",
+  "ui_feedback_title": "Feedback senden",
+  "ui_crash_dialog_title": "Unerwartetes Beenden erkannt",
+  "ui_crash_dialog_body": "Die App wurde zuletzt unerwartet beendet und ein Diagnosebericht erstellt. Du kannst das Problem beschreiben und an den Entwickler senden, um die Behebung zu unterstützen.",
+  "ui_feedback_dialog_body": "Beschreibe das Problem oder den Vorschlag; er wird zusammen mit Geräteinformationen und Diagnoseprotokollen an den Entwickler gesendet.",
+  "ui_feedback_hint": "Problem oder Vorschlag beschreiben (optional)",
+  "ui_crash_attach_logs": "Diagnoseprotokolle anhängen ({count})",
+  "ui_feedback_send": "Senden",
+  "ui_feedback_later": "Später",
+  "ui_feedback_sent": "Feedback gesendet. Danke für deine Hilfe!",
+  "ui_feedback_failed": "Senden fehlgeschlagen. Bitte Netzwerk prüfen und erneut versuchen",
+  "ui_feedback_no_logs": "Keine Diagnoseprotokolle verfügbar"
 }

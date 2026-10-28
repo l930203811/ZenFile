@@ -9289,5 +9289,33 @@
   "@ui_proxy_port": {"description": "代理服务器端口输入框"},
   "@ui_proxy_username": {"description": "代理认证用户名（可选）"},
   "@ui_proxy_password": {"description": "代理认证密码（可选）"},
-  "@ui_proxy_hint": {"description": "SOCKS5 代理说明文字"}
+  "@ui_proxy_hint": {"description": "SOCKS5 代理说明文字"},
+  "ui_feedback_title": "问题反馈",
+  "@ui_feedback_title": {},
+  "ui_crash_dialog_title": "检测到异常退出",
+  "@ui_crash_dialog_title": {},
+  "ui_crash_dialog_body": "上次应用异常退出，已自动生成诊断报告。您可以补充描述遇到的问题，一并上报给开发者，帮助我们定位修复。",
+  "@ui_crash_dialog_body": {},
+  "ui_feedback_dialog_body": "请描述您遇到的问题或建议，将连同设备信息与诊断日志一并上报给开发者。",
+  "@ui_feedback_dialog_body": {},
+  "ui_feedback_hint": "请描述遇到的问题或建议（可留空）",
+  "@ui_feedback_hint": {},
+  "ui_crash_attach_logs": "附带诊断日志（{count} 份）",
+  "@ui_crash_attach_logs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_feedback_send": "上报",
+  "@ui_feedback_send": {},
+  "ui_feedback_later": "稍后再说",
+  "@ui_feedback_later": {},
+  "ui_feedback_sent": "反馈已提交，感谢您的帮助！",
+  "@ui_feedback_sent": {},
+  "ui_feedback_failed": "上报失败，请检查网络后重试",
+  "@ui_feedback_failed": {},
+  "ui_feedback_no_logs": "暂无可附带的诊断日志",
+  "@ui_feedback_no_logs": {}
 }

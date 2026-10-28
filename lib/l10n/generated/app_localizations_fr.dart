@@ -9130,4 +9130,43 @@ class L10nFr extends L10n {
   @override
   String get ui_proxy_hint =>
       'Les connexions passent par le proxy SOCKS5 pour atteindre les serveurs d\'un intranet virtuel.';
+
+  @override
+  String get ui_feedback_title => 'Envoyer des commentaires';
+
+  @override
+  String get ui_crash_dialog_title => 'Sortie inattendue détectée';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'L\'application s\'est arrêtée de manière inattendue et un rapport de diagnostic a été généré. Vous pouvez décrire le problème et l\'envoyer au développeur pour nous aider à le localiser et le corriger.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'Décrivez le problème ou la suggestion ; ils seront envoyés au développeur avec les informations de l\'appareil et les journaux de diagnostic.';
+
+  @override
+  String get ui_feedback_hint =>
+      'Décrivez le problème ou la suggestion (facultatif)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'Joindre les journaux de diagnostic ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'Envoyer';
+
+  @override
+  String get ui_feedback_later => 'Plus tard';
+
+  @override
+  String get ui_feedback_sent => 'Commentaires envoyés. Merci de votre aide !';
+
+  @override
+  String get ui_feedback_failed =>
+      'Échec de l\'envoi. Vérifiez le réseau et réessayez';
+
+  @override
+  String get ui_feedback_no_logs => 'Aucun journal de diagnostic disponible';
 }

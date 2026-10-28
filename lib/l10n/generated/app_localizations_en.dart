@@ -8988,4 +8988,42 @@ class L10nEn extends L10n {
   @override
   String get ui_proxy_hint =>
       'Connections are tunneled through the SOCKS5 proxy, so servers inside a virtual intranet can be reached.';
+
+  @override
+  String get ui_feedback_title => 'Send feedback';
+
+  @override
+  String get ui_crash_dialog_title => 'Unexpected exit detected';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'The app exited unexpectedly last time and a diagnostic report was generated. You can describe the problem and send it to the developer to help us locate and fix it.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'Describe the issue or suggestion; it will be sent to the developer together with device info and diagnostic logs.';
+
+  @override
+  String get ui_feedback_hint => 'Describe the issue or suggestion (optional)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'Attach diagnostic logs ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'Send';
+
+  @override
+  String get ui_feedback_later => 'Later';
+
+  @override
+  String get ui_feedback_sent => 'Feedback sent. Thank you for your help!';
+
+  @override
+  String get ui_feedback_failed =>
+      'Upload failed. Please check your network and try again';
+
+  @override
+  String get ui_feedback_no_logs => 'No diagnostic logs available';
 }

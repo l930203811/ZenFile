@@ -9111,4 +9111,43 @@ class L10nEs extends L10n {
   @override
   String get ui_proxy_hint =>
       'Las conexiones se tunelizan a través del proxy SOCKS5 para acceder a servidores de una intranet virtual.';
+
+  @override
+  String get ui_feedback_title => 'Enviar comentarios';
+
+  @override
+  String get ui_crash_dialog_title => 'Se detectó un cierre inesperado';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'La aplicación se cerró inesperadamente la última vez y se generó un informe de diagnóstico. Puedes describir el problema y enviarlo al desarrollador para ayudarnos a localizarlo y corregirlo.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'Describe el problema o sugerencia; se enviará al desarrollador junto con la información del dispositivo y los registros de diagnóstico.';
+
+  @override
+  String get ui_feedback_hint => 'Describe el problema o sugerencia (opcional)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'Adjuntar registros de diagnóstico ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'Enviar';
+
+  @override
+  String get ui_feedback_later => 'Más tarde';
+
+  @override
+  String get ui_feedback_sent => 'Comentarios enviados. ¡Gracias por tu ayuda!';
+
+  @override
+  String get ui_feedback_failed =>
+      'Error al enviar. Comprueba la red e inténtalo de nuevo';
+
+  @override
+  String get ui_feedback_no_logs =>
+      'No hay registros de diagnóstico disponibles';
 }

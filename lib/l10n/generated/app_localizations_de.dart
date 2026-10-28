@@ -9090,4 +9090,43 @@ class L10nDe extends L10n {
   @override
   String get ui_proxy_hint =>
       'Verbindungen werden über den SOCKS5-Proxy geleitet, um Server in virtuellen Intranets zu erreichen.';
+
+  @override
+  String get ui_feedback_title => 'Feedback senden';
+
+  @override
+  String get ui_crash_dialog_title => 'Unerwartetes Beenden erkannt';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'Die App wurde zuletzt unerwartet beendet und ein Diagnosebericht erstellt. Du kannst das Problem beschreiben und an den Entwickler senden, um die Behebung zu unterstützen.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'Beschreibe das Problem oder den Vorschlag; er wird zusammen mit Geräteinformationen und Diagnoseprotokollen an den Entwickler gesendet.';
+
+  @override
+  String get ui_feedback_hint =>
+      'Problem oder Vorschlag beschreiben (optional)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'Diagnoseprotokolle anhängen ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'Senden';
+
+  @override
+  String get ui_feedback_later => 'Später';
+
+  @override
+  String get ui_feedback_sent => 'Feedback gesendet. Danke für deine Hilfe!';
+
+  @override
+  String get ui_feedback_failed =>
+      'Senden fehlgeschlagen. Bitte Netzwerk prüfen und erneut versuchen';
+
+  @override
+  String get ui_feedback_no_logs => 'Keine Diagnoseprotokolle verfügbar';
 }

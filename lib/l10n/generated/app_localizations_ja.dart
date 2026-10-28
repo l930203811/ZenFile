@@ -8701,4 +8701,41 @@ class L10nJa extends L10n {
 
   @override
   String get ui_proxy_hint => 'SOCKS5 プロキシ経由で接続を転送し、仮想内部ネットワークのサーバーへアクセスできます。';
+
+  @override
+  String get ui_feedback_title => 'フィードバック';
+
+  @override
+  String get ui_crash_dialog_title => '異常終了を検出';
+
+  @override
+  String get ui_crash_dialog_body =>
+      '前回アプリが異常終了し、診断レポートを生成しました。問題の説明を添えて開発者に送信すると、原因の特定に役立ちます。';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      '問題やご提案をご記入ください。端末情報と診断ログとともに開発者へ送信されます。';
+
+  @override
+  String get ui_feedback_hint => '問題やご提案を記入（任意）';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return '診断ログを添付（$count 件）';
+  }
+
+  @override
+  String get ui_feedback_send => '送信';
+
+  @override
+  String get ui_feedback_later => '後で';
+
+  @override
+  String get ui_feedback_sent => 'フィードバックを送信しました。ありがとうございます！';
+
+  @override
+  String get ui_feedback_failed => '送信に失敗しました。ネットワークを確認して再試行してください';
+
+  @override
+  String get ui_feedback_no_logs => '添付できる診断ログはありません';
 }

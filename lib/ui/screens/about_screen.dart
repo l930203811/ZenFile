@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../widgets/crash_report_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AboutZenFileScreen extends StatelessWidget {
@@ -289,6 +290,14 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
+                  // 问题反馈：描述问题 + 可选附带本机诊断日志（已上传过的自动去重）
+                  _buildSocialAction(
+                    context,
+                    icon: Icons.feedback_rounded,
+                    label: L10n.of(context).ui_feedback_title,
+                    onTap: () => CrashReportDialog.showFeedback(context),
+                  ),
+                  const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Broken.magic_star,

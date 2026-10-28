@@ -8960,4 +8960,42 @@ class L10nAr extends L10n {
   @override
   String get ui_proxy_hint =>
       'يتم تمرير الاتصالات عبر الوسيط SOCKS5 للوصول إلى الخوادم داخل الشبكة الافتراضية.';
+
+  @override
+  String get ui_feedback_title => 'إرسال ملاحظات';
+
+  @override
+  String get ui_crash_dialog_title => 'تم اكتشاف إنهاء غير متوقع';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'خرج التطبيق بشكل غير متوقع في المرة الأخيرة وتم إنشاء تقرير تشخيصي. يمكنك وصف المشكلة وإرسالها للمطور لمساعدتنا في تحديد المشكلة وإصلاحها.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'صف المشكلة أو الاقتراح، وسيتم إرسالها للمطور مع معلومات الجهاز وسجلات التشخيص.';
+
+  @override
+  String get ui_feedback_hint => 'صف المشكلة أو الاقتراح (اختياري)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'إرفاق سجلات التشخيص ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'إرسال';
+
+  @override
+  String get ui_feedback_later => 'لاحقاً';
+
+  @override
+  String get ui_feedback_sent => 'تم إرسال الملاحظات، شكراً لمساعدتك!';
+
+  @override
+  String get ui_feedback_failed =>
+      'فشل الإرسال، يرجى التحقق من الشبكة والمحاولة مجدداً';
+
+  @override
+  String get ui_feedback_no_logs => 'لا توجد سجلات تشخيص متاحة';
 }

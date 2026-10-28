@@ -1197,6 +1197,12 @@ class PreferencesService {
   /// 用来判断「公共目录里少掉的那份是不是用户删的」—— 是的话就不再补回来。
   static const String _keyDeliveredCrashReports = 'crash_delivered_reports';
 
+  /// 用户反馈：**已成功上传到反馈端点**的报告文件名（避免重复上传）。
+  ///
+  /// 与「已提示 / 已交付」台账互不替代：提示只管 UI 只弹一次，交付只管原生
+  /// 镜像补拷，本集合只管「这份日志已经发到开发者手里了」。
+  static const String _keyUploadedCrashReports = 'crash_uploaded_reports';
+
   /// 自定义更新源（镜像 / 自建接口）地址。空 = 使用 GitHub 官方 API。
   static const String _keyUpdateApiUrl = 'update_api_url';
 
@@ -1317,6 +1323,15 @@ class PreferencesService {
 
   static Future<void> saveDeliveredCrashReports(List<String> names) async {
     await _prefs?.setStringList(_keyDeliveredCrashReports, names);
+  }
+
+  /// 用户反馈：已成功上传的报告文件名集合。
+  static List<String> getUploadedCrashReports() {
+    return _prefs?.getStringList(_keyUploadedCrashReports) ?? const <String>[];
+  }
+
+  static Future<void> saveUploadedCrashReports(List<String> names) async {
+    await _prefs?.setStringList(_keyUploadedCrashReports, names);
   }
 
   /// 获取远程媒体文件缩略图预览开关

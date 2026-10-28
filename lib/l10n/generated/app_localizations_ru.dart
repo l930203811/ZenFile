@@ -9073,4 +9073,43 @@ class L10nRu extends L10n {
   @override
   String get ui_proxy_hint =>
       'Подключения туннелируются через прокси SOCKS5 — доступ к серверам в виртуальной интрасети.';
+
+  @override
+  String get ui_feedback_title => 'Отправить отзыв';
+
+  @override
+  String get ui_crash_dialog_title => 'Обнаружен непредвиденный выход';
+
+  @override
+  String get ui_crash_dialog_body =>
+      'В прошлый раз приложение завершилось аварийно и был создан диагностический отчёт. Вы можете описать проблему и отправить её разработчику, чтобы помочь нам её найти и исправить.';
+
+  @override
+  String get ui_feedback_dialog_body =>
+      'Опишите проблему или предложение — они будут отправлены разработчику вместе с информацией об устройстве и журналами диагностики.';
+
+  @override
+  String get ui_feedback_hint =>
+      'Опишите проблему или предложение (необязательно)';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return 'Прикрепить журналы диагностики ($count)';
+  }
+
+  @override
+  String get ui_feedback_send => 'Отправить';
+
+  @override
+  String get ui_feedback_later => 'Позже';
+
+  @override
+  String get ui_feedback_sent => 'Отзыв отправлен. Спасибо за помощь!';
+
+  @override
+  String get ui_feedback_failed =>
+      'Не удалось отправить. Проверьте сеть и повторите попытку';
+
+  @override
+  String get ui_feedback_no_logs => 'Нет доступных журналов диагностики';
 }

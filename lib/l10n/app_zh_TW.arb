@@ -8969,5 +8969,16 @@
   "ui_proxy_port": "代理連接埠",
   "ui_proxy_username": "代理使用者名稱",
   "ui_proxy_password": "代理密碼",
-  "ui_proxy_hint": "透過 SOCKS5 代理轉發連線，可存取虛擬內網中的伺服器。"
+  "ui_proxy_hint": "透過 SOCKS5 代理轉發連線，可存取虛擬內網中的伺服器。",
+  "ui_feedback_title": "問題回報",
+  "ui_crash_dialog_title": "偵測到異常結束",
+  "ui_crash_dialog_body": "上次應用程式異常結束，已自動產生診斷報告。您可以補充描述遇到的問題，一併回報給開發者，協助我們定位修復。",
+  "ui_feedback_dialog_body": "請描述您遇到的問題或建議，將連同裝置資訊與診斷日誌一併回報給開發者。",
+  "ui_feedback_hint": "請描述遇到的問題或建議（可留空）",
+  "ui_crash_attach_logs": "附帶診斷日誌（{count} 份）",
+  "ui_feedback_send": "回報",
+  "ui_feedback_later": "稍後再說",
+  "ui_feedback_sent": "回報已送出，感謝您的協助！",
+  "ui_feedback_failed": "回報失敗，請檢查網路後重試",
+  "ui_feedback_no_logs": "目前沒有可附帶的診斷日誌"
 }

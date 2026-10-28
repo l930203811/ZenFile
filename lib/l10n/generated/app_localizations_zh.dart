@@ -8518,6 +8518,42 @@ class L10nZh extends L10n {
 
   @override
   String get ui_proxy_hint => '通过 SOCKS5 代理转发连接，可访问虚拟内网中的服务器。';
+
+  @override
+  String get ui_feedback_title => '问题反馈';
+
+  @override
+  String get ui_crash_dialog_title => '检测到异常退出';
+
+  @override
+  String get ui_crash_dialog_body =>
+      '上次应用异常退出，已自动生成诊断报告。您可以补充描述遇到的问题，一并上报给开发者，帮助我们定位修复。';
+
+  @override
+  String get ui_feedback_dialog_body => '请描述您遇到的问题或建议，将连同设备信息与诊断日志一并上报给开发者。';
+
+  @override
+  String get ui_feedback_hint => '请描述遇到的问题或建议（可留空）';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return '附带诊断日志（$count 份）';
+  }
+
+  @override
+  String get ui_feedback_send => '上报';
+
+  @override
+  String get ui_feedback_later => '稍后再说';
+
+  @override
+  String get ui_feedback_sent => '反馈已提交，感谢您的帮助！';
+
+  @override
+  String get ui_feedback_failed => '上报失败，请检查网络后重试';
+
+  @override
+  String get ui_feedback_no_logs => '暂无可附带的诊断日志';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17004,4 +17040,40 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_proxy_hint => '透過 SOCKS5 代理轉發連線，可存取虛擬內網中的伺服器。';
+
+  @override
+  String get ui_feedback_title => '問題回報';
+
+  @override
+  String get ui_crash_dialog_title => '偵測到異常結束';
+
+  @override
+  String get ui_crash_dialog_body =>
+      '上次應用程式異常結束，已自動產生診斷報告。您可以補充描述遇到的問題，一併回報給開發者，協助我們定位修復。';
+
+  @override
+  String get ui_feedback_dialog_body => '請描述您遇到的問題或建議，將連同裝置資訊與診斷日誌一併回報給開發者。';
+
+  @override
+  String get ui_feedback_hint => '請描述遇到的問題或建議（可留空）';
+
+  @override
+  String ui_crash_attach_logs(int count) {
+    return '附帶診斷日誌（$count 份）';
+  }
+
+  @override
+  String get ui_feedback_send => '回報';
+
+  @override
+  String get ui_feedback_later => '稍後再說';
+
+  @override
+  String get ui_feedback_sent => '回報已送出，感謝您的協助！';
+
+  @override
+  String get ui_feedback_failed => '回報失敗，請檢查網路後重試';
+
+  @override
+  String get ui_feedback_no_logs => '目前沒有可附帶的診斷日誌';
 }

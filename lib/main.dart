@@ -29,6 +29,7 @@ import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
 import 'services/bugly_report_service.dart';
 import 'services/crash_forensics_service.dart';
+import 'ui/widgets/crash_report_dialog.dart';
 import 'services/network_connections_service.dart';
 import 'services/share_intent_service.dart';
 import 'services/pin_service.dart';
@@ -423,23 +424,24 @@ void _maybeNotifyCrashReports() {
 }
 
 /// 提示用户「已保存诊断报告」。刻意做得极保守：
-/// 延迟到启动动画之后、拿不到 ScaffoldMessenger 就静默跳过 ——
+/// 延迟到启动动画之后、拿不到 Navigator 就静默跳过 ——
 /// **弹提示失败绝不能变成又一次崩溃**。
 ///
-/// [notified] 提示成功后才落盘：若因为拿不到 messenger 而没弹出来，下次启动会
+/// [notified] 提示成功后才落盘：若因为拿不到 navigator 而没弹出来，下次启动会
 /// 再试一次（否则「提示失败」会变成「永远不再提示」，反而丢了现场）。
+///
+/// 弹的是 [CrashReportDialog]（kind=crash）：用户可描述问题并连同诊断日志
+/// 一键上报（Workers → GitHub Issue），也可「稍后再说」—— 稍后仍可在
+/// 关于页「问题反馈」里补交（已上传过的日志按台账去重，不会重复发送）。
 void _notifyCrashReportSaved(List<String> notified) {
-  Timer(const Duration(milliseconds: 1200), () {
+  Timer(const Duration(milliseconds: 1500), () {
     try {
       final ctx = navigatorKey.currentContext;
-      if (ctx == null) return;
-      final messenger = ScaffoldMessenger.maybeOf(ctx);
-      if (messenger == null) return;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(L10n.of(ctx).crash_report_saved),
-          duration: const Duration(seconds: 6),
-        ),
+      if (ctx == null || !ctx.mounted) return;
+      showDialog(
+        context: ctx,
+        useRootNavigator: true,
+        builder: (_) => CrashReportDialog(kind: 'crash', logNames: notified),
       );
       unawaited(PreferencesService.saveNotifiedCrashReports(notified));
     } catch (_) {

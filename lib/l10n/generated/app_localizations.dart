@@ -15957,6 +15957,72 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'通过 SOCKS5 代理转发连接，可访问虚拟内网中的服务器。'**
   String get ui_proxy_hint;
+
+  /// No description provided for @ui_feedback_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'问题反馈'**
+  String get ui_feedback_title;
+
+  /// No description provided for @ui_crash_dialog_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到异常退出'**
+  String get ui_crash_dialog_title;
+
+  /// No description provided for @ui_crash_dialog_body.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次应用异常退出，已自动生成诊断报告。您可以补充描述遇到的问题，一并上报给开发者，帮助我们定位修复。'**
+  String get ui_crash_dialog_body;
+
+  /// No description provided for @ui_feedback_dialog_body.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述您遇到的问题或建议，将连同设备信息与诊断日志一并上报给开发者。'**
+  String get ui_feedback_dialog_body;
+
+  /// No description provided for @ui_feedback_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述遇到的问题或建议（可留空）'**
+  String get ui_feedback_hint;
+
+  /// No description provided for @ui_crash_attach_logs.
+  ///
+  /// In zh, this message translates to:
+  /// **'附带诊断日志（{count} 份）'**
+  String ui_crash_attach_logs(int count);
+
+  /// No description provided for @ui_feedback_send.
+  ///
+  /// In zh, this message translates to:
+  /// **'上报'**
+  String get ui_feedback_send;
+
+  /// No description provided for @ui_feedback_later.
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后再说'**
+  String get ui_feedback_later;
+
+  /// No description provided for @ui_feedback_sent.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈已提交，感谢您的帮助！'**
+  String get ui_feedback_sent;
+
+  /// No description provided for @ui_feedback_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'上报失败，请检查网络后重试'**
+  String get ui_feedback_failed;
+
+  /// No description provided for @ui_feedback_no_logs.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可附带的诊断日志'**
+  String get ui_feedback_no_logs;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
