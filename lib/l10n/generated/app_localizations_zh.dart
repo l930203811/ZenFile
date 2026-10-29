@@ -8248,6 +8248,9 @@ class L10nZh extends L10n {
   String get lyric_settings => '歌词设置';
 
   @override
+  String get audioSpectrumToggle => '频谱可视化';
+
+  @override
   String get lyric_style_pv => '文字 PV';
 
   @override
@@ -16768,6 +16771,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get lyric_settings => '歌詞設定';
+
+  @override
+  String get audioSpectrumToggle => '頻譜視覺化';
 
   @override
   String get lyric_style_pv => '文字 PV';

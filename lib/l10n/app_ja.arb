@@ -8740,6 +8740,7 @@
   "lyric_mode_half": "半画面表示",
   "lyric_mode_full": "全画面表示",
   "lyric_settings": "歌詞の設定",
+  "audioSpectrumToggle": "スペクトラム表示",
   "lyric_style_pv": "文字 PV",
   "lyric_style_pv_desc": "巨大な一行、文字の飛来・拡散、光の軌跡と閃光",
   "lyric_style_echo": "残響の欠片",

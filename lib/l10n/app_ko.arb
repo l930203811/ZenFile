@@ -8736,6 +8736,7 @@
   "lyric_mode_half": "반화면 표시",
   "lyric_mode_full": "전체화면",
   "lyric_settings": "가사 설정",
+  "audioSpectrumToggle": "스펙트럼 표시",
   "lyric_style_pv": "텍스트 PV",
   "lyric_style_pv_desc": "한 줄 거대 글자, 글자가 날아와 흩어지며 빛 궤적과 반짝임",
   "lyric_style_echo": "메아리 파편",

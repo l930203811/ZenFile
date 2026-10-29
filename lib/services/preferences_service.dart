@@ -1137,6 +1137,19 @@ class PreferencesService {
     await _prefs?.setBool(_keyDesktopLyricEnabled, val);
   }
 
+  // --- 音频频谱可视化 ---
+  /// 播放页频谱可视化开关（默认**开启**）。关闭后频谱区不渲染，
+  /// Visualizer 也会随之释放（省电，且不再产生原生采集回调）。
+  static const String _keyAudioSpectrumEnabled = 'audio_spectrum_enabled';
+
+  static bool getAudioSpectrumEnabled() {
+    return _prefs?.getBool(_keyAudioSpectrumEnabled) ?? true;
+  }
+
+  static Future<void> saveAudioSpectrumEnabled(bool val) async {
+    await _prefs?.setBool(_keyAudioSpectrumEnabled, val);
+  }
+
   // --- 自动下载歌词 ---
   /// 本地找不到歌词时自动在线搜索（默认**开启**：用户要的是「打开就有歌词」）。
   /// 只控制「自动」这一路；手动「在线搜索歌词」不受此开关影响。

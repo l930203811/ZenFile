@@ -22,6 +22,8 @@ import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
 import '../../../services/audio_equalizer_service.dart';
 import '../../../services/mpv_audio_output_service.dart';
+import '../../../services/audio_visualizer_service.dart';
+import '../../../services/webdav_debug_log.dart';
 import '../../../providers/file_manager_provider.dart';
 import '../../../providers/media_provider.dart';
 import '../internal_file_picker_screen.dart';
@@ -174,6 +176,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   // 桌面歌词悬浮窗
   bool _desktopLyricEnabled = false;
+  // 频谱可视化开关（三点菜单可切换，默认开启；关闭后频谱区不渲染、
+  // Visualizer 随之释放）
+  bool _spectrumEnabled = true;
   LyricAnimationStyle _lyricStyle = LyricAnimationStyle.mixed;
   // 标记用户已跳转系统设置请求悬浮窗权限，等待返回应用时复检
   bool _desktopLyricPendingPermission = false;
@@ -217,6 +222,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _currentIndex = q.index;
     _isBackgroundMode = PreferencesService.getAudioBackgroundPlay();
     _desktopLyricEnabled = PreferencesService.getDesktopLyricEnabled();
+    _spectrumEnabled = PreferencesService.getAudioSpectrumEnabled();
     _lyricStyle = LyricAnimationStyle.fromName(
         PreferencesService.getLyricAnimationStyleName());
     _lyricsDisplayMode = PreferencesService.getLyricsDisplayMode();
@@ -460,8 +466,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       player.stream.playing.listen((playing) {
         if (!mounted) return;
         setState(() => isPlaying = playing);
+        // 频谱可视化：播放时把 Visualizer 挂到本 player 的会话上取 FFT，
+        // 暂停即释放（见 AudioVisualizerService 注释）。
+        _syncAudioVisualizer(playing);
       }),
     );
+    // 初始同步一次：复用 player（通知栏返回 / 继续播放）时页面打开即处于
+    // 播放态，stream 不一定补发当前值。
+    _syncAudioVisualizer(player.state.playing);
     _playerSubs.add(
       player.stream.position.listen((p) {
         if (!mounted || isSeeking) return;
@@ -503,6 +515,75 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         setState(() => isBuffering = buffering);
       }),
     );
+  }
+
+  /// 同步频谱可视化状态：播放 → 挂 Visualizer（幂等），暂停 → 释放。
+  ///
+  /// 会话号来自 [MpvAudioOutputService.sessionIdOf]（`audiotrack-session-id`
+  /// 固定的会话，Visualizer 挂同一个会话才拿得到 FFT）。复用 player 的路径上
+  /// 档位是**异步热应用**的，会话号可能还没写入，此时延迟重试一次；仍拿不到
+  /// 或非 Android → 服务保持不可用，波形组件自动回落伪波形，无任何副作用。
+  void _syncAudioVisualizer(bool playing) {
+    if (!Platform.isAndroid) return;
+    // 开关关闭：不挂载 / 释放已有 Visualizer（省电 + 无原生采集回调）。
+    if (!_spectrumEnabled) {
+      unawaited(AudioVisualizerService.instance.stop());
+      return;
+    }
+    // 诊断：确认播放/暂停钩子真的触发了（落盘 webdav_debug.log，无 adb 可取）。
+    WebdavDebugLog.log('[viz] sync playing=$playing');
+    final viz = AudioVisualizerService.instance;
+    if (!playing) {
+      unawaited(viz.stop());
+      return;
+    }
+    unawaited(_ensureVisualizerStarted(viz));
+  }
+
+  Future<void> _ensureVisualizerStarted(AudioVisualizerService viz) async {
+    // ⚠️ 首次尝试几乎必然早于 mpv 建立 AudioTrack：media_kit 的 playing=true
+    // 在 open() 时就触发，而 AudioTrack 要等解码真正出声才创建 —— 部分机型的
+    // Visualizer 引擎在「会话还没有输出轨道」时初始化失败（真机实测日志：
+    // `Cannot initialize Visualizer engine, error: -3` = AudioEffect NO_INIT，
+    // sid 与 AO 档位均正常）。⇒ 播放期间退避重试，等轨道出现；5 次仍失败
+    // 则本轮放弃回落伪波形（引擎确实缺失的机型也只多 5 次轻量尝试）。
+    for (var attempt = 0; attempt < 6; attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(Duration(milliseconds: 1500 * attempt));
+      }
+      // ⚠️ 用 player.state.playing（实时真值）而不是 isPlaying 状态字段：
+      // 复用 player 的路径（后台播放返回 / existingPlayer）里 _initListeners()
+      // 在 setState(isPlaying) **之前**执行，初始 sync 时状态字段还是默认的
+      // false —— 若在这里读它，重进页面时频谱永远不会启动（用户反馈
+      // 2026-10-29：退出页面再进频谱消失，切歌才恢复）。
+      if (!mounted || !player.state.playing) return;
+      final sid = MpvAudioOutputService.sessionIdOf(player) ?? 0;
+      if (attempt == 0 || sid <= 0) {
+        WebdavDebugLog.log('[viz] ensure attempt#${attempt + 1} sid=$sid '
+            'ao=${PreferencesService.getAudioOutputMode().key} '
+            'alreadyRunning=${viz.available}');
+      }
+      if (await viz.start(sid)) return;
+    }
+    WebdavDebugLog.log('[viz] 多次重试后仍挂载失败，本轮放弃（回落伪波形）');
+  }
+
+  /// 频谱可视化开关切换（三点菜单）：持久化 + 即时生效。
+  ///
+  /// 开启且正在播放 → 立即挂载 Visualizer；关闭 → 释放（频谱区随
+  /// [AudioWaveformWidget.showSpectrum] 不再渲染）。
+  void _handleSpectrumToggle(void Function(void Function()) setSheet) {
+    final nv = !_spectrumEnabled;
+    setSheet(() {});
+    if (!mounted) return;
+    setState(() => _spectrumEnabled = nv);
+    unawaited(PreferencesService.saveAudioSpectrumEnabled(nv));
+    final viz = AudioVisualizerService.instance;
+    if (nv && Platform.isAndroid && player.state.playing) {
+      unawaited(_ensureVisualizerStarted(viz));
+    } else if (!nv) {
+      unawaited(viz.stop());
+    }
   }
 
   /// 取消全部播放器事件订阅（`dispose()` 与重复 `_initListeners()` 共用）。
@@ -815,6 +896,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // ⚠️ 摘掉挂在 player 上的事件订阅：后台播放模式下 player 会被保留（音乐继续
     // 播），不摘掉就会在复用的 player 上越堆越多（见 _playerSubs 声明处）。
     _cancelPlayerSubs();
+    // 频谱可视化随页面销毁释放：FFT 已无消费者，留着只浪费原生回调。
+    unawaited(AudioVisualizerService.instance.stop());
     // 清理远程流式会话
     _stopCurrentStream();
     if (_isBackgroundMode) {
@@ -872,10 +955,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  void _cyclePlaybackMode() {
+  /// 从弹出菜单选定播放模式（0=列表播放 1=列表循环 2=单曲循环 3=随机）。
+  void _selectPlaybackMode(int mode) {
+    if (mode == _playbackMode) return;
     final l10n = L10n.of(context);
     setState(() {
-      _playbackMode = (_playbackMode + 1) % 4;
+      _playbackMode = mode;
       _applyPlaybackMode(_playbackMode);
     });
     PreferencesService.saveAudioPlaybackMode(_playbackMode);
@@ -3099,6 +3184,29 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       _handleBackgroundToggle(ctx, () => setSheet(() {}));
                     },
                   ),
+                  // ── 频谱可视化开关 ─────────────────────────────────────────────
+                  ListTile(
+                    leading: Icon(
+                      Icons.graphic_eq_rounded,
+                      color: _spectrumEnabled
+                          ? Colors.greenAccent
+                          : Colors.white,
+                    ),
+                    title: Text(
+                      L10n.of(context).audioSpectrumToggle,
+                      style: TextStyle(
+                        color:
+                            _spectrumEnabled ? Colors.greenAccent : Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: Switch(
+                      value: _spectrumEnabled,
+                      activeColor: Colors.greenAccent,
+                      onChanged: (_) => _handleSpectrumToggle(setSheet),
+                    ),
+                    onTap: () => _handleSpectrumToggle(setSheet),
+                  ),
                   // ── 歌词设置（桌面歌词 / 动画风格 / 搜索 / 导入统一入口） ──────
                   ListTile(
                     leading: const Icon(Icons.music_note_rounded,
@@ -3409,6 +3517,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                             duration: duration,
                             isPlaying: isPlaying,
                             accentColor: accent,
+                            visualizer: AudioVisualizerService.instance,
+                            showSpectrum: _spectrumEnabled,
                             onSeekStart: () => isSeeking = true,
                             onSeekCancel: () => isSeeking = false,
                             onSeek: (d) {
@@ -3421,8 +3531,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                         const SizedBox(height: 14),
                         AudioControlsWidget(
                           isPlaying: isPlaying,
-                          position: position,
-                          duration: duration,
                           onPlayPause: () => player.playOrPause(),
                           onPrevious: _allSongs.length > 1 ? _playPrevious : null,
                           onNext: _allSongs.length > 1 ? _playNext : null,
@@ -3431,7 +3539,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           onShowEqualizer: _showEqualizerSheet,
                           onShowQueue: () => _showQueueSheet(accent),
                           playbackMode: _playbackMode,
-                          onTogglePlaybackMode: _cyclePlaybackMode,
+                          onPlaybackModeSelected: _selectPlaybackMode,
                           accentColor: accent,
                           lyricsDisplayMode: _lyricsDisplayMode,
                           audioPath: _currentPath,
@@ -3527,11 +3635,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                         ),
                       ),
                       // 标题 / 收藏 / 波形 / 播控整体 pinned 到导航栏上方：
-                      // 间距均匀（12dp），底部再留 20dp 不紧贴导航栏。
+                      // 横屏视口矮，间距全部收紧（4~6dp）、底部留 10dp。
                       // 沉浸态整块收起（见 [_immersiveChrome]）。
                       _immersiveChrome(
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
+                          // 横屏视口矮：底部呼吸空间收紧（20→10），配合紧凑
+                          // 波形与 compact 播控，保证右列不溢出屏幕底部。
+                          padding: const EdgeInsets.only(bottom: 10),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -3550,18 +3660,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                       scrollWhenPaused: true,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w800,
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         letterSpacing: 0.2,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 4),
                                     Text(
                                       _getDisplayArtist(),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         color: theme.colorScheme.onSurface
                                             .withValues(alpha: 0.6),
                                         fontWeight: FontWeight.w600,
@@ -3570,8 +3680,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 4),
                               IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
                                 icon: Icon(
                                   _isFavorite
                                       ? Icons.favorite_rounded
@@ -3581,12 +3697,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                       : theme.colorScheme.onSurface.withValues(
                                           alpha: 0.6,
                                         ),
-                                  size: 32,
+                                  size: 26,
                                 ),
                                 onPressed: () =>
                                     setState(() => _isFavorite = !_isFavorite),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 4),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 24,
@@ -3596,6 +3712,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                   duration: duration,
                                   isPlaying: isPlaying,
                                   accentColor: accent,
+                                  visualizer: AudioVisualizerService.instance,
+                                  showSpectrum: _spectrumEnabled,
+                                  compact: true,
                                   onSeekStart: () => isSeeking = true,
                                   onSeekCancel: () => isSeeking = false,
                                   onSeek: (d) {
@@ -3605,11 +3724,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 6),
                               AudioControlsWidget(
                                 isPlaying: isPlaying,
-                                position: position,
-                                duration: duration,
+                                compact: true,
                                 onPlayPause: () => player.playOrPause(),
                                 onPrevious: _allSongs.length > 1
                                     ? _playPrevious
@@ -3620,7 +3738,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                 onShowEqualizer: _showEqualizerSheet,
                                 onShowQueue: () => _showQueueSheet(accent),
                                 playbackMode: _playbackMode,
-                                onTogglePlaybackMode: _cyclePlaybackMode,
+                                onPlaybackModeSelected: _selectPlaybackMode,
                                 accentColor: accent,
                                 lyricsDisplayMode: _lyricsDisplayMode,
                                 audioPath: _currentPath,

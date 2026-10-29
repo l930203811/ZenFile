@@ -8816,6 +8816,9 @@ class L10nEs extends L10n {
   String get lyric_settings => 'Ajustes de letra';
 
   @override
+  String get audioSpectrumToggle => 'Visualización del espectro';
+
+  @override
   String get lyric_style_pv => 'PV de texto';
 
   @override

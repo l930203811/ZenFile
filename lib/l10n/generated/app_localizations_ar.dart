@@ -8668,6 +8668,9 @@ class L10nAr extends L10n {
   String get lyric_settings => 'إعدادات كلمات الأغاني';
 
   @override
+  String get audioSpectrumToggle => 'المرئيات الطيفية';
+
+  @override
   String get lyric_style_pv => 'عرض نصي متحرك';
 
   @override

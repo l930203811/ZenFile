@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.6.8';
+  static const String _latestChangelogVersion = 'v3.7.0';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v370,
     _v368,
     _v367,
     _v366,
@@ -955,6 +956,38 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v330,
     _v320,
   ];
+
+  /// ── 当前版本：v3.7.0 ────────────────────────────────────────────────
+  static const _Changelog _v370 = _Changelog(
+    version: 'v3.7.0',
+    date: '2026-10-29',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '播放页新增实时音频频谱：跟随正在播放的音乐真实跳动，高中低频高低分明；绿色→黄色→红色 LED 分段柱形，带峰值帽与下沉倒影（右上角三点菜单可关闭，默认开启，选择会被记住）',
+        '播放模式改为菜单选择：点击播放器底部的播放模式按钮弹出菜单，直接选择「顺序播放 / 列表循环 / 单曲循环 / 随机播放」，当前模式高亮并打勾，无需再反复点击切换',
+      ]),
+      _ChangeSection('✨ 界面优化', [
+        '播放页进度条与播放时间紧贴频谱倒影区，版面更紧凑',
+      ]),
+      _ChangeSection('✨ 其他', [
+        '频谱优先读取本应用自身的音频输出，绝大多数机型无需麦克风权限；仅个别机型需要回退时才会申请一次，拒绝后不再重复弹窗',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'The player page gains a real-time audio spectrum: it follows the music that is actually playing, with clear low / mid / high separation; green → yellow → red LED segments with peak caps and a mirrored reflection (can be turned off in the top-right overflow menu; on by default and remembered)',
+        'Playback mode is now picked from a menu: tap the mode button at the bottom of the player to open a menu and choose "Sequential / Repeat all / Repeat one / Shuffle" directly, with the current mode highlighted and ticked — no more repeated tapping to cycle',
+      ]),
+      _ChangeSection('✨ UI Improvements', [
+        'Tighter layout on the player page: the progress bar and playback time now sit right against the spectrum reflection',
+      ]),
+      _ChangeSection('✨ Others', [
+        'The spectrum reads this app\'s own audio output first, so no microphone permission is needed on most devices; a single request is only made on the few devices that need a fallback, and declining it will not prompt again',
+        'Other minor improvements',
+      ]),
+    ],
+  );
 
   /// ── 当前版本：v3.6.8 ────────────────────────────────────────────────
   static const _Changelog _v368 = _Changelog(

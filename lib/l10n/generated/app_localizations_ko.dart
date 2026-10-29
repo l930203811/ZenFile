@@ -8436,6 +8436,9 @@ class L10nKo extends L10n {
   String get lyric_settings => '가사 설정';
 
   @override
+  String get audioSpectrumToggle => '스펙트럼 표시';
+
+  @override
   String get lyric_style_pv => '텍스트 PV';
 
   @override

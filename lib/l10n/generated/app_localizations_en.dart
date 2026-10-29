@@ -8695,6 +8695,9 @@ class L10nEn extends L10n {
   String get lyric_settings => 'Lyric settings';
 
   @override
+  String get audioSpectrumToggle => 'Spectrum visualization';
+
+  @override
   String get lyric_style_pv => 'Text PV';
 
   @override

@@ -8733,6 +8733,7 @@
   "lyric_mode_half": "Halber Bildschirm",
   "lyric_mode_full": "Vollbild",
   "lyric_settings": "Songtext-Einstellungen",
+  "audioSpectrumToggle": "Spektrum-Visualisierung",
   "lyric_style_pv": "Text-PV",
   "lyric_style_pv_desc": "Riesige Zeile: fliegende Buchstaben, Partikelspuren und Funken",
   "lyric_style_echo": "Echo-Fragmente",

@@ -193,6 +193,14 @@ class MpvAudioOutputService {
   /// Player 被释放后条目自动失效。
   static final Expando<int> _sessionIdOf = Expando<int>('zenfile.aoSessionId');
 
+  /// [player] 固定的音频会话号（[configureBeforeOpen] / [applyToRunningPlayer]
+  /// 时申请并写入 mpv 的 `audiotrack-session-id`，AudioTrack 建立即绑这个会话）。
+  ///
+  /// 供音频频谱可视化读取：`Visualizer` 必须挂在**真正出声的那个会话**上才有
+  /// FFT 数据。返回 null 表示该 player 从未固定会话号（非 Android / 通道失败 /
+  /// 档位不含 audiotrack 候选），可视化应回落伪波形。
+  static int? sessionIdOf(Player player) => _sessionIdOf[player];
+
   /// 已经挂过 mpv 日志转储的 [Player]（同一实例只挂一次，避免重复刷盘）。
   static final Expando<bool> _logAttached = Expando<bool>('zenfile.mpvLogAttached');
 

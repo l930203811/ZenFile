@@ -8835,6 +8835,9 @@ class L10nFr extends L10n {
   String get lyric_settings => 'Réglages des paroles';
 
   @override
+  String get audioSpectrumToggle => 'Visualisation du spectre';
+
+  @override
   String get lyric_style_pv => 'PV textuel';
 
   @override

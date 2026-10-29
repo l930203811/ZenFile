@@ -9108,6 +9108,7 @@
   "lyric_mode_half": "半屏显示",
   "lyric_mode_full": "全屏显示",
   "lyric_settings": "歌词设置",
+  "audioSpectrumToggle": "频谱可视化",
   "lyric_style_pv": "文字 PV",
   "lyric_style_pv_desc": "单行巨字，唱到的字飞入、炸开，带光轨与闪点",
   "lyric_style_echo": "回声碎片",

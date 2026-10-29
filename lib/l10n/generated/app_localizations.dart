@@ -15448,6 +15448,12 @@ abstract class L10n {
   /// **'歌词设置'**
   String get lyric_settings;
 
+  /// No description provided for @audioSpectrumToggle.
+  ///
+  /// In zh, this message translates to:
+  /// **'频谱可视化'**
+  String get audioSpectrumToggle;
+
   /// No description provided for @lyric_style_pv.
   ///
   /// In zh, this message translates to:

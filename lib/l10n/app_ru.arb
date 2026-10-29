@@ -8736,6 +8736,7 @@
   "lyric_mode_half": "Полэкрана",
   "lyric_mode_full": "Полный экран",
   "lyric_settings": "Настройки текста",
+  "audioSpectrumToggle": "Визуализация спектра",
   "lyric_style_pv": "Текстовый PV",
   "lyric_style_pv_desc": "Огромная строка: буквы влетают и разлетаются, со световыми треками и искрами",
   "lyric_style_echo": "Осколки эха",

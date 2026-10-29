@@ -8780,6 +8780,9 @@ class L10nRu extends L10n {
   String get lyric_settings => 'Настройки текста';
 
   @override
+  String get audioSpectrumToggle => 'Визуализация спектра';
+
+  @override
   String get lyric_style_pv => 'Текстовый PV';
 
   @override

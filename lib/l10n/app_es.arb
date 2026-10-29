@@ -8736,6 +8736,7 @@
   "lyric_mode_half": "Media pantalla",
   "lyric_mode_full": "Pantalla completa",
   "lyric_settings": "Ajustes de letra",
+  "audioSpectrumToggle": "Visualización del espectro",
   "lyric_style_pv": "PV de texto",
   "lyric_style_pv_desc": "Línea gigante con letras voladoras, estelas de partículas y destellos",
   "lyric_style_echo": "Fragmentos de eco",

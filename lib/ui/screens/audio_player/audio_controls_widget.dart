@@ -6,8 +6,6 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AudioControlsWidget extends StatelessWidget {
   final bool isPlaying;
-  final Duration position;
-  final Duration duration;
   final VoidCallback onPlayPause;
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
@@ -17,18 +15,22 @@ class AudioControlsWidget extends StatelessWidget {
   final VoidCallback onShowQueue;
   // 0=sequential, 1=list loop, 2=single loop, 3=shuffle
   final int playbackMode;
-  final VoidCallback onTogglePlaybackMode;
+
+  /// 从弹出菜单中选定播放模式（值同 [playbackMode] 的编码）。
+  final ValueChanged<int> onPlaybackModeSelected;
   final Color accentColor;
   // 0=off, 1=single line, 2=multi line, 3=full panel
   final int lyricsDisplayMode;
   // 当前播放文件的路径，用于从扩展名/文件头推断真实格式与位深
   final String? audioPath;
 
+  /// 紧凑模式（横屏等矮视口）：播放圆钮 76→56、行距 32→10、工具键 40→32，
+  /// 保证「主控行 + 底部工具行」在横屏高度内完整可见。
+  final bool compact;
+
   const AudioControlsWidget({
     super.key,
     required this.isPlaying,
-    required this.position,
-    required this.duration,
     required this.onPlayPause,
     required this.onPrevious,
     required this.onNext,
@@ -37,40 +39,38 @@ class AudioControlsWidget extends StatelessWidget {
     required this.onShowEqualizer,
     required this.onShowQueue,
     required this.playbackMode,
-    required this.onTogglePlaybackMode,
+    required this.onPlaybackModeSelected,
     required this.accentColor,
     this.lyricsDisplayMode = 0,
     this.audioPath,
+    this.compact = false,
   });
-
-  String _formatDuration(Duration d) {
-    final m = d.inMinutes;
-    final s = d.inSeconds % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final compact = this.compact;
+    // 紧凑模式的几何参数（普通模式与原值一致）。
+    final mainIconSize = compact ? 26.0 : 32.0;
+    final playSize = compact ? 56.0 : 76.0;
+    final playIconSize = compact ? 30.0 : 38.0;
+    final rowGap = compact ? 10.0 : 16.0;
+    final sectionGap = compact ? 10.0 : 32.0;
+    final utilIconSize = compact ? 20.0 : 22.0;
+    final utilConstraints = BoxConstraints(
+      minWidth: compact ? 32 : 40,
+      minHeight: compact ? 32 : 40,
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Main Playback Row with Inline Duration (Matching Screenshot 2)
+        // Main Playback Row（当前/总时长已移至波形组件进度条下方，此处只留控制键）
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Elapsed Time
-              Text(
-                _formatDuration(position),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
               // Main Control Buttons
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -78,20 +78,20 @@ class AudioControlsWidget extends StatelessWidget {
                   // Previous Track
                   IconButton(
                     icon: const Icon(Broken.previous),
-                    iconSize: 32,
+                    iconSize: mainIconSize,
                     color: onPrevious != null
                         ? theme.colorScheme.onSurface
                         : theme.colorScheme.onSurface.withValues(alpha: 0.25),
                     onPressed: onPrevious,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: rowGap),
                   // Big Play / Pause Circle (Indigo / Accent Tint matching Screenshot 2)
                   GestureDetector(
                     onTap: onPlayPause,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
-                      width: 76,
-                      height: 76,
+                      width: playSize,
+                      height: playSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color.alphaBlend(accentColor.withValues(alpha: 0.75), theme.colorScheme.surface),
@@ -115,17 +115,17 @@ class AudioControlsWidget extends StatelessWidget {
                             isPlaying ? Broken.pause : Broken.play,
                             key: ValueKey(isPlaying),
                             color: Colors.white,
-                            size: 38,
+                            size: playIconSize,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: rowGap),
                   // Next Track
                   IconButton(
                     icon: const Icon(Broken.next),
-                    iconSize: 32,
+                    iconSize: mainIconSize,
                     color: onNext != null
                         ? theme.colorScheme.onSurface
                         : theme.colorScheme.onSurface.withValues(alpha: 0.25),
@@ -133,19 +133,10 @@ class AudioControlsWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              // Total Duration
-              Text(
-                _formatDuration(duration),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: sectionGap),
         // Bottom Utility Row (Quality badge on Left, Action Utilities on Right)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -156,7 +147,10 @@ class AudioControlsWidget extends StatelessWidget {
               children: [
                 // Quality Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 10 : 14,
+                    vertical: compact ? 3 : 6,
+                  ),
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -176,8 +170,10 @@ class AudioControlsWidget extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Playback mode toggle
-                    IconButton(
+                    // Playback mode：点击向上弹出菜单选择模式（不再点击一次
+                    // 切换一个）。PopupMenuButton 在屏幕底部时框架会自动把
+                    // 菜单弹在按钮上方；四个标题复用既有 l10n 键，天然多语言。
+                    PopupMenuButton<int>(
                       icon: Icon(
                         playbackMode == 0
                             ? Icons.playlist_play_rounded
@@ -187,8 +183,8 @@ class AudioControlsWidget extends StatelessWidget {
                                     ? Icons.repeat_one_rounded
                                     : Icons.shuffle_rounded,
                       ),
-                      iconSize: 22,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
                       padding: EdgeInsets.zero,
                       tooltip: playbackMode == 0
                           ? L10n.of(context).ui_play_mode_sequential
@@ -197,14 +193,27 @@ class AudioControlsWidget extends StatelessWidget {
                               : playbackMode == 2
                                   ? L10n.of(context).ui_play_mode_single_loop
                                   : L10n.of(context).ui_play_mode_shuffle,
-                      color: accentColor,
-                      onPressed: onTogglePlaybackMode,
+                      color: theme.brightness == Brightness.dark
+                          ? const Color(0xFF2A2A3C)
+                          : null,
+                      initialValue: playbackMode,
+                      onSelected: onPlaybackModeSelected,
+                      itemBuilder: (ctx) => [
+                        _playModeItem(ctx, 0, Icons.playlist_play_rounded,
+                            L10n.of(context).ui_play_mode_sequential),
+                        _playModeItem(ctx, 1, Icons.repeat_rounded,
+                            L10n.of(context).ui_play_mode_list_loop),
+                        _playModeItem(ctx, 2, Icons.repeat_one_rounded,
+                            L10n.of(context).ui_play_mode_single_loop),
+                        _playModeItem(ctx, 3, Icons.shuffle_rounded,
+                            L10n.of(context).ui_play_mode_shuffle),
+                      ],
                     ),
                     // Sound FX / Equalizer
                     IconButton(
                       icon: const Icon(Icons.tune_rounded),
-                      iconSize: 22,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
                       padding: EdgeInsets.zero,
                       tooltip: L10n.of(context).ui_sound_effects,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
@@ -213,8 +222,8 @@ class AudioControlsWidget extends StatelessWidget {
                     // Lyrics display mode toggle
                     IconButton(
                       icon: const Icon(Broken.document),
-                      iconSize: 22,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
                       padding: EdgeInsets.zero,
                       tooltip: lyricsDisplayMode == 0
                           ? L10n.of(context).ui_lyrics_mode_off
@@ -233,8 +242,8 @@ class AudioControlsWidget extends StatelessWidget {
                     // Sleep Timer
                     IconButton(
                       icon: const Icon(Broken.timer),
-                      iconSize: 22,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
                       padding: EdgeInsets.zero,
                       tooltip: L10n.of(context).msg47cab5ae,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
@@ -243,8 +252,8 @@ class AudioControlsWidget extends StatelessWidget {
                     // Queue
                     IconButton(
                       icon: const Icon(Icons.queue_music_rounded),
-                      iconSize: 22,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
                       padding: EdgeInsets.zero,
                       tooltip: L10n.of(context).ui_playback_queue,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
@@ -257,6 +266,44 @@ class AudioControlsWidget extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// 播放模式菜单项：图标 + 本地化标题，当前模式带勾选标记。
+  PopupMenuItem<int> _playModeItem(
+    BuildContext context,
+    int value,
+    IconData icon,
+    String label,
+  ) {
+    final theme = Theme.of(context);
+    final selected = playbackMode == value;
+    return PopupMenuItem<int>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withValues(alpha: 0.75),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? theme.colorScheme.primary : null,
+              ),
+            ),
+          ),
+          if (selected)
+            Icon(Icons.check_rounded,
+                size: 18, color: theme.colorScheme.primary),
+        ],
+      ),
     );
   }
 }

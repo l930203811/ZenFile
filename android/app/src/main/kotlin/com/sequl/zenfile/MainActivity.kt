@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.StatFs
+import android.util.Log
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.MediaStore
@@ -23,6 +24,7 @@ import android.os.Handler
 import android.os.Looper
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
@@ -58,6 +60,7 @@ import android.media.MediaMetadataRetriever
 import androidx.core.content.FileProvider
 import java.util.zip.ZipFile
 import android.media.audiofx.Equalizer
+import android.media.audiofx.Visualizer
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -73,6 +76,21 @@ class MainActivity : AudioServiceFragmentActivity() {
     private var safPermissionResult: MethodChannel.Result? = null
     private val SAF_REQUEST_CODE = 10002
     private var equalizer: Equalizer? = null
+
+    // 音频频谱可视化：挂在**本应用自己的音频会话**上的 Visualizer（见下方
+    // audio_visualizer 通道注释），fft 回调经 EventChannel 推给 Dart。
+    private var visualizer: Visualizer? = null
+    private var visualizerEventSink: EventChannel.EventSink? = null
+
+    // Visualizer 当前挂的会话号（0 = 全局输出混音回退）与 fft 帧计数
+    // （restart 自愈 / 诊断日志用）。
+    private var vizAttachedId = 0
+    private var vizFrameCount = 0
+    private val VIZ_TAG = "ZenFileViz"
+
+    // 最近一次 attach 失败的异常（经 result.error 带回 Dart 落盘——云电脑环境
+    // 没有 adb，logcat 不可取，文件日志是唯一诊断通道）。
+    private var vizLastError: String? = null
 
     // 系统文件选择器（ACTION_GET_CONTENT / ACTION_PICK）桥接：第三方 App 调起选文件时，
     // 由它把 Dart 侧选中的文件转成 document URI 回传。实现见 SystemFilePickerBridge.kt。
@@ -2636,6 +2654,134 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
+        // 音频频谱可视化通道：android.media.audiofx.Visualizer 挂在**本应用自己的
+        // 音频会话**上取【波形】（onWaveFormDataCapture：captureSize 字节 8bit
+        // 无符号、128 = 静音中心；Dart 侧自算 FFT 得到频谱——getFft 的字节格式
+        // 在部分机型上无法解出正常谱形，故弃用）。会话号由 mpv 的
+        // audiotrack-session-id 固定并广播（见 audio_session 通道与 MpvAoMode
+        // 文档），Visualizer 挂到同一个会话即读到**本应用正在播的声音**，因此：
+        // * 无需 RECORD_AUDIO 的语义（不监听设备上其它声音）；
+        // * ⚠️ 必须拒绝 sessionId<=0：那会挂到全局输出混音（AudioSessionId 0），
+        //   是需要录音权限与用户授权的另一条路径，绝不静默降级到它。
+        // 挂不上 / 会话无效时返回 error，Dart 侧回落到现有伪波形动画。
+        // 诊断：logcat 过滤 `ZenFileViz`（start/attach/首帧/每 100 帧采样）。
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_visualizer_events")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    visualizerEventSink = events
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    visualizerEventSink = null
+                }
+            })
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_visualizer").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "start" -> {
+                    val sid = call.argument<Int>("audioSessionId") ?: 0
+                    if (sid <= 0) {
+                        Log.d(VIZ_TAG, "start rejected: sid<=0")
+                        result.error("invalid_session", "audioSessionId<=0", null)
+                        return@setMethodCallHandler
+                    }
+                    Log.d(VIZ_TAG, "start sid=$sid")
+                    try {
+                        visualizer?.release()
+                    } catch (_: Exception) {
+                    }
+                    visualizer = null
+                    // 首选：挂在**本应用自己的会话**上（只读到我们自己出的声）。
+                    var viz = createVisualizer(sid)
+                    var usedOutputMix = false
+                    var ownFailed = false
+                    var mixFailed = false
+                    var micGranted = false
+                    if (viz == null) {
+                        ownFailed = true
+                        // 真机实测（2026-10-29，日志 sid=23153 ao=auto 播放中重试 6 次全败）：
+                        // 部分机型的 Visualizer 引擎无法初始化在
+                        // generateAudioSessionId() 保留的会话上（error -3 NO_INIT），
+                        // 且与「轨道是否已建立」无关。⇒ 回退挂**全局输出混音（0）**：
+                        // 需要 RECORD_AUDIO（本应用分贝计功能已申请过；缺失时静默
+                        // 跳过、绝不弹窗）。内容=整机混音，对音乐播放器的频谱形态
+                        // 基本一致。
+                        micGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                            this, android.Manifest.permission.RECORD_AUDIO,
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        Log.d(VIZ_TAG, "own-session attach failed; RECORD_AUDIO=$micGranted")
+                        if (micGranted) {
+                            viz = createVisualizer(0)
+                            if (viz == null) {
+                                mixFailed = true
+                            } else {
+                                usedOutputMix = true
+                            }
+                        }
+                    }
+                    // 机型信息随结果回传（识别已知缺 Visualizer 引擎的 OEM 固件）。
+                    val device = "${android.os.Build.MANUFACTURER} " +
+                        "${android.os.Build.MODEL} API${android.os.Build.VERSION.SDK_INT}"
+                    if (viz == null) {
+                        // ⚠️ 不返回 error：把**完整决策树**经 success 写回 Dart 落盘
+                        //（云电脑环境没有 logcat，error 的字符串经 PlatformException
+                        // 也能落盘，但拿不到 mix/mic 的分支信息）。
+                        result.success(mapOf(
+                            "attached" to false,
+                            "ownFailed" to ownFailed,
+                            "micGranted" to micGranted,
+                            "mixFailed" to mixFailed,
+                            "lastError" to (vizLastError ?: "unknown"),
+                            "device" to device,
+                        ))
+                    } else {
+                        visualizer = viz
+                        vizAttachedId = if (usedOutputMix) 0 else sid
+                        result.success(mapOf(
+                            "attached" to true,
+                            "outputMix" to usedOutputMix,
+                            // getSamplingRate() 单位是毫赫兹（44100Hz → 44100000），
+                            // 换算回 Hz 再回传（旧值透传曾导致 Dart 分桶全挤进 bin1）。
+                            "sampleRate" to viz.samplingRate / 1000,
+                            "captureSize" to viz.captureSize,
+                            "device" to device,
+                        ))
+                    }
+                }
+                // Dart 侧自愈：数据持续全零 / 帧饿死时重挂一次（原生仍持有目标
+                // 会话号；输出混音回退时为 0，createVisualizer(0) 同样成立）。
+                "restart" -> {
+                    val target = vizAttachedId
+                    try {
+                        visualizer?.release()
+                    } catch (_: Exception) {
+                    }
+                    visualizer = null
+                    val viz = createVisualizer(target)
+                    Log.d(VIZ_TAG, "restart target=$target ok=${viz != null}")
+                    if (viz == null) {
+                        result.success(false)
+                    } else {
+                        visualizer = viz
+                        result.success(true)
+                    }
+                }
+                "stop" -> {
+                    Log.d(VIZ_TAG, "stop target=$vizAttachedId frames=$vizFrameCount")
+                    try {
+                        visualizer?.enabled = false
+                        visualizer?.release()
+                    } catch (_: Exception) {
+                    }
+                    visualizer = null
+                    vizAttachedId = 0
+                    vizFrameCount = 0
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         // 系统音量同步：供视频播放器滑块与系统音量保持一致。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/volume").setMethodCallHandler { call, result ->
             try {
@@ -3374,6 +3520,67 @@ class MainActivity : AudioServiceFragmentActivity() {
     private var decibelChannel: MethodChannel? = null
     private var decibelThread: Thread? = null
     private var decibelRunning = false
+
+    // 创建并启用挂在 [sid] 会话上的 Visualizer（start / restart 共用）。
+    // 失败返回 null（异常细节进 logcat），调用方回落 error → Dart 侧用伪波形。
+    private fun createVisualizer(sid: Int): Visualizer? {
+        var viz: Visualizer? = null
+        return try {
+            viz = Visualizer(sid)
+            // 捕获尺寸取设备允许上限（2 的幂，一般 1024，个别 2048）：FFT 点数
+            // 越大，低频 log 分桶的分辨率越高。audioMotion 用 8192（AnalyserNode），
+            // Visualizer 上限受限但 512 bin 够用。
+            val range = Visualizer.getCaptureSizeRange()
+            val size = if (range != null && range.size >= 2) {
+                range[1].coerceAtMost(2048)
+            } else {
+                1024
+            }
+            viz.captureSize = size
+            vizFrameCount = 0
+            val listener = object : Visualizer.OnDataCaptureListener {
+                // 走【波形采集】：8bit 无符号、128 = 静音中心，格式无歧义。
+                // （此前走 getFft：官方布局是「前半实部/后半虚部」，但实测部分
+                // 机型无法据此解出正常谱形，格式存疑 ⇒ 改由 Dart 侧用波形自算
+                // 真实 FFT，任何机型都成立。）
+                override fun onWaveFormDataCapture(
+                    v: Visualizer?, waveform: ByteArray?, samplingRate: Int
+                ) {
+                    if (waveform == null) return
+                    vizFrameCount++
+                    // 首帧 + 每 100 帧打印一次峰值（诊断会话是否错挂：错挂时恒为 max=0）
+                    if (vizFrameCount == 1 || vizFrameCount % 100 == 0) {
+                        var m = 0
+                        for (b in waveform) {
+                            val u = b.toInt() and 0xFF
+                            if (u > m) m = u
+                        }
+                        Log.d(VIZ_TAG, "wave frame=$vizFrameCount len=${waveform.size} max=$m")
+                    }
+                    visualizerEventSink?.success(waveform)
+                }
+
+                override fun onFftDataCapture(v: Visualizer?, fft: ByteArray?, samplingRate: Int) {}
+            }
+            // 采样率取设备允许上限（毫赫兹单位，一般 20000 = 20Hz）；
+            // 帧间的平滑/回落由 Dart 侧渲染节拍补齐。
+            viz.setDataCaptureListener(listener, Visualizer.getMaxCaptureRate(), true, false)
+            viz.enabled = true
+            Log.d(VIZ_TAG, "attached sid=$sid size=$size samplingRate=${viz.samplingRate}")
+            viz
+        } catch (e: Exception) {
+            Log.d(VIZ_TAG, "attach FAILED sid=$sid err=$e")
+            // ⚠️ 构造成功后（captureSize/监听器/enable）任一步抛出，都会留下一个
+            // **已初始化但未释放**的 Visualizer 实例 —— 效果引擎的实例数有上限，
+            // 泄漏会让后续每次 attach 都失败（-3 症状雪上加霜），必须就地释放。
+            try {
+                viz?.release()
+            } catch (_: Exception) {
+            }
+            vizLastError = e.toString()
+            null
+        }
+    }
 
     private fun startDecibelMeter() {
         if (decibelRunning) return

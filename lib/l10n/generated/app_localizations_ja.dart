@@ -8426,6 +8426,9 @@ class L10nJa extends L10n {
   String get lyric_settings => '歌詞の設定';
 
   @override
+  String get audioSpectrumToggle => 'スペクトラム表示';
+
+  @override
   String get lyric_style_pv => '文字 PV';
 
   @override

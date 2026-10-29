@@ -8802,6 +8802,7 @@
   "lyric_mode_half": "Half screen",
   "lyric_mode_full": "Full screen",
   "lyric_settings": "Lyric settings",
+  "audioSpectrumToggle": "Spectrum visualization",
   "lyric_style_pv": "Text PV",
   "lyric_style_pv_desc": "Giant single line with flying glyphs, particle trails and sparkles",
   "lyric_style_echo": "Echo fragments",

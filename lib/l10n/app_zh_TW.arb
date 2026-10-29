@@ -8884,6 +8884,7 @@
   "lyric_mode_half": "半屏顯示",
   "lyric_mode_full": "全屏顯示",
   "lyric_settings": "歌詞設定",
+  "audioSpectrumToggle": "頻譜視覺化",
   "lyric_style_pv": "文字 PV",
   "lyric_style_pv_desc": "單行巨字，唱到的字飛入、炸開，帶光軌與閃點",
   "lyric_style_echo": "迴聲碎片",

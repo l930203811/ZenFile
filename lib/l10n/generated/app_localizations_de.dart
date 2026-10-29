@@ -8796,6 +8796,9 @@ class L10nDe extends L10n {
   String get lyric_settings => 'Songtext-Einstellungen';
 
   @override
+  String get audioSpectrumToggle => 'Spektrum-Visualisierung';
+
+  @override
   String get lyric_style_pv => 'Text-PV';
 
   @override
