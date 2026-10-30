@@ -95,7 +95,9 @@ class AudioVisualizerService {
   bool _starvationLogged = false; // 本轮挂载周期是否已报过饿死（只报一次）
   int _zeroStreak = 0; // 连续全零帧数
   int _framesReceived = 0; // 累计帧数
-  int _restartAttempts = 0; // 全零自愈重挂次数（上限 3）
+  int _restartAttempts = 0; // 全零自愈次数（上限 4，含交替目标）
+  int _attachTargetId = 0; // 当前实际挂载目标（0 = 输出混音回退）
+  int _baseSessionId = 0; // 本次 start 的自会话号（交替恢复的回摆基准）
 
   // —— 生命周期串行化（2026-10-29 二次修复：重进页面偶发频谱不出）——
   /// 所有挂载/释放/重臂操作**串行排队**执行：旧页面 dispose 的
@@ -174,22 +176,37 @@ class AudioVisualizerService {
     }
   }
 
-  /// 自愈重挂（全零数据专用）：让原生用**同一个目标**重建 Visualizer。最多 3 次。
-  /// 帧仍在到达（订阅健康）⇒ 只需原生侧重挂；入串行队列与 start/stop 互斥。
+  /// 全零数据自愈：数据链路活着（帧在到达）但内容持续全零 —— 常见于目标挂错
+  /// 或机型对某类目标只回零帧。策略（最多 4 次，帧恢复正常即清零）：
+  ///   #1、#3：原目标重挂（原生 restart）；
+  ///   #2、#4：**交替目标**（自会话 ↔ 输出混音 0），完整 stop + 重新挂载
+  ///           —— 部分机型即便授予了麦克风权限、输出混音也回零，此时换回
+  ///           自会话（或反之）往往能拿到真实数据，无需用户干预。
   Future<void> _selfHealRestart(String reason) async {
-    if (!_running || _restartAttempts >= 3) return;
+    if (!_running || _restartAttempts >= 4) return;
     _restartAttempts++;
     final attempt = _restartAttempts;
-    final sid = _activeSessionId;
-    _log('$reason → 重挂 Visualizer（第 $attempt 次）sid=$sid');
-    _lifecycleQueue = _lifecycleQueue.then((_) async {
-      try {
-        final ok = await _channel.invokeMethod<bool>('restart');
-        _log('restart 结果 ok=$ok');
-      } catch (e) {
-        _log('restart 失败: $e');
-      }
-    });
+    final base = _baseSessionId;
+    final cur = _attachTargetId;
+    final alt = cur == 0 ? base : 0;
+    _log('$reason → 自愈 #$attempt（cur=$cur alt=$alt）');
+    if (attempt.isOdd || alt <= 0 || alt == cur) {
+      // 奇数次 / 无可交替目标：原样重挂（原生仍持有目标会话号）。
+      _lifecycleQueue = _lifecycleQueue.then((_) async {
+        try {
+          final ok = await _channel.invokeMethod<bool>('restart');
+          _log('restart 结果 ok=$ok');
+        } catch (e) {
+          _log('restart 失败: $e');
+        }
+      });
+    } else {
+      _lifecycleQueue = _lifecycleQueue.then((_) async {
+        if (!_running) return;
+        await _stopNow();
+        await _attachTarget(alt);
+      });
+    }
   }
 
   /// 帧饿死看门狗：挂上后 >2.5s 没有任何帧回调 ⇒ **持续重臂**——每 2.5s 一次
@@ -275,7 +292,14 @@ class AudioVisualizerService {
       _log('start 幂等命中但帧流饿死（lastFrame=$last）→ 完整重臂');
       await _stopNow();
     }
-    var r = await _startAttempt(audioSessionId);
+    _baseSessionId = audioSessionId;
+    return _attachTarget(audioSessionId);
+  }
+
+  /// 挂载到指定目标（自会话 sid 或 0 = 输出混音），含一次性麦克风权限回退。
+  /// 全零自愈的「交替目标」也走这里，与常规挂载同一条代码路径。
+  Future<bool> _attachTarget(int sid) async {
+    var r = await _startAttempt(sid);
     if (!r.$1 && r.$2 && !_micRequestAttempted) {
       _micRequestAttempted = true;
       _log('输出混音回退需要 RECORD_AUDIO → 请求麦克风权限');
@@ -283,7 +307,7 @@ class AudioVisualizerService {
         final status = await Permission.microphone.request();
         _log('麦克风权限结果: $status');
         if (status.isGranted) {
-          r = await _startAttempt(audioSessionId);
+          r = await _startAttempt(sid);
         }
       } catch (e) {
         _log('麦克风权限请求异常: $e');
@@ -338,6 +362,7 @@ class AudioVisualizerService {
       fftSize = (raw['captureSize'] as num?)?.toInt() ?? 1024;
       final usedOutputMix = raw['outputMix'] as bool? ?? false;
       _activeSessionId = audioSessionId;
+      _attachTargetId = usedOutputMix ? 0 : audioSessionId;
       _running = true;
       _zeroStreak = 0;
       _framesReceived = 0;
@@ -378,6 +403,7 @@ class AudioVisualizerService {
     _sub = null;
     _running = false;
     _activeSessionId = 0;
+    _attachTargetId = 0;
     _zeroStreak = 0;
     _framesReceived = 0;
     _restartAttempts = 0;

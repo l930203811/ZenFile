@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,8 @@ import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../widgets/circled_back_button.dart';
+import '../widgets/liquid_bottom_bar.dart'
+    show kLiquidBarHeight, kLiquidNavBottomGap, kLiquidNavTopGap;
 import '../widgets/liquid_pressable.dart';
 import '../widgets/shell_metrics_stable.dart';
 import '../widgets/zenfile_bottom_nav_bar.dart';
@@ -148,18 +151,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // `FileManagerProvider.init()` 全项目只有那一个调用点，所以上移到这里。
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
+        debugPrint('[ZenFile] HomeScreen postFrame: enter');
         // 先取 provider：下面要跨 await，之后不能再碰 context。
         final fileManager = context.read<FileManagerProvider>();
         final mediaProvider = context.read<MediaProvider>();
-        final hasFullPermission =
-            await Permission.manageExternalStorage.isGranted;
+        debugPrint('[ZenFile] HomeScreen postFrame: providers read ok');
+        // ⚠️ manageExternalStorage 是 Android 专属权限：桌面端不支持会抛
+        // MissingPluginException/UnsupportedError，之前它和 init() 同处一个
+        // try 块且被 catch(_) 吞掉，导致桌面端 init() 从未执行 ⇒ 首页空白。
+        // 因此：权限检查只在 Android 上做、单独隔离，init() 必须无条件执行。
+        var hasFullPermission = false;
+        if (Platform.isAndroid) {
+          try {
+            hasFullPermission =
+                await Permission.manageExternalStorage.isGranted;
+          } catch (_) {}
+        }
         // 冷启动解锁瞬间先让输入法收完（详见 [StartupGate]）：init() 末尾会
         // 穷举首个目录、loadMedia() 会扫全量索引，与 IME 收起动画抢帧就是
         // 「密码输完进分类页，键盘慢慢缩回去」。
         await StartupGate.instance.waitIfSettling();
         if (!mounted) return;
-        fileManager.init();
-        if (hasFullPermission) mediaProvider.loadMedia();
+        debugPrint('[ZenFile] HomeScreen postFrame: calling fileManager.init()');
+        await fileManager.init();
+        debugPrint('[ZenFile] HomeScreen postFrame: init() done');
+        // ⚠️ 桌面端没有存储权限闸门：loadMedia 必须无条件执行（媒体/文档等
+        // 分类数据全靠它触发的文件系统扫描）。Android 保持原语义——仅有
+        // 「所有文件管理」权限才扫，避免无权限时白扫一遍。
+        if (hasFullPermission || !Platform.isAndroid) {
+          mediaProvider.loadMedia();
+        }
       } catch (_) {}
     });
   }
@@ -848,21 +869,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     }
     // 多选操作栏覆盖 4-tab：选择模式（长按多选）时隐藏顶栏 4-tab，
     // 与底栏行为保持一致；壳内页面（媒体分类页等）的局部多选态同理。
+    // ⚠️ 本方法由 ListenableBuilder 的 builder 闭包调用（build L702），
+    // 此刻 HomeScreen 元素不在 build ⇒ 禁用 context.select（provider 断言会炸，
+    // Windows debug 红屏）。响应性由 build() 顶部的 context.watch 整体订阅兜住。
     if (ShellNavigator.childSelectionMode.value ||
         ShellNavigator.childImmersive.value ||
-        context.select<FileManagerProvider, bool>((p) => p.isSelectionMode)) {
+        context.read<FileManagerProvider>().isSelectionMode) {
       return SizedBox(height: MediaQuery.paddingOf(context).top);
     }
     // 4-tab 在顶栏：关闭时整条收起，只留状态栏高度的空白，
     // 免得下面的内容被状态栏压住。
-    if (!context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled)) {
+    if (!context.read<FileManagerProvider>().bottomNavBarEnabled) {
       return SizedBox(height: MediaQuery.paddingOf(context).top);
     }
     // 「导航栏常驻其他页面」关闭时，除分类页（index 0）外的所有 home tab
     // （浏览 / 连接 / 设置）作为「其他页面」不显示导航栏（4-tab），与深层 /
     // 全屏页一致，呈全屏显示；仅分类页始终显示（无论常驻开关）。
     if (_currentIndex != 0 &&
-        !context.select<FileManagerProvider, bool>((p) => p.persistentTabBar)) {
+        !context.read<FileManagerProvider>().persistentTabBar) {
       // 连接 / 设置页：4-tab 隐藏 ⇒ 顶部只放全屏头部。
       if (_fullScreenChromeHidden) {
         return _buildFullScreenHeader();
@@ -879,6 +903,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     return _buildBottomTabs(atTop: true);
   }
 
+  /// 分类页网格的底部预留高度：底栏胶囊总高与 Scaffold 注入的 body 底部
+  /// inset 取**较大者**——注入生效的机型按注入值留白（不双重叠加），
+  /// 注入不生效的机型（半透明底栏）按显式总高留白（不再遮挡）。
+  double _categoryGridBottomReserve(BuildContext context) {
+    final mqBottom = MediaQuery.paddingOf(context).bottom;
+    final gestureBar = MediaQuery.viewPaddingOf(context).bottom;
+    final reserve =
+        gestureBar + kLiquidNavTopGap + kLiquidBarHeight + kLiquidNavBottomGap;
+    return mqBottom > reserve ? mqBottom : reserve;
+  }
+
   /// 底栏：与顶部栏按「导航栏位置」设置互换。
   /// 导航栏开启且 4-tab 落在底栏时，整条栏支持**上滑**唤起收藏夹面板
   /// （对齐 MT / NP 管理器书签的手势）。
@@ -890,13 +925,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   ///   · 浏览页 → 底部操作栏上滑（见 DirectoryScreen._buildCollapsibleBrowseActionBar）。
   /// 这里只留「系统手势条高度」的空白，避免浏览操作栏被系统手势条压住。
   Widget _buildNavBottomBar(bool bottomTabs, bool attachedTop) {
+    // ⚠️ 本方法由 ListenableBuilder 的 builder 闭包调用（build L518），
+    // 此刻 HomeScreen 元素不在 build ⇒ 禁用 context.select（provider 断言会炸，
+    // Windows debug 红屏）。响应性由 build() 顶部的 context.watch 整体订阅兜住。
     final navEnabled =
-        context.select<FileManagerProvider, bool>((p) => p.bottomNavBarEnabled);
+        context.read<FileManagerProvider>().bottomNavBarEnabled;
     // 多选操作栏覆盖 4-tab：任一页面进入选择模式（长按多选）时隐藏整条底栏
     // （4-tab 或工具按钮行），让页面自身 bottomNavigationBar 的多选操作栏落到
     // 屏幕最底部，而不是悬在导航栏上方。
     final selecting =
-        context.select<FileManagerProvider, bool>((p) => p.isSelectionMode);
+        context.read<FileManagerProvider>().isSelectionMode;
     if (selecting ||
         ShellNavigator.childSelectionMode.value ||
         ShellNavigator.childImmersive.value) {
@@ -926,7 +964,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 全屏页一致，呈全屏显示；仅分类页始终显示（无论常驻开关）。这些页返回到
     // 分类页靠返回键逻辑（_currentIndex != 0 → _switchTab(0)），不靠底栏切回。
     if (_currentIndex != 0 &&
-        !context.select<FileManagerProvider, bool>((p) => p.persistentTabBar)) {
+        !context.read<FileManagerProvider>().persistentTabBar) {
       return SizedBox(height: MediaQuery.paddingOf(context).bottom);
     }
     // 浏览页的操作栏与 4-tab 拼成一整块「底部控制台」：操作栏由 DirectoryScreen
@@ -1004,16 +1042,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           children: [
             SizedBox(
               height: 48,
+              // 2026-10-30：三段式布局 —— 抽屉贴左屏幕边缘、设置贴右屏幕
+              // 边缘，中间功能按钮在 Expanded 内均匀分布（原 spaceEvenly
+              // 整行均分导致两侧留白过大）。
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // 抽屉入口：三横线图标（Broken.menu）。与顶栏其它按钮同一套
                   // 风格——Broken 图标集的断线描边字形 + 主题高亮色，不再自绘。
-                  IconButton(
-                    icon: Icon(Broken.menu, color: theme.colorScheme.primary),
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  LiquidPressable(
+                    pressScale: 1.12,
+                    child: IconButton(
+                      icon: Icon(Broken.menu, color: theme.colorScheme.primary),
+                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
                   ),
-                  // 全局搜索：图标样式，点击进入全局搜索页
+                  // 中间功能按钮组：均匀分布
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // 全局搜索：图标样式，点击进入全局搜索页
                   IconButton(
                     icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
                     tooltip: L10n.of(context).ui_global_search_hint,
@@ -1077,17 +1125,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       context.read<FileManagerProvider>().toggleSplitScreen();
                     },
                   ),
-                  // 设置：顶栏最右一格（原收藏夹的位置）。收藏夹已移出顶栏，
-                  // 改由左抽屉「收藏夹」一项 + 上滑手势唤起（导航栏开启时滑底栏，
-                  // 导航栏关闭时滑浏览页底部操作栏）。
-                  IconButton(
-                    icon: Icon(Broken.setting_2, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).ui_personalize_settings,
-                    onPressed: () => _switchTab(_settingsTabIndex),
+                      ],
+                    ),
                   ),
-                  // 顶栏图标统一套一层「液态按压」：按住轻微鼓包、松开回弹，
-                  // 与底部 4-tab 用同一套弹簧参数，避免这里成为全页唯一“死”的按钮组。
-                ].map((w) => LiquidPressable(pressScale: 1.12, child: w)).toList(),
+                  // 设置（贴右屏幕边缘）：顶栏最右一格（原收藏夹的位置）。
+                  // 收藏夹已移出顶栏，改由左抽屉「收藏夹」一项 + 上滑手势唤起
+                  // （导航栏开启时滑底栏，导航栏关闭时滑浏览页底部操作栏）。
+                  LiquidPressable(
+                    pressScale: 1.12,
+                    child: IconButton(
+                      icon: Icon(Broken.setting_2, color: theme.colorScheme.primary),
+                      tooltip: L10n.of(context).ui_personalize_settings,
+                      onPressed: () => _switchTab(_settingsTabIndex),
+                    ),
+                  ),
+                ],
               ),
             ),
             Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withValues(alpha: 0.08)),
@@ -1273,11 +1325,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             height: constraints.maxHeight,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              // extendBody 后底栏悬浮在内容上：底部留白 = 底栏总高，
-              // 否则最后一行分类会被胶囊永久盖住。
+              // extendBody 后底栏悬浮在内容上：底部留白必须 ≥ 底栏总高
+              // （手势条 + kLiquidNavTopGap + 胶囊 64 + kLiquidNavBottomGap）
+              // + 呼吸空间，否则最后一行分类会被胶囊盖住。
+              // ⚠️ 旧写法只垫 `MediaQuery.paddingOf.bottom + 4`，赌的是
+              // Scaffold 会把底栏总高抬升进 body 的 MediaQuery —— 该抬升在
+              // 半透明底栏 + 部分机型上不生效，留白只剩 4dp，分类最后一行
+              // 被胶囊永久遮挡（用户反馈 2026-10-30）。改为显式预留，并取
+              // 两者较大值兼容抬升生效的机型（避免双重留白）。
               padding: EdgeInsets.only(
                 top: 4,
-                bottom: MediaQuery.paddingOf(context).bottom + 4,
+                bottom: _categoryGridBottomReserve(context) + 12,
               ),
               child: grid,
             ),

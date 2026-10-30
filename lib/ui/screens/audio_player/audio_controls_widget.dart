@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/core/utils.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'audio_volume_button.dart';
 
 class AudioControlsWidget extends StatelessWidget {
   final bool isPlaying;
@@ -137,39 +138,14 @@ class AudioControlsWidget extends StatelessWidget {
           ),
         ),
         SizedBox(height: sectionGap),
-        // Bottom Utility Row (Quality badge on Left, Action Utilities on Right)
+        // Bottom Utility Row —— 音质徽标已移至标题行右缘（2026-10-30）；
+        // 工具行最右为音量按钮。六个按钮**均匀铺满整行**（spaceEvenly，
+        // 2026-10-30：原先整体挤在中间、左右大片留白）。
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Quality Badge
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 10 : 14,
-                    vertical: compact ? 3 : 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.high_quality_rounded, color: accentColor, size: 16),
-                      const SizedBox(width: 6),
-                      _QualityBadge(audioPath: audioPath, accentColor: accentColor),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Action Utility Icons
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
                     // Playback mode：点击向上弹出菜单选择模式（不再点击一次
                     // 切换一个）。PopupMenuButton 在屏幕底部时框架会自动把
                     // 菜单弹在按钮上方；四个标题复用既有 l10n 键，天然多语言。
@@ -259,10 +235,13 @@ class AudioControlsWidget extends StatelessWidget {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                       onPressed: onShowQueue,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                    // 音量：点按静音/恢复；按住横向拖动调节；与系统媒体音量同步
+                    AudioVolumeButton(
+                      iconSize: utilIconSize,
+                      constraints: utilConstraints,
+                      accentColor: accentColor,
+                    ),
+            ],
           ),
         ),
       ],
@@ -308,18 +287,57 @@ class AudioControlsWidget extends StatelessWidget {
   }
 }
 
-/// 音质徽标：根据文件路径推断真实格式（扩展名）与位深（FLAC/WAV 文件头）。
-/// 无法判定位深时仅显示格式，绝不显示虚假位深（修复此前硬编码 "FLAC • 24-bit"）。
-class _QualityBadge extends StatefulWidget {
+/// 音质徽标（胶囊样式）：格式 + 位深。
+///
+/// 2026-10-30 从底部工具行左侧移到播放页「收藏爱心」左侧（竖屏/横屏一致），
+/// 由播放页直接放置 [AudioQualityBadge]；工具行腾出的位置给了音量按钮。
+class AudioQualityBadge extends StatelessWidget {
   final String? audioPath;
   final Color accentColor;
-  const _QualityBadge({this.audioPath, required this.accentColor});
+
+  const AudioQualityBadge({
+    super.key,
+    this.audioPath,
+    required this.accentColor,
+  });
 
   @override
-  State<_QualityBadge> createState() => _QualityBadgeState();
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.textScalerOf(context).scale(14) > 18;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 10 : 14,
+        vertical: compact ? 3 : 6,
+      ),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.high_quality_rounded, color: accentColor, size: 16),
+          const SizedBox(width: 6),
+          _QualityLabel(audioPath: audioPath, accentColor: accentColor),
+        ],
+      ),
+    );
+  }
 }
 
-class _QualityBadgeState extends State<_QualityBadge> {
+/// 音质标签本体：根据文件路径推断真实格式（扩展名）与位深（FLAC/WAV 文件头）。
+/// 无法判定位深时仅显示格式，绝不显示虚假位深（修复此前硬编码 "FLAC • 24-bit"）。
+class _QualityLabel extends StatefulWidget {
+  final String? audioPath;
+  final Color accentColor;
+  const _QualityLabel({this.audioPath, required this.accentColor});
+
+  @override
+  State<_QualityLabel> createState() => _QualityLabelState();
+}
+
+class _QualityLabelState extends State<_QualityLabel> {
   String _label = '';
 
   @override
@@ -329,7 +347,7 @@ class _QualityBadgeState extends State<_QualityBadge> {
   }
 
   @override
-  void didUpdateWidget(covariant _QualityBadge oldWidget) {
+  void didUpdateWidget(covariant _QualityLabel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.audioPath != widget.audioPath) {
       setState(() => _label = '');

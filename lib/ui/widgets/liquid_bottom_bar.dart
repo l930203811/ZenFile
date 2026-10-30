@@ -36,7 +36,10 @@ const double kLiquidBarHeight = 64;
 const double kLiquidNavTopGap = 6;
 
 /// 4-tab 槽位的**底部留白**（胶囊与系统手势条之间）。
-const double kLiquidNavBottomGap = 10;
+/// 底栏胶囊与屏幕底边（手势条上方）的间隙。2026-10-30 按用户要求改为 0：
+/// 部分机型上 10dp 悬浮间距让导航栏过于偏上、遮挡分类页底部内容；
+/// SafeArea 已吃掉手势条高度，胶囊直接贴底边。
+const double kLiquidNavBottomGap = 0;
 
 /// 胶囊内容行高：64 − 上下各 4dp。
 const double kLiquidInnerHeight = 56;

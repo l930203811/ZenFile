@@ -122,7 +122,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   late Animation<double> _fadeAnim;
 
   // Modes & Audio FX
-  bool _isFavorite = false;
   int _repeatMode = 0; // 0=none, 1=one, 2=all
   double _playbackSpeed = 1.0;
   double _pitch = 1.0;
@@ -3455,7 +3454,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 标题 / 歌手 / 收藏
+                        // 标题 / 歌手；音质徽标并入本行右缘、与文件名垂直
+                        // 对齐（2026-10-30：移除无效收藏爱心；徽标自底部
+                        // 工具行 → 爱心行 → 此处，不再把标题往下挤）。
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 28),
                           child: Row(
@@ -3491,20 +3492,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  _isFavorite
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  color: _isFavorite
-                                      ? Colors.redAccent
-                                      : theme.colorScheme.onSurface.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                  size: 28,
-                                ),
-                                onPressed: () =>
-                                    setState(() => _isFavorite = !_isFavorite),
+                              const SizedBox(width: 10),
+                              AudioQualityBadge(
+                                audioPath: _currentPath,
+                                accentColor: accent,
                               ),
                             ],
                           ),
@@ -3622,85 +3613,86 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               Expanded(
                 child: FadeTransition(
                   opacity: _fadeAnim,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildSingleLineLyrics(accent, theme, isDark),
-                            ],
+                  // 横屏矮视口兜底（部分机型大字体缩放/大刘海+导航条仍会溢出），
+                  // 三层保险：① 右列文本缩放钳制 ≤1.2；② pinned 块 maxHeight =
+                  // 右列总高，超出即整块内部滚动（正常机型滚不到）；③ 空间不足
+                  // 优先压缩上方歌词区，播放控制必须完整可见。
+                  child: LayoutBuilder(builder: (context, colBox) {
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildSingleLineLyrics(accent, theme, isDark),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      // 标题 / 收藏 / 波形 / 播控整体 pinned 到导航栏上方：
-                      // 横屏视口矮，间距全部收紧（4~6dp）、底部留 10dp。
-                      // 沉浸态整块收起（见 [_immersiveChrome]）。
-                      _immersiveChrome(
-                        Padding(
-                          // 横屏视口矮：底部呼吸空间收紧（20→10），配合紧凑
-                          // 波形与 compact 播控，保证右列不溢出屏幕底部。
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+                        _immersiveChrome(
+                          ConstrainedBox(
+                            constraints:
+                                BoxConstraints(maxHeight: colBox.maxHeight),
+                            child: MediaQuery.withClampedTextScaling(
+                              maxScaleFactor: 1.2,
+                              child: SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                              // 标题（居中）+ 歌手；音质徽标并入本行右缘、
+                              // 与文件名垂直对齐（2026-10-30：移除无效收藏
+                              // 爱心；徽标自底部工具行 → 爱心行 → 此处，
+                              // 为底部工具行腾出一整行高度）。
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 24,
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                child: Row(
                                   children: [
-                                    // 超长标题向左循环滚动（跑马灯），避免省略号截断
-                                    MarqueeText(
-                                      text: _currentTitle,
-                                      textAlign: TextAlign.center,
-                                      active: isPlaying,
-                                      scrollWhenPaused: true,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 18,
-                                        letterSpacing: 0.2,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                                          MarqueeText(
+                                            text: _currentTitle,
+                                            textAlign: TextAlign.center,
+                                            active: isPlaying,
+                                            scrollWhenPaused: true,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 18,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            _getDisplayArtist(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: theme.colorScheme.onSurface
+                                                  .withValues(alpha: 0.6),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _getDisplayArtist(),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.6),
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    const SizedBox(width: 10),
+                                    AudioQualityBadge(
+                                      audioPath: _currentPath,
+                                      accentColor: accent,
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                  minWidth: 36,
-                                  minHeight: 36,
-                                ),
-                                icon: Icon(
-                                  _isFavorite
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  color: _isFavorite
-                                      ? Colors.redAccent
-                                      : theme.colorScheme.onSurface.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                  size: 26,
-                                ),
-                                onPressed: () =>
-                                    setState(() => _isFavorite = !_isFavorite),
                               ),
                               const SizedBox(height: 4),
                               Padding(
@@ -3747,8 +3739,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
+                ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ],

@@ -2807,6 +2807,53 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
+        // 系统音量变化事件：硬件音量键 / 系统音量面板改的是 STREAM_MUSIC 时，
+        // 把归一化后的音量（0..1）推给 Dart —— 音频播放器底部工具行的音量按钮
+        // 依靠它与系统媒体音量**双向同步**。接收器随 EventChannel 订阅起停。
+        // VOLUME_CHANGED_ACTION 是受保护的系统广播（仅系统可发），用 NOT_EXPORTED
+        // 注册仍能收到系统源的事件，同时屏蔽其他应用伪造。
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/volume_events")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                private var receiver: BroadcastReceiver? = null
+                override fun onListen(args: Any?, events: EventChannel.EventSink?) {
+                    receiver = object : BroadcastReceiver() {
+                        // ⚠️ EXTRA_VOLUME_STREAM_TYPE 是 @hide 常量（公开 SDK 没有），
+                        // 只能用字面量（AOSP：android.media.EXTRA_VOLUME_STREAM_TYPE）。
+                        // extra 缺失时放行：宁可多刷一次图标，也不漏掉真音量变化。
+                        override fun onReceive(ctx: Context?, intent: Intent?) {
+                            val type = intent?.getIntExtra(
+                                "android.media.EXTRA_VOLUME_STREAM_TYPE", Int.MIN_VALUE,
+                            )
+                            if (type != Int.MIN_VALUE &&
+                                type != android.media.AudioManager.STREAM_MUSIC
+                            ) return
+                            try {
+                                val am =
+                                    getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                                val cur = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                                val max = am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                                if (max > 0) events?.success((cur / max).toDouble())
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                    val filter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+                    if (android.os.Build.VERSION.SDK_INT >= 33) {
+                        registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                    } else {
+                        registerReceiver(receiver, filter)
+                    }
+                }
+
+                override fun onCancel(args: Any?) {
+                    try {
+                        receiver?.let { unregisterReceiver(it) }
+                    } catch (_: Exception) {
+                    }
+                    receiver = null
+                }
+            })
+
         // 音频会话 ID：mpv 的 ao_audiotrack 驱动只暴露两个选项 —— pcm-float
         // 与 session-id（options_prefix=audiotrack，故 Dart 侧属性名为
         // audiotrack-session-id）。不设置时 Android 会为每个新建的 AudioTrack
