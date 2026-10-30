@@ -8005,7 +8005,7 @@ abstract class L10n {
   /// No description provided for @ui_play_mode_sequential.
   ///
   /// In zh, this message translates to:
-  /// **'列表播放'**
+  /// **'顺序播放'**
   String get ui_play_mode_sequential;
 
   /// No description provided for @ui_play_mode_list_loop.

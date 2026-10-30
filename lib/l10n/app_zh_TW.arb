@@ -4314,7 +4314,7 @@
   "ui_repeat_one": "迴圈：單曲",
   "ui_repeat_all": "迴圈：全部",
   "ui_shuffle_on": "隨機播放：開",
-  "ui_play_mode_sequential": "列表播放",
+  "ui_play_mode_sequential": "順序播放",
   "ui_play_mode_list_loop": "列表迴圈",
   "ui_play_mode_single_loop": "單曲迴圈",
   "ui_play_mode_shuffle": "隨機播放",

@@ -4231,7 +4231,7 @@ class L10nZh extends L10n {
   String get ui_shuffle_on => '随机播放：开';
 
   @override
-  String get ui_play_mode_sequential => '列表播放';
+  String get ui_play_mode_sequential => '顺序播放';
 
   @override
   String get ui_play_mode_list_loop => '列表循环';
@@ -12740,7 +12740,7 @@ class L10nZhTw extends L10nZh {
   String get ui_shuffle_on => '隨機播放：開';
 
   @override
-  String get ui_play_mode_sequential => '列表播放';
+  String get ui_play_mode_sequential => '順序播放';
 
   @override
   String get ui_play_mode_list_loop => '列表迴圈';

@@ -72,8 +72,16 @@ object CrashForensics {
     /** 私有存档目录名（位于 `filesDir` 下）。 */
     private const val DIR_NAME = "crash_forensics"
 
-    /** trace（ANR trace / native tombstone）最多写入的字节数。 */
-    private const val MAX_TRACE_BYTES = 48 * 1024
+    /**
+     * trace（ANR trace / native tombstone）最多写入的字节数。
+     *
+     * ⚠️ 曾是 48KB —— issue #50（TECNO KJ6 ANR）的教训：ANR trace 的线程按
+     * tid 排序，Flutter 的 `1.ui`（Dart isolate）线程排在列表**中后段**，
+     * 48KB 恰好把它截掉，导致「主线程空闲但 KeyEvent 5s 无回执」的 ANR
+     * 无法看到 UI isolate 当时在忙什么。128KB 可完整覆盖典型 56 线程的
+     * ANR trace（全量约 60~80KB），多读的几十 KB 内存对启动无感。
+     */
+    private const val MAX_TRACE_BYTES = 128 * 1024
 
     /** 私有目录最多保留的报告数（超出删最旧）。 */
     private const val MAX_PRIVATE_FILES = 40
@@ -368,9 +376,10 @@ object CrashForensics {
      * 读取崩溃 trace。
      *
      * `REASON_CRASH_NATIVE` 时这里是 **tombstone**（含崩溃线程的寄存器与调用栈），
-     * `REASON_ANR` 时是 ANR trace（主线程栈）—— 这两样正是判断「崩在 native 库
-     * 还是 Dart」最直接的证据。截断到 [MAX_TRACE_BYTES] 是刻意的：tombstone 可能
-     * 上百 KB，全写会拖慢启动，而关键信息总在最前面。
+     * `REASON_ANR` 时是 ANR trace（全部线程的栈）—— 这两样正是判断「崩在 native
+     * 库还是 Dart」最直接的证据。截断到 [MAX_TRACE_BYTES] 仍是必要的：极端场景
+     * （几百线程 + 巨型 ANR trace）全写会拖慢启动；上限已按 issue #50 教训从
+     * 48KB 提到 128KB，保证 Flutter `1.ui` 线程段不被切掉（见常量注释）。
      */
     @TargetApi(Build.VERSION_CODES.R)
     private fun readTrace(info: ApplicationExitInfo): String {
