@@ -8557,6 +8557,62 @@ class L10nZh extends L10n {
 
   @override
   String get ui_feedback_no_logs => '暂无可附带的诊断日志';
+
+  @override
+  String get ui_privacy_policy_title => '隐私政策';
+
+  @override
+  String get privacy_intro =>
+      '更新日期：2026-10-30\n\nZenFile（下称「本应用」）由开发者 l930203811 提供。我们以最小必要原则处理信息：本应用不含任何广告或追踪 SDK，所有文件操作均在您的设备本地完成，我们不会上传、出售或与任何第三方共享您的文件内容。请在使用前仔细阅读本政策：';
+
+  @override
+  String get privacy_perm_storage =>
+      '存储权限（管理所有文件 / 媒体文件）：用于浏览、整理、传输与分类本机文件和音视频媒体库。文件数据仅保存在您的设备上。';
+
+  @override
+  String get privacy_perm_mic =>
+      '麦克风权限：仅用于「分贝仪」实时测量环境声级与「音频播放器」的频谱可视化。本应用不会录音、不存储音频，也不会将麦克风数据发送到任何服务器。';
+
+  @override
+  String get privacy_perm_location =>
+      '位置权限（Android 12 及以下为精确位置，Android 13 及以上为「附近的设备」）：仅用于「快传」在局域网内发现附近的设备并建立传输。本应用不会获取 GPS 行踪轨迹。';
+
+  @override
+  String get privacy_perm_others =>
+      '通知权限：用于后台播放控制与传输进度提示；悬浮窗权限：用于桌面歌词；安装/卸载应用权限：用于应用管理功能；查询所有应用与使用情况：用于应用管理与存储占用分析；照片位置信息：仅用于按拍摄地点整理媒体库。';
+
+  @override
+  String get privacy_logs =>
+      '崩溃与诊断日志：应用发生异常退出（崩溃/无响应）时，会在本机生成崩溃报告（含堆栈、机型、系统与应用版本）。报告仅在被您明确确认后才会上传（启动弹窗或「问题反馈」中），用于定位与修复缺陷；您也可以选择不上传，并随时删除本地报告。';
+
+  @override
+  String get privacy_local_third =>
+      '数据存储：上述数据均保存在设备本地（应用私有目录），除您主动确认上传的崩溃报告外，不向任何服务器传输。第三方组件：应用集成腾讯 Bugly 用于崩溃统计，仅在您同意上传时生效。';
+
+  @override
+  String get privacy_rights =>
+      '您的权利：可在系统设置中随时撤回任何权限授权；清除应用数据即可删除全部本地记录。如对本政策有疑问，请通过 GitHub Issues（github.com/l930203811/ZenFile/issues）或应用内「联系与分享」中的渠道联系。\n\n我们随功能更新同步更新本政策；发生实质性变更时，应用会在下次启动时重新征求您的同意。';
+
+  @override
+  String get ui_privacy_agree => '同意并继续';
+
+  @override
+  String get ui_privacy_disagree => '不同意';
+
+  @override
+  String get ui_privacy_read => '我知道了';
+
+  @override
+  String get ui_privacy_exit_title => '尚未同意隐私政策';
+
+  @override
+  String get ui_privacy_exit_body => '需要您同意《隐私政策》才能使用本应用。';
+
+  @override
+  String get ui_privacy_exit_yes => '退出应用';
+
+  @override
+  String get ui_privacy_exit_no => '继续查看';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17082,4 +17138,60 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_feedback_no_logs => '目前沒有可附帶的診斷日誌';
+
+  @override
+  String get ui_privacy_policy_title => '隱私政策';
+
+  @override
+  String get privacy_intro =>
+      '更新日期：2026-10-30\n\nZenFile（下稱「本應用」）由開發者 l930203811 提供。我們以最小必要原則處理資訊：本應用不含任何廣告或追蹤 SDK，所有檔案操作均在您的裝置本機完成，我們不會上傳、出售或與任何第三方共享您的檔案內容。請在使用前仔細閱讀本政策：';
+
+  @override
+  String get privacy_perm_storage =>
+      '儲存權限（管理所有檔案／媒體檔案）：用於瀏覽、整理、傳輸與分類本機檔案和影音媒體庫。檔案資料僅保存在您的裝置上。';
+
+  @override
+  String get privacy_perm_mic =>
+      '麥克風權限：僅用於「分貝計」即時測量環境音量與「音訊播放器」的頻譜視覺化。本應用不會錄音、不儲存音訊，也不會將麥克風資料傳送到任何伺服器。';
+
+  @override
+  String get privacy_perm_location =>
+      '位置權限（Android 12 及以下為精確位置，Android 13 及以上為「附近的裝置」）：僅用於「快傳」在區域網路內發現附近的裝置並建立傳輸。本應用不會取得 GPS 行蹤軌跡。';
+
+  @override
+  String get privacy_perm_others =>
+      '通知權限：用於背景播放控制與傳輸進度提示；懸浮視窗權限：用於桌面歌詞；安裝/解除安裝應用程式權限：用於應用程式管理功能；查詢所有應用程式與使用情況：用於應用程式管理與儲存空間分析；照片位置資訊：僅用於依拍攝地點整理媒體庫。';
+
+  @override
+  String get privacy_logs =>
+      '當機與診斷日誌：應用程式發生異常結束（當機/無回應）時，會在本機產生當機報告（含堆疊、機型、系統與應用版本）。報告僅在您明確確認後才會上傳（啟動彈窗或「問題回饋」中），用於定位與修復缺陷；您也可以選擇不上傳，並隨時刪除本機報告。';
+
+  @override
+  String get privacy_local_third =>
+      '資料儲存：上述資料均保存在裝置本機（應用程式私有目錄），除您主動確認上傳的當機報告外，不向任何伺服器傳輸。第三方元件：本應用整合騰訊 Bugly 用於當機統計，僅在您同意上傳時生效。';
+
+  @override
+  String get privacy_rights =>
+      '您的權利：可在系統設定中隨時撤回任何權限授權；清除應用程式資料即可刪除全部本機紀錄。如對本政策有疑問，請透過 GitHub Issues（github.com/l930203811/ZenFile/issues）或應用程式內「聯絡與分享」中的管道聯繫。\n\n我們隨功能更新同步更新本政策；發生實質性變更時，應用程式會在下次啟動時重新徵求您的同意。';
+
+  @override
+  String get ui_privacy_agree => '同意並繼續';
+
+  @override
+  String get ui_privacy_disagree => '不同意';
+
+  @override
+  String get ui_privacy_read => '我了解了';
+
+  @override
+  String get ui_privacy_exit_title => '尚未同意隱私政策';
+
+  @override
+  String get ui_privacy_exit_body => '需要您同意《隱私政策》才能使用本應用。';
+
+  @override
+  String get ui_privacy_exit_yes => '結束應用程式';
+
+  @override
+  String get ui_privacy_exit_no => '繼續查看';
 }

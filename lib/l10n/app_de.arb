@@ -8830,5 +8830,21 @@
   "ui_feedback_later": "Später",
   "ui_feedback_sent": "Feedback gesendet. Danke für deine Hilfe!",
   "ui_feedback_failed": "Senden fehlgeschlagen. Bitte Netzwerk prüfen und erneut versuchen",
-  "ui_feedback_no_logs": "Keine Diagnoseprotokolle verfügbar"
+  "ui_feedback_no_logs": "Keine Diagnoseprotokolle verfügbar",
+  "ui_privacy_policy_title": "Datenschutzerklärung",
+  "privacy_intro": "Zuletzt aktualisiert: 2026-10-30\n\nZenFile („die App“) wird vom Entwickler l930203811 bereitgestellt. Wir verarbeiten Informationen nach dem Grundsatz der Datenminimierung: Die App enthält keine Werbe- oder Tracking-SDKs, alle Dateivorgänge erfolgen lokal auf Ihrem Gerät, und wir laden Ihre Dateiinhalte niemals hoch, verkaufen oder teilen sie mit Dritten. Bitte lesen Sie diese Erklärung vor der Nutzung sorgfältig:",
+  "privacy_perm_storage": "Speicherberechtigung (alle Dateien verwalten / Mediendateien): zum Durchsuchen, Ordnen, Übertragen und Klassifizieren lokaler Dateien sowie Ihrer Musik- und Videobibliothek. Dateidaten verbleiben ausschließlich auf Ihrem Gerät.",
+  "privacy_perm_mic": "Mikrofonberechtigung: ausschließlich für den Dezibelmesser (live Umgebungslautstärke) und den Spektrum-Visualisierer im Audio-Player. Die App nimmt niemals Audio auf, speichert es nicht und überträgt Mikrofondaten an keinen Server.",
+  "privacy_perm_location": "Standortberechtigung (genauer Standort bis Android 12; Geräte in der Nähe ab Android 13): ausschließlich für die Schnellübertragung, um Geräte im lokalen Netzwerk zu finden. Die App erfasst niemals Ihren GPS-Standort oder Bewegungsprofil.",
+  "privacy_perm_others": "Benachrichtigungen: Wiedergabe im Hintergrund und Übertragungsfortschritt; Über anderen Apps einblenden: Desktop-Liedtexte; Pakete installieren/deinstallieren: App-Verwaltung; Alle Apps abfragen und Nutzungsdaten: App-Verwaltung und Speicheranalyse; Foto-Standortdaten: nur zum Sortieren der Mediathek nach Aufnahmeort.",
+  "privacy_logs": "Absturz- und Diagnoseprotokolle: Bei abnormaler Beendigung (Absturz/keine Reaktion) wird lokal ein Absturzbericht erstellt (Stacktrace, Gerätemodell, System- und App-Version). Berichte werden erst nach Ihrer ausdrücklichen Bestätigung hochgeladen (Startdialog oder „Feedback“) – ausschließlich zur Fehleranalyse. Sie können den Upload ablehnen und lokale Berichte jederzeit löschen.",
+  "privacy_local_third": "Datenspeicherung: Alle genannten Daten werden lokal auf Ihrem Gerät gespeichert (app-privates Verzeichnis). Außer von Ihnen bestätigten Absturzberichten wird nichts an Server übertragen. Drittkomponenten: Die App integriert Tencent Bugly für Absturzstatistiken, aktiv nur mit Ihrer Zustimmung zum Upload.",
+  "privacy_rights": "Ihre Rechte: Sie können Berechtigungen jederzeit in den Systemeinstellungen widerrufen; das Löschen der App-Daten entfernt alle lokalen Aufzeichnungen. Fragen zu dieser Erklärung: über GitHub Issues (github.com/l930203811/ZenFile/issues) oder die Kanäle unter „Kontakt & Teilen“ in der App.\n\nDiese Erklärung wird mit App-Updates fortgeschrieben; bei wesentlichen Änderungen fragen wir beim nächsten Start erneut um Zustimmung.",
+  "ui_privacy_agree": "Zustimmen und fortfahren",
+  "ui_privacy_disagree": "Ablehnen",
+  "ui_privacy_read": "Verstanden",
+  "ui_privacy_exit_title": "Datenschutzerklärung nicht akzeptiert",
+  "ui_privacy_exit_body": "Zur Nutzung dieser App müssen Sie der Datenschutzerklärung zustimmen.",
+  "ui_privacy_exit_yes": "App beenden",
+  "ui_privacy_exit_no": "Erneut ansehen"
 }

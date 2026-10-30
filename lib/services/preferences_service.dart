@@ -1630,6 +1630,22 @@ class PreferencesService {
 
   static const String _keyHasSelectedLanguage = 'has_selected_language';
 
+  /// 已同意的《隐私政策》版本（0 = 从未同意）。
+  ///
+  /// 政策发生实质性变更时把 [kPrivacyPolicyVersion]（见
+  /// `privacy_policy_dialog.dart`）+1，所有老用户下次启动会重新弹窗征求同意
+  /// （合规要求：变更后需再次取得同意）。
+  static const String _keyPrivacyPolicyAcceptedVersion =
+      'privacy_policy_accepted_version';
+
+  static int getPrivacyPolicyAcceptedVersion() {
+    return _prefs?.getInt(_keyPrivacyPolicyAcceptedVersion) ?? 0;
+  }
+
+  static Future<void> setPrivacyPolicyAcceptedVersion(int version) async {
+    await _prefs?.setInt(_keyPrivacyPolicyAcceptedVersion, version);
+  }
+
   static bool hasSelectedLanguage() {
     return _prefs?.getBool(_keyHasSelectedLanguage) ?? false;
   }

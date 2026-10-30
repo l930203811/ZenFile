@@ -8752,4 +8752,60 @@ class L10nKo extends L10n {
 
   @override
   String get ui_feedback_no_logs => '첨부할 진단 로그가 없습니다';
+
+  @override
+  String get ui_privacy_policy_title => '개인정보 처리방침';
+
+  @override
+  String get privacy_intro =>
+      '최종 업데이트: 2026-10-30\n\nZenFile(이하 “본 앱”)은 개발자 l930203811 가 제공합니다. 당사는 최소 수집 원칙에 따라 정보를 처리합니다: 본 앱에는 광고·추적 SDK 가 포함되어 있지 않으며, 모든 파일 작업은 기기 내부에서 처리되고, 파일 내용을 업로드·판매·제3자와 공유하지 않습니다. 사용 전 본 방침을 자세히 읽어 주세요:';
+
+  @override
+  String get privacy_perm_storage =>
+      '저장소 권한(모든 파일 관리 / 미디어 파일): 로컬 파일 및 음악·동영상 라이브러리의 탐색, 정리, 전송, 분류에 사용됩니다. 파일 데이터는 기기에만 저장됩니다.';
+
+  @override
+  String get privacy_perm_mic =>
+      '마이크 권한: 「소음 측정기」의 실시간 소음 측정과 「음악 플레이어」의 스펙트럼 시각화에만 사용됩니다. 본 앱은 녹음하지 않고, 오디오를 저장하지 않으며, 마이크 데이터를 서버로 전송하지 않습니다.';
+
+  @override
+  String get privacy_perm_location =>
+      '위치 권한(Android 12 이하는 정확한 위치, Android 13 이상은 “근처 기기”): 「빠른 전송」에서 로컬 네트워크의 근처 기기를 검색하고 전송 연결을 맺는 데에만 사용됩니다. GPS 이동 경로는 수집하지 않습니다.';
+
+  @override
+  String get privacy_perm_others =>
+      '알림 권한: 백그라운드 재생 제어 및 전송 진행 상황 표시; 다른 앱 위에 표시: 데스크톱 가사; 앱 설치/삭제: 앱 관리 기능; 모든 앱 조회 및 사용 기록 접근: 앱 관리와 저장 공간 분석; 사진 위치 정보: 촬영 장소별 미디어 정리에만 사용됩니다.';
+
+  @override
+  String get privacy_logs =>
+      '비정상 종료 및 진단 로그: 앱이 비정상 종료(크래시/무응답)하면 기기 내부에 크래시 리포트(스택 트레이스, 기기 모델, 시스템·앱 버전)를 생성합니다. 리포트는 사용자가 명시적으로 확인한 경우에만 업로드되며(시작 대화상자 또는 “피드백”), 결함 파악과 수정에만 사용됩니다. 업로드를 거부할 수 있고 로컬 리포트는 언제든 삭제할 수 있습니다.';
+
+  @override
+  String get privacy_local_third =>
+      '데이터 저장: 위 데이터는 모두 기기 내부(앱 전용 디렉터리)에 저장되며, 사용자가 확인한 크래시 리포트를 제외하고 어떤 서버로도 전송되지 않습니다. 제3자 구성 요소: 본 앱은 크래시 통계를 위해 Tencent Bugly 를 통합하며, 사용자가 업로드에 동의한 경우에만 작동합니다.';
+
+  @override
+  String get privacy_rights =>
+      '사용자의 권리: 시스템 설정에서 언제든 권한을 철회할 수 있으며, 앱 데이터를 삭제하면 모든 로컬 기록이 삭제됩니다. 본 방침에 관한 문의는 GitHub Issues(github.com/l930203811/ZenFile/issues) 또는 앱 내 “연락 및 공유”의 채널로 연락해 주세요.\n\n본 방침은 기능 업데이트에 맞춰 갱신되며, 실질적인 변경 시 다음 실행 때 다시 동의를 요청합니다.';
+
+  @override
+  String get ui_privacy_agree => '동의하고 계속';
+
+  @override
+  String get ui_privacy_disagree => '동의하지 않음';
+
+  @override
+  String get ui_privacy_read => '확인';
+
+  @override
+  String get ui_privacy_exit_title => '개인정보 처리방침 미동의';
+
+  @override
+  String get ui_privacy_exit_body => '본 앱을 사용하려면 개인정보 처리방침에 동의해야 합니다.';
+
+  @override
+  String get ui_privacy_exit_yes => '앱 종료';
+
+  @override
+  String get ui_privacy_exit_no => '다시 보기';
 }

@@ -5,6 +5,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/crash_report_dialog.dart';
+import '../widgets/privacy_policy_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AboutZenFileScreen extends StatelessWidget {
@@ -296,6 +297,14 @@ class AboutZenFileScreen extends StatelessWidget {
                     icon: Icons.feedback_rounded,
                     label: L10n.of(context).ui_feedback_title,
                     onTap: () => CrashReportDialog.showFeedback(context),
+                  ),
+                  const SizedBox(height: 10),
+                  // 隐私政策：只读浏览（同意版本在首次启动时由同意弹窗管理）
+                  _buildSocialAction(
+                    context,
+                    icon: Icons.privacy_tip_rounded,
+                    label: L10n.of(context).ui_privacy_policy_title,
+                    onTap: () => showPrivacyPolicyReadOnly(context),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(

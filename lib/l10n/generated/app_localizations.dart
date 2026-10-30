@@ -16029,6 +16029,102 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'暂无可附带的诊断日志'**
   String get ui_feedback_no_logs;
+
+  /// No description provided for @ui_privacy_policy_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私政策'**
+  String get ui_privacy_policy_title;
+
+  /// No description provided for @privacy_intro.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新日期：2026-10-30\n\nZenFile（下称「本应用」）由开发者 l930203811 提供。我们以最小必要原则处理信息：本应用不含任何广告或追踪 SDK，所有文件操作均在您的设备本地完成，我们不会上传、出售或与任何第三方共享您的文件内容。请在使用前仔细阅读本政策：'**
+  String get privacy_intro;
+
+  /// No description provided for @privacy_perm_storage.
+  ///
+  /// In zh, this message translates to:
+  /// **'存储权限（管理所有文件 / 媒体文件）：用于浏览、整理、传输与分类本机文件和音视频媒体库。文件数据仅保存在您的设备上。'**
+  String get privacy_perm_storage;
+
+  /// No description provided for @privacy_perm_mic.
+  ///
+  /// In zh, this message translates to:
+  /// **'麦克风权限：仅用于「分贝仪」实时测量环境声级与「音频播放器」的频谱可视化。本应用不会录音、不存储音频，也不会将麦克风数据发送到任何服务器。'**
+  String get privacy_perm_mic;
+
+  /// No description provided for @privacy_perm_location.
+  ///
+  /// In zh, this message translates to:
+  /// **'位置权限（Android 12 及以下为精确位置，Android 13 及以上为「附近的设备」）：仅用于「快传」在局域网内发现附近的设备并建立传输。本应用不会获取 GPS 行踪轨迹。'**
+  String get privacy_perm_location;
+
+  /// No description provided for @privacy_perm_others.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知权限：用于后台播放控制与传输进度提示；悬浮窗权限：用于桌面歌词；安装/卸载应用权限：用于应用管理功能；查询所有应用与使用情况：用于应用管理与存储占用分析；照片位置信息：仅用于按拍摄地点整理媒体库。'**
+  String get privacy_perm_others;
+
+  /// No description provided for @privacy_logs.
+  ///
+  /// In zh, this message translates to:
+  /// **'崩溃与诊断日志：应用发生异常退出（崩溃/无响应）时，会在本机生成崩溃报告（含堆栈、机型、系统与应用版本）。报告仅在被您明确确认后才会上传（启动弹窗或「问题反馈」中），用于定位与修复缺陷；您也可以选择不上传，并随时删除本地报告。'**
+  String get privacy_logs;
+
+  /// No description provided for @privacy_local_third.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据存储：上述数据均保存在设备本地（应用私有目录），除您主动确认上传的崩溃报告外，不向任何服务器传输。第三方组件：应用集成腾讯 Bugly 用于崩溃统计，仅在您同意上传时生效。'**
+  String get privacy_local_third;
+
+  /// No description provided for @privacy_rights.
+  ///
+  /// In zh, this message translates to:
+  /// **'您的权利：可在系统设置中随时撤回任何权限授权；清除应用数据即可删除全部本地记录。如对本政策有疑问，请通过 GitHub Issues（github.com/l930203811/ZenFile/issues）或应用内「联系与分享」中的渠道联系。\n\n我们随功能更新同步更新本政策；发生实质性变更时，应用会在下次启动时重新征求您的同意。'**
+  String get privacy_rights;
+
+  /// No description provided for @ui_privacy_agree.
+  ///
+  /// In zh, this message translates to:
+  /// **'同意并继续'**
+  String get ui_privacy_agree;
+
+  /// No description provided for @ui_privacy_disagree.
+  ///
+  /// In zh, this message translates to:
+  /// **'不同意'**
+  String get ui_privacy_disagree;
+
+  /// No description provided for @ui_privacy_read.
+  ///
+  /// In zh, this message translates to:
+  /// **'我知道了'**
+  String get ui_privacy_read;
+
+  /// No description provided for @ui_privacy_exit_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未同意隐私政策'**
+  String get ui_privacy_exit_title;
+
+  /// No description provided for @ui_privacy_exit_body.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要您同意《隐私政策》才能使用本应用。'**
+  String get ui_privacy_exit_body;
+
+  /// No description provided for @ui_privacy_exit_yes.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出应用'**
+  String get ui_privacy_exit_yes;
+
+  /// No description provided for @ui_privacy_exit_no.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续查看'**
+  String get ui_privacy_exit_no;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

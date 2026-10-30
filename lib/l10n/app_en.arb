@@ -8899,5 +8899,21 @@
   "ui_feedback_later": "Later",
   "ui_feedback_sent": "Feedback sent. Thank you for your help!",
   "ui_feedback_failed": "Upload failed. Please check your network and try again",
-  "ui_feedback_no_logs": "No diagnostic logs available"
+  "ui_feedback_no_logs": "No diagnostic logs available",
+  "ui_privacy_policy_title": "Privacy Policy",
+  "privacy_intro": "Last updated: 2026-10-30\n\nZenFile (\"the app\") is provided by developer l930203811. We process information on a minimal-necessary basis: the app contains no advertising or tracking SDK, all file operations happen locally on your device, and we never upload, sell, or share your file contents with any third party. Please read this policy carefully before use:",
+  "privacy_perm_storage": "Storage permission (manage all files / media): used to browse, organize, transfer, and classify local files and your audio/video library. File data stays on your device only.",
+  "privacy_perm_mic": "Microphone permission: used solely for the decibel meter (live ambient sound level) and the spectrum visualizer in the audio player. The app never records, stores, or transmits microphone audio to any server.",
+  "privacy_perm_location": "Location permission (precise location on Android 12 or below; nearby devices on Android 13+): used only for Quick Transfer to discover nearby devices on the local network. The app never tracks your GPS location.",
+  "privacy_perm_others": "Notifications: background playback controls and transfer progress; Display over other apps: desktop lyrics; Install/uninstall packages: app management; Query all apps and usage access: app management and storage analysis; Photo location: only used to organize your media library by place taken.",
+  "privacy_logs": "Crash and diagnostic logs: when the app exits abnormally (crash or not responding), a crash report (stack trace, device model, system and app version) is generated locally. Reports are uploaded only after your explicit confirmation (startup dialog or \"Feedback\"), solely to locate and fix defects. You may decline upload and delete local reports at any time.",
+  "privacy_local_third": "Data storage: all of the above data is stored locally on your device (app-private directory). Except crash reports you explicitly confirm to upload, nothing is transmitted to any server. Third-party components: the app integrates Tencent Bugly for crash statistics, active only when you agree to upload.",
+  "privacy_rights": "Your rights: revoke any permission anytime in system settings; clearing app data deletes all local records. For questions about this policy, contact us via GitHub Issues (github.com/l930203811/ZenFile/issues) or the channels under \"Contact & Share\" in the app.\n\nThis policy is updated along with app releases; for material changes, the app will ask for your consent again at next launch.",
+  "ui_privacy_agree": "Agree and continue",
+  "ui_privacy_disagree": "Disagree",
+  "ui_privacy_read": "Got it",
+  "ui_privacy_exit_title": "Privacy policy not accepted",
+  "ui_privacy_exit_body": "You must agree to the Privacy Policy to use this app.",
+  "ui_privacy_exit_yes": "Exit app",
+  "ui_privacy_exit_no": "Review again"
 }

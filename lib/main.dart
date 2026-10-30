@@ -30,6 +30,7 @@ import 'services/cache_clean_service.dart';
 import 'services/bugly_report_service.dart';
 import 'services/crash_forensics_service.dart';
 import 'ui/widgets/crash_report_dialog.dart';
+import 'ui/widgets/privacy_policy_dialog.dart';
 import 'services/network_connections_service.dart';
 import 'services/share_intent_service.dart';
 import 'services/pin_service.dart';
@@ -98,6 +99,7 @@ void main() {
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
       debugPrint('[ZenFile] Flutter error: ${details.exception}');
+      debugPrint('[ZenFile] Flutter error stack: ${details.stack}');
       // 崩溃取证：框架层错误也留证。它通常不会杀死进程，但往往正是「用户看到
       // 的异常表现」的根源，且时间戳能与原生 report 互相印证。
       // recordError 内部全程 try/catch，绝不会反过来影响这里。
@@ -601,15 +603,24 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   /// ⚠️ 在 initState 里启动但**不 await**：`runApp()` 之前任何挂住的 await 都会让
   /// 界面起不来（见 main() 中相关说明）。这里只登记 Future，结果回来后 setState。
   Future<void> _loadSystemPickerInfo() async {
-    final info = await SystemFilePickerService.getInfo();
-    if (!mounted) return;
-    // 若原生推送已先一步把状态置为 picker，这一次（可能因通道未就绪而拿到 none 的）
-    // 查询不得把它回退掉 —— 两者存在竞态。
-    if (_pickerInfo.isPicker && !info.isPicker) return;
-    setState(() {
-      _pickerInfo = info;
-      _pickerInfoChecked = true;
-    });
+    try {
+      final info = await SystemFilePickerService.getInfo();
+      if (!mounted) return;
+      // 若原生推送已先一步把状态置为 picker，这一次（可能因通道未就绪而拿到 none 的）
+      // 查询不得把它回退掉 —— 两者存在竞态。
+      if (_pickerInfo.isPicker && !info.isPicker) return;
+      setState(() {
+        _pickerInfo = info;
+        _pickerInfoChecked = true;
+      });
+    } catch (e) {
+      // 该通道是 Android 专属实现：桌面端必然 MissingPluginException。
+      // 查询失败必须按「非选择器启动」放行，否则 _pickerInfoChecked 永远
+      // 为 false，home 恒为空白 Scaffold（桌面端首页空白的根因）。
+      debugPrint('[ZenFile] loadSystemPickerInfo failed (treated as non-picker): $e');
+      if (!mounted) return;
+      setState(() => _pickerInfoChecked = true);
+    }
   }
 
   /// 回到前台时主动补查一次 picker 状态 —— **这条才是「ZenFile 在后台被第三方调起
@@ -623,6 +634,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   ///     走的是 onCreate，不回调 onNewIntent ⇒ 没有任何推送。
   /// 所以每次回到前台都补查一次，任何一种情况都能正确切进选择器。
   Future<void> _refreshPickerInfoOnResume() async {
+    if (!Platform.isAndroid) return; // Android 专属通道，桌面端跳过
     if (_pickerInfoRefreshing) return;
     _pickerInfoRefreshing = true;
     try {
@@ -730,6 +742,26 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           _showFirstTimeLanguagePicker();
         });
       }
+      return;
+    }
+
+    // 隐私政策：未同意（或政策版本已更新）时先弹同意弹窗 —— 必须在申请任何
+    // 权限之前取得同意（合规要求）。
+    //
+    // ⚠️ 必须等**首帧绘制完成后**再弹：本方法在 initState 里启动，其异步流
+    // 可能在第一帧绘制之前执行 —— 过早 showDialog 会把 DialogRoute 挂进
+    // 导航器却无帧可画，表现为「白屏很久，切后台再切回才显示」（2026-10-30
+    // 用户反馈；语言选择弹窗正是用 addPostFrameCallback 规避了这一点，见
+    // 上方 _isFirstLaunch 分支）。postFrame 里同意后才能继续权限申请。
+    if (PreferencesService.getPrivacyPolicyAcceptedVersion() <
+        kPrivacyPolicyVersion) {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await showPrivacyPolicyGate(context);
+        if (!mounted) return;
+        // 同意后才能申请权限（合规顺序：协议在前）。
+        await _checkStoragePermission();
+      });
       return;
     }
 
@@ -917,7 +949,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
               ),
               actions: [
                 FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
                     PreferencesService.saveAppLocale(selectedLocale);
                     PreferencesService.setHasSelectedLanguage(true);
                     Navigator.of(ctx).pop();
@@ -926,6 +958,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                         _locale = _localeFromCode(selectedLocale);
                         _isFirstLaunch = false;
                       });
+                      // 隐私政策（协议在前，合规要求）：必须先取得同意，
+                      // 才能进入权限申请。不同意且确认 → 弹窗内部退出应用。
+                      await showPrivacyPolicyGate(context);
+                      if (!mounted) return;
                       // 语言选择完成后，检查并申请存储权限
                       // 应用已完全启动到首页，此时询问权限不会导致闪退
                       _checkPermissionAfterLanguageSelection();
@@ -1465,6 +1501,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   /// 在「权限确认完成」与「回到前台（resumed）」两个时机调用（后者是
   /// Activity 被系统销毁重建、无 onNewIntent 推送时的唯一通路）。
   Future<void> _checkPendingShareIntent() async {
+    // ShareIntentBridge 是 Android 专属通道：桌面端直接跳过，
+    // 避免 getPendingUris 抛 MissingPluginException 成未处理异步错误。
+    if (!Platform.isAndroid) return;
     final info = await ShareIntentService.getPendingUris();
     if (info == null || !mounted) return;
     await _dispatchShareIntent(info.uris);

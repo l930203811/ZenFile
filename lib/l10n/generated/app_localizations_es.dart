@@ -9153,4 +9153,61 @@ class L10nEs extends L10n {
   @override
   String get ui_feedback_no_logs =>
       'No hay registros de diagnóstico disponibles';
+
+  @override
+  String get ui_privacy_policy_title => 'Política de privacidad';
+
+  @override
+  String get privacy_intro =>
+      'Última actualización: 2026-10-30\n\nZenFile («la aplicación») es proporcionada por el desarrollador l930203811. Tratamos la información bajo el principio de minimización: la aplicación no contiene ningún SDK de publicidad ni de rastreo, todas las operaciones con archivos se realizan localmente en su dispositivo y nunca subimos, vendemos ni compartimos el contenido de sus archivos con terceros. Lea atentamente esta política antes de usar la aplicación:';
+
+  @override
+  String get privacy_perm_storage =>
+      'Permiso de almacenamiento (gestionar todos los archivos / archivos multimedia): para explorar, organizar, transferir y clasificar archivos locales y su biblioteca de audio y vídeo. Los datos de archivos permanecen únicamente en su dispositivo.';
+
+  @override
+  String get privacy_perm_mic =>
+      'Permiso de micrófono: solo para el medidor de decibelios (nivel sonoro ambiental en tiempo real) y el visualizador de espectro del reproductor de audio. La aplicación nunca graba, almacena ni transmite audio del micrófono a ningún servidor.';
+
+  @override
+  String get privacy_perm_location =>
+      'Permiso de ubicación (ubicación precisa hasta Android 12; dispositivos cercanos desde Android 13): solo para la transferencia rápida, a fin de descubrir dispositivos de la red local. La aplicación nunca rastrea su ubicación GPS ni sus desplazamientos.';
+
+  @override
+  String get privacy_perm_others =>
+      'Notificaciones: reproducción en segundo plano y progreso de transferencias; Superposición: letras de escritorio; Instalar/desinstalar paquetes: gestión de aplicaciones; Consultar todas las aplicaciones y acceso de uso: gestión de aplicaciones y análisis de almacenamiento; Ubicación de fotos: solo para organizar la biblioteca por lugar de captura.';
+
+  @override
+  String get privacy_logs =>
+      'Registros de fallos y diagnóstico: cuando la aplicación sale de forma anómala (fallo o sin respuesta), se genera localmente un informe de fallo (pila, modelo de dispositivo, versiones del sistema y de la aplicación). Los informes solo se suben tras su confirmación explícita (diálogo de inicio o «Comentarios»), únicamente para localizar y corregir defectos. Puede rechazar la subida y eliminar los informes locales en cualquier momento.';
+
+  @override
+  String get privacy_local_third =>
+      'Almacenamiento de datos: todos los datos anteriores se guardan localmente en su dispositivo (directorio privado de la aplicación). Salvo los informes de fallo que usted confirme explícitamente, no se transmite nada a ningún servidor. Componentes de terceros: la aplicación integra Tencent Bugly para estadísticas de fallos, activo solo cuando usted acepta la subida.';
+
+  @override
+  String get privacy_rights =>
+      'Sus derechos: puede revocar cualquier permiso en cualquier momento desde los ajustes del sistema; borrar los datos de la aplicación elimina todos los registros locales. Para dudas sobre esta política, contáctenos por GitHub Issues (github.com/l930203811/ZenFile/issues) o por los canales de «Contacto y compartir» de la aplicación.\n\nEsta política se actualiza junto con las versiones de la aplicación; ante cambios sustanciales, se le solicitará de nuevo su consentimiento en el siguiente inicio.';
+
+  @override
+  String get ui_privacy_agree => 'Aceptar y continuar';
+
+  @override
+  String get ui_privacy_disagree => 'No aceptar';
+
+  @override
+  String get ui_privacy_read => 'Entendido';
+
+  @override
+  String get ui_privacy_exit_title => 'Política de privacidad no aceptada';
+
+  @override
+  String get ui_privacy_exit_body =>
+      'Debe aceptar la Política de privacidad para usar esta aplicación.';
+
+  @override
+  String get ui_privacy_exit_yes => 'Salir de la aplicación';
+
+  @override
+  String get ui_privacy_exit_no => 'Volver a revisar';
 }

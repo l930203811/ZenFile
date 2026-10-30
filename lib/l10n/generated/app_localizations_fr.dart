@@ -9172,4 +9172,62 @@ class L10nFr extends L10n {
 
   @override
   String get ui_feedback_no_logs => 'Aucun journal de diagnostic disponible';
+
+  @override
+  String get ui_privacy_policy_title => 'Politique de confidentialité';
+
+  @override
+  String get privacy_intro =>
+      'Dernière mise à jour : 2026-10-30\n\nZenFile (« l\'application ») est fournie par le développeur l930203811. Nous traitons les informations selon le principe de minimisation : l\'application ne contient aucun SDK publicitaire ni de suivi, toutes les opérations sur les fichiers s\'effectuent localement sur votre appareil, et nous ne téléchargeons, vendons ni partageons jamais le contenu de vos fichiers avec des tiers. Veuillez lire attentivement cette politique avant utilisation :';
+
+  @override
+  String get privacy_perm_storage =>
+      'Autorisation de stockage (gérer tous les fichiers / fichiers multimédias) : pour parcourir, organiser, transférer et classer vos fichiers locaux et votre bibliothèque audio/vidéo. Les données restent uniquement sur votre appareil.';
+
+  @override
+  String get privacy_perm_mic =>
+      'Autorisation du micro : uniquement pour le décibelmètre (niveau sonore ambiant en direct) et le visualiseur de spectre du lecteur audio. L\'application n\'enregistre jamais, ne stocke aucun audio et n\'envoie aucune donnée du micro à un serveur.';
+
+  @override
+  String get privacy_perm_location =>
+      'Autorisation de localisation (position précise jusqu\'à Android 12 ; appareils à proximité à partir d\'Android 13) : uniquement pour le transfert rapide afin de découvrir les appareils du réseau local. L\'application ne suit jamais votre position GPS ni vos déplacements.';
+
+  @override
+  String get privacy_perm_others =>
+      'Notifications : lecture en arrière-plan et progression des transferts ; Superposition : paroles de bureau ; Installation/désinstallation de paquets : gestion des applications ; Liste des applications et accès à l\'usage : gestion des applications et analyse du stockage ; Localisation des photos : uniquement pour organiser la médiathèque par lieu de prise de vue.';
+
+  @override
+  String get privacy_logs =>
+      'Journaux de plantage et de diagnostic : en cas de sortie anormale (plantage/sans réponse), un rapport de plantage est généré localement (pile d\'appels, modèle d\'appareil, versions système et application). Les rapports ne sont téléversés qu\'après votre confirmation explicite (dialogue de démarrage ou « Retour »), uniquement pour diagnostiquer et corriger les défauts. Vous pouvez refuser le téléversement et supprimer les rapports locaux à tout moment.';
+
+  @override
+  String get privacy_local_third =>
+      'Stockage des données : toutes les données ci-dessus sont conservées localement sur votre appareil (répertoire privé de l\'application). Hormis les rapports que vous confirmez explicitement, rien n\'est transmis à un serveur. Composants tiers : l\'application intègre Tencent Bugly pour les statistiques de plantage, actif uniquement avec votre accord.';
+
+  @override
+  String get privacy_rights =>
+      'Vos droits : vous pouvez révoquer toute autorisation à tout moment dans les réglages système ; effacer les données de l\'application supprime tous les enregistrements locaux. Questions sur cette politique : via GitHub Issues (github.com/l930203811/ZenFile/issues) ou les canaux de « Contact & partage » dans l\'application.\n\nCette politique est mise à jour avec les versions de l\'application ; en cas de changement substantiel, votre consentement sera redemandé au prochain lancement.';
+
+  @override
+  String get ui_privacy_agree => 'Accepter et continuer';
+
+  @override
+  String get ui_privacy_disagree => 'Refuser';
+
+  @override
+  String get ui_privacy_read => 'J\'ai compris';
+
+  @override
+  String get ui_privacy_exit_title =>
+      'Politique de confidentialité non acceptée';
+
+  @override
+  String get ui_privacy_exit_body =>
+      'Vous devez accepter la Politique de confidentialité pour utiliser cette application.';
+
+  @override
+  String get ui_privacy_exit_yes => 'Quitter l\'application';
+
+  @override
+  String get ui_privacy_exit_no => 'Relire';
 }

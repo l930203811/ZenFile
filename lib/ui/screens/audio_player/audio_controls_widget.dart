@@ -303,25 +303,15 @@ class AudioQualityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.textScalerOf(context).scale(14) > 18;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 10 : 14,
-        vertical: compact ? 3 : 6,
-      ),
-      decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.high_quality_rounded, color: accentColor, size: 16),
-          const SizedBox(width: 6),
-          _QualityLabel(audioPath: audioPath, accentColor: accentColor),
-        ],
-      ),
+    // 2026-10-30：移除底色与边框 —— 之前带圆角胶囊描边太像可点按钮；
+    // 现在只保留「图标 + 格式文字」的强调色文本（徽标不可交互）。
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.high_quality_rounded, color: accentColor, size: 16),
+        const SizedBox(width: 6),
+        _QualityLabel(audioPath: audioPath, accentColor: accentColor),
+      ],
     );
   }
 }
