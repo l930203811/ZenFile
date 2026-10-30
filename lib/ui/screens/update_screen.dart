@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.0';
+  static const String _latestChangelogVersion = 'v3.7.1';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v371,
     _v370,
     _v368,
     _v367,
@@ -956,6 +957,42 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v330,
     _v320,
   ];
+
+  /// ── 当前版本：v3.7.1 ────────────────────────────────────────────────
+  static const _Changelog _v371 = _Changelog(
+    version: 'v3.7.1',
+    date: '2026-10-30',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '关于页新增「特别鸣谢」：打赏者、原作者、开源组件与建议反馈用户一目了然，README 同步更新致谢章节',
+        '新增《隐私政策》同意页：首次安装或覆盖安装旧版本后首次启动都会弹出，不同意则无法使用应用；政策更新后会再次弹出，内容支持全部 10 种语言',
+      ]),
+      _ChangeSection('✨ 界面优化', [
+        '音频播放器的音频文件格式徽标去除边框与底色，仅保留文字显示',
+      ]),
+      _ChangeSection('✨ 修复', [
+        '修复覆盖安装后启动黑/白屏很久、需要切一次任务栏再切回才能进入首页的问题',
+        '修复覆盖安装后《隐私政策》同意页不显示的问题，并堵住由此可能绕过协议直接进入首页的漏洞',
+        '启动提速：连接服务、自动加密、回收站等初始化移至首帧之后并行执行，不再拖慢启动',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'The About page gains a "Special Thanks" section: donors, the original author, open-source components and users who gave suggestions & feedback, with the README acknowledgements updated as well',
+        'A Privacy Policy consent page is added: it appears on first install or on the first launch after upgrading from an older version; the app cannot be used without agreeing, and the page re-appears whenever the policy is updated — available in all 10 supported languages',
+      ]),
+      _ChangeSection('✨ UI Improvements', [
+        'The audio-format badge on the player page drops its border and background, keeping only the text',
+      ]),
+      _ChangeSection('✨ Fixes', [
+        'Fixed a long black/white screen after installing an update over a previous version, which required switching to the recent-apps view and back before the home page appeared',
+        'Fixed the Privacy Policy consent page not showing after upgrading, and closed the loophole that could bypass the policy and enter the home page directly',
+        'Faster startup: initialization of connections, auto-encryption and the recycle bin now runs in parallel after the first frame instead of delaying launch',
+        'Other minor improvements',
+      ]),
+    ],
+  );
 
   /// ── 当前版本：v3.7.0 ────────────────────────────────────────────────
   static const _Changelog _v370 = _Changelog(
