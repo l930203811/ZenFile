@@ -156,27 +156,16 @@ void main() {
     } catch (e) {
       debugPrint('[ZenFile] PinService.init failed: $e');
     }
+    WebdavDebugLog.log('[boot] pin ok');
 
-    try {
-      await NetworkConnectionsService.init();
-    } catch (e) {
-      debugPrint('[ZenFile] NetworkConnectionsService.init failed: $e');
-    }
-
-    // 原地加密目录「新文件自动加密」：读开关、注册事件通道，按登记表启动
-    // 前台监听服务并跑一次兜底补加密（用户在加密设置里开启后生效）。
-    try {
-      await CryptAutoEncryptService.instance.init();
-    } catch (e) {
-      debugPrint('[ZenFile] CryptAutoEncryptService.init failed: $e');
-    }
-
-    try {
-      await RecycleBinService.init();
-    } catch (e) {
-      debugPrint('[ZenFile] RecycleBinService.init failed: $e');
-    }
-    WebdavDebugLog.log('[boot] services ok');
+    // ⚠️ 启动提速（2026-10-30）：NetworkConnections / CryptAutoEncrypt /
+    // RecycleBin 三个服务此前在这里串行 await，但它们各自都藏着慢 IO——
+    // secure storage 的 Keystore 解密读（连接凭据）、自动加密的兜底补加密
+    // 扫描、回收站过期项的文件删除清理——低端机上把首帧拖后 1~2 秒。
+    // 它们都不影响首帧渲染，且页面真正用到时（连接页 / 加密目录写文件 /
+    // 回收站）远晚于启动后的几百毫秒，故移到 runApp 之后并行执行
+    // （见下方 [_initDeferredServices]）。各 init 内部自带幂等与异常兜底，
+    // 语义不变。
 
     // Load custom font dynamically if configured
     try {
@@ -245,6 +234,10 @@ void main() {
       WebdavDebugLog.log('[boot] first frame rendered');
     });
 
+    // 延迟初始化的服务（见上方「启动提速」注释）：runApp 之后立即并行启动，
+    // 不等待、不阻塞首帧之后的任何渲染路径。
+    unawaited(_initDeferredServices());
+
     // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
     // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
     unawaited(_logBootFingerprint());
@@ -264,6 +257,35 @@ void main() {
       BuglyReportService.recordError(error, stackTrace, tag: 'AsyncError'),
     );
   });
+}
+
+/// 启动提速：把与首帧渲染无关、但内含慢 IO 的三个服务初始化挪到
+/// runApp **之后**执行（原串行位置与理由见 main() 内「启动提速」注释）。
+///
+/// * [NetworkConnectionsService.init]：secure storage 的 Keystore 解密读
+///   （连接凭据水合）——连接页打开时早已完成；
+/// * [CryptAutoEncryptService.init]：自动加密开关读取 + 前台监听服务注册
+///   + 兜底补加密扫描——用户在加密目录写入新文件的时机远晚于启动；
+/// * [RecycleBinService.init]：回收站元数据读取 + 过期项文件清理——纯后台维护。
+///
+/// 任何一个失败都不影响其余服务与应用启动（各 init 自身也带 try/catch 幂等兜底）。
+Future<void> _initDeferredServices() async {
+  try {
+    await NetworkConnectionsService.init();
+  } catch (e) {
+    debugPrint('[ZenFile] NetworkConnectionsService.init failed: $e');
+  }
+  try {
+    await CryptAutoEncryptService.instance.init();
+  } catch (e) {
+    debugPrint('[ZenFile] CryptAutoEncryptService.init failed: $e');
+  }
+  try {
+    await RecycleBinService.init();
+  } catch (e) {
+    debugPrint('[ZenFile] RecycleBinService.init failed: $e');
+  }
+  WebdavDebugLog.log('[boot] deferred services ok');
 }
 
 /// 收紧 Flutter 图片解码缓存（`ImageCache`）上限。
