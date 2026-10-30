@@ -95,7 +95,33 @@
 
 ## 🙏 致谢
 
+### 原作者
+
 基于 [Senzme/NFile](https://github.com/Senzme/NFile) 二次开发，感谢原作者提供优秀的代码基础！
+
+### 打赏者
+
+衷心感谢以下朋友的支持与信任：**𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮**、**被窝一级避难所**、**季风**、**从前有座山**、**羁客**、**无处安放**、**你没急吧** —— 你们的支持是 ZenFile 持续更新的最大动力。
+
+### 开源项目
+
+ZenFile 站在以下优秀开源项目的肩膀上（排名不分先后）：
+
+- [media_kit](https://github.com/media-kit/media-kit)（mpv）— 音视频播放引擎
+- [audio_service](https://pub.dev/packages/audio_service) — 后台播放与系统媒体会话
+- [on_audio_query](https://github.com/MSOB7YY/on_audio_query) — 媒体库查询
+- [dartssh2](https://github.com/TerminalStudio/dartssh2) — SFTP 协议实现
+- [cronet_http](https://pub.dev/packages/cronet_http) — 高性能网络传输
+- Syncfusion — PDF / 文档渲染
+- [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) — 凭据安全存储
+- [audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) — 音频频谱可视化算法参考（AGPL-3.0）
+- 腾讯 Bugly — 崩溃统计
+
+### 建议与反馈
+
+感谢所有为 ZenFile 提出宝贵建议与问题反馈的用户 —— 应用内：𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮、越界、YC影尘、猕猴桃、大手拉小手、小熊猫[自重率0%]、SAS、Dr. Homi J. Bhabha、sky、Aps、Oxlne、Jankst；GitHub：[KamrulShahed](https://github.com/KamrulShahed)、[0xlne](https://github.com/0xlne)、[SASlobby93](https://github.com/SASlobby93)、[aand1015](https://github.com/aand1015)、[LorianL98](https://github.com/LorianL98)、[qwertti123](https://github.com/qwertti123)。
+
+每一条反馈都让 ZenFile 变得更好 —— 欢迎继续通过 [Issues](https://github.com/l930203811/ZenFile/issues) 提出建议！
 
 ---
 

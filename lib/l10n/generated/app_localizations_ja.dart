@@ -8797,4 +8797,38 @@ class L10nJa extends L10n {
 
   @override
   String get ui_privacy_exit_no => 'ポリシーを再度確認';
+
+  @override
+  String get ui_special_thanks_title => 'スペシャルサンクス';
+
+  @override
+  String get thanks_donors_section => '支援者の皆様';
+
+  @override
+  String get thanks_donors_note =>
+      '以下の皆様のご支援とご信頼に感謝します。皆様の応援が ZenFile を続ける最大の原動力です：';
+
+  @override
+  String get thanks_author_section => '原作者';
+
+  @override
+  String get thanks_author_note =>
+      '本プロジェクトは Senzme 氏のオープンソースプロジェクト NFile をベースに開発されています。素晴らしい基盤をありがとうございます：';
+
+  @override
+  String get thanks_opensource_section => 'オープンソース';
+
+  @override
+  String get thanks_opensource_note =>
+      'ZenFile は以下の優れたオープンソースコンポーネントの上に成り立っています（順不同）：';
+
+  @override
+  String get thanks_feedback_section => 'ご提案とフィードバック';
+
+  @override
+  String get thanks_feedback_note =>
+      '貴重なご提案と不具合報告で ZenFile をより良くしてくださった皆様に感謝します：';
+
+  @override
+  String get thanks_github_note => 'また、GitHub Issues でフィードバックをくださった皆様：';
 }

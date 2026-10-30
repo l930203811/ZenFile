@@ -8808,4 +8808,38 @@ class L10nKo extends L10n {
 
   @override
   String get ui_privacy_exit_no => '다시 보기';
+
+  @override
+  String get ui_special_thanks_title => '특별 감사';
+
+  @override
+  String get thanks_donors_section => '후원자';
+
+  @override
+  String get thanks_donors_note =>
+      '다음 분들의 지원과 신뢰에 감사드립니다. 여러분의 응원이 ZenFile 를 지속 개발하는 가장 큰 원동력입니다:';
+
+  @override
+  String get thanks_author_section => '원작자';
+
+  @override
+  String get thanks_author_note =>
+      '본 프로젝트는 Senzme 님의 오픈소스 프로젝트 NFile 을 기반으로 개발되었습니다. 훌륭한 토대에 감사드립니다:';
+
+  @override
+  String get thanks_opensource_section => '오픈소스';
+
+  @override
+  String get thanks_opensource_note =>
+      'ZenFile 은 다음 훌륭한 오픈소스 구성 요소 위에 서 있습니다(순서 무관):';
+
+  @override
+  String get thanks_feedback_section => '제안 및 피드백';
+
+  @override
+  String get thanks_feedback_note =>
+      '소중한 제안과 버그 신고로 ZenFile 을 더 좋게 만들어 주신 분들께 감사드립니다:';
+
+  @override
+  String get thanks_github_note => '그리고 GitHub Issues 로 피드백을 보내주신 분들:';
 }

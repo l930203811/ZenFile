@@ -9334,5 +9334,15 @@
   "ui_privacy_exit_title": "尚未同意隐私政策",
   "ui_privacy_exit_body": "需要您同意《隐私政策》才能使用本应用。",
   "ui_privacy_exit_yes": "退出应用",
-  "ui_privacy_exit_no": "继续查看"
+  "ui_privacy_exit_no": "继续查看",
+  "ui_special_thanks_title": "特别鸣谢",
+  "thanks_donors_section": "打赏者",
+  "thanks_donors_note": "感谢以下朋友的支持与信任，你们的支持是 ZenFile 持续更新的最大动力：",
+  "thanks_author_section": "原作者",
+  "thanks_author_note": "本项目基于 Senzme 的开源项目 NFile 开发，感谢原作者奠定的出色基础：",
+  "thanks_opensource_section": "开源项目",
+  "thanks_opensource_note": "ZenFile 站在以下优秀开源组件的肩膀上（排名不分先后）：",
+  "thanks_feedback_section": "建议与反馈",
+  "thanks_feedback_note": "感谢以下用户提出的宝贵建议与问题反馈，让 ZenFile 变得更好：",
+  "thanks_github_note": "以及通过 GitHub Issues 反馈的用户："
 }

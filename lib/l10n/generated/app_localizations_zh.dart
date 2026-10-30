@@ -8613,6 +8613,36 @@ class L10nZh extends L10n {
 
   @override
   String get ui_privacy_exit_no => '继续查看';
+
+  @override
+  String get ui_special_thanks_title => '特别鸣谢';
+
+  @override
+  String get thanks_donors_section => '打赏者';
+
+  @override
+  String get thanks_donors_note => '感谢以下朋友的支持与信任，你们的支持是 ZenFile 持续更新的最大动力：';
+
+  @override
+  String get thanks_author_section => '原作者';
+
+  @override
+  String get thanks_author_note => '本项目基于 Senzme 的开源项目 NFile 开发，感谢原作者奠定的出色基础：';
+
+  @override
+  String get thanks_opensource_section => '开源项目';
+
+  @override
+  String get thanks_opensource_note => 'ZenFile 站在以下优秀开源组件的肩膀上（排名不分先后）：';
+
+  @override
+  String get thanks_feedback_section => '建议与反馈';
+
+  @override
+  String get thanks_feedback_note => '感谢以下用户提出的宝贵建议与问题反馈，让 ZenFile 变得更好：';
+
+  @override
+  String get thanks_github_note => '以及通过 GitHub Issues 反馈的用户：';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17194,4 +17224,34 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_privacy_exit_no => '繼續查看';
+
+  @override
+  String get ui_special_thanks_title => '特別鳴謝';
+
+  @override
+  String get thanks_donors_section => '打賞者';
+
+  @override
+  String get thanks_donors_note => '感謝以下朋友的支持與信任，你們的支持是 ZenFile 持續更新的最大動力：';
+
+  @override
+  String get thanks_author_section => '原作者';
+
+  @override
+  String get thanks_author_note => '本專案基於 Senzme 的開源專案 NFile 開發，感謝原作者奠定的出色基礎：';
+
+  @override
+  String get thanks_opensource_section => '開源專案';
+
+  @override
+  String get thanks_opensource_note => 'ZenFile 站在以下優秀開源元件的肩膀上（排名不分先後）：';
+
+  @override
+  String get thanks_feedback_section => '建議與回饋';
+
+  @override
+  String get thanks_feedback_note => '感謝以下使用者提出的寶貴建議與問題回饋，讓 ZenFile 變得更好：';
+
+  @override
+  String get thanks_github_note => '以及透過 GitHub Issues 回饋的使用者：';
 }

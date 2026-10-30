@@ -8853,5 +8853,15 @@
   "ui_privacy_exit_title": "プライバシーポリシー未同意",
   "ui_privacy_exit_body": "本アプリのご利用にはプライバシーポリシーへの同意が必要です。",
   "ui_privacy_exit_yes": "アプリを終了",
-  "ui_privacy_exit_no": "ポリシーを再度確認"
+  "ui_privacy_exit_no": "ポリシーを再度確認",
+  "ui_special_thanks_title": "スペシャルサンクス",
+  "thanks_donors_section": "支援者の皆様",
+  "thanks_donors_note": "以下の皆様のご支援とご信頼に感謝します。皆様の応援が ZenFile を続ける最大の原動力です：",
+  "thanks_author_section": "原作者",
+  "thanks_author_note": "本プロジェクトは Senzme 氏のオープンソースプロジェクト NFile をベースに開発されています。素晴らしい基盤をありがとうございます：",
+  "thanks_opensource_section": "オープンソース",
+  "thanks_opensource_note": "ZenFile は以下の優れたオープンソースコンポーネントの上に成り立っています（順不同）：",
+  "thanks_feedback_section": "ご提案とフィードバック",
+  "thanks_feedback_note": "貴重なご提案と不具合報告で ZenFile をより良くしてくださった皆様に感謝します：",
+  "thanks_github_note": "また、GitHub Issues でフィードバックをくださった皆様："
 }

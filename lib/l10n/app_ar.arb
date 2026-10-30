@@ -8849,5 +8849,15 @@
   "ui_privacy_exit_title": "لم تتم الموافقة على سياسة الخصوصية",
   "ui_privacy_exit_body": "يجب الموافقة على سياسة الخصوصية لاستخدام هذا التطبيق.",
   "ui_privacy_exit_yes": "الخروج من التطبيق",
-  "ui_privacy_exit_no": "المراجعة مجددًا"
+  "ui_privacy_exit_no": "المراجعة مجددًا",
+  "ui_special_thanks_title": "شكر وتقدير خاص",
+  "thanks_donors_section": "الداعمون",
+  "thanks_donors_note": "شكرًا للأصدقاء التالين على دعمهم وثقتهم — كرمكم هو أكبر دافع لاستمرار تطوير ZenFile:",
+  "thanks_author_section": "المؤلف الأصلي",
+  "thanks_author_note": "طُوّر هذا المشروع استنادًا إلى NFile، وهو مشروع مفتوح المصدر من Senzme. شكرًا للأساس الممتاز:",
+  "thanks_opensource_section": "مصدر مفتوح",
+  "thanks_opensource_note": "يقف ZenFile على أكتاف هذه المكوّنات مفتوحة المصدر الممتازة (بلا ترتيب معين):",
+  "thanks_feedback_section": "الاقتراحات والملاحظات",
+  "thanks_feedback_note": "شكرًا للمستخدمين التالين على اقتراحاتهم القيّمة وتقارير الأخطاء التي جعلت ZenFile أفضل:",
+  "thanks_github_note": "وكذلك لكل من أبلغ عن مشكلات عبر GitHub Issues:"
 }

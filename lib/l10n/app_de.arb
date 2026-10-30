@@ -8846,5 +8846,15 @@
   "ui_privacy_exit_title": "Datenschutzerklärung nicht akzeptiert",
   "ui_privacy_exit_body": "Zur Nutzung dieser App müssen Sie der Datenschutzerklärung zustimmen.",
   "ui_privacy_exit_yes": "App beenden",
-  "ui_privacy_exit_no": "Erneut ansehen"
+  "ui_privacy_exit_no": "Erneut ansehen",
+  "ui_special_thanks_title": "Besonderer Dank",
+  "thanks_donors_section": "Unterstützer",
+  "thanks_donors_note": "Dank an die folgenden Freunde für ihre Unterstützung und ihr Vertrauen — eure Großzügigkeit ist die größte Motivation für die Weiterentwicklung von ZenFile:",
+  "thanks_author_section": "Ursprünglicher Autor",
+  "thanks_author_note": "Dieses Projekt basiert auf NFile, dem Open-Source-Projekt von Senzme. Danke für das hervorragende Fundament:",
+  "thanks_opensource_section": "Open Source",
+  "thanks_opensource_note": "ZenFile steht auf den Schultern dieser hervorragenden Open-Source-Komponenten (ohne bestimmte Reihenfolge):",
+  "thanks_feedback_section": "Vorschläge & Feedback",
+  "thanks_feedback_note": "Dank an die folgenden Nutzer für wertvolle Vorschläge und Fehlerberichte, die ZenFile besser gemacht haben:",
+  "thanks_github_note": "Ebenso allen, die Feedback über GitHub Issues gemeldet haben:"
 }

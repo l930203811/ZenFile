@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/crash_report_dialog.dart';
 import '../widgets/privacy_policy_dialog.dart';
+import 'special_thanks_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AboutZenFileScreen extends StatelessWidget {
@@ -305,6 +306,18 @@ class AboutZenFileScreen extends StatelessWidget {
                     icon: Icons.privacy_tip_rounded,
                     label: L10n.of(context).ui_privacy_policy_title,
                     onTap: () => showPrivacyPolicyReadOnly(context),
+                  ),
+                  const SizedBox(height: 10),
+                  // 特别鸣谢：打赏者 / 原作者 / 开源组件 / 建议反馈用户
+                  _buildSocialAction(
+                    context,
+                    icon: Icons.volunteer_activism_rounded,
+                    label: L10n.of(context).ui_special_thanks_title,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const SpecialThanksScreen(),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(

@@ -16125,6 +16125,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'继续查看'**
   String get ui_privacy_exit_no;
+
+  /// No description provided for @ui_special_thanks_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'特别鸣谢'**
+  String get ui_special_thanks_title;
+
+  /// No description provided for @thanks_donors_section.
+  ///
+  /// In zh, this message translates to:
+  /// **'打赏者'**
+  String get thanks_donors_section;
+
+  /// No description provided for @thanks_donors_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢以下朋友的支持与信任，你们的支持是 ZenFile 持续更新的最大动力：'**
+  String get thanks_donors_note;
+
+  /// No description provided for @thanks_author_section.
+  ///
+  /// In zh, this message translates to:
+  /// **'原作者'**
+  String get thanks_author_section;
+
+  /// No description provided for @thanks_author_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'本项目基于 Senzme 的开源项目 NFile 开发，感谢原作者奠定的出色基础：'**
+  String get thanks_author_note;
+
+  /// No description provided for @thanks_opensource_section.
+  ///
+  /// In zh, this message translates to:
+  /// **'开源项目'**
+  String get thanks_opensource_section;
+
+  /// No description provided for @thanks_opensource_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 站在以下优秀开源组件的肩膀上（排名不分先后）：'**
+  String get thanks_opensource_note;
+
+  /// No description provided for @thanks_feedback_section.
+  ///
+  /// In zh, this message translates to:
+  /// **'建议与反馈'**
+  String get thanks_feedback_section;
+
+  /// No description provided for @thanks_feedback_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢以下用户提出的宝贵建议与问题反馈，让 ZenFile 变得更好：'**
+  String get thanks_feedback_note;
+
+  /// No description provided for @thanks_github_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'以及通过 GitHub Issues 反馈的用户：'**
+  String get thanks_github_note;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

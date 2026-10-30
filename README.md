@@ -94,7 +94,33 @@ Required for full functionality:
 
 ## 🙏 Acknowledgements
 
+### Original Author
+
 Based on [Senzme/NFile](https://github.com/Senzme/NFile) — thank you for the excellent foundation!
+
+### Donors
+
+Heartfelt thanks to our supporters: **𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮**, **被窝一级避难所**, **季风**, **从前有座山**, **羁客**, **无处安放**, **你没急吧** — your generosity keeps ZenFile going.
+
+### Open Source
+
+ZenFile stands on the shoulders of these excellent open-source projects (in no particular order):
+
+- [media_kit](https://github.com/media-kit/media-kit) (mpv) — audio/video playback engine
+- [audio_service](https://pub.dev/packages/audio_service) — background playback & system media session
+- [on_audio_query](https://github.com/MSOB7YY/on_audio_query) — media library queries
+- [dartssh2](https://github.com/TerminalStudio/dartssh2) — SFTP implementation
+- [cronet_http](https://pub.dev/packages/cronet_http) — high-performance networking
+- Syncfusion — PDF / document rendering
+- [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) — secure credential storage
+- [audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) — audio spectrum visualization reference (AGPL-3.0)
+- Tencent Bugly — crash reporting
+
+### Suggestions & Feedback
+
+Thanks to everyone who contributed ideas and bug reports — in-app: 𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮, 越界, YC影尘, 猕猴桃, 大手拉小手, 小熊猫[自重率0%], SAS, Dr. Homi J. Bhabha, sky, Aps, Oxlne, Jankst; and on GitHub: [KamrulShahed](https://github.com/KamrulShahed), [0xlne](https://github.com/0xlne), [SASlobby93](https://github.com/SASlobby93), [aand1015](https://github.com/aand1015), [LorianL98](https://github.com/LorianL98), [qwertti123](https://github.com/qwertti123).
+
+Every report makes ZenFile better — keep them coming via [Issues](https://github.com/l930203811/ZenFile/issues)!
 
 ---
 

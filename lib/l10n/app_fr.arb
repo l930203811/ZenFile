@@ -8849,5 +8849,15 @@
   "ui_privacy_exit_title": "Politique de confidentialité non acceptée",
   "ui_privacy_exit_body": "Vous devez accepter la Politique de confidentialité pour utiliser cette application.",
   "ui_privacy_exit_yes": "Quitter l'application",
-  "ui_privacy_exit_no": "Relire"
+  "ui_privacy_exit_no": "Relire",
+  "ui_special_thanks_title": "Remerciements",
+  "thanks_donors_section": "Donateurs",
+  "thanks_donors_note": "Merci aux amis suivants pour leur soutien et leur confiance — votre générosité est la plus grande motivation du développement continu de ZenFile :",
+  "thanks_author_section": "Auteur d'origine",
+  "thanks_author_note": "Ce projet est développé à partir de NFile, le projet open source de Senzme. Merci pour cette excellente base :",
+  "thanks_opensource_section": "Open Source",
+  "thanks_opensource_note": "ZenFile repose sur les épaules de ces excellents composants open source (sans ordre particulier) :",
+  "thanks_feedback_section": "Suggestions et retours",
+  "thanks_feedback_note": "Merci aux utilisateurs suivants pour leurs précieuses suggestions et rapports de bugs qui ont rendu ZenFile meilleur :",
+  "thanks_github_note": "Ainsi qu'à toutes les personnes ayant signalé des problèmes via GitHub Issues :"
 }
