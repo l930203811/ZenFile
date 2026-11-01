@@ -19,18 +19,30 @@ class ShareIntentService {
   );
 
   /// 查询当前待处理的分享 URI；无则返回 null（幂等，不消费）。
+  ///
+  /// ⚠️ 缓存引擎启动竞态（2026-11-01 取证 dart_error_* 20 连击）：app 用
+  /// audio_service 的缓存引擎，从通知栏/最近任务恢复时 Dart 首次查询可能早于
+  /// 原生 handler 注册 —— 首次 [MissingPluginException] 是时序问题而非真缺失，
+  /// 延迟重试即可命中（原生注册在 Activity onCreate 里同步完成）。重试用尽仍
+  /// 失败才静默降级返回 null（与无分享同语义，绝不影响启动）。
   static Future<ShareIntentInfo?> getPendingUris() async {
-    try {
-      final res = await _channel.invokeMethod<Map<dynamic, dynamic>>(
-        'getShareIntent',
-      );
-      if (res == null) return null;
-      final uris = (res['uris'] as List?)?.cast<String>() ?? const <String>[];
-      if (uris.isEmpty) return null;
-      return ShareIntentInfo(uris: uris, mime: res['mime'] as String?);
-    } on PlatformException catch (e) {
-      debugPrint('[share_intent] getPendingUris failed: ${e.code}');
-      return null;
+    for (var attempt = 0; ; attempt++) {
+      try {
+        final res = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+          'getShareIntent',
+        );
+        if (res == null) return null;
+        final uris = (res['uris'] as List?)?.cast<String>() ?? const <String>[];
+        if (uris.isEmpty) return null;
+        return ShareIntentInfo(uris: uris, mime: res['mime'] as String?);
+      } on MissingPluginException {
+        // 重试上限后仍缺失（真·未注册）才放弃；中间失败等一拍再试。
+        if (attempt >= 3) return null;
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      } on PlatformException catch (e) {
+        debugPrint('[share_intent] getPendingUris failed: ${e.code}');
+        return null;
+      }
     }
   }
 
@@ -52,6 +64,9 @@ class ShareIntentService {
       await _channel.invokeMethod<void>('consume');
     } on PlatformException catch (e) {
       debugPrint('[share_intent] consume failed: ${e.code}');
+    } on MissingPluginException {
+      // 同 getPendingUris：启动竞态，消费失败仅可能导致下次补查重复弹一次，
+      // 不值得写取证日志。
     }
   }
 }

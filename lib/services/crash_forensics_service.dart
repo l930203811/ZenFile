@@ -271,6 +271,19 @@ class CrashForensicsService {
   /// 窗口内重复的同一错误**只计数不写盘**，窗口过后再落盘时把抑制次数写进报告
   /// （**降噪但不丢信息**）。
   static void recordError(String kind, Object error, StackTrace? stack) {
+    // 预期噪音过滤（2026-11-01）：缓存引擎冷启动时，Dart 首次通道查询可能早于
+    // 原生 handler 注册而抛 MissingPluginException（这本身就是竞态，调用方已各自
+    // 加了重试兜底）。取证前先按**窄匹配**（异常类型 + 具体通道名）放行丢弃，
+    // 避免它逃逸到 runZonedGuarded 后每次冷启动都写一条报告——真机曾 20 连击刷盘。
+    // 只匹配这两个通道，绝不吞其他 MissingPluginException（那可能是真问题）。
+    if (error is MissingPluginException) {
+      final msg = '${error.message}';
+      if (msg.contains('com.sequl.zenfile/share_intent') ||
+          msg.contains('com.sequl.zenfile/audio_session')) {
+        return;
+      }
+    }
+
     final now = DateTime.now();
 
     final suppressed = _throttle.admit(signatureOf(kind, error, stack), now);

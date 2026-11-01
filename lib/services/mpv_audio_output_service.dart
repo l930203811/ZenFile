@@ -849,17 +849,27 @@ class MpvAudioOutputService {
   /// 否则无法区分「装了旧包」与「代码路径没走到」——2026-09-23 已因此白跑一轮。
   static Future<String> buildStamp() async {
     if (!Platform.isAndroid) return 'not-android';
-    try {
-      // ⚠️ 必须带超时：这个方法在 `main()` 里被 `await`（`[boot]` 哨兵），
-      // 而它走的是 MethodChannel —— 原生侧一旦不回应（引擎未就绪、主线程被
-      // 播放器初始化占住……），`runApp()` 之前的这个 await 就会**把启动卡死**。
-      // 诊断绝不能有这种能力。
-      final r = await _sessionChannel
-          .invokeMethod<String>('buildStamp')
-          .timeout(const Duration(seconds: 3));
-      return r ?? '?';
-    } catch (e) {
-      return 'error:$e';
+
+    // MissingPluginException 重试（2026-11-01）：本应用用 audio_service 的缓存
+    // 引擎，冷启动恢复路径下 Dart 的首次通道查询可能早于原生 handler 注册，
+    // 注册完成只需毫秒级 —— 等一小会儿重发即可。仅对这一种「预期内的暂时性
+    // 失败」重试，其余异常维持原语义。
+    for (var attempt = 0; ; attempt++) {
+      try {
+        // ⚠️ 必须带超时：这个方法在 `main()` 里被 `await`（`[boot]` 哨兵），
+        // 而它走的是 MethodChannel —— 原生侧一旦不回应（引擎未就绪、主线程被
+        // 播放器初始化占住……），`runApp()` 之前的这个 await 就会**把启动卡死**。
+        // 诊断绝不能有这种能力。
+        final r = await _sessionChannel
+            .invokeMethod<String>('buildStamp')
+            .timeout(const Duration(seconds: 3));
+        return r ?? '?';
+      } on MissingPluginException {
+        if (attempt >= 3) return 'error:MissingPluginException';
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      } catch (e) {
+        return 'error:$e';
+      }
     }
   }
 
