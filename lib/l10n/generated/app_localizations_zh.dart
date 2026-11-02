@@ -8643,6 +8643,66 @@ class L10nZh extends L10n {
 
   @override
   String get thanks_github_note => '以及通过 GitHub Issues 反馈的用户：';
+
+  @override
+  String get dup_files_title => '重复文件';
+
+  @override
+  String get dup_files_desc => '找出内容完全相同的文件，默认勾选较旧的副本清理';
+
+  @override
+  String get dup_scan_button => '扫描去重';
+
+  @override
+  String get dup_scanning => '正在扫描重复文件…';
+
+  @override
+  String get dup_none => '没有发现重复文件';
+
+  @override
+  String dup_found(int count, String size) {
+    return '发现 $count 组重复文件，可释放 $size';
+  }
+
+  @override
+  String get dup_auto_hint => '已自动勾选较旧的副本，每组保留最新的一份，可自行调整后再清理';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count 个相同文件';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '可释放 $size';
+  }
+
+  @override
+  String get dup_keep_label => '保留';
+
+  @override
+  String dup_selected(int count) {
+    return '已选 $count 个文件';
+  }
+
+  @override
+  String get dup_clean_button => '清理';
+
+  @override
+  String get dup_clean_confirm_title => '清理重复文件？';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '将清理 $count 个文件，释放 $size。开启回收站时可撤销，否则无法恢复。';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '已清理 $count 个文件，释放 $size';
+  }
+
+  @override
+  String get dup_failed => '清理失败，请检查权限后重试';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17254,4 +17314,64 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get thanks_github_note => '以及透過 GitHub Issues 回饋的使用者：';
+
+  @override
+  String get dup_files_title => '重複檔案';
+
+  @override
+  String get dup_files_desc => '找出內容完全相同的檔案，預設勾選較舊的副本清理';
+
+  @override
+  String get dup_scan_button => '掃描去重';
+
+  @override
+  String get dup_scanning => '正在掃描重複檔案…';
+
+  @override
+  String get dup_none => '沒有發現重複檔案';
+
+  @override
+  String dup_found(int count, String size) {
+    return '發現 $count 組重複檔案，可釋放 $size';
+  }
+
+  @override
+  String get dup_auto_hint => '已自動勾選較舊的副本，每組保留最新的一份，可自行調整後再清理';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count 個相同檔案';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '可釋放 $size';
+  }
+
+  @override
+  String get dup_keep_label => '保留';
+
+  @override
+  String dup_selected(int count) {
+    return '已選 $count 個檔案';
+  }
+
+  @override
+  String get dup_clean_button => '清理';
+
+  @override
+  String get dup_clean_confirm_title => '清理重複檔案？';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '將清理 $count 個檔案，釋放 $size。開啟回收站時可復原，否則無法復原。';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '已清理 $count 個檔案，釋放 $size';
+  }
+
+  @override
+  String get dup_failed => '清理失敗，請檢查權限後重試';
 }

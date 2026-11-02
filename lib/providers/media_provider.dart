@@ -4209,6 +4209,12 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   Future<void> _scanRecentFiles() async {
     final list = <FileSystemEntity>[];
     final seen = <String>{};
+    // 「显示隐藏文件」总开关：关闭时（默认）最近列表既不扫隐藏目录也不收录
+    // 隐藏文件，与浏览页的可见性保持一致；开启后才把点开头（系统隐藏）的
+    // 目录/文件一并纳入。此前这里无条件跳过隐藏目录、却又无条件丢弃点开头
+    // 的文件，导致部分系统隐藏条目仍从其它来源（下载/文档/压缩包/音频清单）
+    // 漏进「最近」。
+    final showHidden = PreferencesService.getShowHiddenFiles();
 
     final rootDir = Directory('/storage/emulated/0');
     if (await rootDir.exists()) {
@@ -4219,8 +4225,10 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
           if (entity is Directory) {
             final name = p.basename(entity.path);
             // 跳过隐藏目录、Android、本应用缓存目录（ZenFile），
-            // 避免远程媒体/缩略图缓存进入「最近」。
-            if (!name.startsWith('.') &&
+            // 避免远程媒体/缩略图缓存进入「最近」。隐藏目录仅在设置开启
+            // 「显示隐藏文件」时才继续向下扫。
+            final hiddenDir = name.startsWith('.');
+            if ((!hiddenDir || showHidden) &&
                 name != 'Android' &&
                 !_isUnderAppCacheDir(entity.path)) {
               pathsToScan.add(entity.path);
@@ -4243,7 +4251,8 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
                 seen.add(entity.path);
                 list.add(entity);
               }
-              if (entity is Directory && !p.basename(entity.path).startsWith('.')) {
+              if (entity is Directory &&
+                  (showHidden || !p.basename(entity.path).startsWith('.'))) {
                 try {
                   final sub = await entity.list(recursive: false).toList();
                   for (final s in sub) {
@@ -4300,7 +4309,13 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
       try {
         if (f is Directory) return;
         final name = p.basename(f.path);
-        if (name.startsWith('.')) return;
+        // 关闭「显示隐藏文件」时，点开头的系统隐藏文件（含 `.nomedia`、
+        // 各应用私有缓存等）一律不进入「最近」；同时剔除位于隐藏目录下
+        // 的条目（这些条目可能来自各分类清单，而非上面的目录枚举）。
+        if (!showHidden &&
+            (name.startsWith('.') || _hasHiddenSegment(f.path))) {
+          return;
+        }
         final stat = await f.stat();
         items.add(FileItemModel(
           entity: f,
@@ -4315,6 +4330,25 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
 
     items.sort((a, b) => b.modified.compareTo(a.modified));
     _recentFiles = items;
+  }
+
+  /// 路径中任意一段以点开头（系统隐藏目录）即视为隐藏路径。
+  /// 仅用于「最近」列表过滤，跳过分区根（`/`、`C://`、空段）。
+  static bool _hasHiddenSegment(String path) {
+    for (final seg in p.split(path)) {
+      if (seg == '/' || seg == '\\' || seg.isEmpty) continue;
+      if (seg.length > 1 && seg.endsWith(':')) continue;
+      if (seg.startsWith('.')) return true;
+    }
+    return false;
+  }
+
+  /// 「显示隐藏文件」开关变化后重建「最近」列表（无需整库重扫）。
+  Future<void> refreshRecentFilesForHiddenSetting() async {
+    try {
+      await _scanRecentFiles();
+      notifyListeners();
+    } catch (_) {}
   }
 
   Future<void> setSortOrder(MediaSortOrder order, {String? category}) async {

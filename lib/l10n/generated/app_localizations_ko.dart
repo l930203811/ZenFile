@@ -8842,4 +8842,65 @@ class L10nKo extends L10n {
 
   @override
   String get thanks_github_note => '그리고 GitHub Issues 로 피드백을 보내주신 분들:';
+
+  @override
+  String get dup_files_title => '중복 파일';
+
+  @override
+  String get dup_files_desc => '내용이 완전히 같은 파일을 찾아 오래된 사본을 기본으로 선택합니다';
+
+  @override
+  String get dup_scan_button => '중복 검사';
+
+  @override
+  String get dup_scanning => '중복 파일 검사 중…';
+
+  @override
+  String get dup_none => '중복 파일이 없습니다';
+
+  @override
+  String dup_found(int count, String size) {
+    return '중복 그룹 $count개 발견, $size 확보 가능';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      '오래된 사본이 미리 선택되어 있으며 각 그룹에서 최신 1개는 유지됩니다. 필요하면 조정한 뒤 정리하세요';
+
+  @override
+  String dup_group_count(int count) {
+    return '동일한 파일 $count개';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size 확보 가능';
+  }
+
+  @override
+  String get dup_keep_label => '유지';
+
+  @override
+  String dup_selected(int count) {
+    return '파일 $count개 선택됨';
+  }
+
+  @override
+  String get dup_clean_button => '정리';
+
+  @override
+  String get dup_clean_confirm_title => '중복 파일을 정리할까요?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '파일 $count개를 삭제하여 $size를 확보합니다. 휴지통이 켜져 있으면 되돌릴 수 있지만, 아니면 복구할 수 없습니다.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '파일 $count개를 정리하여 $size 확보';
+  }
+
+  @override
+  String get dup_failed => '정리에 실패했습니다. 권한을 확인한 뒤 다시 시도하세요';
 }

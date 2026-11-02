@@ -12,6 +12,7 @@ import '../../../services/preferences_service.dart';
 import '../media_category_screen.dart';
 import '../../../models/media_type.dart';
 import 'app_manager_screen.dart';
+import 'duplicate_files_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../widgets/circled_back_button.dart';
 
@@ -70,7 +71,12 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
         if (mounted) _startStorageScan(silent: true);
       });
     } else {
-      _startStorageScan();
+      // ⚠️ 不能在 initState 里同步调 _startStorageScan：其内部 L10n.of(context)
+      // 会在 initState 完成前注册 inherited 依赖（dependOnInheritedWidget 断言，
+      // debug 红屏）。推迟到首帧后再启动。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _startStorageScan();
+      });
     }
 
     // 垃圾体积扫描与主扫描并行：不阻塞页面首帧。
@@ -603,6 +609,9 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           // 垃圾清理：应用缓存 + 临时文件（详见 JunkCleanService）
           _buildJunkCleanCard(theme, isDark, l10n),
 
+          // 扫描去重：找出内容完全相同的文件，推荐勾选较旧的副本清理
+          _buildDuplicateCard(theme, l10n),
+
           // Categories Breakdown Title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
@@ -783,6 +792,87 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
       ),
     );
   }
+  /// 扫描去重卡片：进入重复文件页（页内自动扫描，默认勾选较旧副本）。
+  Widget _buildDuplicateCard(ThemeData theme, L10n l10n) {
+    const color = Color(0xFF6366F1); // indigo
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.06)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: _openDuplicateScreen,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Broken.copy, color: color, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.dup_files_title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      l10n.dup_files_desc,
+                      style: TextStyle(
+                        color: theme.textTheme.bodySmall
+                            ?.color?.withValues(alpha: 0.55),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton.tonal(
+                onPressed: _openDuplicateScreen,
+                style: FilledButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                ),
+                child: Text(l10n.dup_scan_button),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 打开重复文件页；返回后静默重扫（页面里可能已清理掉一部分文件，
+  /// 已用容量与各分类体积都要校正）。
+  Future<void> _openDuplicateScreen() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DuplicateFilesScreen(
+          rootPath: widget.initialVolumePath,
+        ),
+      ),
+    );
+    if (mounted) {
+      unawaited(_startStorageScan(silent: true));
+    }
+  }
+
   Widget _buildCategoryCard({
     required BuildContext context,
     required String title,

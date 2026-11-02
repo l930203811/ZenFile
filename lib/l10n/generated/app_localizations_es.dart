@@ -9245,4 +9245,67 @@ class L10nEs extends L10n {
   @override
   String get thanks_github_note =>
       'Así como a todos los que reportaron problemas vía GitHub Issues:';
+
+  @override
+  String get dup_files_title => 'Archivos duplicados';
+
+  @override
+  String get dup_files_desc =>
+      'Busca archivos con contenido idéntico y preselecciona las copias más antiguas para limpiarlas';
+
+  @override
+  String get dup_scan_button => 'Buscar duplicados';
+
+  @override
+  String get dup_scanning => 'Buscando archivos duplicados…';
+
+  @override
+  String get dup_none => 'No se encontraron archivos duplicados';
+
+  @override
+  String dup_found(int count, String size) {
+    return 'Se encontraron $count grupos de duplicados, $size recuperables';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'Las copias más antiguas están preseleccionadas y se conserva la más reciente de cada grupo; ajústalo antes de limpiar';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count archivos idénticos';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size recuperables';
+  }
+
+  @override
+  String get dup_keep_label => 'Conservar';
+
+  @override
+  String dup_selected(int count) {
+    return '$count archivos seleccionados';
+  }
+
+  @override
+  String get dup_clean_button => 'Limpiar';
+
+  @override
+  String get dup_clean_confirm_title => '¿Limpiar archivos duplicados?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return 'Se eliminarán $count archivos y se liberarán $size. Se puede deshacer con la papelera activada; de lo contrario es permanente.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return 'Se limpiaron $count archivos y se liberaron $size';
+  }
+
+  @override
+  String get dup_failed =>
+      'Error al limpiar, comprueba los permisos e inténtalo de nuevo';
 }

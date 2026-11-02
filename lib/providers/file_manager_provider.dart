@@ -935,6 +935,9 @@ class FileManagerProvider extends ChangeNotifier {
     if (_tabs.isNotEmpty && currentPath.isNotEmpty) {
       loadDirectory(currentPath, showLoading: false);
     }
+    // 分类页「最近」需与浏览页的隐藏文件可见性保持一致：开关一改就重建
+    // 最近列表（只重扫最近，不触发整库刷新）。
+    MediaProvider.instance?.refreshRecentFilesForHiddenSetting();
   }
 
   bool _showFloatingAddButton = false;

@@ -9224,4 +9224,67 @@ class L10nDe extends L10n {
   @override
   String get thanks_github_note =>
       'Ebenso allen, die Feedback über GitHub Issues gemeldet haben:';
+
+  @override
+  String get dup_files_title => 'Doppelte Dateien';
+
+  @override
+  String get dup_files_desc =>
+      'Findet Dateien mit identischem Inhalt und wählt ältere Kopien zum Aufräumen vor';
+
+  @override
+  String get dup_scan_button => 'Duplikate suchen';
+
+  @override
+  String get dup_scanning => 'Suche nach doppelten Dateien…';
+
+  @override
+  String get dup_none => 'Keine doppelten Dateien gefunden';
+
+  @override
+  String dup_found(int count, String size) {
+    return '$count Gruppen doppelter Dateien gefunden, $size freigebbar';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'Die älteren Kopien sind vorausgewählt, die neueste jeder Gruppe bleibt erhalten – vor dem Aufräumen anpassbar';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count identische Dateien';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size freigebbar';
+  }
+
+  @override
+  String get dup_keep_label => 'Behalten';
+
+  @override
+  String dup_selected(int count) {
+    return '$count Dateien ausgewählt';
+  }
+
+  @override
+  String get dup_clean_button => 'Aufräumen';
+
+  @override
+  String get dup_clean_confirm_title => 'Doppelte Dateien aufräumen?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '$count Dateien werden gelöscht und $size freigegeben. Mit aktiviertem Papierkorb rückgängig machbar, sonst endgültig.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '$count Dateien entfernt und $size freigegeben';
+  }
+
+  @override
+  String get dup_failed =>
+      'Aufräumen fehlgeschlagen, bitte Berechtigungen prüfen und erneut versuchen';
 }

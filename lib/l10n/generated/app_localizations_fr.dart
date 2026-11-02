@@ -9265,4 +9265,67 @@ class L10nFr extends L10n {
   @override
   String get thanks_github_note =>
       'Ainsi qu\'à toutes les personnes ayant signalé des problèmes via GitHub Issues :';
+
+  @override
+  String get dup_files_title => 'Fichiers en double';
+
+  @override
+  String get dup_files_desc =>
+      'Repère les fichiers au contenu identique et présélectionne les copies les plus anciennes à nettoyer';
+
+  @override
+  String get dup_scan_button => 'Rechercher';
+
+  @override
+  String get dup_scanning => 'Recherche des fichiers en double…';
+
+  @override
+  String get dup_none => 'Aucun fichier en double trouvé';
+
+  @override
+  String dup_found(int count, String size) {
+    return '$count groupes de doublons trouvés, $size récupérables';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'Les copies les plus anciennes sont présélectionnées et la plus récente de chaque groupe est conservée ; ajustez avant de nettoyer';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count fichiers identiques';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size récupérables';
+  }
+
+  @override
+  String get dup_keep_label => 'Conserver';
+
+  @override
+  String dup_selected(int count) {
+    return '$count fichiers sélectionnés';
+  }
+
+  @override
+  String get dup_clean_button => 'Nettoyer';
+
+  @override
+  String get dup_clean_confirm_title => 'Nettoyer les fichiers en double ?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '$count fichiers seront supprimés, libérant $size. Annulable si la corbeille est activée, définitif sinon.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '$count fichiers nettoyés, $size libérés';
+  }
+
+  @override
+  String get dup_failed =>
+      'Échec du nettoyage, vérifiez les autorisations et réessayez';
 }

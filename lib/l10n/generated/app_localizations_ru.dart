@@ -9207,4 +9207,67 @@ class L10nRu extends L10n {
   @override
   String get thanks_github_note =>
       'А также всем, кто сообщал о проблемах через GitHub Issues:';
+
+  @override
+  String get dup_files_title => 'Дубликаты файлов';
+
+  @override
+  String get dup_files_desc =>
+      'Находит файлы с одинаковым содержимым и заранее отмечает старые копии для очистки';
+
+  @override
+  String get dup_scan_button => 'Искать дубликаты';
+
+  @override
+  String get dup_scanning => 'Поиск дубликатов…';
+
+  @override
+  String get dup_none => 'Дубликаты не найдены';
+
+  @override
+  String dup_found(int count, String size) {
+    return 'Найдено групп дубликатов: $count, можно освободить $size';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'Старые копии отмечены заранее, самая новая в каждой группе сохраняется; при необходимости измените выбор';
+
+  @override
+  String dup_group_count(int count) {
+    return 'Одинаковых файлов: $count';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return 'Можно освободить $size';
+  }
+
+  @override
+  String get dup_keep_label => 'Оставить';
+
+  @override
+  String dup_selected(int count) {
+    return 'Выбрано файлов: $count';
+  }
+
+  @override
+  String get dup_clean_button => 'Очистить';
+
+  @override
+  String get dup_clean_confirm_title => 'Удалить дубликаты?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return 'Будет удалено файлов: $count, освободится $size. Отменяемо при включённой корзине, иначе безвозвратно.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return 'Удалено файлов: $count, освобождено $size';
+  }
+
+  @override
+  String get dup_failed =>
+      'Не удалось очистить, проверьте разрешения и повторите';
 }

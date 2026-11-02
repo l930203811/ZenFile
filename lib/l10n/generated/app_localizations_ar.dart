@@ -9093,4 +9093,66 @@ class L10nAr extends L10n {
   @override
   String get thanks_github_note =>
       'وكذلك لكل من أبلغ عن مشكلات عبر GitHub Issues:';
+
+  @override
+  String get dup_files_title => 'ملفات مكررة';
+
+  @override
+  String get dup_files_desc =>
+      'يبحث عن ملفات متطابقة المحتوى ويحدد النسخ الأقدم افتراضيًا للتنظيف';
+
+  @override
+  String get dup_scan_button => 'فحص التكرار';
+
+  @override
+  String get dup_scanning => 'جارٍ فحص الملفات المكررة…';
+
+  @override
+  String get dup_none => 'لم يتم العثور على ملفات مكررة';
+
+  @override
+  String dup_found(int count, String size) {
+    return 'تم العثور على $count مجموعة من الملفات المكررة، يمكن تحرير $size';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'تم تحديد النسخ الأقدم مسبقًا مع الاحتفاظ بأحدث نسخة في كل مجموعة؛ يمكنك التعديل قبل التنظيف';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count ملفات متطابقة';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return 'يمكن تحرير $size';
+  }
+
+  @override
+  String get dup_keep_label => 'الاحتفاظ';
+
+  @override
+  String dup_selected(int count) {
+    return 'تم تحديد $count ملفًا';
+  }
+
+  @override
+  String get dup_clean_button => 'تنظيف';
+
+  @override
+  String get dup_clean_confirm_title => 'تنظيف الملفات المكررة؟';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return 'سيتم حذف $count ملفًا وتحرير $size. يمكن التراجع إذا كانت سلة المحذوفات مفعّلة، وإلا فسيكون الحذف نهائيًا.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return 'تم تنظيف $count ملفًا وتحرير $size';
+  }
+
+  @override
+  String get dup_failed => 'فشل التنظيف، تحقق من الأذونات وحاول مرة أخرى';
 }

@@ -8831,4 +8831,65 @@ class L10nJa extends L10n {
 
   @override
   String get thanks_github_note => 'また、GitHub Issues でフィードバックをくださった皆様：';
+
+  @override
+  String get dup_files_title => '重複ファイル';
+
+  @override
+  String get dup_files_desc => '内容が完全に同じファイルを検出し、古いコピーを既定で選択します';
+
+  @override
+  String get dup_scan_button => '重複をスキャン';
+
+  @override
+  String get dup_scanning => '重複ファイルをスキャン中…';
+
+  @override
+  String get dup_none => '重複ファイルは見つかりませんでした';
+
+  @override
+  String dup_found(int count, String size) {
+    return '$count 組の重複ファイルを検出、$size を解放できます';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      '古いコピーがあらかじめ選択され、各組で最新の 1 件を残します。必要に応じて調整してから削除してください';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count 個の同一ファイル';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size を解放できます';
+  }
+
+  @override
+  String get dup_keep_label => '保持';
+
+  @override
+  String dup_selected(int count) {
+    return '$count 個のファイルを選択中';
+  }
+
+  @override
+  String get dup_clean_button => 'クリーン';
+
+  @override
+  String get dup_clean_confirm_title => '重複ファイルを削除しますか？';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '$count 個のファイルを削除し、$size を解放します。ごみ箱が有効なら元に戻せますが、無効の場合は復元できません。';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return '$count 個のファイルを削除し、$size を解放しました';
+  }
+
+  @override
+  String get dup_failed => '削除に失敗しました。権限を確認して再試行してください';
 }

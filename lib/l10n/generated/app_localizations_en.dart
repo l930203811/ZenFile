@@ -9121,4 +9121,67 @@ class L10nEn extends L10n {
   @override
   String get thanks_github_note =>
       'As well as everyone who reported issues via GitHub Issues:';
+
+  @override
+  String get dup_files_title => 'Duplicate files';
+
+  @override
+  String get dup_files_desc =>
+      'Find files with identical content and pre-select the older copies to clean up';
+
+  @override
+  String get dup_scan_button => 'Scan';
+
+  @override
+  String get dup_scanning => 'Scanning for duplicate files…';
+
+  @override
+  String get dup_none => 'No duplicate files found';
+
+  @override
+  String dup_found(int count, String size) {
+    return 'Found $count groups of duplicates, $size reclaimable';
+  }
+
+  @override
+  String get dup_auto_hint =>
+      'The older copies are pre-selected and the newest file in each group is kept — adjust before cleaning';
+
+  @override
+  String dup_group_count(int count) {
+    return '$count identical files';
+  }
+
+  @override
+  String dup_reclaimable(String size) {
+    return '$size reclaimable';
+  }
+
+  @override
+  String get dup_keep_label => 'Keep';
+
+  @override
+  String dup_selected(int count) {
+    return '$count files selected';
+  }
+
+  @override
+  String get dup_clean_button => 'Clean';
+
+  @override
+  String get dup_clean_confirm_title => 'Clean up duplicate files?';
+
+  @override
+  String dup_clean_confirm_body(int count, String size) {
+    return '$count files will be removed, freeing $size. This can be undone while the recycle bin is on, otherwise it is permanent.';
+  }
+
+  @override
+  String dup_clean_done(int count, String size) {
+    return 'Cleaned $count files and freed $size';
+  }
+
+  @override
+  String get dup_failed =>
+      'Cleanup failed, please check permissions and try again';
 }

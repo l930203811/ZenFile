@@ -16185,6 +16185,102 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'以及通过 GitHub Issues 反馈的用户：'**
   String get thanks_github_note;
+
+  /// No description provided for @dup_files_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'重复文件'**
+  String get dup_files_title;
+
+  /// No description provided for @dup_files_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'找出内容完全相同的文件，默认勾选较旧的副本清理'**
+  String get dup_files_desc;
+
+  /// No description provided for @dup_scan_button.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描去重'**
+  String get dup_scan_button;
+
+  /// No description provided for @dup_scanning.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描重复文件…'**
+  String get dup_scanning;
+
+  /// No description provided for @dup_none.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有发现重复文件'**
+  String get dup_none;
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'发现 {count} 组重复文件，可释放 {size}'**
+  String dup_found(int count, String size);
+
+  /// No description provided for @dup_auto_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'已自动勾选较旧的副本，每组保留最新的一份，可自行调整后再清理'**
+  String get dup_auto_hint;
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个相同文件'**
+  String dup_group_count(int count);
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'可释放 {size}'**
+  String dup_reclaimable(String size);
+
+  /// No description provided for @dup_keep_label.
+  ///
+  /// In zh, this message translates to:
+  /// **'保留'**
+  String get dup_keep_label;
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 个文件'**
+  String dup_selected(int count);
+
+  /// No description provided for @dup_clean_button.
+  ///
+  /// In zh, this message translates to:
+  /// **'清理'**
+  String get dup_clean_button;
+
+  /// No description provided for @dup_clean_confirm_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'清理重复文件？'**
+  String get dup_clean_confirm_title;
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'将清理 {count} 个文件，释放 {size}。开启回收站时可撤销，否则无法恢复。'**
+  String dup_clean_confirm_body(int count, String size);
+
+  /// ui/screens/storage_analyzer/duplicate_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已清理 {count} 个文件，释放 {size}'**
+  String dup_clean_done(int count, String size);
+
+  /// No description provided for @dup_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'清理失败，请检查权限后重试'**
+  String get dup_failed;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
