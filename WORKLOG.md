@@ -12,6 +12,37 @@
 >    真机验证只作为**合并 `main` 与发版**的门槛。推 `dev` 前仍须遵守第 4 条的安全模式：
 >    只 `git add <本次自己改动的文件>`，**严禁 `git add -A`**，避免夹带其他 AI 未完成的半成品。
 
+## 🔍 issue #55 SMB 连 Windows 看不到共享：补取证链路 + 手填共享名兜底 —— WorkBuddy 2026-11-04 06:52 GMT+8
+
+**用户需求**：读 issue #55 并理解用户诉求（先只分析、不动手）；确认后按「B 方案」执行：补运行时日志 + 空结果缓存 + 反馈附件 + 手填共享名兜底（commit `cede72b`）。
+
+**用户反馈内容**：SMB 连 Windows 电脑后根目录空白；连路由器 SMB 正常；OpenList / 文件管理器+ 用同样 IP 和账号能看到共享。无评论、无附件。
+
+**分析结论（静态代码分析）**：
+- **协商层可排除**：smbj 0.14.0 默认方言 SMB 3.1.1/3.0.2/3.0/2.1/2.0.2，未出现 `withSigningRequired`（服务端要求签名时会自动签），Win11 24H2 强制签名不挡；只有匿名登录才强制降 SMB2-only。
+- **真因在共享枚举**：`SmbService.listShares` 三级降级（rapid7 SRVSVC → 手写 legacy RPC → 200+ 名字暴力探测）**全部失败时 `return emptyList()`，异常只写 `Log.w` 不抛给 Dart** ⇒ 界面呈现"空文件夹、不报错、无指引"。
+- `NetShareEnumAll` 对非管理员账号常被 Windows 拒绝，且前两级走**同一接口**，"降级"实际是同一个坑掉两次；探测表清一色英文名，中文共享名必 miss（用户很可能共享名是中文）。
+- **附带发现（性能 bug）**：探测结果为空时**不写缓存** ⇒ 每次进根目录重跑 200+ 名字 × 8 线程 × 5s，最坏几十秒，用户看到"转半天啥也没有"。
+- **为什么拿不到日志**：`WebdavDebugLog.enabled=false`（发版红线）+ `listDirectory` 只在超时/异常时记日志（空列表无痕）+ 反馈弹窗只认 4 类崩溃报告前缀（`exit_/java_crash_/tombstone_/dart_error_`），`webdav_debug.log` 根本不在候选里。用户点「问题反馈」只会看到"暂无可附加日志"。
+
+**实现**：
+- `SmbService.kt`：会话内记录整轮枚举过程（host/user、每级结果、异常、耗时、结论），新增 `shareEnumDiag(sessionId)` 只读方法；探测额外留痕"存在但无权限(ACCESS_DENIED)"的共享名（区分「枚举不到名字」与「有名字打不开」）；**空结果也写缓存**（`EMPTY_SHARES_CACHE_TTL_MS=30s`，正常仍 60s）。
+- `MainActivity.kt`：SMB channel 增 `getShareEnumDiag` 分支（本 hunk 之前在 `a58766c` 中被 hunk 级剥离，本次补回并完整实现）。
+- `remote_client.dart`：新增 `ShareEnumDiagnostics{failed, detail, cachedCount}` + 默认 getter（非 SMB 恒 null，不影响 WebDAV/FTP/SFTP）。
+- `lan_client.dart`：`listDirectory('/')` 后拉取诊断；**失败走 `logAlways` 落盘**，断开会话清空。
+- `webdav_debug_log.dart`：新增 `logAlways()` —— 不受 `enabled` 控制的低频失败通道。新口子红线：**低频 + 必现 + 不含敏感串**，三者缺一不可（当前仅枚举失败一处使用，不含密码）。
+- `crash_report_upload_service.dart`：`webdav_debug.log` 纳入反馈附件候选；运行时日志**不按文件名去重、不进台账**（否则第一次上传后再也不会附带）；截断方向改为**保尾弃头**（崩溃报告仍保头，因头部才有信号/机型）。
+- `remote_explorer_screen.dart`：根目录空且枚举失败 → 专用空态（说明文案 + 「手动输入共享名」按钮）；弹窗支持粘贴 `\\IP\共享` 自动取末段，绕开枚举直接 TreeConnect。
+- l10n：8 个 `smb_share_*` 词条 × 10 语言。
+
+**验证**：`flutter analyze` 0 error（改动 5 个 Dart 文件，剩余均为存量 info/warning）。Kotlin 改动待真机构建验证。
+
+**待真机验证**：① Windows SMB 根目录空时出现新空态与按钮；② 手填正确共享名能否进入；③ 失败后 `/storage/emulated/0/ZenFile/webdav_debug.log` 出现 `[smb] root 共享枚举 失败` 段；④ 「问题反馈」弹窗出现「附带日志」勾选项；⑤ NAS/路由器 SMB 正常连接行为不变。
+
+**未提交（桌面端，用户明确要求继续留在工作区）**：`.metadata`、`media_provider`、`app_clone_service`、`app_clone_manager_screen`、`browse_settings_screen`、`category_settings_screen`、`directory_screen`、`more_settings_screen`、`pane_browser`、`persistent_nav_bar_scope`、`privacy_policy_dialog`、`quick_categories_grid`、`zenfile_bottom_nav_bar`。
+
+---
+
 ## 🛠️ issue #51–#54 崩溃报告分析与修复 —— Trae 2026-11-04 06:45 GMT+8
 
 **用户需求**：查看 issue #51–#54 崩溃报告并修复（commit `a58766c`）。
