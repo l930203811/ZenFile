@@ -32,7 +32,11 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
-  const HomeScreen({super.key, required this.toggleTheme});
+
+  /// 当前主题模式（跟随系统/浅色/深色）：顶栏主题按钮按它决定图标与提示，
+  /// 三态循环由 main.dart 的 toggleTheme 驱动，本组件只做展示。
+  final ThemeMode themeMode;
+  const HomeScreen({super.key, required this.toggleTheme, required this.themeMode});
 
   // —— 跨路由 tab 切换请求（「导航栏常驻其他页面」）——
   //
@@ -1084,17 +1088,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       });
                     },
                   ),
-                  // 常用功能：切换主题
+                  // 常用功能：切换主题（三态：跟随系统 → 浅色 → 深色 → 循环）
+                  // 图标展示**当前**模式：跟随系统=monitor、浅色=sun、深色=moon，
+                  // 点按由 main.dart 循环切到下一态。
                   IconButton(
                     icon: Icon(
-                      Theme.of(context).brightness == Brightness.dark
-                          ? Broken.sun_1
-                          : Broken.moon,
+                      switch (widget.themeMode) {
+                        ThemeMode.system => Broken.monitor,
+                        ThemeMode.light => Broken.sun_1,
+                        ThemeMode.dark => Broken.moon,
+                      },
                       color: theme.colorScheme.primary,
                     ),
-                    tooltip: Theme.of(context).brightness == Brightness.dark
-                        ? L10n.of(context).msg8755e992
-                        : L10n.of(context).ui_dark_mode,
+                    tooltip: switch (widget.themeMode) {
+                      ThemeMode.system => L10n.of(context).ui_follow_system,
+                      ThemeMode.light => L10n.of(context).msg8755e992,
+                      ThemeMode.dark => L10n.of(context).ui_dark_mode,
+                    },
                     onPressed: widget.toggleTheme,
                   ),
                   // 常用功能：单/双窗口（语义为「显示切换目标」：单窗模式 → 图标

@@ -1285,6 +1285,11 @@ class MainActivity : AudioServiceFragmentActivity() {
                     // 选择器标题由 Dart 侧按「应用内语言」传入（应用语言只作用于 Flutter 层，
                     // 原生拿不到）。为空则交给系统使用其自带的本地化标题。
                     val chooserTitle = call.argument<String>("title")
+                    // false = 直接发起 ACTION_VIEW（不套 createChooser）：系统解析器自带
+                    // 「仅此一次 / 始终」，选「始终」后系统会记住默认应用，后续同样式的
+                    // 打开直达该应用。createChooser 则**永远**弹选择器且不记默认——这正是
+                    // 「选了始终还是每次弹」的根因（2026-11-04）。
+                    val useChooser = call.argument<Boolean>("useChooser") ?: true
                     executor.execute {
                         try {
                             val intent = Intent(Intent.ACTION_VIEW)
@@ -1313,12 +1318,18 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-                            // 使用 Intent.createChooser 强制弹出系统选择器
-                            // 即使已设默认应用也会弹出，让用户从所有可用应用中选择
-                            val chooser = Intent.createChooser(intent, chooserTitle).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if (useChooser) {
+                                // 使用 Intent.createChooser 强制弹出系统选择器
+                                // 即使已设默认应用也会弹出，让用户从所有可用应用中选择
+                                val chooser = Intent.createChooser(intent, chooserTitle).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                startActivity(chooser)
+                            } else {
+                                // 「始终」语义：交给系统解析器。已有默认应用时直达，
+                                // 没有时弹系统解析器（含「仅此一次 / 始终」，选「始终」即被系统记住）
+                                startActivity(intent)
                             }
-                            startActivity(chooser)
                             runOnUiThread { result.success(true) }
                         } catch (e: Exception) {
                             e.printStackTrace()

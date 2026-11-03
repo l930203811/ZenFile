@@ -527,6 +527,15 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
   Locale? _locale = const Locale('en', 'US');
   bool? _hasPermission;
+
+  /// 隐私协议是否已同意（对当前 [kPrivacyPolicyVersion]）。
+  ///
+  /// 字段声明处同步初始化（`runApp` 前 PreferencesService 已 ensureInitialized）。
+  /// 覆盖安装的旧版用户没有该存储键，读取返回 0 < 当前版本 ⇒ 升级后首次启动
+  /// 必弹一次协议页（合规要求）；同意后落盘版本号，日常启动恒为 true、零开销。
+  bool _privacyAccepted =
+      PreferencesService.getPrivacyPolicyAcceptedVersion() >=
+      kPrivacyPolicyVersion;
   // 启动应用保护：开关状态 + 本次运行是否已解锁 + 是否已读取过开关
   bool _appLockEnabled = false;
   bool _appUnlocked = true;
@@ -735,8 +744,12 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       // 清掉缓存让列表在下次构建时重新查询。
       InstallStatusCache.instance.invalidateAll();
     }
-    // 首次启动（语言选择流程中）不触发权限检查，避免与语言选择器冲突
-    if (state == AppLifecycleState.resumed && _hasPermission != true && !_isFirstLaunch) {
+    // 首次启动（语言选择流程中）不触发权限检查，避免与语言选择器冲突；
+    // 隐私协议未同意时同样不触发（合规顺序：协议在前）。
+    if (state == AppLifecycleState.resumed &&
+        _hasPermission != true &&
+        !_isFirstLaunch &&
+        _privacyAccepted) {
       _checkStoragePermission();
     }
   }
@@ -767,30 +780,31 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       return;
     }
 
-    // 隐私政策：未同意（或政策版本已更新）时先弹同意弹窗 —— 必须在申请任何
-    // 权限之前取得同意（合规要求）。
-    //
-    // ⚠️ 必须等**首帧绘制完成后**再弹：本方法在 initState 里启动，其异步流
-    // 可能在第一帧绘制之前执行 —— 过早 showDialog 会把 DialogRoute 挂进
-    // 导航器却无帧可画，表现为「白屏很久，切后台再切回才显示」（2026-10-30
-    // 用户反馈；语言选择弹窗正是用 addPostFrameCallback 规避了这一点，见
-    // 上方 _isFirstLaunch 分支）。postFrame 里同意后才能继续权限申请。
-    if (PreferencesService.getPrivacyPolicyAcceptedVersion() <
-        kPrivacyPolicyVersion) {
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await showPrivacyPolicyGate(context);
-        if (!mounted) return;
-        // 同意后才能申请权限（合规顺序：协议在前）。
-        await _checkStoragePermission();
-      });
-      return;
-    }
+    // 隐私政策（2026-10-30 重构）：同意页改为 **build 树内的全屏拦截页**
+    // （PrivacyGateScreen，见 privacy_policy_dialog.dart 的说明）—— 由 home
+    // 顶部按 [_privacyAccepted] 直接渲染，首帧即是协议页，彻底摆脱
+    // 「本 State 的 context 在 MaterialApp 之上、showDialog 拿不到
+    // Localizations/Navigator」的时序问题（旧实现的 dialog 抛异常 → await 链
+    // 断 → 权限检查永不执行 ⇒ 覆盖安装用户黑屏、resumed 补查绕过协议）。
+    // 未同意协议前**不申请任何权限**（合规顺序：协议在前）—— 同意回调
+    // [_onPrivacyAccepted] 里再触发权限检查。
+    if (!_privacyAccepted) return;
 
     // 非首次启动：检查权限（_checkStoragePermission 内部已用真实目录枚举探测，
     // 避免「清除数据/缓存」后系统误报已授权导致误判）。权限确认后由 _checkStoragePermission
     // 内部完成缓存迁移、监听与媒体加载，无需在此重复。
     await _checkStoragePermission();
+  }
+
+  /// 隐私协议同意回调（[PrivacyGateScreen]）：版本号落盘已由组件完成，
+  /// 这里放行权限申请（合规顺序：协议在前）。首次安装（语言选择后）与
+  /// 覆盖安装（旧版升级）共用同一条路径。
+  void _onPrivacyAccepted() {
+    if (!mounted) return;
+    setState(() => _privacyAccepted = true);
+    if (_hasPermission != true) {
+      _checkPermissionAfterLanguageSelection();
+    }
   }
 
   /// 监听音频通知栏点击事件：点击通知时打开音频播放页并恢复当前后台播放。
@@ -980,13 +994,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                         _locale = _localeFromCode(selectedLocale);
                         _isFirstLaunch = false;
                       });
-                      // 隐私政策（协议在前，合规要求）：必须先取得同意，
-                      // 才能进入权限申请。不同意且确认 → 弹窗内部退出应用。
-                      await showPrivacyPolicyGate(context);
-                      if (!mounted) return;
-                      // 语言选择完成后，检查并申请存储权限
-                      // 应用已完全启动到首页，此时询问权限不会导致闪退
-                      _checkPermissionAfterLanguageSelection();
+                      // 语言选择完成。隐私协议在 home 顶部拦截页等待同意
+                      // （[_privacyAccepted]，合规顺序：协议在前）—— 同意后由
+                      // [_onPrivacyAccepted] 触发权限申请，此处不再重复。
                     }
                   },
                   style: FilledButton.styleFrom(
@@ -1131,13 +1141,23 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     if (Platform.isAndroid) {
       bool manageStorageGranted = false;
       bool mediaOnlyPermission = false;
+
+      /// manage 权限状态为 granted（乐观放行路径）—— 放行后仍需后台枚举确认，
+      /// 见下方「乐观放行」注释。
+      bool manageNeedsBackgroundVerify = false;
       try {
-        // 与 NFile 原项目一致：使用 permission_handler 检查权限
-        // 仅信任 isGranted 会在「清除数据/缓存」后出现误判（报已授权但实际被拒），
-        // 故用一次真实目录枚举再次确认，确保后续扫描不会在无权限时闪退。
+        // 与 NFile 原项目一致：使用 permission_handler 检查权限。
+        // 仅信任 isGranted 会在「清除数据/缓存」后出现误判（报已授权但实际被拒，
+        // 即「幽灵授权」），故仍需真实目录枚举兜底 —— 但枚举确认**不在启动关键
+        // 路径上同步执行**（见下方「乐观放行」注释），只在放行后、媒体扫描前确认。
         final rawManageGranted = await Permission.manageExternalStorage.isGranted;
         if (rawManageGranted) {
-          manageStorageGranted = await _verifyManageStorageAccess();
+          // 启动提速（2026-10-30）：此处**不再**同步跑目录枚举确认（它要等存储
+          // FUSE 挂载唤醒，冷启动可达数秒，是覆盖安装后启动黑/白屏的根因）。
+          // granted 即乐观放行首屏；枚举确认已移至 setState 放行之后、媒体扫描
+          // 之前执行（见下方「乐观放行」注释）—— 幽灵授权防护不变。
+          manageStorageGranted = true;
+          manageNeedsBackgroundVerify = true;
         }
 
         // 检查媒体权限
@@ -1189,6 +1209,31 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           _hasPermission = hasPermission;
           _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
         });
+      }
+
+      // 启动提速（2026-10-30「覆盖安装后启动黑/白屏数秒，切任务栏再回立即恢复」）：
+      // 上面的目录枚举探测（_verifyManageStorageAccess）在**冷启动第一毫秒**执行时
+      // 要等存储 FUSE 挂载唤醒，低端机可达数秒 —— 这期间 _hasPermission 仍是 null，
+      // build 只能渲染空白 Scaffold（浅色白屏/深色黑屏）；枚举完成后 setState 标脏，
+      // 但首帧往往仍未画出，直到用户切一次任务栏才补画 —— 正是用户描述的现象。
+      // （全新安装不黑屏是因为未授权直接跳过枚举、落到授权引导页。）
+      //
+      // 因此改为**乐观放行**：manage 权限状态为 granted 就先显示首页，把枚举确认
+      // 挪到放行**之后**、媒体扫描**之前** —— 幽灵授权防护完全不变（确认失败仍会
+      // 拉回授权引导页，且媒体加载永远不会在无权限时启动），只是从「进首页前拦截」
+      // 变成「进首页后纠正」。
+      if (manageNeedsBackgroundVerify) {
+        final verified = await _verifyManageStorageAccess();
+        if (!verified) {
+          debugPrint('[ZenFile] Ghost grant detected after entry, reverting to setup screen');
+          if (mounted) {
+            setState(() {
+              _hasPermission = false;
+              _isMediaOnlyPermission = false;
+            });
+          }
+          return;
+        }
       }
 
       if (wasPermissionDenied && hasPermission) {
@@ -1566,9 +1611,16 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     setState(() => _isResolvingIntent = resolving);
   }
 
+  /// 顶栏主题按钮：三态循环 跟随系统 → 浅色 → 深色 → 跟随系统。
+  /// 「跟随系统」是默认态（新装用户 `getThemeMode()` 缺省即 system），
+  /// 任何状态下连续点按都能回到它。
   void _toggleTheme() {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+      _themeMode = switch (_themeMode) {
+        ThemeMode.system => ThemeMode.light,
+        ThemeMode.light => ThemeMode.dark,
+        ThemeMode.dark => ThemeMode.system,
+      };
     });
     PreferencesService.saveThemeMode(_themeMode);
   }
@@ -1745,9 +1797,16 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
               // 页面（历史 bug：分享进来只停在分类页）。分享统一走
               // ShareIntentGate，由挂载后的 HomeScreen 自己消费。
               home:
-                  (!_pickerInfoChecked ||
-                      _hasPermission == null ||
-                      !_appLockChecked
+                  // 隐私协议拦截页（build 树内全屏，非 dialog——原因见
+                  // PrivacyGateScreen 文档）：同意后才放行后续所有 home 分支。
+                  // ⚠️ 首次安装（[_isFirstLaunch]）先显示语言选择器（dialog 叠在
+                  // 空白页上），选完语言 setState 重建后才轮到协议页 —— 协议
+                  // 文案必须按用户所选语言渲染。
+                  (!_isFirstLaunch && !_privacyAccepted
+                  ? PrivacyGateScreen(onAccepted: _onPrivacyAccepted)
+                  : (!_pickerInfoChecked ||
+                        _hasPermission == null ||
+                        !_appLockChecked
                   ? const Scaffold()
                   : (_hasPermission == true
                         ? (_appLockEnabled && !_appUnlocked
@@ -1764,6 +1823,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                                       )
                                     : HomeScreen(
                                         toggleTheme: _toggleTheme,
+                                        themeMode: _themeMode,
                                       )))
                         : _StoragePermissionShield(
                             onRequestPermission: _requestStoragePermission,
@@ -1771,7 +1831,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                                 _openManageExternalStorageSettings,
                             isPermanentlyDenied: _isPermanentlyDenied,
                             isMediaOnly: _isMediaOnlyPermission,
-                          ))),
+                          )))),
             );
           },
         );

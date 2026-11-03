@@ -5603,7 +5603,12 @@ class FileManagerProvider extends ChangeNotifier {
       return remoteParent ?? path; // 已到连接根：返回自身（上层据此切到本地 tab）
     }
     final parent = p.dirname(path);
-    final resolved = parent.isEmpty ? '/' : parent;
+    var resolved = parent.isEmpty ? '/' : parent;
+    // Windows：盘符根（如 'D:\'）的上一级是虚拟「此电脑」根 '/'。
+    // p（windows 风格上下文）对盘符根的 dirname 是其自身，不拦截会卡死在盘符根。
+    if (Platform.isWindows && RegExp(r'^[A-Za-z]:[\\/]?$').hasMatch(resolved)) {
+      return '/';
+    }
     // 本地路径越过根目录（如 /storage/emulated/0 → /storage/emulated）时回到自身
     if (!activeTab.isRemote && resolved.length < _rootPath.length) return path;
     return resolved;
@@ -5761,6 +5766,26 @@ class FileManagerProvider extends ChangeNotifier {
             '${suffix.isEmpty ? '' : suffix}/${segs.sublist(0, k + 1).join('/')}',
         ],
       );
+    }
+    // Windows 本地路径：根是虚拟「此电脑」（'/'），盘符是第一段。
+    // 不能走下方 POSIX 切分 —— 'D:\admin\Documents' 按 '/' 切是一整段，
+    // 且目标会拼出 '/D:\...' 的污染路径（前导斜杠导致 exists 失败坠入受限模式）。
+    // 这里按 [\\/]+ 分段，目标逐级用 p.windows.join 生成真实可导航路径。
+    if (!isRemoteTab && RegExp(r'^[A-Za-z]:').hasMatch(currentPath)) {
+      final segs = currentPath
+          .split(RegExp(r'[\\/]+'))
+          .where((n) => n.isNotEmpty)
+          .toList();
+      if (segs.isEmpty) {
+        return (labels: [rootLabel], targets: ['/']);
+      }
+      var acc = '${segs.first}\\';
+      final targets = <String>['/', acc];
+      for (int k = 1; k < segs.length; k++) {
+        acc = p.windows.join(acc, segs[k]);
+        targets.add(acc);
+      }
+      return (labels: [rootLabel, ...segs], targets: targets);
     }
     // 本地路径：以 `/` 为根逐段累加。
     //
@@ -6126,6 +6151,7 @@ class FileManagerProvider extends ChangeNotifier {
   /// 5. 解析 /proc/mounts（最可靠方式，可检测 NTFS/exFAT/ext4 等非原生文件系统的 U 盘）
   /// 6. 枚举更多常见 U 盘挂载路径（不同 ROM 挂载点不同，如 /mnt/usb_storage、/mnt/udisk 等）
   Future<void> _detectStorageVolumes() async {
+    debugPrint('[ZenFile] _detectStorageVolumes: enter (isAndroid=${Platform.isAndroid})');
     final volumes = <StorageVolume>[];
     final seenPaths = <String>{};
 
@@ -6342,6 +6368,20 @@ class FileManagerProvider extends ChangeNotifier {
         } catch (_) {}
       }
     } else {
+      // Windows：枚举盘符（A/B 是历史软驱保留，从 C 扫到 Z），
+      // 让桌面端首页卷列表能看到所有本地磁盘 / U 盘 / 移动硬盘。
+      if (Platform.isWindows) {
+        for (var code = 0x43; code <= 0x5A; code++) {
+          final letter = String.fromCharCode(code);
+          try {
+            final drive = Directory('$letter:\\');
+            if (!drive.existsSync()) continue;
+            addVolume('本地磁盘 ($letter:)', '$letter:\\', code == 0x43);
+          } catch (_) {
+            // 无权限或设备未就绪（如空光驱）→ 跳过该盘符
+          }
+        }
+      }
       final dir = await getApplicationDocumentsDirectory();
       addVolume('文档', dir.path, true);
     }
@@ -6355,6 +6395,34 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> refreshStorageVolumes() async {
     await _detectStorageVolumes();
     notifyListeners();
+  }
+
+  /// 列出 Windows 所有可用盘符（虚拟「此电脑」视图的数据源）。
+  /// A/B 是历史软驱保留盘符，从 C 扫到 Z；无权限或设备未就绪（空光驱等）
+  /// 的盘符自动跳过。条目用真实 [Directory] 实体（图标/类型判断可复用），
+  /// 路径为标准盘符根（如 `C:\`），点击即进入普通本地浏览。
+  Future<List<FileItemModel>> _listWindowsDrives() async {
+    final drives = <FileItemModel>[];
+    for (var code = 0x43; code <= 0x5A; code++) {
+      final letter = String.fromCharCode(code);
+      final root = '$letter:\\';
+      try {
+        final dir = Directory(root);
+        if (!dir.existsSync()) continue;
+        final stat = dir.statSync();
+        drives.add(FileItemModel(
+          entity: dir,
+          name: '本地磁盘 ($letter:)',
+          path: root,
+          isDirectory: true,
+          size: 0,
+          modified: stat.modified,
+        ));
+      } catch (_) {
+        // 无权限或设备未就绪 → 跳过该盘符
+      }
+    }
+    return drives;
   }
 
   /// 存储卷变化事件通道（U 盘/SD 卡热插拔）
@@ -6374,6 +6442,7 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> init() async {
+    debugPrint('[ZenFile] FileManagerProvider.init: enter');
     // 注册存储卷热插拔监听（U 盘/SD 卡插入/拔出时自动刷新）
     _registerStorageListener();
 
@@ -6400,15 +6469,42 @@ class FileManagerProvider extends ChangeNotifier {
         initialPath = dir?.path ?? '/';
       }
       _rootPath = initialPath;
+    } else if (Platform.isWindows) {
+      // Windows：浏览页根 = 虚拟「此电脑」（哨兵 '/'），打开即列出所有盘符，
+      // 点盘符进入真实路径浏览 —— 与资源管理器一致。'/' 绝不能落进
+      // Directory('/').list()：那会列出当前工作盘的根并给出 '/xxx' 伪路径。
+      // 真实列表由 loadDirectory 的 Windows 根分支经 _listWindowsDrives 提供。
+      initialPath = '/';
+      _rootPath = initialPath;
     } else {
       final dir = await getApplicationDocumentsDirectory();
+      debugPrint('[ZenFile] init: non-Android initialPath=${dir.path}');
       initialPath = dir.path;
       _rootPath = initialPath;
     }
 
     try {
-    final homeLeft = PreferencesService.getHomeDirectoryLeft();
-    final homeRight = PreferencesService.getHomeDirectoryRight();
+    var homeLeft = PreferencesService.getHomeDirectoryLeft();
+    var homeRight = PreferencesService.getHomeDirectoryRight();
+
+    // Windows 一次性迁移：旧构建的默认初始路径是「文档目录」，持久化标签/
+    // 主目录偏好里可能还存着它（或被 POSIX 假设污染成 '/D:\...' 形态）。
+    // 只迁移「旧版默认值」，用户主动浏览过的其他路径一律不动，
+    // 让升级后第一次打开浏览页就看到虚拟「此电脑」（所有盘符）。
+    String? legacyWindowsDocs;
+    if (Platform.isWindows) {
+      try {
+        legacyWindowsDocs = (await getApplicationDocumentsDirectory()).path;
+      } catch (_) {}
+    }
+    String migrateWindowsLegacyPath(String path) {
+      final docs = legacyWindowsDocs;
+      if (docs == null || docs.isEmpty) return path;
+      if (path == docs || path == '/$docs') return '/';
+      return path;
+    }
+    if (homeLeft != null) homeLeft = migrateWindowsLegacyPath(homeLeft);
+    if (homeRight != null) homeRight = migrateWindowsLegacyPath(homeRight);
 
     final savedTabsData = PreferencesService.getSavedTabs();
     if (savedTabsData.isNotEmpty) {
@@ -6434,6 +6530,13 @@ class FileManagerProvider extends ChangeNotifier {
         _tabs = allTabs;
       } else {
         _tabs = allTabs.where((t) => t.isPinned).toList();
+      }
+      // Windows 迁移同样作用于恢复出的标签页路径。
+      for (final t in _tabs) {
+        t.currentPath = migrateWindowsLegacyPath(t.currentPath);
+        for (int i = 0; i < t.pathHistory.length; i++) {
+          t.pathHistory[i] = migrateWindowsLegacyPath(t.pathHistory[i]);
+        }
       }
 
       if (_tabs.isEmpty) {
@@ -6523,6 +6626,7 @@ class FileManagerProvider extends ChangeNotifier {
       _paneTabIndexes[0] = 0;
       _paneTabIndexes[1] = 0;
     }
+    debugPrint('[ZenFile] FileManagerProvider.init: done (tabs=${_tabs.length}, volumes=${_storageVolumes.length})');
   }
 
   bool isRestrictedPath(String path) {
@@ -7911,6 +8015,14 @@ class FileManagerProvider extends ChangeNotifier {
     } else if (resolvedPath.startsWith('/mnt/sdcard')) {
       resolvedPath = resolvedPath.replaceFirst('/mnt/sdcard', '/storage/emulated/0');
     }
+    // Windows 本地路径去污染：持久化标签页可能带着 POSIX 假设拼接出的
+    // 前导 `/`（如 `/D:\Users\...`），Directory.exists 必然失败并坠入受限模式。
+    // 桌面端剥掉盘符前的斜杠即可恢复浏览（对正常路径零影响）。
+    if (Platform.isWindows &&
+        !resolvedPath.contains('://') &&
+        RegExp(r'^/[A-Za-z]:[\\/]').hasMatch(resolvedPath)) {
+      resolvedPath = resolvedPath.substring(1);
+    }
     path = resolvedPath;
 
     if (clearCache) {
@@ -8277,7 +8389,12 @@ class FileManagerProvider extends ChangeNotifier {
       }
 
       var plainLoaded = false;
-      if (pathExists) {
+      if (Platform.isWindows && (path == '/' || path == '\\')) {
+        // Windows 虚拟「此电脑」根：列出所有盘符，不落到 Directory('/')。
+        activeTab.currentPath = '/';
+        activeTab.currentFiles = await _listWindowsDrives();
+        plainLoaded = true;
+      } else if (pathExists) {
         activeTab.currentPath = path;
         activeTab.currentFiles = await _listPlainDirectory(path);
         plainLoaded = true;
@@ -13154,7 +13271,13 @@ class FileManagerProvider extends ChangeNotifier {
     if (opened) return;
 
     if (showTypePickerForUnknown) {
-      await _pickAndOpenBuiltInType(context, path, saveDefault: false);
+      await _pickAndOpenBuiltInType(
+        context,
+        path,
+        saveDefault: false,
+        siblingPaths: siblingPaths,
+        siblingNames: siblingNames,
+      );
       return;
     }
 
@@ -13183,12 +13306,19 @@ class FileManagerProvider extends ChangeNotifier {
       if (isAlways) {
         await PreferencesService.saveDefaultOpenAction(ext, 'external');
       }
-      await openWithSystemChooser(path);
+      // 「始终」不套 createChooser：让系统解析器记默认，下次直达该应用
+      await openWithSystemChooser(path, useChooser: !isAlways);
       return;
     }
 
     // selectedType == 'native'：在应用内选择具体文件类型后，用内置查看器/播放器打开
-    await _pickAndOpenBuiltInType(context, path, saveDefault: isAlways);
+    await _pickAndOpenBuiltInType(
+      context,
+      path,
+      saveDefault: isAlways,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
   }
 
   /// 尝试按文件实际类型直接用内置查看器/播放器打开。
@@ -13417,7 +13547,13 @@ class FileManagerProvider extends ChangeNotifier {
 
   /// 弹出文件类型选择器，按用户选定的 text/audio/video/image 类型打开。
   /// [saveDefault] 为 true 时把具体类型存为默认动作。
-  Future<void> _pickAndOpenBuiltInType(BuildContext context, String path, {bool saveDefault = false}) async {
+  Future<void> _pickAndOpenBuiltInType(
+    BuildContext context,
+    String path, {
+    bool saveDefault = false,
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
     final ext = FileUtils.effectiveExtensionWithDot(path);
 
     final builtInType = await showModalBottomSheet<String>(
@@ -13438,7 +13574,13 @@ class FileManagerProvider extends ChangeNotifier {
       await PreferencesService.saveDefaultOpenAction(ext, builtInType);
     }
 
-    await _openBuiltInByType(context, path, builtInType);
+    await _openBuiltInByType(
+      context,
+      path,
+      builtInType,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
   }
 
   /// 用内置文本编辑器打开（并可编辑）任意文件。
@@ -13460,8 +13602,17 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   /// 显示「本应用打开 / 外部系统选择器」BottomSheet，并执行对应打开流程。
-  /// 用于三点菜单 / 长按菜单 / 分类页的「打开方式...」入口。
-  Future<void> showOpenWithSheet(BuildContext context, String path) async {
+  /// 用于三点菜单 / 长按菜单 / 分类页的「打开方式...」入口，以及 openFile 在
+  /// 「跳过打开方式对话框」关闭且无已存默认时的每次打开前置弹窗。
+  ///
+  /// [siblingPaths] / [siblingNames]：同目录列表透传（加密目录图片没有它就退化
+  /// 成「1 of 1」不能左右滑动，与 openFileNatively 的约定一致）。
+  Future<void> showOpenWithSheet(
+    BuildContext context,
+    String path, {
+    List<String>? siblingPaths,
+    List<String>? siblingNames,
+  }) async {
     final ext = FileUtils.effectiveExtensionWithDot(path);
 
     final result = await showModalBottomSheet<String>(
@@ -13485,12 +13636,18 @@ class FileManagerProvider extends ChangeNotifier {
       if (isAlways) {
         await PreferencesService.saveDefaultOpenAction(ext, 'external');
       }
-      await openWithSystemChooser(path);
+      // 「始终」不套 createChooser：让系统解析器记默认，下次直达该应用
+      await openWithSystemChooser(path, useChooser: !isAlways);
       return;
     }
 
     // selectedType == 'native'
-    final opened = await _tryOpenBuiltInDirectly(context, path);
+    final opened = await _tryOpenBuiltInDirectly(
+      context,
+      path,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
     if (opened) {
       if (isAlways) {
         await PreferencesService.saveDefaultOpenAction(ext, 'native');
@@ -13498,7 +13655,13 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    await _pickAndOpenBuiltInType(context, path, saveDefault: isAlways);
+    await _pickAndOpenBuiltInType(
+      context,
+      path,
+      saveDefault: isAlways,
+      siblingPaths: siblingPaths,
+      siblingNames: siblingNames,
+    );
   }
 
   /// 按指定内置类型（text/audio/video/image）以应用内查看器/播放器打开文件
@@ -13894,7 +14057,15 @@ class FileManagerProvider extends ChangeNotifier {
         '${remoteSize != null && remoteSize! > 0 ? ' / 远程 $remoteSize 字节' : ''}），无法打开');
   }
 
-  Future<void> openWithSystemChooser(String path, {String? mimeType}) async {
+  /// [useChooser]：true = 套 `Intent.createChooser` 强制弹选择器（「仅此一次」语义，
+  /// 系统永远不记默认）；false = 直接发起 ACTION_VIEW，由系统解析器接管——
+  /// 用户在系统解析器里选过「始终」后，该格式后续直达那个应用，不再弹任何对话框。
+  /// 「始终」保存默认打开方式的所有路径都必须传 false，否则「选了始终还是每次弹」。
+  Future<void> openWithSystemChooser(
+    String path, {
+    String? mimeType,
+    bool useChooser = true,
+  }) async {
     try {
       // IM 追加后缀（`app.apk.1`）也要给出正确的系统 MIME，否则系统选择器认不出。
       final mime = mimeType ?? lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ?? '*/*';
@@ -13905,6 +14076,7 @@ class FileManagerProvider extends ChangeNotifier {
       await _platformChannel.invokeMethod('openWithChooser', {
         'path': path,
         'mimeType': mime,
+        'useChooser': useChooser,
         if (chooserCtx != null) 'title': L10n.of(chooserCtx).open_with_title,
       });
     } catch (e) {
@@ -14759,8 +14931,8 @@ class FileManagerProvider extends ChangeNotifier {
           final streamUrl = await remoteClient.getStreamUrl(remotePath);
           if (streamUrl != null) {
             if (openAction == 'external') {
-              // 系统选择器打开流式 URL
-              await openWithSystemChooser(streamUrl, mimeType: fileMime);
+              // 系统选择器打开流式 URL（已存「始终」默认，交给系统解析器记默认应用）
+              await openWithSystemChooser(streamUrl, mimeType: fileMime, useChooser: false);
               await remoteClient.disconnect();
               return;
             }
@@ -14801,8 +14973,8 @@ class FileManagerProvider extends ChangeNotifier {
               seekClient: seekClient,
             );
             if (openAction == 'external') {
-              // 系统选择器打开代理 URL（VLC 等可流式播放）
-              await openWithSystemChooser(proxyUrl, mimeType: fileMime);
+              // 系统选择器打开代理 URL（VLC 等可流式播放；已存「始终」默认，交系统记默认应用）
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime, useChooser: false);
               return;
             }
             // 视频/音频统一入口：同目录列表一并传入（此前此处视频也是裸传，属漏改）
@@ -14834,9 +15006,11 @@ class FileManagerProvider extends ChangeNotifier {
             targetPath = localPath;
             await remoteClient.disconnect();
             if (openAction == 'external') {
+              // 已存「始终」默认：不套 createChooser，交系统解析器记默认应用
               await openWithSystemChooser(
                 targetPath,
                 mimeType: lookupMimeType(fileExt) ?? '*/*',
+                useChooser: false,
               );
             } else {
               await openFileNatively(
@@ -14891,8 +15065,8 @@ class FileManagerProvider extends ChangeNotifier {
           final streamUrl = await remoteClient.getStreamUrl(path);
           if (streamUrl != null) {
             if (openAction == 'external') {
-              // 系统选择器打开流式 URL
-              await openWithSystemChooser(streamUrl, mimeType: fileMime);
+              // 系统选择器打开流式 URL（已存「始终」默认，交给系统解析器记默认应用）
+              await openWithSystemChooser(streamUrl, mimeType: fileMime, useChooser: false);
               return;
             }
             // 直接流式播放 — 无需下载。
@@ -14938,8 +15112,8 @@ class FileManagerProvider extends ChangeNotifier {
               seekClient: seekClient,
             );
             if (openAction == 'external') {
-              // 系统选择器打开代理 URL
-              await openWithSystemChooser(proxyUrl, mimeType: fileMime);
+              // 系统选择器打开代理 URL（已存「始终」默认，交系统记默认应用）
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime, useChooser: false);
               return;
             }
             // SMB / FTP / SFTP 走代理流式，视频/音频统一入口
@@ -15024,6 +15198,8 @@ class FileManagerProvider extends ChangeNotifier {
                 await openWithSystemChooser(
                   localPath,
                   mimeType: fileMime.isEmpty ? '*/*' : fileMime,
+                  // 已存默认或刚选「始终」→ 不套 createChooser，交系统解析器记默认应用
+                  useChooser: savedAction != 'external' && !saveChosenType,
                 );
               }
               return;
@@ -15178,7 +15354,9 @@ class FileManagerProvider extends ChangeNotifier {
 
     // 默认/弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
     if (openAction == 'external') {
-      await openWithSystemChooser(targetPath);
+      // 已保存「始终外部打开」：不套 createChooser，由系统解析器记默认
+      // （首次会弹系统解析器让用户选「始终」，之后直达该应用）
+      await openWithSystemChooser(targetPath, useChooser: false);
       return;
     }
 
@@ -15195,8 +15373,10 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     // Universal default action check
+    // ⚠️ 提到 hasNativeViewer 之外：后面的「跳过打开方式对话框」分支同样要用它判断
+    // 「该扩展名是否已存过默认」——只允许在 hasNativeViewer 分支内取值会漏判。
+    final defaultAction = PreferencesService.getDefaultOpenAction(ext);
     if (hasNativeViewer(targetPath)) {
-      final defaultAction = PreferencesService.getDefaultOpenAction(ext);
       if (defaultAction == 'native') {
         await openFileNatively(
           context,
@@ -15206,7 +15386,7 @@ class FileManagerProvider extends ChangeNotifier {
         );
         return;
       } else if (defaultAction == 'external') {
-        await openWithSystemChooser(targetPath);
+        await openWithSystemChooser(targetPath, useChooser: false);
         return;
       } else if (const ['text', 'audio', 'video', 'image'].contains(defaultAction)) {
         // 已保存的具体内置类型：直接以该类型用应用内查看器打开
@@ -15221,6 +15401,20 @@ class FileManagerProvider extends ChangeNotifier {
         );
         return;
       }
+    }
+
+    // 「跳过"打开方式"对话框」关闭（默认）且该扩展名**没存过**默认打开方式：
+    // 每次打开都先弹「打开方式」（浏览页 / 分类页 / 最近 / 收藏等入口统一走 openFile）。
+    // 弹窗里选「始终」会按扩展名存下默认，此后同格式不再弹、按默认直开；
+    // 设置里开启跳过则完全绕过弹窗（副标题承诺的行为）。
+    if (defaultAction == null && !_skipOpenWithDialog) {
+      await showOpenWithSheet(
+        context,
+        targetPath,
+        siblingPaths: siblingPaths,
+        siblingNames: siblingNames,
+      );
+      return;
     }
 
     // 默认：使用内置查看器打开
