@@ -3329,6 +3329,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     _previewImage!,
                     fit: BoxFit.contain,
                     gaplessPlayback: true,
+                    // 帧预览截图为全屏分辨率字节，限制解码尺寸避免
+                    // 低内存设备上 Java Bitmap OOM（issue #54）
+                    cacheWidth: 720,
                   )
                 : Container(
                     color: Colors.black87,

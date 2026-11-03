@@ -118,7 +118,8 @@ object SystemFilePickerBridge {
     /** 注册供 Dart 侧调用的通道。 */
     fun registerChannel(messenger: BinaryMessenger) {
         channel = MethodChannel(messenger, CHANNEL)
-        channel?.setMethodCallHandler { call, result ->
+        channel?.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "getPickerInfo" -> {
                     result.success(

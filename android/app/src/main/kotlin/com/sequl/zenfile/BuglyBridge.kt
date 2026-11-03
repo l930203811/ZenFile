@@ -83,7 +83,8 @@ object BuglyBridge {
     fun registerChannel(messenger: BinaryMessenger) {
         channel?.setMethodCallHandler(null)
         channel = MethodChannel(messenger, "com.sequl.zenfile/bugly").also {
-            it.setMethodCallHandler { call, result ->
+            it.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
                 when (call.method) {
                     "postException" -> {
                         try {

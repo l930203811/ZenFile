@@ -420,7 +420,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         ShareIntentBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         BuglyBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         pdfRendererChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PDF_RENDERER_CHANNEL)
-        pdfRendererChannel?.setMethodCallHandler { call, result ->
+        pdfRendererChannel?.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "pageCount" -> {
                     val path = call.argument<String>("path")
@@ -494,7 +495,8 @@ class MainActivity : AudioServiceFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "checkStatus" -> {
                     executor.execute {
@@ -1548,7 +1550,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/saf").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/saf").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "requestSafDirectory" -> {
                     safPermissionResult = result
@@ -1824,7 +1827,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/gesture_exclusion").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/gesture_exclusion").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             if (call.method == "setSystemGestureExclusionRects") {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val rectsArg = call.argument<List<Map<String, Int>>>("rects")
@@ -1854,7 +1858,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/ftp_service").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/ftp_service").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "startFtpService" -> {
                     val ip = call.argument<String>("ip") ?: "127.0.0.1"
@@ -1895,7 +1900,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         // 原生 FileObserver 事件经 CryptWatchForegroundService.eventChannel 回传 Dart。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/crypt_watch").apply {
             CryptWatchForegroundService.eventChannel = this
-            setMethodCallHandler { call, result ->
+            setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
                 when (call.method) {
                     "start" -> {
                         val paths = call.argument<List<String>>("paths") ?: emptyList()
@@ -1941,7 +1947,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/web_sharing_service").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/web_sharing_service").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "startWebSharingService" -> {
                     val url = call.argument<String>("url") ?: "http://127.0.0.1:8080"
@@ -1978,7 +1985,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/permissions").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/permissions").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "openManageExternalStorageSettings" -> {
                     try {
@@ -2030,7 +2038,8 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/smb").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/smb").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             val smb = SmbService.instance
             executor.execute {
                 try {
@@ -2167,7 +2176,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         // 原生 SSH/SFTP 通道（JSch，硬件加速加解密）
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/sftpNative").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/sftpNative").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             val ssh = SshSftpService.instance
             // 注入私有目录供 TOFU known_hosts 使用（首次记录主机指纹，之后防 MITM）
             if (ssh.appFilesDir == null) {
@@ -2301,7 +2311,8 @@ class MainActivity : AudioServiceFragmentActivity() {
 
         // 全屏视频 edge-to-edge：让视频画面延伸到系统手势导航区，消除左侧固定黑边。
         // 普通页面仍由 Flutter SafeArea 处理避让；仅视频全屏时启用。
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/edge_to_edge").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/edge_to_edge").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             try {
                 val window = window
                 if (call.method == "enable") {
@@ -2363,7 +2374,8 @@ class MainActivity : AudioServiceFragmentActivity() {
 
         notificationsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/notifications")
         // 分贝仪：AudioRecord 实时采集麦克风音量
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/decibel_meter").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/decibel_meter").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "start" -> {
                     startDecibelMeter()
@@ -2376,7 +2388,8 @@ class MainActivity : AudioServiceFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
-        notificationsChannel?.setMethodCallHandler { call, result ->
+        notificationsChannel?.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val channelId = "zenfile_archive_channel"
             val channelName = "ZenFile Archive Operations"
@@ -2483,7 +2496,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         // 用于文档/压缩包/安装包/下载等分类，避免全盘递归扫描导致大存储卡顿。
         // 参考主流文件管理器：其分类即由 ProtocolTypeMediaStore 协议经
         // MediaStore.Files 按 media_type 查询得到，故在大存储下不卡、分类永远完整。
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/media_store").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/media_store").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "queryFiles" -> {
                     executor.execute {
@@ -2505,7 +2519,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         // 电池优化与唤醒锁通道：后台播放时防止系统休眠/杀进程
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/power_manager").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/power_manager").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "isIgnoringBatteryOptimizations" -> {
                     try {
@@ -2556,7 +2571,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         // APK 编辑器通道：读取/修改 APK 的 AndroidManifest.xml
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/apk_editor").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/apk_editor").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "readManifest" -> {
                     executor.execute {
@@ -2645,7 +2661,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         // 音频均衡器通道：使用 Android 原生 Equalizer API
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_equalizer").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_equalizer").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "isEqualizerAvailable" -> {
                     result.success(true)
@@ -2784,7 +2801,8 @@ class MainActivity : AudioServiceFragmentActivity() {
                 }
             })
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_visualizer").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_visualizer").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "start" -> {
                     val sid = call.argument<Int>("audioSessionId") ?: 0
@@ -2891,7 +2909,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
 
         // 系统音量同步：供视频播放器滑块与系统音量保持一致。
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/volume").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/volume").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             try {
                 val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
                 when (call.method) {
@@ -2968,7 +2987,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         // 另分配一个会话号，于是按 session 追踪或挂音效的软件（如免 Root 的
         // RootlessJamesDSP）会在开播/切歌时「丢失目标」。这里提供一个由系统
         // 生成的会话号，供 mpv 在创建 AudioTrack 时绑定。
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_session").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_session").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             try {
                 when (call.method) {
                     "generateAudioSessionId" -> {

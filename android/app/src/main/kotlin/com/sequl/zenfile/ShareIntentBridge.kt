@@ -104,7 +104,8 @@ object ShareIntentBridge {
     /** 注册 Dart 侧通道。 */
     fun registerChannel(messenger: BinaryMessenger) {
         channel = MethodChannel(messenger, CHANNEL)
-        channel?.setMethodCallHandler { call, result ->
+        channel?.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "getShareIntent" -> {
                     val uris = pendingUris

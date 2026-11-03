@@ -6944,6 +6944,10 @@ class _CachedImageTileState extends State<_CachedImageTile> {
                   width: double.infinity,
                   height: double.infinity,
                   gaplessPlayback: true,
+                  // 缩略图字节可能回退为原图（MediaThumbnailService 兜底），
+                  // 限制解码尺寸避免全尺寸解码导致 Java Bitmap OOM（issue #54）
+                  cacheWidth: 512,
+                  cacheHeight: 512,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey.withValues(alpha: 0.1),
                     child: const Center(
@@ -7014,6 +7018,8 @@ class _RemoteVideoTileWidgetState extends State<_RemoteVideoTileWidget> {
                       width: double.infinity,
                       height: double.infinity,
                       gaplessPlayback: true,
+                      cacheWidth: 512,
+                      cacheHeight: 512,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey.withValues(alpha: 0.1),
                         child: const Center(
@@ -7173,6 +7179,8 @@ class _VideoListThumbnailState extends State<_VideoListThumbnail> {
                 width: double.infinity,
                 height: double.infinity,
                 gaplessPlayback: true,
+                cacheWidth: 512,
+                cacheHeight: 512,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                   child: Center(
@@ -7313,6 +7321,8 @@ class _CachedVideoTileState extends State<_CachedVideoTile> {
                       width: double.infinity,
                       height: double.infinity,
                       gaplessPlayback: true,
+                      cacheWidth: 512,
+                      cacheHeight: 512,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey.withValues(alpha: 0.1),
                         child: const Center(
@@ -7445,6 +7455,8 @@ class _LocalVideoTileState extends State<_LocalVideoTile> {
             width: double.infinity,
             height: double.infinity,
             gaplessPlayback: true,
+            cacheWidth: 512,
+            cacheHeight: 512,
             errorBuilder: (context, error, stackTrace) => Container(
               color: Colors.grey.withValues(alpha: 0.1),
               child: const Center(
@@ -7748,7 +7760,12 @@ class _MediaFolderCover extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done &&
               snapshot.data != null) {
-            return Image.memory(snapshot.data!, fit: BoxFit.cover);
+            return Image.memory(
+              snapshot.data!,
+              fit: BoxFit.cover,
+              cacheWidth: 512,
+              cacheHeight: 512,
+            );
           }
           return Container(
             decoration: BoxDecoration(
@@ -7983,6 +8000,8 @@ class _ApkThumbnailState extends State<_ApkThumbnail> {
           fit: BoxFit.cover,
           width: 44,
           height: 44,
+          cacheWidth: 132,
+          cacheHeight: 132,
           errorBuilder: (context, error, stackTrace) => FileTypeIcon(
             icon: Icons.android_rounded,
             label: FileUtils.getInstallPackageTypeLabel(widget.path),

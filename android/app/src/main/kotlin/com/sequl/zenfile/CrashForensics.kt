@@ -249,7 +249,8 @@ object CrashForensics {
         } catch (_: Throwable) {
             context
         }
-        MethodChannel(messenger, "com.sequl.zenfile/crash_forensics").setMethodCallHandler { call, result ->
+        MethodChannel(messenger, "com.sequl.zenfile/crash_forensics").setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             try {
                 when (call.method) {
                     // 触发一次取证（幂等）+ 导出到公共目录，返回结果描述。

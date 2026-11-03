@@ -98,7 +98,8 @@ object DesktopLyricService {
         hostActivity = activity
         val ch = MethodChannel(messenger, CHANNEL)
         channel = ch
-        ch.setMethodCallHandler { call, result ->
+        ch.setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "checkPermission" -> result.success(checkOverlayPermission(activity))
                 "requestPermission" -> {

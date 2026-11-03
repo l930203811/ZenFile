@@ -92,7 +92,8 @@ object QuickTransferP2pPlugin {
         }
         mainActivity.registerReceiver(receiver, filter)
 
-        MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
+        MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
             when (call.method) {
                 "isSupported" -> result.success(manager != null)
                 "getDeviceName" -> result.success(getDeviceName())

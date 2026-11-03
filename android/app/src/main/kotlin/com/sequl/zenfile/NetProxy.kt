@@ -30,7 +30,8 @@ object NetProxy {
 
     fun registerChannel(messenger: BinaryMessenger) {
         try {
-            MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
+            MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, rawResult ->
+            val result = rawResult.replyOnce()
                 try {
                     when (call.method) {
                         "getHttpProxy" -> result.success(querySystemProxy())
