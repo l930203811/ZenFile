@@ -12,6 +12,9 @@ class ExternalOpenWithApp {
   final String label;
   final bool isSystem;
 
+  /// 是否为本应用（列表第一项，弹窗默认勾选）。
+  final bool isSelf;
+
   /// 应用图标（96px PNG，原生渲染；失败为空 → 回退通用图标）。
   final Uint8List? icon;
 
@@ -19,6 +22,7 @@ class ExternalOpenWithApp {
     required this.packageName,
     required this.label,
     required this.isSystem,
+    this.isSelf = false,
     this.icon,
   });
 
@@ -33,6 +37,7 @@ class ExternalOpenWithApp {
       packageName: pkg,
       label: (raw['label'] as String?) ?? pkg,
       isSystem: raw['isSystem'] == true,
+      isSelf: raw['isSelf'] == true,
       icon: icon,
     );
   }
@@ -95,62 +100,72 @@ class _OpenWithAppDialogState extends State<OpenWithAppDialog> {
             ),
             const SizedBox(height: 8),
             Flexible(
+              // ⚠️ FutureBuilder 必须直接返回可滚动列表：不能在内层再套
+              // Column(min) + shrinkWrap ListView——Column 会给子级无界高度，
+              // shrinkWrap 列表按完整内容撑开，应用多时溢出弹窗边框。
               child: FutureBuilder<List<ExternalOpenWithApp>>(
                 future: widget.appsFuture,
                 builder: (context, snap) {
                   final apps = snap.data ?? const <ExternalOpenWithApp>[];
-                  // 缓存给 _submit 用（submit 只可能发生在列表已渲染后；
-                  // 未加载完成时列表只有本应用一项，_selectedIndex 恒为 0，
-                  // 不会访问 apps，因此这里覆盖为空列表是安全的）
+                  // 缓存给 _submit 用（submit 只可能发生在列表已渲染后）
                   _cachedApps = apps;
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (snap.connectionState == ConnectionState.waiting)
-                        const LinearProgressIndicator(minHeight: 2),
-                      ListView.builder(
-                    shrinkWrap: true,
+                  final waiting = snap.connectionState == ConnectionState.waiting;
+                  // 加载失败 / 无应用时显示占位行（按钮此时点击无效，见 _submit）
+                  final showPlaceholder =
+                      !waiting && apps.isEmpty;
+                  return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    itemCount: apps.length + 1,
+                    itemCount:
+                        apps.length + (waiting ? 1 : 0) + (showPlaceholder ? 1 : 0),
                     itemBuilder: (context, i) {
-                      final isNative = i == 0;
-                      final app = isNative ? null : apps[i - 1];
-                      final selected = i == _selectedIndex;
+                      if (waiting && i == 0) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
+                          child: LinearProgressIndicator(minHeight: 2),
+                        );
+                      }
+                      if (showPlaceholder) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              L10n.of(context).open_with_no_apps,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      final app = apps[waiting ? i - 1 : i];
+                      final selected = (waiting ? i - 1 : i) == _selectedIndex;
                       return ListTile(
                         dense: true,
-                        onTap: () => setState(() => _selectedIndex = i),
-                        leading: isNative
-                            ? CircleAvatar(
+                        onTap: () => setState(() => _selectedIndex = waiting ? i - 1 : i),
+                        leading: app.icon != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.memory(
+                                  app.icon!,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : CircleAvatar(
                                 backgroundColor: theme.colorScheme.primary
                                     .withValues(alpha: 0.12),
                                 child: Icon(
-                                  Broken.folder,
+                                  app.isSelf ? Broken.folder : Icons.apps,
                                   size: 20,
                                   color: theme.colorScheme.primary,
                                 ),
-                              )
-                            : (app!.icon != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Image.memory(
-                                      app.icon!,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: theme
-                                        .colorScheme.primary
-                                        .withValues(alpha: 0.12),
-                                    child: Icon(
-                                      Icons.apps,
-                                      size: 20,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  )),
+                              ),
                         title: Text(
-                          isNative ? 'ZenFile' : app!.label,
+                          app.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -158,9 +173,10 @@ class _OpenWithAppDialogState extends State<OpenWithAppDialog> {
                             fontWeight: selected ? FontWeight.w600 : null,
                           ),
                         ),
-                        subtitle: !isNative
-                            ? Text(
-                                app!.packageName,
+                        subtitle: app.isSelf
+                            ? null
+                            : Text(
+                                app.packageName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -168,13 +184,10 @@ class _OpenWithAppDialogState extends State<OpenWithAppDialog> {
                                   color: theme.colorScheme.onSurface
                                       .withValues(alpha: 0.5),
                                 ),
-                              )
-                            : null,
+                              ),
                         trailing: _RadioDot(selected: selected, theme: theme),
                       );
                     },
-                  ),
-                    ],
                   );
                 },
               ),
@@ -220,13 +233,15 @@ class _OpenWithAppDialogState extends State<OpenWithAppDialog> {
   }
 
   void _submit(BuildContext context, {required bool always}) {
-    final apps = _cachedApps ?? const <ExternalOpenWithApp>[];
-    final isNative = _selectedIndex == 0;
+    final apps = _cachedApps;
+    // 列表尚未加载完成（或加载失败为空）时不响应，避免越界
+    if (apps == null || apps.isEmpty) return;
+    final app = apps[_selectedIndex.clamp(0, apps.length - 1)];
     Navigator.pop(
       context,
       OpenWithAppChoice(
-        isNative: isNative,
-        app: isNative ? null : apps[_selectedIndex - 1],
+        isNative: app.isSelf,
+        app: app.isSelf ? null : app,
         always: always,
       ),
     );

@@ -3368,10 +3368,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     if (!path.startsWith('remote://')) {
       // 本地图片：沿用原先直接 File 读取
       return GestureDetector(
-        onTap: () {
+        onTap: () async {
           if (isSelectionMode) {
             onToggle();
           } else {
+            // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+            final proceed = await context
+                .read<FileManagerProvider>()
+                .ensureOpenWithChoice(context, path);
+            if (!proceed || !mounted) return;
             Navigator.push(
               context,
               _slideRoute(
@@ -3466,6 +3471,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               } else {
                 final file = await item.file;
                 if (file != null && mounted) {
+                  // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+                  final proceed = await context
+                      .read<FileManagerProvider>()
+                      .ensureOpenWithChoice(context, file.path);
+                  if (!proceed || !mounted) return;
                   Navigator.push(
                     context,
                     _slideRoute(
@@ -3502,6 +3512,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               if (isAsset) {
                 final f = await item.file;
                 if (f != null && mounted) {
+                  // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+                  final proceed = await context
+                      .read<FileManagerProvider>()
+                      .ensureOpenWithChoice(context, f.path);
+                  if (!proceed || !mounted) return;
                   Navigator.push(
                     context,
                     _slideRoute(
@@ -3514,6 +3529,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                   );
                 }
               } else if (path.isNotEmpty) {
+                // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+                final proceed = await context
+                    .read<FileManagerProvider>()
+                    .ensureOpenWithChoice(context, path);
+                if (!proceed || !mounted) return;
                 Navigator.push(
                   context,
                   _slideRoute(
@@ -3766,6 +3786,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
           if (isAsset) {
             final file = await item.file;
             if (file != null && mounted) {
+              // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+              final proceed = await context
+                  .read<FileManagerProvider>()
+                  .ensureOpenWithChoice(context, file.path);
+              if (!proceed || !mounted) return;
               Navigator.push(
                 context,
                 _slideRoute(
@@ -3778,6 +3803,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               );
             }
           } else {
+            // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+            final proceed = await context
+                .read<FileManagerProvider>()
+                .ensureOpenWithChoice(context, path);
+            if (!proceed || !mounted) return;
             Navigator.push(
               context,
               _slideRoute(
@@ -3954,6 +3984,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               } else {
                 final file = await item.file;
                 if (file != null && mounted) {
+                  // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+                  final proceed = await context
+                      .read<FileManagerProvider>()
+                      .ensureOpenWithChoice(context, file.path);
+                  if (!proceed || !mounted) return;
                   Navigator.push(
                     context,
                     _slideRoute(
@@ -3996,10 +4031,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
           )
         else
           GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (_isSelectionMode) {
                 _toggleSelection(path, null);
               } else {
+                // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+                final proceed = await context
+                    .read<FileManagerProvider>()
+                    .ensureOpenWithChoice(context, path);
+                if (!proceed || !mounted) return;
                 Navigator.push(
                   context,
                   _slideRoute(
@@ -4261,6 +4301,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
           if (isAsset) {
             final file = await item.file;
             if (file != null && mounted) {
+              // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+              final proceed = await context
+                  .read<FileManagerProvider>()
+                  .ensureOpenWithChoice(context, file.path);
+              if (!proceed || !mounted) return;
               Navigator.push(
                 context,
                 _slideRoute(
@@ -4275,6 +4320,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               });
             }
           } else {
+            // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+            final proceed = await context
+                .read<FileManagerProvider>()
+                .ensureOpenWithChoice(context, path);
+            if (!proceed || !mounted) return;
             Navigator.push(
               context,
               _slideRoute(
@@ -4387,10 +4437,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     );
     return ListTile(
       key: ValueKey(path),
-      onTap: () {
+      onTap: () async {
         if (_isSelectionMode) {
           _toggleSelection(path, null);
         } else {
+          // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+          final proceed = await context
+              .read<FileManagerProvider>()
+              .ensureOpenWithChoice(context, path);
+          if (!proceed || !mounted) return;
           Navigator.push(
             context,
             PageRouteBuilder(
@@ -4696,10 +4751,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
 
     return GestureDetector(
       key: ValueKey(path),
-      onTap: () {
+      onTap: () async {
         if (_isSelectionMode) {
           _toggleSelection(path, null);
         } else {
+          // 「打开方式」闸门：无默认时先弹统一弹窗（本应用默认勾选）
+          final proceed = await context
+              .read<FileManagerProvider>()
+              .ensureOpenWithChoice(context, path);
+          if (!proceed || !mounted) return;
           Navigator.push(
             context,
             PageRouteBuilder(

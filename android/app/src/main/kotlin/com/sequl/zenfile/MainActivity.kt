@@ -1352,8 +1352,12 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val pm = packageManager
                             val infos = pm.queryIntentActivities(query, 0)
                             val apps = ArrayList<Map<String, Any>>()
+                            // 同一包名的多个 activity 只保留一个，避免列表重复
+                            val seenPackages = HashSet<String>()
                             for (ri in infos) {
                                 val pkg = ri.activityInfo.packageName
+                                // 跳过本应用：列表第一项由下方固定插入（弹窗默认勾选）
+                                if (pkg == packageName || !seenPackages.add(pkg)) continue
                                 val label = try {
                                     ri.loadLabel(pm)?.toString()
                                 } catch (_: Exception) { null } ?: pkg
@@ -1380,6 +1384,7 @@ class MainActivity : AudioServiceFragmentActivity() {
                                         "packageName" to pkg,
                                         "label" to label,
                                         "isSystem" to isSystem,
+                                        "isSelf" to false,
                                         "icon" to (iconBytes ?: ByteArray(0)),
                                     )
                                 )
@@ -1389,6 +1394,37 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 compareBy(
                                     { if (it["isSystem"] as Boolean) 1 else 0 },
                                     { (it["label"] as String).lowercase() },
+                                )
+                            )
+                            // 本应用固定为第一项（弹窗默认勾选），带真实应用图标。
+                            // ⚠️ 必须在排序之后插入，否则会被排到第三方应用中间。
+                            val selfIcon = try {
+                                val drawable = pm.getApplicationIcon(packageName)
+                                val size = 96
+                                val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+                                val canvas = Canvas(bmp)
+                                drawable.setBounds(0, 0, size, size)
+                                drawable.draw(canvas)
+                                val bos = ByteArrayOutputStream()
+                                bmp.compress(Bitmap.CompressFormat.PNG, 100, bos)
+                                bmp.recycle()
+                                bos.toByteArray()
+                            } catch (_: Exception) {
+                                ByteArray(0)
+                            }
+                            val selfLabel = try {
+                                pm.getApplicationLabel(applicationInfo).toString()
+                            } catch (_: Exception) {
+                                "ZenFile"
+                            }
+                            apps.add(
+                                0,
+                                mapOf(
+                                    "packageName" to packageName,
+                                    "label" to selfLabel,
+                                    "isSystem" to false,
+                                    "isSelf" to true,
+                                    "icon" to selfIcon,
                                 )
                             )
                             runOnUiThread { result.success(apps) }

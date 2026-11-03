@@ -13634,6 +13634,60 @@ class FileManagerProvider extends ChangeNotifier {
     await openWithSystemChooser(path, packageName: pkg);
   }
 
+  /// 媒体分类页直达查看器/播放器之前的「打开方式」闸门。
+  ///
+  /// 分类页的视频/图片/音频 tile 直达内置查看器（为保留相册滑动浏览等体验，
+  /// 不改走 openFile），但按需求这些类别**无默认时也要弹「打开方式」**：
+  /// * 该扩展名已存过默认 → 直接按现状打开（返回 true，调用方继续推查看器）
+  /// * 设置里开启「跳过打开方式对话框」 → 同上
+  /// * 无默认且未跳过 → 弹统一「打开方式」弹窗：
+  ///   - 本应用（+始终 则存默认）→ 返回 true 继续内置打开
+  ///   - 外部应用（+始终 则存 `external:<包名>`）→ 按包名直达并返回 false
+  /// * 用户取消弹窗 → 返回 false，什么都不做
+  ///
+  /// ⚠️ 仅支持本地路径（remote:// / http 的远程媒体无法交给外部应用，
+  /// 直接返回 true 保持原有内置打开行为）。
+  Future<bool> ensureOpenWithChoice(BuildContext context, String path) async {
+    if (path.startsWith('remote://') ||
+        path.startsWith('cryptremote://') ||
+        path.startsWith('http')) {
+      return true;
+    }
+    final ext = FileUtils.effectiveExtensionWithDot(path);
+    final saved = PreferencesService.getDefaultOpenAction(ext);
+    if (saved != null) {
+      // 已记住外部应用：分类页直达也尊重外部默认（与 openFile 行为一致）
+      if (saved.startsWith('external:')) {
+        await openWithSystemChooser(
+          path,
+          packageName: saved.substring('external:'.length),
+        );
+        return false;
+      }
+      if (saved == 'external') {
+        await openWithSystemChooser(path);
+        return false;
+      }
+      return true; // 'native' 或具体内置类型：继续内置打开
+    }
+    if (_skipOpenWithDialog) return true;
+
+    final choice = await showOpenWithAppChoiceDialog(context, path);
+    if (choice == null || !context.mounted) return false;
+    if (choice.isNative) {
+      if (choice.always) {
+        await PreferencesService.saveDefaultOpenAction(ext, 'native');
+      }
+      return true;
+    }
+    final pkg = choice.app!.packageName;
+    if (choice.always) {
+      await PreferencesService.saveDefaultOpenAction(ext, 'external:$pkg');
+    }
+    await openWithSystemChooser(path, packageName: pkg);
+    return false;
+  }
+
   /// 按指定内置类型（text/audio/video/image）以应用内查看器/播放器打开文件
   Future<void> _openBuiltInByType(
     BuildContext context,
@@ -14785,6 +14839,53 @@ class FileManagerProvider extends ChangeNotifier {
     // 本地真实压缩包：进入浏览 tab 的 zip:// 虚拟视图（与浏览页内点击压缩包一致）。
     // 分类页（压缩类别）/最近列表/全局搜索/收藏夹等入口都从这里进来。
     //
+    // 「打开方式」闸门：压缩包**无默认时也要先弹统一「打开方式」弹窗**（不再默认
+    // 用本应用的内置压缩浏览器）——选本应用才进入 zip 虚拟视图，选外部应用则
+    // 按包名/系统选择器交给外部；「始终」按扩展名记住，下次不再弹。
+    // （必须在本分支内判断：本分支在尾部统一弹窗分支之前 return。）
+    final bool isLocalArchive = !isRemoteStream &&
+        !path.startsWith('remote://') &&
+        !path.startsWith('cryptremote://') &&
+        !path.startsWith('http') &&
+        FileUtils.isArchive(path) &&
+        !activeTab.isRemote &&
+        File(path).existsSync();
+    if (isLocalArchive) {
+      final archiveExt = FileUtils.effectiveExtensionWithDot(path);
+      final savedAction = PreferencesService.getDefaultOpenAction(archiveExt);
+      if (savedAction != null && savedAction.startsWith('external:')) {
+        // 已记住外部应用：直达（压缩包分支此前抢在 openAction 处理之前）
+        await openWithSystemChooser(
+          path,
+          packageName: savedAction.substring('external:'.length),
+        );
+        return;
+      }
+      if (savedAction == 'external') {
+        await openWithSystemChooser(path);
+        return;
+      }
+      if (savedAction == null && !_skipOpenWithDialog) {
+        final choice = await showOpenWithAppChoiceDialog(context, path);
+        if (choice == null || !context.mounted) return;
+        if (choice.isNative) {
+          if (choice.always) {
+            await PreferencesService.saveDefaultOpenAction(
+                archiveExt, 'native');
+          }
+          // 选本应用：继续走下方 zip 虚拟视图（本应用对压缩包的内置打开方式）
+        } else {
+          final pkg = choice.app!.packageName;
+          if (choice.always) {
+            await PreferencesService.saveDefaultOpenAction(
+                archiveExt, 'external:$pkg');
+          }
+          await openWithSystemChooser(path, packageName: pkg);
+          return;
+        }
+      }
+    }
+    //
     // 导航惯例与「打开所在位置」(showFileInLocation) 完全一致——**在点击事件内
     // 同步启动 loadDirectory，先把内容写进浏览 tab 的 provider 状态，再做页面
     // 切换**（加载与切 tab 职责分离，互不依赖对方时序）：
@@ -14801,13 +14902,7 @@ class FileManagerProvider extends ChangeNotifier {
     // 任一环被抢先复位 notifier（home_screen.didChangeDependencies 只复位布尔不
     // 消费 pending），或 notifier 残留 true 时 ValueNotifier 同值不再通知，pending
     // 都会被静默丢弃——表现为「切到浏览页却停在根目录/原地不动」（v2 实测回归）。
-    if (!isRemoteStream &&
-        !path.startsWith('remote://') &&
-        !path.startsWith('cryptremote://') &&
-        !path.startsWith('http') &&
-        FileUtils.isArchive(path) &&
-        !activeTab.isRemote &&
-        File(path).existsSync()) {
+    if (isLocalArchive) {
       // zip 解析失败已在 _loadZipDirectory 内提示并回退 zip 父目录；这里兜底吞掉
       // loadDirectory 可能抛出的异常（同 init 的防御），保证导航仍能进行。
       try {
