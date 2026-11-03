@@ -4997,6 +4997,7 @@
   "open_with_external": "使用外部系统选择器打开",
   "open_once": "仅一次",
   "open_always": "始终",
+  "video_reset_zoom": "还原画面",
   "pick_file_type": "选择文件类型",
   "file_type_text": "文本",
   "file_type_audio": "音频",

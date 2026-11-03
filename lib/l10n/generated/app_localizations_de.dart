@@ -4885,6 +4885,9 @@ class L10nDe extends L10n {
   String get open_always => 'Immer';
 
   @override
+  String get video_reset_zoom => 'Zoom zurücksetzen';
+
+  @override
   String get pick_file_type => 'Dateityp auswählen';
 
   @override

@@ -4693,6 +4693,9 @@ class L10nKo extends L10n {
   String get open_always => '항상';
 
   @override
+  String get video_reset_zoom => '화면 초기화';
+
+  @override
   String get pick_file_type => '파일 형식 선택';
 
   @override

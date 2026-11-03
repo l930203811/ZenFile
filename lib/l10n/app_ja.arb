@@ -4721,6 +4721,7 @@
   "open_with_external": "外部アプリで開く",
   "open_once": "今回のみ",
   "open_always": "常に",
+  "video_reset_zoom": "画面をリセット",
   "pick_file_type": "ファイルの種類を選択",
   "file_type_text": "テキスト",
   "file_type_audio": "オーディオ",

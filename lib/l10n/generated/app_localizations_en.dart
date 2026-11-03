@@ -4840,6 +4840,9 @@ class L10nEn extends L10n {
   String get open_always => 'Always';
 
   @override
+  String get video_reset_zoom => 'Reset Zoom';
+
+  @override
   String get pick_file_type => 'Select file type';
 
   @override

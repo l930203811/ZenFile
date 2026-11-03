@@ -4717,6 +4717,7 @@
   "open_with_external": "Abrir con aplicación externa",
   "open_once": "Solo esta vez",
   "open_always": "Siempre",
+  "video_reset_zoom": "Restablecer zoom",
   "pick_file_type": "Seleccionar tipo de archivo",
   "file_type_text": "Texto",
   "file_type_audio": "Audio",

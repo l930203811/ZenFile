@@ -4691,6 +4691,9 @@ class L10nJa extends L10n {
   String get open_always => '常に';
 
   @override
+  String get video_reset_zoom => '画面をリセット';
+
+  @override
   String get pick_file_type => 'ファイルの種類を選択';
 
   @override

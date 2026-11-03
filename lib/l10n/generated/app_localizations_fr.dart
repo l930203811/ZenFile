@@ -4915,6 +4915,9 @@ class L10nFr extends L10n {
   String get open_always => 'Toujours';
 
   @override
+  String get video_reset_zoom => 'Réinitialiser le zoom';
+
+  @override
   String get pick_file_type => 'Sélectionner le type de fichier';
 
   @override

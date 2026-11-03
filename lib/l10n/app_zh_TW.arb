@@ -4813,6 +4813,7 @@
   "open_with_external": "使用外部系統選擇器開啟",
   "open_once": "僅一次",
   "open_always": "始終",
+  "video_reset_zoom": "還原畫面",
   "pick_file_type": "選擇檔案型別",
   "file_type_text": "文字",
   "file_type_audio": "音訊",

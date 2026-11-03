@@ -4717,6 +4717,7 @@
   "open_with_external": "فتح بالتطبيق الخارجي",
   "open_once": "مرة واحدة فقط",
   "open_always": "دائمًا",
+  "video_reset_zoom": "إعادة ضبط التكبير",
   "pick_file_type": "اختر نوع الملف",
   "file_type_text": "نص",
   "file_type_audio": "صوت",

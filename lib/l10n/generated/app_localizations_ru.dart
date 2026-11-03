@@ -4891,6 +4891,9 @@ class L10nRu extends L10n {
   String get open_always => 'Всегда';
 
   @override
+  String get video_reset_zoom => 'Сбросить масштаб';
+
+  @override
   String get pick_file_type => 'Выберите тип файла';
 
   @override

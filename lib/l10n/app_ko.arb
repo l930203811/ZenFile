@@ -4717,6 +4717,7 @@
   "open_with_external": "외부 앱으로 열기",
   "open_once": "이번만",
   "open_always": "항상",
+  "video_reset_zoom": "화면 초기화",
   "pick_file_type": "파일 형식 선택",
   "file_type_text": "텍스트",
   "file_type_audio": "오디오",

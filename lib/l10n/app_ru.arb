@@ -4717,6 +4717,7 @@
   "open_with_external": "Открыть внешним приложением",
   "open_once": "Только один раз",
   "open_always": "Всегда",
+  "video_reset_zoom": "Сбросить масштаб",
   "pick_file_type": "Выберите тип файла",
   "file_type_text": "Текст",
   "file_type_audio": "Аудио",

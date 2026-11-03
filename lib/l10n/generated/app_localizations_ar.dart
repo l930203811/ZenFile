@@ -4822,6 +4822,9 @@ class L10nAr extends L10n {
   String get open_always => 'دائمًا';
 
   @override
+  String get video_reset_zoom => 'إعادة ضبط التكبير';
+
+  @override
   String get pick_file_type => 'اختر نوع الملف';
 
   @override

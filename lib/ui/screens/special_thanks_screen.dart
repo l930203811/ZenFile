@@ -44,6 +44,8 @@ class SpecialThanksScreen extends StatelessWidget {
     'aand1015',
     'LorianL98',
     'qwertti123',
+    'zhnfe',
+    '斯卡里茨的守护者',
   ];
 
   /// 本项目使用的核心开源组件（排名不分先后）。

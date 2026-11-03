@@ -103,6 +103,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isWaitingForCache = false;
   Timer? _cacheCheckTimer;
 
+  // ── 双指缩放画面 ──
+  // 视频画面当前变换矩阵（缩放 + 平移）；identity = 未缩放。
+  Matrix4 _videoTransform = Matrix4.identity();
+  // 画面已被缩放/平移（用于在非沉浸式时显示「还原画面」按钮）。
+  bool _isVideoZoomed = false;
+  // 双指捏合进行中（第二根手指落下到抬起之间，屏蔽单指 seek/音量/亮度路由）。
+  bool _pinchActive = false;
+  // 捏合开始时的焦点与基准矩阵：scale 相对 onScaleStart 累积，
+  // 新矩阵 = 焦点平移 * 绕起始焦点缩放 * 基准矩阵。
+  Offset _pinchStartFocal = Offset.zero;
+  Matrix4 _pinchBaseMatrix = Matrix4.identity();
+  // 单指拖动轴向路由：0 未 determined，1 横向 seek，2 纵向音量/亮度。
+  int _singleDragAxis = 0;
+  Offset _singleDragStart = Offset.zero;
+
   // 远程流式播放
   String? _currentStreamUrl;
 
@@ -2454,6 +2469,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _duration = Duration.zero;
       _sliderValue = 0;
       _isBuffering = true;
+      // 切换视频：还原双指缩放，避免上一集的缩放/平移残留到新视频
+      _videoTransform = Matrix4.identity();
+      _isVideoZoomed = false;
+      _pinchActive = false;
     });
 
     // 清理上一次的远程流式会话
@@ -2820,10 +2839,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _showControls();
   }
 
-  void _onHorizontalDragStart(DragStartDetails details) {
+  void _onHorizontalDragStartAt(Offset globalPosition) {
     if (_isLocked) return;
     _isHorizontalDragging = true;
-    _dragStartX = details.globalPosition.dx;
+    _dragStartX = globalPosition.dx;
     _dragStartPosition = _position;
     _dragSeekDelta = 0;
     _hideTimer?.cancel();
@@ -2846,12 +2865,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+  void _onHorizontalDragUpdateAt(double globalDx) {
     if (_isLocked || !_isHorizontalDragging) return;
     final screenWidth = MediaQuery.of(context).size.width;
     final totalSeconds = _duration.inSeconds;
     if (screenWidth <= 0 || totalSeconds <= 0) return;
-    final deltaX = details.globalPosition.dx - _dragStartX;
+    final deltaX = globalDx - _dragStartX;
     final seekSec = (deltaX / screenWidth * totalSeconds / 2).round();
     final targetPos = _dragStartPosition + Duration(seconds: seekSec);
     final clampedMs = targetPos.inMilliseconds.clamp(Duration.zero.inMilliseconds, _duration.inMilliseconds);
@@ -2866,7 +2885,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _schedulePreviewCapture();
   }
 
-  void _onHorizontalDragEnd(DragEndDetails details) {
+  void _onHorizontalDragEnd() {
     if (_isLocked || !_isHorizontalDragging) return;
     _isHorizontalDragging = false;
     final newPos = _dragStartPosition + Duration(seconds: _dragSeekDelta);
@@ -2912,9 +2931,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  void _onVerticalDragUpdate(DragUpdateDetails details, bool isLeft) {
+  /// 纵向单指拖动（左半屏音量 / 右半屏亮度），传入本帧焦点的 dy 增量。
+  void _onVerticalDragDelta(double dyDelta, bool isLeft) {
     if (_isLocked) return;
-    final delta = -details.primaryDelta! / 250.0;
+    final delta = -dyDelta / 250.0;
     if (isLeft) {
       final newVolume = (_volume + delta).clamp(0.0, 1.0);
       _setSystemVolume(newVolume);
@@ -2942,6 +2962,110 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         });
       }
     });
+  }
+
+  /// ── 双指缩放画面 + 单指手势统一入口 ──
+  ///
+  /// 手势分区原先分别注册横/纵 Drag 识别器；改用 Scale 识别器后可以同时
+  /// 识别双指捏合（缩放画面）与单指拖动（横 seek / 纵音量亮度）：
+  /// * 双指（pointerCount > 1）：进入 [_pinchActive]，缩放画面
+  /// * 单指：按位移主轴路由到横向 seek 或纵向音量/亮度（与原行为一致，
+  ///   先 determined 的轴独占，另一轴不响应）
+  void _onScaleStart(ScaleStartDetails details, bool isLeft) {
+    if (_isLocked) return;
+    if (details.pointerCount > 1) {
+      // 第二根手指落下：若单指 seek 已在进行则先按拖动结束收尾（执行 seek）
+      if (_isHorizontalDragging) {
+        _onHorizontalDragEnd();
+      }
+      _pinchActive = true;
+      _singleDragAxis = 0;
+      _pinchStartFocal = details.localFocalPoint;
+      _pinchBaseMatrix = _videoTransform.clone();
+      _hideTimer?.cancel();
+      return;
+    }
+    // 单指：记录起点，轴向待位移超过阈值后 determined
+    _singleDragAxis = 0;
+    _singleDragStart = details.localFocalPoint;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details, bool isLeft) {
+    if (_isLocked) return;
+    if (_pinchActive || details.pointerCount > 1) {
+      _applyPinch(details);
+      return;
+    }
+    // 单指路由
+    if (_singleDragAxis == 0) {
+      final dx = (details.localFocalPoint.dx - _singleDragStart.dx).abs();
+      final dy = (details.localFocalPoint.dy - _singleDragStart.dy).abs();
+      if (dx > 10 && dx > dy) {
+        _singleDragAxis = 1;
+        _onHorizontalDragStartAt(_singleDragStart);
+      } else if (dy > 10 && dy >= dx) {
+        _singleDragAxis = 2;
+      }
+      if (_singleDragAxis == 0) return;
+    }
+    if (_singleDragAxis == 1) {
+      _onHorizontalDragUpdateAt(details.localFocalPoint.dx);
+    } else {
+      _onVerticalDragDelta(details.focalPointDelta.dy, isLeft);
+    }
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (_pinchActive) {
+      _pinchActive = false;
+      _startHideTimer();
+      return;
+    }
+    if (_singleDragAxis == 1 && _isHorizontalDragging) {
+      _onHorizontalDragEnd();
+    }
+    _singleDragAxis = 0;
+  }
+
+  /// 应用捏合缩放：新矩阵 = 焦点平移 × 绕起始焦点缩放 × 基准矩阵。
+  /// 缩放范围夹紧 1.0–5.0；缩放回到 1.0 时直接还原（清除残留平移）。
+  void _applyPinch(ScaleUpdateDetails details) {
+    final s = details.scale;
+    final base = _pinchBaseMatrix;
+    final baseScale = base.getMaxScaleOnAxis();
+    Matrix4 m;
+    if (s <= 1.001) {
+      m = Matrix4.identity();
+    } else {
+      var effective = s;
+      if (baseScale * effective > 5.0) {
+        effective = 5.0 / baseScale;
+      }
+      final fdx = details.localFocalPoint.dx - _pinchStartFocal.dx;
+      final fdy = details.localFocalPoint.dy - _pinchStartFocal.dy;
+      final fx = _pinchStartFocal.dx;
+      final fy = _pinchStartFocal.dy;
+      m = Matrix4.identity()
+        ..translateByDouble(fdx, fdy, 0, 1)
+        ..translateByDouble(fx, fy, 0, 1)
+        ..scaleByDouble(effective, effective, 1, 1)
+        ..translateByDouble(-fx, -fy, 0, 1)
+        ..multiply(base);
+    }
+    setState(() {
+      _videoTransform = m;
+      _isVideoZoomed = !m.isIdentity();
+    });
+  }
+
+  /// 「还原画面」按钮：清除缩放与平移，恢复原始画面。
+  void _resetVideoZoom() {
+    setState(() {
+      _videoTransform = Matrix4.identity();
+      _isVideoZoomed = false;
+      _pinchActive = false;
+    });
+    _showControls();
   }
 
   /// 从系统读取当前媒体音量并同步到 UI。
@@ -3754,16 +3878,25 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
     // 全屏时移除系统手势/导航区的 padding，确保视频画面铺满（消除左侧固定黑边）。
     // 配合原生 edge-to-edge 使用；即便 ROM 仍上报 inset，此处也把画面推到屏幕边缘。
-    final videoBody = _isFullScreen
-        ? MediaQuery.removePadding(
-            context: context,
-            removeLeft: true,
-            removeRight: true,
-            removeTop: true,
-            removeBottom: true,
-            child: _buildVideoSurface(),
-          )
-        : _buildVideoSurface();
+    //
+    // 双指缩放：变换矩阵应用在整个画面上（放大后配合平移可看清局部细节）。
+    // ClipRect 防止放大后的画面溢出播放区域。
+    final videoBody = ClipRect(
+      child: Transform(
+        transform: _videoTransform,
+        alignment: Alignment.topLeft,
+        child: _isFullScreen
+            ? MediaQuery.removePadding(
+                context: context,
+                removeLeft: true,
+                removeRight: true,
+                removeTop: true,
+                removeBottom: true,
+                child: _buildVideoSurface(),
+              )
+            : _buildVideoSurface(),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -3828,7 +3961,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               ),
             ),
 
-          // Gesture Zones (Horizontal Drag Seek, Double Tap Play/Pause, Long Press Speed)
+          // Gesture Zones (Scale Pinch Zoom, Horizontal Drag Seek, Double Tap Play/Pause, Long Press Speed)
           Row(
             children: [
               Expanded(
@@ -3838,10 +3971,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
-                  onHorizontalDragStart: _onHorizontalDragStart,
-                  onHorizontalDragUpdate: _onHorizontalDragUpdate,
-                  onHorizontalDragEnd: _onHorizontalDragEnd,
-                  onVerticalDragUpdate: (d) => _onVerticalDragUpdate(d, true),
+                  onScaleStart: (d) => _onScaleStart(d, true),
+                  onScaleUpdate: (d) => _onScaleUpdate(d, true),
+                  onScaleEnd: _onScaleEnd,
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -3852,10 +3984,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
-                  onHorizontalDragStart: _onHorizontalDragStart,
-                  onHorizontalDragUpdate: _onHorizontalDragUpdate,
-                  onHorizontalDragEnd: _onHorizontalDragEnd,
-                  onVerticalDragUpdate: (d) => _onVerticalDragUpdate(d, false),
+                  onScaleStart: (d) => _onScaleStart(d, false),
+                  onScaleUpdate: (d) => _onScaleUpdate(d, false),
+                  onScaleEnd: _onScaleEnd,
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -4154,6 +4285,51 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           ),
         ),
       ),
+
+          // 双指缩放「还原画面」按钮：
+          // 画面被缩放/平移且非沉浸式（控制条可见、未锁定）时显示，右侧居中
+          if (_isVideoZoomed && _controlsVisible && !_isLocked)
+            Positioned(
+              right: 12,
+              top: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: !_isFullScreen,
+                bottom: !_isFullScreen,
+                child: Center(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _resetVideoZoom,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.filter_center_focus,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              L10n.of(context).video_reset_zoom,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // 常驻细进度条：开启"进度条常驻"且未锁定时，控制条隐藏时底部保留一条可拖动细进度条
           // 注意：Positioned 必须是 Stack 的直接子级才会参与定位；若嵌套在

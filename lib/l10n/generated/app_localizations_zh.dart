@@ -4651,6 +4651,9 @@ class L10nZh extends L10n {
   String get open_always => '始终';
 
   @override
+  String get video_reset_zoom => '还原画面';
+
+  @override
   String get pick_file_type => '选择文件类型';
 
   @override
@@ -13305,6 +13308,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get open_always => '始終';
+
+  @override
+  String get video_reset_zoom => '還原畫面';
 
   @override
   String get pick_file_type => '選擇檔案型別';

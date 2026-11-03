@@ -8740,6 +8740,12 @@ abstract class L10n {
   /// **'始终'**
   String get open_always;
 
+  /// No description provided for @video_reset_zoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'还原画面'**
+  String get video_reset_zoom;
+
   /// No description provided for @pick_file_type.
   ///
   /// In zh, this message translates to:
