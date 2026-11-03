@@ -26,7 +26,8 @@ android/app/src/main/jniLibs/armeabi-v7a/
 android/libs/
 test_*.lrc
 
-# WORKLOG.md 已于 2026-11-04 起随代码入库（多 AI 协作交接日志，每次优化随提交推送 dev）
+# 本地协作记录（TRAE + WorkBuddy 共用），仅保留在本地，不进远程仓库
+WORKLOG.md
 
 # 本地历史版本快照（约 2.4GB，用于对比参考），不进仓库
 test/ZenFile-v1.1.32/
