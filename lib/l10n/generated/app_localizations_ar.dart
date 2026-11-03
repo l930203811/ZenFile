@@ -9162,4 +9162,30 @@ class L10nAr extends L10n {
 
   @override
   String get dup_failed => 'فشل التنظيف، تحقق من الأذونات وحاول مرة أخرى';
+
+  @override
+  String get smb_share_enum_failed_title => 'تعذّر جلب قائمة المشاركات';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'رفض الخادم طلب قائمة المشاركات (شائع في Windows مع حساب عادي). يمكنك إدخال اسم المشاركة يدويًا للاتصال مباشرة.';
+
+  @override
+  String get smb_share_manual_btn => 'إدخال اسم المشاركة';
+
+  @override
+  String get smb_share_input_title => 'اسم المشاركة';
+
+  @override
+  String get smb_share_input_body =>
+      'أدخل اسم المشاركة نفسها (مثل Share أو D أو Documents) بدون عنوان IP وبدون شرطات مائلة.';
+
+  @override
+  String get smb_share_input_hint => 'مثال: Share أو D';
+
+  @override
+  String get smb_share_input_ok => 'اتصال';
+
+  @override
+  String get smb_share_input_cancel => 'إلغاء';
 }

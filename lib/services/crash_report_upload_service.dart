@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 
 import 'crash_forensics_service.dart';
 import 'preferences_service.dart';
+import 'webdav_debug_log.dart';
 
 /// 一份待上传的诊断日志。
 class CrashLogFile {
@@ -55,33 +56,57 @@ abstract final class CrashReportUploadService {
     'dart_error_',
   ];
 
+  /// **运行时日志**（文件名 → 绝对路径），与崩溃报告分属不同目录。
+  ///
+  /// 崩溃报告只覆盖「进程死掉」这一类问题；而用户反馈里绝大多数是
+  /// 「功能不工作但不崩溃」—— 远程连不上、SMB 看不到共享、播放无声音等，
+  /// 此时归档目录里**一份报告都没有**，弹窗只能提示「暂无可附加日志」，
+  /// 我们拿不到任何现场（issue #55 就是这么卡的）。
+  /// 这里把运行时滚动日志也纳入附件候选，由用户勾选后随报告一起上传。
+  static const Map<String, String> _runtimeLogs = <String, String>{
+    'webdav_debug.log': WebdavDebugLog.filePath,
+  };
+
   static bool get _configured => endpoint.isNotEmpty && token.isNotEmpty;
 
-  /// 列出公共归档目录里的诊断报告名（升序 = 按崩溃时间）。
+  /// 列出可附带的诊断文件名（升序 = 按崩溃时间），末尾追加运行时日志。
   ///
   /// 自行列目录而不是复用 [CrashForensicsService.listAllReports]：那个只认
   /// `.txt`，会漏掉 xCrash 的 `tombstone_*.xcrash` —— 恰恰是最有价值的堆栈。
+  ///
+  /// 运行时日志**排在最后**：[_readLogs] 超份数时保留末尾的，正好优先保住它。
   static List<String> listReportNames() {
+    final names = <String>[];
     try {
       final dir = Directory(CrashForensicsService.publicDir);
-      if (!dir.existsSync()) return const <String>[];
-      return dir
-          .listSync()
-          .whereType<File>()
-          .map((f) => p.basename(f.path))
-          .where((n) => _prefixes.any((pre) => n.startsWith(pre)))
-          .toList()
-        ..sort();
-    } catch (_) {
-      return const <String>[];
+      if (dir.existsSync()) {
+        names.addAll(
+          dir
+              .listSync()
+              .whereType<File>()
+              .map((f) => p.basename(f.path))
+              .where((n) => _prefixes.any((pre) => n.startsWith(pre))),
+        );
+      }
+    } catch (_) {}
+    for (final entry in _runtimeLogs.entries) {
+      try {
+        if (File(entry.value).existsSync()) names.add(entry.key);
+      } catch (_) {}
     }
+    return names..sort();
   }
 
   /// 从 [names] 里挑出**尚未上传过**的（比对持久化台账）。
+  ///
+  /// 运行时日志例外：它的内容每次都不同但文件名固定，若按名字去重，
+  /// 第一次上传之后就永远不会再被附带 —— 那正好让后续反馈全部失去现场。
   static List<String> filterUnuploaded(List<String> names) {
     if (names.isEmpty) return const <String>[];
     final uploaded = PreferencesService.getUploadedCrashReports().toSet();
-    return names.where((n) => !uploaded.contains(n)).toList();
+    return names
+        .where((n) => _runtimeLogs.containsKey(n) || !uploaded.contains(n))
+        .toList();
   }
 
   /// 读取并截断日志内容。纯读文件，失败跳过该份。
@@ -95,13 +120,21 @@ abstract final class CrashReportUploadService {
     for (final name in picked) {
       if (total >= _maxTotalChars) break;
       try {
-        final file = File(p.join(CrashForensicsService.publicDir, name));
+        final runtimePath = _runtimeLogs[name];
+        final file = File(
+          runtimePath ?? p.join(CrashForensicsService.publicDir, name),
+        );
         if (!file.existsSync()) continue;
         var content = file.readAsStringSync();
         final budget = min(_maxCharsPerFile, _maxTotalChars - total);
         if (content.length > budget) {
-          // 保头弃尾：报告头部有信号/机型/版本，尾部多为线程快照
-          content = content.substring(0, budget);
+          // 截断方向按文件性质区分：
+          //  * 崩溃报告 → **保头弃尾**（头部有信号/机型/版本，尾部多为线程快照）；
+          //  * 运行时日志 → **保尾弃头**（追加写入，出事前的那几行在最后）。
+          content = runtimePath != null
+              ? '...(前 ${content.length - budget} 字已省略)\n'
+                    '${content.substring(content.length - budget)}'
+              : content.substring(0, budget);
         }
         total += content.length;
         logs.add(CrashLogFile(name: name, content: content));
@@ -166,10 +199,18 @@ abstract final class CrashReportUploadService {
       }
 
       if (logs.isNotEmpty) {
-        await PreferencesService.saveUploadedCrashReports(<String>[
-          ...PreferencesService.getUploadedCrashReports(),
-          ...logs.map((l) => l.name),
-        ]);
+        // 运行时日志不进台账：文件名固定、内容每次不同，记进去没有意义，
+        // 只会让台账无限增长；[filterUnuploaded] 已单独放行它。
+        final recordable = logs
+            .map((l) => l.name)
+            .where((n) => !_runtimeLogs.containsKey(n))
+            .toList();
+        if (recordable.isNotEmpty) {
+          await PreferencesService.saveUploadedCrashReports(<String>[
+            ...PreferencesService.getUploadedCrashReports(),
+            ...recordable,
+          ]);
+        }
       }
       debugPrint('[Feedback] Uploaded (${logs.length} logs)');
       return true;

@@ -9335,4 +9335,31 @@ class L10nFr extends L10n {
   @override
   String get dup_failed =>
       'Échec du nettoyage, vérifiez les autorisations et réessayez';
+
+  @override
+  String get smb_share_enum_failed_title =>
+      'Impossible de récupérer la liste des partages';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'Le serveur a refusé la requête de liste des partages (fréquent sous Windows avec un compte standard). Vous pouvez saisir le nom du partage pour vous connecter directement.';
+
+  @override
+  String get smb_share_manual_btn => 'Saisir le nom du partage';
+
+  @override
+  String get smb_share_input_title => 'Nom du partage';
+
+  @override
+  String get smb_share_input_body =>
+      'Saisissez le nom du partage lui-même (par ex. Share, D, Documents), sans adresse IP ni barres obliques.';
+
+  @override
+  String get smb_share_input_hint => 'par ex. Share ou D';
+
+  @override
+  String get smb_share_input_ok => 'Connecter';
+
+  @override
+  String get smb_share_input_cancel => 'Annuler';
 }

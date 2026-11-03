@@ -87,6 +87,27 @@ class WebdavDebugLog {
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
   static void log(String msg) {
     if (!enabled) return;
+    _write(msg);
+  }
+
+  /// 写入一行**不受 [enabled] 控制**的日志，只用于「低频、必现、用户无 adb」
+  /// 的失败现场。
+  ///
+  /// ## 为什么需要这个口子（2026-11-04，issue #55）
+  ///
+  /// [enabled] 是发版红线（默认 false），但「SMB 连上了却看不到共享」这类
+  /// 问题的现场只有失败那一刻才有：用户不可能为一个 Bug 长期开着全量日志。
+  /// 于是这里只对**枚举失败**开放 `logAlways`：一台机器只会在进根目录且
+  /// 枚举不到共享时写一小段（含 host/用户名/各级状态码），正常使用零写入，
+  /// 也不含密码。配合「反馈可附带运行时日志」，这类问题以后不必再问用户
+  /// 「有没有日志」。
+  ///
+  /// ⚠️ 新增调用点前请确认：**低频 + 必现 + 不含敏感串**，三者缺一不可。
+  static void logAlways(String msg) {
+    _write(msg);
+  }
+
+  static void _write(String msg) {
     try {
       final file = File(filePath);
       if (!file.parent.existsSync()) {

@@ -113,6 +113,12 @@ class LanClient extends RemoteClient {
   String? _resolvedUsername;
   String? get resolvedUsername => _resolvedUsername;
 
+  /// 最近一次根目录共享枚举的诊断（issue #55）。仅 `listDirectory('/')` 刷新。
+  ShareEnumDiagnostics? _shareEnumDiag;
+
+  @override
+  ShareEnumDiagnostics? get shareEnumDiagnostics => _shareEnumDiag;
+
   LanClient({
     required this.host,
     required this.port,
@@ -606,6 +612,8 @@ class LanClient extends RemoteClient {
     } finally {
       _sessionId = null;
       _isConnected = false;
+      // 枚举诊断跟着会话走，断开后必须清掉，避免下次连接复用到上一次的结论。
+      _shareEnumDiag = null;
     }
   }
 
@@ -660,6 +668,13 @@ class LanClient extends RemoteClient {
       throw e;
     });
 
+    // 根目录 = 共享列表：把原生侧这一轮枚举的诊断取回来（issue #55）。
+    // 枚举失败时原生是「静默返回空列表」的，只写 logcat —— 用户没有 adb，
+    // 反馈里只能写「连上了但看不到内容」。这里统一落盘并暴露给 UI。
+    if (normalized == '/') {
+      await _refreshShareEnumDiag(session);
+    }
+
     if (result == null) return <RemoteFileItem>[];
 
     final items = <RemoteFileItem>[];
@@ -687,6 +702,42 @@ class LanClient extends RemoteClient {
       }
     }
     return items;
+  }
+
+  /// 取回原生侧最近一次「共享枚举」的诊断并落盘（issue #55）。
+  ///
+  /// 原生 `listShares` 三级降级（DCE/RPC → legacy RPC → 名称探测）全部失败时
+  /// 只 `return emptyList()`，异常仅写 logcat；而绝大多数用户没有 adb，
+  /// 反馈里没法提供任何现场。这里把过程文本转成可落盘、可随反馈上传的内容。
+  /// 只读内存，不触发枚举，重复调用开销可忽略。
+  Future<void> _refreshShareEnumDiag(String session) async {
+    try {
+      final raw = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+        'getShareEnumDiag',
+        {'sessionId': session},
+      );
+      if (raw == null) return;
+      final failed = raw['failed'] == true;
+      final detail = (raw['diag'] as String?) ?? '';
+      final cachedCount = (raw['cachedCount'] as num?)?.toInt() ?? -1;
+      _shareEnumDiag = ShareEnumDiagnostics(
+        failed: failed,
+        detail: detail,
+        cachedCount: cachedCount,
+      );
+      // 失败走 logAlways：这类现场只在出错那一刻存在，而全局日志开关是
+      // 发版红线（默认关闭）——用普通 log 会永远拿不到证据（issue #55 的
+      // 教训）。成功仍受开关控制，正常使用零写入。
+      final line =
+          '[smb] root 共享枚举 ${failed ? '失败' : '成功'}（缓存 $cachedCount 项）\n$detail';
+      if (failed) {
+        WebdavDebugLog.logAlways(line);
+      } else {
+        WebdavDebugLog.log(line);
+      }
+    } catch (e) {
+      WebdavDebugLog.log('[smb] getShareEnumDiag 取诊断失败: $e');
+    }
   }
 
   @override

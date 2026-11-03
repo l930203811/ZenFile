@@ -9277,4 +9277,31 @@ class L10nRu extends L10n {
   @override
   String get dup_failed =>
       'Не удалось очистить, проверьте разрешения и повторите';
+
+  @override
+  String get smb_share_enum_failed_title =>
+      'Не удалось получить список общих ресурсов';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'Сервер отклонил запрос списка общих ресурсов (часто на Windows с обычной учётной записью). Можно ввести имя ресурса вручную и подключиться напрямую.';
+
+  @override
+  String get smb_share_manual_btn => 'Ввести имя ресурса';
+
+  @override
+  String get smb_share_input_title => 'Имя общего ресурса';
+
+  @override
+  String get smb_share_input_body =>
+      'Введите имя самого ресурса (например, Share, D, Documents) — без IP-адреса и без косых черт.';
+
+  @override
+  String get smb_share_input_hint => 'например, Share или D';
+
+  @override
+  String get smb_share_input_ok => 'Подключить';
+
+  @override
+  String get smb_share_input_cancel => 'Отмена';
 }

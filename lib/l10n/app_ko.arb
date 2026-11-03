@@ -8883,5 +8883,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "파일 {count}개를 정리하여 {size} 확보",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "정리에 실패했습니다. 권한을 확인한 뒤 다시 시도하세요"
+  "dup_failed": "정리에 실패했습니다. 권한을 확인한 뒤 다시 시도하세요",
+  "smb_share_enum_failed_title": "공유 목록을 가져올 수 없습니다",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "서버가 공유 목록 조회를 거부했습니다(Windows 일반 계정에서 흔함). 공유 이름을 직접 입력하면 바로 연결할 수 있습니다.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "공유 이름 직접 입력",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "공유 이름 입력",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "공유 자체의 이름을 입력하세요(예: Share, D, Documents). IP 주소와 슬래시는 필요 없습니다.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "예: Share 또는 D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "연결",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "취소",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

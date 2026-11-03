@@ -87,7 +87,13 @@ class SmbService {
         val host: String,
         val shares: ConcurrentHashMap<String, DiskShare> = ConcurrentHashMap(),
         @Volatile var cachedShares: List<Map<String, Any>>? = null,
-        @Volatile var sharesCacheTimeMs: Long = 0L
+        @Volatile var sharesCacheTimeMs: Long = 0L,
+        // 共享枚举的取证信息（2026-11-04，issue #55）。
+        // 此前三级降级的失败原因只写 logcat：无 adb 的用户在反馈里只能描述
+        // 「连上了但看不到内容」，我们拿不到任何现场。这里把整轮枚举过程串成
+        // 一段可读文本，由 Dart 侧落盘 / 随反馈附件上传。
+        @Volatile var lastShareEnumDiag: String? = null,
+        @Volatile var shareEnumFailed: Boolean = false
     )
 
     private val sessions = ConcurrentHashMap<String, SmbSessionEntry>()
@@ -128,6 +134,13 @@ class SmbService {
         // Shares on a server rarely change during a session, so 60s is a
         // reasonable balance between responsiveness and freshness.
         private const val SHARES_CACHE_TTL_MS = 60_000L
+
+        // 「枚举结果为空」时的缓存时长，短于上面的正常 TTL（2026-11-04）。
+        // 目的不是让用户看旧数据，而是**别让失败场景反复空转**：Windows 拒绝
+        // NetShareEnum 且探测全 miss 时，一轮三级枚举要跑 200+ 个名字，实测
+        // 能拖几十秒。30s 窗口足够挡住「返回上一级再进来」这类连续操作，
+        // 又不至于让用户新开的共享长时间看不到。
+        private const val EMPTY_SHARES_CACHE_TTL_MS = 30_000L
     }
 
     /**
@@ -372,33 +385,91 @@ class SmbService {
         if (!forceRefresh) {
             val cached = entry.cachedShares
             val cacheAge = System.currentTimeMillis() - entry.sharesCacheTimeMs
-            if (cached != null && cacheAge < SHARES_CACHE_TTL_MS) {
+            // 空结果也走缓存，但 TTL 更短（2026-11-04）：
+            // 以前只在「非空」时写缓存 ⇒ 枚举失败的机器每次进根目录都要把
+            // 三级全跑一遍（200 个名字 × 8 线程 × 5s 超时，实测能转几十秒），
+            // 用户看到的就是「进去转半天啥也没有」。给空结果一个较短 TTL，
+            // 既能挡住这种重复空转，又不会让用户新开的共享长时间看不到。
+            val ttl = if (cached != null && cached.isEmpty()) {
+                EMPTY_SHARES_CACHE_TTL_MS
+            } else {
+                SHARES_CACHE_TTL_MS
+            }
+            if (cached != null && cacheAge < ttl) {
                 Log.i("SmbService", "Returning cached shares (${cached.size} items, age=${cacheAge}ms) for ${entry.host}")
                 return cached
             }
         }
 
+        val diag = StringBuilder()
+        val startedAt = System.currentTimeMillis()
+        val userLabel = entry.username.ifEmpty { "<空/匿名>" }
+        diag.append("host=${entry.host}  user=$userLabel\n")
+
         // Tier 1 + Tier 2: DCE/RPC enumeration (rapid7 SRVSVC → legacy manual)
         try {
             Log.i("SmbService", "Enumerating shares via DCE/RPC for ${entry.host}")
             val rpcResult = listSharesViaRpc(entry)
+            diag.append("T1 DCE/RPC(SRVSVC+legacy) → ${rpcResult.size} 个共享\n")
             if (rpcResult.isNotEmpty()) {
                 entry.cachedShares = rpcResult
                 entry.sharesCacheTimeMs = System.currentTimeMillis()
+                entry.shareEnumFailed = false
+                entry.lastShareEnumDiag = finishDiag(diag, startedAt, "成功（DCE/RPC 枚举）")
                 return rpcResult
             }
             Log.i("SmbService", "DCE/RPC returned empty, trying probing")
         } catch (e: Exception) {
             Log.w("SmbService", "DCE/RPC failed, falling back to probing: ${e.message}")
+            diag.append("T1 DCE/RPC → 异常: ${e.message}\n")
         }
         // Tier 3: brute-force probing
         Log.i("SmbService", "Enumerating shares via probing for ${entry.host}")
-        val probeResult = listSharesViaProbing(entry)
-        if (probeResult.isNotEmpty()) {
-            entry.cachedShares = probeResult
-            entry.sharesCacheTimeMs = System.currentTimeMillis()
-        }
+        val probeResult = listSharesViaProbing(entry, diag)
+        diag.append("T3 名称探测 → ${probeResult.size} 个共享\n")
+
+        // 空结果同样写缓存（短 TTL），避免每次进根目录重跑三级枚举
+        entry.cachedShares = probeResult
+        entry.sharesCacheTimeMs = System.currentTimeMillis()
+        entry.shareEnumFailed = probeResult.isEmpty()
+        entry.lastShareEnumDiag = finishDiag(
+            diag,
+            startedAt,
+            if (probeResult.isEmpty()) {
+                "无法枚举共享：服务端拒绝枚举且探测表未命中（可由用户手填共享名绕过）"
+            } else {
+                "成功（名称探测命中）"
+            }
+        )
         return probeResult
+    }
+
+    /// 把枚举过程收尾成一段完整文本（含总耗时），供 Dart 落盘/上报。
+    private fun finishDiag(diag: StringBuilder, startedAt: Long, conclusion: String): String {
+        diag.append("结论: $conclusion\n")
+        diag.append("耗时: ${System.currentTimeMillis() - startedAt}ms")
+        val text = diag.toString()
+        Log.i("SmbService", "[shareEnum] $text")
+        return text
+    }
+
+    /**
+     * 返回最近一次共享枚举的取证信息（issue #55 排查用）。
+     *
+     * 返回 `{failed: Boolean, diag: String, cachedCount: Int}`：
+     * * `failed` —— 枚举跑完但一个共享都没拿到（根目录会是空的）；
+     * * `diag` —— 三级降级每一步的结果/异常、耗时、结论；
+     * * `cachedCount` —— 当前缓存里的共享数，-1 表示还没枚举过。
+     *
+     * 本方法不触发枚举，只读内存，Dart 侧可随时调用（含空结果缓存命中的场景）。
+     */
+    fun shareEnumDiag(sessionId: String): Map<String, Any> {
+        val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
+        return mapOf(
+            "failed" to entry.shareEnumFailed,
+            "diag" to (entry.lastShareEnumDiag ?: "尚未枚举（本次会话还没进入过根目录）"),
+            "cachedCount" to (entry.cachedShares?.size ?: -1)
+        )
     }
 
     /**
@@ -1018,7 +1089,7 @@ class SmbService {
      * invalid share name with STATUS_BAD_NETWORK_NAME within milliseconds;
      * the 5s ceiling only matters for slow or unresponsive servers.
      */
-    private fun listSharesViaProbing(entry: SmbSessionEntry): List<Map<String, Any>> {
+    private fun listSharesViaProbing(entry: SmbSessionEntry, diag: StringBuilder? = null): List<Map<String, Any>> {
         val commonNames = listOf(
             // Generic
             "share", "Shared", "Shares", "files", "Files", "data", "Data",
@@ -1101,6 +1172,12 @@ class SmbService {
         }
 
         Log.i("SmbService", "Probing ${uniqueNames.size} share names for ${entry.host}")
+        diag?.append("  探测名单: ${uniqueNames.size} 个\n")
+
+        // 「存在但当前账号无权限」的共享：命中它说明名字对了、凭据不够。
+        // 这类项现在也会被塞进列表，用户点进去才失败；单独留痕以便区分
+        // 「枚举不到名字」和「有名字但打不开」两种截然不同的故障。
+        val deniedShares = java.util.Collections.synchronizedList(mutableListOf<String>())
 
         // Bounded thread pool: 8 concurrent probes is enough to saturate a
         // typical SMB server's tree-connect throughput without triggering
@@ -1119,6 +1196,7 @@ class SmbService {
                         val status = e.statusCode
                         if (status in ACCESS_EXISTS_STATUS_CODES) {
                             Log.i("SmbService", "Found share (access denied): $name (status=0x${status.toString(16)})")
+                            deniedShares.add(name)
                             name to 2
                         } else {
                             // STATUS_BAD_NETWORK_NAME, STATUS_OBJECT_NAME_NOT_FOUND, etc.
@@ -1158,6 +1236,10 @@ class SmbService {
 
             items.sortBy { (it["name"] as String).lowercase() }
             Log.i("SmbService", "Probing found ${items.size} shares")
+            if (deniedShares.isNotEmpty()) {
+                val deniedLabel = deniedShares.take(10).joinToString(", ")
+                diag?.append("  其中无权限(存在但被拒): $deniedLabel\n")
+            }
             return items
         } finally {
             executor.shutdownNow()

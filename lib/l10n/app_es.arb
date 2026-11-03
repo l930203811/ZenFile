@@ -8883,5 +8883,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "Se limpiaron {count} archivos y se liberaron {size}",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "Error al limpiar, comprueba los permisos e inténtalo de nuevo"
+  "dup_failed": "Error al limpiar, comprueba los permisos e inténtalo de nuevo",
+  "smb_share_enum_failed_title": "No se puede obtener la lista de recursos",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "El servidor rechazó la consulta de la lista de recursos (habitual en Windows con una cuenta estándar). Puedes escribir el nombre del recurso compartido para conectar directamente.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "Escribir nombre del recurso",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "Nombre del recurso compartido",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "Escribe el nombre del propio recurso (p. ej. Share, D, Documents), sin dirección IP ni barras.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "p. ej. Share o D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "Conectar",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "Cancelar",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

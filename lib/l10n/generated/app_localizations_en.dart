@@ -9190,4 +9190,30 @@ class L10nEn extends L10n {
   @override
   String get dup_failed =>
       'Cleanup failed, please check permissions and try again';
+
+  @override
+  String get smb_share_enum_failed_title => 'Can\'t fetch the share list';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'The server refused the share list query (common on Windows with a standard account). You can enter the share name manually to connect directly.';
+
+  @override
+  String get smb_share_manual_btn => 'Enter share name';
+
+  @override
+  String get smb_share_input_title => 'Share name';
+
+  @override
+  String get smb_share_input_body =>
+      'Enter the share\'s own name (e.g. Share, D, Documents) — no IP address and no slashes.';
+
+  @override
+  String get smb_share_input_hint => 'e.g. Share or D';
+
+  @override
+  String get smb_share_input_ok => 'Connect';
+
+  @override
+  String get smb_share_input_cancel => 'Cancel';
 }

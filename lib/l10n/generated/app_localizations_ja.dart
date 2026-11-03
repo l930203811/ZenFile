@@ -8898,4 +8898,30 @@ class L10nJa extends L10n {
 
   @override
   String get dup_failed => '削除に失敗しました。権限を確認して再試行してください';
+
+  @override
+  String get smb_share_enum_failed_title => '共有リストを取得できません';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'サーバーが共有リストの取得を拒否しました（Windows の通常アカウントでよくあります）。共有名を手動で入力すると直接接続できます。';
+
+  @override
+  String get smb_share_manual_btn => '共有名を手動入力';
+
+  @override
+  String get smb_share_input_title => '共有名を入力';
+
+  @override
+  String get smb_share_input_body =>
+      '共有自体の名前を入力してください（例: Share、D、Documents）。IP アドレスやスラッシュは不要です。';
+
+  @override
+  String get smb_share_input_hint => '例: Share または D';
+
+  @override
+  String get smb_share_input_ok => '接続';
+
+  @override
+  String get smb_share_input_cancel => 'キャンセル';
 }

@@ -33,6 +33,32 @@ class RemoteFileItem {
   }
 }
 
+/// SMB 共享枚举的诊断结果（2026-11-04，issue #55）。
+///
+/// 只有 SMB 客户端会填；其它协议恒为 null。
+///
+/// 背景：`Windows` 对普通账号经常拒绝 `NetShareEnum`，而共享枚举失败时
+/// 原生层是「静默返回空列表」的 —— 用户只看到空文件夹、界面不报错，
+/// 反馈里也只能写「连上了但没内容」。这里把三级降级每一步的结果/异常/
+/// 耗时带到 Dart 层，用于：① 落盘进运行时日志；② 空目录时给出手填共享名
+/// 的引导；③ 随反馈附件上传。
+class ShareEnumDiagnostics {
+  const ShareEnumDiagnostics({
+    required this.failed,
+    required this.detail,
+    required this.cachedCount,
+  });
+
+  /// 枚举跑完但一个共享都没拿到（根目录必然为空）。
+  final bool failed;
+
+  /// 三级降级的过程文本（host/user、每级结果、异常、耗时、结论）。
+  final String detail;
+
+  /// 当前缓存里的共享数，-1 表示本次会话还没枚举过。
+  final int cachedCount;
+}
+
 abstract class RemoteClient {
   Future<void> connect();
   Future<void> disconnect();
@@ -88,6 +114,12 @@ abstract class RemoteClient {
   ///
   /// 约定：本方法不得抛异常，探测失败一律返回 false（由调用方决定是否重建）。
   Future<bool> checkAlive() async => true;
+
+  /// 最近一次 **SMB 共享枚举**的诊断；非 SMB、或本次会话还没进过根目录时为 null。
+  ///
+  /// 仅供 UI 在「根目录为空」时判断是「真的没有共享」还是「枚举被服务端拒绝」，
+  /// 以及把原生侧的过程文本落到运行时日志里（issue #55）。
+  ShareEnumDiagnostics? get shareEnumDiagnostics => null;
 
   // ── 按需区间随机读（用于 HttpRangeProxyService 流式播放） ────────────────
 

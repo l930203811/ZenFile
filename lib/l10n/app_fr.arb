@@ -8883,5 +8883,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "{count} fichiers nettoyés, {size} libérés",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "Échec du nettoyage, vérifiez les autorisations et réessayez"
+  "dup_failed": "Échec du nettoyage, vérifiez les autorisations et réessayez",
+  "smb_share_enum_failed_title": "Impossible de récupérer la liste des partages",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "Le serveur a refusé la requête de liste des partages (fréquent sous Windows avec un compte standard). Vous pouvez saisir le nom du partage pour vous connecter directement.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "Saisir le nom du partage",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "Nom du partage",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "Saisissez le nom du partage lui-même (par ex. Share, D, Documents), sans adresse IP ni barres obliques.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "par ex. Share ou D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "Connecter",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "Annuler",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

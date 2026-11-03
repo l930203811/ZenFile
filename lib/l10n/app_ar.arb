@@ -8883,5 +8883,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "تم تنظيف {count} ملفًا وتحرير {size}",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "فشل التنظيف، تحقق من الأذونات وحاول مرة أخرى"
+  "dup_failed": "فشل التنظيف، تحقق من الأذونات وحاول مرة أخرى",
+  "smb_share_enum_failed_title": "تعذّر جلب قائمة المشاركات",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "رفض الخادم طلب قائمة المشاركات (شائع في Windows مع حساب عادي). يمكنك إدخال اسم المشاركة يدويًا للاتصال مباشرة.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "إدخال اسم المشاركة",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "اسم المشاركة",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "أدخل اسم المشاركة نفسها (مثل Share أو D أو Documents) بدون عنوان IP وبدون شرطات مائلة.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "مثال: Share أو D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "اتصال",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "إلغاء",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

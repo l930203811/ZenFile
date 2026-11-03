@@ -2075,6 +2075,13 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val res = smb.createDirectory(sessionId, path)
                             runOnUiThread { result.success(res) }
                         }
+                        // 共享枚举取证（issue #55）：根目录为空时 Dart 侧取这段
+                        // 文本落盘 + 反馈附件上传。只读内存，不触发枚举。
+                        "getShareEnumDiag" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val diag = smb.shareEnumDiag(sessionId)
+                            runOnUiThread { result.success(diag) }
+                        }
                         "createFile" -> {
                             val sessionId = call.argument<String>("sessionId") ?: ""
                             val path = call.argument<String>("path") ?: ""

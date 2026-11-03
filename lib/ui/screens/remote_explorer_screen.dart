@@ -44,6 +44,10 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   late final String _rootPath;
   List<RemoteFileItem> _items = [];
 
+  /// SMB 根目录共享枚举的诊断（issue #55）：为空结果时用来区分
+  /// 「真的没有共享」和「服务端拒绝枚举」，后者给出手填共享名的入口。
+  ShareEnumDiagnostics? _shareEnumDiag;
+
   // Selection mode
   bool _isSelectionMode = false;
   final Set<String> _selectedPaths = {};
@@ -144,6 +148,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           _items = items;
           _currentPath = path;
           _isLoading = false;
+          // 仅 SMB 会填；WebDAV/FTP/SFTP 恒为 null，不会影响原有空态。
+          _shareEnumDiag = _client?.shareEnumDiagnostics;
         });
       }
     } catch (e) {
@@ -154,6 +160,150 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         });
       }
     }
+  }
+
+  /// SMB 根目录枚举失败时的手填共享名入口（issue #55）。
+  ///
+  /// Windows 对普通账号经常拒绝 `NetShareEnum`，界面上表现为「连上了但
+  /// 一个共享都没有」。这里让用户直接填共享名绕开枚举：填完就是一次
+  /// TreeConnect + 列目录，成不成马上知道。
+  Future<void> _promptShareName() async {
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+    final controller = TextEditingController();
+
+    final raw = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.smb_share_input_title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.smb_share_input_body,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: l10n.smb_share_input_hint,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.smb_share_input_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.smb_share_input_ok),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    // 容错：允许用户粘贴 `\\192.168.1.2\共享` 或 `/共享`，只取最后一段。
+    var name = (raw ?? '').trim().replaceAll('\\', '/');
+    if (name.contains('/')) {
+      name = name.split('/').where((s) => s.isNotEmpty).lastOrNull ?? '';
+    }
+    if (name.isEmpty) return;
+    await _loadDirectoryContents('/$name', forceRefresh: true);
+  }
+
+  /// 根目录为空且 SMB 共享枚举被服务端拒绝 → 给手填入口；否则维持原空态。
+  bool get _shareEnumFailedAtRoot =>
+      _shareEnumDiag?.failed == true && _currentPath == '/';
+
+  Widget _buildEmptyState(ThemeData theme, bool hasLocalClipboard) {
+    if (_shareEnumFailedAtRoot) return _buildShareEnumFailedState(theme);
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Broken.folder_open, size: 56, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+          const SizedBox(height: 14),
+          Text(L10n.of(context).msga21f6ab1,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+          if (hasLocalClipboard) ...[
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _uploadFromLocalClipboard,
+              icon: const Icon(Icons.upload_rounded, size: 16),
+              label: Text(L10n.of(context).msge1c538b8),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary, foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 共享枚举失败的空态：说清原因 + 直接给「手动输入共享名」的按钮。
+  ///
+  /// 以前这里和「目录本来就是空的」共用同一个空态，用户完全不理解发生了什么；
+  /// 而排查所需的诊断已经落盘到 `/storage/emulated/0/ZenFile/webdav_debug.log`。
+  Widget _buildShareEnumFailedState(ThemeData theme) {
+    final l10n = L10n.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Broken.folder_open, size: 56, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+            const SizedBox(height: 14),
+            Text(
+              l10n.smb_share_enum_failed_title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.smb_share_enum_failed_body,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.5,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
+            const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: _promptShareName,
+              icon: const Icon(Icons.drive_file_move_outline, size: 16),
+              label: Text(l10n.smb_share_manual_btn),
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _navigateTo(RemoteFileItem item) {
@@ -1153,31 +1303,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                 // File list
                 Expanded(
                   child: _items.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Broken.folder_open, size: 56, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
-                              const SizedBox(height: 14),
-                              Text(L10n.of(context).msga21f6ab1,
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
-                              if (hasLocalClipboard) ...[
-                                const SizedBox(height: 12),
-                                ElevatedButton.icon(
-                                  onPressed: _uploadFromLocalClipboard,
-                                  icon: const Icon(Icons.upload_rounded, size: 16),
-                                  label: Text(L10n.of(context).msge1c538b8),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: theme.colorScheme.primary, foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        )
+                      ? _buildEmptyState(theme, hasLocalClipboard)
                       : ScrollConfiguration(
                           behavior: const ScrollBehavior().copyWith(overscroll: false),
                           child: ListView.builder(

@@ -8883,5 +8883,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "Удалено файлов: {count}, освобождено {size}",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "Не удалось очистить, проверьте разрешения и повторите"
+  "dup_failed": "Не удалось очистить, проверьте разрешения и повторите",
+  "smb_share_enum_failed_title": "Не удалось получить список общих ресурсов",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "Сервер отклонил запрос списка общих ресурсов (часто на Windows с обычной учётной записью). Можно ввести имя ресурса вручную и подключиться напрямую.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "Ввести имя ресурса",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "Имя общего ресурса",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "Введите имя самого ресурса (например, Share, D, Documents) — без IP-адреса и без косых черт.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "например, Share или D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "Подключить",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "Отмена",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

@@ -8880,5 +8880,21 @@
   "@dup_clean_confirm_body": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
   "dup_clean_done": "{count} Dateien entfernt und {size} freigegeben",
   "@dup_clean_done": {"description": "ui/screens/storage_analyzer/duplicate_files_screen.dart", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
-  "dup_failed": "Aufräumen fehlgeschlagen, bitte Berechtigungen prüfen und erneut versuchen"
+  "dup_failed": "Aufräumen fehlgeschlagen, bitte Berechtigungen prüfen und erneut versuchen",
+  "smb_share_enum_failed_title": "Freigabeliste nicht abrufbar",
+  "@smb_share_enum_failed_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_enum_failed_body": "Der Server hat die Abfrage der Freigabeliste abgelehnt (bei Windows mit Standardkonto üblich). Du kannst den Freigabenamen manuell eingeben, um direkt zu verbinden.",
+  "@smb_share_enum_failed_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_manual_btn": "Freigabenamen eingeben",
+  "@smb_share_manual_btn": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_title": "Freigabenamen eingeben",
+  "@smb_share_input_title": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_body": "Gib den Namen der Freigabe selbst ein (z. B. Share, D, Documents) – ohne IP-Adresse und ohne Schrägstriche.",
+  "@smb_share_input_body": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_hint": "z. B. Share oder D",
+  "@smb_share_input_hint": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_ok": "Verbinden",
+  "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "smb_share_input_cancel": "Abbrechen",
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
 }

@@ -9294,4 +9294,30 @@ class L10nDe extends L10n {
   @override
   String get dup_failed =>
       'Aufräumen fehlgeschlagen, bitte Berechtigungen prüfen und erneut versuchen';
+
+  @override
+  String get smb_share_enum_failed_title => 'Freigabeliste nicht abrufbar';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'Der Server hat die Abfrage der Freigabeliste abgelehnt (bei Windows mit Standardkonto üblich). Du kannst den Freigabenamen manuell eingeben, um direkt zu verbinden.';
+
+  @override
+  String get smb_share_manual_btn => 'Freigabenamen eingeben';
+
+  @override
+  String get smb_share_input_title => 'Freigabenamen eingeben';
+
+  @override
+  String get smb_share_input_body =>
+      'Gib den Namen der Freigabe selbst ein (z. B. Share, D, Documents) – ohne IP-Adresse und ohne Schrägstriche.';
+
+  @override
+  String get smb_share_input_hint => 'z. B. Share oder D';
+
+  @override
+  String get smb_share_input_ok => 'Verbinden';
+
+  @override
+  String get smb_share_input_cancel => 'Abbrechen';
 }

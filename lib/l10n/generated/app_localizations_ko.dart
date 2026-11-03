@@ -8909,4 +8909,30 @@ class L10nKo extends L10n {
 
   @override
   String get dup_failed => '정리에 실패했습니다. 권한을 확인한 뒤 다시 시도하세요';
+
+  @override
+  String get smb_share_enum_failed_title => '공유 목록을 가져올 수 없습니다';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      '서버가 공유 목록 조회를 거부했습니다(Windows 일반 계정에서 흔함). 공유 이름을 직접 입력하면 바로 연결할 수 있습니다.';
+
+  @override
+  String get smb_share_manual_btn => '공유 이름 직접 입력';
+
+  @override
+  String get smb_share_input_title => '공유 이름 입력';
+
+  @override
+  String get smb_share_input_body =>
+      '공유 자체의 이름을 입력하세요(예: Share, D, Documents). IP 주소와 슬래시는 필요 없습니다.';
+
+  @override
+  String get smb_share_input_hint => '예: Share 또는 D';
+
+  @override
+  String get smb_share_input_ok => '연결';
+
+  @override
+  String get smb_share_input_cancel => '취소';
 }

@@ -9315,4 +9315,31 @@ class L10nEs extends L10n {
   @override
   String get dup_failed =>
       'Error al limpiar, comprueba los permisos e inténtalo de nuevo';
+
+  @override
+  String get smb_share_enum_failed_title =>
+      'No se puede obtener la lista de recursos';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      'El servidor rechazó la consulta de la lista de recursos (habitual en Windows con una cuenta estándar). Puedes escribir el nombre del recurso compartido para conectar directamente.';
+
+  @override
+  String get smb_share_manual_btn => 'Escribir nombre del recurso';
+
+  @override
+  String get smb_share_input_title => 'Nombre del recurso compartido';
+
+  @override
+  String get smb_share_input_body =>
+      'Escribe el nombre del propio recurso (p. ej. Share, D, Documents), sin dirección IP ni barras.';
+
+  @override
+  String get smb_share_input_hint => 'p. ej. Share o D';
+
+  @override
+  String get smb_share_input_ok => 'Conectar';
+
+  @override
+  String get smb_share_input_cancel => 'Cancelar';
 }

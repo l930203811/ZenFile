@@ -8709,6 +8709,31 @@ class L10nZh extends L10n {
 
   @override
   String get dup_failed => '清理失败，请检查权限后重试';
+
+  @override
+  String get smb_share_enum_failed_title => '无法获取共享列表';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      '服务器拒绝了共享列表查询（Windows 对普通账号很常见）。你可以手动输入共享名直接连接。';
+
+  @override
+  String get smb_share_manual_btn => '手动输入共享名';
+
+  @override
+  String get smb_share_input_title => '输入共享名';
+
+  @override
+  String get smb_share_input_body => '填写共享本身的名称（如 Share、D、我的文件），不要带 IP 和斜杠。';
+
+  @override
+  String get smb_share_input_hint => '例如 Share 或 D';
+
+  @override
+  String get smb_share_input_ok => '连接';
+
+  @override
+  String get smb_share_input_cancel => '取消';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17386,4 +17411,29 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get dup_failed => '清理失敗，請檢查權限後重試';
+
+  @override
+  String get smb_share_enum_failed_title => '無法取得共用清單';
+
+  @override
+  String get smb_share_enum_failed_body =>
+      '伺服器拒絕了共用清單查詢（Windows 對一般帳號很常見）。你可以手動輸入共用名稱直接連線。';
+
+  @override
+  String get smb_share_manual_btn => '手動輸入共用名稱';
+
+  @override
+  String get smb_share_input_title => '輸入共用名稱';
+
+  @override
+  String get smb_share_input_body => '填寫共用本身的名稱（如 Share、D、我的文件），不要帶 IP 和斜線。';
+
+  @override
+  String get smb_share_input_hint => '例如 Share 或 D';
+
+  @override
+  String get smb_share_input_ok => '連線';
+
+  @override
+  String get smb_share_input_cancel => '取消';
 }

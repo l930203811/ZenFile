@@ -16293,6 +16293,54 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'清理失败，请检查权限后重试'**
   String get dup_failed;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取共享列表'**
+  String get smb_share_enum_failed_title;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器拒绝了共享列表查询（Windows 对普通账号很常见）。你可以手动输入共享名直接连接。'**
+  String get smb_share_enum_failed_body;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'手动输入共享名'**
+  String get smb_share_manual_btn;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入共享名'**
+  String get smb_share_input_title;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'填写共享本身的名称（如 Share、D、我的文件），不要带 IP 和斜杠。'**
+  String get smb_share_input_body;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如 Share 或 D'**
+  String get smb_share_input_hint;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get smb_share_input_ok;
+
+  /// ui/screens/remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get smb_share_input_cancel;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
