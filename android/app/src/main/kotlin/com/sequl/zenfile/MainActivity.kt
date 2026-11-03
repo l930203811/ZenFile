@@ -1359,11 +1359,28 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 } catch (_: Exception) { null } ?: pkg
                                 val isSystem = (ri.activityInfo.applicationInfo.flags
                                         and ApplicationInfo.FLAG_SYSTEM) != 0
+                                // 应用图标渲染成 96px PNG：Dart 侧列表要显示真实图标
+                                // （参考 ES 文件管理器「选择」弹窗样式）
+                                val iconBytes = try {
+                                    val drawable = ri.loadIcon(pm)
+                                    val size = 96
+                                    val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+                                    val canvas = Canvas(bmp)
+                                    drawable.setBounds(0, 0, size, size)
+                                    drawable.draw(canvas)
+                                    val bos = ByteArrayOutputStream()
+                                    bmp.compress(Bitmap.CompressFormat.PNG, 100, bos)
+                                    bmp.recycle()
+                                    bos.toByteArray()
+                                } catch (_: Exception) {
+                                    null
+                                }
                                 apps.add(
                                     mapOf(
                                         "packageName" to pkg,
                                         "label" to label,
                                         "isSystem" to isSystem,
+                                        "icon" to (iconBytes ?: ByteArray(0)),
                                     )
                                 )
                             }

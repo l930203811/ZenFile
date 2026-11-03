@@ -13281,44 +13281,11 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    // 未知格式：先让用户选择「本应用打开」还是「外部系统选择器」
-    final result = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => OpenWithSheet(
-        fileName: p.basename(path),
-        fileExtension: FileUtils.effectiveExtensionWithDot(path),
-      ),
-    );
-
-    if (result == null || !context.mounted) return;
-
-    final isAlways = result.startsWith('always_');
-    final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
-    // 归一化扩展名：`app.apk.1` 与 `app.apk` 共用同一条「默认打开方式」偏好。
-    final ext = FileUtils.effectiveExtensionWithDot(path);
-
-    if (selectedType == 'external') {
-      // 使用外部应用打开（系统「打开方式...」）
-      if (isAlways) {
-        // 「始终」：应用内列出外部应用让用户选并按扩展名记住（external:<包名>），
-        // 之后同格式直达该应用
-        await _chooseAndRememberExternalApp(context, path, ext);
-      } else {
-        // 「仅此一次」：直接弹系统选择器
-        await openWithSystemChooser(path);
-      }
-      return;
-    }
-
-    // selectedType == 'native'：在应用内选择具体文件类型后，用内置查看器/播放器打开
-    await _pickAndOpenBuiltInType(
+    // 未知格式：弹统一「打开方式」弹窗（ES 样式：本应用默认勾选 + 外部应用列表
+    // + 始终/仅此一次），由 showOpenWithSheet 执行选择结果
+    await showOpenWithSheet(
       context,
       path,
-      saveDefault: isAlways,
       siblingPaths: siblingPaths,
       siblingNames: siblingNames,
     );
@@ -13604,7 +13571,23 @@ class FileManagerProvider extends ChangeNotifier {
     );
   }
 
-  /// 显示「本应用打开 / 外部系统选择器」BottomSheet，并执行对应打开流程。
+  /// 弹出统一「打开方式」选择弹窗（ES 文件管理器样式，见 [OpenWithAppDialog]），
+  /// 返回用户的选择；关闭弹窗返回 null。
+  Future<OpenWithAppChoice?> showOpenWithAppChoiceDialog(
+    BuildContext context,
+    String path, {
+    String? mimeType,
+  }) {
+    return showDialog<OpenWithAppChoice>(
+      context: context,
+      builder: (_) => OpenWithAppDialog(
+        // 先建好 Future：弹窗内重建不会重复查询
+        appsFuture: getExternalOpenWithApps(path, mimeType: mimeType),
+      ),
+    );
+  }
+
+  /// 统一「打开方式」弹窗入口并执行选择结果。
   /// 用于三点菜单 / 长按菜单 / 分类页的「打开方式...」入口，以及 openFile 在
   /// 「跳过打开方式对话框」关闭且无已存默认时的每次打开前置弹窗。
   ///
@@ -13618,56 +13601,37 @@ class FileManagerProvider extends ChangeNotifier {
   }) async {
     final ext = FileUtils.effectiveExtensionWithDot(path);
 
-    final result = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => OpenWithSheet(
-        fileName: p.basename(path),
-        fileExtension: ext,
-      ),
-    );
+    final choice = await showOpenWithAppChoiceDialog(context, path);
+    if (choice == null || !context.mounted) return;
 
-    if (result == null || !context.mounted) return;
-
-    final isAlways = result.startsWith('always_');
-    final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
-
-    if (selectedType == 'external') {
-      if (isAlways) {
-        // 「始终」：应用内列出外部应用让用户选并按扩展名记住（external:<包名>），
-        // 之后同格式直达该应用
-        await _chooseAndRememberExternalApp(context, path, ext);
-      } else {
-        // 「仅此一次」：直接弹系统选择器
-        await openWithSystemChooser(path);
-      }
-      return;
-    }
-
-    // selectedType == 'native'
-    final opened = await _tryOpenBuiltInDirectly(
-      context,
-      path,
-      siblingPaths: siblingPaths,
-      siblingNames: siblingNames,
-    );
-    if (opened) {
-      if (isAlways) {
+    if (choice.isNative) {
+      if (choice.always) {
         await PreferencesService.saveDefaultOpenAction(ext, 'native');
       }
+      final opened = await _tryOpenBuiltInDirectly(
+        context,
+        path,
+        siblingPaths: siblingPaths,
+        siblingNames: siblingNames,
+      );
+      if (!opened && context.mounted) {
+        await _pickAndOpenBuiltInType(
+          context,
+          path,
+          saveDefault: false,
+          siblingPaths: siblingPaths,
+          siblingNames: siblingNames,
+        );
+      }
       return;
     }
 
-    await _pickAndOpenBuiltInType(
-      context,
-      path,
-      saveDefault: isAlways,
-      siblingPaths: siblingPaths,
-      siblingNames: siblingNames,
-    );
+    // 外部应用：记住（始终）后按包名直达，否则仅此一次
+    final pkg = choice.app!.packageName;
+    if (choice.always) {
+      await PreferencesService.saveDefaultOpenAction(ext, 'external:$pkg');
+    }
+    await openWithSystemChooser(path, packageName: pkg);
   }
 
   /// 按指定内置类型（text/audio/video/image）以应用内查看器/播放器打开文件
@@ -14116,35 +14080,6 @@ class FileManagerProvider extends ChangeNotifier {
       debugPrint('[getExternalOpenWithApps] $e');
       return const <ExternalOpenWithApp>[];
     }
-  }
-
-  /// 「始终 + 外部系统选择器」的实际语义（2026-11-04 定稿）：
-  /// 弹出**应用内**的外部应用选择列表让用户选，选中后按扩展名记
-  /// `external:<包名>`，之后同格式直达该应用——不弹任何对话框。
-  ///
-  /// 为什么不让系统解析器记默认：裸 ACTION_VIEW 在视频/音频/图片上普遍被系统
-  /// **预置的默认应用**直接接管（用户根本没机会选第三方应用）；而
-  /// `createChooser` 永远弹框且不记默认。两头都堵死，只能应用内自己记。
-  Future<void> _chooseAndRememberExternalApp(
-    BuildContext context,
-    String path,
-    String ext,
-  ) async {
-    if (!context.mounted) return;
-    final app = await showModalBottomSheet<ExternalOpenWithApp>(
-      context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => ExternalAppPickerSheet(
-        // 先建好 Future：弹窗内重建不会重复查询
-        appsFuture: getExternalOpenWithApps(path),
-      ),
-    );
-    if (app == null) return;
-    await PreferencesService.saveDefaultOpenAction(ext, 'external:${app.packageName}');
-    await openWithSystemChooser(path, packageName: app.packageName);
   }
 
   // ───────────────────────────────────────────────────────────────────
@@ -15216,7 +15151,6 @@ class FileManagerProvider extends ChangeNotifier {
 
             String selectedType; // 'external' or 'native'
             String? builtInType;
-            bool saveChosenType = false; // OpenWithSheet 选了"始终"时为 true
             // 已记住的「始终」外部应用包名（默认值 `external:<包名>`）
             String? savedExternalPkg;
 
@@ -15236,32 +15170,29 @@ class FileManagerProvider extends ChangeNotifier {
               // 已选"始终用本应用打开"但未保存具体类型：跳过 OpenWithSheet，直接选类型
               selectedType = 'native';
             } else {
-              // 首次打开：弹出「打开方式」（ZenFile 内置 / 外部系统选择器）
-              final result = await showModalBottomSheet<String>(
-                context: context,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                builder: (ctx) => OpenWithSheet(
-                  fileName: fileName,
-                  fileExtension: fileExt,
-                ),
+              // 首次打开：统一「打开方式」弹窗（ES 样式，本应用默认勾选）
+              final choice = await showOpenWithAppChoiceDialog(
+                context,
+                path,
+                mimeType: fileMime.isEmpty ? null : fileMime,
               );
 
-              if (result == null || !context.mounted) return;
+              if (choice == null || !context.mounted) return;
 
-              final isAlways = result.startsWith('always_');
-              selectedType = result.substring(
-                  isAlways ? 'always_'.length : 'just_once_'.length);
-              if (isAlways) {
-                saveChosenType = true;
-                // external 的「始终」由应用内选择列表记 `external:<包名>`（见下），
-                // 这里只保存内置类型的默认
-                if (selectedType != 'external') {
+              if (choice.isNative) {
+                if (choice.always) {
                   await PreferencesService.saveDefaultOpenAction(
-                      fileExt, selectedType);
+                      fileExt, 'native');
                 }
+                selectedType = 'native';
+              } else {
+                final pkg = choice.app!.packageName;
+                if (choice.always) {
+                  await PreferencesService.saveDefaultOpenAction(
+                      fileExt, 'external:$pkg');
+                }
+                selectedType = 'external';
+                savedExternalPkg = pkg;
               }
             }
 
@@ -15281,32 +15212,8 @@ class FileManagerProvider extends ChangeNotifier {
                     mimeType: mime,
                     packageName: savedExternalPkg,
                   );
-                } else if (saveChosenType) {
-                  // 「始终」：应用内列出外部应用让用户选并记住
-                  final app = await showModalBottomSheet<ExternalOpenWithApp>(
-                    context: context,
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(24)),
-                    ),
-                    builder: (_) => ExternalAppPickerSheet(
-                      appsFuture: getExternalOpenWithApps(
-                        localPath,
-                        mimeType: mime,
-                      ),
-                    ),
-                  );
-                  if (app == null) return;
-                  await PreferencesService.saveDefaultOpenAction(
-                      fileExt, 'external:${app.packageName}');
-                  await openWithSystemChooser(
-                    localPath,
-                    mimeType: mime,
-                    packageName: app.packageName,
-                  );
                 } else {
-                  // 「仅此一次」：直接弹系统选择器
+                  // 旧版本存下的纯 external 值：直接弹系统选择器
                   await openWithSystemChooser(localPath, mimeType: mime);
                 }
               }
@@ -15328,12 +15235,6 @@ class FileManagerProvider extends ChangeNotifier {
               );
 
               if (builtInType == null || !context.mounted) return;
-
-              // 用户在 OpenWithSheet 选了"始终"，把具体类型也持久化
-              if (saveChosenType) {
-                await PreferencesService.saveDefaultOpenAction(
-                    fileExt, builtInType);
-              }
             }
 
             // 视频/音频直接流式播放，不下载到本地缓存
@@ -15448,18 +15349,6 @@ class FileManagerProvider extends ChangeNotifier {
       targetPath = materialized;
     }
 
-    // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，
-    // 即使用户设过"外部打开"默认也不走系统选择器，避免弹出"打开方式"
-    if (ApkInstallerService.isApk(targetPath)) {
-      if (PreferencesService.getApkOpenMode() == 'chooser') {
-        // 系统选择器模式：交给第三方安装器（批量安装等场景更顺手）
-        await openWithSystemChooser(targetPath, mimeType: 'application/vnd.android.package-archive');
-      } else {
-        await ApkInstallerService.installApk(context, targetPath);
-      }
-      return;
-    }
-
     // 默认/弹窗选择了"使用外部应用打开"
     if (openAction == 'external') {
       if (defaultExternalPkg != null) {
@@ -15485,9 +15374,64 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     // Universal default action check
-    // ⚠️ 提到 hasNativeViewer 之外：后面的「跳过打开方式对话框」分支同样要用它判断
-    // 「该扩展名是否已存过默认」——只允许在 hasNativeViewer 分支内取值会漏判。
+    // ⚠️ 提到 APK/hasNativeViewer 分支之前：下面的统一弹窗分支同样要用它判断
+    // 「该扩展名是否已存过默认」。
     final defaultAction = PreferencesService.getDefaultOpenAction(ext);
+
+    // 「跳过"打开方式"对话框」关闭（默认）且该扩展名**没存过**默认打开方式：
+    // 每次打开都先弹统一「打开方式」弹窗（ES 样式：本应用默认勾选 + 外部应用列表
+    // + 始终/仅此一次）。浏览页 / 分类页 / 最近 / 收藏等入口统一走 openFile；
+    // ⚠️ 必须排在 APK 分支之前——安装包（.apk/.xapk…）在无默认时**也要弹窗选择**，
+    // 不再默认交给内置安装器。选「始终」存默认后同格式不再弹。
+    if (defaultAction == null && !_skipOpenWithDialog) {
+      final choice = await showOpenWithAppChoiceDialog(context, targetPath);
+      if (choice != null && context.mounted) {
+        if (choice.isNative) {
+          if (choice.always) {
+            await PreferencesService.saveDefaultOpenAction(ext, 'native');
+          }
+          if (ApkInstallerService.isApk(targetPath)) {
+            // 本应用打开 APK = 内置安装器（保持「选择器模式」设置语义）
+            if (PreferencesService.getApkOpenMode() == 'chooser') {
+              await openWithSystemChooser(
+                targetPath,
+                mimeType: 'application/vnd.android.package-archive',
+              );
+            } else {
+              await ApkInstallerService.installApk(context, targetPath);
+            }
+          } else {
+            await openFileNatively(
+              context,
+              targetPath,
+              showTypePickerForUnknown: true,
+              siblingPaths: siblingPaths,
+              siblingNames: siblingNames,
+            );
+          }
+        } else {
+          final pkg = choice.app!.packageName;
+          if (choice.always) {
+            await PreferencesService.saveDefaultOpenAction(ext, 'external:$pkg');
+          }
+          await openWithSystemChooser(targetPath, packageName: pkg);
+        }
+      }
+      return;
+    }
+
+    // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，
+    // 即使用户设过"外部打开"默认也不走系统选择器，避免弹出"打开方式"
+    if (ApkInstallerService.isApk(targetPath)) {
+      if (PreferencesService.getApkOpenMode() == 'chooser') {
+        // 系统选择器模式：交给第三方安装器（批量安装等场景更顺手）
+        await openWithSystemChooser(targetPath, mimeType: 'application/vnd.android.package-archive');
+      } else {
+        await ApkInstallerService.installApk(context, targetPath);
+      }
+      return;
+    }
+
     if (hasNativeViewer(targetPath)) {
       if (defaultAction == 'native') {
         await openFileNatively(
@@ -15510,20 +15454,6 @@ class FileManagerProvider extends ChangeNotifier {
         );
         return;
       }
-    }
-
-    // 「跳过"打开方式"对话框」关闭（默认）且该扩展名**没存过**默认打开方式：
-    // 每次打开都先弹「打开方式」（浏览页 / 分类页 / 最近 / 收藏等入口统一走 openFile）。
-    // 弹窗里选「始终」会按扩展名存下默认，此后同格式不再弹、按默认直开；
-    // 设置里开启跳过则完全绕过弹窗（副标题承诺的行为）。
-    if (defaultAction == null && !_skipOpenWithDialog) {
-      await showOpenWithSheet(
-        context,
-        targetPath,
-        siblingPaths: siblingPaths,
-        siblingNames: siblingNames,
-      );
-      return;
     }
 
     // 默认：使用内置查看器打开

@@ -1,249 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
-
-class OpenWithSheet extends StatefulWidget {
-  final String fileName;
-  final String fileExtension;
-
-  const OpenWithSheet({
-    super.key,
-    required this.fileName,
-    required this.fileExtension,
-  });
-
-  @override
-  State<OpenWithSheet> createState() => _OpenWithSheetState();
-}
-
-class _OpenWithSheetState extends State<OpenWithSheet> {
-  String _selectedType = 'native';
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                L10n.of(context).msg2a4cfb07,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                widget.fileName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () {
-                  if (_selectedType == 'native') {
-                    Navigator.pop(context, 'just_once_native');
-                  } else {
-                    setState(() => _selectedType = 'native');
-                  }
-                },
-                onDoubleTap: () {
-                  Navigator.pop(context, 'just_once_native');
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _selectedType == 'native'
-                        ? theme.colorScheme.primary.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _selectedType == 'native'
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outline.withValues(alpha: 0.2),
-                      width: _selectedType == 'native' ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Broken.eye,
-                          color: theme.colorScheme.primary,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              L10n.of(context).built_in_zenfile_viewer,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _selectedType == 'native'
-                                    ? theme.colorScheme.primary
-                                    : theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              L10n.of(context).zenfile6,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_selectedType == 'native')
-                        Icon(Icons.check_circle, color: theme.colorScheme.primary)
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              InkWell(
-                onTap: () {
-                  if (_selectedType == 'external') {
-                    Navigator.pop(context, 'just_once_external');
-                  } else {
-                    setState(() => _selectedType = 'external');
-                  }
-                },
-                onDoubleTap: () {
-                  Navigator.pop(context, 'just_once_external');
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _selectedType == 'external'
-                        ? theme.colorScheme.primary.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _selectedType == 'external'
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outline.withValues(alpha: 0.2),
-                      width: _selectedType == 'external' ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Broken.export_1,
-                          color: theme.colorScheme.primary,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              L10n.of(context).msg42be43e6,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _selectedType == 'external'
-                                    ? theme.colorScheme.primary
-                                    : theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              L10n.of(context).msgd1fca831,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_selectedType == 'external')
-                        Icon(Icons.check_circle, color: theme.colorScheme.primary)
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context, 'just_once_$_selectedType');
-                      },
-                      child: Text(L10n.of(context).msgdb75b769),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context, 'always_$_selectedType');
-                      },
-                      child: Text(L10n.of(context).open_always),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// 「始终 + 外部」时可选的外部应用（原生 `getOpenWithApps` 经
 /// `queryIntentActivities` 返回，第三方在前、系统应用在后）。
@@ -252,137 +12,256 @@ class ExternalOpenWithApp {
   final String label;
   final bool isSystem;
 
+  /// 应用图标（96px PNG，原生渲染；失败为空 → 回退通用图标）。
+  final Uint8List? icon;
+
   const ExternalOpenWithApp({
     required this.packageName,
     required this.label,
     required this.isSystem,
+    this.icon,
   });
 
   static ExternalOpenWithApp? fromMap(Object? raw) {
     if (raw is! Map) return null;
     final pkg = raw['packageName'];
     if (pkg is! String || pkg.isEmpty) return null;
+    final iconRaw = raw['icon'];
+    final Uint8List? icon =
+        (iconRaw is Uint8List && iconRaw.isNotEmpty) ? iconRaw : null;
     return ExternalOpenWithApp(
       packageName: pkg,
       label: (raw['label'] as String?) ?? pkg,
       isSystem: raw['isSystem'] == true,
+      icon: icon,
     );
   }
 }
 
-/// 外部应用选择列表。
+/// 弹窗选择结果：本应用（[isNative]）或某个外部应用（[app]），
+/// [always] 对应底部「始终」按钮（false = 「仅此一次」）。
+class OpenWithAppChoice {
+  final bool isNative;
+  final ExternalOpenWithApp? app;
+  final bool always;
+
+  const OpenWithAppChoice({
+    required this.isNative,
+    this.app,
+    required this.always,
+  });
+}
+
+/// 统一「打开方式」弹窗（参考 ES 文件管理器样式）。
 ///
-/// 为什么由本应用自己列应用（而不是把「始终」交给系统解析器记默认）：
-/// 裸 `ACTION_VIEW` 在系统里视频/音频/图片普遍**预置了默认应用**，会被系统
-/// 自带播放器/相册直接接管，用户根本没机会选第三方应用。列表选中后由
-/// `FileManagerProvider` 按扩展名记 `external:<包名>`，之后按包名直开。
-class ExternalAppPickerSheet extends StatelessWidget {
-  /// 由调用方在 `showModalBottomSheet` **之前**创建好，避免重建重复查询。
+/// 与旧版两级弹窗（先选本应用/外部，再选应用）不同：这里一步到位——
+/// 列表第一项固定为本应用并**默认勾选**，其后是可打开该文件的外部应用
+/// （带真实图标）；底部「始终 / 仅此一次」决定是否按扩展名记住选择。
+/// 三点菜单、长按菜单、浏览页/分类页/远程文件首次打开统一走这一个弹窗。
+class OpenWithAppDialog extends StatefulWidget {
+  /// 由调用方在 `showDialog` **之前**创建好，避免重建重复查询。
   final Future<List<ExternalOpenWithApp>> appsFuture;
 
-  const ExternalAppPickerSheet({super.key, required this.appsFuture});
+  const OpenWithAppDialog({super.key, required this.appsFuture});
+
+  @override
+  State<OpenWithAppDialog> createState() => _OpenWithAppDialogState();
+}
+
+class _OpenWithAppDialogState extends State<OpenWithAppDialog> {
+  /// 0 = 本应用（默认勾选），i>0 = apps[i-1]。
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SafeArea(
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 36, vertical: 24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.65,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.65,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 20),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  L10n.of(context).open_with_title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
+            const SizedBox(height: 20),
+            Text(
+              L10n.of(context).open_with_title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
               ),
             ),
             const SizedBox(height: 8),
             Flexible(
               child: FutureBuilder<List<ExternalOpenWithApp>>(
-                future: appsFuture,
+                future: widget.appsFuture,
                 builder: (context, snap) {
-                  if (snap.connectionState != ConnectionState.done) {
-                    return const Padding(
-                      padding: EdgeInsets.all(40),
-                      child: CircularProgressIndicator(),
-                    );
-                  }
                   final apps = snap.data ?? const <ExternalOpenWithApp>[];
-                  if (apps.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.all(40),
-                      child: Text(
-                        L10n.of(context).open_with_no_apps,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    );
-                  }
-                  return ListView.builder(
+                  // 缓存给 _submit 用（submit 只可能发生在列表已渲染后；
+                  // 未加载完成时列表只有本应用一项，_selectedIndex 恒为 0，
+                  // 不会访问 apps，因此这里覆盖为空列表是安全的）
+                  _cachedApps = apps;
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (snap.connectionState == ConnectionState.waiting)
+                        const LinearProgressIndicator(minHeight: 2),
+                      ListView.builder(
                     shrinkWrap: true,
-                    padding: const EdgeInsets.only(bottom: 20),
-                    itemCount: apps.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: apps.length + 1,
                     itemBuilder: (context, i) {
-                      final app = apps[i];
+                      final isNative = i == 0;
+                      final app = isNative ? null : apps[i - 1];
+                      final selected = i == _selectedIndex;
                       return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor:
-                              theme.colorScheme.primary.withValues(alpha: 0.1),
-                          child: Icon(
-                            Icons.apps,
-                            size: 20,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
+                        dense: true,
+                        onTap: () => setState(() => _selectedIndex = i),
+                        leading: isNative
+                            ? CircleAvatar(
+                                backgroundColor: theme.colorScheme.primary
+                                    .withValues(alpha: 0.12),
+                                child: Icon(
+                                  Broken.folder,
+                                  size: 20,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              )
+                            : (app!.icon != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Image.memory(
+                                      app.icon!,
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor: theme
+                                        .colorScheme.primary
+                                        .withValues(alpha: 0.12),
+                                    child: Icon(
+                                      Icons.apps,
+                                      size: 20,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  )),
                         title: Text(
-                          app.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          app.packageName,
+                          isNative ? 'ZenFile' : app!.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 11,
-                            color:
-                                theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 14,
+                            fontWeight: selected ? FontWeight.w600 : null,
                           ),
                         ),
-                        onTap: () => Navigator.pop(context, app),
+                        subtitle: !isNative
+                            ? Text(
+                                app!.packageName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.5),
+                                ),
+                              )
+                            : null,
+                        trailing: _RadioDot(selected: selected, theme: theme),
                       );
                     },
+                  ),
+                    ],
                   );
                 },
               ),
             ),
+            const SizedBox(height: 8),
+            const Divider(height: 1),
+            Row(children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => _submit(context, always: true),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(),
+                  ),
+                  child: Text(
+                    L10n.of(context).open_always,
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              Container(width: 1, height: 24, color: theme.dividerColor),
+              Expanded(
+                child: TextButton(
+                  onPressed: () => _submit(context, always: false),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(),
+                  ),
+                  child: Text(
+                    L10n.of(context).msgdb75b769,
+                    style: TextStyle(color: theme.colorScheme.primary),
+                  ),
+                ),
+              ),
+            ]),
           ],
         ),
       ),
+    );
+  }
+
+  void _submit(BuildContext context, {required bool always}) {
+    final apps = _cachedApps ?? const <ExternalOpenWithApp>[];
+    final isNative = _selectedIndex == 0;
+    Navigator.pop(
+      context,
+      OpenWithAppChoice(
+        isNative: isNative,
+        app: isNative ? null : apps[_selectedIndex - 1],
+        always: always,
+      ),
+    );
+  }
+
+  /// FutureBuilder 里缓存的应用列表（见 build 中的赋值说明）。
+  List<ExternalOpenWithApp>? _cachedApps;
+}
+
+/// 单选圆点：选中 = 主题色实心 + 白色对勾；未选中 = 描边空心。
+class _RadioDot extends StatelessWidget {
+  final bool selected;
+  final ThemeData theme;
+
+  const _RadioDot({required this.selected, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: selected ? theme.colorScheme.primary : Colors.transparent,
+        border: Border.all(
+          color: selected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface.withValues(alpha: 0.35),
+          width: 2,
+        ),
+      ),
+      child: selected
+          ? const Icon(Icons.check, size: 14, color: Colors.white)
+          : null,
     );
   }
 }
