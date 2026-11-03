@@ -7100,6 +7100,7 @@
   "open_file": "打开",
   "open_in_location": "打开文件所在位置",
   "open_with_title": "打开方式",
+  "open_with_no_apps": "未找到可打开此文件的应用",
   "share_permission_title": "需要权限",
   "share_permission_message": "ZenFile 没有权限访问该文件，请重新分享或授予权限后重试。",
   "@share_permission_title": {

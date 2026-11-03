@@ -1285,11 +1285,10 @@ class MainActivity : AudioServiceFragmentActivity() {
                     // 选择器标题由 Dart 侧按「应用内语言」传入（应用语言只作用于 Flutter 层，
                     // 原生拿不到）。为空则交给系统使用其自带的本地化标题。
                     val chooserTitle = call.argument<String>("title")
-                    // false = 直接发起 ACTION_VIEW（不套 createChooser）：系统解析器自带
-                    // 「仅此一次 / 始终」，选「始终」后系统会记住默认应用，后续同样式的
-                    // 打开直达该应用。createChooser 则**永远**弹选择器且不记默认——这正是
-                    // 「选了始终还是每次弹」的根因（2026-11-04）。
-                    val useChooser = call.argument<Boolean>("useChooser") ?: true
+                    // 非空 = 「始终」记住的默认应用：显式按包名直开（不弹任何选择器）。
+                    // 为什么不交给系统解析器记默认：裸 ACTION_VIEW 在视频/音频/图片上普遍
+                    // 被系统**预置的默认应用**直接接管，用户根本没机会选第三方应用（2026-11-04）。
+                    val targetPackage = call.argument<String>("packageName")
                     executor.execute {
                         try {
                             val intent = Intent(Intent.ACTION_VIEW)
@@ -1318,22 +1317,67 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-                            if (useChooser) {
+                            if (!targetPackage.isNullOrEmpty()) {
+                                // 记住的默认应用：直开。应用已卸载等异常由下方 catch 返回错误，
+                                // Dart 侧会回退到系统选择器。
+                                intent.setPackage(targetPackage)
+                                startActivity(intent)
+                            } else {
                                 // 使用 Intent.createChooser 强制弹出系统选择器
                                 // 即使已设默认应用也会弹出，让用户从所有可用应用中选择
                                 val chooser = Intent.createChooser(intent, chooserTitle).apply {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 startActivity(chooser)
-                            } else {
-                                // 「始终」语义：交给系统解析器。已有默认应用时直达，
-                                // 没有时弹系统解析器（含「仅此一次 / 始终」，选「始终」即被系统记住）
-                                startActivity(intent)
                             }
                             runOnUiThread { result.success(true) }
                         } catch (e: Exception) {
                             e.printStackTrace()
                             runOnUiThread { result.error("CHOOSER_ERROR", e.message, null) }
+                        }
+                    }
+                }
+                "getOpenWithApps" -> {
+                    // 查询可打开给定 MIME 的外部应用（供「始终+外部」的应用内选择列表）。
+                    // 应用本身已声明 QUERY_ALL_PACKAGES，Android 11+ 也能查到完整列表。
+                    val mimeType = call.argument<String>("mimeType") ?: ""
+                    executor.execute {
+                        try {
+                            val query = Intent(Intent.ACTION_VIEW)
+                            if (mimeType.isNotEmpty()) {
+                                query.type = mimeType
+                            } else {
+                                query.type = "*/*"
+                            }
+                            val pm = packageManager
+                            val infos = pm.queryIntentActivities(query, 0)
+                            val apps = ArrayList<Map<String, Any>>()
+                            for (ri in infos) {
+                                val pkg = ri.activityInfo.packageName
+                                val label = try {
+                                    ri.loadLabel(pm)?.toString()
+                                } catch (_: Exception) { null } ?: pkg
+                                val isSystem = (ri.activityInfo.applicationInfo.flags
+                                        and ApplicationInfo.FLAG_SYSTEM) != 0
+                                apps.add(
+                                    mapOf(
+                                        "packageName" to pkg,
+                                        "label" to label,
+                                        "isSystem" to isSystem,
+                                    )
+                                )
+                            }
+                            // 第三方在前、系统应用在后，组内按标签排序，常用选择更靠上
+                            apps.sortWith(
+                                compareBy(
+                                    { if (it["isSystem"] as Boolean) 1 else 0 },
+                                    { (it["label"] as String).lowercase() },
+                                )
+                            )
+                            runOnUiThread { result.success(apps) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("QUERY_ERROR", e.message, null) }
                         }
                     }
                 }

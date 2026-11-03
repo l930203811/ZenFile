@@ -6835,6 +6835,9 @@ class L10nEn extends L10n {
   String get open_with_title => 'Open with';
 
   @override
+  String get open_with_no_apps => 'No apps found that can open this file';
+
+  @override
   String get share_permission_title => 'Permission required';
 
   @override

@@ -6753,6 +6753,7 @@
   "open_file": "Open",
   "open_in_location": "Open file location",
   "open_with_title": "Open with",
+  "open_with_no_apps": "このファイルを開けるアプリが見つかりません",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

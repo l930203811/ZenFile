@@ -12232,6 +12232,12 @@ abstract class L10n {
   /// **'打开方式'**
   String get open_with_title;
 
+  /// No description provided for @open_with_no_apps.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可打开此文件的应用'**
+  String get open_with_no_apps;
+
   /// Title for share permission prompt
   ///
   /// In zh, this message translates to:

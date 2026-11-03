@@ -6533,6 +6533,9 @@ class L10nZh extends L10n {
   String get open_with_title => '打开方式';
 
   @override
+  String get open_with_no_apps => '未找到可打开此文件的应用';
+
+  @override
   String get share_permission_title => '需要权限';
 
   @override
@@ -15203,6 +15206,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get open_with_title => '開啟方式';
+
+  @override
+  String get open_with_no_apps => '未找到可開啟此檔案的應用程式';
 
   @override
   String get share_permission_title => '需要許可權';

@@ -13302,12 +13302,15 @@ class FileManagerProvider extends ChangeNotifier {
     final ext = FileUtils.effectiveExtensionWithDot(path);
 
     if (selectedType == 'external') {
-      // 使用外部系统选择器打开（系统「打开方式...」）
+      // 使用外部应用打开（系统「打开方式...」）
       if (isAlways) {
-        await PreferencesService.saveDefaultOpenAction(ext, 'external');
+        // 「始终」：应用内列出外部应用让用户选并按扩展名记住（external:<包名>），
+        // 之后同格式直达该应用
+        await _chooseAndRememberExternalApp(context, path, ext);
+      } else {
+        // 「仅此一次」：直接弹系统选择器
+        await openWithSystemChooser(path);
       }
-      // 「始终」不套 createChooser：让系统解析器记默认，下次直达该应用
-      await openWithSystemChooser(path, useChooser: !isAlways);
       return;
     }
 
@@ -13634,10 +13637,13 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (selectedType == 'external') {
       if (isAlways) {
-        await PreferencesService.saveDefaultOpenAction(ext, 'external');
+        // 「始终」：应用内列出外部应用让用户选并按扩展名记住（external:<包名>），
+        // 之后同格式直达该应用
+        await _chooseAndRememberExternalApp(context, path, ext);
+      } else {
+        // 「仅此一次」：直接弹系统选择器
+        await openWithSystemChooser(path);
       }
-      // 「始终」不套 createChooser：让系统解析器记默认，下次直达该应用
-      await openWithSystemChooser(path, useChooser: !isAlways);
       return;
     }
 
@@ -14057,31 +14063,88 @@ class FileManagerProvider extends ChangeNotifier {
         '${remoteSize != null && remoteSize! > 0 ? ' / 远程 $remoteSize 字节' : ''}），无法打开');
   }
 
-  /// [useChooser]：true = 套 `Intent.createChooser` 强制弹选择器（「仅此一次」语义，
-  /// 系统永远不记默认）；false = 直接发起 ACTION_VIEW，由系统解析器接管——
-  /// 用户在系统解析器里选过「始终」后，该格式后续直达那个应用，不再弹任何对话框。
-  /// 「始终」保存默认打开方式的所有路径都必须传 false，否则「选了始终还是每次弹」。
+  /// [packageName]：非空 = 直接用「始终」记住的默认应用打开（应用内自主记忆，
+  /// 不依赖系统解析器——裸 ACTION_VIEW 会被系统预置的默认应用直接接管，视频/
+  /// 音频/图片尤甚）。原生侧按包名直开；失败（如应用已被卸载）自动回退系统选择器。
   Future<void> openWithSystemChooser(
     String path, {
     String? mimeType,
-    bool useChooser = true,
+    String? packageName,
+  }) async {
+    // IM 追加后缀（`app.apk.1`）也要给出正确的系统 MIME，否则系统选择器认不出。
+    final mime = mimeType ?? lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ?? '*/*';
+    // 系统选择器是原生 UI，拿不到「应用内语言」（该语言只作用于 Flutter 层），
+    // 标题必须由这里传入，否则永远是硬编码中文。取不到 context 时传 null，
+    // 由系统使用自带的本地化标题兜底。
+    final chooserCtx = navigatorKey.currentContext;
+    Future<void> invoke(String? pkg) =>
+        _platformChannel.invokeMethod('openWithChooser', {
+          'path': path,
+          'mimeType': mime,
+          if (pkg != null) 'packageName': pkg,
+          if (chooserCtx != null) 'title': L10n.of(chooserCtx).open_with_title,
+        });
+    try {
+      await invoke(packageName);
+    } catch (e) {
+      debugPrint('[openWithSystemChooser] $path (${packageName ?? 'chooser'}): $e');
+      if (packageName != null) {
+        // 记住的应用已不可用（卸载/停用等）：回退系统选择器，别让文件打不开
+        try {
+          await invoke(null);
+        } catch (_) {}
+      }
+    }
+  }
+
+  /// 查询可打开 [path] 的外部应用列表（第三方在前、系统应用在后，标签升序）。
+  /// 供「始终 + 外部系统选择器」的应用内选择列表使用。
+  Future<List<ExternalOpenWithApp>> getExternalOpenWithApps(
+    String path, {
+    String? mimeType,
   }) async {
     try {
-      // IM 追加后缀（`app.apk.1`）也要给出正确的系统 MIME，否则系统选择器认不出。
       final mime = mimeType ?? lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ?? '*/*';
-      // 系统选择器是原生 UI，拿不到「应用内语言」（该语言只作用于 Flutter 层），
-      // 标题必须由这里传入，否则永远是硬编码中文。取不到 context 时传 null，
-      // 由系统使用自带的本地化标题兜底。
-      final chooserCtx = navigatorKey.currentContext;
-      await _platformChannel.invokeMethod('openWithChooser', {
-        'path': path,
-        'mimeType': mime,
-        'useChooser': useChooser,
-        if (chooserCtx != null) 'title': L10n.of(chooserCtx).open_with_title,
-      });
+      final raw = await _platformChannel
+          .invokeMethod<List<dynamic>>('getOpenWithApps', {'mimeType': mime});
+      if (raw == null) return const <ExternalOpenWithApp>[];
+      return raw
+          .map((e) => ExternalOpenWithApp.fromMap(e))
+          .whereType<ExternalOpenWithApp>()
+          .toList();
     } catch (e) {
-      debugPrint('openWithSystemChooser 失败: $e');
+      debugPrint('[getExternalOpenWithApps] $e');
+      return const <ExternalOpenWithApp>[];
     }
+  }
+
+  /// 「始终 + 外部系统选择器」的实际语义（2026-11-04 定稿）：
+  /// 弹出**应用内**的外部应用选择列表让用户选，选中后按扩展名记
+  /// `external:<包名>`，之后同格式直达该应用——不弹任何对话框。
+  ///
+  /// 为什么不让系统解析器记默认：裸 ACTION_VIEW 在视频/音频/图片上普遍被系统
+  /// **预置的默认应用**直接接管（用户根本没机会选第三方应用）；而
+  /// `createChooser` 永远弹框且不记默认。两头都堵死，只能应用内自己记。
+  Future<void> _chooseAndRememberExternalApp(
+    BuildContext context,
+    String path,
+    String ext,
+  ) async {
+    if (!context.mounted) return;
+    final app = await showModalBottomSheet<ExternalOpenWithApp>(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => ExternalAppPickerSheet(
+        // 先建好 Future：弹窗内重建不会重复查询
+        appsFuture: getExternalOpenWithApps(path),
+      ),
+    );
+    if (app == null) return;
+    await PreferencesService.saveDefaultOpenAction(ext, 'external:${app.packageName}');
+    await openWithSystemChooser(path, packageName: app.packageName);
   }
 
   // ───────────────────────────────────────────────────────────────────
@@ -14891,11 +14954,16 @@ class FileManagerProvider extends ChangeNotifier {
     final checkExt = FileUtils.effectiveExtensionWithDot(checkPath);
 
     String? openAction;
+    // 已记住的「始终」外部应用包名（默认值存的是 `external:<包名>`）
+    String? defaultExternalPkg;
     if (forceNative) {
       openAction = 'native';
     } else {
       final defaultAction = PreferencesService.getDefaultOpenAction(checkExt);
-      if (defaultAction == 'external') {
+      if (defaultAction != null && defaultAction.startsWith('external:')) {
+        openAction = 'external';
+        defaultExternalPkg = defaultAction.substring('external:'.length);
+      } else if (defaultAction == 'external') {
         openAction = 'external';
       }
     }
@@ -14931,8 +14999,8 @@ class FileManagerProvider extends ChangeNotifier {
           final streamUrl = await remoteClient.getStreamUrl(remotePath);
           if (streamUrl != null) {
             if (openAction == 'external') {
-              // 系统选择器打开流式 URL（已存「始终」默认，交给系统解析器记默认应用）
-              await openWithSystemChooser(streamUrl, mimeType: fileMime, useChooser: false);
+              // 外部打开：记住的「始终」应用直达，否则弹系统选择器
+              await openWithSystemChooser(streamUrl, mimeType: fileMime, packageName: defaultExternalPkg);
               await remoteClient.disconnect();
               return;
             }
@@ -14973,8 +15041,8 @@ class FileManagerProvider extends ChangeNotifier {
               seekClient: seekClient,
             );
             if (openAction == 'external') {
-              // 系统选择器打开代理 URL（VLC 等可流式播放；已存「始终」默认，交系统记默认应用）
-              await openWithSystemChooser(proxyUrl, mimeType: fileMime, useChooser: false);
+              // 外部打开（VLC 等可流式播放）：记住的应用直达，否则弹系统选择器
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime, packageName: defaultExternalPkg);
               return;
             }
             // 视频/音频统一入口：同目录列表一并传入（此前此处视频也是裸传，属漏改）
@@ -15010,7 +15078,7 @@ class FileManagerProvider extends ChangeNotifier {
               await openWithSystemChooser(
                 targetPath,
                 mimeType: lookupMimeType(fileExt) ?? '*/*',
-                useChooser: false,
+                packageName: defaultExternalPkg,
               );
             } else {
               await openFileNatively(
@@ -15065,8 +15133,8 @@ class FileManagerProvider extends ChangeNotifier {
           final streamUrl = await remoteClient.getStreamUrl(path);
           if (streamUrl != null) {
             if (openAction == 'external') {
-              // 系统选择器打开流式 URL（已存「始终」默认，交给系统解析器记默认应用）
-              await openWithSystemChooser(streamUrl, mimeType: fileMime, useChooser: false);
+              // 外部打开：记住的「始终」应用直达，否则弹系统选择器
+              await openWithSystemChooser(streamUrl, mimeType: fileMime, packageName: defaultExternalPkg);
               return;
             }
             // 直接流式播放 — 无需下载。
@@ -15112,8 +15180,8 @@ class FileManagerProvider extends ChangeNotifier {
               seekClient: seekClient,
             );
             if (openAction == 'external') {
-              // 系统选择器打开代理 URL（已存「始终」默认，交系统记默认应用）
-              await openWithSystemChooser(proxyUrl, mimeType: fileMime, useChooser: false);
+              // 外部打开：记住的应用直达，否则弹系统选择器
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime, packageName: defaultExternalPkg);
               return;
             }
             // SMB / FTP / SFTP 走代理流式，视频/音频统一入口
@@ -15149,9 +15217,15 @@ class FileManagerProvider extends ChangeNotifier {
             String selectedType; // 'external' or 'native'
             String? builtInType;
             bool saveChosenType = false; // OpenWithSheet 选了"始终"时为 true
+            // 已记住的「始终」外部应用包名（默认值 `external:<包名>`）
+            String? savedExternalPkg;
 
-            if (savedAction == 'external') {
-              // 已设为外部打开：直接走系统选择器，不弹窗
+            if (savedAction != null && savedAction.startsWith('external:')) {
+              // 已记住外部应用：直达该应用，不弹窗
+              selectedType = 'external';
+              savedExternalPkg = savedAction.substring('external:'.length);
+            } else if (savedAction == 'external') {
+              // 旧版本存下的纯 external 值：直接走系统选择器，不弹窗
               selectedType = 'external';
             } else if (savedAction != null &&
                 ['text', 'image', 'audio', 'video'].contains(savedAction)) {
@@ -15182,25 +15256,59 @@ class FileManagerProvider extends ChangeNotifier {
                   isAlways ? 'always_'.length : 'just_once_'.length);
               if (isAlways) {
                 saveChosenType = true;
-                await PreferencesService.saveDefaultOpenAction(
-                    fileExt, selectedType);
+                // external 的「始终」由应用内选择列表记 `external:<包名>`（见下），
+                // 这里只保存内置类型的默认
+                if (selectedType != 'external') {
+                  await PreferencesService.saveDefaultOpenAction(
+                      fileExt, selectedType);
+                }
               }
             }
 
             if (selectedType == 'external') {
-              // 外部应用必须先把文件拿到本地，再交给系统选择器
+              // 外部应用必须先把文件拿到本地，再交给外部应用打开
               final localPath = await _downloadRemoteFileVerified(
                 remoteClient,
                 path,
                 fileName,
               );
               if (context.mounted) {
-                await openWithSystemChooser(
-                  localPath,
-                  mimeType: fileMime.isEmpty ? '*/*' : fileMime,
-                  // 已存默认或刚选「始终」→ 不套 createChooser，交系统解析器记默认应用
-                  useChooser: savedAction != 'external' && !saveChosenType,
-                );
+                final mime = fileMime.isEmpty ? '*/*' : fileMime;
+                if (savedExternalPkg != null) {
+                  // 记住的应用直达
+                  await openWithSystemChooser(
+                    localPath,
+                    mimeType: mime,
+                    packageName: savedExternalPkg,
+                  );
+                } else if (saveChosenType) {
+                  // 「始终」：应用内列出外部应用让用户选并记住
+                  final app = await showModalBottomSheet<ExternalOpenWithApp>(
+                    context: context,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    builder: (_) => ExternalAppPickerSheet(
+                      appsFuture: getExternalOpenWithApps(
+                        localPath,
+                        mimeType: mime,
+                      ),
+                    ),
+                  );
+                  if (app == null) return;
+                  await PreferencesService.saveDefaultOpenAction(
+                      fileExt, 'external:${app.packageName}');
+                  await openWithSystemChooser(
+                    localPath,
+                    mimeType: mime,
+                    packageName: app.packageName,
+                  );
+                } else {
+                  // 「仅此一次」：直接弹系统选择器
+                  await openWithSystemChooser(localPath, mimeType: mime);
+                }
               }
               return;
             }
@@ -15352,11 +15460,15 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    // 默认/弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
+    // 默认/弹窗选择了"使用外部应用打开"
     if (openAction == 'external') {
-      // 已保存「始终外部打开」：不套 createChooser，由系统解析器记默认
-      // （首次会弹系统解析器让用户选「始终」，之后直达该应用）
-      await openWithSystemChooser(targetPath, useChooser: false);
+      if (defaultExternalPkg != null) {
+        // 「始终」记住的外部应用：直达（应用不可用时内部自动回退系统选择器）
+        await openWithSystemChooser(targetPath, packageName: defaultExternalPkg);
+      } else {
+        // 旧版本存下的纯 external 值：仅弹系统选择器（不记默认）
+        await openWithSystemChooser(targetPath);
+      }
       return;
     }
 
@@ -15384,9 +15496,6 @@ class FileManagerProvider extends ChangeNotifier {
           siblingPaths: siblingPaths,
           siblingNames: siblingNames,
         );
-        return;
-      } else if (defaultAction == 'external') {
-        await openWithSystemChooser(targetPath, useChooser: false);
         return;
       } else if (const ['text', 'audio', 'video', 'image'].contains(defaultAction)) {
         // 已保存的具体内置类型：直接以该类型用应用内查看器打开

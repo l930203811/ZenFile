@@ -6648,6 +6648,9 @@ class L10nKo extends L10n {
   String get open_with_title => 'Open with';
 
   @override
+  String get open_with_no_apps => '이 파일을 열 수 있는 앱을 찾을 수 없습니다';
+
+  @override
   String get share_permission_title => 'Permission required';
 
   @override

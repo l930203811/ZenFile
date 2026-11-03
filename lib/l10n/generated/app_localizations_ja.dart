@@ -6645,6 +6645,9 @@ class L10nJa extends L10n {
   String get open_with_title => 'Open with';
 
   @override
+  String get open_with_no_apps => 'このファイルを開けるアプリが見つかりません';
+
+  @override
   String get share_permission_title => 'Permission required';
 
   @override

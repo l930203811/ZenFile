@@ -6897,6 +6897,7 @@
   "open_file": "開啟",
   "open_in_location": "開啟檔案所在位置",
   "open_with_title": "開啟方式",
+  "open_with_no_apps": "未找到可開啟此檔案的應用程式",
   "share_permission_title": "需要許可權",
   "share_permission_message": "ZenFile 沒有許可權存取該檔案，請重新分享或授予許可權後重試。",
   "@share_permission_title": {

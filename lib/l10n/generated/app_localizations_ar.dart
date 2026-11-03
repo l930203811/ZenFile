@@ -6816,6 +6816,10 @@ class L10nAr extends L10n {
   String get open_with_title => 'Open with';
 
   @override
+  String get open_with_no_apps =>
+      'لم يتم العثور على تطبيقات يمكنها فتح هذا الملف';
+
+  @override
   String get share_permission_title => 'Permission required';
 
   @override

@@ -6930,6 +6930,10 @@ class L10nEs extends L10n {
   String get open_with_title => 'Open with';
 
   @override
+  String get open_with_no_apps =>
+      'No se encontraron aplicaciones que puedan abrir este archivo';
+
+  @override
   String get share_permission_title => 'Permission required';
 
   @override
