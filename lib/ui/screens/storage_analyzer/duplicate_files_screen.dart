@@ -9,7 +9,10 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../widgets/circled_back_button.dart';
 
 /// 「重复文件」页：扫描内容完全相同的文件，**默认勾选较旧的副本**、
-/// 保留最新的一份，一键清理腾出空间。
+/// 推荐保留最新的一份，一键清理腾出空间。
+///
+/// 默认只是**推荐**：所有条目（含最新那份）都可以手动勾选/取消 —— 用户可能
+/// 想留下的恰好是旧副本（比如新的一份在临时目录、旧的在归档目录）。
 ///
 /// 入口在「空间」（存储分析）页的「扫描去重」卡片。
 class DuplicateFilesScreen extends StatefulWidget {
@@ -30,7 +33,8 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
 
   DupScanResult? _result;
 
-  /// 已勾选待清理的文件路径。默认 = 每组除「最新那份」外的全部副本。
+  /// 已勾选待清理的文件路径。初始 = 每组除「最新那份」外的全部副本，
+  /// 之后完全由用户决定（任意条目都可勾/取消，包括最新那份）。
   final Set<String> _selected = <String>{};
 
   /// 折叠的分组下标（默认全部展开：用户要一眼看到将被删除的是哪些文件）。
@@ -83,6 +87,7 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
       _result = result;
       _scannedFiles = result.scanned;
       // 默认勾选：每组除「最新那份」（files.first）以外的所有副本。
+      // 这只是初始状态，用户可以随意改选（含把最新那份也勾上）。
       for (final group in result.groups) {
         for (var i = 1; i < group.files.length; i++) {
           _selected.add(group.files[i].path);
@@ -337,7 +342,9 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
   ) {
     final collapsed = _collapsed.contains(index);
     final groupSelected = group.files.where((f) => _selected.contains(f.path));
-    final allSelected = groupSelected.length == group.files.length - 1;
+    // 全选判定按「整组」算：允许把最新那份也勾上（用户可能就想删它、留别的副本）。
+    final allChecked = groupSelected.length == group.files.length;
+    final someChecked = groupSelected.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -401,19 +408,19 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
                       ],
                     ),
                   ),
-                  // 组内勾选状态：全选 / 部分
+                  // 组内勾选状态：全选 / 部分 / 未选（三态）
                   Checkbox(
-                    value: allSelected,
+                    value: allChecked ? true : (someChecked ? null : false),
                     tristate: true,
-                    onChanged: (v) {
+                    onChanged: (_) {
                       setState(() {
-                        if (allSelected) {
+                        if (allChecked) {
                           for (final f in group.files) {
                             _selected.remove(f.path);
                           }
                         } else {
-                          for (var i = 1; i < group.files.length; i++) {
-                            _selected.add(group.files[i].path);
+                          for (final f in group.files) {
+                            _selected.add(f.path);
                           }
                         }
                       });
@@ -451,18 +458,19 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
   ) {
     final isKeeper = identical(file, group.keeper) || file.path == group.keeper.path;
     final checked = _selected.contains(file.path);
+    // 每一行都可勾选 —— 包括「最新那份」：用户可能想保留别的副本、删掉这份
+    // （例如最新那份在临时目录里，他想留归档目录里的旧副本）。
+    // 默认勾选策略仍在 [_startScan] 里（只勾旧副本），这里只放开手动操作。
     return InkWell(
-      onTap: isKeeper
-          ? null
-          : () {
-              setState(() {
-                if (checked) {
-                  _selected.remove(file.path);
-                } else {
-                  _selected.add(file.path);
-                }
-              });
-            },
+      onTap: () {
+        setState(() {
+          if (checked) {
+            _selected.remove(file.path);
+          } else {
+            _selected.add(file.path);
+          }
+        });
+      },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
         child: Row(
@@ -470,17 +478,15 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
           children: [
             Checkbox(
               value: checked,
-              onChanged: isKeeper
-                  ? null
-                  : (v) {
-                      setState(() {
-                        if (v == true) {
-                          _selected.add(file.path);
-                        } else {
-                          _selected.remove(file.path);
-                        }
-                      });
-                    },
+              onChanged: (v) {
+                setState(() {
+                  if (v == true) {
+                    _selected.add(file.path);
+                  } else {
+                    _selected.remove(file.path);
+                  }
+                });
+              },
             ),
             Expanded(
               child: Padding(
@@ -509,7 +515,9 @@ class _DuplicateFilesScreenState extends State<DuplicateFilesScreen> {
                             ),
                           ),
                         ),
-                        if (isKeeper) ...[
+                        // 「保留」只是**默认推荐**：用户一旦勾选它（要删掉它），
+                        // 标签就必须消失，否则和删除线自相矛盾。
+                        if (isKeeper && !checked) ...[
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(

@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.1';
+  static const String _latestChangelogVersion = 'v3.7.2';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v372,
     _v371,
     _v370,
     _v368,
@@ -958,7 +959,43 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.1 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.2 ────────────────────────────────────────────────
+  static const _Changelog _v372 = _Changelog(
+    version: 'v3.7.2',
+    date: '2026-11-04',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '空间页新增「扫描去重」：按文件内容精确比对（SHA-256），只挑出完全相同的重复文件；默认勾选较旧的副本并推荐保留最新一份，任意条目都可自行勾选或取消，清理前二次确认，开启回收站时还能撤销',
+        '「打开方式」重构为统一弹窗：本应用与所有能打开该格式的应用同列展示（真实图标 + 应用名），可选「始终」或「仅此一次」；分类页的视频、音频、图片、截图、压缩包、安装包点击文件都会先询问，不再默认用本应用打开',
+        '视频播放器支持双指捏合缩放画面（1x–5x），缩放后非全屏观看时显示「还原画面」按钮，切换集数自动还原',
+      ]),
+      _ChangeSection('✨ 界面优化', [
+        '「最近」列表遵循「显示隐藏文件」开关：关闭时不再列出系统隐藏文件与隐藏目录中的文件',
+      ]),
+      _ChangeSection('✨ 修复', [
+        '修复部分 Windows 电脑的 SMB 共享连接后根目录空白、且没有任何提示的问题：现在会明确告知共享列表读取失败，并支持手动输入共享名直接进入（可直接粘贴共享地址，自动识别）',
+        '修复若干崩溃：原生通道重复回复导致的 IllegalStateException、超大照片与 HEIC 缩略图全尺寸解码导致的引擎异常终止（顺带缓解高内存占用下的卡死无响应）、冷启动时插件通道尚未就绪导致的分享与音频会话异常',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'Duplicate scan on the Storage page: files are compared by content (SHA-256), so only truly identical duplicates are grouped; older copies are ticked by default with the newest one recommended to keep, every item can be ticked or unticked freely, cleaning asks for confirmation first and can be undone when the recycle bin is enabled',
+        'A unified "Open with" dialog: this app and every app that can handle the file type are listed together with real icons and app names, plus "Always" / "Just once"; videos, audio, images, screenshots, archives and APKs opened from the category pages now ask first instead of always using this app',
+        'The video player supports pinch-to-zoom (1x–5x); a "Reset Zoom" button appears when zoomed in non-fullscreen mode, and the zoom resets automatically when switching episodes',
+      ]),
+      _ChangeSection('✨ UI Improvements', [
+        'The "Recent" list now follows the show-hidden-files switch: when it is off, system hidden files and files inside hidden folders are no longer listed',
+      ]),
+      _ChangeSection('✨ Fixes', [
+        'Fixed a blank root directory with no explanation when connecting to SMB shares on some Windows PCs: the app now states that the share list could not be read, and lets you type a share name directly (you can paste a share address and it is parsed automatically)',
+        'Fixed several crashes: an IllegalStateException caused by a native channel replying twice, an engine abort caused by decoding very large photos and HEIC thumbnails at full resolution (which also eases freezes on devices under memory pressure), and sharing / audio-session failures on cold start when the plugin channel was not ready yet',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.1（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v371 = _Changelog(
     version: 'v3.7.1',
     date: '2026-10-30',
@@ -994,7 +1031,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     ],
   );
 
-  /// ── 当前版本：v3.7.0 ────────────────────────────────────────────────
+  /// ── v3.7.0 ───────────────────────────────────────────────────────────
   static const _Changelog _v370 = _Changelog(
     version: 'v3.7.0',
     date: '2026-10-29',
