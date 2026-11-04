@@ -34,6 +34,7 @@ class SpecialThanksScreen extends StatelessWidget {
     'Aps',
     'Oxlne',
     'Jankst',
+    '斯卡里茨的守护者',
   ];
 
   /// 通过 GitHub Issues 反馈、其建议已被采纳的用户（对应 issue 均已实现/修复）。
@@ -45,8 +46,13 @@ class SpecialThanksScreen extends StatelessWidget {
     'LorianL98',
     'qwertti123',
     'zhnfe',
-    '斯卡里茨的守护者',
   ];
+
+  /// 为本应用设计图标的用户（昵称原文照录，**不翻译**）。
+  ///
+  /// 昵称含阿拉伯字母与符号（✿҉），交给 Text 的 bidi 算法渲染即可，
+  /// 不要做任何转义或方向标记 —— 改一个字符就不是用户本人了。
+  static const List<String> _iconDesign = ['ي霖漉✿҉'];
 
   /// 本项目使用的核心开源组件（排名不分先后）。
   static const List<String> _openSource = [
@@ -88,6 +94,12 @@ class SpecialThanksScreen extends StatelessWidget {
             title: l10n.thanks_author_section,
             note: l10n.thanks_author_note,
             names: const ['Senzme (github.com/Senzme/NFile)'],
+          ),
+          _section(
+            context,
+            title: l10n.thanks_icon_section,
+            note: l10n.thanks_icon_note,
+            names: _iconDesign,
           ),
           _section(
             context,

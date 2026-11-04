@@ -9084,6 +9084,13 @@ class L10nAr extends L10n {
       'طُوّر هذا المشروع استنادًا إلى NFile، وهو مشروع مفتوح المصدر من Senzme. شكرًا للأساس الممتاز:';
 
   @override
+  String get thanks_icon_section => 'تصميم الأيقونة';
+
+  @override
+  String get thanks_icon_note =>
+      'شكرًا للمستخدم الذي صمّم أيقونة التطبيق — فمنها تنشأ الانطباع الأول عن ZenFile:';
+
+  @override
   String get thanks_opensource_section => 'مصدر مفتوح';
 
   @override

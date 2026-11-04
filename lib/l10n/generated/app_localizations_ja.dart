@@ -8822,6 +8822,13 @@ class L10nJa extends L10n {
       '本プロジェクトは Senzme 氏のオープンソースプロジェクト NFile をベースに開発されています。素晴らしい基盤をありがとうございます：';
 
   @override
+  String get thanks_icon_section => 'アイコンデザイン';
+
+  @override
+  String get thanks_icon_note =>
+      'アプリアイコンをデザインしてくださったユーザーに感謝します。ZenFile の第一印象はここから生まれます：';
+
+  @override
   String get thanks_opensource_section => 'オープンソース';
 
   @override

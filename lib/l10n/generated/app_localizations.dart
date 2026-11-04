@@ -16168,6 +16168,18 @@ abstract class L10n {
   /// **'本项目基于 Senzme 的开源项目 NFile 开发，感谢原作者奠定的出色基础：'**
   String get thanks_author_note;
 
+  /// No description provided for @thanks_icon_section.
+  ///
+  /// In zh, this message translates to:
+  /// **'图标设计'**
+  String get thanks_icon_section;
+
+  /// No description provided for @thanks_icon_note.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢为本应用设计图标的用户，ZenFile 的第一印象由此而来：'**
+  String get thanks_icon_note;
+
   /// No description provided for @thanks_opensource_section.
   ///
   /// In zh, this message translates to:

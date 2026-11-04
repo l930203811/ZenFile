@@ -9198,6 +9198,13 @@ class L10nRu extends L10n {
       'Этот проект разработан на основе NFile — проекта с открытым исходным кодом от Senzme. Спасибо за отличную основу:';
 
   @override
+  String get thanks_icon_section => 'Дизайн иконки';
+
+  @override
+  String get thanks_icon_note =>
+      'Спасибо пользователю, который разработал иконку приложения — именно с неё начинается первое впечатление о ZenFile:';
+
+  @override
   String get thanks_opensource_section => 'Открытый код';
 
   @override

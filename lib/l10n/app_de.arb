@@ -8854,6 +8854,8 @@
   "thanks_donors_note": "Dank an die folgenden Freunde für ihre Unterstützung und ihr Vertrauen — eure Großzügigkeit ist die größte Motivation für die Weiterentwicklung von ZenFile:",
   "thanks_author_section": "Ursprünglicher Autor",
   "thanks_author_note": "Dieses Projekt basiert auf NFile, dem Open-Source-Projekt von Senzme. Danke für das hervorragende Fundament:",
+  "thanks_icon_section": "Icon-Design",
+  "thanks_icon_note": "Dank an den Nutzer, der das App-Icon entworfen hat – daraus entsteht der erste Eindruck von ZenFile:",
   "thanks_opensource_section": "Open Source",
   "thanks_opensource_note": "ZenFile steht auf den Schultern dieser hervorragenden Open-Source-Komponenten (ohne bestimmte Reihenfolge):",
   "thanks_feedback_section": "Vorschläge & Feedback",

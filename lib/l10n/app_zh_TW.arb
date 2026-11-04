@@ -9005,6 +9005,8 @@
   "thanks_donors_note": "感謝以下朋友的支持與信任，你們的支持是 ZenFile 持續更新的最大動力：",
   "thanks_author_section": "原作者",
   "thanks_author_note": "本專案基於 Senzme 的開源專案 NFile 開發，感謝原作者奠定的出色基礎：",
+  "thanks_icon_section": "圖示設計",
+  "thanks_icon_note": "感謝為本應用程式設計圖示的使用者，ZenFile 的第一印象由此而來：",
   "thanks_opensource_section": "開源專案",
   "thanks_opensource_note": "ZenFile 站在以下優秀開源元件的肩膀上（排名不分先後）：",
   "thanks_feedback_section": "建議與回饋",

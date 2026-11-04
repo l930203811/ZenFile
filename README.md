@@ -98,6 +98,12 @@ Required for full functionality:
 
 Based on [Senzme/NFile](https://github.com/Senzme/NFile) — thank you for the excellent foundation!
 
+### Icon Design
+
+Thanks to the user who designed the app icon — ZenFile's first impression comes from it:
+
+**ي霖漉✿҉**
+
 ### Donors
 
 Heartfelt thanks to our supporters: **𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮**, **被窝一级避难所**, **季风**, **从前有座山**, **羁客**, **无处安放**, **你没急吧** — your generosity keeps ZenFile going.
@@ -118,7 +124,7 @@ ZenFile stands on the shoulders of these excellent open-source projects (in no p
 
 ### Suggestions & Feedback
 
-Thanks to everyone who contributed ideas and bug reports — in-app: 𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮, 越界, YC影尘, 猕猴桃, 大手拉小手, 小熊猫[自重率0%], SAS, Dr. Homi J. Bhabha, sky, Aps, Oxlne, Jankst; and on GitHub: [KamrulShahed](https://github.com/KamrulShahed), [0xlne](https://github.com/0xlne), [SASlobby93](https://github.com/SASlobby93), [aand1015](https://github.com/aand1015), [LorianL98](https://github.com/LorianL98), [qwertti123](https://github.com/qwertti123).
+Thanks to everyone who contributed ideas and bug reports — in-app: 𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮, 越界, YC影尘, 猕猴桃, 大手拉小手, 小熊猫[自重率0%], SAS, Dr. Homi J. Bhabha, sky, Aps, Oxlne, Jankst, 斯卡里茨的守护者; and on GitHub: [KamrulShahed](https://github.com/KamrulShahed), [0xlne](https://github.com/0xlne), [SASlobby93](https://github.com/SASlobby93), [aand1015](https://github.com/aand1015), [LorianL98](https://github.com/LorianL98), [qwertti123](https://github.com/qwertti123), [zhnfe](https://github.com/zhnfe).
 
 Every report makes ZenFile better — keep them coming via [Issues](https://github.com/l930203811/ZenFile/issues)!
 

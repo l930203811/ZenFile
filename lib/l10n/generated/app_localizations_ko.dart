@@ -8833,6 +8833,13 @@ class L10nKo extends L10n {
       '본 프로젝트는 Senzme 님의 오픈소스 프로젝트 NFile 을 기반으로 개발되었습니다. 훌륭한 토대에 감사드립니다:';
 
   @override
+  String get thanks_icon_section => '아이콘 디자인';
+
+  @override
+  String get thanks_icon_note =>
+      '앱 아이콘을 디자인해 주신 사용자께 감사드립니다. ZenFile의 첫인상은 여기에서 시작됩니다:';
+
+  @override
   String get thanks_opensource_section => '오픈소스';
 
   @override

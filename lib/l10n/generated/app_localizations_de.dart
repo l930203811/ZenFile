@@ -9215,6 +9215,13 @@ class L10nDe extends L10n {
       'Dieses Projekt basiert auf NFile, dem Open-Source-Projekt von Senzme. Danke für das hervorragende Fundament:';
 
   @override
+  String get thanks_icon_section => 'Icon-Design';
+
+  @override
+  String get thanks_icon_note =>
+      'Dank an den Nutzer, der das App-Icon entworfen hat – daraus entsteht der erste Eindruck von ZenFile:';
+
+  @override
   String get thanks_opensource_section => 'Open Source';
 
   @override

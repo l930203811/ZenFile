@@ -8636,6 +8636,12 @@ class L10nZh extends L10n {
   String get thanks_author_note => '本项目基于 Senzme 的开源项目 NFile 开发，感谢原作者奠定的出色基础：';
 
   @override
+  String get thanks_icon_section => '图标设计';
+
+  @override
+  String get thanks_icon_note => '感谢为本应用设计图标的用户，ZenFile 的第一印象由此而来：';
+
+  @override
   String get thanks_opensource_section => '开源项目';
 
   @override
@@ -17336,6 +17342,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get thanks_author_note => '本專案基於 Senzme 的開源專案 NFile 開發，感謝原作者奠定的出色基礎：';
+
+  @override
+  String get thanks_icon_section => '圖示設計';
+
+  @override
+  String get thanks_icon_note => '感謝為本應用程式設計圖示的使用者，ZenFile 的第一印象由此而來：';
 
   @override
   String get thanks_opensource_section => '開源專案';

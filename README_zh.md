@@ -99,6 +99,12 @@
 
 基于 [Senzme/NFile](https://github.com/Senzme/NFile) 二次开发，感谢原作者提供优秀的代码基础！
 
+### 图标设计
+
+感谢为本应用设计图标的用户，ZenFile 的第一印象由此而来：
+
+**ي霖漉✿҉**
+
 ### 打赏者
 
 衷心感谢以下朋友的支持与信任：**𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮**、**被窝一级避难所**、**季风**、**从前有座山**、**羁客**、**无处安放**、**你没急吧** —— 你们的支持是 ZenFile 持续更新的最大动力。
@@ -119,7 +125,7 @@ ZenFile 站在以下优秀开源项目的肩膀上（排名不分先后）：
 
 ### 建议与反馈
 
-感谢所有为 ZenFile 提出宝贵建议与问题反馈的用户 —— 应用内：𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮、越界、YC影尘、猕猴桃、大手拉小手、小熊猫[自重率0%]、SAS、Dr. Homi J. Bhabha、sky、Aps、Oxlne、Jankst；GitHub：[KamrulShahed](https://github.com/KamrulShahed)、[0xlne](https://github.com/0xlne)、[SASlobby93](https://github.com/SASlobby93)、[aand1015](https://github.com/aand1015)、[LorianL98](https://github.com/LorianL98)、[qwertti123](https://github.com/qwertti123)。
+感谢所有为 ZenFile 提出宝贵建议与问题反馈的用户 —— 应用内：𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮、越界、YC影尘、猕猴桃、大手拉小手、小熊猫[自重率0%]、SAS、Dr. Homi J. Bhabha、sky、Aps、Oxlne、Jankst、斯卡里茨的守护者；GitHub：[KamrulShahed](https://github.com/KamrulShahed)、[0xlne](https://github.com/0xlne)、[SASlobby93](https://github.com/SASlobby93)、[aand1015](https://github.com/aand1015)、[LorianL98](https://github.com/LorianL98)、[qwertti123](https://github.com/qwertti123)、[zhnfe](https://github.com/zhnfe)。
 
 每一条反馈都让 ZenFile 变得更好 —— 欢迎继续通过 [Issues](https://github.com/l930203811/ZenFile/issues) 提出建议！
 
