@@ -765,6 +765,15 @@ class ThumbnailCache {
   static final Map<String, Future<Uint8List?>> _pending = {};
   static String? _cacheDir;
 
+  /// 释放内存中的缩略图字节（**不动磁盘上的 `.thumb` 文件**）。
+  ///
+  /// 供系统低内存（`didHaveMemoryPressure`）与 UI 卡顿自愈调用：内存被清空后
+  /// 再用到的条目会从磁盘/原生侧重新取，代价只是一次读取，不会丢数据。
+  static void clearMemory() => _cache.clear();
+
+  /// 当前内存中的缩略图字节总量（诊断用）。
+  static int get memoryBytes => _cache.byteSize;
+
   static Future<void> init() async {
     if (_cacheDir != null) return;
     try {
@@ -776,20 +785,34 @@ class ThumbnailCache {
       _cacheDir = folder.path;
       // 异步遍历缓存目录，避免 listSync/readAsBytesSync 阻塞主线程。
       // 缓存文件较多时（数百张缩略图），同步读取会明显卡顿。
-      // 有 LRU 上限：内存预算用尽即停止预载，其余条目按需从磁盘回读。
+      //
+      // ⚠️ 预载**必须有硬上限**（issue #58）：这里原本只受 LRU 的 57 MB 预算
+      // 约束，等于「首次用到缩略图时就把磁盘上最多 57 MB 的图一次性读进内存」。
+      // 那个时机恰好是启动后第一次滚动分类页，与三份 ANR 报告里「启动后 20 余秒
+      // 内存冲到 1.2 GB、主线程卡在 Dart 代码」的形态吻合。现在预载只做**很小
+      // 一批热图**，其余条目走 [_get] 的按需回读 —— 少一次启动期 IO 风暴与内存尖峰。
+      var preloaded = 0;
       try {
         await for (final f in folder.list()) {
-          if (_cache.byteSize >= _cache.maxBytes * 0.9) break;
+          if (preloaded >= _kPreloadMaxEntries) break;
+          if (_cache.byteSize >= _kPreloadMaxBytes) break;
           if (f is File && f.path.endsWith('.thumb')) {
             final key = f.path.split('/').last.split('\\').last.replaceAll('.thumb', '');
             if (!_cache.containsKey(key)) {
               _cache[key] = await f.readAsBytes();
+              preloaded++;
             }
           }
         }
       } catch (_) {}
     } catch (_) {}
   }
+
+  /// 预载上限：条目数（够填满首屏 + 一屏滚动即可）。
+  static const int _kPreloadMaxEntries = 60;
+
+  /// 预载上限：字节数（约 6 MB，远超它的部分按需回读）。
+  static const int _kPreloadMaxBytes = 6 * 1024 * 1024;
 
   static Future<Uint8List?> get(AssetEntity asset) async {
     final key = asset.id;

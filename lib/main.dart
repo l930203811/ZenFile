@@ -25,6 +25,8 @@ import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
 import 'services/startup_gate.dart';
 import 'services/webdav_debug_log.dart';
+import 'services/thumb_byte_cache.dart';
+import 'services/ui_stall_watchdog.dart';
 import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
 import 'services/bugly_report_service.dart';
@@ -307,6 +309,53 @@ void _configureImageCache() {
   final cache = PaintingBinding.instance.imageCache;
   cache.maximumSizeBytes = 64 << 20; // 64 MiB（默认 100 MiB）
   cache.maximumSize = 500; // 500 张（默认 1000）
+}
+
+/// 一次性释放**所有可回收的内存缓存**，返回一段可直接进日志的现场摘要。
+///
+/// ## 为什么要有这个函数（issue #52 / #53 / #58）
+/// 三份 ANR 报告的共性：`RssHwmKb ≈ 1.2 GB`、主线程 `state=R` 卡在 `libapp.so`
+/// 里的 Dart 代码上。这种「主 isolate 被占住 + 内存高压」的组合里，最廉价也最
+/// 有效的自救动作就是**把手里的可回收内存吐出来**，让接下来的分配不再触发
+/// 连续 GC。可回收的东西一共三处，彼此独立，故集中在这里清：
+///
+///  * `PaintingBinding.imageCache` —— Flutter 解码后的位图，上限 64 MB
+///    （见 [_configureImageCache]）。`clear()` 清掉非活跃条目，
+///    `clearLiveImages()` 连「正在被引用」的也放掉，低内存时宁可重解码。
+///  * `ThumbnailCache` —— 磁盘缩略图的**字节**内存 LRU，上限 64 MB
+///    （见 media_provider.dart）。
+///  * `ThumbByteCache` —— 分类页视频缩略图**字节** LRU，上限 12 MB
+///    （见 services/thumb_byte_cache.dart）。
+///
+/// 三处都只清内存、不动磁盘：被清掉的条目下次用到时重新生成/读取，不丢数据。
+String _relieveMemoryPressure(String reason) {
+  final cache = PaintingBinding.instance.imageCache;
+  final before =
+      'img=${(cache.currentSizeBytes / 1048576).toStringAsFixed(1)}MB'
+      '/${cache.currentSize}张'
+      ' thumb=${(ThumbnailCache.memoryBytes / 1048576).toStringAsFixed(1)}MB'
+      ' tile=${(ThumbByteCache.byteSize / 1048576).toStringAsFixed(1)}MB';
+  try {
+    cache.clear();
+    cache.clearLiveImages();
+  } catch (_) {}
+  try {
+    ThumbnailCache.clearMemory();
+  } catch (_) {}
+  try {
+    ThumbByteCache.clearAll();
+  } catch (_) {}
+  return '$reason 释放前: $before';
+}
+
+/// 当前缓存占用摘要（给卡顿看门狗当现场信息用）。
+String _memoryStatsLine() {
+  final cache = PaintingBinding.instance.imageCache;
+  return '  life=${WidgetsBinding.instance.lifecycleState?.name ?? '?'}'
+      '  img=${(cache.currentSizeBytes / 1048576).toStringAsFixed(1)}MB'
+      '/${cache.currentSize}张'
+      '  thumb=${(ThumbnailCache.memoryBytes / 1048576).toStringAsFixed(1)}MB'
+      '  tile=${(ThumbByteCache.byteSize / 1048576).toStringAsFixed(1)}MB';
 }
 
 /// 启动指纹哨兵：记下「本机跑的到底是哪个包」+ 当前 AO 档位 / 日志开关状态。
@@ -613,6 +662,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     ShareIntentService.setIntentHandler(_onShareIntentPush);
     // 闸门 → _isResolvingIntent（处理外部分享期间不插更新弹窗）。
     ShareIntentGate.pending.addListener(_syncShareIntentResolving);
+    // UI isolate 卡顿看门狗（issue #52 / #53 / #58 缺少的取证维度）。
+    // 检测到 ≥2.5s 的卡顿就记一条日志，并顺手把可回收内存吐掉自救；
+    // 只在 `main()` 里跑一次，重复调用无副作用。
+    UiStallWatchdog.start(
+      context: _memoryStatsLine,
+      onStall: (stall) => _relieveMemoryPressure('ui-stall-${stall.inMilliseconds}ms'),
+    );
   }
 
   /// 切换到「选文件」界面并开启一个新的选择器会话。
@@ -727,6 +783,23 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     _flushPendingMediaLoad();
   }
 
+  /// 系统低内存回调（Android `onTrimMemory` → Flutter 派发）。
+  ///
+  /// ## 为什么必须实现（issue #52 / #53 / #58）
+  /// 本项目此前**完全没有接这个回调** —— 系统在进程接近上限时给出「我快撑不住
+  /// 了」的信号，应用却把 64 MB 位图解缓存 + 数十 MB 缩略图字节缓存一直攥在
+  /// 手里，直到自己触发连续 GC。三份 ANR 报告里 `RssHwmKb ≈ 1.2 GB`、主线程
+  /// 长时间卡在 Dart 代码上，正是这个形态。
+  ///
+  /// 现在收到信号就把可回收内存整体吐掉（见 [_relieveMemoryPressure]）：
+  /// 代价是部分缩略图要重新解码一次，收益是避免一次 ANR/被系统杀掉。
+  @override
+  void didHaveMemoryPressure() {
+    super.didHaveMemoryPressure();
+    final summary = _relieveMemoryPressure('system-low-memory');
+    WebdavDebugLog.logAlways('[mem] $summary');
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -757,6 +830,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     _cancelAutoCleanTimer();
+    UiStallWatchdog.stop();
     WidgetsBinding.instance.removeObserver(this);
     ShareIntentGate.pending.removeListener(_syncShareIntentResolving);
     _audioNotificationClickSub?.cancel();

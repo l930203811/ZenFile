@@ -21,6 +21,7 @@ import '../../core/utils.dart';
 import '../../core/navigator_key.dart';
 import '../../services/app_manager_service.dart';
 import '../../services/media_thumbnail_service.dart';
+import '../../services/thumb_byte_cache.dart';
 import '../../services/folder_share_service.dart';
 import '../../models/media_type.dart';
 import 'image_viewer_screen.dart';
@@ -7411,7 +7412,11 @@ class _LocalVideoTileState extends State<_LocalVideoTile> {
   Uint8List? _thumb;
 
   // 内存缓存，避免滚动复用/重建时重复调用原生缩略图生成。
-  static final Map<String, Uint8List> _memCache = {};
+  //
+  // 旧实现是只进不出的 `static Map<String, Uint8List>`：滑过的每个视频都把一份
+  // 缩略图字节永久留在内存里，几千个视频就是几百 MB（issue #52/#53/#58 的
+  // 1.2 GB 内存高压）。现改为有上限的 LRU，低内存时还会被整体清空。
+  // （ThumbByteCache 见 services/thumb_byte_cache.dart）
 
   @override
   void initState() {
@@ -7420,7 +7425,7 @@ class _LocalVideoTileState extends State<_LocalVideoTile> {
   }
 
   Future<void> _load() async {
-    final cached = _memCache[widget.filePath];
+    final cached = ThumbByteCache.get(widget.filePath);
     if (cached != null) {
       if (mounted)
         setState(() {
@@ -7433,7 +7438,7 @@ class _LocalVideoTileState extends State<_LocalVideoTile> {
         widget.filePath,
       );
       if (bytes != null && bytes.isNotEmpty) {
-        _memCache[widget.filePath] = bytes;
+        ThumbByteCache.put(widget.filePath, bytes);
         if (mounted)
           setState(() {
             _thumb = bytes;

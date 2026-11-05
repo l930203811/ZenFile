@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.2';
+  static const String _latestChangelogVersion = 'v3.7.3';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v373,
     _v372,
     _v371,
     _v370,
@@ -959,7 +960,35 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.2 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.3 ────────────────────────────────────────────────
+  static const _Changelog _v373 = _Changelog(
+    version: 'v3.7.3',
+    date: '2026-11-05',
+    zh: [
+      _ChangeSection('✨ 新功能', [
+        '视频播放器手势全面升级：双击画面左 / 中 / 右区域分别快退 10 秒、播放暂停、快进 10 秒；长按倍速可自定义（1.25x / 1.5x / 2x / 3x，默认 2x）；上下滑调节亮度与音量，并可设置左右两侧分别控制哪一项（默认左亮度、右音量，与主流播放器一致）；播放器菜单新增「手势设置」，改完立即生效',
+        '横向滑动调节进度的速率改为固定值：滑满一屏固定快进或快退 90 秒，不再随视频时长放大 —— 两小时的电影也不会稍一滑动就跳过好几分钟',
+      ]),
+      _ChangeSection('✨ 修复', [
+        '修复系统「打开方式」列表不全：部分应用（如 NextPlayer）此前不会出现在列表里，现在能正常列出并选择',
+        '缓解长时间使用后内存持续升高、界面卡死无响应的问题：分类页的视频缩略图缓存改为有上限的自动淘汰（不再只进不出），缩略图启动预载加了上限，并接入系统低内存通知 —— 系统提示内存紧张时立即释放图片与缩略图缓存',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New Features', [
+        'A full gesture overhaul for the video player: double-tap the left / middle / right third of the screen to rewind 10s, play-pause or forward 10s; the long-press speed is now configurable (1.25x / 1.5x / 2x / 3x, default 2x); vertical swipes adjust brightness and volume, and you can choose which side controls which (default: brightness on the left, volume on the right, matching most players); a new "Gesture settings" entry in the player menu applies changes immediately',
+        'Horizontal swipe seeking now uses a fixed rate: a full swipe is always 90 seconds either way instead of scaling with duration, so a two-hour movie no longer jumps several minutes on a small swipe',
+      ]),
+      _ChangeSection('✨ Fixes', [
+        'Fixed an incomplete system "Open with" list: some apps (for example NextPlayer) never appeared before and are now listed and selectable',
+        'Eased steadily growing memory usage and freezes after long sessions: the category page video-thumbnail cache is now a size-capped LRU instead of growing forever, startup thumbnail preloading has a hard cap, and the app now listens for the system low-memory signal and releases image and thumbnail caches when it fires',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.2（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v372 = _Changelog(
     version: 'v3.7.2',
     date: '2026-11-04',
