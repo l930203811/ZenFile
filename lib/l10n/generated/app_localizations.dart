@@ -8746,6 +8746,36 @@ abstract class L10n {
   /// **'还原画面'**
   String get video_reset_zoom;
 
+  /// No description provided for @gesture_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'手势设置'**
+  String get gesture_settings;
+
+  /// No description provided for @long_press_speed.
+  ///
+  /// In zh, this message translates to:
+  /// **'长按倍速'**
+  String get long_press_speed;
+
+  /// No description provided for @vertical_sides.
+  ///
+  /// In zh, this message translates to:
+  /// **'上下滑动'**
+  String get vertical_sides;
+
+  /// No description provided for @brightness_on_left.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧调亮度、右侧调音量'**
+  String get brightness_on_left;
+
+  /// No description provided for @volume_on_left.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧调音量、右侧调亮度'**
+  String get volume_on_left;
+
   /// No description provided for @pick_file_type.
   ///
   /// In zh, this message translates to:

@@ -51,6 +51,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback? onToggleProgressAlwaysShow;
   final bool isBackgroundActive; // 后台播放是否已激活（菜单项高亮）
   final VoidCallback? onPlaybackInfo; // 「播放信息」（可量化诊断，只读）
+  final VoidCallback? onGestureSettings; // 「手势设置」（长按倍速/上下滑左右侧）
 
   const VideoControlsOverlay({
     super.key,
@@ -102,6 +103,7 @@ class VideoControlsOverlay extends StatelessWidget {
     this.onToggleProgressAlwaysShow,
     this.isBackgroundActive = false,
     this.onPlaybackInfo,
+    this.onGestureSettings,
   });
 
   String _formatDuration(Duration d) {
@@ -270,6 +272,8 @@ class VideoControlsOverlay extends StatelessWidget {
                         onToggleProgressAlwaysShow?.call();
                       } else if (value == 'playback_info') {
                         onPlaybackInfo?.call();
+                      } else if (value == 'gesture_settings') {
+                        onGestureSettings?.call();
                       }
                     },
                     itemBuilder: (_) => [
@@ -397,6 +401,27 @@ class VideoControlsOverlay extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (onGestureSettings != null)
+                        PopupMenuItem<String>(
+                          value: 'gesture_settings',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.swipe_up_rounded,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).gesture_settings,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ],

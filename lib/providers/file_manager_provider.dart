@@ -14124,7 +14124,7 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       final mime = mimeType ?? lookupMimeType(FileUtils.stripImAppendedSuffix(path)) ?? '*/*';
       final raw = await _platformChannel
-          .invokeMethod<List<dynamic>>('getOpenWithApps', {'mimeType': mime});
+          .invokeMethod<List<dynamic>>('getOpenWithApps', {'mimeType': mime, 'path': path});
       if (raw == null) return const <ExternalOpenWithApp>[];
       return raw
           .map((e) => ExternalOpenWithApp.fromMap(e))

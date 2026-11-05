@@ -4894,6 +4894,21 @@ class L10nRu extends L10n {
   String get video_reset_zoom => 'Сбросить масштаб';
 
   @override
+  String get gesture_settings => 'Настройки жестов';
+
+  @override
+  String get long_press_speed => 'Скорость при удержании';
+
+  @override
+  String get vertical_sides => 'Вертикальный свайп';
+
+  @override
+  String get brightness_on_left => 'Слева: яркость, справа: громкость';
+
+  @override
+  String get volume_on_left => 'Слева: громкость, справа: яркость';
+
+  @override
   String get pick_file_type => 'Выберите тип файла';
 
   @override

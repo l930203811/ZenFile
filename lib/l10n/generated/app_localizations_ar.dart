@@ -4825,6 +4825,21 @@ class L10nAr extends L10n {
   String get video_reset_zoom => 'إعادة ضبط التكبير';
 
   @override
+  String get gesture_settings => 'إعدادات الإيماءات';
+
+  @override
+  String get long_press_speed => 'سرعة الضغط المطوّل';
+
+  @override
+  String get vertical_sides => 'التمرير العمودي';
+
+  @override
+  String get brightness_on_left => 'يسار: السطوع، يمين: الصوت';
+
+  @override
+  String get volume_on_left => 'يسار: الصوت، يمين: السطوع';
+
+  @override
   String get pick_file_type => 'اختر نوع الملف';
 
   @override

@@ -4843,6 +4843,21 @@ class L10nEn extends L10n {
   String get video_reset_zoom => 'Reset Zoom';
 
   @override
+  String get gesture_settings => 'Gesture Settings';
+
+  @override
+  String get long_press_speed => 'Long-press Speed';
+
+  @override
+  String get vertical_sides => 'Vertical Swipe';
+
+  @override
+  String get brightness_on_left => 'Left: Brightness, Right: Volume';
+
+  @override
+  String get volume_on_left => 'Left: Volume, Right: Brightness';
+
+  @override
   String get pick_file_type => 'Select file type';
 
   @override

@@ -1969,6 +1969,8 @@ class PreferencesService {
   static const String _keyVideoHwdec = 'video_hwdec'; // true=硬解(auto-safe), false=软解(no)
   static const String _keyVideoProgressAlwaysShow = 'video_progress_always_show';
   static const String _keyVideoPlaybackSpeed = 'video_playback_speed';
+  static const String _keyVideoLongPressSpeed = 'video_long_press_speed';
+  static const String _keyVideoBrightnessOnLeft = 'video_brightness_on_left';
   static const String _keyVideoVolume = 'video_volume';
   static const String _keyImageFitMode = 'image_fit_mode'; // 0=适应宽度(contained) 1=适应高度 2=原始大小
   static const String _keyVideoBackgroundMode = 'video_background_mode';
@@ -2135,6 +2137,27 @@ class PreferencesService {
   /// 保存视频默认播放倍速
   static Future<void> saveVideoPlaybackSpeed(double value) async {
     await _prefs?.setDouble(_keyVideoPlaybackSpeed, value);
+  }
+
+  /// 获取长按倍速值，默认 2.0（issue #33 反馈：长按倍速自定义）
+  static double getVideoLongPressSpeed() {
+    return _prefs?.getDouble(_keyVideoLongPressSpeed) ?? 2.0;
+  }
+
+  /// 保存长按倍速值
+  static Future<void> saveVideoLongPressSpeed(double value) async {
+    await _prefs?.setDouble(_keyVideoLongPressSpeed, value);
+  }
+
+  /// 左侧上下滑是否调节亮度（默认 true：左亮度右音量，与主流播放器一致；
+  /// false = 左音量右亮度旧版习惯）。issue #33 反馈：希望可配置。
+  static bool getVideoBrightnessOnLeft() {
+    return _prefs?.getBool(_keyVideoBrightnessOnLeft) ?? true;
+  }
+
+  /// 保存左侧上下滑调节亮度的开关
+  static Future<void> saveVideoBrightnessOnLeft(bool value) async {
+    await _prefs?.setBool(_keyVideoBrightnessOnLeft, value);
   }
 
   /// 获取视频音量（0-1），默认 1.0

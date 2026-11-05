@@ -4654,6 +4654,21 @@ class L10nZh extends L10n {
   String get video_reset_zoom => '还原画面';
 
   @override
+  String get gesture_settings => '手势设置';
+
+  @override
+  String get long_press_speed => '长按倍速';
+
+  @override
+  String get vertical_sides => '上下滑动';
+
+  @override
+  String get brightness_on_left => '左侧调亮度、右侧调音量';
+
+  @override
+  String get volume_on_left => '左侧调音量、右侧调亮度';
+
+  @override
   String get pick_file_type => '选择文件类型';
 
   @override
@@ -13342,6 +13357,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get video_reset_zoom => '還原畫面';
+
+  @override
+  String get gesture_settings => '手勢設定';
+
+  @override
+  String get long_press_speed => '長按倍速';
+
+  @override
+  String get vertical_sides => '上下滑動';
+
+  @override
+  String get brightness_on_left => '左側調亮度、右側調音量';
+
+  @override
+  String get volume_on_left => '左側調音量、右側調亮度';
 
   @override
   String get pick_file_type => '選擇檔案型別';

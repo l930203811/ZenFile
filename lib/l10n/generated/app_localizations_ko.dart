@@ -4696,6 +4696,21 @@ class L10nKo extends L10n {
   String get video_reset_zoom => '화면 초기화';
 
   @override
+  String get gesture_settings => '제스처 설정';
+
+  @override
+  String get long_press_speed => '길게 눌러 배속';
+
+  @override
+  String get vertical_sides => '세로 스와이프';
+
+  @override
+  String get brightness_on_left => '왼쪽: 밝기, 오른쪽: 볼륨';
+
+  @override
+  String get volume_on_left => '왼쪽: 볼륨, 오른쪽: 밝기';
+
+  @override
   String get pick_file_type => '파일 형식 선택';
 
   @override

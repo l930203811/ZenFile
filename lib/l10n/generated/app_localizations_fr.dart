@@ -4918,6 +4918,21 @@ class L10nFr extends L10n {
   String get video_reset_zoom => 'Réinitialiser le zoom';
 
   @override
+  String get gesture_settings => 'Paramètres des gestes';
+
+  @override
+  String get long_press_speed => 'Vitesse d\'appui long';
+
+  @override
+  String get vertical_sides => 'Balayage vertical';
+
+  @override
+  String get brightness_on_left => 'Gauche : luminosité, droite : volume';
+
+  @override
+  String get volume_on_left => 'Gauche : volume, droite : luminosité';
+
+  @override
   String get pick_file_type => 'Sélectionner le type de fichier';
 
   @override

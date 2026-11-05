@@ -4694,6 +4694,21 @@ class L10nJa extends L10n {
   String get video_reset_zoom => '画面をリセット';
 
   @override
+  String get gesture_settings => 'ジェスチャー設定';
+
+  @override
+  String get long_press_speed => '長押し倍速';
+
+  @override
+  String get vertical_sides => '上下スワイプ';
+
+  @override
+  String get brightness_on_left => '左：明るさ、右：音量';
+
+  @override
+  String get volume_on_left => '左：音量、右：明るさ';
+
+  @override
   String get pick_file_type => 'ファイルの種類を選択';
 
   @override

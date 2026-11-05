@@ -4888,6 +4888,21 @@ class L10nDe extends L10n {
   String get video_reset_zoom => 'Zoom zurücksetzen';
 
   @override
+  String get gesture_settings => 'Gesteneinstellungen';
+
+  @override
+  String get long_press_speed => 'Geschwindigkeit bei langem Drücken';
+
+  @override
+  String get vertical_sides => 'Vertikales Wischen';
+
+  @override
+  String get brightness_on_left => 'Links: Helligkeit, rechts: Lautstärke';
+
+  @override
+  String get volume_on_left => 'Links: Lautstärke, rechts: Helligkeit';
+
+  @override
   String get pick_file_type => 'Dateityp auswählen';
 
   @override

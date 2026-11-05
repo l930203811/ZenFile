@@ -3,6 +3,7 @@ package com.sequl.zenfile
 import android.content.pm.PackageManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
+import android.content.pm.ResolveInfo
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.content.Intent
@@ -1342,24 +1343,45 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "getOpenWithApps" -> {
                     // 查询可打开给定 MIME 的外部应用（供「始终+外部」的应用内选择列表）。
                     // 应用本身已声明 QUERY_ALL_PACKAGES，Android 11+ 也能查到完整列表。
+                    //
+                    // issue #33 反馈：只按 mimeType 查询会漏掉 intent-filter 里
+                    // 声明了 data scheme（content/file）的应用（如 NextPlayer）——
+                    // queryIntentActivities 匹配时 intent 无 scheme 则带 scheme 的
+                    // filter 不命中。此处做三次查询（仅 type / file:// / content://）
+                    // 后按包名合并去重，覆盖全部声明方式。
                     val mimeType = call.argument<String>("mimeType") ?: ""
+                    val filePath = call.argument<String>("path") ?: ""
                     executor.execute {
                         try {
-                            val query = Intent(Intent.ACTION_VIEW)
-                            if (mimeType.isNotEmpty()) {
-                                query.type = mimeType
-                            } else {
-                                query.type = "*/*"
-                            }
                             val pm = packageManager
-                            val infos = pm.queryIntentActivities(query, 0)
+                            val baseType = mimeType.ifEmpty { "*/*" }
+                            val queries = mutableListOf<Intent>()
+                            queries.add(Intent(Intent.ACTION_VIEW).apply { type = baseType })
+                            if (filePath.isNotEmpty()) {
+                                queries.add(
+                                    Intent(Intent.ACTION_VIEW).setDataAndType(
+                                        Uri.fromFile(java.io.File(filePath)), baseType)
+                                )
+                                queries.add(
+                                    Intent(Intent.ACTION_VIEW).setDataAndType(
+                                        Uri.parse("content://zenfile.query" + filePath), baseType)
+                                )
+                            }
+                            val infos = LinkedHashMap<String, ResolveInfo>()
+                            for (q in queries) {
+                                try {
+                                    for (ri in pm.queryIntentActivities(q, 0)) {
+                                        infos.putIfAbsent(ri.activityInfo.packageName, ri)
+                                    }
+                                } catch (_: Exception) {
+                                }
+                            }
                             val apps = ArrayList<Map<String, Any>>()
-                            // 同一包名的多个 activity 只保留一个，避免列表重复
-                            val seenPackages = HashSet<String>()
-                            for (ri in infos) {
+                            // 同一包名只保留一个（上面三次查询已按包名合并去重）
+                            for (ri in infos.values) {
                                 val pkg = ri.activityInfo.packageName
                                 // 跳过本应用：列表第一项由下方固定插入（弹窗默认勾选）
-                                if (pkg == packageName || !seenPackages.add(pkg)) continue
+                                if (pkg == packageName) continue
                                 val label = try {
                                     ri.loadLabel(pm)?.toString()
                                 } catch (_: Exception) { null } ?: pkg

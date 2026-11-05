@@ -103,6 +103,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isWaitingForCache = false;
   Timer? _cacheCheckTimer;
 
+  // 横向滑动 seek 固定速率：滑满一屏宽对应的秒数（与视频时长无关）。
+  static const double _fullSwipeSeekSeconds = 90.0;
+
+  // 双击左右区域的快进/快退秒数（参考 NextPlayer，默认 10 秒）。
+  static const int _doubleTapSeekSeconds = 10;
+
+  // 长按倍速值（可在播放器菜单「手势设置」中自定义，默认 2.0）。
+  double _longPressSpeed = 2.0;
+  // 左侧上下滑调节亮度（默认 true：左亮度右音量，与主流播放器一致）。
+  bool _brightnessOnLeft = true;
+
   // ── 双指缩放画面 ──
   // 视频画面当前变换矩阵（缩放 + 平移）；identity = 未缩放。
   Matrix4 _videoTransform = Matrix4.identity();
@@ -264,6 +275,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _useHardwareDecode = PreferencesService.getUseHardwareDecode();
     _alwaysShowProgress = PreferencesService.getVideoProgressAlwaysShow();
     _playbackSpeed = PreferencesService.getVideoPlaybackSpeed();
+    _longPressSpeed = PreferencesService.getVideoLongPressSpeed();
+    _brightnessOnLeft = PreferencesService.getVideoBrightnessOnLeft();
     _volume = PreferencesService.getVideoVolume();
     _isBackgroundMode = PreferencesService.getVideoBackgroundMode();
     if (_isBackgroundMode) {
@@ -2868,10 +2881,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void _onHorizontalDragUpdateAt(double globalDx) {
     if (_isLocked || !_isHorizontalDragging) return;
     final screenWidth = MediaQuery.of(context).size.width;
-    final totalSeconds = _duration.inSeconds;
-    if (screenWidth <= 0 || totalSeconds <= 0) return;
+    if (screenWidth <= 0) return;
+    // 固定速率 seek（issue #33 反馈）：与视频时长解耦，横向滑满一屏 = ±90 秒。
+    // 旧实现按时长比例（满屏 = 总时长/2），两小时视频稍滑就跳 150 秒+。
     final deltaX = globalDx - _dragStartX;
-    final seekSec = (deltaX / screenWidth * totalSeconds / 2).round();
+    final seekSec = (deltaX / screenWidth * _fullSwipeSeekSeconds).round();
     final targetPos = _dragStartPosition + Duration(seconds: seekSec);
     final clampedMs = targetPos.inMilliseconds.clamp(Duration.zero.inMilliseconds, _duration.inMilliseconds);
     final clampedTarget = Duration(milliseconds: clampedMs);
@@ -2931,11 +2945,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  /// 纵向单指拖动（左半屏音量 / 右半屏亮度），传入本帧焦点的 dy 增量。
+  /// 纵向单指拖动（左侧/右侧上下滑），传入本帧焦点的 dy 增量。
+  /// 亮度和音量分配在哪一侧由 [_brightnessOnLeft] 决定（可在
+  /// 播放器菜单「手势设置」中配置；默认左亮度右音量，与主流播放器一致）。
   void _onVerticalDragDelta(double dyDelta, bool isLeft) {
     if (_isLocked) return;
     final delta = -dyDelta / 250.0;
-    if (isLeft) {
+    if (isLeft == _brightnessOnLeft) {
+      setState(() {
+        _brightness = (_brightness + delta).clamp(0.1, 1.0);
+        _showBrightnessSlider = true;
+        _showVolumeSlider = false;
+      });
+    } else {
       final newVolume = (_volume + delta).clamp(0.0, 1.0);
       _setSystemVolume(newVolume);
       PreferencesService.saveVideoVolume(newVolume);
@@ -2944,12 +2966,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _isMuted = newVolume == 0;
         _showVolumeSlider = true;
         _showBrightnessSlider = false;
-      });
-    } else {
-      setState(() {
-        _brightness = (_brightness + delta).clamp(0.1, 1.0);
-        _showBrightnessSlider = true;
-        _showVolumeSlider = false;
       });
     }
 
@@ -2971,7 +2987,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   /// * 双指（pointerCount > 1）：进入 [_pinchActive]，缩放画面
   /// * 单指：按位移主轴路由到横向 seek 或纵向音量/亮度（与原行为一致，
   ///   先 determined 的轴独占，另一轴不响应）
-  void _onScaleStart(ScaleStartDetails details, bool isLeft) {
+  ///
+  /// [verticalSide]：手势分区在屏幕的左右侧（true=左，false=右），用于
+  /// 纵向滑动的亮度/音量分配（按 [_brightnessOnLeft] 配置）；null 表示
+  /// 中间分区，不响应纵向滑动（参考 NextPlayer 三分区手势设计）。
+  void _onScaleStart(ScaleStartDetails details, bool? verticalSide) {
     if (_isLocked) return;
     if (details.pointerCount > 1) {
       // 第二根手指落下：若单指 seek 已在进行则先按拖动结束收尾（执行 seek）
@@ -2990,7 +3010,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _singleDragStart = details.localFocalPoint;
   }
 
-  void _onScaleUpdate(ScaleUpdateDetails details, bool isLeft) {
+  void _onScaleUpdate(ScaleUpdateDetails details, bool? verticalSide) {
     if (_isLocked) return;
     if (_pinchActive || details.pointerCount > 1) {
       _applyPinch(details);
@@ -3004,14 +3024,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _singleDragAxis = 1;
         _onHorizontalDragStartAt(_singleDragStart);
       } else if (dy > 10 && dy >= dx) {
-        _singleDragAxis = 2;
+        // 中间分区不响应纵向滑动（verticalSide == null）
+        _singleDragAxis = verticalSide != null ? 2 : 0;
       }
       if (_singleDragAxis == 0) return;
     }
     if (_singleDragAxis == 1) {
       _onHorizontalDragUpdateAt(details.localFocalPoint.dx);
     } else {
-      _onVerticalDragDelta(details.focalPointDelta.dy, isLeft);
+      _onVerticalDragDelta(details.focalPointDelta.dy, verticalSide!);
     }
   }
 
@@ -3025,6 +3046,123 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _onHorizontalDragEnd();
     }
     _singleDragAxis = 0;
+  }
+
+  /// 双击左右区域的快进/快退（参考 NextPlayer，默认 ±10 秒）。
+  /// 复用横向 seek 的指示器 UI（_showSeekLeft/_showSeekRight）。
+  void _doubleTapSeek(int seconds) {
+    if (_isLocked) return;
+    final target = _position + Duration(seconds: seconds);
+    final clampedMs = target.inMilliseconds.clamp(
+        Duration.zero.inMilliseconds, _duration.inMilliseconds);
+    player.seek(Duration(milliseconds: clampedMs));
+    setState(() {
+      _seekSeconds = _doubleTapSeekSeconds;
+      _showSeekRight = seconds > 0;
+      _showSeekLeft = seconds < 0;
+    });
+    _seekIndicatorTimer?.cancel();
+    _seekIndicatorTimer = Timer(const Duration(milliseconds: 400), () {
+      if (mounted) {
+        setState(() {
+          _showSeekLeft = false;
+          _showSeekRight = false;
+          _seekSeconds = 0;
+        });
+      }
+    });
+    _showControls();
+  }
+
+  /// 「手势设置」底部弹窗：长按倍速自定义 + 上下滑亮度/音量左右侧配置。
+  Future<void> _showGestureSettingsSheet() async {
+    _showControls();
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: StatefulBuilder(
+          builder: (sheetCtx, setSheetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+                child: Text(
+                  L10n.of(context).gesture_settings,
+                  style: Theme.of(sheetCtx).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Text(
+                  L10n.of(context).long_press_speed,
+                  style: Theme.of(sheetCtx).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(sheetCtx).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+              ...[1.25, 1.5, 2.0, 3.0].map(
+                (v) => RadioListTile<double>(
+                  value: v,
+                  groupValue: _longPressSpeed,
+                  dense: true,
+                  title: Text('${v}x'),
+                  onChanged: (nv) {
+                    if (nv == null) return;
+                    setSheetState(() => _longPressSpeed = nv);
+                    PreferencesService.saveVideoLongPressSpeed(nv);
+                    setState(() => _longPressSpeed = nv);
+                  },
+                ),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Text(
+                  L10n.of(context).vertical_sides,
+                  style: Theme.of(sheetCtx).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(sheetCtx).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+              RadioListTile<bool>(
+                value: true,
+                groupValue: _brightnessOnLeft,
+                dense: true,
+                title: Text(L10n.of(context).brightness_on_left),
+                onChanged: (nv) {
+                  if (nv == null) return;
+                  setSheetState(() => _brightnessOnLeft = nv);
+                  PreferencesService.saveVideoBrightnessOnLeft(nv);
+                  setState(() => _brightnessOnLeft = nv);
+                },
+              ),
+              RadioListTile<bool>(
+                value: false,
+                groupValue: _brightnessOnLeft,
+                dense: true,
+                title: Text(L10n.of(context).volume_on_left),
+                onChanged: (nv) {
+                  if (nv == null) return;
+                  setSheetState(() => _brightnessOnLeft = nv);
+                  PreferencesService.saveVideoBrightnessOnLeft(nv);
+                  setState(() => _brightnessOnLeft = nv);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// 应用捏合缩放：新矩阵 = 焦点平移 × 绕起始焦点缩放 × 基准矩阵。
@@ -3126,7 +3264,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void _startLongPress() {
     if (_isLocked) return;
     _previousSpeed = _playbackSpeed;
-    player.setRate(2.0);
+    player.setRate(_longPressSpeed);
     setState(() => _isLongPressSpeed = true);
   }
 
@@ -3964,13 +4102,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               ),
             ),
 
-          // Gesture Zones (Scale Pinch Zoom, Horizontal Drag Seek, Double Tap Play/Pause, Long Press Speed)
+          // Gesture Zones — 三分区（参考 NextPlayer）：
+          // 左区双击快退 / 中区双击播放暂停 / 右区双击快进；
+          // 左右区上下滑调亮度/音量（哪侧调什么由「手势设置」配置），
+          // 中区不响应上下滑；全区域支持横滑 seek、长按倍速、双指缩放
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onDoubleTap: _onTogglePlayPause,
+                  onDoubleTap: () => _doubleTapSeek(-_doubleTapSeekSeconds),
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
@@ -3984,6 +4125,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onDoubleTap: _onTogglePlayPause,
+                  onTap: _toggleControls,
+                  onLongPressStart: (_) => _startLongPress(),
+                  onLongPressEnd: (_) => _endLongPress(),
+                  onScaleStart: (d) => _onScaleStart(d, null),
+                  onScaleUpdate: (d) => _onScaleUpdate(d, null),
+                  onScaleEnd: _onScaleEnd,
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onDoubleTap: () => _doubleTapSeek(_doubleTapSeekSeconds),
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
@@ -4281,6 +4435,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     },
                     isBackgroundActive: _isBackgroundMode,
                     onPlaybackInfo: _showPlaybackInfo,
+                    onGestureSettings: _showGestureSettingsSheet,
                   ),
                 ],
               ),
