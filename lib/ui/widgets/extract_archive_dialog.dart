@@ -187,8 +187,9 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                           Text(
                             _destDir,
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            // 完整显示目标路径不截断：低分屏长路径自动折行，
+                            // 方便用户确认解压位置（issue 反馈：路径被截断）。
+                            softWrap: true,
                           ),
                         ],
                       ),

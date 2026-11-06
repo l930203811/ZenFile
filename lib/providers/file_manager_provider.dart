@@ -735,6 +735,8 @@ class FileManagerProvider extends ChangeNotifier {
         final files = tab.currentFiles.where((e) => !e.isDirectory).toList();
         _sortList(folders, tab.currentPath);
         _sortList(files, tab.currentPath);
+        // 切到按大小排序时，目录大小可能还没算过——后台预热后自动重排归位
+        _maybeWarmFolderSizesForSort(folders, tab.currentPath);
         tab.currentFiles = [...folders, ...files];
       }
     }
@@ -885,10 +887,14 @@ class FileManagerProvider extends ChangeNotifier {
         items.sort((a, b) => a.modified.compareTo(b.modified));
         break;
       case FileSortType.sizeLargest:
-        items.sort((a, b) => b.size.compareTo(a.size));
+        // 文件夹按内容总大小参与排序（取 _folderSizes 缓存值；未算完时按 0
+        // 占位，由 _maybeWarmFolderSizesForSort 异步算完后重排修正）。
+        // 修复：旧实现用 item.size，文件夹恒为 0，「大小从大到小」下文件夹
+        // 完全不参与排序（含大文件的文件夹排不到前面）。
+        items.sort((a, b) => _sortSizeOf(b).compareTo(_sortSizeOf(a)));
         break;
       case FileSortType.sizeSmallest:
-        items.sort((a, b) => a.size.compareTo(b.size));
+        items.sort((a, b) => _sortSizeOf(a).compareTo(_sortSizeOf(b)));
         break;
       case FileSortType.type:
         items.sort((a, b) {
@@ -914,6 +920,74 @@ class FileManagerProvider extends ChangeNotifier {
       items.addAll(pinned);
       items.addAll(unpinned);
     }
+  }
+
+  /// 排序用尺寸：文件夹取内容总大小缓存（getFolderSize 共享缓存），文件取自身大小。
+  int _sortSizeOf(FileItemModel item) =>
+      item.isDirectory ? (_folderSizes[item.path] ?? 0) : item.size;
+
+  int _sizeSortWarmPending = 0;
+  Timer? _sizeSortRefreshTimer;
+  final Set<String> _sizeSortWarmInFlight = <String>{};
+
+  /// 「按大小排序」时异步预热子目录的内容总大小。
+  ///
+  /// 文件夹大小不在列目录时同步计算（太贵），而 _sortList 排序是同步的——
+  /// 文件夹首次进列表时还没有大小数据。这里在列表加载/切换到大小排序后，
+  /// 对未缓存的子目录后台调 getFolderSize（与「显示文件夹大小」共享缓存），
+  /// 每次算完防抖重排当前目录，几秒内文件夹会按真实大小归位。
+  ///
+  /// 仅本地真实路径生效：远程/加密/SAF 虚拟路径传给 getFolderSize 会扫本地
+  /// 磁盘得到错误的 0 并污染缓存，必须排除。
+  void _maybeWarmFolderSizesForSort(List<FileItemModel> items, String path) {
+    final activeSort = getSortTypeForPath(path);
+    if (activeSort != FileSortType.sizeLargest &&
+        activeSort != FileSortType.sizeSmallest) {
+      return;
+    }
+    final pending = items
+        .where((e) =>
+            e.isDirectory &&
+            !_folderSizes.containsKey(e.path) &&
+            !_sizeSortWarmInFlight.contains(e.path) &&
+            e.path.startsWith('/') &&
+            !e.path.contains(':'))
+        .toList();
+    if (pending.isEmpty) return;
+    _sizeSortWarmPending += pending.length;
+    for (final f in pending) {
+      _sizeSortWarmInFlight.add(f.path);
+      getFolderSize(f.path).then((_) {
+        _sizeSortWarmInFlight.remove(f.path);
+        _sizeSortWarmPending--;
+        _scheduleSizeSortRefresh(path);
+      }).catchError((_) {
+        _sizeSortWarmInFlight.remove(f.path);
+        _sizeSortWarmPending--;
+      });
+    }
+  }
+
+  /// 子目录大小计算完成后的防抖重排：停顿 250ms 才刷新一次，
+  /// 避免大批目录算完时每个都触发一次整页重排。
+  void _scheduleSizeSortRefresh(String path) {
+    _sizeSortRefreshTimer?.cancel();
+    _sizeSortRefreshTimer = Timer(const Duration(milliseconds: 250), () {
+      reSortCurrentDirectoryForSize(path);
+    });
+  }
+
+  /// 用最新的大小缓存重排当前可见目录（用户仍停在该路径时才生效）。
+  void reSortCurrentDirectoryForSize(String path) {
+    if (_tabs.isEmpty) return;
+    final tab = activeTab;
+    if (tab.currentPath != path || tab.currentFiles.isEmpty) return;
+    final folders = tab.currentFiles.where((e) => e.isDirectory).toList();
+    final files = tab.currentFiles.where((e) => !e.isDirectory).toList();
+    _sortList(folders, path);
+    _sortList(files, path);
+    tab.currentFiles = [...folders, ...files];
+    notifyListeners();
   }
 
   bool _showHiddenFiles = false;
@@ -2544,6 +2618,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     _sortList(filteredFolders, path);
     _sortList(filteredFiles, path);
+    _maybeWarmFolderSizesForSort(filteredFolders, path);
 
     return [...filteredFolders, ...filteredFiles];
   }
@@ -8146,6 +8221,7 @@ class FileManagerProvider extends ChangeNotifier {
         final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
         _sortList(filteredFolders, path);
         _sortList(filteredFiles, path);
+        _maybeWarmFolderSizesForSort(filteredFolders, path);
         activeTab.currentPath = path;
         activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
         activeTab.isLoading = false;
