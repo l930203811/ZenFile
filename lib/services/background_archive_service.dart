@@ -1695,7 +1695,9 @@ static void _compressIsolateTask(Map<String, dynamic> args) async {
       // 否则外层变量永远是 null ⇒ TAR.* 解压留下的临时文件再也不会被删除。
 
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
-        final input = InputFileStream(archivePath);
+        // TolerantInputFileStream：修复 WinRAR（GBK 文件名、无 UTF-8 标志）压缩的
+        // zip 在读本地文件头文件名时严格 UTF-8 解码抛 FormatException 的问题。
+        final input = TolerantInputFileStream(archivePath);
         archiveInputToClose = input;
         // requirePasswordIfEncrypted：加密 ZIP 且没给密码时立刻抛
         // ArchivePasswordRequiredException，而不是让 archive 包解出「空内容」——

@@ -114,6 +114,57 @@ void _writeBytesChunked(IOSink sink, List<int> bytes, {int chunkSize = _kArchive
   }
 }
 
+/// 容忍型输入文件流：修复 WinRAR 等 Windows 工具压缩的 zip 无法解压的问题。
+///
+/// 根因：archive 3.6.1 的 `ZipFile` 构造器读取本地文件头里的文件名时，无视
+/// UTF-8 标志位直接调用 `readString(utf8: true)`，而 `InputFileStream.readString`
+/// 用严格的 `Utf8Decoder` 解码 —— WinRAR 在中文 Windows 默认写 GBK 文件名且不置
+/// UTF-8 标志（bit 11），解码直接抛 `FormatException: Missing extension byte`，
+/// 整包解压失败。中央目录与内存路径（InputStream.readString）都是宽松实现，
+/// 所以只有「文件流 + 本地文件头」这条路径会炸。
+///
+/// 修复：override `readString`，严格 UTF-8 失败时回退 `String.fromCharCodes`
+/// （Latin-1 逐字节保真），原始字节不丢，随后交由既有的 `_fixZipFilename`
+/// （GBK 解码）把文件名修复为正确的中文。
+///
+/// 仅用于 ZIP 解码入口；TAR / GZIP 等分支保持原 `InputFileStream` 不变。
+///
+/// 注意：`InputFileStream` 的主构造是 factory（Dart 不允许子类 super 调用），
+/// 故显式走 `withFileBuffer` 构造；`FileHandle(path)` 默认即只读模式。
+class TolerantInputFileStream extends InputFileStream {
+  TolerantInputFileStream(String path)
+      : super.withFileBuffer(FileBuffer(FileHandle(path)));
+
+  @override
+  String readString({int? size, bool utf8 = true}) {
+    if (!utf8) return super.readString(size: size, utf8: false);
+    final bytes = size == null
+        ? _readUntilNull()
+        : readBytes(size).toUint8List();
+    return _tolerantUtf8Decode(bytes);
+  }
+
+  List<int> _readUntilNull() {
+    final codes = <int>[];
+    while (!isEOS) {
+      final c = readByte();
+      if (c == 0) break;
+      codes.add(c);
+    }
+    return codes;
+  }
+
+  static String _tolerantUtf8Decode(List<int> bytes) {
+    try {
+      return utf8.decode(bytes);
+    } catch (_) {
+      // 非 UTF-8 字节（如 GBK）：Latin-1 逐字节映射成字符串，保住原始字节，
+      // 交给 _fixZipFilename 用 GBK 解码还原。
+      return String.fromCharCodes(bytes);
+    }
+  }
+}
+
 class ArchiveService {
   /// Creates an archive or multiple separate archives.
   static Future<void> createArchive({
@@ -547,7 +598,7 @@ class ArchiveService {
     try {
       final file = File(archivePath);
       if (!file.existsSync()) return false;
-      input = InputFileStream(archivePath);
+      input = TolerantInputFileStream(archivePath);
       final decoder = ZipDecoder();
       decoder.decodeBuffer(input);
       return decoder.directory.fileHeaders
@@ -1012,7 +1063,7 @@ class ArchiveService {
       InputFileStream? zipInputToClose;
 
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
-        final input = InputFileStream(archivePath);
+        final input = TolerantInputFileStream(archivePath);
         zipInputToClose = input;
         archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
       } else if (lowerPath.endsWith('.tar')) {
@@ -1032,7 +1083,7 @@ class ArchiveService {
           archive = TarDecoder().decodeBuffer(input);
         } else {
           // fallback：走 InputFileStream + zip decoder
-          final input = InputFileStream(archivePath);
+          final input = TolerantInputFileStream(archivePath);
           zipInputToClose = input;
           archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
         }
@@ -1132,7 +1183,7 @@ class ArchiveService {
       if (isKoniArchivePath(archivePath)) {
         return await _extractKoniEntriesToBytes(archivePath, requested, pwdStr);
       }
-      final input = InputFileStream(archivePath);
+      final input = TolerantInputFileStream(archivePath);
       try {
         final archive = decodeZip(input, pwdStr, requirePasswordIfEncrypted: true);
         _fixArchiveFilenames(archive);
@@ -1210,7 +1261,7 @@ class ArchiveService {
       try {
         late Archive archive;
         if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
-          final input = InputFileStream(archivePath);
+          final input = TolerantInputFileStream(archivePath);
           try {
             archive = decodeZip(input, pwdStr);
           } finally { try { input.closeSync(); } catch (_) {} }
@@ -1231,13 +1282,13 @@ class ArchiveService {
               archive = TarDecoder().decodeBuffer(input);
             } finally { try { input.closeSync(); } catch (_) {} }
           } else {
-            final input = InputFileStream(archivePath);
+            final input = TolerantInputFileStream(archivePath);
             try {
               archive = decodeZip(input, pwdStr);
             } finally { try { input.closeSync(); } catch (_) {} }
           }
         } else {
-          final input = InputFileStream(archivePath);
+          final input = TolerantInputFileStream(archivePath);
           try {
             archive = decodeZip(input, pwdStr);
           } finally { try { input.closeSync(); } catch (_) {} }
@@ -1314,7 +1365,7 @@ class ArchiveService {
       try {
         if (archiveFile.existsSync() && archiveFile.lengthSync() > 0) {
           if (isZip) {
-            final fs = InputFileStream(archivePath);
+            final fs = TolerantInputFileStream(archivePath);
             input = fs;
             oldArchive = ZipDecoder().decodeBuffer(fs);
           } else if (isTar) {
@@ -1520,7 +1571,7 @@ class ArchiveService {
       if (!srcFile.existsSync() || srcFile.lengthSync() == 0) return false;
 
       // 1) 解码原包（条目内容为惰性窗口，编码期间仍需从输入流读取）
-      final input = InputFileStream(archivePath);
+      final input = TolerantInputFileStream(archivePath);
       try {
         final oldArchive = ZipDecoder().decodeBuffer(input);
 
@@ -1628,7 +1679,7 @@ class ArchiveService {
       // 1) 流式读入旧 Archive（不一次性 readAsBytesSync 压缩包）
       late Archive oldArchive;
       if (isZip) {
-        final fs = InputFileStream(archivePath);
+        final fs = TolerantInputFileStream(archivePath);
         input = fs;
         oldArchive = ZipDecoder().decodeBuffer(fs);
       } else if (isTar) {
