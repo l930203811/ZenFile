@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.3';
+  static const String _latestChangelogVersion = 'v3.7.4';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v374,
     _v373,
     _v372,
     _v371,
@@ -960,7 +961,33 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.3 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.4 ────────────────────────────────────────────────
+  static const _Changelog _v374 = _Changelog(
+    version: 'v3.7.4',
+    date: '2026-11-07',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复「按大小排序」时文件夹不参与排序：选择「大小（大）」或「大小（小）」后，文件夹此前因为大小恒按 0 计算，总是堆在最后或最前；现在改为按文件夹内实际内容总大小参与排序，尚未算完的目录先按已知大小排列，算完几秒内自动归位',
+        '修复 WinRAR 压缩的 zip 无法解压：中文 Windows 下 WinRAR 默认用 GBK 写文件名，此前这类压缩包会直接报错、完全打不开；现在能正常解压、预览与查看，中文文件名也能正确还原',
+        '修复解压缩对话框的目标路径被截断：低分辨率屏或路径层级较深时，路径不再单行省略，而是自动折行完整显示',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed folders being left out of size sorting: after choosing "Size (largest)" or "Size (smallest)", folders used to pile up at the very bottom or top because their size was always counted as 0. They now sort by the total size of their contents; folders still being measured fall back to a placeholder and move into place within a few seconds once the scan finishes',
+        'Fixed zip files created by WinRAR failing to extract: on Chinese Windows, WinRAR writes filenames in GBK by default, and such archives used to fail with an error and could not be opened at all. They now extract, preview and open normally, with Chinese filenames restored correctly',
+        'Fixed the destination path being truncated in the extract dialog: on low-resolution screens or with deeply nested paths, the path now wraps and shows in full instead of being cut off on a single line',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.3（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v373 = _Changelog(
     version: 'v3.7.3',
     date: '2026-11-05',
