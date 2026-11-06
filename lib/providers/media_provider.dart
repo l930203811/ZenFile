@@ -4232,6 +4232,8 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   Future<void> _scanRecentFiles() async {
     final list = <FileSystemEntity>[];
     final seen = <String>{};
+    /// 已展开过子项的目录路径：最终结果里要剔除它们本身。
+    final expandedDirs = <String>{};
     // 「显示隐藏文件」总开关：关闭时（默认）最近列表既不扫隐藏目录也不收录
     // 隐藏文件，与浏览页的可见性保持一致；开启后才把点开头（系统隐藏）的
     // 目录/文件一并纳入。此前这里无条件跳过隐藏目录、却又无条件丢弃点开头
@@ -4278,6 +4280,12 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
                   (showHidden || !p.basename(entity.path).startsWith('.'))) {
                 try {
                   final sub = await entity.list(recursive: false).toList();
+                  // 记录「已展开过子项的目录」：最终列表要剔除这些父目录
+                  // （子项已在列表里，父目录本身不该作为条目出现）。
+                  // 旧实现用 list.any(p.isWithin) 事后两两比对，是 O(n²) ——
+                  // 几万个实体时主 isolate 会连续跑数秒，正是 issue #59
+                  // （Input dispatching timed out）的来源。改为遍历时记账，O(n)。
+                  expandedDirs.add(entity.path);
                   for (final s in sub) {
                     if (!seen.contains(s.path)) {
                       seen.add(s.path);
@@ -4317,39 +4325,49 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
       }
     }
 
-    // Filter: remove parent dirs if a child also exists in the list
+    // 剔除「已展开过子项」的父目录（其子项已在 list 里）。
+    // 旧实现是 list.any(p.isWithin) 的两两比对 —— O(n²)，几万个实体时会在
+    // 主 isolate 上连续跑数秒到数十秒，直接触发 ANR（issue #59）。
     final filteredList = <FileSystemEntity>[];
     for (final entity in list) {
-      if (entity is Directory) {
-        bool hasChild = list.any((o) => o.path != entity.path && p.isWithin(entity.path, o.path));
-        if (hasChild) continue;
-      }
+      if (entity is Directory && expandedDirs.contains(entity.path)) continue;
       filteredList.add(entity);
     }
 
     final items = <FileItemModel>[];
-    await Future.wait(filteredList.map((f) async {
-      try {
-        if (f is Directory) return;
-        final name = p.basename(f.path);
-        // 关闭「显示隐藏文件」时，点开头的系统隐藏文件（含 `.nomedia`、
-        // 各应用私有缓存等）一律不进入「最近」；同时剔除位于隐藏目录下
-        // 的条目（这些条目可能来自各分类清单，而非上面的目录枚举）。
-        if (!showHidden &&
-            (name.startsWith('.') || _hasHiddenSegment(f.path))) {
-          return;
-        }
-        final stat = await f.stat();
-        items.add(FileItemModel(
-          entity: f,
-          name: name,
-          path: f.path,
-          isDirectory: false,
-          size: stat.size,
-          modified: stat.modified,
-        ));
-      } catch (_) {}
-    }));
+    // 分批 stat 并逐批让出事件循环：几万个文件一次性 Future.wait 会同时挂起
+    // 数万个异步 op，既不必要地把内存推到峰值，也会让主 isolate 长时间
+    // 得不到空闲。每 200 个一批、批间让出一拍，输入事件能及时被处理。
+    const batchSize = 200;
+    for (var start = 0; start < filteredList.length; start += batchSize) {
+      final end = start + batchSize < filteredList.length
+          ? start + batchSize
+          : filteredList.length;
+      await Future.wait(filteredList.sublist(start, end).map((f) async {
+        try {
+          if (f is Directory) return;
+          final name = p.basename(f.path);
+          // 关闭「显示隐藏文件」时，点开头的系统隐藏文件（含 `.nomedia`、
+          // 各应用私有缓存等）一律不进入「最近」；同时剔除位于隐藏目录下
+          // 的条目（这些条目可能来自各分类清单，而非上面的目录枚举）。
+          if (!showHidden &&
+              (name.startsWith('.') || _hasHiddenSegment(f.path))) {
+            return;
+          }
+          final stat = await f.stat();
+          items.add(FileItemModel(
+            entity: f,
+            name: name,
+            path: f.path,
+            isDirectory: false,
+            size: stat.size,
+            modified: stat.modified,
+          ));
+        } catch (_) {}
+      }));
+      // 让出一拍：把控制权交回事件循环，避免连续占满主 isolate。
+      await Future<void>.delayed(Duration.zero);
+    }
 
     items.sort((a, b) => b.modified.compareTo(a.modified));
     _recentFiles = items;

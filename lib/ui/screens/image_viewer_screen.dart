@@ -594,6 +594,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         });
         return;
       }
+      // 这条回退会把整幅图解码进内存（只为读尺寸）。几十 MB 的原图足以把
+      // 内存峰值推高一截，超大文件干脆跳过：尺寸拿不到时按「适应宽度」显示，
+      // 不影响查看。
+      try {
+        if (await f.length() > 40 * 1024 * 1024) return;
+      } catch (_) {}
       final provider = f.path.toLowerCase().endsWith('.avif')
           ? FileAvifImage(f) as ImageProvider
           : FileImage(f) as ImageProvider;
@@ -622,6 +628,37 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         stream.removeListener(listener);
       }
     } catch (_) {}
+  }
+
+  /// 全屏查看时的解码尺寸上限（长边像素）。
+  ///
+  /// 为什么必须限制：`FileImage` 是**全尺寸解码**，Android 侧走 engine 的
+  /// `ImageGenerator`（底层 `ImageDecoder` / `BitmapFactory`）。一张一亿像素的
+  /// 照片要申请约 400 MB 位图，分配失败时 Java 侧抛异常，而 engine 在
+  /// `android_image_generator.cc:117` 用
+  /// `FML_CHECK(fml::jni::CheckException(env))` 断言 —— 断言失败即 SIGABRT，
+  /// Dart 侧连 catch 的机会都没有（issue #60 报的就是这一行）。
+  /// 所以只能在**解码前**把目标尺寸压下来，事后 try/catch 兜不住。
+  static const int _kMaxDecodeSide = 4096;
+
+  /// 构造查看用的 provider：按屏幕尺寸（含像素比，最多 2 倍）降采样解码，
+  /// 既避免超大图整幅解码炸内存，也保证缩放后仍有足够细节。
+  /// AVIF 走 flutter_avif 自带解码器（异常可被 Dart 捕获），保持原样。
+  ImageProvider _viewerProvider(File file, bool isAvif, BuildContext context) {
+    if (isAvif) return FileAvifImage(file);
+    final size = MediaQuery.sizeOf(context);
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    // 超过 2 倍像素比对人眼已无收益，只是白占内存。
+    final double want =
+        math.max(size.width, size.height) * (dpr > 2.0 ? 2.0 : dpr);
+    final int side = want.clamp(720.0, _kMaxDecodeSide.toDouble()).round();
+    return ResizeImage(
+      FileImage(file),
+      width: side,
+      height: side,
+      policy: ResizeImagePolicy.fit,
+      allowUpscaling: false,
+    );
   }
 
   /// 只读文件前 [length] 字节（不足则读全部），用于头部解析，避免整文件读入。
@@ -656,6 +693,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       try {
         info = await _editService.readInfo(headerBytes);
       } catch (_) {
+        // 只有把 SOF 写在 1 MB 之后的畸形图才需要整文件重试。超大文件不再
+        // 整读 —— 为了一行尺寸/格式把几十 MB 拉进内存不值得，直接放弃刷新。
+        if (await file.length() > 64 * 1024 * 1024) rethrow;
         info = await _editService.readInfo(await file.readAsBytes());
       }
       final size = await file.length();
@@ -1427,8 +1467,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     }
 
                     final ImageProvider provider = isValidFile
-                        ? (isAvif ? FileAvifImage(imgFile) : FileImage(imgFile))
-                              as ImageProvider
+                        ? _viewerProvider(imgFile, isAvif, context)
                         : (thumbData != null
                               ? MemoryImage(thumbData)
                               : MemoryImage(_kTransparentImage));
