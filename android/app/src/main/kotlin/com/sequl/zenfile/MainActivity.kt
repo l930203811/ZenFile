@@ -420,6 +420,9 @@ class MainActivity : AudioServiceFragmentActivity() {
         SystemFilePickerBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         ShareIntentBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         BuglyBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
+        // HEIC/HEIF 安全解码（issue #61）：绕开 engine 的 AndroidImageGenerator，
+        // 否则 Java 解码异常会让 engine 在 FML_CHECK 处直接 SIGABRT。
+        HeifDecoderBridge.registerChannel(flutterEngine.dartExecutor.binaryMessenger)
         pdfRendererChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PDF_RENDERER_CHANNEL)
         pdfRendererChannel?.setMethodCallHandler { call, rawResult ->
             val result = rawResult.replyOnce()

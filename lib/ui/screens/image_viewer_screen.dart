@@ -3,8 +3,10 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:math' as math;
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:mime/mime.dart';
@@ -19,6 +21,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../ui/widgets/file_action_dialogs.dart';
 import '../../services/image_edit_service.dart';
+import '../../services/heif_image_provider.dart';
 import '../../services/preferences_service.dart';
 import '../../services/image_metadata_service.dart';
 import '../../services/folder_share_service.dart';
@@ -286,6 +289,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         }
       });
     }
+  }
+
+  /// 保险箱流式解密的条目只有显示名可用，按扩展名判断是否为 HEIF 家族。
+  static bool _isHeifName(String name) {
+    final n = name.toLowerCase();
+    return n.endsWith('.heic') ||
+        n.endsWith('.heif') ||
+        n.endsWith('.heix') ||
+        n.endsWith('.hevc');
   }
 
   /// 归一化路径，仅用于「是否同一个文件」的比较（不用于读写）。
@@ -577,6 +589,20 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       f = _remoteCache[_currentIndex];
     }
     if (f == null || !f.existsSync()) return;
+    // HEIF 不能交给 engine 整幅解码（issue #61 的 SIGABRT）。原生桥会顺带
+    // 返回原始尺寸，这里只要 64px 缩略图就能拿到，开销极小；失败就保持
+    // 「适应宽度」，不影响查看。
+    if (isHeifFile(f)) {
+      try {
+        final r = await HeifDecoder.decode(f.path, 64);
+        if (r != null && r.width > 0 && r.height > 0 && mounted) {
+          setState(() {
+            _imageSize = Size(r.width.toDouble(), r.height.toDouble());
+          });
+        }
+      } catch (_) {}
+      return;
+    }
     try {
       // 优先用文件头解析尺寸（零解码开销，不重复解码正在显示的图）；
       // AVIF 等 image 包不支持的格式回退到下方 provider 完整解码路径。
@@ -600,6 +626,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       try {
         if (await f.length() > 40 * 1024 * 1024) return;
       } catch (_) {}
+      // 这里要的是**原始**尺寸，不能降采样；HEIF 已在上方单独走原生桥取尺寸，
+      // 走到这里的只会是 Skia 能解的格式，FileImage 不会触发 engine abort。
       final provider = f.path.toLowerCase().endsWith('.avif')
           ? FileAvifImage(f) as ImageProvider
           : FileImage(f) as ImageProvider;
@@ -644,6 +672,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   /// 构造查看用的 provider：按屏幕尺寸（含像素比，最多 2 倍）降采样解码，
   /// 既避免超大图整幅解码炸内存，也保证缩放后仍有足够细节。
   /// AVIF 走 flutter_avif 自带解码器（异常可被 Dart 捕获），保持原样。
+  ///
+  /// HEIC/HEIF 由 [imageProviderForFile] 转交原生桥安全解码：engine 的
+  /// AndroidImageGenerator 会**无视**这里的降采样尺寸整幅解码，且 Java 侧
+  /// 一抛异常就 FML_CHECK → SIGABRT（issue #60 / #61），ResizeImage 挡不住。
   ImageProvider _viewerProvider(File file, bool isAvif, BuildContext context) {
     if (isAvif) return FileAvifImage(file);
     final size = MediaQuery.sizeOf(context);
@@ -652,13 +684,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     final double want =
         math.max(size.width, size.height) * (dpr > 2.0 ? 2.0 : dpr);
     final int side = want.clamp(720.0, _kMaxDecodeSide.toDouble()).round();
-    return ResizeImage(
-      FileImage(file),
-      width: side,
-      height: side,
-      policy: ResizeImagePolicy.fit,
-      allowUpscaling: false,
-    );
+    return imageProviderForFile(file, cacheWidth: side, cacheHeight: side);
   }
 
   /// 只读文件前 [length] 字节（不足则读全部），用于头部解析，避免整文件读入。
@@ -1375,21 +1401,30 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     //    左右滑过去画面纹丝不动（看着像翻页其实没翻）。
                     final cryptPath = _pathAtIndex(index);
                     if (cryptPath != null && cryptPath.startsWith('http://')) {
+                      // 保险箱流式解密出来的 HEIC 同样不能交给 NetworkImage：
+                      // engine 还是会走 AndroidImageGenerator → 可能 SIGABRT。
+                      // 先落成本地临时文件，再走原生安全解码。
+                      final bool streamHeif = _isHeifName(_titleOf(index));
                       return PhotoViewGalleryPageOptions.customChild(
                         child: Transform.rotate(
                           angle: _rotation,
-                          child: Image(
-                            image: NetworkImage(cryptPath),
-                            fit: BoxFit.contain,
-                            loadingBuilder: (ctx, child, loading) {
-                              if (loading == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white70,
+                          child: streamHeif
+                              ? _HeifStreamImage(
+                                  url: cryptPath,
+                                  targetSide: _kMaxDecodeSide,
+                                )
+                              : Image(
+                                  image: NetworkImage(cryptPath),
+                                  fit: BoxFit.contain,
+                                  loadingBuilder: (ctx, child, loading) {
+                                    if (loading == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white70,
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
                         ),
                         initialScale: PhotoViewComputedScale.contained,
                         minScale: PhotoViewComputedScale.contained,
@@ -1754,6 +1789,92 @@ class _ActionBarButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 保险箱流式解密的 HEIC 图片（issue #61 的同类路径）。
+///
+/// 解密流是 `http://127.0.0.1/...`，直接 `NetworkImage` 会把 HEIF 字节喂给
+/// engine 的 AndroidImageGenerator，Java 解码一抛异常就是 SIGABRT。这里先把
+/// 字节落到临时文件，再用 [HeifImage] 走原生安全解码；失败只显示占位图标。
+class _HeifStreamImage extends StatefulWidget {
+  const _HeifStreamImage({required this.url, required this.targetSide});
+
+  final String url;
+  final int targetSide;
+
+  @override
+  State<_HeifStreamImage> createState() => _HeifStreamImageState();
+}
+
+class _HeifStreamImageState extends State<_HeifStreamImage> {
+  // 同一页来回切换不必反复下载解密流。
+  static final Map<String, File> _cache = <String, File>{};
+
+  File? _file;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final cached = _cache[widget.url];
+    if (cached != null && cached.existsSync()) {
+      _file = cached;
+    } else {
+      _fetch();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeifStreamImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url == widget.url) return;
+    final cached = _cache[widget.url];
+    _file = (cached != null && cached.existsSync()) ? cached : null;
+    _failed = false;
+    if (_file == null) _fetch();
+  }
+
+  Future<void> _fetch() async {
+    HttpClient? client;
+    try {
+      client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+      final request = await client.getUrl(Uri.parse(widget.url));
+      final response = await request.close();
+      final bytes = await consolidateHttpClientResponseBytes(response);
+      if (bytes.isEmpty) throw StateError('empty decrypted stream');
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/zenfile_heif_${widget.url.hashCode}.heic');
+      await file.writeAsBytes(bytes, flush: true);
+      if (_cache.length >= 8) _cache.clear();
+      _cache[widget.url] = file;
+      if (mounted) setState(() => _file = file);
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    } finally {
+      client?.close(force: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final file = _file;
+    if (_failed || file == null) {
+      return Center(
+        child: _failed
+            ? const Icon(Icons.broken_image_outlined,
+                color: Colors.white54, size: 48)
+            : const CircularProgressIndicator(color: Colors.white70),
+      );
+    }
+    return Image(
+      image: HeifImage(file, targetSide: widget.targetSide),
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => const Center(
+        child: Icon(Icons.broken_image_outlined,
+            color: Colors.white54, size: 48),
       ),
     );
   }

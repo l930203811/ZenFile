@@ -397,13 +397,74 @@ object CrashForensics {
                     out.write(buf, 0, take)
                     total += take
                 }
-                val text = String(out.toByteArray(), Charsets.UTF_8)
-                if (text.isBlank()) "(trace 为空)" else text
+                val raw = out.toByteArray()
+                if (raw.isEmpty()) "(trace 为空)" else readableTrace(raw)
             }
         } catch (t: Throwable) {
             "(读取 trace 失败: ${t.javaClass.simpleName}: ${t.message})"
         }
     }
+
+    /**
+     * Android 11+ 的 `REASON_CRASH_NATIVE` trace 是 **protobuf 序列化的
+     * tombstone**，不是文本：旧写法 `String(bytes, UTF_8)` 会把长度前缀和
+     * 寄存器字节解成满屏乱码（issue #61 的报告就是这样，59735 字符里
+     * 真正能读的只有几十行）。
+     *
+     * 分两种处理：
+     *  - 基本是文本的（ANR trace）→ 原样 UTF-8 解码；
+     *  - 二进制的 → 抽取长度 ≥ 4 的可打印 ASCII 串逐行输出，其余字节折叠成
+     *    `[<binary N bytes>]`。FATAL 行、崩溃线程栈、so 路径、build-id 都会
+     *    完整保留，报告从「一堆乱码」变成可以直接定位的可读日志。
+     *
+     * 判据只数控制字符（< 0x20），不把 ≥ 0x80 算二进制：ANR trace 里的中文
+     * 路径/线程名因此不会被误判。
+     */
+    private fun readableTrace(raw: ByteArray): String {
+        var control = 0
+        for (b in raw) {
+            val v = b.toInt() and 0xFF
+            if (v < 0x20 && v != 0x09 && v != 0x0A && v != 0x0D) control++
+        }
+        if (control * 20 < raw.size) {
+            return String(raw, Charsets.UTF_8).ifBlank { "(trace 为空)" }
+        }
+
+        val sb = StringBuilder()
+        sb.append("[binary tombstone ${raw.size} bytes; 以下为其中可打印内容]\n")
+        var i = 0
+        var skipped = 0
+        while (i < raw.size && sb.length < 64 * 1024) {
+            val v = raw[i].toInt() and 0xFF
+            if (!isPrintable(v)) {
+                i++
+                skipped++
+                continue
+            }
+            val start = i
+            while (i < raw.size && isPrintable(raw[i].toInt() and 0xFF)) i++
+            val run = i - start
+            if (run >= 4) {
+                if (skipped > 0) {
+                    sb.append("[<binary ").append(skipped).append(" bytes>]\n")
+                    skipped = 0
+                }
+                val line = String(raw, start, run, Charsets.UTF_8)
+                sb.append(line)
+                if (!line.endsWith('\n')) sb.append('\n')
+            } else {
+                // 太短的可打印片段多半是 protobuf 里的字段名碎片，丢掉。
+                skipped += run
+            }
+        }
+        if (skipped > 0) {
+            sb.append("[<binary ").append(skipped).append(" bytes>]\n")
+        }
+        return sb.toString().ifBlank { "(trace 为空)" }
+    }
+
+    private fun isPrintable(v: Int): Boolean =
+        v == 0x09 || v == 0x0A || v == 0x0D || (v in 0x20..0x7E)
 
     private fun reasonName(code: Int): String = when (code) {
         REASON_EXIT_SELF -> "EXIT_SELF（正常退出）"

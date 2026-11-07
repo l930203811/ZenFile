@@ -8,6 +8,7 @@ import '../widgets/quick_categories_grid.dart';
 import '../widgets/nav_bar_settings_sheet.dart';
 import '../widgets/persistent_nav_bar_scope.dart';
 import '../../services/preferences_service.dart';
+import '../../services/heif_image_provider.dart';
 import '../../services/cache_clean_service.dart';
 import '../../services/app_manager_service.dart';
 import 'package:path/path.dart' as p;
@@ -3529,8 +3530,11 @@ Widget _buildCustomIconOptionCard(
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: hasCustomIcon
-                      ? Image.file(
-                          File(customIconPath),
+                      ? Image(
+                          image: imageProviderForFile(
+                            File(customIconPath),
+                            cacheWidth: 168,
+                          ),
                           width: 56,
                           height: 56,
                           fit: BoxFit.cover,

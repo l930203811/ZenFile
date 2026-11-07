@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/network_connection_model.dart';
+import '../../services/heif_image_provider.dart';
 import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -840,12 +841,11 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           ),
         );
       }
-      return Image.file(
-        File(widget.file.path),
+      return Image(
+        image: imageProviderForFile(File(widget.file.path), cacheWidth: 160),
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        cacheWidth: 160,
         errorBuilder: (context, error, stackTrace) => FileTypeIcon(
           icon: Broken.image,
           label: FileUtils.getImageTypeLabel(_displayPath),

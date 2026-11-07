@@ -10,6 +10,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audio_service/audio_service.dart';
 import '../../providers/media_provider.dart';
+import '../../services/heif_image_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/pin_service.dart';
 import '../../services/remote/remote_client.dart';
@@ -3402,12 +3403,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                     ),
                   ),
                 )
-              : Image.file(
-                  File(path),
+              : Image(
+                  image: imageProviderForFile(File(path), cacheWidth: 300),
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
-                  cacheWidth: 300,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey.withValues(alpha: 0.1),
                     child: const Center(
@@ -3849,10 +3849,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                         ),
                       ),
                     )
-                  : Image.file(
-                      File(path),
+                  : Image(
+                      image: imageProviderForFile(File(path), cacheWidth: 120),
                       fit: BoxFit.cover,
-                      cacheWidth: 120,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey.withValues(alpha: 0.1),
                         child: Center(
@@ -6822,12 +6821,11 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
                             width: double.infinity,
                             height: double.infinity,
                           )
-                        : Image.file(
-                            _cached!,
+                        : Image(
+                            image: imageProviderForFile(_cached!, cacheWidth: 300),
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
-                            cacheWidth: 300,
                             errorBuilder: (c, e, s) => Container(
                               color: Colors.grey.withValues(alpha: 0.1),
                               child: const Center(
@@ -7803,10 +7801,9 @@ class _MediaFolderCover extends StatelessWidget {
             Container(color: Colors.grey.withValues(alpha: 0.1)),
       );
     }
-    return Image.file(
-      File(samplePath),
+    return Image(
+      image: imageProviderForFile(File(samplePath), cacheWidth: 200),
       fit: BoxFit.cover,
-      cacheWidth: 200,
       errorBuilder: (context, error, stackTrace) => Container(
         color: Colors.grey.withValues(alpha: 0.1),
         child: Center(

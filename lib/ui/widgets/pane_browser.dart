@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_avif/flutter_avif.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/heif_image_provider.dart';
 import '../screens/app_clone_manager_screen.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
@@ -2293,12 +2294,11 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           ),
         );
       }
-      return Image.file(
-        File(widget.file.path),
+      return Image(
+        image: imageProviderForFile(File(widget.file.path), cacheWidth: 80),
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        cacheWidth: 80,
         errorBuilder: (context, error, stackTrace) => FileTypeIcon(
           icon: Broken.image,
           label: FileUtils.getImageTypeLabel(_displayPath),

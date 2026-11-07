@@ -10,6 +10,7 @@ import '../../models/network_connection_model.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/heif_image_provider.dart';
 import '../../services/webdav_debug_log.dart';
 import '../../services/media_thumbnail_service.dart';
 import '../../services/remote/remote_client.dart';
@@ -1464,8 +1465,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         if (snapshot.hasData && snapshot.data != null) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              File(snapshot.data!),
+            child: Image(
+              image: imageProviderForFile(
+                File(snapshot.data!),
+                cacheWidth: 120,
+              ),
               width: 40,
               height: 40,
               fit: BoxFit.cover,
