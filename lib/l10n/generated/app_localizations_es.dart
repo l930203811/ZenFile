@@ -8542,6 +8542,14 @@ class L10nEs extends L10n {
   String get ui_delete_confirm_dont_ask => 'No preguntar de nuevo';
 
   @override
+  String get ui_delete_confirm_dont_ask_title =>
+      '¿Desactivar la confirmación de eliminación?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'Los archivos se eliminarán sin confirmación. Puedes volver a activarla en General → Multimedia y Acciones Predeterminadas → Confirmación de eliminación.';
+
+  @override
   String get ui_move_to_recycle_bin => 'Mover a la papelera';
 
   @override

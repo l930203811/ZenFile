@@ -12,6 +12,8 @@ import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
@@ -44,6 +46,11 @@ object QuickTransferP2pPlugin {
     private val peers = mutableMapOf<String, WifiP2pDevice>()
 
     private var lastGroupOwnerAddress: String? = null
+
+    // disconnect 并发合并：dispose / _reset / connect 前清组可能在同一帧叠加，
+    // 多次 removeGroup 会让框架回 BUSY(2)，旧实现把它当错误抛给 Dart。
+    private val pendingDisconnect = mutableListOf<MethodChannel.Result>()
+    private var disconnectInFlight = false
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -241,17 +248,70 @@ object QuickTransferP2pPlugin {
         }
     }
 
+    /**
+     * 断开 P2P 组。语义上**幂等**：目标状态是「没有活跃组」，所以无组可删、
+     * 框架正忙（重复调用）、通道已失效都按成功收尾，不再抛 DISCONNECT_FAILED。
+     *
+     * 历史问题：`dispose()` / `_reset()` / connect 前清组会在同一帧叠加调用，
+     * removeGroup 回 `BUSY(2)` → PlatformException 被 runZonedGuarded 写成
+     * `dart_error_*.txt`，用户无感却污染崩溃日志（v3.7.4 / vivo V2054A）。
+     */
     private fun disconnect(result: MethodChannel.Result) {
-        val m = manager ?: return result.error("NO_MANAGER", "WifiP2pManager unavailable", null)
-        m.removeGroup(channel, object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                lastGroupOwnerAddress = null
-                result.success(true)
+        val m = manager
+        val ch = channel
+        if (m == null || ch == null) {
+            // 拿不到管理器/通道，本来就不可能有活跃组。
+            lastGroupOwnerAddress = null
+            result.success(true)
+            return
+        }
+
+        // 已有 removeGroup 在途：合并等待，不重复向框架发请求。
+        pendingDisconnect.add(result)
+        if (disconnectInFlight) return
+        disconnectInFlight = true
+
+        val handler = Handler(Looper.getMainLooper())
+        var timeout: Runnable? = null
+
+        fun finish(ok: Boolean, reason: Int) {
+            if (!disconnectInFlight) return // 回调与超时竞态，只处理一次
+            timeout?.let { handler.removeCallbacks(it) }
+            lastGroupOwnerAddress = null
+            disconnectInFlight = false
+            val waiting = pendingDisconnect.toList()
+            pendingDisconnect.clear()
+            for (r in waiting) {
+                try {
+                    if (ok) r.success(true)
+                    else r.error("DISCONNECT_FAILED", "reason=$reason", null)
+                } catch (_: Throwable) {
+                    // Activity / engine 已销毁时 result 可能失效，忽略即可。
+                }
             }
-            override fun onFailure(reason: Int) {
-                result.error("DISCONNECT_FAILED", "reason=$reason", null)
-            }
-        })
+        }
+
+        // 极少数机型上框架不回调 ActionListener；3 秒兜底，避免
+        // disconnectInFlight 一直挂着，导致后续所有调用都拿不到回复。
+        val cb = Runnable { finish(true, -2) }
+        timeout = cb
+        handler.postDelayed(cb, 3000L)
+
+        try {
+            m.removeGroup(ch, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() = finish(true, 0)
+                override fun onFailure(reason: Int) {
+                    // WifiP2pManager.ActionListener: 0=ERROR, 1=P2P_UNSUPPORTED,
+                    // 2=BUSY。0/2 都是「无活跃组 / 框架正忙」的常态，目标状态
+                    // 已达成；只有 1 一类真实失败才如实上报。
+                    if (reason == 0 || reason == 2) finish(true, reason)
+                    else finish(false, reason)
+                }
+            })
+        } catch (_: Throwable) {
+            // 通道已失效时 removeGroup 可能直接抛异常，同样按已断开处理。
+            finish(true, -1)
+        }
     }
 
     private fun hasNearbyPermission(): Boolean {

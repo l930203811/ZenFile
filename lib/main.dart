@@ -328,6 +328,11 @@ void _configureImageCache() {
 ///    （见 services/thumb_byte_cache.dart）。
 ///
 /// 三处都只清内存、不动磁盘：被清掉的条目下次用到时重新生成/读取，不丢数据。
+/// 上次处理系统内存压力的时间。引擎的一次内存事件可能连续回调两次
+/// `didHaveMemoryPressure`，日志里表现为成对的 `[mem]`；首次已把三处缓存全清，
+/// 紧随其后的那次既无可释放内存、也只会多写一行噪声，故做 2 秒合并。
+DateTime? _lastMemoryReliefAt;
+
 String _relieveMemoryPressure(String reason) {
   final cache = PaintingBinding.instance.imageCache;
   final before =
@@ -668,6 +673,12 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     UiStallWatchdog.start(
       context: _memoryStatsLine,
       onStall: (stall) => _relieveMemoryPressure('ui-stall-${stall.inMilliseconds}ms'),
+      // 启动时通常还没收到生命周期回调，用当前状态做初值；后续变化由
+      // didChangeAppLifecycleState 同步，后台期间看门狗会完全停表。
+      foreground:
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused &&
+              WidgetsBinding.instance.lifecycleState != AppLifecycleState.hidden &&
+              WidgetsBinding.instance.lifecycleState != AppLifecycleState.detached,
     );
   }
 
@@ -796,12 +807,22 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   @override
   void didHaveMemoryPressure() {
     super.didHaveMemoryPressure();
+    final now = DateTime.now();
+    final last = _lastMemoryReliefAt;
+    if (last != null) {
+      final delta = now.difference(last).inMilliseconds;
+      if (delta >= 0 && delta < 2000) return;
+    }
+    _lastMemoryReliefAt = now;
     final summary = _relieveMemoryPressure('system-low-memory');
     WebdavDebugLog.logAlways('[mem] $summary');
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 看门狗只在前台计时：退到后台停心跳、回前台重置基准，否则整段后台
+    // 冻结时间会被误记成「UI 卡顿」（日志里曾出现 15,938,050ms 的假卡顿）。
+    UiStallWatchdog.setForeground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.resumed) {
       // 系统可能在应用切到后台/恢复时重置系统 UI 样式，恢复时重新应用缓存的样式
       // （仅在确有缓存时调用，不引入每帧平台通道开销）。

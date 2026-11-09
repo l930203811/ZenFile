@@ -8461,6 +8461,8 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "Больше не спрашивать",
+  "ui_delete_confirm_dont_ask_title": "Отключить подтверждение удаления?",
+  "ui_delete_confirm_dont_ask_hint": "Файлы будут удаляться без подтверждения. Вернуть его можно в разделе «Общие → Медиа и Действия по Умолчанию → Подтверждение удаления».",
   "ui_move_to_recycle_bin": "Переместить в корзину",
   "video_auto_fallback_soft": "Обнаружена проблема аппаратного декодирования. Автоматически переключено на программное.",
   "video_vo_compat": "Обнаружена проблема рендеринга видео. Переключено в режим совместимости.",

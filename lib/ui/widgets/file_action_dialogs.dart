@@ -127,7 +127,8 @@ class FileActionDialogs {
   /// 删除确认的统一入口：
   /// 设置中「删除文件确认」开关关闭时直接返回 (true, null)（跳过弹窗，
   /// 回收站与否交由调用方按回收站设置的既有默认行为处理）；
-  /// 开启时弹出带「删除不再提示」「移入回收站」复选框的确认对话框。
+  /// 开启时弹出带「移入回收站」勾选框与「不再提示」按钮的确认对话框
+  /// （「不再提示」位于「取消」左侧，点击后先二次提醒恢复路径）。
   ///
   /// [items] 非空时，弹窗会附带一块「待删条目预览」（图标 + 文件名），
   /// 高度随条数自适应，让用户在点下删除前看清到底删了哪些东西。
@@ -206,8 +207,9 @@ class FileActionDialogs {
   /// - [showRecycleBinCheckbox] 为 true 时展示「移入回收站」勾选框，确认后
   ///   第二个元素为勾选状态；为 false 时恒为 null。
   /// - [showRecycleBinCheckbox] 为 true 且用户勾选但回收站功能未开启时，
-  ///   确认删除会**自动开启回收站**（写入 prefs，唯一写设置的场景）；
-  ///   取消勾选不回写任何设置。
+  ///   确认删除会**自动开启回收站**（写入 prefs）；取消勾选不回写任何设置。
+  /// - [showSkipCheckbox] 为 true 时在「取消」左侧提供「不再提示」按钮；
+  ///   点击后先弹二次提醒告知恢复路径，用户确认才关闭删除确认并执行本次删除。
   static Future<(bool, bool?)> showConfirmDialog(
     BuildContext context, {
     required String content,
@@ -215,7 +217,9 @@ class FileActionDialogs {
     bool showRecycleBinCheckbox = false,
     DeleteConfirmItems? items,
   }) async {
-    var dontAskAgain = false;
+    // 弹窗内的 context 挂在 Overlay 上，取不到页面上方的 Provider；
+    // 持久化「不再提示」后要用调用方传进来的页面 context 同步内存状态。
+    final pageContext = context;
     // 勾选框初始态跟随回收站设置：已开启默认勾选，未开启默认不勾选。
     final recycleBinWasEnabled = RecycleBinService.isEnabled();
     var moveToTrash = recycleBinWasEnabled;
@@ -234,8 +238,8 @@ class FileActionDialogs {
                     const SizedBox(height: 12),
                     _DeleteItemsPreview(items: items),
                   ],
-                  // 勾选框顺序：「移入回收站」在上（本次动作的即时选择）、
-                  // 「不再提示」在下（持久化偏好，使用频率更低）。
+                  // 「移入回收站」是本次动作的即时选择，留在内容区；
+                  // 「不再提示」是持久化偏好，已移到按钮行的「取消」左侧。
                   if (showRecycleBinCheckbox) ...[
                     const SizedBox(height: 8),
                     CheckboxListTile(
@@ -251,27 +255,66 @@ class FileActionDialogs {
                       ),
                     ),
                   ],
-                  if (showSkipCheckbox) ...[
-                    const SizedBox(height: 8),
-                    CheckboxListTile(
-                      value: dontAskAgain,
-                      onChanged: (v) =>
-                          setState(() => dontAskAgain = v ?? false),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        L10n.of(context).ui_delete_confirm_dont_ask,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                  ],
+                  // 「不再提示」已移到下方 actions 的「取消」左侧。
                 ],
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               actions: [
+                // 「不再提示」不再用勾选框，而是独立按钮放在「取消」左侧：
+                // 点击后先二次提醒恢复路径，确认才关闭删除确认并执行本次删除。
+                if (showSkipCheckbox)
+                  TextButton(
+                    onPressed: () async {
+                      final l10n = L10n.of(context);
+                      final accepted = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(l10n.ui_delete_confirm_dont_ask_title),
+                          content: Text(l10n.ui_delete_confirm_dont_ask_hint),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text(l10n.ui_cancel),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: FilledButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(l10n.ui_confirm),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (accepted != true) return;
+                      await PreferencesService.saveDeleteConfirmEnabled(false);
+                      if (!pageContext.mounted) return;
+                      try {
+                        pageContext
+                            .read<FileManagerProvider>()
+                            .setDeleteConfirmEnabled(false);
+                      } catch (_) {}
+                      if (context.mounted) {
+                        Navigator.pop(context, (true, moveToTrash));
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      L10n.of(context).ui_delete_confirm_dont_ask,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, (false, false)),
                   child: Text(L10n.of(context).ui_cancel),
@@ -294,13 +337,7 @@ class FileActionDialogs {
       },
     );
     final confirmed = result?.$1 ?? false;
-    // 勾选了"删除不再提示"且确认删除 → 持久化关闭删除确认
-    if (confirmed && dontAskAgain) {
-      PreferencesService.saveDeleteConfirmEnabled(false);
-      try {
-        context.read<FileManagerProvider>().setDeleteConfirmEnabled(false);
-      } catch (_) {}
-    }
+    // 「不再提示」的持久化已在按钮的二次提醒里完成，这里不再重复写设置。
     // 勾选了「移入回收站」但回收站功能未开启 → 确认删除时自动开启
     // （写入 prefs，下次弹窗默认勾选；取消勾选绝不关闭回收站设置）。
     if (confirmed && showRecycleBinCheckbox && moveToTrash && !recycleBinWasEnabled) {

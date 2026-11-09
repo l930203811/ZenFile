@@ -8609,6 +8609,8 @@
     "description": "文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件"
   },
   "ui_delete_confirm_dont_ask": "不再提示",
+  "ui_delete_confirm_dont_ask_title": "關閉刪除確認？",
+  "ui_delete_confirm_dont_ask_hint": "此後刪除檔案將不再彈出確認。如需恢復，可到「一般設定 → 媒體與預設操作 → 刪除檔案確認」重新開啟。",
   "ui_move_to_recycle_bin": "移到回收站",
   "video_auto_fallback_soft": "偵測到硬解異常，已自動切換為軟解",
   "video_vo_compat": "影片渲染異常，已切換為相容渲染模式",

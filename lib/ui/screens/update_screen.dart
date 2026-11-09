@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.4';
+  static const String _latestChangelogVersion = 'v3.7.5';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v375,
     _v374,
     _v373,
     _v372,
@@ -961,7 +962,39 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.4 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.5 ────────────────────────────────────────────────
+  static const _Changelog _v375 = _Changelog(
+    version: 'v3.7.5',
+    date: '2026-11-09',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复 HEIC / HEIF 照片导致闪退：部分手机（realme、小米等）相机默认保存为 HEIF，引擎会对这类照片整幅全尺寸解码，遇到 10-bit HDR 或多张同时加载时直接终止进程；现在改为按显示尺寸降采样后再解码，并限制同时解码数量，列表与全屏查看均不再闪退',
+        '修复崩溃报告满屏乱码：native 崩溃时系统给出的是二进制 tombstone，此前被当成文本直接解码，日志里全是乱码；现在只提取可读内容、把二进制段折叠显示，中文路径也不会被误判',
+        '修复分类页隐藏远程文件后无法切换视图：视频、音频、图片类别关闭「显示远程文件」时，「全部项目 / 文件夹」切换会一起消失，用户被锁在文件夹视图；现在两种切换互不影响，且过滤后只剩远程目录时会正常显示空状态',
+        '修复退出快传页面时写出无用的错误日志：反复连接、断开或中途退出会因重复清理 P2P 组产生一条错误记录（不影响使用，但会被当成崩溃上报）；断开操作现在可重复执行，无活跃连接时直接视为已断开',
+        '修复诊断日志把后台时间误记成「界面卡顿」：应用退到后台被系统冻结后再回前台，会把几小时的后台时长算成一次卡顿；现在改用单调时钟并只在应用前台计时，卡顿记录更可信',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '删除文件确认弹窗：「不再提示」改为「取消」左侧的独立按钮，去掉勾选框；点击后会二次提醒，并告知后续可在「通用设置 → 媒体与默认操作 → 删除文件确认」重新开启，避免误触后找不到恢复开关',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed crashes caused by HEIC / HEIF photos: cameras on some phones (realme, Xiaomi and others) save in HEIF by default, and the engine decoded these at full resolution — 10-bit HDR shots or several images loading at once could kill the process outright. Photos are now downsampled to the display size with concurrent decoding capped, in both lists and the full-screen viewer',
+        'Fixed crash reports being full of gibberish: for native crashes Android supplies a binary tombstone, which was previously decoded as plain text. Readable strings are now extracted and binary runs collapsed, and Chinese paths are no longer misdetected',
+        'Fixed the view switch disappearing after hiding remote files in category pages: turning off "Show remote files" for Video / Audio / Images also removed the "All items / Folders" switch and locked users into folder view. The two switches are now independent, and an empty state is shown when only remote folders remain',
+        'Fixed a harmless error log written when leaving Quick Transfer: repeatedly connecting, disconnecting or backing out mid-transfer could report a failure while cleaning up the P2P group (no user-visible effect, but it was captured as a crash). Disconnect is now idempotent — no active group simply counts as disconnected',
+        'Fixed diagnostic logs mistaking background time for a UI stall: after the app was frozen in the background, the whole gap (hours) was recorded as one stall on return. The watchdog now uses a monotonic clock and only measures while the app is in the foreground',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Delete confirmation: the "Don\'t ask again" checkbox is gone — it is now a separate button to the left of Cancel. Tapping it shows a second reminder with the path to re-enable the prompt (General settings → Media & default actions → Delete file confirmation)',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.4（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v374 = _Changelog(
     version: 'v3.7.4',
     date: '2026-11-07',

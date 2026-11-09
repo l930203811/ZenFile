@@ -8812,6 +8812,8 @@
     "description": "文件操作菜单：用内置文本编辑器打开（并可编辑）任意文件"
   },
   "ui_delete_confirm_dont_ask": "不再提示",
+  "ui_delete_confirm_dont_ask_title": "关闭删除确认？",
+  "ui_delete_confirm_dont_ask_hint": "此后删除文件将不再弹出确认。如需恢复，可到「通用设置 → 媒体与默认操作 → 删除文件确认」重新开启。",
   "ui_move_to_recycle_bin": "移入回收站",
   "@ui_move_to_recycle_bin": {
     "description": "删除确认弹窗中的「移入回收站」勾选框：勾选后本次删除移入回收站而非直接删除；回收站未开启时勾选并确认会自动开启回收站"

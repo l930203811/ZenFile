@@ -8510,6 +8510,14 @@ class L10nRu extends L10n {
   String get ui_delete_confirm_dont_ask => 'Больше не спрашивать';
 
   @override
+  String get ui_delete_confirm_dont_ask_title =>
+      'Отключить подтверждение удаления?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'Файлы будут удаляться без подтверждения. Вернуть его можно в разделе «Общие → Медиа и Действия по Умолчанию → Подтверждение удаления».';
+
+  @override
   String get ui_move_to_recycle_bin => 'Переместить в корзину';
 
   @override

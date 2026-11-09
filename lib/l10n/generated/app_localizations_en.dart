@@ -8427,6 +8427,14 @@ class L10nEn extends L10n {
   String get ui_delete_confirm_dont_ask => 'Don\'t ask again';
 
   @override
+  String get ui_delete_confirm_dont_ask_title =>
+      'Turn off delete confirmation?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'Files will be deleted without asking again. You can turn it back on in General → Media & Default Actions → Delete Confirmation.';
+
+  @override
   String get ui_move_to_recycle_bin => 'Move to recycle bin';
 
   @override

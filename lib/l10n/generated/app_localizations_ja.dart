@@ -8172,6 +8172,13 @@ class L10nJa extends L10n {
   String get ui_delete_confirm_dont_ask => '今後確認しない';
 
   @override
+  String get ui_delete_confirm_dont_ask_title => '削除確認を無効にしますか？';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      '今後は確認なしでファイルが削除されます。再度有効にする場合は「一般設定 → メディアとデフォルト操作 → 削除確認」から設定できます。';
+
+  @override
   String get ui_move_to_recycle_bin => 'ごみ箱へ移動';
 
   @override

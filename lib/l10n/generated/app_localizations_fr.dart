@@ -8560,6 +8560,14 @@ class L10nFr extends L10n {
   String get ui_delete_confirm_dont_ask => 'Ne plus demander';
 
   @override
+  String get ui_delete_confirm_dont_ask_title =>
+      'Désactiver la confirmation de suppression ?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'Les fichiers seront supprimés sans confirmation. Vous pouvez la réactiver dans Général → Média et actions par défaut → Confirmation de suppression.';
+
+  @override
   String get ui_move_to_recycle_bin => 'Déplacer vers la corbeille';
 
   @override

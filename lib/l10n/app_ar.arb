@@ -8461,6 +8461,8 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "لا تسأل مرة أخرى",
+  "ui_delete_confirm_dont_ask_title": "إيقاف تأكيد الحذف؟",
+  "ui_delete_confirm_dont_ask_hint": "سيتم حذف الملفات دون تأكيد. يمكنك إعادة تفعيله من «عام ← الوسائط والإجراءات الافتراضية ← تأكيد الحذف».",
   "ui_move_to_recycle_bin": "نقل إلى سلة المحذوفات",
   "video_auto_fallback_soft": "تم اكتشاف مشكلة في فك التشفير بالأجهزة. تم التبديل تلقائيًا إلى فك التشفير البرمجي.",
   "video_vo_compat": "تم اكتشاف مشكلة في عرض الفيديو. تم التبديل إلى وضع التوافق.",

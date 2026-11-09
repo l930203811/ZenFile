@@ -48,6 +48,9 @@ class QuickTransferService {
   P2pConnectionState _lastConnection = P2pConnectionState.disconnected;
   P2pConnectionState get lastConnection => _lastConnection;
 
+  /// 正在进行的 disconnect，用于把并发调用合并成一次原生请求。
+  Future<bool>? _disconnectInFlight;
+
   Stream<List<PeerDevice>> get peersStream {
     _peersStream ??= _peersChannel.receiveBroadcastStream().map((event) {
       final list = (event as List?) ?? [];
@@ -153,9 +156,41 @@ class QuickTransferService {
     return r ?? false;
   }
 
-  Future<bool> disconnect() async {
-    final r = await _channel.invokeMethod<bool>('disconnect');
-    return r ?? false;
+  /// 断开 P2P 组。**幂等**，且绝不向调用方抛异常。
+  ///
+  /// 历史上 dispose / _reset / connect 前清组会在同一帧叠加触发多次
+  /// `removeGroup`，框架回 `BUSY(2)` → 原生把 `DISCONNECT_FAILED` 抛回 Dart，
+  /// 未捕获的 PlatformException 被 `runZonedGuarded` 写成 `dart_error_*.txt`
+  /// （v3.7.4 / vivo V2054A 实测），用户无感但污染崩溃日志。
+  /// 「断开」本质是清理动作：目标状态（无活跃组）达成即成功，失败也不该冒泡。
+  Future<bool> disconnect() {
+    final pending = _disconnectInFlight;
+    if (pending != null) return pending;
+    final future = _disconnectOnce();
+    _disconnectInFlight = future;
+    // 清理放在 whenComplete（微任务）里，保证一定晚于上面的赋值；
+    // identical 判断避免「上一代」的回调把新一代的在途标记清掉。
+    // 不能用 async 函数内的 finally：若整个流程同步走完，finally 会早于赋值，
+    // 让 _disconnectInFlight 永久指向一个已完成的 Future。
+    future.whenComplete(() {
+      if (identical(_disconnectInFlight, future)) _disconnectInFlight = null;
+    });
+    return future;
+  }
+
+  Future<bool> _disconnectOnce() async {
+    try {
+      final r = await _channel.invokeMethod<bool>('disconnect').timeout(
+            const Duration(milliseconds: 3500),
+            // 原生侧有 3 秒兜底；这里再兜一层，任何情况下都不让清理动作挂住 UI。
+            onTimeout: () => true,
+          );
+      // 原生侧已把「无活跃组 / 框架忙」归一为 true；null 同样按已断开处理。
+      return r ?? true;
+    } catch (_) {
+      // PlatformException / MissingPluginException / 通道已销毁，一律吞掉。
+      return false;
+    }
   }
 
   Future<String?> getGroupOwnerAddress() async =>

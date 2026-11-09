@@ -8401,6 +8401,13 @@ class L10nAr extends L10n {
   String get ui_delete_confirm_dont_ask => 'لا تسأل مرة أخرى';
 
   @override
+  String get ui_delete_confirm_dont_ask_title => 'إيقاف تأكيد الحذف؟';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'سيتم حذف الملفات دون تأكيد. يمكنك إعادة تفعيله من «عام ← الوسائط والإجراءات الافتراضية ← تأكيد الحذف».';
+
+  @override
   String get ui_move_to_recycle_bin => 'نقل إلى سلة المحذوفات';
 
   @override

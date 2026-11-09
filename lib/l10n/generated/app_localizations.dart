@@ -14980,6 +14980,18 @@ abstract class L10n {
   /// **'不再提示'**
   String get ui_delete_confirm_dont_ask;
 
+  /// No description provided for @ui_delete_confirm_dont_ask_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭删除确认？'**
+  String get ui_delete_confirm_dont_ask_title;
+
+  /// No description provided for @ui_delete_confirm_dont_ask_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'此后删除文件将不再弹出确认。如需恢复，可到「通用设置 → 媒体与默认操作 → 删除文件确认」重新开启。'**
+  String get ui_delete_confirm_dont_ask_hint;
+
   /// 删除确认弹窗中的「移入回收站」勾选框：勾选后本次删除移入回收站而非直接删除；回收站未开启时勾选并确认会自动开启回收站
   ///
   /// In zh, this message translates to:

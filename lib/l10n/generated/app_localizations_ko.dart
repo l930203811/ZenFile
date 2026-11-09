@@ -8180,6 +8180,13 @@ class L10nKo extends L10n {
   String get ui_delete_confirm_dont_ask => '다시 묻지 않음';
 
   @override
+  String get ui_delete_confirm_dont_ask_title => '삭제 확인을 끄시겠습니까?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      '앞으로 파일이 확인 없이 삭제됩니다. 다시 켜려면 \'일반 설정 → 미디어 및 기본 작업 → 삭제 확인\'에서 설정할 수 있습니다.';
+
+  @override
   String get ui_move_to_recycle_bin => '휴지통으로 이동';
 
   @override

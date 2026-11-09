@@ -8465,6 +8465,8 @@
     "description": "File action menu: open (and edit) any file with the built-in text editor"
   },
   "ui_delete_confirm_dont_ask": "今後確認しない",
+  "ui_delete_confirm_dont_ask_title": "削除確認を無効にしますか？",
+  "ui_delete_confirm_dont_ask_hint": "今後は確認なしでファイルが削除されます。再度有効にする場合は「一般設定 → メディアとデフォルト操作 → 削除確認」から設定できます。",
   "ui_move_to_recycle_bin": "ごみ箱へ移動",
   "video_auto_fallback_soft": "ハードウェアデコードの異常を検出し、ソフトウェアデコードに自動切り替えしました。",
   "video_vo_compat": "動画レンダリングの異常を検出し、互換レンダリングモードに切り替えました。",

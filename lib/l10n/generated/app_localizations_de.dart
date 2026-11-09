@@ -8524,6 +8524,14 @@ class L10nDe extends L10n {
   String get ui_delete_confirm_dont_ask => 'Nicht erneut fragen';
 
   @override
+  String get ui_delete_confirm_dont_ask_title =>
+      'Löschbestätigung deaktivieren?';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      'Dateien werden künftig ohne Rückfrage gelöscht. Du kannst sie unter „Allgemein → Medien & Standardaktionen → Löschbestätigung“ wieder aktivieren.';
+
+  @override
   String get ui_move_to_recycle_bin => 'In den Papierkorb verschieben';
 
   @override

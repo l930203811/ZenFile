@@ -137,7 +137,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
   // 当前类别是否开启「自动同步」（即同步菜单中显示三个方向按钮）
   bool _autoSyncEnabled = false;
 
-  // 当前类别是否显示远程文件（false 时仅显示本地并隐藏本地/远程切换按钮）
+  // 当前类别是否显示远程文件（false 时仅显示本地并隐藏「本地/远程」切换；
+  // 「全部项目/文件夹」查看模式不受影响，仍正常显示）
   late bool _showRemoteFiles;
 
   /// 防止自动同步在每次重建时重复触发。
@@ -2289,17 +2290,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
         ),
         body: Column(
           children: [
+            // 「本地 / 远程」切换只在允许显示远程文件时有意义；
+            // 隐藏远程文件后列表固定为本地，没必要再占一行。
             if (widget.album == null &&
                 widget.folderPath == null &&
                 _supportsRemoteSync &&
                 _showRemoteFiles)
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildScopeToggle(theme),
-                  if (_supportsFolderView) _buildFoldersToggle(theme),
-                ],
-              ),
+              _buildScopeToggle(theme),
+            // 「全部项目 / 文件夹」是独立的查看模式，与远程显示开关无关：
+            // 隐藏远程文件后仍必须保留，否则停在文件夹视图时用户切不回来。
+            if (widget.album == null &&
+                widget.folderPath == null &&
+                _supportsFolderView)
+              _buildFoldersToggle(theme),
             if (widget.album == null &&
                 widget.mediaType == MediaType.audios &&
                 _showResumeAudio)
@@ -2337,11 +2340,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                           .where((e) => e.value.isNotEmpty)
                           .where((e) {
                             final isRemote = e.key.startsWith('remote://');
+                            // 隐藏远程文件时无条件只保留本地文件夹，避免
+                            // _scopeFilter 仍停在 remote 导致出现空白网格。
+                            if (!_showRemoteFiles) return !isRemote;
                             return _scopeFilter == _ScopeFilter.remote
                                 ? isRemote
                                 : !isRemote;
                           })
                           .toList();
+                      // 过滤后一个文件夹都不剩（例如原本全是远程目录）：
+                      // 显示空状态而不是空白网格，分段条仍可切回「全部项目」。
+                      if (entries.isEmpty) {
+                        if (!provider.isLoaded) return _buildShimmerLoading();
+                        return _buildEmptyState(theme);
+                      }
                       entries.sort((a, b) {
                         final cmp = b.value.length.compareTo(a.value.length);
                         if (cmp != 0) return cmp;

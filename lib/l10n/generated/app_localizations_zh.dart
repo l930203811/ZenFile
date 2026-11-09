@@ -8000,6 +8000,13 @@ class L10nZh extends L10n {
   String get ui_delete_confirm_dont_ask => '不再提示';
 
   @override
+  String get ui_delete_confirm_dont_ask_title => '关闭删除确认？';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      '此后删除文件将不再弹出确认。如需恢复，可到「通用设置 → 媒体与默认操作 → 删除文件确认」重新开启。';
+
+  @override
   String get ui_move_to_recycle_bin => '移入回收站';
 
   @override
@@ -16721,6 +16728,13 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_delete_confirm_dont_ask => '不再提示';
+
+  @override
+  String get ui_delete_confirm_dont_ask_title => '關閉刪除確認？';
+
+  @override
+  String get ui_delete_confirm_dont_ask_hint =>
+      '此後刪除檔案將不再彈出確認。如需恢復，可到「一般設定 → 媒體與預設操作 → 刪除檔案確認」重新開啟。';
 
   @override
   String get ui_move_to_recycle_bin => '移到回收站';
