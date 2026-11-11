@@ -3,6 +3,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'dart:io';
 import 'dart:async';
 import 'dart:collection';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -160,6 +161,42 @@ List<int> _countLocalFilesAndBytesIsolate(List<String> paths) {
     bytes += r[1];
   }
   return [count, bytes];
+}
+
+/// 顶层函数：在独立 isolate 中枚举目录子树，返回纯数据条目
+/// `[path(String), isDir(bool), size(int)]`（目录 size 恒为 0）。
+///
+/// 目录的整树同步枚举 + 逐文件 `lengthSync()` 若在主 isolate 执行，
+/// 大目录（上万条目 × FUSE/SDCardFS 高延迟）会阻塞 UI 线程 5 秒以上，
+/// 直接触发「Input dispatching timed out」ANR（issue #62 取证）。
+/// 枚举是纯 IO，移到 isolate 后主线程只做轻量的路径拼接与列表组装。
+/// 不包含根目录本身（与 `listSync(recursive: true)` 语义一致）；
+/// 单个条目枚举失败静默跳过（与原 try/catch 语义一致）。
+List<List<Object?>> _enumerateDirSubtreeIsolate(String rootPath, bool followLinks) {
+  final result = <List<Object?>>[];
+  void walk(String dirPath) {
+    List<FileSystemEntity> entries;
+    try {
+      entries = Directory(dirPath).listSync(followLinks: followLinks);
+    } catch (_) {
+      return;
+    }
+    for (final e in entries) {
+      if (e is Directory) {
+        result.add(<Object?>[e.path, true, 0]);
+        walk(e.path);
+      } else if (e is File) {
+        int size = 0;
+        try {
+          size = e.lengthSync();
+        } catch (_) {}
+        result.add(<Object?>[e.path, false, size]);
+      }
+    }
+  }
+
+  walk(rootPath);
+  return result;
 }
 
 /// 远程源目录因剪切/移动等操作发生变化后广播的事件。
@@ -7587,23 +7624,34 @@ class FileManagerProvider extends ChangeNotifier {
     final baseName = p.basename(srcPath);
     final rootPrefix = '$destInternalPrefix$baseName/';
     bool hasChildren = false;
-    for (final e in dir.listSync(recursive: true)) {
-      if (e is File) {
-        hasChildren = true;
-        final rel = p.relative(e.path, from: srcPath).replaceAll('\\', '/');
-        final key = '$rootPrefix$rel';
-        try {
-          addEntries[key] = await e.readAsBytes();
-          deletePaths.add(key);
-        } catch (_) {}
-      } else if (e is Directory) {
-        hasChildren = true;
-        final rel = p.relative(e.path, from: srcPath).replaceAll('\\', '/');
+    // 整树枚举移到 isolate：与粘贴路径同一 ANR 根因（issue #62）；
+    // 文件内容仍走异步 readAsBytes（每次 await 让出主线程）。
+    // followLinks 保持与原 listSync(recursive: true) 相同的默认语义。
+    final List<List<Object?>> entries;
+    try {
+      entries = await Isolate.run(
+        () => _enumerateDirSubtreeIsolate(srcPath, true),
+      );
+    } catch (_) {
+      return;
+    }
+    for (final entry in entries) {
+      final entityPath = entry[0] as String;
+      final isDir = entry[1] as bool;
+      hasChildren = true;
+      final rel = p.relative(entityPath, from: srcPath).replaceAll('\\', '/');
+      if (isDir) {
         final key = '$rootPrefix$rel/';
         // 空目录以 null 条目追加；非空目录条目可省略（文件路径隐式建目录）
         if (!addEntries.containsKey(key)) {
           addEntries[key] = null;
         }
+      } else {
+        final key = '$rootPrefix$rel';
+        try {
+          addEntries[key] = await File(entityPath).readAsBytes();
+          deletePaths.add(key);
+        } catch (_) {}
       }
     }
     if (!hasChildren) {
@@ -9354,28 +9402,26 @@ class FileManagerProvider extends ChangeNotifier {
             );
           } else {
             try {
-              final entities = dir.listSync(recursive: true, followLinks: false);
-              for (final entity in entities) {
-                final relPath = p.relative(entity.path, from: srcPath);
+              // 整树枚举 + 逐文件 lengthSync 移到 isolate 执行：大目录下这段
+              // 同步代码曾阻塞 UI 线程 5s+ 触发 ANR（issue #62）。
+              // 失败时静默放弃（与原 try/catch 语义一致，不影响后续流程）。
+              final entries = await Isolate.run(
+                () => _enumerateDirSubtreeIsolate(srcPath, false),
+              );
+              if (_isOperationCancelled) throw Exception('Cancelled');
+              for (final entry in entries) {
+                final entityPath = entry[0] as String;
+                final isDir = entry[1] as bool;
+                final size = entry[2] as int;
+                final relPath = p.relative(entityPath, from: srcPath);
                 final destPath = p.join(topDestPath, relPath);
-
-                if (entity is Directory) {
-                  itemsToProcess.add({
-                    'source': entity,
-                    'destPath': destPath,
-                    'size': 0,
-                    'isDir': true,
-                  });
-                } else if (entity is File) {
-                  final size = entity.lengthSync();
-                  totalBytes += size;
-                  itemsToProcess.add({
-                    'source': entity,
-                    'destPath': destPath,
-                    'size': size,
-                    'isDir': false,
-                  });
-                }
+                itemsToProcess.add({
+                  'source': isDir ? Directory(entityPath) : File(entityPath),
+                  'destPath': destPath,
+                  'size': size,
+                  'isDir': isDir,
+                });
+                if (!isDir) totalBytes += size;
               }
             } catch (_) {}
           }
