@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +20,28 @@ import 'bulk_crypt_actions.dart';
 import 'action_bar_button.dart';
 import '../../services/file_hash_service.dart';
 import '../../services/file_birth_time_service.dart';
+
+/// isolate 内整树统计（供属性框）：返回 `[文件数, 子目录数, 总字节]`。
+/// `followLinks:false` 不跟随符号链接（与粘贴/压缩路径的防环策略一致）。
+/// issue #65：属性框对大目录在主 isolate 逐条 stat（await for + length）
+/// 会把主线程打满 5 秒以上，触发 Input dispatching timed out ANR。
+List<int> _dirTreeStatsIsolate(String root) {
+  int files = 0, dirs = 0, bytes = 0;
+  try {
+    final list = Directory(root).listSync(recursive: true, followLinks: false);
+    for (final e in list) {
+      try {
+        if (e is File) {
+          files++;
+          bytes += e.lengthSync();
+        } else if (e is Directory) {
+          dirs++;
+        }
+      } catch (_) {}
+    }
+  } catch (_) {}
+  return [files, dirs, bytes];
+}
 
 class SelectionActionBar extends StatelessWidget {
   final FileManagerProvider provider;
@@ -741,38 +764,30 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
           final type = FileSystemEntity.typeSync(path);
           if (type == FileSystemEntityType.directory) {
             folders++;
-            final dir = Directory(path);
-            if (dir.existsSync()) {
-              if (widget.selectedPaths.length == 1) {
-                final stat = dir.statSync();
-                _lastModified = stat.modified;
-                final canRead = (stat.mode & 0x100) != 0;
-                final canWrite = (stat.mode & 0x80) != 0;
-                final l = l10n();
-                if (l != null) {
-                  if (canRead && canWrite) {
-                    _permissions = '${l.prop_read} / ${l.prop_write}';
-                  } else if (canRead) {
-                    _permissions = l.prop_read;
-                  } else if (canWrite) {
-                    _permissions = l.prop_write;
-                  }
+            if (widget.selectedPaths.length == 1) {
+              final stat = Directory(path).statSync();
+              _lastModified = stat.modified;
+              final canRead = (stat.mode & 0x100) != 0;
+              final canWrite = (stat.mode & 0x80) != 0;
+              final l = l10n();
+              if (l != null) {
+                if (canRead && canWrite) {
+                  _permissions = '${l.prop_read} / ${l.prop_write}';
+                } else if (canRead) {
+                  _permissions = l.prop_read;
+                } else if (canWrite) {
+                  _permissions = l.prop_write;
                 }
               }
-              try {
-                await for (final entity in dir.list(
-                  recursive: true,
-                  followLinks: false,
-                )) {
-                  if (entity is File) {
-                    files++;
-                    bytes += await entity.length();
-                  } else if (entity is Directory) {
-                    folders++;
-                  }
-                }
-              } catch (_) {}
             }
+            // 整树枚举/求和移至 isolate（issue #65）：主 isolate 逐条 stat
+            // 阻塞输入分发导致 ANR；isolate 失败则回退 0 值，不影响渲染。
+            try {
+              final st = await Isolate.run(() => _dirTreeStatsIsolate(path));
+              files += st[0];
+              folders += st[1];
+              bytes += st[2];
+            } catch (_) {}
           } else if (type == FileSystemEntityType.file) {
             files++;
             final f = File(path);

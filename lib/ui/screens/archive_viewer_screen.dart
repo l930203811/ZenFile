@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -458,21 +459,27 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       for (final path in selectedPaths) {
         final type = FileSystemEntity.typeSync(path);
         if (type == FileSystemEntityType.directory) {
-          final dir = Directory(path);
           final folderBaseName = p.basename(path);
-          final entities = dir.listSync(recursive: true);
+          // 整树枚举移至 isolate（issue #65）：主线程 listSync(recursive:true)
+          // 对大目录逐项 stat，阻塞输入分发导致 ANR。isolate 只回传文件路径，
+          // followLinks:false 不跟随符号链接（与压缩/粘贴路径防环策略一致）。
+          final entities = await Isolate.run(
+            () => Directory(path)
+                .listSync(recursive: true, followLinks: false)
+                .whereType<File>()
+                .map((f) => f.path)
+                .toList(),
+          );
 
-          for (final entity in entities) {
-            if (entity is File) {
-              final relPath = entity.path.substring(path.length + 1);
-              final targetInternalPath = p.join(_currentInternalPath, folderBaseName, p.dirname(relPath)).replaceAll('\\', '/');
-              final ok = await ArchiveService.addFileToArchive(
-                archivePath: widget.archivePath,
-                filePathToAdd: entity.path,
-                internalPath: targetInternalPath == '.' ? '' : '$targetInternalPath/',
-              );
-              if (ok) addedCount++;
-            }
+          for (final filePath in entities) {
+            final relPath = filePath.substring(path.length + 1);
+            final targetInternalPath = p.join(_currentInternalPath, folderBaseName, p.dirname(relPath)).replaceAll('\\', '/');
+            final ok = await ArchiveService.addFileToArchive(
+              archivePath: widget.archivePath,
+              filePathToAdd: filePath,
+              internalPath: targetInternalPath == '.' ? '' : '$targetInternalPath/',
+            );
+            if (ok) addedCount++;
           }
         } else {
           final ok = await ArchiveService.addFileToArchive(
