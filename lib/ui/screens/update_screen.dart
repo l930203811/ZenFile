@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.5';
+  static const String _latestChangelogVersion = 'v3.7.6';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v376,
     _v375,
     _v374,
     _v373,
@@ -962,7 +963,27 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.5 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.6 ────────────────────────────────────────────────
+  static const _Changelog _v376 = _Changelog(
+    version: 'v3.7.6',
+    date: '2026-11-13',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复粘贴 / 剪切大文件夹时界面卡死无响应：粘贴（含向压缩包追加文件夹）前需要对整个目录树逐项清点，此前这一步在界面线程上进行，文件夹一大就会独占线程数秒，系统弹出「应用无响应」；现在整树清点全部移到后台线程，界面全程可响应，进度与取消不受影响',
+        '修复查看大文件夹「属性」时界面卡死：属性页的「大小 / 文件数」此前也在界面线程上逐项统计，大目录会让触摸点击迟迟得不到响应；现在统计移到后台线程，弹窗即点即出，算完自动填入',
+        '修复压缩包内添加大文件夹时界面卡死：添加前的目录枚举同样移到后台线程；不再跟随符号链接，与粘贴 / 压缩路径的防环策略一致',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed the UI freezing when pasting / moving large folders: before pasting (including appending a folder into an archive) the whole directory tree had to be enumerated item by item, and this ran on the UI thread — a big folder could monopolise it for seconds and trigger the "app isn\'t responding" dialog. Tree enumeration now runs entirely on a background thread; the UI stays responsive and progress / cancel are unaffected',
+        'Fixed the UI freezing when viewing the properties of a large folder: the size / file count on the properties page was also tallied on the UI thread, so taps on a big directory went unanswered. The tally now runs on a background thread — the dialog opens instantly and fills in when done',
+        'Fixed the UI freezing when adding a large folder inside an archive: the pre-add directory enumeration also moved to a background thread. Symbolic links are no longer followed, consistent with the loop-protection used by paste / archive paths',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.5（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v375 = _Changelog(
     version: 'v3.7.5',
     date: '2026-11-09',
