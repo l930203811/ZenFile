@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.6';
+  static const String _latestChangelogVersion = 'v3.7.7';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v377,
     _v376,
     _v375,
     _v374,
@@ -963,7 +964,35 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.6 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.7 ────────────────────────────────────────────────
+  static const _Changelog _v377 = _Changelog(
+    version: 'v3.7.7',
+    date: '2026-11-15',
+    zh: [
+      _ChangeSection('✨ 新增', [
+        '支持直接读取音频文件内嵌歌词：MP3（ID3v2 USLT / SYLT）、FLAC / OGG / Opus（Vorbis LYRICS）、M4A / MP4（©lyr）、APE、WAV 等常见格式的歌词标签均可识别，不再需要同名 .lrc 文件；加载顺序为「同名 .lrc → 文件内嵌歌词 → 在线搜索」，本地与远程服务器（SFTP / SMB / WebDAV / FTP）上的音频都支持，且只读取标签区的小段数据，不整曲下载',
+        '支持逐字歌词的毫秒时间戳格式：部分音乐软件导出的歌词采用 [起始毫秒,时长] 与 (起始毫秒,时长) 写法，此前会被当成普通文本丢弃；现在可正确解析并逐字高亮，标准 LRC 与 Enhanced LRC 的显示效果保持不变',
+        '播放页与通知栏在媒体库未收录或缺少艺术家信息时，会读取音频文件自身的标签补上真实歌手名，在线歌词搜索也改用该名称，不再显示「未知艺术家」',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '内嵌标签解析全部放到后台线程，打开大体积音频也不会卡住界面；找不到歌词时会给出便于排查的原因提示',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ New', [
+        'Embedded lyrics can now be read directly from audio files: ID3v2 USLT / SYLT in MP3, Vorbis LYRICS in FLAC / OGG / Opus, the ©lyr atom in M4A / MP4, APEv2 tags and ID3 chunks inside WAV are all recognised, so a matching .lrc file is no longer required. Loading order is "sidecar .lrc → embedded lyrics → online search", and it works for both local files and audio on remote servers (SFTP / SMB / WebDAV / FTP). Only the small tag area is read — the whole track is never downloaded',
+        'Added support for millisecond-based word-level lyrics: some music apps export timestamps as [startMs,duration] and (startMs,duration), which used to be discarded as plain text. These are now parsed correctly with per-character highlighting, while standard LRC and Enhanced LRC rendering is unchanged',
+        'When the media library has no artist information, the player and the notification now read the artist tag stored in the audio file itself. Online lyric search uses the same real name instead of showing "Unknown artist"',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Tag parsing now runs entirely on a background thread, so opening large audio files never freezes the UI. When no lyrics are found, a short reason is shown to help diagnose the cause',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.6（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v376 = _Changelog(
     version: 'v3.7.6',
     date: '2026-11-13',
