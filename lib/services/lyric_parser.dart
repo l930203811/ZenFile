@@ -48,6 +48,9 @@ class _TimestampMatch {
 /// - 多时间戳: [00:12.34][01:23.45]重复歌词
 /// - 逐字时间戳(卡拉OK): [00:12.34]这[00:12.56]是[00:12.78]歌词
 /// - Enhanced LRC: [00:12.34]<00:12.34>这<00:12.56>是<00:12.78>歌词
+/// - 毫秒制逐字(KRC明文变体): [795,4678]你(795,285)离(1080,282)歌词
+///   行戳 [起始毫秒,行时长毫秒]，字戳 (起始毫秒,字时长毫秒)；
+///   酷狗 KRC 明文 / 汽水音乐等导出的 FLAC/MP3 内嵌歌词常见此格式
 /// - 元数据标签: [ti:], [ar:], [al:], [by:], [offset:]
 class LyricParser {
   /// 方括号时间戳: [mm:ss.xx] 或 [mm:ss.xxx]
@@ -57,6 +60,12 @@ class LyricParser {
   /// 尖括号时间戳: <mm:ss.xx> (Enhanced LRC 逐字格式)
   static final _angleTimeRegex =
       RegExp(r'<(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?>');
+
+  /// 毫秒制行时间戳: [起始毫秒,行时长毫秒]（KRC 明文变体）
+  static final _msLineRegex = RegExp(r'\[(\d{1,7}),(\d{1,7})\]');
+
+  /// 毫秒制逐字时间戳: 字(起始毫秒,字时长毫秒)
+  static final _msWordRegex = RegExp(r'\((\d{1,7}),(\d{1,7})\)');
 
   /// 解析时间戳字符串为 Duration
   static Duration _parseTimeStr(String minutes, String seconds, String? fraction) {
@@ -124,6 +133,60 @@ class LyricParser {
 
       // 跳过其他元数据标签
       if (RegExp(r'^\[(ti|ar|al|by|length|re|ve):').hasMatch(line)) {
+        continue;
+      }
+
+      // 毫秒制逐字格式（KRC 明文变体）: [795,4678]你(795,285)离(1080,282)…
+      // 行戳 [起始ms,行时长ms]，字戳 (起始ms,字时长ms)，字文本在字戳之前。
+      final msLineMatches = _msLineRegex.allMatches(line).toList();
+      if (msLineMatches.isNotEmpty) {
+        final lineMs =
+            int.parse(msLineMatches.first.group(1)!) + offsetMs;
+        final firstStampEnd = msLineMatches.first.end;
+        final wordMatches = _msWordRegex
+            .allMatches(line)
+            .where((w) => w.start >= firstStampEnd)
+            .toList();
+
+        if (wordMatches.isNotEmpty) {
+          // 逐字行：每段「字戳前的文本」就是该戳对应的词
+          final words = <LyricWord>[];
+          int prevEnd = firstStampEnd;
+          for (final w in wordMatches) {
+            if (w.start < prevEnd) continue;
+            final wordText = _cleanText(line.substring(prevEnd, w.start));
+            prevEnd = w.end;
+            if (wordText.isEmpty) continue;
+            words.add(LyricWord(
+              timestamp: Duration(
+                milliseconds: int.parse(w.group(1)!) + offsetMs,
+              ),
+              text: wordText,
+            ));
+          }
+          // 尾部剩余文本（最后一个字戳之后）：并入最后一个词
+          final tail = _cleanText(line.substring(prevEnd));
+          if (tail.isNotEmpty && words.isNotEmpty) {
+            words[words.length - 1] = LyricWord(
+              timestamp: words.last.timestamp,
+              text: words.last.text + tail,
+            );
+          }
+          if (words.isEmpty) continue;
+          lines.add(LyricLine(
+            timestamp: Duration(milliseconds: lineMs),
+            text: words.map((w) => w.text).join(),
+            words: words,
+          ));
+        } else {
+          // 纯行戳行: [795,4678]歌词文本（无逐字）
+          final text = _cleanText(line);
+          if (text.isEmpty) continue;
+          lines.add(LyricLine(
+            timestamp: Duration(milliseconds: lineMs),
+            text: text,
+          ));
+        }
         continue;
       }
 

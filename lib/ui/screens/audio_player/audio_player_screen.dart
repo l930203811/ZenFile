@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,7 @@ import '../../../services/desktop_lyric_service.dart';
 import '../../../services/desktop_lyric_controller.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_animation_style.dart';
+import '../../../services/embedded_lyrics_service.dart';
 import '../../../services/lyric_parser.dart';
 import '../../../services/lyric_search_service.dart';
 import '../../../services/remote_streaming_service.dart';
@@ -99,13 +102,78 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   int get _currentId => _currentSong?.id ?? 0;
   String get _currentPath => _currentSong?.data ?? widget.audioPath;
 
-  /// 返回用于界面显示的艺术家名称，空值或 "unknown" 时使用 l10n 翻译。
+  /// 返回用于界面显示的艺术家名称，空值 / "unknown" / 界面占位文案时使用标签回退。
   String _getDisplayArtist() {
     final artist = _currentArtist;
-    if (FileUtils.isUnknownArtist(artist)) {
-      return L10n.of(context).msg5e32276d;
+    final unknownLabel = L10n.of(context).msg5e32276d;
+    // 分类页会把缺失的 artist 替换成 l10n 占位文案再传进来（如「未知艺术家」），
+    // isUnknownArtist 只认英文 unknown，必须一并识别，否则标签回退永远不触发。
+    if (FileUtils.isUnknownArtist(artist) || artist.trim() == unknownLabel) {
+      // MediaStore / 播放入口缺失艺术家：回退读音频文件自身标签
+      //（懒触发一次，会话级缓存；解析完成 setState 后下次 build 生效）。
+      final fallback = _tagArtistFallback;
+      if (fallback != null) return fallback;
+      _scheduleArtistTagResolve();
+      return unknownLabel;
     }
     return artist;
+  }
+
+  // ── 艺术家标签回退（MediaStore 未收录 / 播放入口缺失 artist 时） ──
+
+  /// 会话级缓存：路径 → 标签艺术家（'' 表示已查过且无标签，避免重复读文件）。
+  static final Map<String, String> _artistTagCache = <String, String>{};
+  bool _resolvingArtistTags = false;
+
+  /// 当前歌曲的标签回退艺术家；缓存未命中或为空时返回 null。
+  String? get _tagArtistFallback {
+    final path = _currentPath;
+    if (path.isEmpty) return null;
+    final cached = _artistTagCache[path];
+    return (cached != null && cached.isNotEmpty) ? cached : null;
+  }
+
+  /// 后台 isolate 读取当前歌曲的 ID3/Vorbis/M4A/APE 艺术家标签。
+  /// 只处理本地可随机读路径；remote:// / http / content:// 直接跳过。
+  void _scheduleArtistTagResolve() {
+    var path = _currentPath;
+    // 播放队列里的 SongModel.data 偶有为空 / 为 URI 的情况，回退到入口路径。
+    if (path.isEmpty || !path.startsWith('/')) path = widget.audioPath;
+    if (path.isEmpty ||
+        path.startsWith('http') ||
+        path.startsWith('remote://') ||
+        path.startsWith('content://') ||
+        _artistTagCache.containsKey(path) ||
+        _resolvingArtistTags) {
+      return;
+    }
+    _resolvingArtistTags = true;
+    _resolveArtistTags(path);
+  }
+
+  Future<void> _resolveArtistTags(String path) async {
+    try {
+      final tags =
+          await Isolate.run(() => EmbeddedLyricsService.readTagsSync(path));
+      _applyArtistTags(path, tags);
+    } catch (e) {
+      // isolate 内若因依赖图 / 平台通道差异解析失败，主 isolate 直接重试一次。
+      debugPrint('[EmbeddedTags] isolate 失败，主线程重试: $e');
+      try {
+        _applyArtistTags(path, EmbeddedLyricsService.readTagsSync(path));
+      } catch (_) {
+        _artistTagCache[path] = '';
+      }
+    } finally {
+      _resolvingArtistTags = false;
+    }
+  }
+
+  /// 写入艺术家标签缓存并刷新界面；[tags] 为 null 表示确实没有标签。
+  void _applyArtistTags(String path, ({String? title, String? artist})? tags) {
+    _artistTagCache[path] = tags?.artist ?? '';
+    debugPrint('[EmbeddedTags] path=$path artist=${tags?.artist} title=${tags?.title}');
+    if (mounted) setState(() {});
   }
 
   /// 返回用于界面显示的专辑名称，空值时使用 l10n 翻译。
@@ -164,6 +232,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _isLoadingLyrics = false;
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
   bool _lyricsWerePlaceholder = false; // 检测歌词为占位文本时显示多语言提示
+  /// 内嵌歌词未命中时的原因（真机排查用，显示在"未找到歌词"卡片下方）。
+  String? _lyricDiag;
 
   /// 已尝试过「自动在线下载歌词」的歌曲路径：本次会话内每首歌只试一次，
   /// 避免切歌来回切时反复打搜索接口（也避免搜不到的歌每切一次都重试）。
@@ -1057,6 +1127,44 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
+  /// 远程音频内嵌歌词：按 remote://{connectionId}|{path} 解析出连接，
+  /// 经 [RemoteClient.downloadRange] 取文件头部 2MB 到临时文件，再用
+  /// [EmbeddedLyricsService] 解析。失败静默返回 null，不影响后续在线搜索。
+  Future<List<LyricLine>?> _extractRemoteEmbeddedLyrics(String remotePath) async {
+    File? tmp;
+    try {
+      final uriPart = remotePath.substring('remote://'.length);
+      final separatorIndex = uriPart.indexOf('|');
+      if (separatorIndex < 0) return null;
+      final connectionId = uriPart.substring(0, separatorIndex);
+      final remoteFilePath = uriPart.substring(separatorIndex + 1);
+
+      final conn = NetworkConnectionsService.getConnections().where((c) => c.id == connectionId).firstOrNull;
+      if (conn == null) return null;
+
+      final client = FileManagerProvider.createRemoteClient(conn);
+      await client.connect();
+      final tempDir = await getTemporaryDirectory();
+      tmp = File(p.join(tempDir.path, 'zenfile_embedded_lyrics_head'));
+      try {
+        await client.downloadRange(remoteFilePath, tmp.path, 0, 2 * 1024 * 1024);
+      } finally {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+      }
+
+      final snapshot = tmp;
+      return await Isolate.run(() => EmbeddedLyricsService.extractSync(snapshot.path));
+    } catch (_) {
+      return null;
+    } finally {
+      try {
+        if (tmp != null && await tmp.exists()) await tmp.delete();
+      } catch (_) {}
+    }
+  }
+
   /// 自动加载当前歌曲的歌词
   void _loadLyrics() {
     final audioPath = _currentPath;
@@ -1074,6 +1182,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       _lyrics = null;
       _isLoadingLyrics = true;
       _lyricsWerePlaceholder = false;
+      _lyricDiag = null;
     });
 
     // 异步加载歌词
@@ -1098,21 +1207,89 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
 
+      // 1.5 本地 .lrc 未找到：尝试音频文件内嵌歌词。本地文件直接读标签区；
+      //     remote:// 虚拟路径经 RemoteClient.downloadRange 取文件头部
+      //     （FLAC/OGG/ID3/M4A-faststart 的歌词标签区都在文件头）后解析；
+      //     纯 http 流式地址无法按字节随机读，跳过。
+      final isHttpStream = audioPath.startsWith('http');
+      final isRemoteVirtual = audioPath.startsWith('remote://');
+      if (!isHttpStream) {
+        List<LyricLine>? embedded;
+        String diag = '';
+        try {
+          if (isRemoteVirtual) {
+            embedded = await _extractRemoteEmbeddedLyrics(audioPath);
+          } else {
+            embedded = await Isolate.run(
+              () => EmbeddedLyricsService.extractSync(audioPath),
+            );
+            if (embedded == null || embedded.isEmpty) {
+              // isolate 内若因依赖图 / 平台通道差异解析失败，主 isolate 直接重试一次。
+              diag = 'isolate 未命中';
+              debugPrint('[EmbeddedLyrics] isolate 未命中，主线程重试: $audioPath');
+              embedded = EmbeddedLyricsService.extractSync(audioPath);
+            }
+          }
+        } catch (e) {
+          diag = '异常: $e';
+          debugPrint('[EmbeddedLyrics] 提取异常: $e ($audioPath)');
+          if (!isRemoteVirtual) {
+            try {
+              embedded = EmbeddedLyricsService.extractSync(audioPath);
+            } catch (_) {}
+          }
+        }
+        debugPrint('[EmbeddedLyrics] path=$audioPath lines=${embedded?.length} $diag');
+        if (generation != _lyricsLoadGeneration) return;
+
+        if (embedded != null && embedded.isNotEmpty) {
+          final sanitized = _sanitizeLyrics(embedded);
+          if (mounted) {
+            setState(() {
+              _isLoadingLyrics = false;
+              if (sanitized != null) _lyrics = sanitized;
+            });
+            if (sanitized != null && _desktopLyricEnabled) {
+              DesktopLyricController.instance.setLyrics(sanitized);
+            }
+          }
+          // 内嵌歌词视为「有词」：即使被判定为纯音乐占位文本，
+          // 也不再走在线搜索，保持与本地 .lrc 命中时一致的行为。
+          if (sanitized != null) return;
+          if (_lyricsWerePlaceholder) return;
+        } else if (mounted && !isRemoteVirtual) {
+          // 未命中时把原因显示在歌词卡片下方，便于真机直接定位。
+          final reason = EmbeddedLyricsService.diagnoseSync(audioPath);
+          if (generation == _lyricsLoadGeneration) {
+            setState(() => _lyricDiag = '内嵌歌词: $diag $reason');
+          }
+        }
+      }
+
       // 2. 本地未找到歌词：「自动下载歌词」开关打开时在线搜索（逐字优先）。
       //    每首歌本次会话只试一次；关闭开关则保持无歌词状态（用户仍可手动搜）。
+      //    入场时艺术家缺失的话，标签回退此刻可能已解析完成——补一次真实
+      //    艺术家（不用 _lyricSearchMeta 重算：其内部走 context，跨 await 不安全）。
+      var effectiveMeta = searchMeta;
+      if (searchMeta.artist.isEmpty) {
+        final cachedArtist = _artistTagCache[audioPath];
+        if (cachedArtist != null && cachedArtist.isNotEmpty) {
+          effectiveMeta = (title: searchMeta.title, artist: cachedArtist);
+        }
+      }
       final canAutoDownload =
           PreferencesService.getAutoDownloadLyrics() &&
           audioPath.startsWith('/') &&
-          searchMeta.title.isNotEmpty &&
+          effectiveMeta.title.isNotEmpty &&
           _autoLyricTried.add(audioPath);
 
       if (canAutoDownload) {
         debugPrint(
-          '[LyricSearch] 本地无歌词，自动在线搜索: ${searchMeta.title} - ${searchMeta.artist}',
+          '[LyricSearch] 本地无歌词，自动在线搜索: ${effectiveMeta.title} - ${effectiveMeta.artist}',
         );
         final auto = await LyricSearchService.searchAndDownload(
-          title: searchMeta.title,
-          artist: searchMeta.artist,
+          title: effectiveMeta.title,
+          artist: effectiveMeta.artist,
           audioPath: audioPath,
         );
         if (auto != null && mounted && generation == _lyricsLoadGeneration) {
@@ -1296,9 +1473,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   ///  · 标题里带分隔符时，**歌名框只留前半段**（否则会把整串「歌名-歌手」
   ///    当成歌名去搜，基本搜不到）。
   ({String title, String artist}) _lyricSearchMeta() {
-    final rawArtist = _currentArtist.trim();
+    var rawArtist = _currentArtist.trim();
     // 从类别页进来时 artist 可能已被替换成界面占位文案，这里一并识别为「无」。
     final unknownLabel = L10n.of(context).msg5e32276d;
+    // MediaStore 缺失艺术家时，若标签回退已解析出真实艺术家则优先使用，
+    // 在线歌词搜索命中率更高。
+    if (FileUtils.isUnknownArtist(rawArtist) || rawArtist == unknownLabel) {
+      final fallback = _tagArtistFallback;
+      if (fallback != null) rawArtist = fallback;
+    }
     final artistKnown =
         !FileUtils.isUnknownArtist(rawArtist) && rawArtist != unknownLabel;
 
@@ -2338,6 +2521,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.35),
               ),
             ),
+            if (_lyricDiag != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  _lyricDiag!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10,
+                    height: 1.4,
+                    color: (isDark ? Colors.white : theme.colorScheme.onSurface).withValues(alpha: 0.28),
+                  ),
+                ),
+              ),
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: _showLyricSearchDialog,
@@ -2960,10 +3156,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
     final rawArtist = song?.artist ?? widget.artist;
     final rawAlbum = song?.album ?? '';
+    final unknownLabel = L10n.of(context).msg5e32276d;
+    final displayArtist =
+        (FileUtils.isUnknownArtist(rawArtist) || rawArtist.trim() == unknownLabel)
+            ? (_tagArtistFallback ?? unknownLabel)
+            : rawArtist;
     return MediaItem(
       id: song?.data ?? widget.audioPath,
       title: song?.title ?? widget.title,
-      artist: FileUtils.isUnknownArtist(rawArtist) ? L10n.of(context).msg5e32276d : rawArtist,
+      artist: displayArtist,
       album: rawAlbum.isEmpty ? L10n.of(context).ui_single : rawAlbum,
       artUri: artUri,
       duration: songDuration,
