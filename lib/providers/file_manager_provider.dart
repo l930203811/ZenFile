@@ -18,8 +18,8 @@ import '../models/file_filter_type.dart';
 import '../models/category_filter_type.dart';
 import 'media_provider.dart';
 import 'package:mime/mime.dart';
-// zip:// 条目浏览要用 package:archive 的 Archive / ArchiveFile 类型。
-import 'package:archive/archive.dart';
+// zip:// 条目浏览改用轻量索引（纯数据，不把 Archive 对象图带回主 isolate）。
+import '../models/archive_index.dart';
 import '../ui/screens/image_viewer_screen.dart';
 import '../ui/screens/video_player/video_player_screen.dart';
 import '../ui/screens/audio_player/audio_player_screen.dart';
@@ -1349,15 +1349,15 @@ class FileManagerProvider extends ChangeNotifier {
   ///
   /// 直接复用 [_buildZipEntries] —— 与浏览页实际渲染的列表**严格同源**
   /// （隐藏文件过滤、深层条目折叠去重、目录在前完全一致），计数不会和
-  /// 列表对不上；Archive 未命中 LRU 缓存时会读一次压缩包（有缓存兜底）。
+  /// 列表对不上；索引未命中 LRU 缓存时会在隔离区重解一次（有缓存兜底）。
   /// 失败记 0 并写缓存，与本地目录分支的失败行为一致。
   Future<int> _computeZipFolderItemCount(String cacheKey, String virtualPath) async {
     int count = 0;
     try {
       final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(virtualPath);
-      final archive = await _getZipArchiveCached(zipPath);
-      if (archive != null) {
-        count = _buildZipEntries(archive, zipPath, internalDir).length;
+      final index = await _getZipArchiveCached(zipPath);
+      if (index != null) {
+        count = _buildZipEntries(index, zipPath, internalDir).length;
       }
     } catch (_) {
       count = 0;
@@ -7091,14 +7091,17 @@ class FileManagerProvider extends ChangeNotifier {
 
   /// 已解析压缩包的 LRU 缓存（key = zip 绝对路径，容量 3）。
   ///
-  /// 为什么必须缓存：readArchive 在隔离区整包解析（zip/tar 中央目录），
-  /// zip:// 各级子目录之间导航若每次都重解，大压缩包每进一层都要卡一次。
+  /// 缓存的是 [ArchiveIndex] 纯数据，**不是** package:archive 的 Archive 对象图：
+  /// 旧实现每次 compute 回传完整 Archive，主线程深拷贝大对象图会连续扩容堆、
+  /// 打满 CPU，正是打开大型 RAR 时 Input dispatching timed out 的根因。
+  /// 现在解析与目录折叠都在隔离区做完，各级子目录导航按
+  /// [ArchiveIndex.children] O(1) 命中，不必重解包也不必全表扫描。
   /// Map 按插入序迭代：命中时先删后插即等价 LRU 触碰，超容量淘汰最旧（首 key）。
-  final Map<String, Archive> _zipArchiveCache = {};
+  final Map<String, ArchiveIndex> _zipArchiveCache = {};
   static const int _zipArchiveCacheCapacity = 3;
 
-  /// 获取（并缓存）压缩包解析结果；zip 不存在 / 为空 / 解析失败返回 null。
-  Future<Archive?> _getZipArchiveCached(String zipPath) async {
+  /// 获取（并缓存）压缩包索引；zip 不存在 / 为空 / 解析失败返回 null。
+  Future<ArchiveIndex?> _getZipArchiveCached(String zipPath) async {
     if (_zipArchiveCache.containsKey(zipPath)) {
       final hit = _zipArchiveCache.remove(zipPath)!;
       _zipArchiveCache[zipPath] = hit; // 触碰：移到最新
@@ -7107,31 +7110,25 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       final f = File(zipPath);
       if (!f.existsSync() || f.lengthSync() == 0) return null;
-      final archive = await ArchiveService.readArchive(zipPath);
-      if (archive == null) return null;
+      final index = await ArchiveService.readArchiveIndex(zipPath);
       _zipArchiveCache.remove(zipPath);
-      _zipArchiveCache[zipPath] = archive;
+      _zipArchiveCache[zipPath] = index;
       while (_zipArchiveCache.length > _zipArchiveCacheCapacity) {
         _zipArchiveCache.remove(_zipArchiveCache.keys.first);
       }
-      return archive;
+      return index;
     } catch (e) {
       debugPrint('[ZenFile] 解析压缩包失败: $zipPath, $e');
       return null;
     }
   }
 
-  /// 归一化压缩包内部条目名（与 ArchiveViewerScreen 同算法）：
-  /// 反斜杠 → 正斜杠，去掉前导 `/` 与 `./`，保证与 internalDir 同一形态可比。
-  static String _normalizeZipEntryPath(String path) {
-    var name = path.replaceAll('\\', '/');
-    while (name.startsWith('/')) {
-      name = name.substring(1);
-    }
-    while (name.startsWith('./')) {
-      name = name.substring(2);
-    }
-    return name;
+  /// 加密预检：命中索引缓存时直接复用隔离区算好的标志，避免在主线程同步
+  /// 跑一次 ZipDecoder.decodeBuffer（大 ZIP 的中央目录解析同样会卡 UI）。
+  bool _zipPasswordRequired(String zipPath) {
+    final cached = _zipArchiveCache[zipPath];
+    if (cached != null) return cached.hasEncryptedEntries;
+    return ArchiveService.zipNeedsPassword(zipPath);
   }
 
   /// 由压缩包条目构造浏览页列表项。
@@ -7166,54 +7163,26 @@ class FileManagerProvider extends ChangeNotifier {
     );
   }
 
-  /// 按当前 internalDir 生成 zip 内条目列表（算法迁移自 ArchiveViewerScreen）：
-  /// 直接子项平铺，更深层的条目折叠为直接子目录；目录名去重、目录在前排序。
+  /// 按当前 internalDir 生成 zip 内条目列表。
+  ///
+  /// 目录折叠 / 去重 / 自然排序已在隔离区构建 [ArchiveIndex] 时完成，这里只按
+  /// [ArchiveIndex.childrenOf] 取当前目录的直接子项并套用「显示隐藏文件」开关，
+  /// 复杂度 O(当前目录项数)，不再随整包条目数增长。
   /// 隐藏文件过滤与本地目录分支一致（受「显示隐藏文件」开关控制）。
-  List<FileItemModel> _buildZipEntries(Archive archive, String zipPath, String internalDir) {
-    final seenFolders = <String>{};
+  List<FileItemModel> _buildZipEntries(
+      ArchiveIndex index, String zipPath, String internalDir) {
     final items = <FileItemModel>[];
-    for (final f in archive.files) {
-      final name = _normalizeZipEntryPath(f.name);
-      if (name.isEmpty || name == internalDir) continue;
-      if (!name.startsWith(internalDir)) continue;
-      final remaining = name.substring(internalDir.length);
-      final parts = remaining.split('/');
-      // 名字以 `/` 结尾的条目 split 后末段为空 —— 是显式目录项；
-      // 单段是直接文件；多段是深层条目，折叠为其直接子目录。
-      // 目录（显式或折叠）统一走 else 分支，size 恒 0（与查看器一致）。
-      final isDirectFile = parts.length == 1;
-      final firstName = parts[0];
-      if (firstName.isEmpty) continue;
-      if (!_showHiddenFiles && firstName.startsWith('.')) continue;
-      if (isDirectFile) {
-        items.add(_zipEntryToFileItem(
-          zipPath: zipPath,
-          fullInternalPath: name,
-          name: firstName,
-          isDirectory: false,
-          size: f.size,
-          lastModTime: f.lastModTime,
-        ));
-      } else {
-        // 目录（显式目录项或深层折叠）：去重后 size 恒 0（与查看器一致）
-        if (seenFolders.add(firstName)) {
-          items.add(_zipEntryToFileItem(
-            zipPath: zipPath,
-            fullInternalPath: '$internalDir$firstName/',
-            name: firstName,
-            isDirectory: true,
-            size: 0,
-            lastModTime: f.lastModTime,
-          ));
-        }
-      }
+    for (final item in index.childrenOf(internalDir)) {
+      if (!_showHiddenFiles && item.name.startsWith('.')) continue;
+      items.add(_zipEntryToFileItem(
+        zipPath: zipPath,
+        fullInternalPath: item.fullPath,
+        name: item.name,
+        isDirectory: item.isDirectory,
+        size: item.size,
+        lastModTime: item.lastModTime,
+      ));
     }
-    // 目录在前、自然名称排序，与浏览页普通列表一致
-    items.sort((a, b) {
-      if (a.isDirectory && !b.isDirectory) return -1;
-      if (!a.isDirectory && b.isDirectory) return 1;
-      return FileUtils.compareNatural(a.name, b.name);
-    });
     return items;
   }
 
@@ -7284,24 +7253,23 @@ class FileManagerProvider extends ChangeNotifier {
     }
     final (zipPath, internalDir) = FileUtils.parseZipVirtualPath(virtualPath);
 
-    // v1 不支持加密 zip 密码流程：预检到加密直接回退，避免「列表能看、
-    // 点开必失败」的半残状态。
-    if (ArchiveService.zipNeedsPassword(zipPath)) {
-      _showZipPasswordRequiredToast();
-      await _fallbackZipToParent(tab, zipPath, showLoading: showLoading, recordHistory: recordHistory);
-      return;
-    }
-
+    // v1 不支持加密 zip 密码流程。加密标志由隔离区解析索引时顺带算出，
+    // 不再在主线程同步跑一次 ZipDecoder.decodeBuffer（大 ZIP 会卡 UI）。
     try {
-      final archive = await _getZipArchiveCached(zipPath);
-      if (archive == null) {
+      final index = await _getZipArchiveCached(zipPath);
+      if (index == null) {
         // zip 文件不存在/为空/解析失败：提示后回退到真实父目录。
         _showZipOpenFailedToast(zipPath);
         await _fallbackZipToParent(tab, zipPath, showLoading: showLoading, recordHistory: recordHistory);
         return;
       }
+      if (index.hasEncryptedEntries) {
+        _showZipPasswordRequiredToast();
+        await _fallbackZipToParent(tab, zipPath, showLoading: showLoading, recordHistory: recordHistory);
+        return;
+      }
       tab.currentPath = virtualPath;
-      tab.currentFiles = _buildZipEntries(archive, zipPath, internalDir);
+      tab.currentFiles = _buildZipEntries(index, zipPath, internalDir);
     } catch (e) {
       debugPrint('[ZenFile] 压缩包目录加载失败: $e');
       // 与远程分支同策略：失败不清空旧列表（用户不至于看到内容凭空消失），
@@ -7326,7 +7294,7 @@ class FileManagerProvider extends ChangeNotifier {
     if (entryPath.isEmpty) return;
     final entryName = p.basename(entryPath);
     try {
-      if (ArchiveService.zipNeedsPassword(zipPath)) {
+      if (_zipPasswordRequired(zipPath)) {
         _showZipPasswordRequiredToast();
         return;
       }
@@ -7425,12 +7393,12 @@ class FileManagerProvider extends ChangeNotifier {
     if (virtualPaths.isEmpty) return false;
     final (zipPath, _) = FileUtils.parseZipVirtualPath(virtualPaths.first);
     try {
-      if (ArchiveService.zipNeedsPassword(zipPath)) {
+      if (_zipPasswordRequired(zipPath)) {
         _showZipPasswordRequiredToast();
         return false;
       }
-      final archive = await _getZipArchiveCached(zipPath);
-      if (archive == null) {
+      final index = await _getZipArchiveCached(zipPath);
+      if (index == null) {
         _showZipOpenFailedToast(zipPath);
         return false;
       }
@@ -7446,11 +7414,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (entry.isEmpty) continue;
         if (vp.endsWith('/')) {
           dirRoots[entry] = p.basename(entry);
-          for (final f in archive.files) {
-            if (!f.isFile) continue;
-            final n = _normalizeZipEntryPath(f.name);
-            if (n.startsWith('$entry/')) fileEntries.add(n);
-          }
+          fileEntries.addAll(index.fileNamesUnder(entry));
         } else {
           fileEntries.add(entry);
         }
@@ -7523,7 +7487,7 @@ class FileManagerProvider extends ChangeNotifier {
       _showZipL10nToast((l10n) => l10n.archive_unsupported_format);
       return false;
     }
-    if (ArchiveService.zipNeedsPassword(zipPath)) {
+    if (_zipPasswordRequired(zipPath)) {
       _showZipPasswordRequiredToast();
       return false;
     }
@@ -7588,15 +7552,9 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  /// 收集 zip 内目录条目的子树文件清单（与 [_extractZipEntriesToDir] 同算法）。
-  List<String> _collectZipSubtreeFiles(Archive archive, String dirEntry) {
-    final files = <String>[];
-    for (final f in archive.files) {
-      if (!f.isFile) continue;
-      final n = _normalizeZipEntryPath(f.name);
-      if (n.startsWith('$dirEntry/')) files.add(n);
-    }
-    return files;
+  /// 收集 zip 内目录条目的子树文件清单（索引里的条目名已归一化）。
+  List<String> _collectZipSubtreeFiles(ArchiveIndex index, String dirEntry) {
+    return index.fileNamesUnder(dirEntry);
   }
 
   /// 收集真实文件系统源到「追加进 zip」的条目集：文件读 bytes；目录递归收集
@@ -7706,14 +7664,13 @@ class FileManagerProvider extends ChangeNotifier {
     final oldKey = isDir ? '$entry/' : entry;
 
     // 同名冲突：zip 内已有同名条目（文件/显式目录）时拒绝，避免静默混淆
-    final archive = await _getZipArchiveCached(zipPath);
-    if (archive == null) {
+    final index = await _getZipArchiveCached(zipPath);
+    if (index == null) {
       _showZipOpenFailedToast(zipPath);
       return;
     }
-    for (final f in archive.files) {
-      final n = _normalizeZipEntryPath(f.name);
-      if (n == newEntry || n == newKey) {
+    for (final e in index.entries) {
+      if (e.name == newEntry || e.name == newKey) {
         _showZipL10nToast((l10n) => l10n.msg_file_exists);
         return;
       }
@@ -7756,12 +7713,12 @@ class FileManagerProvider extends ChangeNotifier {
           renamePaths[srcIsDir ? '$srcEntry/' : srcEntry] = srcIsDir ? '$destKey/' : destKey;
         } else {
           // 复制（同/跨包）或跨包剪切：解压 bytes 追加
-          final archive = await _getZipArchiveCached(srcZip);
-          if (archive == null) {
+          final index = await _getZipArchiveCached(srcZip);
+          if (index == null) {
             _showZipOpenFailedToast(srcZip);
             continue;
           }
-          final files = srcIsDir ? _collectZipSubtreeFiles(archive, srcEntry) : <String>[srcEntry];
+          final files = srcIsDir ? _collectZipSubtreeFiles(index, srcEntry) : <String>[srcEntry];
           if (files.isEmpty && !srcIsDir) continue;
           final map = await ArchiveService.extractEntriesToBytes(srcZip, files);
           for (final e in map.entries) {
@@ -13316,7 +13273,7 @@ class FileManagerProvider extends ChangeNotifier {
     final archiveDir = p.dirname(path);
     // 预检：ZIP 是否加密。加密包必须在拿到密码后才开始解压——否则 archive 包会
     // 「不报错地」解出一堆 0 字节文件，用户误以为是压缩包损坏（真机反馈）。
-    var needsPassword = ArchiveService.zipNeedsPassword(path);
+    var needsPassword = await ArchiveService.zipNeedsPasswordAsync(path);
     String? password;
     var passwordRejected = false;
     while (context.mounted) {

@@ -230,7 +230,8 @@ class MainActivity : AudioServiceFragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // 崩溃取证必须在 super.onCreate() **之前**：那一步会创建 FlutterEngine、
         // 加载 libflutter.so / libmpv.so，正是「启动即崩」的主要发生地。
-        // 同步执行少量 IO（读系统退出记录 + 写几 KB 报告），耗时毫秒级。
+        // v3.7.7：这里只同步安装未捕获异常兜底；读系统退出记录 / trace 落盘已移到
+        // 后台线程，避免 ANR 被杀后重启时再拖长冷启动主线程（见 CrashForensics）。
         CrashForensics.captureOnStartup(this)
         // 系统文件选择器入口：必须在 super.onCreate() **之前**读取 intent —— Dart 侧
         // 启动后会异步查询该状态（getPickerInfo），晚于 onCreate 返回。
@@ -296,52 +297,71 @@ class MainActivity : AudioServiceFragmentActivity() {
 
         // 启动修复：按用户保存的图标偏好恢复对应启动别名，保证「重启后仍保持所选图标」。
         // 背景：旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
-        // 组件启用状态跨应用更新持久化；此处先统一重置为「仅目标别名启用、其余禁用」，
+        // 组件启用状态跨应用更新持久化；此处统一重置为「仅目标别名启用、其余禁用」，
         // 既修复旧用户升级后丢失桌面图标的问题，也确保新选的备用图标在进程重建后不失效。
-        try {
-            val pm = packageManager
-            val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-            val saved = try { prefs.getString("flutter.active_app_icon", "default") } catch (e: Exception) { "default" }
-            val aliasMap = mapOf(
-                "classic2" to "com.sequl.zenfile.MainActivityClassic2",
-                "classic3" to "com.sequl.zenfile.MainActivityClassic3",
-                "classic4" to "com.sequl.zenfile.MainActivityClassic4",
-                "cyberpunk" to "com.sequl.zenfile.MainActivityCyberpunk",
-                "glassmorphism" to "com.sequl.zenfile.MainActivityGlassmorphism",
-                "3d_gradient" to "com.sequl.zenfile.MainActivity3DGradient",
-                "glossy_blue" to "com.sequl.zenfile.MainActivityGlossyBlue",
-                "paper_gray" to "com.sequl.zenfile.MainActivityPaperGray",
-                "metal_frost" to "com.sequl.zenfile.MainActivityMetalFrost",
-                "blue_folder" to "com.sequl.zenfile.MainActivityBlueFolder",
-                "blue_folder_white" to "com.sequl.zenfile.MainActivityBlueFolderWhite",
-                "blue_folder_gradient" to "com.sequl.zenfile.MainActivityBlueFolderGradient",
-                "deep_blue_gold" to "com.sequl.zenfile.MainActivityDeepBlueGold",
-                "sunset_zf" to "com.sequl.zenfile.MainActivitySunsetZf",
-                // 深蓝鎏金已升级为默认图标（application icon + MainActivityDefault），
-                // 不再作为备选 alias；原默认图标改为备选（MainActivityOriginal）。
-                "original" to "com.sequl.zenfile.MainActivityOriginal",
-                "m3_expressive" to "com.sequl.zenfile.MainActivityM3Expressive",
-                "minimal_flat" to "com.sequl.zenfile.MainActivityMinimalFlat",
-                "neumorphism" to "com.sequl.zenfile.MainActivityNeumorphism",
-            )
-            val target = aliasMap[saved] ?: "com.sequl.zenfile.MainActivityDefault"
-            // ⚠️ 2026-09-27 事故：新增 4 个备选图标时这里漏同步，切新图标后 saved 在
-            // aliasMap 查不到 ⇒ target 回落 default ⇒ 每次启动把 default 重新 ENABLED，
-            // 而新 alias 又不在禁用列表里 ⇒ 桌面出现「新图标 + 默认图标」两个入口。
-            // allAliases 直接复用 legacyIconAliases()（与 changeAppIcon 同一真源），
-            // 以后新增图标只需同步 aliasMap 一处（manifest + legacy 名单）。
-            val allAliases = legacyIconAliases()
-            for (alias in allAliases) {
-                val componentName = android.content.ComponentName(this, alias)
-                val state = if (alias == target) {
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                } else {
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-                }
-                pm.setComponentEnabledSetting(componentName, state, PackageManager.DONT_KILL_APP)
+        //
+        // v3.7.7 冷启动减负：整段移到低优先级后台线程，且只写「状态确实不符」的别名。
+        // 原实现每次冷启动都在主线程对 18+ 个别名做同步 setComponentEnabledSetting，
+        // 每次都要跨 Binder 让 PackageManager 持久化并广播包状态；在上次进程因 ANR
+        // 被杀、系统还在写 trace 的高负载重启里，这段同步工作会明显延长冷启动，叠加
+        // 多个 ContentProvider 初始化后可能触发 timeout publishing content providers。
+        // 组件启用状态本身是持久化的，正常启动下状态本就正确 ⇒ 绝大多数启动零 Binder 写。
+        Thread(Runnable {
+            try {
+                android.os.Process.setThreadPriority(
+                    android.os.Process.THREAD_PRIORITY_BACKGROUND)
+            } catch (_: Throwable) {
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            try {
+                val pm = packageManager
+                val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                val saved = try { prefs.getString("flutter.active_app_icon", "default") } catch (e: Exception) { "default" }
+                val aliasMap = mapOf(
+                    "classic2" to "com.sequl.zenfile.MainActivityClassic2",
+                    "classic3" to "com.sequl.zenfile.MainActivityClassic3",
+                    "classic4" to "com.sequl.zenfile.MainActivityClassic4",
+                    "cyberpunk" to "com.sequl.zenfile.MainActivityCyberpunk",
+                    "glassmorphism" to "com.sequl.zenfile.MainActivityGlassmorphism",
+                    "3d_gradient" to "com.sequl.zenfile.MainActivity3DGradient",
+                    "glossy_blue" to "com.sequl.zenfile.MainActivityGlossyBlue",
+                    "paper_gray" to "com.sequl.zenfile.MainActivityPaperGray",
+                    "metal_frost" to "com.sequl.zenfile.MainActivityMetalFrost",
+                    "blue_folder" to "com.sequl.zenfile.MainActivityBlueFolder",
+                    "blue_folder_white" to "com.sequl.zenfile.MainActivityBlueFolderWhite",
+                    "blue_folder_gradient" to "com.sequl.zenfile.MainActivityBlueFolderGradient",
+                    "deep_blue_gold" to "com.sequl.zenfile.MainActivityDeepBlueGold",
+                    "sunset_zf" to "com.sequl.zenfile.MainActivitySunsetZf",
+                    // 深蓝鎏金已升级为默认图标（application icon + MainActivityDefault），
+                    // 不再作为备选 alias；原默认图标改为备选（MainActivityOriginal）。
+                    "original" to "com.sequl.zenfile.MainActivityOriginal",
+                    "m3_expressive" to "com.sequl.zenfile.MainActivityM3Expressive",
+                    "minimal_flat" to "com.sequl.zenfile.MainActivityMinimalFlat",
+                    "neumorphism" to "com.sequl.zenfile.MainActivityNeumorphism",
+                )
+                val target = aliasMap[saved] ?: "com.sequl.zenfile.MainActivityDefault"
+                // ⚠️ 2026-09-27 事故：新增 4 个备选图标时这里漏同步，切新图标后 saved 在
+                // aliasMap 查不到 ⇒ target 回落 default ⇒ 每次启动把 default 重新 ENABLED，
+                // 而新 alias 又不在禁用列表里 ⇒ 桌面出现「新图标 + 默认图标」两个入口。
+                // allAliases 直接复用 legacyIconAliases()（与 changeAppIcon 同一真源）。
+                val allAliases = legacyIconAliases()
+                for (alias in allAliases) {
+                    val componentName = android.content.ComponentName(this@MainActivity, alias)
+                    val desired = if (alias == target) {
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    } else {
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                    }
+                    // 已是目标状态就跳过：避免每次启动都做一次无意义的 Binder 写。
+                    if (pm.getComponentEnabledSetting(componentName) == desired) continue
+                    pm.setComponentEnabledSetting(componentName, desired, PackageManager.DONT_KILL_APP)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }, "zenfile-icon-restore").apply {
+            isDaemon = true
+            priority = Thread.MIN_PRIORITY
+            start()
         }
     }
 

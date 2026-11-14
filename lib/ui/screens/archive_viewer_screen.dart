@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'package:archive/archive.dart';
+import '../../models/archive_index.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
@@ -38,21 +38,15 @@ class ArchiveViewerScreen extends StatefulWidget {
 }
 
 class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
-  Archive? _archive;
+  ArchiveIndex? _archive;
   String _currentInternalPath = '';
   bool _isLoading = true;
   final Set<String> _selectedInternalPaths = {};
 
-  String _normalizePath(String path) {
-    var name = path.replaceAll('\\', '/');
-    while (name.startsWith('/')) {
-      name = name.substring(1);
-    }
-    while (name.startsWith('./')) {
-      name = name.substring(2);
-    }
-    return name;
-  }
+  // 当前目录列表缓存：索引已在隔离区完成折叠 + 排序，UI 每帧 rebuild 时 O(1)
+  // 复用，避免大压缩包在 build 期间反复全表遍历 + 排序造成掉帧 / ANR。
+  List<ArchiveItem>? _cachedItems;
+  String _cachedItemsPath = '';
 
   String get _archiveName => p.basename(widget.archivePath);
   bool get isSelectionMode => _selectedInternalPaths.isNotEmpty;
@@ -65,71 +59,37 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
   Future<void> _loadArchive() async {
     setState(() => _isLoading = true);
-    final arch = await ArchiveService.readArchive(widget.archivePath);
+    final index = await ArchiveService.readArchiveIndex(widget.archivePath);
     if (mounted) {
       setState(() {
-        _archive = arch;
+        _archive = index;
+        _cachedItems = null;
         _isLoading = false;
         _selectedInternalPaths.clear();
       });
     }
   }
 
+  /// 当前目录条目：索引已在隔离区完成折叠 / 去重 / 自然排序，这里只做一次
+  /// ArchiveItem 映射并按路径缓存，UI 每帧 rebuild 不再全表扫描整包。
   List<ArchiveItem> get _currentItems {
-    if (_archive == null) return [];
-
-    final Set<String> folders = {};
-    final List<ArchiveItem> items = [];
-
-    for (final f in _archive!.files) {
-      final name = _normalizePath(f.name);
-      if (name.isEmpty || name == _currentInternalPath) continue;
-
-      if (name.startsWith(_currentInternalPath)) {
-        final remaining = name.substring(_currentInternalPath.length);
-        final parts = remaining.split('/');
-
-        if (parts.length == 1 || (parts.length == 2 && parts[1].isEmpty)) {
-          if (parts.length == 2 && parts[1].isEmpty) {
-            final folderName = parts[0];
-            if (!folders.contains(folderName)) {
-              folders.add(folderName);
-              items.add(ArchiveItem(
-                name: folderName,
-                fullPath: '$_currentInternalPath$folderName/',
-                isDirectory: true,
-                size: 0,
-              ));
-            }
-          } else {
-            items.add(ArchiveItem(
-              name: parts[0],
-              fullPath: name,
-              isDirectory: false,
-              size: f.size,
-            ));
-          }
-        } else {
-          final folderName = parts[0];
-          if (!folders.contains(folderName)) {
-            folders.add(folderName);
-            items.add(ArchiveItem(
-              name: folderName,
-              fullPath: '$_currentInternalPath$folderName/',
-              isDirectory: true,
-              size: 0,
-            ));
-          }
-        }
-      }
+    final index = _archive;
+    if (index == null) return const <ArchiveItem>[];
+    final cached = _cachedItems;
+    if (cached != null && _cachedItemsPath == _currentInternalPath) {
+      return cached;
     }
-
-    items.sort((a, b) {
-      if (a.isDirectory && !b.isDirectory) return -1;
-      if (!a.isDirectory && b.isDirectory) return 1;
-      return FileUtils.compareNatural(a.name, b.name);
-    });
-
+    final items = <ArchiveItem>[];
+    for (final item in index.childrenOf(_currentInternalPath)) {
+      items.add(ArchiveItem(
+        name: item.name,
+        fullPath: item.fullPath,
+        isDirectory: item.isDirectory,
+        size: item.size,
+      ));
+    }
+    _cachedItems = items;
+    _cachedItemsPath = _currentInternalPath;
     return items;
   }
 
@@ -159,8 +119,9 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
   /// 将单个 ArchiveItem 提取到临时目录，返回临时文件路径（内部复用）
   /// 单张文件解压失败时返回 null，不向上抛异常，避免同目录其他图片预览被连带失败。
-  /// 注意：内容通过 ArchiveService.extractEntriesToBytes 在隔离区内完成解压后回传，
-  /// 不要直接读 _archive.files[x].content（跨隔离区的文件型流在解压时会失效/读空）。
+  /// 注意：内容通过 ArchiveService.extractEntriesToBytes 在隔离区内完成解压后回传。
+  /// 索引只保存名称 / 大小 / 类型等元数据，没有条目内容，也不应把 Archive 对象图
+  /// 带回主隔离区（跨隔离区的文件型流会失效、读空，且大对象图会打满主线程 CPU）。
   Future<String?> _extractItemToTemp(ArchiveItem item) async {
     try {
       final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, [item.fullPath]);
@@ -291,10 +252,8 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
         await destFile.writeAsBytes(content);
       } else {
         // 目录：收集该目录树下所有文件条目，一次性提取
-        final subPaths = _archive!.files
-            .where((f) => f.isFile && _normalizePath(f.name).startsWith(item.fullPath))
-            .map((f) => _normalizePath(f.name))
-            .toList();
+        final dirPrefix = item.fullPath.replaceAll(RegExp(r'/+$'), '');
+        final subPaths = _archive!.fileNamesUnder(dirPrefix);
         final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, subPaths);
         for (final entry in map.entries) {
           final bytes = entry.value;
@@ -341,11 +300,8 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       }
       final allPaths = <String>[...filePaths];
       for (final dirPath in dirPaths) {
-        for (final f in _archive!.files) {
-          if (f.isFile && _normalizePath(f.name).startsWith(dirPath)) {
-            allPaths.add(_normalizePath(f.name));
-          }
-        }
+        final prefix = dirPath.replaceAll(RegExp(r'/+$'), '');
+        allPaths.addAll(_archive!.fileNamesUnder(prefix));
       }
 
       // 隔离区内一次性解压，规避跨隔离区文件流导致大文件解压失败

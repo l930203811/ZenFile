@@ -11,6 +11,7 @@ import 'package:koni_archive/io.dart' as koni;
 import 'package:dart_lz4/dart_lz4.dart';
 import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
+import '../models/archive_index.dart';
 
 /// ArchiveService 同步分块 IO 用的缓冲区大小（1 MiB）。
 /// 在 compute Isolate 里使用同步 openRead/Write，避免主线程阻塞；
@@ -611,6 +612,22 @@ class ArchiveService {
     }
   }
 
+  /// 异步版加密预检：把 ZIP 中央目录解析放进隔离区。
+  ///
+  /// [zipNeedsPassword] 是同步实现，在 UI 线程调用时会完整解析一遍中央目录；
+  /// 大 ZIP 上这段同步 IO + 对象构造同样会卡界面。非 ZIP 格式直接短路，
+  /// 不额外开隔离区。
+  static Future<bool> zipNeedsPasswordAsync(String archivePath) {
+    final lower = archivePath.toLowerCase();
+    if (!lower.endsWith('.zip') && !lower.contains('.zip.')) {
+      return Future<bool>.value(false);
+    }
+    return compute(_zipNeedsPasswordTask, archivePath);
+  }
+
+  static bool _zipNeedsPasswordTask(String archivePath) =>
+      zipNeedsPassword(archivePath);
+
   /// 校验密码是否匹配：挑一个「有内容」的条目触发解密并比对 CRC32。
   ///
   /// - AES：错误密码会在读取内容时直接抛异常（由 [decodeZip] 捕获），CRC 校验是额外保险。
@@ -1130,8 +1147,56 @@ class ArchiveService {
     } catch (_) {}
   }
 
+  /// 旧接口：把完整 [Archive] 对象图跨隔离区回传主线程。
+  ///
+  /// ⚠️ 仅供「确实需要 ArchiveFile 内容」的特殊场景使用；UI 浏览大压缩包请改用
+  /// [readArchiveIndex]。ArchiveFile 持有惰性 content / InputStream / FileBuffer
+  /// 引用，跨隔离区深拷贝大对象图会打满主线程 CPU（v3.7.7 的 RAR ANR）。
   static Future<Archive?> readArchive(String archivePath, {String? password}) async {
     return compute(_readArchiveTask, {'archivePath': archivePath, 'password': password});
+  }
+
+  /// 读取压缩包「轻量索引」：解析、文件名归一化、目录折叠、自然排序**全部在
+  /// compute 隔离区内完成**，主线程只收到 String/int/bool 组成的纯数据。
+  ///
+  /// 这样 [Archive] 对象图永远不跨隔离区边界，浏览各级子目录时按
+  /// [ArchiveIndex.children] O(1) 命中，不再每次全表扫描 + 全表排序。
+  static Future<ArchiveIndex> readArchiveIndex(
+    String archivePath, {
+    String? password,
+  }) async {
+    return compute(_readArchiveIndexTask, {
+      'archivePath': archivePath,
+      'password': password,
+    });
+  }
+
+  static Future<ArchiveIndex> _readArchiveIndexTask(
+      Map<String, dynamic> args) async {
+    final archivePath = args['archivePath'] as String;
+    final lower = archivePath.toLowerCase();
+    // 加密标志只对 ZIP 有意义；放在隔离区内算，避免主线程同步解析中央目录
+    // （旧 zip:// 加载路径会在 UI 线程跑一次 ZipDecoder.decodeBuffer）。
+    final bool encrypted = (lower.endsWith('.zip') || lower.contains('.zip.'))
+        ? zipNeedsPassword(archivePath)
+        : false;
+    try {
+      final archive = await _readArchiveTask(args);
+      if (archive == null || archive.files.isEmpty) return ArchiveIndex.empty;
+      final entries = <ArchiveEntryInfo>[];
+      for (final f in archive.files) {
+        entries.add(ArchiveEntryInfo(
+          name: _normalizeForMatch(f.name),
+          size: f.size,
+          isFile: f.isFile,
+          lastModTime: f.lastModTime,
+        ));
+      }
+      return buildArchiveIndex(entries, hasEncryptedEntries: encrypted);
+    } catch (e) {
+      debugPrint('[ZenFile] 构建压缩包索引失败: $e');
+      return ArchiveIndex.empty;
+    }
   }
 
   /// 在隔离区内以「全新打开、全程保持打开」的流，把指定内部路径的条目解压为纯字节返回。

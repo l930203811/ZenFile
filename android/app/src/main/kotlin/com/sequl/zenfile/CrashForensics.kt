@@ -128,16 +128,49 @@ object CrashForensics {
     // ══════════════════════════════════════════════════════════════════
 
     /**
-     * 在 `MainActivity.attachBaseContext()` 里调用：装上 Java 未捕获异常兜底，
-     * 并把系统记录的上次异常退出落盘。
+     * 在 `MainActivity.onCreate()` 的 `super` 之前调用：同步装上 Java 未捕获异常
+     * 兜底，把系统记录的上次异常退出落盘**放到低优先级后台线程**。
      *
-     * 这个方法**同步**执行少量 IO（读 binder 列表 + 写几 KB 文件）。刻意如此：
-     * 放进协程/线程会让「应用崩在取证之前」重新变成可能，而这点开销是毫秒级的。
+     * ## 为什么不再同步取证（v3.7.7 冷启动超时修复）
+     * [collectViaExitInfo] 会同步调用 `getHistoricalProcessExitReasons`，逐条读取
+     * 最多 128KB 的 ANR trace / tombstone，再写文件并清理旧报告。单次确实是毫秒级，
+     * 但「打开大压缩包触发 ANR → 进程被系统杀掉 → 立刻重启」时，系统仍在写 ANR
+     * trace、弹无响应对话框，磁盘与 Binder 都很拥挤，这段同步 IO 会明显延长冷启动
+     * 主线程占用，叠加多个 ContentProvider 初始化后可能撞上
+     * `timeout publishing content providers`（INITIALIZATION_FAILURE）。
+     *
+     * ## 安全性
+     * 崩溃记录是**系统留的**，本次没取到不会丢；[capture] 幂等（报告名含崩溃
+     * 时间戳，已存在即跳过），下次启动或 Dart 侧 `exportToPublicDir` 都会补上。
+     * 真正的「本次启动即崩」由同步安装的 [installJavaHandler] 与系统记录兜底，
+     * 因此把落盘挪出主线程不会损失证据。
      */
     @JvmStatic
     fun captureOnStartup(context: Context) {
         installJavaHandler(context)
-        capture(context)
+        val appCtx = try {
+            context.applicationContext ?: context
+        } catch (_: Throwable) {
+            context
+        }
+        try {
+            Thread(Runnable {
+                try {
+                    android.os.Process.setThreadPriority(
+                        android.os.Process.THREAD_PRIORITY_BACKGROUND)
+                } catch (_: Throwable) {
+                }
+                capture(appCtx)
+            }, "zenfile-crash-forensics").apply {
+                isDaemon = true
+                priority = Thread.MIN_PRIORITY
+                start()
+            }
+        } catch (t: Throwable) {
+            // 连线程都起不来（极端低内存）时退化为同步取证，保证证据不丢。
+            Log.w(TAG, "background capture unavailable: ${t.javaClass.simpleName}")
+            capture(appCtx)
+        }
     }
 
     /**
