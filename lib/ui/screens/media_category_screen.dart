@@ -1090,7 +1090,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
       context,
       content: L10n.of(context).count1(count),
-      items: DeleteConfirmItems.from(previewItems),
+      // 混合本地+远程选择：含远程条目时「移入回收站」勾选框灰色禁用
+      // （远程删除不经过回收站）；相册 AssetEntity 恒为本地，不影响判定。
+      items: DeleteConfirmItems.from(
+        previewItems,
+        recycleBinSupported: FileActionDialogs.pathsSupportRecycleBin(
+          _selectedFilePaths,
+        ),
+      ),
     );
 
     if (confirm == true && mounted) {
@@ -2176,50 +2183,32 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                       ),
                       if (showPlayerController != null) ...[
                         const PopupMenuDivider(),
+                        // 修复：与「显示远程文件」菜单项一致，去掉 Row 里随状态翻转的
+                        // toggle_on/off 图标和「显示/隐藏」翻转标题，改用单一信号：
+                        // 固定标题（显示播放器控制器）+ checked ✓
+                        // （✓ = 当前正在显示控制器）。不再画 toggle 图标，标题也不再
+                        // 翻转，避免「状态」与「下一步动作」语义混淆。
+                        // 音频 / 视频类别共用本方法，故两种菜单一并修复。
                         CheckedPopupMenuItem(
                           value: _ViewMenuAction.togglePlayerController,
                           checked: showPlayerController,
-                          child: Row(
-                            children: [
-                              Icon(
-                                showPlayerController
-                                    ? Icons.toggle_on
-                                    : Icons.toggle_off,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                showPlayerController
-                                    ? L10n.of(context).ui_hide_player_controller
-                                    : L10n.of(
-                                        context,
-                                      ).ui_show_player_controller,
-                              ),
-                            ],
+                          child: Text(
+                            L10n.of(context).ui_show_player_controller,
                           ),
                         ),
                       ],
                       if (_supportsRemoteSync) ...[
                         const PopupMenuDivider(),
+                        // 修复：原先同时叠了「左侧 ✓（checked）」「Row 里的
+                        // toggle_on/off 图标」「随状态翻转的 显示/隐藏 标题」三种
+                        // 互相打架的信号，用户无法判断点下去是隐藏还是显示。
+                        // 改为与排序/视图菜单项一致的单一信号：固定标题 +
+                        // checked ✓（✓ = 当前正在显示远程文件）。不再画 toggle 图标，
+                        // 标题也不再翻转，避免「状态」与「下一步动作」语义混淆。
                         CheckedPopupMenuItem(
                           value: _ViewMenuAction.toggleShowRemoteFiles,
                           checked: _showRemoteFiles,
-                          child: Row(
-                            children: [
-                              Icon(
-                                _showRemoteFiles
-                                    ? Icons.toggle_on
-                                    : Icons.toggle_off,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _showRemoteFiles
-                                    ? L10n.of(context).ui_hide_remote_files
-                                    : L10n.of(context).ui_show_remote_files,
-                              ),
-                            ],
-                          ),
+                          child: Text(L10n.of(context).ui_show_remote_files),
                         ),
                       ],
                     ],
@@ -2303,6 +2292,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                 widget.folderPath == null &&
                 _supportsFolderView)
               _buildFoldersToggle(theme),
+            // 「继续播放 / 正在播放」控制器：放回列表顶部（用户反馈 2026-11-15：
+            // 放到底部会干扰列表滑动；悬浮可拖拽方案备选，暂不启用）。
             if (widget.album == null &&
                 widget.mediaType == MediaType.audios &&
                 _showResumeAudio)
@@ -6200,12 +6191,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(13),
-                      onTap: () =>
-                          _openAudioPlayerFromResume(path, title, artist),
+                      onTap: () => _openAudioPlayerFromResume(
+                            path,
+                            title,
+                            artist,
+                            startPaused: true,
+                          ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
-                          vertical: 12,
+                          vertical: 10,
                         ),
                         child: Row(
                           children: [
@@ -6238,17 +6233,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    isCurrentTrack && isPlaying
-                                        ? L10n.of(context).ui_now_playing
-                                        : L10n.of(context).ui_resume_playback,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
+                                  // 顶部蓝色小标题（继续播放/正在播放）已移除：
+                                  // 与第三行副标题「继续播放 · 时长」重复，
+                                  // 且压高了卡片（用户反馈 2026-11-15）。
                                   Text(
                                     title,
                                     maxLines: 1,
@@ -6318,9 +6305,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
       return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     }
 
+    // 无播放记录时不显示副标题行（原实现回退成 title，会让标题显示两遍）。
     final subtitle = savedPosition.inSeconds > 0
         ? '${L10n.of(context).ui_resume_playback} · ${formatDuration(savedPosition)}'
-        : title;
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -6330,9 +6318,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: BorderRadius.circular(13),
-          onTap: () => _openVideoPlayerFromResume(path),
+          onTap: () => _openVideoPlayerFromResume(path, startPaused: true),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 SizedBox(
@@ -6343,7 +6331,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: () => _openVideoPlayerFromResume(path),
+                      onTap: () => _openVideoPlayerFromResume(path, startPaused: false),
                       child: Icon(
                         Icons.play_arrow_rounded,
                         color: theme.colorScheme.onPrimary,
@@ -6358,15 +6346,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        L10n.of(context).ui_resume_playback,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
+                      // 顶部蓝色「继续播放」小标题已移除：与副标题重复且压高卡片
+                      // （与音频卡片同款调整，用户反馈 2026-11-15）。
                       Text(
                         title,
                         maxLines: 1,
@@ -6377,16 +6358,18 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -6403,12 +6386,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     );
   }
 
-  void _openVideoPlayerFromResume(String path) {
+  void _openVideoPlayerFromResume(String path, {bool startPaused = false}) {
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            VideoPlayerScreen(videoPath: path),
+            VideoPlayerScreen(videoPath: path, startPaused: startPaused),
         transitionsBuilder: (context, animation, secondaryAnimation, child) =>
             SlideTransition(
               position:
@@ -6430,7 +6413,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     });
   }
 
-  void _openAudioPlayerFromResume(String path, String title, String artist) {
+  void _openAudioPlayerFromResume(
+    String path,
+    String title,
+    String artist, {
+    bool startPaused = false,
+  }) {
     final handler = getAudioHandler();
     final isSamePlaying =
         handler.isPlayingPath(path) && handler.hasActivePlayer;
@@ -6463,6 +6451,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
               allSongs: index >= 0 ? audios : null,
               initialIndex: index >= 0 ? index : 0,
               existingPlayer: isSamePlaying ? handler.currentPlayer : null,
+              startPaused: startPaused,
             ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) =>
             SlideTransition(
@@ -6496,7 +6485,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
 
     if (!handler.hasActivePlayer || !isCurrentTrack) {
       // 没有播放器或播放的不是当前歌曲：打开播放器并开始播放
-      _openAudioPlayerFromResume(path, title, artist);
+      _openAudioPlayerFromResume(
+        path,
+        title,
+        artist,
+        startPaused: false,
+      );
       return;
     }
 

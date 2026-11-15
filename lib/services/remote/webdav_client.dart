@@ -498,6 +498,14 @@ class WebDavRemoteClient extends RemoteClient {
   @override
   bool get rangeViaPassthrough => true;
 
+  /// WebDAV / OpenList 是无状态 HTTP 协议，每次请求独立建连，支持同一客户端
+  /// 实例上并发跑多个 [uploadFile]。开启后 FileManagerProvider 会把多文件粘贴
+  /// 改成有界并发，把「本地→服务器→网盘」的等待重叠起来（OpenList 本机代理
+  /// 模式下尤为明显：单文件 PUT 要等它把数据传到网盘才返回，串行会空闲大量
+  /// 本地→服务器带宽）。
+  @override
+  bool get supportsConcurrentUpload => true;
+
   /// WebDAV 走**原生透传**：把播放器的 Range 头原样发给远端（自动跟随 302 并
   /// 保留 Range），再原样回传状态码/实体头与响应流，不产生任何本地临时文件。
   @override

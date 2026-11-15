@@ -351,6 +351,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
           items: FileActionDialogs.itemsFromPaths(
             isMulti ? provider.selectedPaths : [path],
           ),
+          // 远程 / 加密远程标签页里的条目是纯服务器路径（无 remote:// 前缀，
+          // 路径自动判定不了），按所在 pane 的标签页状态显式传入：
+          // 这些删除不经过回收站，弹窗「移入回收站」勾选框灰色禁用。
+          recycleBinSupported: !(provider.tabs[widget.tabIndex].isRemote ||
+              provider.tabs[widget.tabIndex].isCryptRemote),
         );
         if (confirm) {
           try {

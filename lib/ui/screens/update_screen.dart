@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.7';
+  static const String _latestChangelogVersion = 'v3.7.8';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v378,
     _v377,
     _v376,
     _v375,
@@ -964,7 +965,27 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.7 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.8 ────────────────────────────────────────────────
+  static const _Changelog _v378 = _Changelog(
+    version: 'v3.7.8',
+    date: '2026-11-15',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复媒体分类页「显示远程文件」菜单项的操作歧义：原先同时显示左侧勾选框、行内开关图标和随状态翻转的「隐藏/显示」标题，三种互相冲突的信号让用户无法判断点下去到底是隐藏还是显示；现改为与排序/视图菜单一致的单一信号（固定标题「显示远程文件」+ 勾选 ✓，✓ 表示当前正在显示远程文件），操作含义一目了然',
+        '修复音频 / 视频分类页「显示播放器控制器」菜单项同样的勾选与开关图标冲突问题（音频、视频两个菜单一并修复）',
+        '点击媒体分类页的「继续播放」控制器卡片直接进入播放器页面且不再自动播放（停在记忆进度）；只有点击左侧的播放 / 暂停按钮才会播放或暂停（音频为后台播放切换，视频为进场即播放）；此前点击卡片进入视频播放页会立即自动播放的问题一并修复',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed the ambiguous "Show remote files" menu item on the media category page: it previously combined a left-side checkbox, an inline toggle icon and a state-flipping "Hide/Show" label, and the three conflicting signals made it impossible to tell whether tapping would hide or show. It now uses a single, consistent signal (fixed label "Show remote files" + checkmark ✓, where ✓ means remote files are currently shown), so the action is unambiguous',
+        'Fixed the same checkbox / toggle-icon conflict on the "Show player controller" menu item of the audio and video category pages (both menus fixed at once)',
+        'Tapping the "resume playback" controller card on the media category pages now opens the player page directly without auto-playing (it stays paused at the remembered position); playback is only started or paused via the left play / pause button (background playback toggle for audio, play-on-enter for video). This also fixes the video player automatically starting playback when the card was tapped',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.7（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v377 = _Changelog(
     version: 'v3.7.7',
     date: '2026-11-15',

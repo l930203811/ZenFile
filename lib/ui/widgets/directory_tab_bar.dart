@@ -298,7 +298,9 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
             icon: _tabActionIcon(
               context,
               Broken.close_circle,
-              Colors.redAccent,
+              // 关闭动作不是删除：跟随主题色（与左侧「新建标签」按钮一致），
+              // 不再用红色 —— 红色在本应用语义上留给「删除/清空」。
+              theme.colorScheme.primary,
               17,
             ),
             tooltip: L10n.of(context).ui_close_tab,
@@ -327,10 +329,10 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
                   value: 'current',
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Broken.close_circle,
                         size: 20,
-                        color: Colors.redAccent,
+                        color: theme.colorScheme.primary,
                       ),
                       const SizedBox(width: 12),
                       Text(

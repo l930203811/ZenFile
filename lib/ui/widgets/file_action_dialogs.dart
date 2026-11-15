@@ -30,20 +30,39 @@ class DeleteConfirmItem {
 /// 又不让弹窗首帧去 build 几千个行。
 class DeleteConfirmItems {
   /// 从完整条目列表构造（内部自行截断到预览上限）。
-  factory DeleteConfirmItems.from(Iterable<DeleteConfirmItem> all) {
+  ///
+  /// [recycleBinSupported]：路径来源不含路径信息（如相册条目）时由调用方
+  /// 自行判定传入；混合本地+远程选择时只要含远程条目即传 false。
+  factory DeleteConfirmItems.from(
+    Iterable<DeleteConfirmItem> all, {
+    bool recycleBinSupported = true,
+  }) {
     final preview = all
         .take(FileActionDialogs.maxPreviewItems)
         .toList(growable: false);
-    return DeleteConfirmItems._(preview, all.length);
+    return DeleteConfirmItems._(
+      preview,
+      all.length,
+      recycleBinSupported: recycleBinSupported,
+    );
   }
 
-  const DeleteConfirmItems._(this.items, this.totalCount);
+  const DeleteConfirmItems._(
+    this.items,
+    this.totalCount, {
+    this.recycleBinSupported = true,
+  });
 
   /// 实际参与预览的条目（已截断）。
   final List<DeleteConfirmItem> items;
 
   /// 待删条目真实总数。
   final int totalCount;
+
+  /// 待删条目是否全部支持「移入回收站」。远程（remote:// / cryptremote://）、
+  /// zip:// 压缩包内条目删除时不经过回收站，为 false 时确认弹窗的
+  /// 「移入回收站」勾选框呈灰色禁用（未勾选），如实反映删除行为。
+  final bool recycleBinSupported;
 
   /// 因超上限而未逐条展示的条数。
   int get hiddenCount => totalCount - items.length;
@@ -142,6 +161,7 @@ class FileActionDialogs {
     BuildContext context, {
     required String content,
     DeleteConfirmItems? items,
+    bool? recycleBinSupported,
   }) async {
     // 开关关闭 → 直接删除，不再弹窗
     if (!PreferencesService.getDeleteConfirmEnabled()) return (true, null);
@@ -151,6 +171,10 @@ class FileActionDialogs {
       showSkipCheckbox: true,
       showRecycleBinCheckbox: true,
       items: items,
+      // 显式传入时优先（如远程标签页里的纯服务器路径不带 remote:// 前缀，
+      // 路径自动判定不了，由调用方按浏览上下文传入）。
+      recycleBinSupported:
+          recycleBinSupported ?? items?.recycleBinSupported ?? true,
     );
   }
 
@@ -162,6 +186,20 @@ class FileActionDialogs {
 
   /// 单行高度（含留白），用于按条数推算预览区高度。
   static const double previewRowExtent = 52.0;
+
+  /// 判断待删路径是否支持「移入回收站」：任一条目为远程
+  /// （remote:// / cryptremote://）或 zip:// 压缩包内条目即不支持
+  /// （这些分支的删除不经过回收站，见 FileManagerProvider.deleteFile）。
+  static bool pathsSupportRecycleBin(Iterable<String> paths) {
+    for (final path in paths) {
+      if (path.startsWith('remote://') ||
+          path.startsWith('cryptremote://') ||
+          path.startsWith('zip://')) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   /// 由路径列表构造 [DeleteConfirmItems]：各删除入口共用同一套取名 / 判目录
   /// 逻辑，避免每个调用点各写一份 `p.basename` + `existsSync`。
@@ -183,7 +221,11 @@ class FileActionDialogs {
           ),
         )
         .toList(growable: false);
-    return DeleteConfirmItems._(preview, all.length);
+    return DeleteConfirmItems._(
+      preview,
+      all.length,
+      recycleBinSupported: pathsSupportRecycleBin(all),
+    );
   }
 
   static String _displayNameForPath(String path) {
@@ -206,6 +248,9 @@ class FileActionDialogs {
   /// 返回 `(confirmed, moveToTrash)`，语义见 [showDeleteConfirmDialog]：
   /// - [showRecycleBinCheckbox] 为 true 时展示「移入回收站」勾选框，确认后
   ///   第二个元素为勾选状态；为 false 时恒为 null。
+  /// - [items] 携带的 [DeleteConfirmItems.recycleBinSupported] 为 false
+  ///   （远程 / zip 内条目）时，勾选框灰色禁用且未勾选，moveToTrash 恒为
+  ///   false——这些删除不经过回收站。
   /// - [showRecycleBinCheckbox] 为 true 且用户勾选但回收站功能未开启时，
   ///   确认删除会**自动开启回收站**（写入 prefs）；取消勾选不回写任何设置。
   /// - [showSkipCheckbox] 为 true 时在「取消」左侧提供「不再提示」按钮；
@@ -216,12 +261,17 @@ class FileActionDialogs {
     bool showSkipCheckbox = false,
     bool showRecycleBinCheckbox = false,
     DeleteConfirmItems? items,
+    bool? recycleBinSupported,
   }) async {
     // 弹窗内的 context 挂在 Overlay 上，取不到页面上方的 Provider；
     // 持久化「不再提示」后要用调用方传进来的页面 context 同步内存状态。
     final pageContext = context;
+    // 远程 / zip 内条目删除不经过回收站：勾选框灰色禁用且未勾选，
+    // 如实反映「直接删除」的实际行为。显式参数优先于 items 自带判定。
+    final binSupported =
+        recycleBinSupported ?? items?.recycleBinSupported ?? true;
     // 勾选框初始态跟随回收站设置：已开启默认勾选，未开启默认不勾选。
-    final recycleBinWasEnabled = RecycleBinService.isEnabled();
+    final recycleBinWasEnabled = RecycleBinService.isEnabled() && binSupported;
     var moveToTrash = recycleBinWasEnabled;
     final result = await showDialog<(bool, bool)>(
       context: context,
@@ -244,8 +294,11 @@ class FileActionDialogs {
                     const SizedBox(height: 8),
                     CheckboxListTile(
                       value: moveToTrash,
-                      onChanged: (v) =>
-                          setState(() => moveToTrash = v ?? false),
+                      // 远程 / zip 内条目删除不进回收站：禁用勾选框（灰色），
+                      // 用户无法勾选，避免「以为会进回收站」的误解。
+                      onChanged: binSupported
+                          ? (v) => setState(() => moveToTrash = v ?? false)
+                          : null,
                       controlAffinity: ListTileControlAffinity.leading,
                       dense: true,
                       contentPadding: EdgeInsets.zero,

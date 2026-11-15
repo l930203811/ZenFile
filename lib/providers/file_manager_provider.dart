@@ -86,6 +86,89 @@ enum MultiTabPaneMode {
   all,
 }
 
+/// 多文件并发上传相关的纯数据结构（库级私有类）。
+/// 抽出到顶层，避免被误置于方法体内导致「类声明在方法内」的解析错误，
+/// 同时保证 [FileManagerProvider] 内的上传逻辑都能直接引用。
+
+/// 单个待上传文件的作业描述（已扁平化，不再嵌套目录结构）。
+///
+/// [stagedPath] 非空表示该文件来自受限目录、经 shell 暂存到 app 缓存，
+/// 上传完成后由 [runUploadJobs] 负责清理（与旧实现 try/finally 行为一致）。
+/// [srcPath]/[isCut]/[bypassUseRoot] 仅用于「剪切」模式下上传成功后删除本地源。
+class _UploadJob {
+  const _UploadJob({
+    required this.name,
+    required this.localPath,
+    required this.remotePath,
+    required this.size,
+    this.stagedPath,
+    this.srcPath,
+    this.isCut = false,
+    this.bypassUseRoot,
+  });
+  final String name;
+  final String localPath;
+  final String remotePath;
+  final int size;
+  final String? stagedPath;
+  final String? srcPath;
+  final bool isCut;
+  final bool? bypassUseRoot;
+}
+
+/// 「剪切」模式下需要上传成功后删除的本地源（顶级条目可能延迟到并发上传
+/// 完成后才删除，故先收集）。
+class _CutItem {
+  const _CutItem({
+    required this.srcPath,
+    required this.isDir,
+    this.bypassUseRoot,
+  });
+  final String srcPath;
+  final bool isDir;
+  final bool? bypassUseRoot;
+}
+
+/// 并发上传进度聚合器。
+///
+/// 旧实现用 previousFilesBytes + 「一次只传一个文件」的假设累计进度，并发时
+/// 多个文件同时有进度会让累计值错乱。这里为**每个文件**独立记录已传字节，
+/// bytesDone = 已完成文件总字节 + 所有在途文件已传字节之和，天然支持并发。
+class _UploadProgressTracker {
+  _UploadProgressTracker(this.totalBytes, this.totalFiles);
+  final int totalBytes;
+  final int totalFiles;
+
+  final Map<String, int> _inFlight = {};
+  int _completedBytes = 0;
+  int _completedFiles = 0;
+  int _inFlightCount = 0;
+  String _currentName = '';
+
+  void touch(String name, int size, double prog) {
+    final p = prog.isFinite ? prog.clamp(0.0, 1.0) : 0.0;
+    if (p >= 1.0) {
+      if (_inFlight.remove(name) != null) {
+        _completedBytes += size;
+        _completedFiles++;
+        if (_inFlightCount > 0) _inFlightCount--;
+      }
+      return;
+    }
+    if (!_inFlight.containsKey(name)) {
+      _inFlightCount++;
+      _currentName = name;
+    }
+    _inFlight[name] = (size * p).round();
+  }
+
+  int get bytesDone =>
+      _completedBytes + _inFlight.values.fold(0, (a, b) => a + b);
+  int get filesDone => _completedFiles;
+  int get inFlight => _inFlightCount;
+  String get currentName => _currentName;
+}
+
 class StorageVolume {
   final String name;
   final String path;
@@ -10748,12 +10831,11 @@ class FileManagerProvider extends ChangeNotifier {
 
       int processedFileCount = 0;
       int bytesDone = 0;
-      int previousFilesBytes = 0;
-      // 进度单调化：客户端可能重复 / 乱序回调（分块重试、收尾再报一次 1.0），
-      // 直接透传会让圆环来回闪。记住「当前文件 + 该文件已上报的最大进度」，
-      // 同一文件内只增不减；文件切换或重新从 0 开始时复位。
-      String currentEmitName = '';
-      double currentEmitProg = 0.0;
+      // 并发上传进度聚合：每个文件独立记录已传字节，不再依赖「一次只传一个
+      // 文件」的 previousFilesBytes 假设（详见 _UploadProgressTracker）。
+      late final _UploadProgressTracker _tracker =
+          _UploadProgressTracker(totalBytesAll, totalFileCount);
+      int _lastTrackerBytes = 0;
       // 滑动窗口实时速率：避免累计平均速率在文件间停顿时持续衰减。
       final speedTracker = _TransferSpeedTracker(window: const Duration(seconds: 2));
       // 节流：WebDAV/FTP 的 onProgress 每 64KB 调用一次（千兆下每秒约 16000 次），
@@ -10765,19 +10847,13 @@ class FileManagerProvider extends ChangeNotifier {
 
       // 统一构造进度通知，保证 percentage / bytesProcessed / speed / eta 一致。
       void emitProgress(String fileName, int currentFileSize, double currentFileProg) {
-        // ⚠️ 上报值必须夹到 [0,1] 且同文件内单调（见 currentEmitName 注释）：
-        // 客户端给的 prog 若是 NaN / >1 / 中途回退，圆环会闪、甚至提前冲到 100%。
-        final rawProg = currentFileProg.isFinite ? currentFileProg : 0.0;
-        if (fileName != currentEmitName || rawProg == 0.0) {
-          currentEmitName = fileName;
-          currentEmitProg = 0.0;
-        }
-        if (rawProg > currentEmitProg) currentEmitProg = rawProg;
-        final prog = currentEmitProg.clamp(0.0, 1.0);
-        final newBytesDone = previousFilesBytes + (currentFileSize * prog).round();
-        if (newBytesDone > bytesDone) {
-          pendingSpeedDelta += newBytesDone - bytesDone;
-          bytesDone = newBytesDone;
+        // 并发安全：每个文件独立累计，由 _tracker 聚合。tracker.touch 内部已
+        // clamp 到 [0,1] 并同文件单调（重复 / 乱序回调不会让已上报进度回退）。
+        _tracker.touch(fileName, currentFileSize, currentFileProg);
+        final newBytes = _tracker.bytesDone;
+        if (newBytes > _lastTrackerBytes) {
+          pendingSpeedDelta += newBytes - _lastTrackerBytes;
+          _lastTrackerBytes = newBytes;
           final now = DateTime.now();
           if (lastSpeedUpdate == null ||
               now.difference(lastSpeedUpdate!) >= const Duration(milliseconds: 50)) {
@@ -10786,14 +10862,21 @@ class FileManagerProvider extends ChangeNotifier {
             lastSpeedUpdate = now;
           }
         }
+        bytesDone = newBytes;
+        processedFileCount = _tracker.filesDone;
+        final prog =
+            currentFileProg.isFinite ? currentFileProg.clamp(0.0, 1.0) : 0.0;
         final pct = (bytesDone / totalBytesAll).clamp(0.0, 1.0);
         final speedMBs = speedTracker.currentMBs();
         final remainingBytes = totalBytesAll - bytesDone;
-        final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+        final etaSeconds = speedMBs > 0
+            ? (remainingBytes / (1024 * 1024)) / speedMBs
+            : 0.0;
         progressNotifier.value = FileOperationProgress(
           totalFiles: totalFileCount,
-          currentFileIndex: processedFileCount + 1,
-          currentFileName: fileName,
+          currentFileIndex: processedFileCount + (_tracker.inFlight > 0 ? 1 : 0),
+          currentFileName:
+              _tracker.currentName.isEmpty ? fileName : _tracker.currentName,
           percentage: pct,
           speedMBs: speedMBs,
           eta: Duration(seconds: etaSeconds.round()),
@@ -10807,6 +10890,12 @@ class FileManagerProvider extends ChangeNotifier {
       ConflictResult? cachedResolution;
       // 目标远程目录的「已有条目」缓存（按目录），供重名判定与弹窗信息使用。
       final Map<String, Map<String, ConflictFileInfo>> remoteEntriesCache = {};
+
+      // 顶级文件先收集、循环结束后再统一并发上传（仅 WebDAV / OpenList 等
+      // 支持并发的客户端走有界并发），这样「复制多个文件到远程」时多个文件的
+      // 「本地→服务器→网盘」等待能重叠，不必等上一个传完网盘才传下一个。
+      final List<_UploadJob> _pendingFileJobs = [];
+      final List<_CutItem> _pendingCutItems = [];
 
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -10869,10 +10958,13 @@ class FileManagerProvider extends ChangeNotifier {
                 client,
                 cryptSrc.physical,
                 destPath,
-                onFileProgress: (fileName, fileSize, prog) {
-                  emitProgress(fileName, fileSize, prog);
-                  if (prog >= 1.0) processedFileCount++;
-                },
+              onFileProgress: (fileName, fileSize, prog) {
+                emitProgress(fileName, fileSize, prog);
+              },
+              onJobDone: (n, s) {
+                lastUploadedName = n;
+                lastUploadedSize = s;
+              },
               );
             } else {
               int fileSize = 0;
@@ -10888,9 +10980,8 @@ class FileManagerProvider extends ChangeNotifier {
                 if (client.isCancelled) throw Exception('Cancelled');
                 rethrow;
               }
-              previousFilesBytes += fileSize;
-              bytesDone = previousFilesBytes;
-              processedFileCount++;
+              // 标记该文件进度完成（_tracker 据此累加；不再使用 previousFilesBytes）
+              emitProgress(diskName, fileSize, 1.0);
               lastUploadedName = p.basename(destPath);
               lastUploadedSize = fileSize;
             }
@@ -10944,16 +11035,21 @@ class FileManagerProvider extends ChangeNotifier {
             // 计数改在「文件完成」时推进（原先放在 onFileStart）：emitProgress 里
             // 用 `processedFileCount + 1` 表示当前文件序号，若提前自增，目录里的
             // 第一个文件会显示成 2/N。单文件分支本来就是完成后自增，两处必须一致。
-            onFileProgress: (fileName, fileSize, prog) {
-              emitProgress(fileName, fileSize, prog);
-              // 文件完成时，把真实大小累加到 previousFilesBytes，
-              // 使下一个文件的 bytesDone 基线正确。
-              if (prog >= 1.0) {
-                previousFilesBytes += fileSize;
-                processedFileCount++;
-              }
+              onFileProgress: (fileName, fileSize, prog) {
+                emitProgress(fileName, fileSize, prog);
+              },
+            onJobDone: (n, s) {
+              lastUploadedName = n;
+              lastUploadedSize = s;
             },
           );
+          if (_isCut) {
+            _pendingCutItems.add(_CutItem(
+              srcPath: srcPath,
+              isDir: true,
+              bypassUseRoot: bypassUseRoot,
+            ));
+          }
         } else {
           // 受限源：先经 shell cp 暂存到 app 外部缓存（app 可读），
           // 上传暂存文件，完成后清理；大小取 shell stat 结果
@@ -10975,55 +11071,76 @@ class FileManagerProvider extends ChangeNotifier {
           }
 
           emitProgress(name, fileSize, 0.0);
-
-          try {
-            await client.uploadFile(uploadSrc, destPath, (prog) {
-              emitProgress(name, fileSize, prog);
-            });
-          } catch (e) {
-            // 客户端在 cancel() 后可能直接抛异常（如 FTP socket 关闭），
-            // 此时统一按“已取消”处理，确保传输立即停止并提示“操作已取消”
-            if (client.isCancelled) throw Exception('Cancelled');
-            rethrow;
-          } finally {
-            if (stagedPath != null) {
-              try { File(stagedPath).delete(); } catch (_) {}
-            }
-          }
-          previousFilesBytes += fileSize;
-          bytesDone = previousFilesBytes;
-          processedFileCount++;
-          lastUploadedName = p.basename(destPath);
-          lastUploadedSize = fileSize;
+          // 不在此处 await 上传：收集为作业，循环结束后统一并发上传
+          // （见下方「批量并发上传顶级文件」段）。剪切源删除一并延后处理。
+          _pendingFileJobs.add(_UploadJob(
+            name: name,
+            localPath: uploadSrc,
+            remotePath: destPath,
+            size: fileSize,
+            stagedPath: stagedPath,
+            srcPath: srcPath,
+            isCut: _isCut,
+            bypassUseRoot: bypassUseRoot,
+          ));
         }
 
         // 记入目标目录缓存：同一次粘贴里若存在同名（来自不同源目录）的后续条目，
         // 也能正确判为冲突，而不是把前一个刚上传的覆盖掉。
         destEntries[p.basename(destPath)] =
             ConflictFileInfo(modified: DateTime.now());
+      }
 
-        if (_isCut) {
-          if (bypassUseRoot != null && _needsBypass(srcPath)) {
-            // 受限源：Dart delete 不可用，走 shell rm
-            try {
-              await RootShizukuService.deleteItem(srcPath, useRoot: bypassUseRoot);
-            } catch (e) {
-              debugPrint('Failed to delete restricted item after cut: $e');
+      // ---- 批量并发上传顶级文件 ----
+      // 循环里只收集 _pendingFileJobs，不逐个 await；这里一次性并发上传
+      // （WebDAV / OpenList 走有界并发，文件间「本地→服务器→网盘」的等待重叠，
+      // 不再等上一个传完网盘才传下一个，节省大量本地→服务器空闲带宽）。
+      if (_pendingFileJobs.isNotEmpty) {
+        await _runUploadJobs(
+          client,
+          _pendingFileJobs,
+          onFileProgress: (name, size, prog) => emitProgress(name, size, prog),
+          onJobDone: (n, s) {
+            lastUploadedName = n;
+            lastUploadedSize = s;
+          },
+        );
+      }
+
+      // ---- 剪切模式：延迟删除本地源 ----
+      // 必须在所有并发上传成功完成后再删源，否则中途失败 / 取消会丢源文件。
+      if (_isCut) {
+        // 1) 顶级目录源（含受限目录，走 shell 删除）
+        for (final cut in _pendingCutItems) {
+          if (_isOperationCancelled) break;
+          try {
+            if (cut.bypassUseRoot != null && _needsBypass(cut.srcPath)) {
+              await RootShizukuService.deleteItem(
+                  cut.srcPath, useRoot: cut.bypassUseRoot!);
+            } else {
+              await _deletePhysical(cut.srcPath, isDir: cut.isDir);
             }
-          } else {
-            try {
-              final type = FileSystemEntity.typeSync(srcPath);
-              if (type == FileSystemEntityType.directory) {
-                await Directory(srcPath).delete(recursive: true);
-              } else {
-                await File(srcPath).delete();
-              }
-            } catch (e) {
-              debugPrint('Failed to delete local item after cut: $e');
+          } catch (e) {
+            debugPrint('Failed to delete local source dir after cut: $e');
+          }
+        }
+        // 2) 顶级文件源（已上传成功的才删）
+        for (final job in _pendingFileJobs) {
+          if (!job.isCut || job.srcPath == null) continue;
+          if (_isOperationCancelled) break;
+          try {
+            if (job.bypassUseRoot != null && _needsBypass(job.srcPath!)) {
+              await RootShizukuService.deleteItem(
+                  job.srcPath!, useRoot: job.bypassUseRoot!);
+            } else {
+              await _deletePhysical(job.srcPath!, isDir: false);
             }
+          } catch (e) {
+            debugPrint('Failed to delete local source file after cut: $e');
           }
         }
       }
+
       // 上传循环结束后，服务端可能还在把临时文件最终化为目标文件。
       // 最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 后台轮询负责，
       // 不再调用 _awaitUploadFinalized（避免与 scheduleRemoteRefreshAfterUpload
@@ -11723,41 +11840,44 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  /// 递归上传整个本地目录到远程（用于普通复制/粘贴，非分类同步）。
-  Future<void> _uploadLocalDirectory(
+  /// 多文件粘贴的有界并发度。仅作用于 client.supportsConcurrentUpload 为 true
+  /// 的协议（WebDAV / OpenList 本机代理）：把「本地→服务器→网盘」的等待在多个
+  /// 文件间重叠，避免上一个文件传完网盘、本地→服务器带宽空闲时才开始下一个。
+  /// 取 4 是在「充分重叠」与「不压垮手机 / OpenList 本机代理」之间的折中。
+  static const int _kMaxConcurrentUploads = 4;
+
+
+  /// 递归收集本地目录子树的所有叶子文件（含受限源的暂存文件），写入 [jobs]，
+  /// 同时把所有需要创建的远程目录路径写入 [dirs]。收集阶段不发起任何上传，
+  /// 调用方随后统一建目录、再统一上传，从而把多文件并发跑满。
+  Future<void> _collectLocalUploadJobs(
     RemoteClient client,
     String localDirPath,
-    String remoteDirPath, {
-    void Function(String fileName)? onFileStart,
-    void Function(String fileName, int fileSize, double progress)? onFileProgress,
+    String remoteDirPath,
+    List<_UploadJob> jobs,
+    List<String> dirs, {
     bool? bypassUseRoot,
   }) async {
-    await client.createDirectory(remoteDirPath);
-    // 受限目录：listSync 被 FUSE 拦截，经 shell listFiles 遍历，
-    // 文件暂存到 app 缓存后上传
+    dirs.add(remoteDirPath);
+    // 受限目录：listSync 被 FUSE 拦截，经 shell listFiles 遍历，文件暂存后上传
     if (bypassUseRoot != null && _needsBypass(localDirPath)) {
-      final children = await RootShizukuService.listFiles(localDirPath, useRoot: bypassUseRoot);
+      final children =
+          await RootShizukuService.listFiles(localDirPath, useRoot: bypassUseRoot);
       for (final child in children) {
         if (_isOperationCancelled) throw Exception('Cancelled');
         final remotePath = _buildRemotePath(remoteDirPath, child.name);
         if (child.isDirectory) {
-          await _uploadLocalDirectory(client, child.path, remotePath,
-              onFileStart: onFileStart, onFileProgress: onFileProgress,
+          await _collectLocalUploadJobs(client, child.path, remotePath, jobs, dirs,
               bypassUseRoot: bypassUseRoot);
         } else {
-          String? stagedPath;
-          try {
-            stagedPath = await _stageRestrictedFile(child.path, bypassUseRoot);
-            onFileStart?.call(child.name);
-            onFileProgress?.call(child.name, child.size, 0.0);
-            await client.uploadFile(stagedPath, remotePath, (prog) {
-              onFileProgress?.call(child.name, child.size, prog);
-            });
-          } finally {
-            if (stagedPath != null) {
-              try { File(stagedPath).delete(); } catch (_) {}
-            }
-          }
+          final staged = await _stageRestrictedFile(child.path, bypassUseRoot);
+          jobs.add(_UploadJob(
+            name: child.name,
+            localPath: staged,
+            remotePath: remotePath,
+            size: child.size,
+            stagedPath: staged,
+          ));
         }
       }
       return;
@@ -11769,19 +11889,129 @@ class FileManagerProvider extends ChangeNotifier {
       final name = p.basename(item.path);
       final remotePath = _buildRemotePath(remoteDirPath, name);
       if (item is Directory) {
-        await _uploadLocalDirectory(client, item.path, remotePath,
-            onFileStart: onFileStart, onFileProgress: onFileProgress,
+        await _collectLocalUploadJobs(client, item.path, remotePath, jobs, dirs,
             bypassUseRoot: bypassUseRoot);
       } else if (item is File) {
         int fileSize = 0;
-        try { fileSize = item.lengthSync(); } catch (_) {}
-        onFileStart?.call(name);
-        onFileProgress?.call(name, fileSize, 0.0);
-        await client.uploadFile(item.path, remotePath, (prog) {
-          onFileProgress?.call(name, fileSize, prog);
-        });
+        try {
+          fileSize = item.lengthSync();
+        } catch (_) {}
+        jobs.add(_UploadJob(
+          name: name,
+          localPath: item.path,
+          remotePath: remotePath,
+          size: fileSize,
+        ));
       }
     }
+  }
+
+  /// 有界并发上传：把 [jobs] 中的文件以最多 [_kMaxConcurrentUploads] 个同时
+  /// 上传到 [client]。仅当 client.supportsConcurrentUpload 为 true 时并发，
+  /// 否则逐个字 await（旧行为，保证 SFTP / FTP / SMB 等单连接协议安全）。
+  ///
+  /// [onFileProgress] 与 _pasteLocalToRemote 里的 emitProgress 对接，由
+  /// [_UploadProgressTracker] 聚合多文件并发下的进度。受限源暂存文件在 finally
+  /// 里清理，与旧实现一致。
+  Future<void> _runUploadJobs(
+    RemoteClient client,
+    List<_UploadJob> jobs, {
+    required void Function(String name, int size, double prog) onFileProgress,
+    void Function(String name, int size)? onJobDone,
+  }) async {
+    if (jobs.isEmpty) return;
+
+    Future<void> runOne(_UploadJob j) async {
+      onFileProgress(j.name, j.size, 0.0);
+      try {
+        await client.uploadFile(j.localPath, j.remotePath, (prog) {
+          onFileProgress(j.name, j.size, prog);
+        });
+        // 每个文件上传成功后通知上层（用于跟踪最后一次上传的文件，
+        // 供 OpenList 本机代理的 finalize 轮询检测）。并发下「最后一个
+        // 完成」的会覆盖，任意一个已上传文件都能触发刷新，符合预期。
+        onJobDone?.call(j.name, j.size);
+      } finally {
+        if (j.stagedPath != null) {
+          try {
+            File(j.stagedPath!).delete();
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (!client.supportsConcurrentUpload) {
+      // 单连接协议：严格串行，行为与旧版完全一致。
+      for (final j in jobs) {
+        if (_isOperationCancelled) throw Exception('Cancelled');
+        await runOne(j);
+      }
+      return;
+    }
+
+    // 无状态 HTTP 协议（WebDAV / OpenList）：多文件并发，重叠等待。
+    int cursor = 0;
+    Object? firstError;
+    Future<void> worker() async {
+      while (true) {
+        if (_isOperationCancelled) return;
+        final i = cursor;
+        if (i >= jobs.length) return;
+        cursor = i + 1; // 单线程 Dart 下「读+自增」原子，无需加锁
+        final j = jobs[i];
+        try {
+          await runOne(j);
+        } catch (e) {
+          if (firstError == null) {
+            firstError = e;
+            // 一处失败即中止其余在途上传：cancel 会让 WebDAV.uploadFile 检测到
+            // isCancelled 并中断底层 socket，避免残留半截文件 / 继续无意义传输。
+            client.cancel();
+            _isOperationCancelled = true;
+          }
+          return;
+        }
+        if (_isOperationCancelled) return;
+      }
+    }
+
+    final n = jobs.length < _kMaxConcurrentUploads
+        ? jobs.length
+        : _kMaxConcurrentUploads;
+    final workers = [for (int w = 0; w < n; w++) worker()];
+    await Future.wait(workers);
+    if (firstError != null) throw firstError!;
+  }
+
+  /// 递归上传整个本地目录到远程（用于普通复制/粘贴，非分类同步）。
+  ///
+  /// v3.7.8 起改为：先扁平收集整个子树的叶子文件，统一建好所有目录，再一次性
+  /// 有界并发上传（仅 WebDAV / OpenList 等支持并发的客户端；其余回退串行）。
+  /// 这样「本地→服务器→网盘」的等待在多个文件间重叠，大幅缩短多文件总耗时
+  /// （OpenList 本机代理模式下尤为明显：单文件 PUT 要等它把数据传到网盘才返回，
+  /// 串行会空闲大量本地→服务器带宽）。
+  Future<void> _uploadLocalDirectory(
+    RemoteClient client,
+    String localDirPath,
+    String remoteDirPath, {
+    void Function(String fileName)? onFileStart,
+    void Function(String fileName, int fileSize, double progress)? onFileProgress,
+    void Function(String name, int size)? onJobDone,
+    bool? bypassUseRoot,
+  }) async {
+    final jobs = <_UploadJob>[];
+    final dirs = <String>[];
+    await _collectLocalUploadJobs(client, localDirPath, remoteDirPath, jobs, dirs,
+        bypassUseRoot: bypassUseRoot);
+    for (final d in dirs) {
+      if (_isOperationCancelled) throw Exception('Cancelled');
+      await client.createDirectory(d);
+    }
+    if (jobs.isEmpty) return;
+    await _runUploadJobs(client, jobs, onFileProgress: (name, size, prog) {
+      onFileStart?.call(name);
+      onFileProgress?.call(name, size, prog);
+    }, onJobDone: onJobDone);
   }
 
   /// 递归统计受限目录的文件数与总字节数（shell listFiles 替代 Dart 遍历），

@@ -38,6 +38,9 @@ class VideoPlayerScreen extends StatefulWidget {
   final List<AssetEntity>? assetPlaylist;
   final int? initialIndex;
   final bool isRemote;
+  /// 进场时是否保持暂停。默认 true（沿用旧行为：打开停在首帧/记忆进度）。
+  /// 分类页「继续播放」控制器的左侧播放按钮传 false，进场即自动播放。
+  final bool startPaused;
 
   const VideoPlayerScreen({
     super.key,
@@ -47,6 +50,7 @@ class VideoPlayerScreen extends StatefulWidget {
     this.assetPlaylist,
     this.initialIndex,
     this.isRemote = false,
+    this.startPaused = true,
   });
 
   @override
@@ -258,6 +262,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   // Playback Progress
   Timer? _progressSaveTimer;
   bool _hasRestoredPosition = false;
+  /// 本会话是否已经真正开始播过（playing=true 出现过至少一次）。
+  /// 用于「恢复进度后是否自动起播」：startPaused 进场（继续播放卡片）保持
+  /// 暂停，但用户手动开播后切下一集 / 完播自动连播仍要继续播；后台播放中
+  /// 接管回来的会话在 listener 挂上瞬间也会收到 playing=true，同样正确。
+  bool _everPlayed = false;
 
   // Dynamic playlist (auto-built from directory when widget.playlist is empty)
   List<dynamic>? _resolvedPlaylist;
@@ -615,6 +624,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         '硬解=$_useHardwareDecode voCompat=$_voCompatMode');
     _startBlackScreenCheck();
     player.open(Media(widget.videoPath), play: false);
+    // startPaused=false（「继续播放」控制器的左侧播放键）→ 进场即自动播放；
+    // 其余入口默认 true，保持「打开停在首帧」的原行为不变。
+    if (!widget.startPaused) player.play();
     // 崩溃定位哨兵：`open()` 之后紧邻的一段没有任何日志，若进程崩在这里，上面那行
     // 「打开视频」就是日志最后一行 —— 用它把「崩在 open 里」和「崩在之后」分开。
     WebdavDebugLog.log('[vp] open() 已发出 player=#${identityHashCode(player)}');
@@ -1532,6 +1544,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _playerSubs.add(
       player.stream.playing.listen((v) {
         if (v) {
+          _everPlayed = true;
           WebdavDebugLog.log(
             '播放器开始播放 path=${WebdavDebugLog.mask(widget.videoPath)}',
           );
@@ -2053,7 +2066,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
       _startProgressSaveTimer();
     }
-    await player.play();
+    // 修复：这里原先无条件 play()，是视频所有入口「打开即自动播放」的真正
+    // 来源（open(play:false) 之后由 duration 事件走到本方法起播）。
+    // startPaused（「继续播放」卡片）进场保持暂停；默认入口（点文件即播）
+    // 或本会话已开播过（切下一集 / 完播连播 / 后台接管）才自动起播。
+    if (!widget.startPaused || _everPlayed) {
+      await player.play();
+    }
     _hasRestoredPosition = true;
   }
 

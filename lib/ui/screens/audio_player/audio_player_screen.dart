@@ -50,6 +50,9 @@ class AudioPlayerScreen extends StatefulWidget {
   final int initialIndex;
   final bool isRemote;
   final Player? existingPlayer;
+  /// 进场时是否直接播放。默认 false（沿用旧行为：从文件列表点开即播）。
+  /// 分类页「继续播放」卡片用它打开**暂停**的播放页（停在记忆进度，不自动出声）。
+  final bool startPaused;
 
   const AudioPlayerScreen({
     super.key,
@@ -60,6 +63,7 @@ class AudioPlayerScreen extends StatefulWidget {
     this.initialIndex = 0,
     this.isRemote = false,
     this.existingPlayer,
+    this.startPaused = false,
   });
 
   @override
@@ -391,7 +395,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       getAudioHandler().setSkipCallback(_onBackgroundSkip);
       if (switchToRequested) {
         // 打开用户点的新歌（内部会加载歌词、写 lastPlayedAudio 并 open 播放）
-        _openTrack();
+        _openTrack(play: !widget.startPaused);
         // 以新队列重建后台会话：通知栏上一首/下一首才会按新队列切歌。
         // attach 对同一 player 重复调用是安全的（见 handler attach 注释）。
         _startBackgroundMode();
@@ -435,7 +439,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         // 而不是候选列表回显）+ mpv 自身日志 + 复刻 RJ 的挂音效自检。
         // 仅在诊断日志开启时产生（否则内部直接返回，零开销）。
         MpvAudioOutputService.schedulePlaybackDiagnostics(player, 'audio');
-        _openTrack();
+        _openTrack(play: !widget.startPaused);
       }();
       if (_isBackgroundMode) {
         _startBackgroundMode();
@@ -686,7 +690,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  void _openTrack() async {
+  void _openTrack({bool play = true}) async {
     // 重置进度恢复标记
     _hasSeekedToSavedPosition = false;
     // 保存当前播放的音频信息（用于从分类页恢复播放）
@@ -745,7 +749,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 setState(() => _isWaitingForCache = false);
                 // 均衡器在 open 之前挂接（与视频播放器一致，af 随音频链初始化生效）
                 _initEqualizer();
-                await _openMediaSafe(Media(playPath), play: true);
+                await _openMediaSafe(Media(playPath), play: play);
                 player.setRate(_playbackSpeed);
                 player.setPitch(_pitch);
                 _resetFade();
@@ -761,7 +765,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 均衡器在 open 之前挂接：与视频播放器一致，mpv 初始化音频链时即应用 af 滤镜，
     // 避免 Android 上播放中动态修改 af 不生效的问题。
     _initEqualizer();
-    if (!await _openMediaSafe(Media(playPath), play: true)) return;
+    if (!await _openMediaSafe(Media(playPath), play: play)) return;
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
     _resetFade();

@@ -115,6 +115,18 @@ abstract class RemoteClient {
   /// 约定：本方法不得抛异常，探测失败一律返回 false（由调用方决定是否重建）。
   Future<bool> checkAlive() async => true;
 
+  /// 是否支持**并发上传**：同一客户端实例上同时跑多个 [uploadFile]。
+  ///
+  /// WebDAV / OpenList 这类无状态 HTTP 协议每次请求独立建连，天然支持并发，
+  /// 开启后 FileManagerProvider 会把多文件粘贴改成有界并发（见
+  /// [_uploadFilesConcurrently]），把「本地→服务器→网盘」的等待重叠起来，
+  /// 大幅缩短多文件总耗时。
+  ///
+  /// 有长会话的协议（SMB / SFTP / FTP）**必须保持 false**：单连接上交错多个
+  /// 上传会互相打乱请求/响应，导致文件损坏或会话错乱。FileManagerProvider 对
+  /// 返回 false 的客户端一律回退到原有串行上传，行为与旧版完全一致。
+  bool get supportsConcurrentUpload => false;
+
   /// 最近一次 **SMB 共享枚举**的诊断；非 SMB、或本次会话还没进过根目录时为 null。
   ///
   /// 仅供 UI 在「根目录为空」时判断是「真的没有共享」还是「枚举被服务端拒绝」，

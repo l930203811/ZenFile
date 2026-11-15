@@ -179,6 +179,12 @@ class SelectionActionBar extends StatelessWidget {
                             items: FileActionDialogs.itemsFromPaths(
                               provider.selectedPaths,
                             ),
+                            // 远程 / 加密远程标签页：条目是纯服务器路径（无
+                            // remote:// 前缀），按当前标签页状态显式传入，
+                            // 弹窗「移入回收站」勾选框灰色禁用（不进回收站）。
+                            recycleBinSupported:
+                                !(provider.activeTab.isRemote ||
+                                    provider.activeTab.isCryptRemote),
                           );
                       if (confirm) {
                         try {
