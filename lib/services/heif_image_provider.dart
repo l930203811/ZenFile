@@ -206,5 +206,18 @@ ImageProvider imageProviderForFile(
     final side = (cacheWidth ?? cacheHeight ?? 2048).clamp(64, 4096);
     return HeifImage(file, targetSide: side);
   }
+  // cacheWidth 与 cacheHeight **同时**给出时，ResizeImage 默认 policy=exact
+  // 会把位图硬拉成给定的宽×高（BoxFit.fill 类行为、比例失真）——查看器全屏
+  // 解码用的正是「两边都 = 上限」的调用方式，非方形图会被压扁/拉伸（issue #77
+  // 的失真根因）。改用 fit：在给定边长盒内**保比例**缩放。只传单边的调用方
+  // （列表缩略图）行为不变。
+  if (cacheWidth != null && cacheHeight != null) {
+    return ResizeImage(
+      FileImage(file),
+      width: cacheWidth,
+      height: cacheHeight,
+      policy: ResizeImagePolicy.fit,
+    );
+  }
   return ResizeImage.resizeIfNeeded(cacheWidth, cacheHeight, FileImage(file));
 }

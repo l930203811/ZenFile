@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.8';
+  static const String _latestChangelogVersion = 'v3.7.9';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v379,
     _v378,
     _v377,
     _v376,
@@ -965,7 +966,35 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.8 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.7.9 ────────────────────────────────────────────────
+  static const _Changelog _v379 = _Changelog(
+    version: 'v3.7.9',
+    date: '2026-11-17',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复图片查看器中部分图片被拉伸变形（画面压扁 / 拉宽）的问题：解码缩略时不再把非正方形图片强制按正方形比例解码，原始比例始终保留',
+        '修复图片查看器「适应宽度 / 适应高度 / 原始大小」三种查看模式全部表现为放大铺满、且无法缩回适应窗口的问题；现在切换模式会正确跳转到目标比例，捏合缩放后再切换模式也能立即生效',
+        '优化启动阶段的负载，降低个别设备上冷启动卡顿甚至触发「应用无响应」的概率：回收站记录的解析移至后台线程完成，回收站过期自动清理改为批量完成后一次性保存',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '平板与大屏设备上，媒体分类页的网格会在空间充裕时自动增加列数，修复了图标和卡片显示过大的问题；手机端的布局不受影响',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed some images appearing stretched or squashed in the image viewer: non-square images are no longer force-decoded as squares during downsampling, so the original aspect ratio is always preserved',
+        'Fixed the three viewer modes (fit width / fit height / original size) all rendering as an enlarged, edge-to-edge image with no way to zoom back out to the fit window. Switching modes now jumps to the correct scale, and switching after a pinch-zoom takes effect immediately',
+        'Reduced work during app startup to lower the chance of a stuttery cold start or an "app is not responding" dialog on some devices: recycle-bin records are now parsed on a background thread, and automatic cleanup of expired recycle-bin items saves its state only once after the whole batch',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'On tablets and other large screens, the media category grid now automatically adds columns when there is plenty of space, fixing oversized icons and cards. The layout on phones is unchanged',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.8（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v378 = _Changelog(
     version: 'v3.7.8',
     date: '2026-11-15',

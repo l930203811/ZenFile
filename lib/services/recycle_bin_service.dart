@@ -56,12 +56,25 @@ class RecycleBinService {
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     final list = _prefs?.getStringList(_keyRecycleBinItems) ?? [];
-    _trashItems = list
-        .map((itemStr) => RecycleBinItem.fromJson(jsonDecode(itemStr)))
-        .toList();
-    
+    // 逐条 jsonDecode 放到 isolate：回收站条目多时（几百条长路径 JSON），
+    // 在 UI isolate 上串行解析会把启动首帧后的可交互时间推迟一大截 ——
+    // issue #75（冷启动 10s 内主 isolate CPU 5.8s → 输入 5s 超时 ANR）的
+    // 启动路径减负项之一。
+    _trashItems = await compute(_parseTrashItemsIsolate, list);
+
     // Automatically trigger background cleanup of expired items on launch
     await autoCleanupExpired();
+  }
+
+  /// isolate 顶层入口：解析回收站元数据 JSON 列表。
+  static List<RecycleBinItem> _parseTrashItemsIsolate(List<String> list) {
+    return list
+        .map(
+          (itemStr) => RecycleBinItem.fromJson(
+            jsonDecode(itemStr) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
   }
 
   static bool isEnabled() {
@@ -318,7 +331,11 @@ class RecycleBinService {
     await _saveToPrefs();
   }
 
-  static Future<void> deletePermanently(RecycleBinItem item, {bool useRoot = false}) async {
+  static Future<void> deletePermanently(
+    RecycleBinItem item, {
+    bool useRoot = false,
+    bool savePrefs = true,
+  }) async {
     final trashPath = p.join(trashDirectoryPath, item.id);
 
     try {
@@ -336,7 +353,9 @@ class RecycleBinService {
     }
 
     _trashItems.removeWhere((x) => x.id == item.id);
-    await _saveToPrefs();
+    // 批量清理（autoCleanupExpired）由调用方统一保存一次，避免每删一项就
+    // 把整个列表 JSON 序列化写盘一次。
+    if (savePrefs) await _saveToPrefs();
   }
 
   static Future<void> emptyBin({bool useRoot = false}) async {
@@ -361,8 +380,11 @@ class RecycleBinService {
     }).toList();
 
     for (final item in expiredItems) {
-      await deletePermanently(item, useRoot: useRoot);
+      await deletePermanently(item, useRoot: useRoot, savePrefs: false);
     }
+    // 有实际清理时统一落盘一次（每项都写一次 prefs 会在启动窗口里串行
+    // 做 N 次全量 JSON 序列化 + 磁盘写）。
+    if (expiredItems.isNotEmpty) await _saveToPrefs();
   }
 
   // --- Internals & Helpers ---

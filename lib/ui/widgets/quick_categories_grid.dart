@@ -25,6 +25,28 @@ import '../../services/recycle_bin_service.dart';
 /// 分类网格的卡片间距（上下左右同值；与优化前一致，不要再单独调大）。
 const double _kCategoryGridSpacing = 2.0;
 
+/// 大屏适配（issue #76）：网格可用宽度 ≥ 此值（平板 / 横屏 / 墨水屏）时，
+/// 若按用户所选列数摊出的卡片超过 [_kMaxCategoryCardWidth]，自动增加列数把
+/// 卡片压回合理宽度 —— 否则 10 寸平板 3 列时每张卡 ~250dp 宽，图标按
+/// 「卡片宽度 × 比例」放大到 ~75dp，观感巨大。手机上宽度达不到阈值，
+/// 用户自选列数原样生效，行为零变化。
+const double _kWideGridMinWidth = 600.0;
+const double _kMaxCategoryCardWidth = 160.0;
+const int _kMaxCategoryColumns = 8;
+
+/// 分类网格的「有效列数」。build（生成 gridDelegate）与 _updateDrag（拖拽命中）
+/// **必须共用**同一入参调用本函数，否则两处列数不同步会导致拖拽排序错位。
+int _effectiveGridColumns(int configured, double gridWidth) {
+  if (gridWidth < _kWideGridMinWidth) return configured;
+  var columns = configured;
+  while (columns < _kMaxCategoryColumns &&
+      (gridWidth - (columns - 1) * _kCategoryGridSpacing) / columns >
+          _kMaxCategoryCardWidth) {
+    columns++;
+  }
+  return columns;
+}
+
 /// 分类网格几何：由**网格可用宽度**（= GridView 的 RenderBox 宽度，即已扣除外层
 /// 左右 Padding 之后的宽度）与列数推导出卡片宽度与行高。
 ///
@@ -709,11 +731,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     if (gridRenderBox == null) return;
 
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
-    final columns = PreferencesService.getCategoriesGridColumns();
     final screenWidth = gridRenderBox.size.width;
-    // 与 build 共用同一套几何（含「行高锚定优化前基准」的逻辑）：左右边距收窄后
-    // 卡片会变宽，若这里仍按旧的 childAspectRatio 推行高，行命中步长会被算大，
-    // 拖拽排序就会错行。
+    // 与 build 共用同一套几何（含大屏自适应列数与「行高锚定优化前基准」的
+    // 逻辑）：两处公式一旦不同步，拖拽排序就会错行。
+    final columns = _effectiveGridColumns(
+      PreferencesService.getCategoriesGridColumns(),
+      screenWidth,
+    );
     final metrics = _gridMetrics(screenWidth, columns);
     final itemWidth = metrics.itemWidth;
     final itemHeight = metrics.rowHeight;
@@ -1239,7 +1263,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       widget.onNavigateTab,
     );
 
-    final columns = PreferencesService.getCategoriesGridColumns();
     // 统一完整顺序（full_grid_order：分类 + 系统入口一条链），
     // 分类页网格显示其过滤视图（激活分类 + 可见系统入口），
     // 配置区与网格任一拖拽都会双向同步。
@@ -1330,6 +1353,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     // 间距与几何统一由 _gridMetrics 推导（与 _updateDrag 同源，
                     // 避免两处公式漂移导致拖拽错行）。
                     const spacing = _kCategoryGridSpacing;
+                    // 大屏（平板 / 横屏 / 墨水屏）自适应列数：按卡片最大期望
+                    // 宽度自动加列，防止图标随卡片等比放大（issue #76）。
+                    // 手机上宽度 < 阈值，用户自选列数原样生效。
+                    final columns = _effectiveGridColumns(
+                      PreferencesService.getCategoriesGridColumns(),
+                      constraints.maxWidth,
+                    );
                     final metrics = _gridMetrics(constraints.maxWidth, columns);
                     final rowHeight = metrics.rowHeight;
                     // 图标按卡片宽度等比缩放：图标与卡片的比例与优化前保持一致，

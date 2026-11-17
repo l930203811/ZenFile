@@ -150,6 +150,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   int _fitMode = 0;
   // 当前图片原始尺寸（按高度适配模式计算缩放用），切换图片时重置
   Size? _imageSize;
+  // 各页 scaleState 控制器：photo_view 在「非缩放态」下会随 scaleBoundaries
+  // 变化自动重算 scale，但用户捏合过的页面处于 zoomed 态会**跳过重算**——
+  // 切换显示模式时手动 reset() 强制从当前缩放回放到新模式的 initialScale
+  // （issue #77：切「原始大小」没反应的原因之一）。
+  final Map<int, PhotoViewScaleStateController> _pageScaleStateControllers =
+      {};
 
   // 顶部信息条
   String? _currentDims;
@@ -171,7 +177,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     _pageController = PageController(initialPage: _currentIndex);
     _preloadAdjacent(_currentIndex);
     _refreshMeta();    _fitMode = PreferencesService.getImageFitMode();
-    if (_fitMode == 1) {
+    // 模式 1 需要「屏高 / 图高」；模式 2 的「原始大小」也要用真实尺寸推导
+    // photo_view 的 childSize —— 未解析尺寸时两种模式都会退化成 contained。
+    if (_fitMode == 1 || _fitMode == 2) {
       _resolveCurrentImageSize();
     }
   }
@@ -518,6 +526,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     // 离开查看器务必复位壳层沉浸态，否则回到首页后底栏会一直藏着。
     ShellNavigator.setChildImmersive(false);
     _pageController.dispose();
+    for (final c in _pageScaleStateControllers.values) {
+      c.dispose();
+    }
+    _pageScaleStateControllers.clear();
     super.dispose();
   }
 
@@ -685,6 +697,30 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         math.max(size.width, size.height) * (dpr > 2.0 ? 2.0 : dpr);
     final int side = want.clamp(720.0, _kMaxDecodeSide.toDouble()).round();
     return imageProviderForFile(file, cacheWidth: side, cacheHeight: side);
+  }
+
+  /// 当前页位图**解码后**的实际像素尺寸（photo_view 的 childSize 语义）。
+  ///
+  /// 必须与 [_viewerProvider] 的解码上限同参推导（长边 = side，保比例），
+  /// 否则 contained / 原始大小会按错误的基准计算。AVIF 走 [FileAvifImage]
+  /// 全尺寸解码，位图即原始尺寸。解析失败返回 null，查看器回退 contained。
+  Size? _decodedChildSize(File? imgFile, bool isAvif, BuildContext context) {
+    final original = _imageSize;
+    if (imgFile == null ||
+        original == null ||
+        original.width <= 0 ||
+        original.height <= 0) {
+      return null;
+    }
+    if (isAvif) return original;
+    final size = MediaQuery.sizeOf(context);
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final double want =
+        math.max(size.width, size.height) * (dpr > 2.0 ? 2.0 : dpr);
+    final double side = want.clamp(720.0, _kMaxDecodeSide.toDouble());
+    final factor =
+        math.min(1.0, side / math.max(original.width, original.height));
+    return Size(original.width * factor, original.height * factor);
   }
 
   /// 只读文件前 [length] 字节（不足则读全部），用于头部解析，避免整文件读入。
@@ -1309,7 +1345,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                       onSelected: (m) {
                         setState(() => _fitMode = m);
                         PreferencesService.saveImageFitMode(m);
-                        if (m == 1) _resolveCurrentImageSize();
+                        // 模式 1 需要「屏高/图高」，模式 2 需要真实尺寸推导
+                        // childSize；未解析时两种模式都会退化成 contained。
+                        if (m == 1 || m == 2) _resolveCurrentImageSize();
+                        // 用户捏合过的页面处于 zoomed 态，photo_view 会跳过
+                        // scaleBoundaries 变化的重算 —— reset 强制回到新模式的
+                        // initialScale（带动画）。未缩放过的页面由重算路径处理。
+                        _pageScaleStateControllers[_currentIndex]?.reset();
                       },
                       itemBuilder: (_) => [
                         PopupMenuItem(
@@ -1382,7 +1424,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                       _rotation = 0.0; // 切换图片重置查看态旋转
                       _imageSize = null;
                     });
-                    if (_fitMode == 1) _resolveCurrentImageSize();
+                    if (_fitMode == 1 || _fitMode == 2) {
+                      _resolveCurrentImageSize();
+                    }
                     _preloadAdjacent(index);
                     _refreshMeta();
                   },
@@ -1508,23 +1552,54 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                               : MemoryImage(_kTransparentImage));
 
                     // 显示模式：0=适应宽度(contained) 1=适应高度(屏高/图高) 2=原始大小(1.0)
+                    //
+                    // childSize 必须传**位图解码后的实际尺寸**：photo_view 的
+                    // contained / 原始大小都以 childSize 为基准计算；旧实现不传，
+                    // photo_view 退回视口尺寸 ⇒ contained == 1.0 == 「原始大小」，
+                    // 三种模式全部塌缩成「适应窗口」（issue #77「切原始大小没
+                    // 反应」的根因）。尺寸未解析 / 缩略图兜底时为 null，回退
+                    // contained（与旧行为一致）。
+                    final Size? childSize = isValidFile
+                        ? _decodedChildSize(imgFile, isAvif, context)
+                        : null;
                     final double? fitScale = _fitMode == 0
                         ? null
                         : (_fitMode == 2
                             ? 1.0
-                            : (_imageSize != null && _imageSize!.height > 0
+                            : (childSize != null && childSize.height > 0
                                 ? MediaQuery.sizeOf(context).height /
-                                    _imageSize!.height
+                                      childSize.height
                                 : null));
+                    // 模式 2 的下限放宽到 min(1.0, contained)：大图允许捏合缩小
+                    // 回适应窗口（旧实现 minScale 锁死 1.0 无法缩小）；小图的
+                    // contained > 1，取 1.0 避免「打开就小于下限」。
+                    // photo_view 的 minScale 形参是 dynamic（数值或
+                    // PhotoViewComputedScale 符号常量均可），这里保持同型。
+                    final dynamic minScale;
+                    if (childSize == null) {
+                      minScale = fitScale ?? PhotoViewComputedScale.contained;
+                    } else {
+                      final viewport = MediaQuery.sizeOf(context);
+                      final contained = math.min(
+                        viewport.width / childSize.width,
+                        viewport.height / childSize.height,
+                      );
+                      minScale = _fitMode == 2
+                          ? math.min(1.0, contained)
+                          : contained;
+                    }
                     return PhotoViewGalleryPageOptions.customChild(
                       child: Transform.rotate(
                         angle: _rotation,
                         child: Image(image: provider, fit: BoxFit.contain),
                       ),
+                      childSize: childSize,
                       initialScale: fitScale ?? PhotoViewComputedScale.contained,
-                      minScale: fitScale ?? PhotoViewComputedScale.contained,
+                      minScale: minScale,
                       maxScale: PhotoViewComputedScale.covered * 4,
                       heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                      scaleStateController: _pageScaleStateControllers
+                          .putIfAbsent(index, PhotoViewScaleStateController.new),
                       onTapUp: (context, details, controllerValue) {
                         _toggleShellUI();
                       },
