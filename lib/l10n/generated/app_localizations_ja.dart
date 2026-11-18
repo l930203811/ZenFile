@@ -4763,6 +4763,9 @@ class L10nJa extends L10n {
   String get ui_category_card_style_minimal => 'シンプル';
 
   @override
+  String get ui_category_card_style_list => 'リスト';
+
+  @override
   String get ui_2columns => '2列';
 
   @override

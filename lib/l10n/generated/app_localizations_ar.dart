@@ -4894,6 +4894,9 @@ class L10nAr extends L10n {
   String get ui_category_card_style_minimal => 'بسيط';
 
   @override
+  String get ui_category_card_style_list => 'قائمة';
+
+  @override
   String get ui_2columns => '2 أعمدة';
 
   @override

@@ -4741,6 +4741,7 @@
   "ui_category_card_style": "카드 표시 스타일",
   "ui_category_card_style_filled": "테두리",
   "ui_category_card_style_minimal": "심플",
+  "ui_category_card_style_list": "목록",
   "ui_2columns": "2열",
   "ui_3columns": "3열",
   "ui_4columns": "4열",

@@ -4765,6 +4765,9 @@ class L10nKo extends L10n {
   String get ui_category_card_style_minimal => '심플';
 
   @override
+  String get ui_category_card_style_list => '목록';
+
+  @override
   String get ui_2columns => '2열';
 
   @override

@@ -4723,6 +4723,9 @@ class L10nZh extends L10n {
   String get ui_category_card_style_minimal => '极简';
 
   @override
+  String get ui_category_card_style_list => '列表';
+
+  @override
   String get ui_2columns => '2列';
 
   @override
@@ -13438,6 +13441,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_category_card_style_minimal => '極簡';
+
+  @override
+  String get ui_category_card_style_list => '清單';
 
   @override
   String get ui_2columns => '2列';

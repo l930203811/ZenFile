@@ -8884,6 +8884,12 @@ abstract class L10n {
   /// **'极简'**
   String get ui_category_card_style_minimal;
 
+  /// No description provided for @ui_category_card_style_list.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表'**
+  String get ui_category_card_style_list;
+
   /// No description provided for @ui_2columns.
   ///
   /// In zh, this message translates to:

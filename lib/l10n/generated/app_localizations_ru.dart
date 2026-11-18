@@ -4963,6 +4963,9 @@ class L10nRu extends L10n {
   String get ui_category_card_style_minimal => 'Минимальный';
 
   @override
+  String get ui_category_card_style_list => 'Список';
+
+  @override
   String get ui_2columns => '2 Колонки';
 
   @override

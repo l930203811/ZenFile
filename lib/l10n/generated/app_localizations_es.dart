@@ -4985,6 +4985,9 @@ class L10nEs extends L10n {
   String get ui_category_card_style_minimal => 'Minimal';
 
   @override
+  String get ui_category_card_style_list => 'Lista';
+
+  @override
   String get ui_2columns => '2 Columnas';
 
   @override

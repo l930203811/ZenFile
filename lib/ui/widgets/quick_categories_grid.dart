@@ -1251,7 +1251,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
-    // 卡片样式（0=底框+边框 / 1=极简）。用 select 只订阅这一个字段，
+    // 卡片样式（0=底框+边框 / 1=极简 / 2=列表）。用 select 只订阅这一个字段，
     // 避免 FileManagerProvider 的高频 notify（目录刷新等）连带重建整个网格。
     final cardStyle = context.select<FileManagerProvider, int>(
       (p) => p.categoryCardStyle,
@@ -1340,6 +1340,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 ),
               ),
             )
+          else if (cardStyle == 2)
+            // 「列表」样式：纵向单列行，绕过网格与拖拽排序链路。
+            _buildCategoryList(theme, allCategoriesMap, visibleOrder)
           else
             Listener(
               onPointerMove: _isDragging
@@ -1597,6 +1600,188 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// 「列表」卡片样式（cardStyle == 2）：分类与系统入口渲染为纵向单列行 ——
+  /// 左侧图标 + 名称，右侧条目计数。点击行为与网格卡片完全一致（分类进入
+  /// 对应页面、系统入口跳转对应 tab），长按仍弹出与网格相同的上下文菜单；
+  /// 但不启动网格的拖拽排序（列表行没有网格几何，_updateDrag 无法命中行，
+  /// 排序可在网格样式或「自定义快捷方式」对话框中完成）。
+  Widget _buildCategoryList(
+    ThemeData theme,
+    Map<String, Map<String, dynamic>> allCategoriesMap,
+    List<String> visibleOrder,
+  ) {
+    final fm = context.read<FileManagerProvider>();
+    final rows = <Widget>[];
+    for (int i = 0; i < visibleOrder.length; i++) {
+      final key = visibleOrder[i];
+      // 行间分隔线：从图标右侧起缩进，视觉上与图标列对齐。
+      if (rows.isNotEmpty) {
+        rows.add(Divider(
+          height: 1,
+          thickness: 0.6,
+          indent: 44,
+          color: theme.dividerColor.withValues(alpha: 0.5),
+        ));
+      }
+
+      final Widget row;
+      if (PreferencesService.isSysEntryKey(key)) {
+        // 系统入口（自定义 / 传输 / 设置）：与网格的 _buildSysEntryCard 同源。
+        final IconData icon;
+        final String label;
+        final VoidCallback onTap;
+        if (key == PreferencesService.sysCustomKey) {
+          icon = Broken.edit_2;
+          label = PreferencesService.getCustomEntryLabel() ??
+              L10n.of(context).msgf1d4ff50;
+          onTap = () => QuickCategoriesGrid.showCustomizeDialog(
+            context,
+            widget.onNavigateTab,
+          );
+        } else if (key == PreferencesService.sysTransfersKey) {
+          icon = Broken.link;
+          label = PreferencesService.getTransfersEntryLabel() ??
+              L10n.of(context).ui_transfers;
+          onTap = () => widget.onNavigateTab.call(2);
+        } else {
+          icon = Broken.setting_2;
+          label = PreferencesService.getSettingsEntryLabel() ??
+              L10n.of(context).cat_settings;
+          onTap = () => widget.onNavigateTab.call(3);
+        }
+        row = _buildListRow(
+          theme,
+          icon: icon,
+          iconColor: theme.colorScheme.primary,
+          label: label,
+          count: null,
+          onTap: onTap,
+          onLongPressStart: (details) {
+            fm.setCategoryReorderInteracting(true);
+            _showSystemEntryMenu(
+              position: details.globalPosition,
+              entryKey: key,
+              color: theme.colorScheme.primary,
+            );
+          },
+          onLongPressEnd: (_) {
+            fm.setCategoryReorderInteracting(false);
+          },
+        );
+      } else {
+        final cat = allCategoriesMap[key];
+        if (cat == null) continue;
+        final label = cat['label'] as String;
+        final icon = cat['icon'] as IconData;
+        final color = cat['color'] as Color;
+        final iconColor = (cat['iconColor'] ?? color) as Color;
+        final count = cat['count'] as String;
+        final pageBuilder = cat['pageBuilder'] as Widget Function()?;
+        final action = cat['action'] as VoidCallback?;
+        final iconKey = GlobalKey();
+        row = _buildListRow(
+          theme,
+          icon: icon,
+          iconColor: iconColor,
+          label: label,
+          count: count,
+          onTap: () {
+            if (pageBuilder != null) {
+              _navigateWithExpand(
+                iconKey: iconKey,
+                color: color,
+                targetPage: pageBuilder(),
+              );
+            } else {
+              action?.call();
+            }
+          },
+          onLongPressStart: (details) {
+            fm.setCategoryReorderInteracting(true);
+            _showCategoryContextMenu(
+              position: details.globalPosition,
+              labelKey: key,
+              color: color,
+            );
+          },
+          onLongPressEnd: (_) {
+            fm.setCategoryReorderInteracting(false);
+          },
+        );
+      }
+      rows.add(row);
+    }
+    return Column(children: rows);
+  }
+
+  /// 列表样式的单行：左侧图标 + 名称，右侧计数。
+  /// [onLongPressStart]/[onLongPressEnd] 由调用方决定弹哪类菜单；
+  /// 计数为 null 时（系统入口）不显示右侧文本。
+  Widget _buildListRow(
+    ThemeData theme, {
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String? count,
+    required VoidCallback onTap,
+    required void Function(LongPressStartDetails) onLongPressStart,
+    required void Function(LongPressEndDetails) onLongPressEnd,
+  }) {
+    return LiquidPressable(
+      pressScale: 1.02,
+      child: GestureDetector(
+        // InkWell 只有 onLongPress，这里需要区分 start/end（长按菜单在
+        // start 弹出、end 复位 reorder 标志），故外层用 GestureDetector 承接。
+        onLongPressStart: onLongPressStart,
+        onLongPressEnd: onLongPressEnd,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              if (!_isDragging) onTap();
+            },
+            splashColor: iconColor.withValues(alpha: 0.12),
+            highlightColor: iconColor.withValues(alpha: 0.08),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+              child: Row(
+                children: [
+                  Icon(icon, color: iconColor, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (count != null && count.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      count,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color
+                            ?.withValues(alpha: 0.6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -2585,10 +2770,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             ],
                           ),
                         ),
-                        // ===== 分类卡片样式（底框 + 边框 / 极简）=====
-                        // 只切换分类页网格卡片的**装饰层**（底色 / 边框 / 阴影），
-                        // 图标、标题、计数与说明一律保留 —— 供用户对比「有卡片框」
-                        // 与「纯图标文字」哪种更清爽。行样式与「每行显示」保持一致。
+                        // ===== 分类卡片样式（底框 + 边框 / 极简 / 列表）=====
+                        // 0/1 只切换分类页网格卡片的**装饰层**（底色 / 边框 / 阴影），
+                        // 图标、标题、计数与说明一律保留；2 = 列表样式，整个网格
+                        // 变为纵向单列行（左图标 + 名称、右侧计数）。默认极简。
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
@@ -2634,6 +2819,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                     DropdownMenuItem(
                                       value: 1,
                                       child: Text(L10n.of(context).ui_category_card_style_minimal),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 2,
+                                      child: Text(L10n.of(context).ui_category_card_style_list),
                                     ),
                                   ],
                                   onChanged: (val) {

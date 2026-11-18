@@ -4745,6 +4745,7 @@
   "ui_category_card_style": "カードの表示スタイル",
   "ui_category_card_style_filled": "枠線",
   "ui_category_card_style_minimal": "シンプル",
+  "ui_category_card_style_list": "リスト",
   "ui_2columns": "2列",
   "ui_3columns": "3列",
   "ui_4columns": "4列",

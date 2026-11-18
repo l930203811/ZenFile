@@ -4957,6 +4957,9 @@ class L10nDe extends L10n {
   String get ui_category_card_style_minimal => 'Minimal';
 
   @override
+  String get ui_category_card_style_list => 'Liste';
+
+  @override
   String get ui_2columns => '2 Spalten';
 
   @override
