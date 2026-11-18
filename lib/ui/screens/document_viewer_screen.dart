@@ -7,15 +7,19 @@ import 'package:excel/excel.dart' as excel_pkg;
 import 'package:excel2003/excel2003.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:xml/xml.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/ui/widgets/native_pdf_viewer.dart';
+import 'package:zenfile/ui/widgets/open_with_sheet.dart';
 
 /// ── 办公文档（xlsx / xls / docx / pptx）查看的 ANR 防护（issue #78） ──
 ///
@@ -28,9 +32,10 @@ import 'package:zenfile/ui/widgets/native_pdf_viewer.dart';
 ///
 /// 对策：
 /// * 解析全部移入后台 isolate（见下方 `_parseXxxIsolate` 顶层函数）；
-/// * 解析层限行/限列（内存上限可控），渲染层限行（每帧构建成本可控）；
-/// * 超大文件（> [kDocOfficeInlineSafeBytes]，与 PDF 同一阈值）不再内置解析，
-///   直接回退到「文档预览 + 外部应用打开」页。
+/// * 解析层限行/限列（内存上限可控）；渲染层用 `ListView.builder` 虚拟化，
+///   只构建可见行 + 预加载下一屏，可滚动查看全部已解析行，不再截断到 100 行；
+/// * 超大文件（> [kDocOfficeInlineSafeBytes]，与 PDF 同一阈值）弹「打开方式」
+///   让用户自选：继续用 ZenFile（解析防护仍生效）或第三方应用打开。
 const int kDocOfficeInlineSafeBytes = 20 * 1024 * 1024;
 
 /// 解析层：每个 sheet 最多读入的行数（超出部分不解析、不入内存）。
@@ -39,8 +44,13 @@ const int kDocSheetMaxParseRows = 5000;
 /// 解析层：每个 sheet 最多读入的列数。
 const int kDocSheetMaxParseCols = 100;
 
-/// 渲染层：表格预览最多构建的行数（`Table` 不虚拟化，行数直接决定单帧成本）。
-const int kDocSheetPreviewRows = 100;
+/// 渲染层：表格单元格固定宽度——避免 `IntrinsicColumnWidth` 逐格测量，
+/// 也让横向滚动的总宽度可预先算出（ListView 需要确定的横向 extent）。
+const double kDocSheetColumnWidth = 128;
+
+/// 渲染层：固定行高（`itemExtent` 让 ListView 省去逐行测量，滚动更快）。
+const double kDocSheetRowHeight = 48;
+
 
 /// xlsx（OOXML）解析：在后台 isolate 执行，返回「sheet 名 → 字符串网格」。
 Map<String, List<List<String>>> _parseXlsxIsolate(Uint8List bytes) {
@@ -154,12 +164,22 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   int? _officeFileBytes;
   bool _officeProbeDone = false;
 
-  /// 超大 Office 文件不做内置解析（解析再快也会撑爆内存与首帧），直接走
-  /// 「文档预览 + 外部应用打开」兜底页（各 viewer 在数据为空时自动显示该页）。
+  /// 超大文件不再「强制外部打开」：弹出「打开方式」让用户选。
+  /// 用户在弹窗里明确选了「本应用（ZenFile）」时置 true —— 尊重其选择，
+  /// 绕过体积阈值继续内置解析（风险自担；ANR 防护的解析/渲染限行依然生效）。
+  bool _officeForceInline = false;
+
+  /// 超大且用户尚未选择「继续用 ZenFile」⇒ 数据层跳过内置解析，
+  /// 界面展示预览兜底页（引导用户选「打开方式」）。
   bool get _officeTooLarge =>
+      !_officeForceInline &&
       _officeProbeDone &&
       (_isExcel || _isWord || _isPpt) &&
       (_officeFileBytes ?? 0) > kDocOfficeInlineSafeBytes;
+
+  /// 当前 Office 文件的内置解析入口（由 initState 的探测流程注入），
+  /// 供「打开方式」选「本应用」后重新触发内置解析。
+  Future<void> Function()? _officeLoad;
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -247,9 +267,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     });
   }
 
-  /// 先探测 Office 文档体积，超大文件直接跳过解析（显示预览兜底页），
-  /// 正常体积的文件再执行 [load]。
+  /// 先探测 Office 文档体积：正常体积直接内置解析；超大文件**不再强制外部
+  /// 打开**，而是弹应用内统一的「打开方式」弹窗（第一项本应用、其余第三方），
+  /// 由用户自己决定继续用 ZenFile 还是交给第三方应用（见 issue #78 后续反馈）。
   Future<void> _probeOfficeSizeThen(Future<void> Function() load) async {
+    _officeLoad = load;
     int? size;
     try {
       final file = File(widget.filePath);
@@ -260,11 +282,61 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       _officeFileBytes = size;
       _officeProbeDone = true;
     });
+    final ext = FileUtils.effectiveExtensionWithDot(widget.filePath);
+    // 尊重此前「始终」的选择：saved='native'（继续用 ZenFile）⇒ 直接内置解析，
+    // 不再每次弹窗打扰；saved='external:<包名>' ⇒ 直接按包名打开，也不弹窗。
+    final saved = PreferencesService.getDefaultOpenAction(ext);
+    if (_officeTooLarge && saved != null) {
+      if (saved == 'native') {
+        if (mounted) setState(() => _officeForceInline = true);
+        await load();
+        return;
+      }
+      if (saved.startsWith('external:')) {
+        final pkg = saved.substring('external:'.length);
+        await Provider.of<FileManagerProvider>(context, listen: false)
+            .openWithSystemChooser(widget.filePath, packageName: pkg);
+        return;
+      }
+    }
     if (_officeTooLarge) {
+      // 先收起转圈显示兜底页，再弹「打开方式」；取消则留在兜底页，
+      // 用户仍可点页面上的「外部打开」按钮再次选择。
       setState(() => _isLoading = false);
+      await _showOpenWithChoice();
       return;
     }
     await load();
+  }
+
+  /// 超大文件的「打开方式」选择：复用全局统一的 [OpenWithAppDialog]
+  /// （本应用 + 系统已注册的第三方应用列表，带「始终 / 仅此一次」）。
+  /// * 选本应用 → 置 [_officeForceInline] 并继续内置解析；
+  /// * 选第三方 → 按包名直达系统应用（非系统默认，能真正选应用）；
+  /// * 取消 → 什么都不做，留在兜底页。
+  Future<void> _showOpenWithChoice() async {
+    if (!mounted) return;
+    final provider = Provider.of<FileManagerProvider>(context, listen: false);
+    final choice = await provider.showOpenWithAppChoiceDialog(
+      context,
+      widget.filePath,
+    );
+    if (choice == null || !mounted) return;
+    final ext = FileUtils.effectiveExtensionWithDot(widget.filePath);
+    if (choice.isNative) {
+      if (choice.always) {
+        await PreferencesService.saveDefaultOpenAction(ext, 'native');
+      }
+      // 用户明确要继续用 ZenFile：绕过体积阈值，继续（限行/后台的）内置解析。
+      setState(() => _officeForceInline = true);
+      await _officeLoad?.call();
+      return;
+    }
+    final pkg = choice.app!.packageName;
+    if (choice.always) {
+      await PreferencesService.saveDefaultOpenAction(ext, 'external:$pkg');
+    }
+    await provider.openWithSystemChooser(widget.filePath, packageName: pkg);
   }
 
   Future<void> _loadTextFile() async {
@@ -403,6 +475,12 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   }
 
   Future<void> _openExternal() async {
+    // Office 文档（尤其超大文件兜底页）不再走 OpenFilex 的系统默认应用，
+    // 统一弹应用内「打开方式」让用户选具体应用（本应用 / 第三方列表）。
+    if (_isExcel || _isWord || _isPpt) {
+      await _showOpenWithChoice();
+      return;
+    }
     await OpenFilex.open(widget.filePath);
   }
 
@@ -1006,10 +1084,12 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     if (_excelSheets.isEmpty) return _buildDocumentPreview(theme, isDark);
 
     final rows = _excelSheets[_selectedSheet] ?? [];
-    final previewRows = rows.length > kDocSheetPreviewRows
-        ? rows.sublist(0, kDocSheetPreviewRows)
-        : rows;
-    final rowsTruncated = rows.length > previewRows.length;
+    // 列数按该 sheet 最宽的一行算，横向滚动宽度可预先确定。
+    final columnCount = rows.fold<int>(
+      0,
+      (maxCols, row) => row.length > maxCols ? row.length : maxCols,
+    );
+    final tableWidth = columnCount * kDocSheetColumnWidth;
 
     return Column(
       children: [
@@ -1054,62 +1134,64 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      // 渲染层限行（issue #78）：`Table` 不虚拟化，行数直接决定
-                      // 单帧构建成本 —— IntrinsicColumnWidth 会测量每个单元格，
-                      // 全量渲染上万行会在主 isolate 上构建出秒级长帧（ANR）。
-                      // 超出部分不渲染，用底部提示引导走外部应用查看完整内容。
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Table(
-                            border: TableBorder.all(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                              width: 1,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      // 虚拟化：只构建可见行，cacheExtent 预加载下一屏（issue #78）。
+                      // 不再截断到 100 行——全部已解析行都可滚动查看。
+                      itemCount: rows.length,
+                      itemExtent: kDocSheetRowHeight,
+                      scrollCacheExtent: const ScrollCacheExtent.viewport(1.0),
+                      itemBuilder: (context, rowIndex) {
+                        final row = rows[rowIndex];
+                        final isHeader = rowIndex == 0;
+                        final isEven = rowIndex.isEven;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: isHeader
+                                ? Colors.green.withValues(alpha: 0.15)
+                                : (isEven
+                                    ? theme.colorScheme.surface.withValues(alpha: 0.5)
+                                    : Colors.transparent),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.2),
+                                width: 1,
+                              ),
                             ),
-                            defaultColumnWidth: const IntrinsicColumnWidth(),
+                          ),
+                          child: Row(
                             children: [
-                              for (var i = 0; i < previewRows.length; i++)
-                                TableRow(
-                                  decoration: BoxDecoration(
-                                    color: i == 0
-                                        ? Colors.green.withValues(alpha: 0.15)
-                                        : (i % 2 == 0
-                                            ? theme.colorScheme.surface.withValues(alpha: 0.5)
-                                            : Colors.transparent),
-                                  ),
-                                  children: previewRows[i].map((cell) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              for (final cell in row)
+                                Tooltip(
+                                  message: cell,
+                                  child: SizedBox(
+                                    width: kDocSheetColumnWidth,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
                                       child: Text(
-                                        cell.toString(),
+                                        cell,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
+                                          fontWeight: isHeader
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                           fontSize: 13,
                                         ),
                                       ),
-                                    );
-                                  }).toList(),
+                                    ),
+                                  ),
                                 ),
                             ],
                           ),
-                          if (rowsTruncated) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              L10n.of(context).docSheetPreviewTruncated(
-                                kDocSheetPreviewRows,
-                              ),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),

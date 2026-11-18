@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.7.9';
+  static const String _latestChangelogVersion = 'v3.8.0';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v380,
     _v379,
     _v378,
     _v377,
@@ -966,7 +967,37 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.7.9 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.0 ────────────────────────────────────────────────
+  static const _Changelog _v380 = _Changelog(
+    version: 'v3.8.0',
+    date: '2026-11-18',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复打开较大的 Excel 表格时可能出现的应用无响应（ANR）：表格解析移至后台线程完成，并限制单次读入的行列数量',
+        'Excel 表格改为按需渲染：只构建当前屏幕可见的行并预加载下一屏，可流畅滚动查看全部已解析内容，不再截断到前 100 行',
+        '打开超过 20MB 的 Office 文档时不再强制使用外部应用，而是弹出「打开方式」由你选择继续用 ZenFile 查看还是用其他应用打开',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '扫一扫改用完全开源的扫描引擎，不再包含 Google ML Kit 闭源组件；应用现在是完整的自由开源软件（FOSS），无需再拆分成两个版本',
+        '「自定义快捷方式」的分类卡片样式新增「列表」选项：分类页可切换为紧凑的单列列表，右侧显示条目数量；默认仍是「极简」样式',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed an "app is not responding" (ANR) dialog when opening large Excel spreadsheets: parsing now runs on a background thread with bounded row/column limits',
+        'Excel sheets are now rendered on demand: only the visible rows plus the next screen are built, so you can scroll smoothly through all parsed content instead of being capped at the first 100 rows',
+        'Opening an Office document larger than 20MB no longer forces an external app; a chooser now lets you continue in ZenFile or open it in another app',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'The scanner now uses a fully open-source engine and no longer bundles the proprietary Google ML Kit, making ZenFile completely free and open-source software (FOSS) with no need for separate builds',
+        'Added a "List" option to the category card styles in "Customize shortcuts": the categories page can now switch to a compact single-column list with item counts on the right. The default is still the "Minimal" style',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.7.9（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v379 = _Changelog(
     version: 'v3.7.9',
     date: '2026-11-17',

@@ -20,8 +20,9 @@ class SpecialThanksScreen extends StatelessWidget {
     '你没急吧',
   ];
 
-  /// 应用内（Telegram/QQ 群等）提供建议与反馈的用户。
-  static const List<String> _inAppFeedback = [
+  /// 提供建议与反馈的用户（应用内与 GitHub Issues 合并，不再区分渠道；
+  /// 昵称原文照录）。末两位为 issue #40「采用开源扫描器」建议者。
+  static const List<String> _feedback = [
     '𝗖𝗵𝗲𝗻𝗴𝗵𝘂𝗮',
     '越界',
     'YC影尘',
@@ -35,10 +36,6 @@ class SpecialThanksScreen extends StatelessWidget {
     'Oxlne',
     'Jankst',
     '斯卡里茨的守护者',
-  ];
-
-  /// 通过 GitHub Issues 反馈、其建议已被采纳的用户（对应 issue 均已实现/修复）。
-  static const List<String> _githubFeedback = [
     'KamrulShahed',
     '0xlne',
     'SASlobby93',
@@ -46,6 +43,8 @@ class SpecialThanksScreen extends StatelessWidget {
     'LorianL98',
     'qwertti123',
     'zhnfe',
+    'ninosandzak',
+    'Rorschach1010',
   ];
 
   /// 为本应用设计图标的用户（昵称原文照录，**不翻译**）。
@@ -71,7 +70,6 @@ class SpecialThanksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -111,20 +109,8 @@ class SpecialThanksScreen extends StatelessWidget {
             context,
             title: l10n.thanks_feedback_section,
             note: l10n.thanks_feedback_note,
-            names: _inAppFeedback,
+            names: _feedback,
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 6, bottom: 12),
-            child: Text(
-              l10n.thanks_github_note,
-              style: TextStyle(
-                fontSize: 12.5,
-                height: 1.5,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
-          _nameChips(context, _githubFeedback),
         ],
       ),
     );

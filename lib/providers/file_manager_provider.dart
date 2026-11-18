@@ -131,42 +131,67 @@ class _CutItem {
 
 /// 并发上传进度聚合器。
 ///
-/// 旧实现用 previousFilesBytes + 「一次只传一个文件」的假设累计进度，并发时
-/// 多个文件同时有进度会让累计值错乱。这里为**每个文件**独立记录已传字节，
-/// bytesDone = 已完成文件总字节 + 所有在途文件已传字节之和，天然支持并发。
+/// 为**每个文件**用唯一 [key]（目标远程路径）独立记录已传字节，
+/// bytesDone = 已完成文件总字节 + 所有在途文件已传字节之和，天然支持并发，且
+/// 不同目录的同名文件不会互相覆盖（旧实现用 basename 当 key，会让外圈偏低）。
+///
+/// 内圈（当前文件进度）改为取「焦点文件」= 最早进入、尚未完成的那个：它单调
+/// 推进，只有该文件完成才切到下一个。旧实现让每次任意文件的回调都改写内圈，
+/// 4 路并发时每 512KB 就在不同文件间跳变，且文件名固定为最先开始的那一个，
+/// 出现「内圈乱跳 / 名字与进度对不上」。
 class _UploadProgressTracker {
   _UploadProgressTracker(this.totalBytes, this.totalFiles);
   final int totalBytes;
   final int totalFiles;
 
-  final Map<String, int> _inFlight = {};
+  /// LinkedHashMap 保插入序 ⇒ values.first 即最早进入的在途文件（焦点）。
+  final LinkedHashMap<String, _UploadFileState> _inFlight = LinkedHashMap();
   int _completedBytes = 0;
   int _completedFiles = 0;
-  int _inFlightCount = 0;
-  String _currentName = '';
 
-  void touch(String name, int size, double prog) {
+  /// [key] 必须能唯一标识一个文件（并发上传用 remotePath）；[name] 仅供显示。
+  void touch(String key, String name, int size, double prog) {
     final p = prog.isFinite ? prog.clamp(0.0, 1.0) : 0.0;
     if (p >= 1.0) {
-      if (_inFlight.remove(name) != null) {
-        _completedBytes += size;
+      final done = _inFlight.remove(key);
+      if (done != null) {
+        // 用首次记录的 size 结算，避免回调里 size 抖动导致累计偏差。
+        _completedBytes += done.size;
         _completedFiles++;
-        if (_inFlightCount > 0) _inFlightCount--;
       }
       return;
     }
-    if (!_inFlight.containsKey(name)) {
-      _inFlightCount++;
-      _currentName = name;
-    }
-    _inFlight[name] = (size * p).round();
+    final state = _inFlight.putIfAbsent(
+      key,
+      () => _UploadFileState(name: name, size: size),
+    );
+    state.bytes = (state.size * p).round();
   }
 
   int get bytesDone =>
-      _completedBytes + _inFlight.values.fold(0, (a, b) => a + b);
+      _completedBytes + _inFlight.values.fold(0, (a, s) => a + s.bytes);
   int get filesDone => _completedFiles;
-  int get inFlight => _inFlightCount;
-  String get currentName => _currentName;
+  int get inFlight => _inFlight.length;
+
+  _UploadFileState? get _focus {
+    for (final state in _inFlight.values) {
+      return state;
+    }
+    return null;
+  }
+
+  /// 焦点文件：界面内圈只反映它，名字与进度取自同一文件，单调不回退。
+  String get focusName => _focus?.name ?? '';
+  int get focusBytes => _focus?.bytes ?? 0;
+  int get focusSize => _focus?.size ?? 0;
+}
+
+/// [_UploadProgressTracker] 内部单个在途文件的状态。
+class _UploadFileState {
+  _UploadFileState({required this.name, required this.size});
+  final String name;
+  final int size;
+  int bytes = 0;
 }
 
 class StorageVolume {
@@ -10846,10 +10871,12 @@ class FileManagerProvider extends ChangeNotifier {
       DateTime? lastSpeedUpdate;
 
       // 统一构造进度通知，保证 percentage / bytesProcessed / speed / eta 一致。
-      void emitProgress(String fileName, int currentFileSize, double currentFileProg) {
+      // [key] 唯一标识一个文件（并发 job 传 remotePath）；省略时用文件名。
+      void emitProgress(String fileName, int currentFileSize, double currentFileProg,
+          {String? key}) {
         // 并发安全：每个文件独立累计，由 _tracker 聚合。tracker.touch 内部已
         // clamp 到 [0,1] 并同文件单调（重复 / 乱序回调不会让已上报进度回退）。
-        _tracker.touch(fileName, currentFileSize, currentFileProg);
+        _tracker.touch(key ?? fileName, fileName, currentFileSize, currentFileProg);
         final newBytes = _tracker.bytesDone;
         if (newBytes > _lastTrackerBytes) {
           pendingSpeedDelta += newBytes - _lastTrackerBytes;
@@ -10864,26 +10891,26 @@ class FileManagerProvider extends ChangeNotifier {
         }
         bytesDone = newBytes;
         processedFileCount = _tracker.filesDone;
-        final prog =
-            currentFileProg.isFinite ? currentFileProg.clamp(0.0, 1.0) : 0.0;
         final pct = (bytesDone / totalBytesAll).clamp(0.0, 1.0);
         final speedMBs = speedTracker.currentMBs();
         final remainingBytes = totalBytesAll - bytesDone;
         final etaSeconds = speedMBs > 0
             ? (remainingBytes / (1024 * 1024)) / speedMBs
             : 0.0;
+        // 内圈固定追踪「焦点文件」（最早进入且未完成者）：单调推进，完成一个才
+        // 切下一个，不再随任意文件的回调乱跳；名字与进度取自同一文件。
         progressNotifier.value = FileOperationProgress(
           totalFiles: totalFileCount,
           currentFileIndex: processedFileCount + (_tracker.inFlight > 0 ? 1 : 0),
           currentFileName:
-              _tracker.currentName.isEmpty ? fileName : _tracker.currentName,
+              _tracker.focusName.isEmpty ? fileName : _tracker.focusName,
           percentage: pct,
           speedMBs: speedMBs,
           eta: Duration(seconds: etaSeconds.round()),
           totalBytes: totalBytesAll,
           bytesProcessed: bytesDone,
-          currentFileBytes: (currentFileSize * prog).round(),
-          currentFileTotal: currentFileSize,
+          currentFileBytes: _tracker.focusBytes,
+          currentFileTotal: _tracker.focusSize,
         );
       }
 
@@ -10958,8 +10985,8 @@ class FileManagerProvider extends ChangeNotifier {
                 client,
                 cryptSrc.physical,
                 destPath,
-              onFileProgress: (fileName, fileSize, prog) {
-                emitProgress(fileName, fileSize, prog);
+              onFileProgress: (fileName, fileSize, prog, key) {
+                emitProgress(fileName, fileSize, prog, key: key);
               },
               onJobDone: (n, s) {
                 lastUploadedName = n;
@@ -11035,8 +11062,8 @@ class FileManagerProvider extends ChangeNotifier {
             // 计数改在「文件完成」时推进（原先放在 onFileStart）：emitProgress 里
             // 用 `processedFileCount + 1` 表示当前文件序号，若提前自增，目录里的
             // 第一个文件会显示成 2/N。单文件分支本来就是完成后自增，两处必须一致。
-              onFileProgress: (fileName, fileSize, prog) {
-                emitProgress(fileName, fileSize, prog);
+              onFileProgress: (fileName, fileSize, prog, key) {
+                emitProgress(fileName, fileSize, prog, key: key);
               },
             onJobDone: (n, s) {
               lastUploadedName = n;
@@ -11099,7 +11126,8 @@ class FileManagerProvider extends ChangeNotifier {
         await _runUploadJobs(
           client,
           _pendingFileJobs,
-          onFileProgress: (name, size, prog) => emitProgress(name, size, prog),
+          onFileProgress: (name, size, prog, key) =>
+              emitProgress(name, size, prog, key: key),
           onJobDone: (n, s) {
             lastUploadedName = n;
             lastUploadedSize = s;
@@ -11652,7 +11680,7 @@ class FileManagerProvider extends ChangeNotifier {
               onFileStart: (fileName) {
                 processedFileCount++;
               },
-              onFileProgress: (fileName, fileSize, prog) {
+              onFileProgress: (fileName, fileSize, prog, key) {
                 emitProgress(fileName, fileSize, prog);
                 if (prog >= 1.0) {
                   previousFilesBytes += fileSize;
@@ -11916,17 +11944,24 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _runUploadJobs(
     RemoteClient client,
     List<_UploadJob> jobs, {
-    required void Function(String name, int size, double prog) onFileProgress,
+    required void Function(String name, int size, double prog, String key)
+        onFileProgress,
     void Function(String name, int size)? onJobDone,
   }) async {
     if (jobs.isEmpty) return;
 
     Future<void> runOne(_UploadJob j) async {
-      onFileProgress(j.name, j.size, 0.0);
+      // key 用唯一的目标路径：不同子目录的同名文件不会被聚合器当成同一个。
+      final key = j.remotePath;
+      onFileProgress(j.name, j.size, 0.0, key);
       try {
         await client.uploadFile(j.localPath, j.remotePath, (prog) {
-          onFileProgress(j.name, j.size, prog);
+          onFileProgress(j.name, j.size, prog, key);
         });
+        // 显式补一帧 1.0：个别协议 uploadFile 的末帧不是精确 1.0，缺这一帧会让
+        // 文件永远留在 tracker 的在途表里，外圈卡在 99%。已结算过的文件再
+        // touch 是 no-op，重复安全。
+        onFileProgress(j.name, j.size, 1.0, key);
         // 每个文件上传成功后通知上层（用于跟踪最后一次上传的文件，
         // 供 OpenList 本机代理的 finalize 轮询检测）。并发下「最后一个
         // 完成」的会覆盖，任意一个已上传文件都能触发刷新，符合预期。
@@ -11995,7 +12030,8 @@ class FileManagerProvider extends ChangeNotifier {
     String localDirPath,
     String remoteDirPath, {
     void Function(String fileName)? onFileStart,
-    void Function(String fileName, int fileSize, double progress)? onFileProgress,
+    void Function(String fileName, int fileSize, double progress, String key)?
+        onFileProgress,
     void Function(String name, int size)? onJobDone,
     bool? bypassUseRoot,
   }) async {
@@ -12008,9 +12044,13 @@ class FileManagerProvider extends ChangeNotifier {
       await client.createDirectory(d);
     }
     if (jobs.isEmpty) return;
-    await _runUploadJobs(client, jobs, onFileProgress: (name, size, prog) {
-      onFileStart?.call(name);
-      onFileProgress?.call(name, size, prog);
+    // onFileStart 每个文件只触发一次（原来每次进度回调都调用，补发的完成帧
+    // 会让它多计一次；远程→远程链路用该回调推进 processedFileCount）。
+    final startedKeys = <String>{};
+    await _runUploadJobs(client, jobs,
+        onFileProgress: (name, size, prog, key) {
+      if (startedKeys.add(key)) onFileStart?.call(name);
+      onFileProgress?.call(name, size, prog, key);
     }, onJobDone: onJobDone);
   }
 

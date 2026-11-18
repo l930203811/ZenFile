@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.7.9+112
+version: 3.8.0+113
 
 environment:
   sdk: ^3.11.5
@@ -126,7 +126,10 @@ dependencies:
   local_auth: ^3.0.2
   flutter_secure_storage: ^10.3.1
   qr_flutter: ^4.1.0
-  mobile_scanner: ^7.4.1
+  # 扫码：改用开源方案（issue #40），彻底移除闭源的 Google ML Kit 依赖。
+  # camera 走系统 CameraX（Apache-2.0），zxing2 是 ZXing 的纯 Dart 移植（Apache-2.0）。
+  camera: ^0.12.2
+  zxing2: ^0.2.4
   # 聚合网盘登录：内嵌 WebView 打开官方登录页，注入 JS 抓取登录态（cookie / refresh_token）。
   webview_flutter: ^4.10.0
   # 聚合网盘客户端：夸克风控会掐断 Dart 默认 TLS 指纹的连接，需用 Cronet（真实浏览器网络栈）请求。
