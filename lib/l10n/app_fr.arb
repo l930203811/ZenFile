@@ -8908,5 +8908,7 @@
   "smb_share_input_ok": "Connecter",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "Annuler",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "Cette feuille est volumineuse ; seules les {shown} premières lignes sont affichées. Utilisez le bouton en haut à droite pour l'ouvrir dans une application externe",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

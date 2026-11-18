@@ -5,6 +5,7 @@ import 'package:charset/charset.dart';
 import 'package:docx_to_text/docx_to_text.dart';
 import 'package:excel/excel.dart' as excel_pkg;
 import 'package:excel2003/excel2003.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
@@ -15,6 +16,106 @@ import '../../core/utils.dart';
 import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/ui/widgets/native_pdf_viewer.dart';
+
+/// ── 办公文档（xlsx / xls / docx / pptx）查看的 ANR 防护（issue #78） ──
+///
+/// 崩溃取证：OnePlus / Android 16，v3.7.9 打开 xlsx 后主线程在 libapp.so 深栈
+/// 烧 CPU > 5s（输入分发超时 ANR），进程 RSS ~1.9GB。根因有三层：
+/// ① `Excel.decodeBytes` + 全表遍历在**主 isolate** 同步执行（纯 CPU）；
+/// ② 渲染层用 `Table` + `IntrinsicColumnWidth` 一次性构建**全部行 × 全部列**
+///    的 widget（不虚拟化），行多时即使解析挪到后台，构建一帧同样占死主线程；
+/// ③ 所有 sheet 全量转字符串常驻内存（RSS 爆高的元凶）。
+///
+/// 对策：
+/// * 解析全部移入后台 isolate（见下方 `_parseXxxIsolate` 顶层函数）；
+/// * 解析层限行/限列（内存上限可控），渲染层限行（每帧构建成本可控）；
+/// * 超大文件（> [kDocOfficeInlineSafeBytes]，与 PDF 同一阈值）不再内置解析，
+///   直接回退到「文档预览 + 外部应用打开」页。
+const int kDocOfficeInlineSafeBytes = 20 * 1024 * 1024;
+
+/// 解析层：每个 sheet 最多读入的行数（超出部分不解析、不入内存）。
+const int kDocSheetMaxParseRows = 5000;
+
+/// 解析层：每个 sheet 最多读入的列数。
+const int kDocSheetMaxParseCols = 100;
+
+/// 渲染层：表格预览最多构建的行数（`Table` 不虚拟化，行数直接决定单帧成本）。
+const int kDocSheetPreviewRows = 100;
+
+/// xlsx（OOXML）解析：在后台 isolate 执行，返回「sheet 名 → 字符串网格」。
+Map<String, List<List<String>>> _parseXlsxIsolate(Uint8List bytes) {
+  final excel = excel_pkg.Excel.decodeBytes(bytes);
+  final out = <String, List<List<String>>>{};
+  for (final table in excel.tables.keys) {
+    final sheet = excel.tables[table]!;
+    final rows = <List<String>>[];
+    for (final row in sheet.rows) {
+      if (rows.length >= kDocSheetMaxParseRows) break;
+      final rowData = <String>[];
+      final cols = row.length < kDocSheetMaxParseCols
+          ? row.length
+          : kDocSheetMaxParseCols;
+      for (var i = 0; i < cols; i++) {
+        rowData.add(row[i]?.value?.toString() ?? '');
+      }
+      rows.add(rowData);
+    }
+    out[table] = rows;
+  }
+  return out;
+}
+
+/// xls（BIFF 2-8 二进制格式）解析：在后台 isolate 执行。
+Map<String, List<List<String>>> _parseXlsIsolate(Uint8List bytes) {
+  final xls = XlsReader.fromBytes(bytes);
+  final out = <String, List<List<String>>>{};
+  for (final sheetName in xls.sheetNames) {
+    final sheet = xls.sheetByName(sheetName);
+    if (sheet == null) continue;
+    final rows = <List<String>>[];
+    for (final r in sheet.rows) {
+      if (rows.length >= kDocSheetMaxParseRows) break;
+      final rowData = <String>[];
+      final cols = r.length < kDocSheetMaxParseCols
+          ? r.length
+          : kDocSheetMaxParseCols;
+      for (var i = 0; i < cols; i++) {
+        rowData.add(r[i]?.toString() ?? '');
+      }
+      rows.add(rowData);
+    }
+    out[sheetName] = rows;
+  }
+  return out;
+}
+
+/// docx 正文抽取：在后台 isolate 执行。
+String _parseDocxIsolate(Uint8List bytes) => docxToText(bytes);
+
+/// pptx 幻灯片文本抽取：在后台 isolate 执行（zip 解包 + 逐页 XML 解析）。
+/// 空页返回空字符串，由调用方（主 isolate）填本地化文案。
+List<String> _parsePptxIsolate(Uint8List bytes) {
+  final archive = ZipDecoder().decodeBytes(bytes);
+  final slideMap = <int, String>{};
+  for (final file in archive.files) {
+    if (file.name.startsWith('ppt/slides/slide') &&
+        file.name.endsWith('.xml')) {
+      final match = RegExp(r'slide(\d+)\.xml').firstMatch(file.name);
+      if (match != null) {
+        final slideNum = int.parse(match.group(1)!);
+        final contentStr = utf8.decode(file.content as List<int>);
+        final doc = XmlDocument.parse(contentStr);
+        final textNodes = doc.findAllElements('a:t');
+        slideMap[slideNum] = textNodes
+            .map((node) => node.innerText)
+            .where((t) => t.trim().isNotEmpty)
+            .join('\n');
+      }
+    }
+  }
+  final sortedKeys = slideMap.keys.toList()..sort();
+  return sortedKeys.map((k) => slideMap[k]!).toList();
+}
 
 class DocumentViewerScreen extends StatefulWidget {
   final String filePath;
@@ -45,9 +146,20 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       _ext == '.md';
 
   String _textContent = '';
-  final Map<String, List<List<dynamic>>> _excelSheets = {};
+  final Map<String, List<List<String>>> _excelSheets = {};
   String _selectedSheet = '';
   List<String> _pptSlides = [];
+
+  /// Office 文档体积探测（xlsx / xls / docx / pptx，见 [kDocOfficeInlineSafeBytes]）。
+  int? _officeFileBytes;
+  bool _officeProbeDone = false;
+
+  /// 超大 Office 文件不做内置解析（解析再快也会撑爆内存与首帧），直接走
+  /// 「文档预览 + 外部应用打开」兜底页（各 viewer 在数据为空时自动显示该页）。
+  bool get _officeTooLarge =>
+      _officeProbeDone &&
+      (_isExcel || _isWord || _isPpt) &&
+      (_officeFileBytes ?? 0) > kDocOfficeInlineSafeBytes;
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -102,11 +214,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     } else if (_isText) {
       _loadTextFile();
     } else if (_isWord) {
-      _loadWordFile();
+      _probeOfficeSizeThen(_loadWordFile);
     } else if (_isExcel) {
-      _loadExcelFile();
+      _probeOfficeSizeThen(_loadExcelFile);
     } else if (_isPpt) {
-      _loadPptFile();
+      _probeOfficeSizeThen(_loadPptFile);
     } else {
       setState(() => _isLoading = false);
     }
@@ -135,12 +247,36 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     });
   }
 
+  /// 先探测 Office 文档体积，超大文件直接跳过解析（显示预览兜底页），
+  /// 正常体积的文件再执行 [load]。
+  Future<void> _probeOfficeSizeThen(Future<void> Function() load) async {
+    int? size;
+    try {
+      final file = File(widget.filePath);
+      if (await file.exists()) size = await file.length();
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _officeFileBytes = size;
+      _officeProbeDone = true;
+    });
+    if (_officeTooLarge) {
+      setState(() => _isLoading = false);
+      return;
+    }
+    await load();
+  }
+
   Future<void> _loadTextFile() async {
     try {
       final file = File(widget.filePath);
       if (await file.exists()) {
         final bytes = await file.readAsBytes();
-        String content = _decodeBytesWithFallback(bytes);
+        // 大文本（>512KB）的多编码回退解码是 CPU 密集操作：大 log / csv 在主
+        // isolate 上解码同样会占死主线程（与 issue #78 同类问题），移入后台。
+        final String content = bytes.length > 512 * 1024
+            ? await compute(_decodeBytesWithFallback, bytes)
+            : _decodeBytesWithFallback(bytes);
         _textController.text = content;
         _textContent = content;
       }
@@ -185,7 +321,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     try {
       final file = File(widget.filePath);
       final bytes = await file.readAsBytes();
-      final text = docxToText(bytes);
+      // docx 解包 + XML 文本抽取移入后台 isolate（与 issue #78 同类问题）。
+      final text = await compute(_parseDocxIsolate, bytes);
       _textContent = text;
       _textController.text = text;
     } catch (e) {
@@ -197,38 +334,20 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
   Future<void> _loadExcelFile() async {
     try {
+      if (_officeTooLarge) return;
       final file = File(widget.filePath);
       final bytes = await file.readAsBytes();
 
-      _excelSheets.clear();
+      // 解析（zip 解包 + sheet 遍历 + 单元格转字符串）全部移入后台 isolate：
+      // 主 isolate 上执行时，大表格会把主线程占死数秒甚至数十秒 → 输入分发
+      // 超时 ANR（issue #78）。解析层已限行/限列，内存上限可控。
+      final sheets = _ext == '.xls'
+          ? await compute(_parseXlsIsolate, bytes)
+          : await compute(_parseXlsxIsolate, bytes);
 
-      if (_ext == '.xls') {
-        final xls = XlsReader.fromBytes(bytes);
-        for (final sheetName in xls.sheetNames) {
-          final sheet = xls.sheetByName(sheetName);
-          if (sheet != null) {
-            final List<List<dynamic>> rowsStr = [];
-            for (final r in sheet.rows) {
-              rowsStr.add(r.map((c) => c?.toString() ?? '').toList());
-            }
-            _excelSheets[sheetName] = rowsStr;
-          }
-        }
-      } else {
-        final excel = excel_pkg.Excel.decodeBytes(bytes);
-        for (final table in excel.tables.keys) {
-          final sheet = excel.tables[table]!;
-          final List<List<dynamic>> rows = [];
-          for (final row in sheet.rows) {
-            final List<dynamic> rowData = [];
-            for (final cell in row) {
-              rowData.add(cell?.value?.toString() ?? '');
-            }
-            rows.add(rowData);
-          }
-          _excelSheets[table] = rows;
-        }
-      }
+      _excelSheets
+        ..clear()
+        ..addAll(sheets);
 
       if (_excelSheets.isNotEmpty) {
         _selectedSheet = _excelSheets.keys.first;
@@ -244,26 +363,13 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     try {
       final file = File(widget.filePath);
       final bytes = await file.readAsBytes();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      final slideMap = <int, String>{};
-
-      for (final file in archive.files) {
-        if (file.name.startsWith('ppt/slides/slide') && file.name.endsWith('.xml')) {
-          final match = RegExp(r'slide(\d+)\.xml').firstMatch(file.name);
-          if (match != null) {
-            final slideNum = int.parse(match.group(1)!);
-            final contentStr = utf8.decode(file.content as List<int>);
-            final doc = XmlDocument.parse(contentStr);
-            final textNodes = doc.findAllElements('a:t');
-            final slideText = textNodes.map((node) => node.innerText).where((t) => t.trim().isNotEmpty).join('\n');
-            slideMap[slideNum] = slideText.isEmpty ? L10n.of(context).msg5937f822 : slideText;
-          }
-        }
-      }
-
-      final sortedKeys = slideMap.keys.toList()..sort();
-      _pptSlides = sortedKeys.map((k) => slideMap[k]!).toList();
+      // zip 解包 + 逐页 XML 解析移入后台 isolate（与 issue #78 同类问题）；
+      // isolate 内不能用 context，空页文案在主 isolate 侧补本地化。
+      final slides = await compute(_parsePptxIsolate, bytes);
+      if (!mounted) return;
+      final emptyLabel = L10n.of(context).msg5937f822;
+      _pptSlides =
+          slides.map((s) => s.isEmpty ? emptyLabel : s).toList();
     } catch (e) {
       debugPrint('Error reading PPTX: $e');
     } finally {
@@ -900,6 +1006,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     if (_excelSheets.isEmpty) return _buildDocumentPreview(theme, isDark);
 
     final rows = _excelSheets[_selectedSheet] ?? [];
+    final previewRows = rows.length > kDocSheetPreviewRows
+        ? rows.sublist(0, kDocSheetPreviewRows)
+        : rows;
+    final rowsTruncated = rows.length > previewRows.length;
 
     return Column(
       children: [
@@ -948,36 +1058,57 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Table(
-                        border: TableBorder.all(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                        defaultColumnWidth: const IntrinsicColumnWidth(),
-                        children: rows.map((row) {
-                          final isHeader = rows.indexOf(row) == 0;
-                          return TableRow(
-                            decoration: BoxDecoration(
-                              color: isHeader
-                                  ? Colors.green.withValues(alpha: 0.15)
-                                  : (rows.indexOf(row) % 2 == 0
-                                      ? theme.colorScheme.surface.withValues(alpha: 0.5)
-                                      : Colors.transparent),
+                      // 渲染层限行（issue #78）：`Table` 不虚拟化，行数直接决定
+                      // 单帧构建成本 —— IntrinsicColumnWidth 会测量每个单元格，
+                      // 全量渲染上万行会在主 isolate 上构建出秒级长帧（ANR）。
+                      // 超出部分不渲染，用底部提示引导走外部应用查看完整内容。
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Table(
+                            border: TableBorder.all(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                              width: 1,
                             ),
-                            children: row.map((cell) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: Text(
-                                  cell.toString(),
-                                  style: TextStyle(
-                                    fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
-                                    fontSize: 13,
+                            defaultColumnWidth: const IntrinsicColumnWidth(),
+                            children: [
+                              for (var i = 0; i < previewRows.length; i++)
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: i == 0
+                                        ? Colors.green.withValues(alpha: 0.15)
+                                        : (i % 2 == 0
+                                            ? theme.colorScheme.surface.withValues(alpha: 0.5)
+                                            : Colors.transparent),
                                   ),
+                                  children: previewRows[i].map((cell) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      child: Text(
+                                        cell.toString(),
+                                        style: TextStyle(
+                                          fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
-                              );
-                            }).toList(),
-                          );
-                        }).toList(),
+                            ],
+                          ),
+                          if (rowsTruncated) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              L10n.of(context).docSheetPreviewTruncated(
+                                kDocSheetPreviewRows,
+                              ),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),

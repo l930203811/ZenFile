@@ -8964,4 +8964,9 @@ class L10nKo extends L10n {
 
   @override
   String get smb_share_input_cancel => '취소';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return '이 시트는 크기가 커서 처음 $shown행만 미리 보기로 표시됩니다. 전체 내용은 오른쪽 위 버튼을 눌러 외부 앱에서 열어 확인하세요';
+  }
 }

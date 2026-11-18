@@ -8908,5 +8908,7 @@
   "smb_share_input_ok": "Подключить",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "Отмена",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "Лист большой; показаны только первые {shown} строк. Нажмите кнопку в правом верхнем углу, чтобы открыть файл во внешнем приложении",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

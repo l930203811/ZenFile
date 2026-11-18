@@ -9334,4 +9334,9 @@ class L10nRu extends L10n {
 
   @override
   String get smb_share_input_cancel => 'Отмена';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'Лист большой; показаны только первые $shown строк. Нажмите кнопку в правом верхнем углу, чтобы открыть файл во внешнем приложении';
+  }
 }

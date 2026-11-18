@@ -8953,4 +8953,9 @@ class L10nJa extends L10n {
 
   @override
   String get smb_share_input_cancel => 'キャンセル';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'このシートは大きいため、先頭の $shown 行のみ表示しています。完全な内容を表示するには右上のボタンから外部アプリで開いてください';
+  }
 }

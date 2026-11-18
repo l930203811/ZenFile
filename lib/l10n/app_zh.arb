@@ -9393,5 +9393,7 @@
   "smb_share_input_ok": "连接",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "取消",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "表格内容较多，仅预览前 {shown} 行；完整内容请点右上角按钮在外部应用打开",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

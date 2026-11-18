@@ -8908,5 +8908,7 @@
   "smb_share_input_ok": "연결",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "취소",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "이 시트는 크기가 커서 처음 {shown}행만 미리 보기로 표시됩니다. 전체 내용은 오른쪽 위 버튼을 눌러 외부 앱에서 열어 확인하세요",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

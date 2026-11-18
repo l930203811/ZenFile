@@ -8905,5 +8905,7 @@
   "smb_share_input_ok": "Verbinden",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "Abbrechen",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "Das Blatt ist groß; nur die ersten {shown} Zeilen werden angezeigt. Über die Schaltfläche oben rechts lässt sich die Datei in einer externen App öffnen",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

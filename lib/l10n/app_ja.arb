@@ -8912,5 +8912,7 @@
   "smb_share_input_ok": "接続",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "キャンセル",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "このシートは大きいため、先頭の {shown} 行のみ表示しています。完全な内容を表示するには右上のボタンから外部アプリで開いてください",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

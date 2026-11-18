@@ -9392,4 +9392,9 @@ class L10nFr extends L10n {
 
   @override
   String get smb_share_input_cancel => 'Annuler';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'Cette feuille est volumineuse ; seules les $shown premières lignes sont affichées. Utilisez le bouton en haut à droite pour l\'ouvrir dans une application externe';
+  }
 }

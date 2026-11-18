@@ -9217,4 +9217,9 @@ class L10nAr extends L10n {
 
   @override
   String get smb_share_input_cancel => 'إلغاء';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'الورقة كبيرة؛ يتم عرض أول $shown صفوف فقط. استخدم الزر في أعلى اليمين لفتح الملف في تطبيق خارجي';
+  }
 }

@@ -8908,5 +8908,7 @@
   "smb_share_input_ok": "Conectar",
   "@smb_share_input_ok": {"description":"ui/screens/remote_explorer_screen.dart"},
   "smb_share_input_cancel": "Cancelar",
-  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"}
+  "@smb_share_input_cancel": {"description":"ui/screens/remote_explorer_screen.dart"},
+  "docSheetPreviewTruncated": "La hoja es grande; solo se muestran las primeras {shown} filas. Usa el botón de la esquina superior derecha para abrirla en una aplicación externa",
+  "@docSheetPreviewTruncated": {"placeholders":{"shown":{"type":"int"}}}
 }

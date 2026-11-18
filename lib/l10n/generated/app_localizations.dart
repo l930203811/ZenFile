@@ -16395,6 +16395,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'取消'**
   String get smb_share_input_cancel;
+
+  /// No description provided for @docSheetPreviewTruncated.
+  ///
+  /// In zh, this message translates to:
+  /// **'表格内容较多，仅预览前 {shown} 行；完整内容请点右上角按钮在外部应用打开'**
+  String docSheetPreviewTruncated(int shown);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

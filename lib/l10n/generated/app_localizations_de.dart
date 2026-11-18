@@ -9350,4 +9350,9 @@ class L10nDe extends L10n {
 
   @override
   String get smb_share_input_cancel => 'Abbrechen';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'Das Blatt ist groß; nur die ersten $shown Zeilen werden angezeigt. Über die Schaltfläche oben rechts lässt sich die Datei in einer externen App öffnen';
+  }
 }

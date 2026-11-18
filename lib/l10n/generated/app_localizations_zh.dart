@@ -8762,6 +8762,11 @@ class L10nZh extends L10n {
 
   @override
   String get smb_share_input_cancel => '取消';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return '表格内容较多，仅预览前 $shown 行；完整内容请点右上角按钮在外部应用打开';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -17492,4 +17497,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get smb_share_input_cancel => '取消';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return '表格內容較多，僅預覽前 $shown 列；完整內容請點右上角按鈕在外部應用開啟';
+  }
 }

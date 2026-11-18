@@ -9246,4 +9246,9 @@ class L10nEn extends L10n {
 
   @override
   String get smb_share_input_cancel => 'Cancel';
+
+  @override
+  String docSheetPreviewTruncated(int shown) {
+    return 'This sheet is large; only the first $shown rows are previewed. Tap the button in the top-right corner to open it in an external app for the full content';
+  }
 }
