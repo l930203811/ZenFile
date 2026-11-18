@@ -11,7 +11,9 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <!-- Legacy storage for Android <= 12 (API 32) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion" />
+    <!-- tools:replace：camera_android_camerax 插件也声明了 WRITE_EXTERNAL_STORAGE@maxSdkVersion=28，
+         与本应用的 32 冲突导致 manifest 合并失败；这里显式以本应用的 32 为准（覆盖到 Android 12）。 -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <!-- Granular media permissions for Android 13+ (API 33+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
