@@ -3009,6 +3009,14 @@ class L10nEs extends L10n {
       'Introduzca una frase de contraseña para cifrar la información sensible de la copia (contraseñas de conexiones remotas, de la caja fuerte, etc.). Déjelo vacío para excluirla; deberá reconfigurarse tras la restauración.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'Cifrar esta copia (establecer frase de contraseña, obligatoria al restaurar)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'La frase de contraseña no puede estar vacía. Introdúcela o desactiva el cifrado.';
+
+  @override
   String get ui_restore_passphrase_title => 'Introducir frase de contraseña';
 
   @override
@@ -3022,6 +3030,10 @@ class L10nEs extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'No se restauró la información sensible; las contraseñas deben reconfigurarse manualmente';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'Restauración cancelada: esta copia está cifrada y requiere la frase de contraseña correcta.';
 
   @override
   String get update_err_network =>

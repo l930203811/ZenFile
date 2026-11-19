@@ -2858,6 +2858,13 @@ class L10nJa extends L10n {
       'バックアップ内の機密情報（リモート接続のパスワード、保管庫のパスワードなど）を暗号化するパスワードを入力してください。空欄の場合、機密情報はバックアップされず、復元後に手動で再設定が必要です。';
 
   @override
+  String get ui_backup_encrypt_option => 'このバックアップを暗号化する（パスフレーズを設定、復元時に必須）';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'パスフレーズを入力してください。入力するか暗号化のチェックを外してください。';
+
+  @override
   String get ui_restore_passphrase_title => 'バックアップパスワードを入力';
 
   @override
@@ -2870,6 +2877,10 @@ class L10nJa extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       '機密情報の復元をスキップしました。パスワードは手動で再設定してください';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      '復元をキャンセルしました：このバックアップは暗号化されているため、正しいパスワードが必要です。';
 
   @override
   String get update_err_network => 'サーバーに接続できません。ネットワークを確認して再試行してください';

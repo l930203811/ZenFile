@@ -2947,6 +2947,14 @@ class L10nEn extends L10n {
       'Enter a passphrase to encrypt sensitive data in the backup (remote connection passwords, vault passwords, etc.). Leave empty to exclude sensitive data; you will need to reconfigure it after restore.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'Encrypt this backup (set a passphrase)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'Passphrase cannot be empty. Please enter one or uncheck encryption.';
+
+  @override
   String get ui_restore_passphrase_title => 'Enter backup passphrase';
 
   @override
@@ -2959,6 +2967,10 @@ class L10nEn extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'Sensitive data was not restored; passwords must be reconfigured manually';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'Restore cancelled: this backup is encrypted and requires the correct passphrase to restore.';
 
   @override
   String get update_err_network =>

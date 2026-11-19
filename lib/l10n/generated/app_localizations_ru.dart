@@ -2995,6 +2995,14 @@ class L10nRu extends L10n {
       'Введите пароль для шифрования конфиденциальных данных в резервной копии (пароли удалённых подключений, хранилища и т.д.). Оставьте пустым, чтобы исключить их; после восстановления потребуется ручная настройка.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'Шифровать эту копию (установить пароль, обязателен при восстановлении)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'Пароль не может быть пустым. Введите пароль или отключите шифрование.';
+
+  @override
   String get ui_restore_passphrase_title => 'Введите пароль резервной копии';
 
   @override
@@ -3007,6 +3015,10 @@ class L10nRu extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'Конфиденциальные данные не восстановлены; пароли нужно настроить вручную';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'Восстановление отменено: эта копия зашифрована и требует правильный пароль.';
 
   @override
   String get update_err_network =>

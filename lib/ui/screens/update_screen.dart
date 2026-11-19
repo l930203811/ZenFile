@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.8.0';
+  static const String _latestChangelogVersion = 'v3.8.1';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v381,
     _v380,
     _v379,
     _v378,
@@ -967,7 +968,33 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.8.0 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.1 ────────────────────────────────────────────────
+  static const _Changelog _v381 = _Changelog(
+    version: 'v3.8.1',
+    date: '2026-11-19',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复部分远程连接（如 WebDAV）保存后 SOCKS5 代理设置丢失、导致连接超时的问题',
+        '修复加密备份在不输入口令的情况下也能恢复的问题：现在必须输入正确口令才能恢复，取消或输错都不会改动现有设置',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '备份口令改为按需勾选：只有勾选「加密备份」才需要设置口令，不勾选则直接备份',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed an issue where SOCKS5 proxy settings were lost after saving some remote connections (such as WebDAV), causing connection timeouts',
+        'Fixed an issue where encrypted backups could be restored without a passphrase: the correct passphrase is now required, and cancelling or entering a wrong one leaves existing settings untouched',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Backup passphrase is now opt-in: only enable "Encrypt this backup" when you want to set one, otherwise the backup is created directly',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.8.0（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v380 = _Changelog(
     version: 'v3.8.0',
     date: '2026-11-18',

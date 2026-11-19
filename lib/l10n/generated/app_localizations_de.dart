@@ -2989,6 +2989,14 @@ class L10nDe extends L10n {
       'Geben Sie eine Passphrase ein, um vertrauliche Daten im Backup zu verschlüsseln (Remote-Passwörter, Tresor-Passwörter usw.). Leer lassen, um vertrauliche Daten auszuschließen; diese müssen nach der Wiederherstellung neu konfiguriert werden.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'Dieses Backup verschlüsseln (Passphrase festlegen, bei der Wiederherstellung erforderlich)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'Die Passphrase darf nicht leer sein. Bitte eingeben oder Verschlüsselung deaktivieren.';
+
+  @override
   String get ui_restore_passphrase_title => 'Backup-Passphrase eingeben';
 
   @override
@@ -3002,6 +3010,10 @@ class L10nDe extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'Vertrauliche Daten wurden nicht wiederhergestellt; Passwörter müssen manuell neu konfiguriert werden';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'Wiederherstellung abgebrochen: Dieses Backup ist verschlüsselt und erfordert die korrekte Passphrase.';
 
   @override
   String get update_err_network =>

@@ -32,8 +32,9 @@ class BackupFileInfo {
   });
 }
 
-/// 恢复结果：success 之外还要暴露敏感块的恢复情况，
-/// 供 UI 在「跳过敏感信息」时提示用户。
+/// 恢复结果：success 之外还要暴露敏感块的恢复情况。
+/// issue #79 后加密备份不允许跳过：口令未通过时 success=false 且不改动
+/// 任何设置；secretsRestored 仅用于结果统计与 UI 文案兜底。
 class SettingsRestoreResult {
   final bool success;
 
@@ -96,6 +97,11 @@ class SettingsBackupService {
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     } else if (conn.type == 'SFTP') {
       return SftpRemoteClient(
@@ -106,6 +112,11 @@ class SettingsBackupService {
         sshKeyPath: conn.sshKeyPath,
         sshKeyPassword: conn.sshKeyPassword,
         authMethod: conn.authMethod,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     } else if (conn.type == 'WebDav') {
       return WebDavRemoteClient(
@@ -115,6 +126,11 @@ class SettingsBackupService {
         password: conn.password,
         protocol: conn.protocol,
         rootPath: conn.rootPath,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     } else if (NetworkConnectionsService.isSmbType(conn.type)) {
       return LanClient(
@@ -122,6 +138,11 @@ class SettingsBackupService {
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        proxyType: conn.proxyType,
+        proxyHost: conn.proxyHost,
+        proxyPort: conn.proxyPort,
+        proxyUsername: conn.proxyUsername,
+        proxyPassword: conn.proxyPassword,
       );
     } else if (conn.type == 'saf') {
       return SafRemoteClient(rootUri: conn.rootPath);
@@ -445,8 +466,10 @@ class SettingsBackupService {
   /// 从 JSON 备份文件恢复设置到 SharedPreferences。
   ///
   /// [askPassphrase]：备份带 `secrets` 加密块时由本服务回调 UI 取口令；
-  /// 返回 null/空串 = 跳过敏感信息恢复；[wrongPassphrase] = 上一次口令
-  /// 错误，UI 应提示重输。v1 旧版扁平备份不受影响。
+  /// 返回 null/空串 = 用户取消 ⇒ 整次恢复作废（不写入任何设置，issue #79）；
+  /// [wrongPassphrase] = 上一次口令错误，UI 应提示重输。
+  /// 口令验证在任何写盘之前完成，加密备份必须输对口令才能恢复。
+  /// v1 旧版扁平备份（无 secrets 块）不受影响。
   static Future<SettingsRestoreResult> restoreSettings(
     BuildContext context,
     String filePath, {
@@ -514,7 +537,60 @@ class SettingsBackupService {
 
       final prefs = await SharedPreferences.getInstance();
 
-      // 先清除现有设置
+      // ── issue #79：加密备份必须先解开敏感块，才允许改动本机设置 ──
+      // 旧实现先 prefs.clear() 再要口令，用户跳过/取消时虽然敏感数据全丢，
+      // 却仍返回 success=true 并重启——正是 issue #79 反馈的「不输密码也
+      // 恢复了」。按维护者在 #79 的回复：加密备份文件必须输入正确口令
+      // 才能恢复。因此这里把口令验证与解密**前置到写入之前**：
+      //   · 口令取消/留空 ⇒ 整次恢复作废，prefs 一步未动；
+      //   · 口令错误 ⇒ 重试；敏感块损坏 ⇒ 整体失败且不改动设置。
+      Map<String, dynamic>? decryptedSecrets;
+      if (secretsBlock != null) {
+        if (askPassphrase == null) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(L10n.of(context).ui_restore_passphrase_required)),
+            );
+          }
+          return SettingsRestoreResult(success: false, hasSecrets: true);
+        }
+        var wrong = false;
+        while (true) {
+          final pass = await askPassphrase(wrong);
+          if (pass == null || pass.isEmpty) {
+            // 用户取消：整次恢复作废，上面的 prefs 一步未动
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                        Text(L10n.of(context).ui_restore_passphrase_required)),
+              );
+            }
+            return SettingsRestoreResult(success: false, hasSecrets: true);
+          }
+          try {
+            decryptedSecrets =
+                await BackupSecretsCodec.decrypt(secretsBlock, pass);
+            break;
+          } on BackupPassphraseException {
+            wrong = true;
+          } on FormatException {
+            // 敏感块损坏：不重试，整体失败且不改动任何设置
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(L10n.of(context)
+                      .ui_restore_failed(L10n.of(context).ui_restore_invalid_file)),
+                ),
+              );
+            }
+            return SettingsRestoreResult(success: false, hasSecrets: true);
+          }
+        }
+      }
+
+      // 到这里口令已验证通过（或备份本身不含敏感块），才开始写入
       await prefs.clear();
 
       // 逐项恢复
@@ -551,26 +627,9 @@ class SettingsBackupService {
         }
       } catch (_) {}
 
-      // v2 敏感块恢复：回调 UI 要口令，口令错可重试，null = 跳过
-      var secretsRestored = false;
-      if (secretsBlock != null && askPassphrase != null) {
-        var wrong = false;
-        while (true) {
-          final pass = await askPassphrase(wrong);
-          if (pass == null || pass.isEmpty) break;
-          try {
-            await _applySecrets(
-              await BackupSecretsCodec.decrypt(secretsBlock, pass),
-            );
-            secretsRestored = true;
-            break;
-          } on BackupPassphraseException {
-            wrong = true;
-          } on FormatException {
-            // 块损坏：不再重试，按跳过处理
-            break;
-          }
-        }
+      // 应用已验证解密的敏感块（含远程连接密码、保险箱配置等）
+      if (decryptedSecrets != null) {
+        await _applySecrets(decryptedSecrets);
       }
 
       if (context.mounted) {
@@ -581,7 +640,7 @@ class SettingsBackupService {
       return SettingsRestoreResult(
         success: true,
         hasSecrets: secretsBlock != null,
-        secretsRestored: secretsRestored,
+        secretsRestored: decryptedSecrets != null,
       );
     } catch (e) {
       if (context.mounted) {

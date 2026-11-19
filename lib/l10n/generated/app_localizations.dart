@@ -5410,6 +5410,18 @@ abstract class L10n {
   /// **'输入备份口令以加密备份中的敏感信息（远程连接密码、保险箱密码等）。留空则不备份敏感信息，恢复后需手动重新配置。'**
   String get ui_backup_passphrase_hint;
 
+  /// No description provided for @ui_backup_encrypt_option.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密此备份（设置口令，恢复时必须输入）'**
+  String get ui_backup_encrypt_option;
+
+  /// No description provided for @ui_backup_passphrase_empty.
+  ///
+  /// In zh, this message translates to:
+  /// **'口令不能为空，请输入口令或取消勾选加密。'**
+  String get ui_backup_passphrase_empty;
+
   /// No description provided for @ui_restore_passphrase_title.
   ///
   /// In zh, this message translates to:
@@ -5433,6 +5445,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已跳过敏感信息恢复，相关密码需手动重新配置'**
   String get ui_restore_secrets_skipped;
+
+  /// No description provided for @ui_restore_passphrase_required.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消恢复：此备份已加密，必须输入正确的备份口令才能恢复。'**
+  String get ui_restore_passphrase_required;
 
   /// No description provided for @update_err_network.
   ///

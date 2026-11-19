@@ -126,6 +126,13 @@ class NetworkConnectionsService {
       sshKeyPath: conn.sshKeyPath,
       sshKeyPassword: conn.sshKeyPassword ?? secrets['sshKeyPassword'],
       authMethod: conn.authMethod,
+      // issue #80：代理配置必须随连接对象一起水合。此前只回填了
+      // proxyPassword，proxyType/host/port/username 在此被丢成 null，
+      // 导致「测试连接走代理、保存后打开却直连超时」。
+      proxyType: conn.proxyType,
+      proxyHost: conn.proxyHost,
+      proxyPort: conn.proxyPort,
+      proxyUsername: conn.proxyUsername,
       proxyPassword: conn.proxyPassword ?? secrets['proxyPassword'],
     );
   }
@@ -174,6 +181,9 @@ class NetworkConnectionsService {
       final secrets = <String, String>{
         'password': (value['password'] as String?) ?? '',
         'sshKeyPassword': (value['sshKeyPassword'] as String?) ?? '',
+        // issue #80：代理密码同样属于敏感凭据，需随备份恢复一并落 secure
+        // storage，否则恢复后 SOCKS5 需要认证的连接会失败。
+        'proxyPassword': (value['proxyPassword'] as String?) ?? '',
       };
       _secrets[entry.key] = secrets;
       try {

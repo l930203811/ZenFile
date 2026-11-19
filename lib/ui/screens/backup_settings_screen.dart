@@ -210,11 +210,15 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
     }
   }
 
-  /// 备份口令输入弹窗。返回 null = 用户取消/跳过敏感信息。
+  /// 口令输入弹窗。返回 null = 用户取消。
+  /// [requireNonEmpty]：备份加密场景要求口令非空，避免"勾选了加密却留空"
+  /// 生成无加密备份导致语义混乱；恢复场景保持 false（空口令由 service 层
+  /// 按"取消恢复"处理）。
   Future<String?> _showPassphraseDialog({
     required String title,
     required String hint,
     String? errorText,
+    bool requireNonEmpty = false,
   }) async {
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
@@ -261,7 +265,15 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
                 child: Text(l10n.ui_cancel, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7))),
               ),
               FilledButton(
-                onPressed: () => Navigator.pop(ctx, controller.text),
+                onPressed: () {
+                  final text = controller.text;
+                  if (requireNonEmpty && text.trim().isEmpty) {
+                    setDialogState(
+                        () => dialogError = l10n.ui_backup_passphrase_empty);
+                    return;
+                  }
+                  Navigator.pop(ctx, text);
+                },
                 child: Text(l10n.ui_confirm),
               ),
             ],
@@ -277,38 +289,77 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
 
-    // 先弹窗确认当前备份路径
+    // 是否加密备份（勾选后才需要设置口令），由确认弹窗内的勾选项决定。
+    var encryptBackup = false;
+
+    // 弹窗确认备份路径，并让用户按需勾选是否加密（设置口令）。
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        title: Text(l10n.ui_backup_confirm_title, style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: Text(
-          l10n.ui_backup_confirm_message(_backupDirPath),
-          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(l10n.ui_backup_confirm_title, style: TextStyle(color: theme.colorScheme.onSurface)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.ui_backup_confirm_message(_backupDirPath),
+                style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () =>
+                    setDialogState(() => encryptBackup = !encryptBackup),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: encryptBackup,
+                      onChanged: (v) =>
+                          setDialogState(() => encryptBackup = v ?? false),
+                    ),
+                    Expanded(
+                      child: Text(
+                        l10n.ui_backup_encrypt_option,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.ui_cancel, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7))),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.ui_confirm),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.ui_cancel, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7))),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.ui_confirm),
-          ),
-        ],
       ),
     );
 
     if (confirmed != true) return;
 
-    // 备份口令：非空时敏感凭据（远程连接密码、保险箱配置等）加密进备份；
-    // 留空确认 = 不备份敏感信息（v1 扁平格式，恢复后需手动重配密码）
-    final passphrase = await _showPassphraseDialog(
-      title: l10n.ui_backup_passphrase_title,
-      hint: l10n.ui_backup_passphrase_hint,
-    );
-    if (passphrase == null) return; // 用户取消
+    // issue #79：口令改为"按需勾选"——默认不加密，只有勾选了「加密备份」
+    // 才弹出口令输入框；不勾选则直接备份（v1 扁平格式，不含敏感信息）。
+    String? passphrase;
+    if (encryptBackup) {
+      passphrase = await _showPassphraseDialog(
+        title: l10n.ui_backup_passphrase_title,
+        hint: l10n.ui_backup_passphrase_hint,
+        requireNonEmpty: true,
+      );
+      if (passphrase == null) return; // 用户取消口令输入 ⇒ 放弃本次备份
+    }
 
     final success = await SettingsBackupService.backupSettings(
       context,
@@ -370,14 +421,9 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
       ),
     );
     if (result.success && mounted) {
-      if (result.hasSecrets && !result.secretsRestored) {
-        // 用户跳过敏感信息或未输对口令：提示后再重启
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.ui_restore_secrets_skipped)),
-        );
-        await Future<void>.delayed(const Duration(seconds: 2));
-      }
-      // 恢复成功后直接重启应用，不再额外弹窗
+      // issue #79：加密备份口令未通过时服务层已返回 success=false 并提示，
+      // 不会走到这里；能到这里即代表全部设置（含敏感块）已恢复成功。
+      // 直接重启应用，不再额外弹窗。
       SystemNavigator.pop();
     }
   }

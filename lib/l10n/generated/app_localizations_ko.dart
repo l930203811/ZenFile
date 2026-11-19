@@ -2856,6 +2856,13 @@ class L10nKo extends L10n {
       '백업 중인 민감 정보(원격 연결 비밀번호, 금고 비밀번호 등)를 암호화할 암호를 입력하세요. 비워 두면 민감 정보가 백업되지 않으며 복원 후 수동으로 다시 설정해야 합니다.';
 
   @override
+  String get ui_backup_encrypt_option => '이 백업 암호화 (암호 설정, 복원 시 필수)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      '암호를 입력해 주세요. 암호를 입력하거나 암호화 선택을 해제하세요.';
+
+  @override
   String get ui_restore_passphrase_title => '백업 암호 입력';
 
   @override
@@ -2868,6 +2875,10 @@ class L10nKo extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       '민감 정보 복원을 건너뛰었습니다. 비밀번호는 수동으로 다시 설정해야 합니다';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      '복원 취소: 이 백업은 암호화되어 있어 올바른 암호를 입력해야 복원할 수 있습니다.';
 
   @override
   String get update_err_network => '서버에 연결할 수 없습니다. 네트워크를 확인한 후 다시 시도하세요';

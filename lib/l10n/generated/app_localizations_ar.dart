@@ -2941,6 +2941,14 @@ class L10nAr extends L10n {
       'أدخل كلمة المرور لتشفير البيانات الحساسة في النسخة الاحتياطية (كلمات مرور الاتصالات البعيدة والخزنة وما إلى ذلك). اتركها فارغة لاستبعادها؛ وستحتاج إلى إعادة تهيئتها بعد الاستعادة.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'تشفير هذه النسخة الاحتياطية (تعيين كلمة مرور مطلوبة عند الاستعادة)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'لا يمكن أن تكون كلمة المرور فارغة. أدخل كلمة مرور أو ألغِ خيار التشفير.';
+
+  @override
   String get ui_restore_passphrase_title => 'أدخل كلمة مرور النسخة الاحتياطية';
 
   @override
@@ -2953,6 +2961,10 @@ class L10nAr extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'لم تتم استعادة البيانات الحساسة؛ يجب إعادة تهيئة كلمات المرور يدويًا';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'تم إلغاء الاستعادة: هذه النسخة الاحتياطية مشفرة وتتطلب كلمة المرور الصحيحة للاستعادة.';
 
   @override
   String get update_err_network =>

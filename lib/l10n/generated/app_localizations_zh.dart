@@ -2849,6 +2849,12 @@ class L10nZh extends L10n {
       '输入备份口令以加密备份中的敏感信息（远程连接密码、保险箱密码等）。留空则不备份敏感信息，恢复后需手动重新配置。';
 
   @override
+  String get ui_backup_encrypt_option => '加密此备份（设置口令，恢复时必须输入）';
+
+  @override
+  String get ui_backup_passphrase_empty => '口令不能为空，请输入口令或取消勾选加密。';
+
+  @override
   String get ui_restore_passphrase_title => '输入备份口令';
 
   @override
@@ -2860,6 +2866,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_restore_secrets_skipped => '已跳过敏感信息恢复，相关密码需手动重新配置';
+
+  @override
+  String get ui_restore_passphrase_required => '已取消恢复：此备份已加密，必须输入正确的备份口令才能恢复。';
 
   @override
   String get update_err_network => '无法连接服务器，请检查网络后重试';
@@ -11608,6 +11617,12 @@ class L10nZhTw extends L10nZh {
       '輸入備份密碼以加密備份中的敏感資訊（遠端連線密碼、保險箱密碼等）。留空則不備份敏感資訊，還原後需手動重新設定。';
 
   @override
+  String get ui_backup_encrypt_option => '加密此備份（設定密碼，還原時必須輸入）';
+
+  @override
+  String get ui_backup_passphrase_empty => '密碼不能為空，請輸入密碼或取消勾選加密。';
+
+  @override
   String get ui_restore_passphrase_title => '輸入備份密碼';
 
   @override
@@ -11619,6 +11634,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_restore_secrets_skipped => '已略過敏感資訊還原，相關密碼需手動重新設定';
+
+  @override
+  String get ui_restore_passphrase_required => '已取消還原：此備份已加密，必須輸入正確的備份密碼才能還原。';
 
   @override
   String get update_err_network => '無法連接伺服器，請檢查網路後重試';

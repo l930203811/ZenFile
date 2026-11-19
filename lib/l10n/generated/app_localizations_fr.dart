@@ -3006,6 +3006,14 @@ class L10nFr extends L10n {
       'Saisissez une phrase secrète pour chiffrer les données sensibles de la sauvegarde (mots de passe des connexions distantes, du coffre, etc.). Laissez vide pour exclure les données sensibles ; elles devront être reconfigurées après la restauration.';
 
   @override
+  String get ui_backup_encrypt_option =>
+      'Chiffrer cette sauvegarde (définir une phrase secrète, requise à la restauration)';
+
+  @override
+  String get ui_backup_passphrase_empty =>
+      'La phrase secrète ne peut pas être vide. Saisissez-la ou désactivez le chiffrement.';
+
+  @override
   String get ui_restore_passphrase_title => 'Saisir la phrase secrète';
 
   @override
@@ -3019,6 +3027,10 @@ class L10nFr extends L10n {
   @override
   String get ui_restore_secrets_skipped =>
       'Données sensibles non restaurées ; les mots de passe doivent être reconfigurés manuellement';
+
+  @override
+  String get ui_restore_passphrase_required =>
+      'Restauration annulée : cette sauvegarde est chiffrée et nécessite la phrase secrète correcte.';
 
   @override
   String get update_err_network =>
