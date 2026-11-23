@@ -834,6 +834,10 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_pin_browse_bar": "固定操作栏",
+  "@ui_pin_browse_bar": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
+  "ui_pin_browse_bar_hint": "开启后滚动时底部操作栏保持不变，不自动折叠",
+  "@ui_pin_browse_bar_hint": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
   "ui_favorites_reorder_hint": "长按条目可拖动排序",
   "@ui_favorites_reorder_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
@@ -3577,7 +3581,7 @@
   "ui_media_preferences": "媒体偏好",
   "ui_file_actions_viewers": "文件操作与查看器",
   "ui_no_settings_found": "未找到设置",
-  "ui_show_action_bar": "显示操作按钮",
+  "ui_show_action_bar": "显示操作栏",
   "ui_show_remote_cloud_badge": "显示远程文件云徽",
   "msg_remote_cloud_badge": "在浏览页远程文件与文件夹图标左上角显示云图标，便于区分本地与远程文件",
   "ui_use_24h_format": "使用24小时制",

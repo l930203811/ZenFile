@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -29,6 +30,7 @@ import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
 import '../../services/folder_share_service.dart';
+import '../../services/preferences_service.dart';
 import '../widgets/pane_browser.dart';
 import '../widgets/file_operation_progress_dialog.dart';
 import '../../services/network_connections_service.dart';
@@ -117,6 +119,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   // 折叠状态只由单窗口那个 CustomScrollView 的滚动驱动，双窗口的列表在 PaneBrowser 内，
   // 若切入双窗口时恰好停在折叠态，就会看起来「双窗口下操作栏不显示」。
   bool? _lastSplitScreen;
+  // 上一次构建时的「固定操作栏」状态：从关→开时强制展开一次（issue #86）。
+  bool? _lastPinBrowseActionBar;
   // 折叠/展开判定的同方向累计位移（px）：抵消手指微动与弹性回弹造成的抖动切换。
   double _browseBarDragAccum = 0;
 
@@ -254,9 +258,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             final isFirst = index == 0;
             final isLast = index == labels.length - 1;
             final targetPath = targets[index];
-            return Container(
-              // 负边距让后一项真正向左 overlap，消除 Row 布局在绘制位置之外的额外空隙。
-              margin: EdgeInsets.only(left: isFirst ? 0 : -overlap),
+            // 负边距的合法等价物：Container 的负 margin 触发 `margin.isNonNegative`
+            // 断言（debug 红屏；Android release 被剥离所以从未暴露）。_OverlapLeft
+            // 让子项按自然宽度布局与绘制、本盒只占 child.width - shift，Row 中后续
+            // 兄弟整体左移，实现与负 margin 完全一致的视觉重叠与命中区域。
+            return _OverlapLeft(
+              shift: isFirst ? 0 : overlap,
               child: GestureDetector(
                 onTap: () {
                   if (targetPath != currentPath) provider.loadDirectory(targetPath);
@@ -458,7 +465,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   /// 操作栏上滑唤起收藏夹：只认「向上」的快速滑动；
   /// 向下滑、慢速拖都不触发，避免和按钮点按、列表滚动抢手势。
+  /// issue #85：用户可在收藏夹说明栏关闭该手势，避免系统手势导航误触。
   void _handleSwipeUpForFavorites(DragEndDetails details) {
+    if (!PreferencesService.getSwipeUpToFavorites()) return;
     final velocity = details.primaryVelocity ?? 0;
     if (velocity < -260) _openFavoritesSheet();
   }
@@ -487,6 +496,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   /// 用户拖动文件列表时驱动浏览操作栏折叠/展开。
   /// [maxExtent] 为该列表的 maxScrollExtent（双窗口下由各 pane 的滚动通知冒泡上来）。
   void _onBrowseListDrag(double delta, double offset, double maxExtent) {
+    // issue #86：固定操作栏开启时，滚动不再折叠；若此前已折叠则立即展开，
+    // 这样用户在滚动中途打开开关也能马上看到效果，不用回拉一下。
+    if (context.read<FileManagerProvider>().pinBrowseActionBar) {
+      _browseBarDragAccum = 0;
+      _setBrowseBarVisible(true);
+      return;
+    }
     // 同方向累计位移（换方向即清零），避免手指微动/弹性回弹导致来回折叠。
     final sameDir =
         (delta > 0 && _browseBarDragAccum > 0) || (delta < 0 && _browseBarDragAccum < 0);
@@ -1539,6 +1555,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           _browseBarDragAccum = 0;
         }
 
+        // issue #86：固定开关从关→开时立即展开操作栏（设置面板切换时本页
+        // 不在拖动中，_onBrowseListDrag 不会触发，需在这里兜底）。
+        if (_lastPinBrowseActionBar != provider.pinBrowseActionBar) {
+          _lastPinBrowseActionBar = provider.pinBrowseActionBar;
+          if (provider.pinBrowseActionBar) {
+            _browseBarVisible = true;
+            DirectoryScreen.browseBarExpanded.value = true;
+            _browseBarDragAccum = 0;
+          }
+        }
+
         if (provider.shouldScrollToHighlight) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
@@ -2387,5 +2414,68 @@ class _AnimatedTitleButtonState extends State<_AnimatedTitleButton> with SingleT
         ),
       ),
     );
+  }
+}
+
+/// 负边距的合法等价物（面包屑重叠专用）。
+///
+/// `Container` 的负 margin 会触发 `margin.isNonNegative` 断言 —— debug 下面包屑
+/// 直接红屏（Android release 断言被剥离，行为与本组件一致，所以从未暴露）。
+/// 本组件让子项按自然宽度布局与绘制，但本盒只占 `child.width - shift` 的宽度，
+/// Row 中后续兄弟因此整体左移 [shift]，实现与负 margin 完全一致的视觉重叠、
+/// 布局总宽与命中区域（子项绘制溢出本盒右侧 8px，由后绘制的右邻项覆盖）。
+class _OverlapLeft extends SingleChildRenderObjectWidget {
+  const _OverlapLeft({required this.shift, required super.child});
+
+  /// 本盒相对子项自然宽度收缩的横向量。
+  final double shift;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOverlapLeft(shift);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderOverlapLeft renderObject,
+  ) {
+    renderObject.shift = shift;
+  }
+}
+
+class _RenderOverlapLeft extends RenderProxyBox {
+  _RenderOverlapLeft(this.shift);
+
+  double shift;
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    // 横向无界（水平 ScrollView 内）时按原约束布局，子项取自然宽度；
+    // 有界时允许子项比本盒 allot 宽 [shift]，保证自然宽度不受挤压。
+    final inner = constraints.maxWidth == double.infinity
+        ? constraints
+        : BoxConstraints(
+            minWidth: constraints.minWidth + shift,
+            maxWidth: constraints.maxWidth + shift,
+          );
+    child.layout(inner, parentUsesSize: true);
+    size = constraints.constrain(
+      Size(child.size.width - shift, child.size.height),
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // 关键：与负 margin 的绘制语义严格对齐。负 margin（Padding 左内边距为
+    // -shift）会把子项画在盒原点左侧 (-shift, 0)，即每一项都向左凸出 shift；
+    // 缺了这一步，首项与次项只会齐平（0 重叠），表现为面包屑多出一条 8px 缝。
+    if (child != null) {
+      context.paintChild(child!, offset + Offset(-shift, 0));
+    }
   }
 }

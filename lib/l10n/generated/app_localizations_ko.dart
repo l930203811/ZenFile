@@ -699,6 +699,12 @@ class L10nKo extends L10n {
   String get ui_favorites_swipe_hint => '화면 하단에서 위로 스와이프하여 즐겨찾기를 엽니다';
 
   @override
+  String get ui_pin_browse_bar => '작업 표시줄 고정';
+
+  @override
+  String get ui_pin_browse_bar_hint => '스크롤할 때 하단 작업 표시줄을 자동으로 접지 않고 계속 표시합니다';
+
+  @override
   String get ui_favorites_reorder_hint => '항목을 길게 눌러 순서를 변경할 수 있습니다';
 
   @override

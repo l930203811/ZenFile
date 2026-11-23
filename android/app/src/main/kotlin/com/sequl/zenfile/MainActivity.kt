@@ -37,7 +37,6 @@ import java.io.BufferedOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -1516,7 +1515,9 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
                             // 使用 cp 命令复制，比 Java I/O 更快更可靠
                             val process = ProcessBuilder("cp", source, dest).start()
-                            val completed = process.waitFor(10, TimeUnit.MINUTES)
+                            // 用兼容实现替代 waitFor(long, TimeUnit)：后者是 API 26 方法，
+                            // 在 API 25 设备上抛 NoSuchMethodError 导致线程池线程崩溃。
+                            val completed = waitForProcessCompat(process, 10 * 60 * 1000L)
                             if (completed && process.exitValue() == 0) {
                                 runOnUiThread { result.success(true) }
                             } else {
@@ -3631,12 +3632,37 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
+    /**
+     * 兼容低版本 Android 的「带超时等待进程结束」。
+     *
+     * Process.waitFor(long, TimeUnit) 是 API 26（Android 8.0）才加入的方法，
+     * 在 API 25 及更低版本（见崩溃报告 #87-#90 的 Android 7.1.2）上调用会抛
+     * NoSuchMethodError —— 它属于 Error 而非 Exception，现有的 catch(Exception) 拦不住，
+     * 会直接冲垮线程池线程。
+     *
+     * 这里改用无参 waitFor()（API 1 起可用）+ daemon 线程 join(timeout) 实现等价语义：
+     * 进程在 timeoutMs 内结束返回 true，超时返回 false（由调用方 destroy 进程并降级）。
+     */
+    private fun waitForProcessCompat(process: java.lang.Process, timeoutMs: Long): Boolean {
+        val waiter = Thread {
+            try {
+                process.waitFor()
+            } catch (_: Throwable) {
+                // waitFor() 正常不会抛；吞掉以防异常冒到未捕获处理器
+            }
+        }
+        waiter.isDaemon = true
+        waiter.start()
+        waiter.join(timeoutMs)
+        return !waiter.isAlive
+    }
+
     private fun checkRootAvailable(): Boolean {
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
             // 加超时防止 vivo 等定制 ROM 的 su 弹出权限对话框导致永久挂起，
             // 进而使 checkStatus / loadDirectory 永远不返回。
-            val completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)
+            val completed = waitForProcessCompat(process, 3 * 1000L)
             if (!completed) {
                 process.destroy()
                 return false

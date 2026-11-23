@@ -820,6 +820,10 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_pin_browse_bar": "固定操作欄",
+  "@ui_pin_browse_bar": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
+  "ui_pin_browse_bar_hint": "開啟後捲動時底部操作欄保持不變，不自動摺疊",
+  "@ui_pin_browse_bar_hint": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
   "ui_favorites_reorder_hint": "長按項目可拖曳排序",
   "@ui_favorites_reorder_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
@@ -3533,7 +3537,7 @@
   "ui_media_preferences": "媒體偏好",
   "ui_file_actions_viewers": "檔案操作與檢視器",
   "ui_no_settings_found": "未找到設定",
-  "ui_show_action_bar": "顯示操作按鈕",
+  "ui_show_action_bar": "顯示操作欄",
   "ui_show_remote_cloud_badge": "顯示遠端檔案雲徽",
   "msg_remote_cloud_badge": "在瀏覽頁遠端檔案與資料夾圖示左上角顯示雲圖示，便於區分本機與遠端檔案",
   "ui_use_24h_format": "使用24小時制",

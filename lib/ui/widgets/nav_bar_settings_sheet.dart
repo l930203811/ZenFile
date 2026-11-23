@@ -119,6 +119,7 @@ class _NavBarSettingsSheetBody extends StatelessWidget {
                   // 与「自定义快捷方式」页的滑杆共用同一份 provider 状态，
                   // 两处双向同步。滑杆只改底色透明度，不影响开关 / 位置。
                   NavBarOpacitySlider(provider: fileManager),
+                  const SizedBox(height: 12),
                   // 「导航栏常驻」：开启时从分类页 / 抽屉进入的页面也保留底部
                   // 4-tab（只占 body 区域）；关闭则恢复整页全屏。
                   // 与「自定义快捷方式」页里的同名开关共用同一份 provider 状态。

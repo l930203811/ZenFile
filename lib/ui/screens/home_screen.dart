@@ -997,7 +997,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   /// 底部导航栏上滑唤起收藏夹：
   /// 只认「向上」的快速滑动 —— 向下滑、慢速拖都不触发，避免和点按、横向切页抢手势。
+  /// issue #85：用户可在收藏夹说明栏关闭该手势，避免系统手势导航误触。
   void _handleSwipeUpForFavorites(DragEndDetails details) {
+    if (!PreferencesService.getSwipeUpToFavorites()) return;
     final velocity = details.primaryVelocity ?? 0;
     if (velocity < -260) _openFavoritesSheet();
   }

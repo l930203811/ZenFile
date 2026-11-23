@@ -431,6 +431,24 @@ class _BrowserNavGroupScreen extends StatelessWidget {
               ),
               onTap: () => fileManager.toggleFloatingAddButton(),
             ),
+            // ===== 固定浏览操作栏（issue #86）=====
+            // 默认关闭 = 滚动时自动折叠（让出列表空间）；开启后操作栏常驻不折叠。
+            // 与 provider 同一份状态，和浏览页实时同步。原在导航栏设置面板，
+            // 因与「显示操作按钮」语义相邻，迁移至此便于统一理解。
+            SettingsTile(
+              icon: Broken.maximize,
+              title: L10n.of(context).ui_pin_browse_bar,
+              subtitle: L10n.of(context).ui_pin_browse_bar_hint,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: fileManager.pinBrowseActionBar,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => fileManager.setPinBrowseActionBar(!fileManager.pinBrowseActionBar),
+                ),
+              ),
+              onTap: () => fileManager.setPinBrowseActionBar(!fileManager.pinBrowseActionBar),
+            ),
             SettingsTile(
               icon: Broken.cloud,
               title: L10n.of(context).ui_show_remote_cloud_badge,

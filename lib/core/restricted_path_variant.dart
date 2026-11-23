@@ -43,6 +43,26 @@ List<String> androidRestrictedVariants(String path) {
   ];
 }
 
+/// 解析受限目录文件在 app 进程里「可实读」的路径。
+///
+/// Shizuku/root 通道列目录后把路径规范化成干净路径（/storage/emulated/0/
+/// Android/data/...），而图标/缩略图要在无特权的 app 进程按路径实读——干净
+/// 路径会被 FUSE 拦截（errno 13）读不到字节。零宽字符通道本身已返回变体
+/// 路径，此处原样放行；普通路径同样原样返回。只有干净的受限路径才逐个
+/// 探测候选变体，命中可读者即返回；全失败则回退原路径（由调用方兜底）。
+Future<String> resolveReadablePath(String path) async {
+  // 已带绕过标记（零宽字符 /./）：本身就是变体路径，直接用。
+  if (stripRestrictedVariantMarkers(path) != path) return path;
+  final variants = androidRestrictedVariants(path);
+  if (variants.isEmpty) return path; // 非受限路径
+  for (final variant in variants) {
+    try {
+      if (await File(variant).exists()) return variant;
+    } catch (_) {}
+  }
+  return path;
+}
+
 /// 把变体路径列出的子条目路径归一化回干净路径。
 ///
 /// 变体父路径前缀整体替换为干净父路径；子文件名部分原样保留——子名里

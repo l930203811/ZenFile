@@ -796,6 +796,10 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_pin_browse_bar": "Закрепить панель действий",
+  "@ui_pin_browse_bar": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
+  "ui_pin_browse_bar_hint": "Не сворачивать нижнюю панель действий автоматически при прокрутке",
+  "@ui_pin_browse_bar_hint": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
   "ui_favorites_reorder_hint": "Нажмите и удерживайте элемент, чтобы перетащить и изменить порядок",
   "@ui_favorites_reorder_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"

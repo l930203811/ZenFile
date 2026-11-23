@@ -375,6 +375,7 @@ class FileManagerProvider extends ChangeNotifier {
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
     _bottomNavBarEnabled = PreferencesService.getBottomNavBarEnabled();
     _persistentTabBar = PreferencesService.getPersistentTabBar();
+    _pinBrowseActionBar = PreferencesService.getPinBrowseActionBar();
     _navBarOpacity = PreferencesService.getNavBarOpacity();
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
     _showMediaPreviews = PreferencesService.getShowMediaPreviews();
@@ -1649,6 +1650,17 @@ class FileManagerProvider extends ChangeNotifier {
     if (_persistentTabBar == value) return;
     _persistentTabBar = value;
     PreferencesService.savePersistentTabBar(_persistentTabBar);
+    notifyListeners();
+  }
+
+  // 固定浏览操作栏（issue #86）：开启后滚动不再折叠操作栏。默认 false = 自动折叠。
+  bool _pinBrowseActionBar = false;
+  bool get pinBrowseActionBar => _pinBrowseActionBar;
+
+  void setPinBrowseActionBar(bool value) {
+    if (_pinBrowseActionBar == value) return;
+    _pinBrowseActionBar = value;
+    PreferencesService.savePinBrowseActionBar(_pinBrowseActionBar);
     notifyListeners();
   }
 

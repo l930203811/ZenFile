@@ -735,6 +735,13 @@ class L10nEn extends L10n {
       'Swipe up from the bottom of the screen to open Favorites';
 
   @override
+  String get ui_pin_browse_bar => 'Pin action bar';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'Keep the bottom action bar visible while scrolling instead of auto-collapsing';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'Long-press an item to drag and reorder';
 

@@ -2214,6 +2214,31 @@ class PreferencesService {
     await _prefs?.setBool('$_keyDrawerSectionExpanded$sectionKey', expanded);
   }
 
+  // --- Pin browse action bar (issue #86) ---
+  /// 固定浏览操作栏：开启后滚动时操作栏不再自动折叠。默认 false = 维持
+  /// 现有「滚动折叠让出空间」行为，老用户升级无感。
+  static const String _keyPinBrowseActionBar = 'pin_browse_action_bar';
+
+  static bool getPinBrowseActionBar() =>
+      _prefs?.getBool(_keyPinBrowseActionBar) ?? false;
+
+  static Future<void> savePinBrowseActionBar(bool pinned) async {
+    await _prefs?.setBool(_keyPinBrowseActionBar, pinned);
+  }
+
+  // --- Swipe-up-to-open Favorites (issue #85) ---
+  /// 上滑底部导航栏 / 浏览操作栏打开收藏夹的总开关。默认开启；关闭后
+  /// 系统手势导航的误触不再弹面板，收藏夹仍可从抽屉 / 全局搜索进入。
+  static const String _keySwipeUpToFavorites = 'swipe_up_to_favorites';
+
+  /// 默认 true：老用户升级后行为不变。
+  static bool getSwipeUpToFavorites() =>
+      _prefs?.getBool(_keySwipeUpToFavorites) ?? true;
+
+  static Future<void> saveSwipeUpToFavorites(bool enabled) async {
+    await _prefs?.setBool(_keySwipeUpToFavorites, enabled);
+  }
+
   // --- Favorites Group Collapsed State ---
   static const String _keyFavoritesGroupCollapsed = 'favorites_group_collapsed';
 

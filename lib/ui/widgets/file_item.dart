@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../../models/file_item_model.dart';
 import '../../core/utils.dart';
+import '../../core/restricted_path_variant.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/pin_service.dart';
 import '../../services/app_manager_service.dart';
@@ -358,6 +359,29 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     _apkIconCache[path] = bytes;
   }
 
+  /// 受限目录文件在 app 进程里可实读的路径（见 resolveReadablePath）。
+  /// 异步解析，解析完成后 setState 让图片缩略图用变体路径重建。
+  String _readablePath = '';
+  Future<String> _readablePathFuture = Future.value('');
+
+  /// 准备可实读路径：零宽通道/普通路径立即放行，干净受限路径异步探测变体。
+  void _prepareReadablePath() {
+    _readablePath = '';
+    final future = resolveReadablePath(widget.file.path);
+    _readablePathFuture = future;
+    future.then((resolved) {
+      // 文件快速切换时丢弃旧 future 的结果，避免覆盖新路径。
+      if (!mounted || _readablePathFuture != future) return;
+      if (resolved != _readablePath) {
+        setState(() => _readablePath = resolved);
+      }
+    });
+  }
+
+  /// 图标/缩略图实际读取用的路径（干净受限路径会被换成可实读变体）。
+  String get _readPath =>
+      _readablePath.isEmpty ? widget.file.path : _readablePath;
+
   Uint8List? _videoThumb;
   Uint8List? _audioThumb;
   Uint8List? _apkIcon;
@@ -372,6 +396,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     // 延迟到第一帧后执行，以便获取 context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _prepareReadablePath();
       // 远程文件优先处理
       if (widget.file.isRemote &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
@@ -407,6 +432,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _apkIcon = null;
         _remoteThumb = null;
       });
+      _prepareReadablePath();
       // 远程文件优先处理
       if (widget.file.isRemote &&
           PreferencesService.getRemoteMediaThumbnailPreview()) {
@@ -602,7 +628,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       return;
     }
     try {
-      final iconBytes = await AppManagerService.getApkIcon(path);
+      // 变体路径解析可能尚未完成，等它结束后再取可实读路径。
+      await _readablePathFuture;
+      final iconBytes = await AppManagerService.getApkIcon(_readPath);
       _apkIconCachePut(path, iconBytes);
       if (mounted && iconBytes != null) {
         setState(() {
@@ -646,14 +674,17 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
   Future<void> _loadVideoThumbFromFile() async {
     if (!mounted) return;
     try {
-      final filePath = widget.file.path;
-      final file = File(filePath);
+      final cleanPath = widget.file.path;
+      // 变体路径解析可能尚未完成，等它结束后再取可实读路径。
+      await _readablePathFuture;
+      final readPath = _readPath;
+      final file = File(readPath);
       if (!await file.exists()) return;
 
       // 共享视频 AssetEntity 查询（全局只取一次、按路径命中），避免每个瓦片各自
       // getAssetListRange(0,1000) 在大存储（上万视频）下引发上万次并发 native 媒体
       // 查询打满设备线程、丢弃输入并卡住播放启动。
-      final matchedAsset = await MediaProvider.getVideoAssetByPath(filePath);
+      final matchedAsset = await MediaProvider.getVideoAssetByPath(cleanPath);
       if (matchedAsset != null) {
         final thumbData = await MediaProvider.runBoundedThumb(
           () => matchedAsset.thumbnailDataWithSize(
@@ -670,7 +701,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       // 回退2：文件不在系统相册中（下载目录、NAS 挂载目录等），
       // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
       final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(
-        filePath,
+        readPath,
       );
       if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
         setState(() => _videoThumb = thumbBytes);
@@ -731,6 +762,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     final isVid = FileUtils.isVideo(_displayPath);
     final isAud = FileUtils.isAudio(_displayPath);
     final isApk = FileUtils.canExtractApkIcon(_displayPath);
+    // 受限目录（Shizuku/root 通道）返回干净路径，app 进程实读会被 FUSE 拦截；
+    // 用可实读变体路径渲染缩略图，普通路径/零宽通道原样。
+    final readPath = _readPath;
 
     if (widget.isSelected) {
       return Icon(
@@ -800,7 +834,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           );
         }
         return SvgPicture.file(
-          File(widget.file.path),
+          File(readPath),
           fit: BoxFit.cover,
           placeholderBuilder: (context) => FileTypeIcon(
             icon: Broken.image,
@@ -812,7 +846,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       }
       if (_displayPath.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
-          File(widget.file.path),
+          File(readPath),
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
@@ -842,7 +876,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         );
       }
       return Image(
-        image: imageProviderForFile(File(widget.file.path), cacheWidth: 160),
+        image: imageProviderForFile(File(readPath), cacheWidth: 160),
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
@@ -870,7 +904,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         );
       }
       return SvgPicture.file(
-        File(widget.file.path),
+        File(readPath),
         fit: BoxFit.cover,
         placeholderBuilder: (context) => FileTypeIcon(
           icon: Broken.image,

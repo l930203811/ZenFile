@@ -699,6 +699,12 @@ class L10nJa extends L10n {
   String get ui_favorites_swipe_hint => '画面の下から上にスワイプして「お気に入り」を開けます';
 
   @override
+  String get ui_pin_browse_bar => '操作バーを固定';
+
+  @override
+  String get ui_pin_browse_bar_hint => 'スクロール時に下部の操作バーを自動的に折りたたまず、表示したままにします';
+
+  @override
   String get ui_favorites_reorder_hint => '項目を長押しするとドラッグで並べ替えできます';
 
   @override

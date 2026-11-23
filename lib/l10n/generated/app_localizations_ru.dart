@@ -747,6 +747,13 @@ class L10nRu extends L10n {
       'Проведите вверх от нижнего края экрана, чтобы открыть «Избранное»';
 
   @override
+  String get ui_pin_browse_bar => 'Закрепить панель действий';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'Не сворачивать нижнюю панель действий автоматически при прокрутке';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'Нажмите и удерживайте элемент, чтобы перетащить и изменить порядок';
 

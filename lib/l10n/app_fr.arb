@@ -796,6 +796,10 @@
   "@ui_favorites_swipe_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"
   },
+  "ui_pin_browse_bar": "Épingler la barre d’actions",
+  "@ui_pin_browse_bar": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
+  "ui_pin_browse_bar_hint": "Garde la barre d’actions inférieure visible pendant le défilement au lieu de la replier automatiquement",
+  "@ui_pin_browse_bar_hint": {"description":"ui/widgets/nav_bar_settings_sheet.dart"},
   "ui_favorites_reorder_hint": "Appuyez longuement sur un élément pour le faire glisser et le réordonner",
   "@ui_favorites_reorder_hint": {
     "description": "ui\\widgets\\favorites_sheet.dart"

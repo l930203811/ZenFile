@@ -731,6 +731,13 @@ class L10nAr extends L10n {
       'اسحب لأعلى من أسفل الشاشة لفتح المفضلة';
 
   @override
+  String get ui_pin_browse_bar => 'تثبيت شريط الإجراءات';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'إبقاء شريط الإجراءات السفلي مرئيًا أثناء التمرير بدلًا من طيه تلقائيًا';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'اضغط مطولاً على أي عنصر لسحبه وإعادة ترتيبه';
 

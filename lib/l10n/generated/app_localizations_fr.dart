@@ -750,6 +750,13 @@ class L10nFr extends L10n {
       'Balayez vers le haut depuis le bas de l’écran pour ouvrir les favoris';
 
   @override
+  String get ui_pin_browse_bar => 'Épingler la barre d’actions';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'Garde la barre d’actions inférieure visible pendant le défilement au lieu de la replier automatiquement';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'Appuyez longuement sur un élément pour le faire glisser et le réordonner';
 

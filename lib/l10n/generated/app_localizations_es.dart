@@ -752,6 +752,13 @@ class L10nEs extends L10n {
       'Desliza hacia arriba desde la parte inferior de la pantalla para abrir los favoritos';
 
   @override
+  String get ui_pin_browse_bar => 'Fijar barra de acciones';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'Mantén la barra de acciones inferior visible al desplazarte en lugar de plegarla automáticamente';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'Mantén pulsado un elemento para arrastrarlo y reordenarlo';
 

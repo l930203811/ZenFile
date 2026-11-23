@@ -1402,6 +1402,18 @@ abstract class L10n {
   /// **'从屏幕底部上滑即可打开收藏夹'**
   String get ui_favorites_swipe_hint;
 
+  /// ui/widgets/nav_bar_settings_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'固定操作栏'**
+  String get ui_pin_browse_bar;
+
+  /// ui/widgets/nav_bar_settings_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后滚动时底部操作栏保持不变，不自动折叠'**
+  String get ui_pin_browse_bar_hint;
+
   /// ui\widgets\favorites_sheet.dart
   ///
   /// In zh, this message translates to:
@@ -5719,7 +5731,7 @@ abstract class L10n {
   /// No description provided for @ui_show_action_bar.
   ///
   /// In zh, this message translates to:
-  /// **'显示操作按钮'**
+  /// **'显示操作栏'**
   String get ui_show_action_bar;
 
   /// No description provided for @ui_show_remote_cloud_badge.

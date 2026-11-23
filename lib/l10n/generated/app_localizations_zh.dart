@@ -697,6 +697,12 @@ class L10nZh extends L10n {
   String get ui_favorites_swipe_hint => '从屏幕底部上滑即可打开收藏夹';
 
   @override
+  String get ui_pin_browse_bar => '固定操作栏';
+
+  @override
+  String get ui_pin_browse_bar_hint => '开启后滚动时底部操作栏保持不变，不自动折叠';
+
+  @override
   String get ui_favorites_reorder_hint => '长按条目可拖动排序';
 
   @override
@@ -3010,7 +3016,7 @@ class L10nZh extends L10n {
   String get ui_no_settings_found => '未找到设置';
 
   @override
-  String get ui_show_action_bar => '显示操作按钮';
+  String get ui_show_action_bar => '显示操作栏';
 
   @override
   String get ui_show_remote_cloud_badge => '显示远程文件云徽';
@@ -9474,6 +9480,12 @@ class L10nZhTw extends L10nZh {
   String get ui_favorites_swipe_hint => '從螢幕底部上滑即可開啟收藏夾';
 
   @override
+  String get ui_pin_browse_bar => '固定操作欄';
+
+  @override
+  String get ui_pin_browse_bar_hint => '開啟後捲動時底部操作欄保持不變，不自動摺疊';
+
+  @override
   String get ui_favorites_reorder_hint => '長按項目可拖曳排序';
 
   @override
@@ -11778,7 +11790,7 @@ class L10nZhTw extends L10nZh {
   String get ui_no_settings_found => '未找到設定';
 
   @override
-  String get ui_show_action_bar => '顯示操作按鈕';
+  String get ui_show_action_bar => '顯示操作欄';
 
   @override
   String get ui_show_remote_cloud_badge => '顯示遠端檔案雲徽';

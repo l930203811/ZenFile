@@ -749,6 +749,13 @@ class L10nDe extends L10n {
       'Wischen Sie vom unteren Bildschirmrand nach oben, um die Favoriten zu öffnen';
 
   @override
+  String get ui_pin_browse_bar => 'Aktionsleiste fixieren';
+
+  @override
+  String get ui_pin_browse_bar_hint =>
+      'Hält die untere Aktionsleiste beim Scrollen sichtbar, statt sie automatisch einzuklappen';
+
+  @override
   String get ui_favorites_reorder_hint =>
       'Eintrag lange drücken, um ihn zu verschieben und neu zu sortieren';
 

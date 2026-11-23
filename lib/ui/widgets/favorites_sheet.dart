@@ -149,6 +149,9 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
 
   /// 面板标题行：图标 + 「收藏夹」+ 新建收藏按钮 + 上滑提示小字。
   Widget _buildHeader(BuildContext context, ThemeData theme, L10n l10n) {
+    // 上滑开关状态本地缓存：面板内切换即时反映，离开面板后由
+    // PreferencesService 持久化，两个手势入口读取同一份值。
+    final swipeUpEnabled = PreferencesService.getSwipeUpToFavorites();
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 6, 12, 8),
       child: Column(
@@ -184,12 +187,30 @@ class _FavoritesSheetState extends State<FavoritesSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n.ui_favorites_swipe_hint,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-                    fontSize: 12,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.ui_favorites_swipe_hint,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    // issue #85：说明栏内直接开关「上滑打开收藏夹」，默认开启。
+                    Transform.scale(
+                      scale: 0.85,
+                      child: Switch(
+                        value: swipeUpEnabled,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onChanged: (enabled) {
+                          PreferencesService.saveSwipeUpToFavorites(enabled);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 // 收藏为空时没有可拖的条目，不必提示排序。
                 if (widget.provider.favorites.isNotEmpty) ...[
