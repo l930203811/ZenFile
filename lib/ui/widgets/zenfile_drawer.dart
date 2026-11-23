@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/app_version.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
 import '../screens/wake_on_lan_screen.dart';
@@ -387,9 +388,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             // Footer Version Info
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Text(
-                'ZenFile v3.7.7',
-                style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600),
+              child: FutureBuilder<String>(
+                future: getAppVersion(),
+                builder: (context, snapshot) {
+                  final version = snapshot.data ?? '';
+                  return Text(
+                    version.isEmpty ? 'ZenFile' : 'ZenFile v$version',
+                    style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600),
+                  );
+                },
               ),
             ),
           ],

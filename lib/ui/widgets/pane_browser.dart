@@ -149,6 +149,162 @@ class _PaneBrowserState extends State<PaneBrowser> {
     });
   }
 
+  /// 桌面端（Windows/Linux/macOS）：采用与资源管理器一致的鼠标交互。
+  static final bool _isDesktop =
+      Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
+  /// 列表项单击行为：桌面端单击 = 选中（双击才打开），移动端保持单击直接打开。
+  void _handleItemTap(
+    FileManagerProvider provider,
+    bool isSelectionMode,
+    String path,
+    VoidCallback openAction,
+  ) {
+    _activatePane(provider);
+    if (isSelectionMode || _isDesktop) {
+      provider.toggleSelection(path);
+    } else {
+      openAction();
+    }
+  }
+
+  /// 桌面端为条目附加「双击打开 + 右键上下文菜单」。
+  Widget _wrapDesktopMouse(
+    BuildContext context,
+    FileManagerProvider provider,
+    FileItemModel item,
+    Widget child,
+  ) {
+    if (!_isDesktop) return child;
+    return GestureDetector(
+      onDoubleTap: () {
+        _activatePane(provider);
+        if (item.isDirectory) {
+          _openFolder(provider, item.path);
+        } else {
+          provider.openFile(context, item.path);
+        }
+      },
+      onSecondaryTapUp: (details) {
+        _showDesktopContextMenu(
+          context,
+          provider,
+          details.globalPosition,
+          item,
+        );
+      },
+      child: child,
+    );
+  }
+
+  /// 桌面端右键菜单：打开 / 复制 / 剪切 / 重命名 / 删除 / 粘贴 / 全选 / 刷新。
+  Future<void> _showDesktopContextMenu(
+    BuildContext context,
+    FileManagerProvider provider,
+    Offset position,
+    FileItemModel? item,
+  ) async {
+    _activatePane(provider);
+    final l10n = L10n.of(context);
+    // Windows 语义：右键未选中的条目时，先选中它（清除其他选择）。
+    if (item != null && !provider.selectedPaths.contains(item.path)) {
+      provider.clearSelection();
+      provider.toggleSelection(item.path);
+    }
+    final isMulti =
+        item != null &&
+        provider.selectedPaths.contains(item.path) &&
+        provider.selectedPaths.length > 1;
+
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        if (item != null)
+          PopupMenuItem(value: 'open', height: 40, child: Text(l10n.ui_open)),
+        if (item != null)
+          PopupMenuItem(value: 'copy', height: 40, child: Text(l10n.ui_copy)),
+        if (item != null)
+          PopupMenuItem(value: 'cut', height: 40, child: Text(l10n.ui_cut)),
+        if (item != null)
+          PopupMenuItem(
+            value: 'rename',
+            height: 40,
+            child: Text(l10n.msgc8ce4b36),
+          ),
+        if (item != null)
+          PopupMenuItem(
+            value: 'delete',
+            height: 40,
+            child: Text(l10n.ui_delete),
+          ),
+        PopupMenuItem(value: 'paste', height: 40, child: Text(l10n.ui_paste)),
+        PopupMenuItem(
+          value: 'select_all',
+          height: 40,
+          child: Text(l10n.ui_select_all),
+        ),
+        PopupMenuItem(
+          value: 'refresh',
+          height: 40,
+          child: Text(l10n.ui_refresh),
+        ),
+      ],
+    );
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case 'open':
+        if (item == null) break;
+        if (item.isDirectory) {
+          _openFolder(provider, item.path);
+        } else {
+          provider.openFile(context, item.path);
+        }
+        break;
+      case 'copy':
+        if (item == null) break;
+        if (isMulti) {
+          provider.copySelected();
+        } else {
+          provider.copyFile(item.path);
+        }
+        break;
+      case 'cut':
+        if (item == null) break;
+        if (isMulti) {
+          provider.cutSelected();
+        } else {
+          await handleCutWithDestination(
+            context,
+            provider,
+            paths: [item.path],
+            defaultCut: () async => provider.cutFile(item.path),
+          );
+        }
+        break;
+      case 'rename':
+        if (item != null) _handleAction(context, 'rename', item.path);
+        break;
+      case 'delete':
+        if (item != null) _handleAction(context, 'delete', item.path);
+        break;
+      case 'paste':
+        await provider.pasteFile(context);
+        break;
+      case 'select_all':
+        provider.selectAll();
+        break;
+      case 'refresh':
+        provider.refreshDirectoryView();
+        break;
+    }
+  }
+
   void _goBack(FileManagerProvider provider) async {
     _activatePane(provider);
     if (_scrollController.hasClients) {
@@ -353,7 +509,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
           ),
           // 远程 / 加密远程标签页里的条目是纯服务器路径（无 remote:// 前缀，
           // 路径自动判定不了），按所在 pane 的标签页状态显式传入：
-          // 这些删除不经过回收站，弹窗「移入回收站」勾选框灰色禁用。
+          // 这些删除不经过回收站，弹窗勾选框灰色禁用。
           recycleBinSupported: !(provider.tabs[widget.tabIndex].isRemote ||
               provider.tabs[widget.tabIndex].isCryptRemote),
         );
@@ -1114,7 +1270,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                                 item.path,
                                                               );
                                                         };
-                                                        return DragDropHandler(
+                                                        return _wrapDesktopMouse(
+                                                          context,
+                                                          provider,
+                                                          item,
+                                                          DragDropHandler(
                                                           path: item.path,
                                                           isDirectory: true,
                                                           onLongPress:
@@ -1141,22 +1301,15 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                             itemPaddingMultiplier:
                                                                 provider
                                                                     .itemPaddingMultiplier,
-                                                            onTap: () {
-                                                              _activatePane(
+                                                            onTap: () => _handleItemTap(
+                                                              provider,
+                                                              isSelectionMode,
+                                                              item.path,
+                                                              () => _openFolder(
                                                                 provider,
-                                                              );
-                                                              if (isSelectionMode) {
-                                                                provider
-                                                                    .toggleSelection(
-                                                                      item.path,
-                                                                    );
-                                                              } else {
-                                                                _openFolder(
-                                                                  provider,
-                                                                  item.path,
-                                                                );
-                                                              }
-                                                            },
+                                                                item.path,
+                                                              ),
+                                                            ),
                                                             onLongPress:
                                                                 provider
                                                                     .enableDragDrop
@@ -1171,6 +1324,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                                   item.path,
                                                                 ),
                                                           ),
+                                                          ),
                                                         );
                                                       } else {
                                                         final itemLongPress = () {
@@ -1182,7 +1336,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                                 item.path,
                                                               );
                                                         };
-                                                        return DragDropHandler(
+                                                        return _wrapDesktopMouse(
+                                                          context,
+                                                          provider,
+                                                          item,
+                                                          DragDropHandler(
                                                           path: item.path,
                                                           isDirectory: false,
                                                           onLongPress:
@@ -1209,23 +1367,15 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                             itemPaddingMultiplier:
                                                                 provider
                                                                     .itemPaddingMultiplier,
-                                                            onTap: () {
-                                                              _activatePane(
-                                                                provider,
-                                                              );
-                                                              if (isSelectionMode) {
-                                                                provider
-                                                                    .toggleSelection(
-                                                                      item.path,
-                                                                    );
-                                                              } else {
-                                                                provider
-                                                                    .openFile(
-                                                                      context,
-                                                                      item.path,
-                                                                    );
-                                                              }
-                                                            },
+                                                            onTap: () => _handleItemTap(
+                                                              provider,
+                                                              isSelectionMode,
+                                                              item.path,
+                                                              () => provider.openFile(
+                                                                context,
+                                                                item.path,
+                                                              ),
+                                                            ),
                                                             onLongPress:
                                                                 provider
                                                                     .enableDragDrop
@@ -1239,6 +1389,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                                   action,
                                                                   item.path,
                                                                 ),
+                                                          ),
                                                           ),
                                                         );
                                                       }
@@ -1319,7 +1470,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
             provider.toggleSelection(folder.path);
           };
 
-    return DragDropHandler(
+    return _wrapDesktopMouse(
+      context,
+      provider,
+      folder,
+      DragDropHandler(
       path: folder.path,
       isDirectory: true,
       onLongPress: itemLongPress,
@@ -1327,14 +1482,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
       remoteItems: folder.remoteSource != null ? [folder.remoteSource!] : null,
       connection: folder.isRemote ? remoteConnection : null,
       child: InkWell(
-        onTap: onTapOverride ?? () {
-          _activatePane(provider);
-          if (isSelectionMode) {
-            provider.toggleSelection(folder.path);
-          } else {
-            _openFolder(provider, folder.path);
-          }
-        },
+        onTap: onTapOverride ??
+            () => _handleItemTap(
+              provider,
+              isSelectionMode,
+              folder.path,
+              () => _openFolder(provider, folder.path),
+            ),
         onLongPress: provider.enableDragDrop ? null : itemLongPress,
         child: Stack(
           children: [
@@ -1507,9 +1661,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>(
-              (p) => p.hideActionMenuButtons,
-            ))
+            // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
+            // context 即 SliverList 自身的 context，provider 禁止在此调用
+            // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
+            // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
+            // 重建整个列表，因此这里直接 read 读取当前值即可。
+            if (!context.read<FileManagerProvider>().hideActionMenuButtons)
               Positioned(
                 top: 0,
                 right: 0,
@@ -1542,6 +1699,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -1567,7 +1725,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
       provider.toggleSelection(file.path);
     };
 
-    return DragDropHandler(
+    return _wrapDesktopMouse(
+      context,
+      provider,
+      file,
+      DragDropHandler(
       path: file.path,
       isDirectory: false,
       onLongPress: itemLongPress,
@@ -1575,14 +1737,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
       remoteItems: file.remoteSource != null ? [file.remoteSource!] : null,
       connection: file.isRemote ? remoteConnection : null,
       child: InkWell(
-        onTap: () {
-          _activatePane(provider);
-          if (isSelectionMode) {
-            provider.toggleSelection(file.path);
-          } else {
-            provider.openFile(context, file.path);
-          }
-        },
+        onTap: () => _handleItemTap(
+          provider,
+          isSelectionMode,
+          file.path,
+          () => provider.openFile(context, file.path),
+        ),
         onLongPress: provider.enableDragDrop ? null : itemLongPress,
         child: Stack(
           children: [
@@ -1703,9 +1863,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>(
-              (p) => p.hideActionMenuButtons,
-            ))
+            // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
+            // context 即 SliverList 自身的 context，provider 禁止在此调用
+            // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
+            // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
+            // 重建整个列表，因此这里直接 read 读取当前值即可。
+            if (!context.read<FileManagerProvider>().hideActionMenuButtons)
               Positioned(
                 top: 0,
                 right: 0,
@@ -1734,6 +1897,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

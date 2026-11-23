@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/app_version.dart';
 import '../widgets/crash_report_dialog.dart';
 import '../widgets/privacy_policy_dialog.dart';
 import 'special_thanks_screen.dart';
@@ -185,16 +186,22 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
-                  Text(
-                    'v3.7.7',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'LexendDeca',
-                      letterSpacing: 0.3,
-                    ),
+                  // 版本号文本：动态读取 pubspec，避免发版 bump 时漏改显示旧版本
+                  FutureBuilder<String>(
+                    future: getAppVersion(),
+                    builder: (context, snapshot) {
+                      final version = snapshot.data ?? '';
+                      return Text(
+                        version.isEmpty ? '' : 'v$version',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'LexendDeca',
+                          letterSpacing: 0.3,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 

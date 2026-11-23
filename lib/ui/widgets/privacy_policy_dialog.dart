@@ -196,3 +196,113 @@ Widget _para(String text) {
     ),
   );
 }
+
+/// 首次启动 / 政策更新时的**全屏同意页**（build 树内拦截，不再用 dialog）。
+///
+/// ⚠️ 为什么不是 dialog：应用根 State 的 `context` 位于 MaterialApp **之上**，
+/// 从它 `showDialog` 时 `L10n.of(context)` 拿不到 Localizations（返回 null）、
+/// Navigator 也够不到 —— 弹窗抛异常、调用方 await 链断，权限检查永不执行：
+/// 表现为「覆盖安装后启动黑/白屏很久，切任务栏再回才恢复（且绕过了协议，
+/// 合规漏洞）」（2026-10-30 用户反馈）。作为 `home` 顶部的全屏页则完全没有
+/// 这些时序/上下文问题：它就是首帧本身。
+///
+/// 同意 → 落盘版本号并回调 [onAccepted]（调用方据此继续权限申请，
+/// 合规顺序：协议在前）；不同意 → 挽留确认 → [exit](0)。
+class PrivacyGateScreen extends StatelessWidget {
+  final VoidCallback onAccepted;
+
+  const PrivacyGateScreen({super.key, required this.onAccepted});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.privacy_tip_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 26,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              l10n.ui_privacy_policy_title,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      _para(l10n.privacy_intro),
+                      _para(l10n.privacy_perm_storage),
+                      _para(l10n.privacy_perm_mic),
+                      _para(l10n.privacy_perm_location),
+                      _para(l10n.privacy_perm_others),
+                      _para(l10n.privacy_logs),
+                      _para(l10n.privacy_local_third),
+                      _para(l10n.privacy_rights),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _confirmExit(context, l10n),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(l10n.ui_privacy_disagree),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton(
+                        onPressed: () async {
+                          await PreferencesService.setPrivacyPolicyAcceptedVersion(
+                            kPrivacyPolicyVersion,
+                          );
+                          onAccepted();
+                        },
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(l10n.ui_privacy_agree),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

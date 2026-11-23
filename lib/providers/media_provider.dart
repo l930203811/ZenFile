@@ -58,6 +58,28 @@ bool _isUnderAppCacheDir(String path) {
   return false;
 }
 
+/// Windows 系统目录：媒体扫描一律不进入。
+/// AppData 单目录可达数十万文件、Windows/Program Files 为系统文件——
+/// 不剪枝会让 depth-3 全盘扫描卡死几分钟且产出全是噪音。
+const Set<String> _kWindowsScanSkipDirs = {
+  'AppData',
+  'Application Data',
+  'Windows',
+  'Program Files',
+  'Program Files (x86)',
+  'ProgramData',
+  r'$Recycle.Bin',
+  'System Volume Information',
+  'node_modules',
+};
+
+/// 是否为应跳过的 Windows 系统目录名（非 Windows 平台恒 false）。
+/// 供 isolate 扫描与最近文件扫描的目录剪枝共用。
+bool _isWindowsSystemDir(String name) {
+  if (!Platform.isWindows) return false;
+  return _kWindowsScanSkipDirs.contains(name);
+}
+
 /// 传给 isolate 的扫描参数（所有字段均可跨 isolate 结构化克隆）。
 /// 扫描根：路径 + 允许的最大递归深度。
 /// depth 0 = 仅扫描该目录自身（不进入子目录）；depth 4 = 进入至多 4 层子目录。
@@ -489,10 +511,11 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
       await for (final entity in Directory(current).list(recursive: false)) {
         if (entity is Directory) {
           final name = p.basename(entity.path);
-          // 跳过隐藏目录、Android、以及本应用缓存目录（远程媒体/缩略图缓存，
-          // 避免缓存图片被当成用户媒体重复收录）。
+          // 跳过隐藏目录、Android、Windows 系统目录、以及本应用缓存目录
+          // （远程媒体/缩略图缓存，避免缓存图片被当成用户媒体重复收录）。
           if (!name.startsWith('.') &&
               name != 'Android' &&
+              !_isWindowsSystemDir(name) &&
               !_isUnderAppCacheDir(entity.path)) {
             dirSubs.add(entity.path);
             if (currentDepth + 1 <= currentCap && !queued.contains(entity.path)) {
@@ -1254,7 +1277,10 @@ class MediaProvider extends ChangeNotifier {
   /// isolate 扫描阶段累计的各分类字节数原始值（key 与分类名一致）。
   /// 主线程 [_recalcCategorySizes] 从该值 + 自定义路径补充重建缓存，避免对
   /// 几十万文件同步 lengthSync 阻塞 UI（安卓 15/16 键盘/输入卡顿根因之一）。
-  Map<String, int> _fsCategorySizes = const {};
+  // ⚠️ 必须可变：磁盘缓存恢复（addAll）与 MediaStore/isolate 扫描都会原地写键，
+  // 用 const {} 会在首次加载抛 "Cannot modify unmodifiable map"，把分类大小
+  // 统计静默打断（isolate 扫描完成前的所有写入路径全部失效）。
+  Map<String, int> _fsCategorySizes = <String, int>{};
   List<FileSystemEntity> _customImages = [];
   List<FileSystemEntity> _customVideos = [];
   List<FileSystemEntity> _customScreenshots = [];
@@ -2785,12 +2811,14 @@ class MediaProvider extends ChangeNotifier {
 
       // 与 loadMedia 一致：先独占式加载音频（querySongs 拿到全量，避免与 PhotoManager
       // fetchAll 并发抢 MediaStore 导致 querySongs 返回空、叠加缓存缺失时音频清零），
-      // 再加载视频图片。
-      await _loadAudios();
-      await _loadImagesAndVideos();
-      // 回前台索引整表替换后，合并上次主动刷新持久化的补充媒体
-      // （随后 pruneDeletedMedia 按存在性裁剪，顺带清掉补充集中已删除的幽灵）。
-      await _mergeSupplementaryMedia();
+      // 再加载视频图片。Windows 桌面端无 MediaStore，跳过（数据源为文件系统扫描）。
+      if (!Platform.isWindows) {
+        await _loadAudios();
+        await _loadImagesAndVideos();
+        // 回前台索引整表替换后，合并上次主动刷新持久化的补充媒体
+        // （随后 pruneDeletedMedia 按存在性裁剪，顺带清掉补充集中已删除的幽灵）。
+        await _mergeSupplementaryMedia();
+      }
       await _computeMediaCategorySizes();
       // 回前台时清理他应用/浏览页删除后残留的空白图标条目（基于存在性裁剪）。
       await pruneDeletedMedia();
@@ -2864,10 +2892,15 @@ class MediaProvider extends ChangeNotifier {
       docExtensions: _docExtensions,
       archiveExtensions: _archiveExtensions,
       apkExtensions: _apkExtensions,
-      downloadDirs: [
-        '/storage/emulated/0/Download',
-        '/storage/emulated/0/Downloads',
-      ],
+      downloadDirs: Platform.isWindows
+          ? <String>[
+              if (Platform.environment['USERPROFILE'] case final home? when home.isNotEmpty)
+                '$home\\Downloads',
+            ]
+          : [
+              '/storage/emulated/0/Download',
+              '/storage/emulated/0/Downloads',
+            ],
       skipMediaCategories: !onlyApk && !includeMedia,
       onlyApk: onlyApk,
       dirCache: _dirCache,
@@ -3053,7 +3086,11 @@ class MediaProvider extends ChangeNotifier {
   /// 主存储。返回 false 时非媒体递归扫描必然为空，需走 MediaStore 兜底。
   Future<bool> _verifyStorageAccess() async {
     try {
-      final dir = Directory('/storage/emulated/0');
+      // Windows 桌面端没有存储权限层：用用户主目录做一次真实枚举探测即可
+      // （语义与 Android 的 /storage/emulated/0 探测一致——确认 dart:io 可用）。
+      final dir = Directory(Platform.isWindows
+          ? (Platform.environment['USERPROFILE'] ?? r'C:\Users')
+          : '/storage/emulated/0');
       await dir
           .list(followLinks: false, recursive: false)
           .first
@@ -3219,8 +3256,15 @@ class MediaProvider extends ChangeNotifier {
       // _saveAudioCache 原子写入说明），_audios 便无可靠来源而清零——表现为「视频
       // 图片加载完成后音频被清空」（仅大存储设备复现）。改为先独占式加载音频
       // （querySongs 拿到全量），再加载视频图片，彻底消除争抢。
-      await _loadAudios();
-      await _loadImagesAndVideos();
+      if (Platform.isWindows) {
+        // Windows 桌面端没有 MediaStore / photo_manager / on_audio_query：
+        // 图/视/截/音全量由下方 _scanNonMediaInBackground(includeMedia: true)
+        // 的 dart:io 递归扫描提供（isolate 内合成 SongModel，见音频合并处）。
+        debugPrint('[ZenFile] loadMedia: Windows 端跳过系统媒体索引');
+      } else {
+        await _loadAudios();
+        await _loadImagesAndVideos();
+      }
       // 非强制（启动）加载：系统索引整表替换列表后，合并上次主动刷新持久化
       // 的补充媒体（索引未收录的默认路径文件），修复「刷新后文件出现、重启
       // 后又消失」。强制刷新走全量递归重扫 + 替换语义（清除幽灵条目），
@@ -3781,6 +3825,38 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   /// 全树降到极小，且始终为限深扫描、不做无界递归。
   Future<List<_ScanRoot>> _getUserSearchDirs() async {
     final roots = <_ScanRoot>[];
+    // ===== Windows 桌面端 =====
+    // 用户主目录为主根（depth 3）+ 标准用户目录热点（depth 4）+
+    // 非系统固定盘符根（depth 3）。系统盘根目录不直接扫描——Windows/Program
+    // Files/AppData 等系统目录由 isolate 的 _isWindowsSystemDir 剪枝兜底，
+    // 而系统盘的用户数据集中在主目录下，跳过根扫描可省去大量无效枚举。
+    if (Platform.isWindows) {
+      final home = Platform.environment['USERPROFILE'] ?? '';
+      if (home.isNotEmpty && Directory(home).existsSync()) {
+        roots.add(_ScanRoot(home, 3));
+        for (final name in const [
+          'Desktop',
+          'Documents',
+          'Downloads',
+          'Pictures',
+          'Music',
+          'Videos',
+        ]) {
+          final d = Directory('$home\\$name');
+          if (d.existsSync()) roots.add(_ScanRoot(d.path, 4));
+        }
+      }
+      final homeDrive = home.isEmpty ? '' : home.substring(0, 1).toUpperCase();
+      for (var i = 0; i < 26; i++) {
+        final letter = String.fromCharCode(65 + i);
+        if (letter == homeDrive) continue; // 系统盘已由主根覆盖
+        try {
+          final root = Directory('$letter:\\');
+          if (root.existsSync()) roots.add(_ScanRoot(root.path, 3));
+        } catch (_) {}
+      }
+      return roots;
+    }
     try {
       final rootDir = Directory('/storage/emulated/0');
       if (await rootDir.exists()) {
@@ -4241,20 +4317,23 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     // 漏进「最近」。
     final showHidden = PreferencesService.getShowHiddenFiles();
 
-    final rootDir = Directory('/storage/emulated/0');
-    if (await rootDir.exists()) {
+    final rootDir = Directory(Platform.isWindows
+        ? (Platform.environment['USERPROFILE'] ?? '')
+        : '/storage/emulated/0');
+    if (rootDir.path.isNotEmpty && await rootDir.exists()) {
       try {
         final List<String> pathsToScan = [];
         final rootEntities = await rootDir.list(recursive: false).toList();
         for (final entity in rootEntities) {
           if (entity is Directory) {
             final name = p.basename(entity.path);
-            // 跳过隐藏目录、Android、本应用缓存目录（ZenFile），
+            // 跳过隐藏目录、Android、Windows 系统目录、本应用缓存目录（ZenFile），
             // 避免远程媒体/缩略图缓存进入「最近」。隐藏目录仅在设置开启
             // 「显示隐藏文件」时才继续向下扫。
             final hiddenDir = name.startsWith('.');
             if ((!hiddenDir || showHidden) &&
                 name != 'Android' &&
+                !_isWindowsSystemDir(name) &&
                 !_isUnderAppCacheDir(entity.path)) {
               pathsToScan.add(entity.path);
             }
@@ -4374,7 +4453,7 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
   }
 
   /// 路径中任意一段以点开头（系统隐藏目录）即视为隐藏路径。
-  /// 仅用于「最近」列表过滤，跳过分区根（`/`、`C://`、空段）。
+  /// 仅用于「最近」列表过滤，跳过分区根（`/`、`C:\`、空段）。
   static bool _hasHiddenSegment(String path) {
     for (final seg in p.split(path)) {
       if (seg == '/' || seg == '\\' || seg.isEmpty) continue;
