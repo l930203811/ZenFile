@@ -2507,6 +2507,8 @@
   "@e20": {
     "type": "text"
   },
+  "ui_text_editor_unopenable": "Файл слишком большой или содержит двоичные данные и не может быть открыт в текстовом редакторе. Откройте его другим способом.",
+  "@ui_text_editor_unopenable": {"description":"ui/screens/text_editor_screen.dart"},
   "e20": "Ошибка загрузки файла: {e}",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"

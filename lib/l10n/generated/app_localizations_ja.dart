@@ -2038,6 +2038,10 @@ class L10nJa extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable =>
+      'ファイルが大きすぎる、またはバイナリ内容のためテキストエディタで開けません。別の方法で開いてください。';
+
+  @override
   String get msg24c6ab0f => 'ファイルの保存に成功しました';
 
   @override

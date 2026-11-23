@@ -2574,6 +2574,8 @@
     "description": "ui\\screens\\text_editor_screen.dart",
     "type": "text"
   },
+  "ui_text_editor_unopenable": "文件过大或是二进制内容，无法用文本编辑器打开，请用其他方式查看",
+  "@ui_text_editor_unopenable": {"description":"ui/screens/text_editor_screen.dart"},
   "msg24c6ab0f": "文件保存成功",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"

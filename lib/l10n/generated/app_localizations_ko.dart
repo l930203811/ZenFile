@@ -2035,6 +2035,10 @@ class L10nKo extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable =>
+      '파일이 너무 크거나 바이너리 데이터여서 텍스트 편집기로 열 수 없습니다. 다른 방법으로 열어 주세요.';
+
+  @override
   String get msg24c6ab0f => '파일이 성공적으로 저장되었습니다';
 
   @override

@@ -2507,6 +2507,8 @@
   "@e20": {
     "type": "text"
   },
+  "ui_text_editor_unopenable": "파일이 너무 크거나 바이너리 데이터여서 텍스트 편집기로 열 수 없습니다. 다른 방법으로 열어 주세요.",
+  "@ui_text_editor_unopenable": {"description":"ui/screens/text_editor_screen.dart"},
   "e20": "파일 로드 오류: {e}",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"

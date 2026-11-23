@@ -2031,6 +2031,9 @@ class L10nZh extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable => '文件过大或是二进制内容，无法用文本编辑器打开，请用其他方式查看';
+
+  @override
   String get msg24c6ab0f => '文件保存成功';
 
   @override
@@ -10813,6 +10816,9 @@ class L10nZhTw extends L10nZh {
   String e20(Object e) {
     return '載入檔案出錯：$e';
   }
+
+  @override
+  String get ui_text_editor_unopenable => '檔案過大或是二進位內容，無法用文字編輯器開啟，請用其他方式檢視';
 
   @override
   String get msg24c6ab0f => '檔案儲存成功';

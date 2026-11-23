@@ -2507,6 +2507,8 @@
   "@e20": {
     "type": "text"
   },
+  "ui_text_editor_unopenable": "El archivo es demasiado grande o contiene datos binarios y no se puede abrir en el editor de texto. Ábrelo de otra forma.",
+  "@ui_text_editor_unopenable": {"description":"ui/screens/text_editor_screen.dart"},
   "e20": "Error al cargar archivo: {e}",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"

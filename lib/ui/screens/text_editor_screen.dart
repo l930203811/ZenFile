@@ -315,6 +315,31 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     }
   }
 
+  /// 文本编辑器能安全打开的文件上限。超过后整文件 readAsBytes + 全量解码 +
+  /// 单 TextField 渲染会烧死光栅线程导致 ANR（issue #84：用文本打开 .jar 卡死）。
+  static const int _maxTextFileBytes = 10 * 1024 * 1024;
+
+  /// 读文件前若干字节做二进制嗅探：NUL 字节占比超阈值即判定为二进制。
+  /// 二进制当文本解码会产生海量乱码，塞进编辑器同样卡死，必须提前拦下。
+  static bool _looksBinary(List<int> head) {
+    if (head.isEmpty) return false;
+    int nul = 0;
+    for (final b in head) {
+      if (b == 0) nul++;
+    }
+    return nul / head.length > 0.05;
+  }
+
+  /// 无法用文本编辑器打开时：弹提示并退回上一页，绝不进入加载/渲染流程。
+  void _rejectAndPop() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L10n.of(context).ui_text_editor_unopenable)),
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _loadFile() async {
     if (_currentFilePath.isEmpty) {
       // 空编辑器（「新建文本」入口）：没有文件可读，本来就是要写东西，
@@ -326,6 +351,40 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     }
     try {
       final provider = context.read<FileManagerProvider>();
+
+      // ── 大小 / 二进制防线（issue #84）──
+      // 在整文件读入内存之前先 stat 大小；超限直接拒绝，避免大文件卡死。
+      // 受限路径走 shell 通道 stat，普通路径直接 File.stat。
+      final isRestricted = provider.isRestrictedPath(_currentFilePath);
+      int? fileSize;
+      try {
+        if (isRestricted) {
+          final item = await RootShizukuService.statItem(
+            _currentFilePath,
+            useRoot: provider.useRootMode,
+          );
+          fileSize = item?.size;
+        } else {
+          final f = File(_currentFilePath);
+          if (await f.exists()) fileSize = await f.length();
+        }
+      } catch (_) {}
+      if (fileSize != null && fileSize > _maxTextFileBytes) {
+        _rejectAndPop();
+        return;
+      }
+
+      // 二进制嗅探：读前 4KB，含大量 NUL 即拒绝。
+      // 普通路径直接流式读 head；受限路径在下面拷到临时文件后再嗅探。
+      if (!isRestricted) {
+        try {
+          final head = await File(_currentFilePath).openRead().take(4096).first;
+          if (_looksBinary(head)) {
+            _rejectAndPop();
+            return;
+          }
+        } catch (_) {}
+      }
       String content;
       if (provider.isRestrictedPath(_currentFilePath)) {
         final tempDir = Directory('/storage/emulated/0/.nfile_temp');
@@ -343,6 +402,15 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         // shell/SAF 通道不可用或失败时，回退零宽字符变体直拷（Dart IO）。
         if (!shellCopied) {
           await tryCopyViaRestrictedVariants(_currentFilePath, tempFile.path);
+        }
+        // 受限路径的二进制嗅探：刚才跳过，这里在临时文件上补做。
+        if (await tempFile.exists()) {
+          final head = await tempFile.openRead().take(4096).first;
+          if (_looksBinary(head)) {
+            try { await tempFile.delete(); } catch (_) {}
+            _rejectAndPop();
+            return;
+          }
         }
         content = _decodeBytesWithFallback(await tempFile.readAsBytes());
         try {

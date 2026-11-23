@@ -2112,6 +2112,10 @@ class L10nAr extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable =>
+      'الملف كبير جدًا أو يحتوي على بيانات ثنائية ولا يمكن فتحه في محرر النصوص. افتحه بطريقة أخرى.';
+
+  @override
   String get msg24c6ab0f => 'تم حفظ الملف بنجاح';
 
   @override

@@ -2121,6 +2121,10 @@ class L10nEn extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable =>
+      'The file is too large or contains binary data and cannot be opened in the text editor. Please open it another way.';
+
+  @override
   String get msg24c6ab0f => 'File saved successfully';
 
   @override

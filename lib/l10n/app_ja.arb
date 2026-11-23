@@ -2511,6 +2511,8 @@
   "@e20": {
     "type": "text"
   },
+  "ui_text_editor_unopenable": "ファイルが大きすぎる、またはバイナリ内容のためテキストエディタで開けません。別の方法で開いてください。",
+  "@ui_text_editor_unopenable": {"description":"ui/screens/text_editor_screen.dart"},
   "e20": "ファイルの読み込みエラー: {e}",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"

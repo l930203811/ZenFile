@@ -3916,6 +3916,12 @@ abstract class L10n {
   /// **'加载文件出错：{e}'**
   String e20(Object e);
 
+  /// ui/screens/text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件过大或是二进制内容，无法用文本编辑器打开，请用其他方式查看'**
+  String get ui_text_editor_unopenable;
+
   /// ui\screens\text_editor_screen.dart
   ///
   /// In zh, this message translates to:

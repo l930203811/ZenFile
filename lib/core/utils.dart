@@ -114,7 +114,13 @@ class FileUtils {
         lower.endsWith('.bz2') ||
         lower.endsWith('.7z') ||
         lower.endsWith('.rar') ||
-        lower.endsWith('.001');
+        lower.endsWith('.001') ||
+        // Java 归档（jar/war/aar/ear）本质都是 ZIP，交给压缩包内浏览通道，
+        // 避免落进文本编辑器被整文件 readAsBytes + 全量解码卡死（issue #84）。
+        lower.endsWith('.jar') ||
+        lower.endsWith('.war') ||
+        lower.endsWith('.aar') ||
+        lower.endsWith('.ear');
   }
 
   // ── zip:// 虚拟路径（压缩包内浏览）──────────────────────────────────

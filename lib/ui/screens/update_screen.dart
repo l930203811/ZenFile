@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.8.1';
+  static const String _latestChangelogVersion = 'v3.8.2';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v382,
     _v381,
     _v380,
     _v379,
@@ -968,7 +969,43 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.8.1 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.2 ────────────────────────────────────────────────
+  static const _Changelog _v382 = _Changelog(
+    version: 'v3.8.2',
+    date: '2026-11-24',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复用文本方式打开 .jar / .war / .aar / .ear 等 Java 归档时可能出现的应用无响应（ANR）：现在这类文件会按压缩包识别，可直接浏览内部文件',
+        '文本编辑器新增安全防线：打开超过 10MB 的文件或检测到二进制内容时会给出提示并退回，不再尝试整文件解码渲染导致界面卡死',
+        '修复 Android 7.x（API 25）设备上复制文件或检测 Root 权限时的崩溃：改用兼容低版本系统的进程等待方式',
+        '修复通过 Shizuku 访问 Android/data 等受限目录时，文件夹内图片 / 视频 / APK 图标不显示的问题',
+        '修复抽屉页与「关于 ZenFile」页版本号错误显示为 v3.7.7 的问题，现在始终读取当前安装的实际版本',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '收藏夹说明栏新增「上滑打开收藏夹」开关（默认开启）：系统手势导航容易误触时可随时关闭',
+        '「固定操作栏」开关迁入「设置 — 浏览页设置 — 文件浏览器与导航」，并将「显示操作按钮」统一更名为「显示操作栏」；默认关闭，开启后滚动列表时操作栏保持可见',
+        '补充 Windows 桌面端基础适配、媒体扫描与鼠标交互等改动，不影响 Android 端使用',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed an app-not-responding (ANR) issue when opening .jar / .war / .aar / .ear Java archives as text: these files are now recognised as archives and can be browsed directly',
+        'Added safeguards to the text editor: files larger than 10MB or detected as binary now show a notice and close instead of being fully decoded and rendered, which could freeze the app',
+        'Fixed crashes on Android 7.x (API 25) when copying files or checking root access by using a process-waiting method compatible with older system versions',
+        'Fixed missing images, video thumbnails and APK icons inside restricted folders such as Android/data when using Shizuku access',
+        'Fixed the version number in the drawer and on the "About ZenFile" page being stuck at v3.7.7; it now always reads the installed version',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Added a "Swipe up to open Favorites" toggle in the Favorites panel (enabled by default), so the gesture can be turned off when it conflicts with system navigation',
+        'Moved the "Keep action bar pinned" toggle to Settings - Browse settings - File browser and navigation, and renamed "Show action buttons" to "Show action bar" for consistency. It is off by default and keeps the bar visible while scrolling when enabled',
+        'Added groundwork for Windows desktop support, including media scanning and mouse interaction improvements; Android behaviour is unchanged',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.8.1（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v381 = _Changelog(
     version: 'v3.8.1',
     date: '2026-11-19',

@@ -2158,6 +2158,10 @@ class L10nRu extends L10n {
   }
 
   @override
+  String get ui_text_editor_unopenable =>
+      'Файл слишком большой или содержит двоичные данные и не может быть открыт в текстовом редакторе. Откройте его другим способом.';
+
+  @override
   String get msg24c6ab0f => 'Файл успешно сохранён';
 
   @override
