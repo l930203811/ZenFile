@@ -11109,7 +11109,12 @@ class FileManagerProvider extends ChangeNotifier {
             }
           }
 
-          emitProgress(name, fileSize, 0.0);
+          // 预热帧必须带 key=destPath：_runUploadJobs 的进度/完成回调统一用
+          // j.remotePath 当 key。若这里缺省（用文件名当 key），tracker 会为每个
+          // 顶级文件多造一个「永不更新也永不结算」的幽灵条目，且它排在最前
+          // —— 内圈（focus=最早插入的在途条目）会永远指向幽灵、恒为 0%。
+          // OpenList 本机代理模式上传等待长，内圈卡 0 才被注意到。
+          emitProgress(name, fileSize, 0.0, key: destPath);
           // 不在此处 await 上传：收集为作业，循环结束后统一并发上传
           // （见下方「批量并发上传顶级文件」段）。剪切源删除一并延后处理。
           _pendingFileJobs.add(_UploadJob(
