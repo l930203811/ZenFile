@@ -5,6 +5,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/network_connections_service.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
@@ -479,6 +480,14 @@ class QuickCategoriesGrid extends StatefulWidget {
                 'key': e.key,
                 'label': e.value['label'] as String,
                 'icon': e.value['icon'] as IconData,
+              }),
+          // issue #83：Remote 侧栏保存的连接可直接占一个底栏槽位，
+          // 点击后直达该连接（此前只能选包含它们的通用「连接」tab）。
+          ...NetworkConnectionsService.getConnections().map((conn) => {
+                'type': 'remote',
+                'key': conn.id,
+                'label': conn.name,
+                'icon': Broken.cloud,
               }),
         ];
         final currentType = current?['type'];
@@ -3237,6 +3246,12 @@ class BottomTabSlotRow extends StatelessWidget {
         default:
           return l10n.ui_transfers;
       }
+    }
+    if (cfg['type'] == 'remote') {
+      for (final conn in NetworkConnectionsService.getConnections()) {
+        if (conn.id == cfg['key']) return conn.name;
+      }
+      return l10n.ui_transfers; // 连接已删除：兜底显示
     }
     if (cfg['type'] == 'custom_entry') {
       return PreferencesService.getCustomEntryLabel() ??

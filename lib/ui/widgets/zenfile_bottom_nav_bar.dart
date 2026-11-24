@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/network_connections_service.dart';
 import 'liquid_bottom_bar.dart';
 import 'quick_categories_grid.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -251,6 +252,16 @@ class ZenFileBottomNavBar extends StatelessWidget {
         default:
           return [Broken.link, L10n.of(context).ui_transfers, 2, false, slot];
       }
+    }
+    // issue #83：Remote 侧栏保存的连接可直达，显示名用连接自身名称。
+    if (type == 'remote') {
+      for (final conn in NetworkConnectionsService.getConnections()) {
+        if (conn.id == key) {
+          // isCustomEntry=true → 点击走 onOpenSlotEntry，宿主负责打开远程 tab
+          return [Broken.cloud, conn.name, -1, true, slot];
+        }
+      }
+      return [defaultIcon, defaultLabel, defaultIndex, false, slot];
     }
     // custom_entry：打开自定义快捷方式弹窗（isCustomEntry=true → 点击走 onOpenSlotEntry）
     if (type == 'custom_entry') {

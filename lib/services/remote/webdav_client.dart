@@ -561,7 +561,8 @@ class WebDavRemoteClient extends RemoteClient {
         }
       }
     } finally {
-      await sink.flush();
+      // issue #83：IOSink.close() 自身会 flush 后再关闭，额外的 flush()
+      // 等于多一次 fsync（大视频可阻塞 20–30s，进度环已 100% 仍卡住对话框）。
       await sink.close();
     }
     if (isCancelled) {
@@ -597,7 +598,8 @@ class WebDavRemoteClient extends RemoteClient {
         if (downloaded >= length) break;
       }
     } finally {
-      await sink.flush();
+      // issue #83：IOSink.close() 自身会 flush 后再关闭，额外的 flush()
+      // 等于多一次 fsync（大视频可阻塞 20–30s，进度环已 100% 仍卡住对话框）。
       await sink.close();
     }
   }

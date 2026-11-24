@@ -3154,28 +3154,32 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
   }
 
   /// 取文件/目录大小：优先使用系统 MediaStore 索引缓存的字节数（零 I/O），
-  /// 其次 remote:// 缓存，最后回退同步 statSync（仅极少触发的递归扫描兜底路径）。
+  /// 其次 remote:// 缓存，最后是异步预取的本地兜底缓存。
+  ///
+  /// 旧实现在缓存未命中时直接 `entity.statSync()` —— build 阶段每个可见条目
+  /// 都可能触发一次 fstatat，大存储/多文件设备上滚动列表会持续打满主 isolate
+  /// 并触发 Input dispatching timed out（issue #91 的栈顶就是 fstatat）。
+  /// 现在 build 阶段零同步 I/O：未命中先返回 0，同时后台 `stat()` 补缓存，
+  /// 完成后再局部 setState 刷新。
   int _fileSizeOf(FileSystemEntity entity) {
     final p = entity.path;
     if (MediaProvider.isRemotePath(p)) {
       return MediaProvider.getCachedRemoteFileSize(p);
     }
-    // 命中系统索引缓存（含 0 字节文件）→ 零 I/O，避免对海量文件逐个 statSync。
+    // 命中系统索引缓存（含 0 字节文件）→ 零 I/O。
     final cached = Provider.of<MediaProvider>(
       context,
       listen: false,
     ).nonMediaSizes[p];
     if (cached != null) return cached;
-    try {
-      return entity.statSync().size;
-    } catch (_) {
-      return 0;
-    }
+    final fallback = _fallbackSizes[p];
+    if (fallback != null) return fallback;
+    _scheduleFallbackStat(entity);
+    return 0;
   }
 
-  /// 取文件/目录修改时间：优先使用系统 MediaStore 索引缓存的修改时间(ms)（零 I/O），
-  /// 其次 remote:// 缓存，最后回退同步 statSync。避免大存储/多文件设备「按日期」
-  /// 分组时 O(n) 同步 I/O 打满主线程（与音频崩溃同源）。
+  /// 取文件/目录修改时间：优先使用系统 MediaStore 索引缓存的修改时间(ms)，
+  /// 其次 remote:// 缓存，最后是异步预取的本地兜底缓存。不再在 build 中 statSync。
   DateTime _fileModifiedOf(FileSystemEntity entity) {
     final p = entity.path;
     if (MediaProvider.isRemotePath(p)) {
@@ -3188,14 +3192,62 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     if (cached != null && cached > 0) {
       return DateTime.fromMillisecondsSinceEpoch(cached);
     }
-    try {
-      return entity.statSync().modified;
-    } catch (_) {
-      return DateTime.now();
-    }
+    final fallback = _fallbackDates[p];
+    if (fallback != null) return fallback;
+    _scheduleFallbackStat(entity);
+    return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  // _groupByMonth 结果缓存：分组是 O(n)（含逐项日期解析，可能触发 statSync），
+  // 分类页本地文件元数据兜底缓存：只在 MediaProvider 索引缓存未命中时使用。
+  // 由异步 stat() 填充，build 阶段只读 Map，不做任何文件系统 I/O。
+  final Map<String, int> _fallbackSizes = <String, int>{};
+  final Map<String, DateTime> _fallbackDates = <String, DateTime>{};
+  final Set<String> _fallbackStatPending = <String>{};
+  bool _fallbackRefreshScheduled = false;
+
+  /// 多个异步 stat 同时完成时合并成一帧刷新，避免逐个 setState 造成新的掉帧。
+  void _scheduleFallbackRefresh() {
+    if (_fallbackRefreshScheduled || !mounted) return;
+    _fallbackRefreshScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fallbackRefreshScheduled = false;
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _scheduleFallbackStat(FileSystemEntity entity) {
+    final p = entity.path;
+    if (_fallbackStatPending.contains(p)) return;
+    if (_fallbackSizes.containsKey(p) && _fallbackDates.containsKey(p)) return;
+    _fallbackStatPending.add(p);
+    () async {
+      try {
+        final stat = await entity.stat();
+        if (!mounted) return;
+        _fallbackSizes[p] = stat.size;
+        _fallbackDates[p] = stat.modified;
+      } catch (_) {
+        // 读不到就记住 0 / 纪元值，避免滚动时反复重试造成新的 I/O 风暴。
+        if (!mounted) return;
+        _fallbackSizes[p] = 0;
+        _fallbackDates[p] = DateTime.fromMillisecondsSinceEpoch(0);
+      } finally {
+        _fallbackStatPending.remove(p);
+      }
+      // 简单上限，避免长期浏览海量文件时 Map 无限增长；清掉旧条目但保留当前项。
+      if (_fallbackSizes.length > 2000) {
+        final size = _fallbackSizes[p];
+        final date = _fallbackDates[p];
+        _fallbackSizes.clear();
+        _fallbackDates.clear();
+        if (size != null) _fallbackSizes[p] = size;
+        if (date != null) _fallbackDates[p] = date;
+      }
+      _scheduleFallbackRefresh();
+    }();
+  }
+
+  // _groupByMonth 结果缓存：分组是 O(n)（含逐项日期解析），
   // 而该页有大量 setState，任意一次都会触发 build 重新分组。以「源列表引用 +
   // locale」为失效条件；列表由 provider 整体替换，原地修改不存在。
   Object? _groupCacheSource;

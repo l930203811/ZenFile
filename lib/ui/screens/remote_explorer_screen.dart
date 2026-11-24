@@ -14,12 +14,7 @@ import '../../services/heif_image_provider.dart';
 import '../../services/webdav_debug_log.dart';
 import '../../services/media_thumbnail_service.dart';
 import '../../services/remote/remote_client.dart';
-import '../../services/remote/ftp_client.dart';
-import '../../services/remote/sftp_client.dart';
-import '../../services/remote/webdav_client.dart';
-import '../../services/remote/lan_client.dart';
 import '../../services/remote_streaming_service.dart';
-import '../../services/remote/saf_client.dart';
 import '../../services/remote/remote_error_localizer.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/file_action_dialogs.dart';
@@ -89,26 +84,12 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
   Future<void> _initClient() async {
     final conn = widget.connection;
-    if (conn.type == 'FTP') {
-      _client = FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'SFTP') {
-      _client = SftpRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
-      );
-    } else if (conn.type == 'WebDav') {
-      _client = WebDavRemoteClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-        protocol: conn.protocol,
-        rootPath: conn.rootPath,
-      );
-    } else if (FileManagerProvider.isSmbType(conn.type)) {
-      _client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'saf') {
-      _client = SafRemoteClient(rootUri: conn.rootPath);
+    // issue #83：全屏浏览页的下载/上传/播放必须复用权威工厂，带上逐连接
+    // SOCKS5 设置；此前这里 hand-roll 构造，仅列表以外的数据传输全部直连超时。
+    try {
+      _client = FileManagerProvider.createRemoteClient(conn);
+    } catch (e) {
+      debugPrint('Unsupported remote connection: $e');
     }
 
     if (_client == null) {

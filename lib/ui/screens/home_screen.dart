@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../models/network_connection_model.dart';
+import '../../services/network_connections_service.dart';
+import '../../services/remote_guard_service.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
@@ -1249,6 +1252,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           return;
       }
     }
+    // issue #83：底栏槽位直接指向 Remote 侧栏的保存连接。
+    if (type == 'remote') {
+      unawaited(_openRemoteSlotEntry(key));
+      return;
+    }
     if (type == 'custom_entry') {
       _switchTab(0);
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -1276,6 +1284,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // 最终高亮由 action 自身的 _switchTab / openFile 决定，避免与内置 tab 双高亮。
     final action = entry['action'] as VoidCallback?;
     if (action != null) action();
+  }
+
+  /// 打开指向保存远程连接的底栏槽位：与抽屉/网络分类页同等安全语义
+  /// （RemoteGuard PIN 校验 → 连接 → 打开远程 tab → 切浏览页）。
+  Future<void> _openRemoteSlotEntry(String? connectionId) async {
+    NetworkConnectionModel? conn;
+    for (final c in NetworkConnectionsService.getConnections()) {
+      if (c.id == connectionId) {
+        conn = c;
+        break;
+      }
+    }
+    if (conn == null) return; // 连接已删除：静默兜底
+    if (!await RemoteGuardService.guard(context)) return;
+    final client = FileManagerProvider.createRemoteClient(conn);
+    try {
+      await client.connect();
+      if (!mounted) return;
+      await context.read<FileManagerProvider>().openRemoteTab(client, conn);
+      if (mounted) _switchTab(1);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L10n.of(context).e13(e)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   /// 底部槽位长按选择器：不进自定义快捷方式页即可替换任意槽位。

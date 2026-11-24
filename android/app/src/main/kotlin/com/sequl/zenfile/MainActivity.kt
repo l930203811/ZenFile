@@ -1904,7 +1904,9 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/ftp_service").setMethodCallHandler { call, rawResult ->
+        val ftpServiceChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/ftp_service")
+        FtpForegroundService.timeoutChannel = ftpServiceChannel
+        ftpServiceChannel.setMethodCallHandler { call, rawResult ->
             val result = rawResult.replyOnce()
             when (call.method) {
                 "startFtpService" -> {
@@ -1993,7 +1995,9 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/web_sharing_service").setMethodCallHandler { call, rawResult ->
+        val webSharingChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/web_sharing_service")
+        WebSharingForegroundService.timeoutChannel = webSharingChannel
+        webSharingChannel.setMethodCallHandler { call, rawResult ->
             val result = rawResult.replyOnce()
             when (call.method) {
                 "startWebSharingService" -> {

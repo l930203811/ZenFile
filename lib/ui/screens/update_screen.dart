@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.8.2';
+  static const String _latestChangelogVersion = 'v3.8.3';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v383,
     _v382,
     _v381,
     _v380,
@@ -969,7 +970,39 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.8.2 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.3 ────────────────────────────────────────────────
+  static const _Changelog _v383 = _Changelog(
+    version: 'v3.8.3',
+    date: '2026-11-25',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复启用 SOCKS5 代理的远程连接（WebDAV / SFTP / FTP 等）在后台复制、下载或上传文件时绕过代理、导致大文件传输超时的问题：现在数据传输与目录浏览使用同一套代理配置',
+        '修复 Android 15 及以上系统因 dataSync 前台服务（FTP 服务、Web 分享、自动加密监听）达到 6 小时时限未及时停止而闪退的问题：到达时限时自动关闭服务并同步更新界面状态',
+        '修复媒体分类页（文档 / 压缩包 / 下载 / 安装包等）与文件属性面板在文件数量多时因主线程同步读取文件信息导致的卡顿 / 无响应，大小与时间改为异步补齐',
+        '修复本地多文件上传完成后进度条内圈不显示的问题',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '从远程服务器复制视频等大文件时，进度到达 100% 后立即关闭进度对话框，文件收尾操作改为后台执行，不再出现进度满格后卡顿等待的情况',
+        '底部导航栏的槽位现在可直接选择「远程」侧栏中保存的某个连接作为独立入口，点击即直达该连接（需通过远程访问密码校验）',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed an issue where remote connections with SOCKS5 proxy enabled (WebDAV / SFTP / FTP, etc.) bypassed the proxy during background copy, download or upload, causing large-file transfers to time out: data transfers now use the same proxy settings as directory browsing',
+        'Fixed crashes on Android 15+ when dataSync foreground services (FTP server, Web sharing, auto-encryption watch) reached their 6-hour limit without stopping: services now stop automatically and the UI state is updated in sync',
+        'Fixed freezes / app-not-responding in media category screens (Documents / Archives / Downloads / APKs, etc.) and the file properties panel on large libraries caused by synchronous file reads on the main thread; sizes and dates are now filled in asynchronously',
+        'Fixed the progress ring inner circle not showing after multi-file local uploads complete',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'When copying large files such as videos from a remote server, the progress dialog now closes as soon as progress reaches 100% and cleanup runs in the background, removing the freeze after full progress',
+        'Bottom navigation bar slots can now be assigned directly to a saved connection from the "Remote" sidebar as a standalone shortcut; tapping it opens that connection (subject to the remote-access PIN check)',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.8.2（已发布，日志保持发布时的内容，勿改） ────────────
   static const _Changelog _v382 = _Changelog(
     version: 'v3.8.2',
     date: '2026-11-24',

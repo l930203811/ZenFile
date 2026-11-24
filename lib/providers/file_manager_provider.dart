@@ -54,10 +54,7 @@ import '../services/remote/remote_media_playlist.dart';
 import '../services/remote/remote_session_recovery.dart';
 import '../services/crypt/crypt.dart';
 import '../services/remote/ftp_client.dart';
-import '../services/remote/sftp_client.dart';
-import '../services/remote/webdav_client.dart';
 import '../services/remote/lan_client.dart';
-import '../services/remote/saf_client.dart';
 import '../services/remote_streaming_service.dart';
 import '../services/network_connections_service.dart';
 import '../core/navigator_key.dart';
@@ -10502,27 +10499,14 @@ class FileManagerProvider extends ChangeNotifier {
         ? p.dirname(_remoteClipboardItems.first.path)
         : '/';
 
+    // issue #83：后台传输必须复用权威工厂（含逐连接 SOCKS5 代理设置）。
+    // 此前这里 hand-roll 构造 client，5 个 proxy* 字段全部丢失 ⇒ 目录列表
+    // 走代理正常、GET/PUT 直连超时；改用工厂同时修掉本地化 type 精确比较失配。
     RemoteClient? client;
-    if (conn.type == 'FTP') {
-      client = FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'SFTP') {
-      client = SftpRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
-      );
-    } else if (conn.type == 'WebDav') {
-      client = WebDavRemoteClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-        protocol: conn.protocol,
-        rootPath: conn.rootPath,
-      );
-    } else if (isSmbType(conn.type)) {
-      client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'saf') {
-      client = SafRemoteClient(rootUri: conn.rootPath);
+    try {
+      client = createRemoteClient(conn);
+    } catch (e) {
+      debugPrint('Unsupported remote connection for paste: $e');
     }
 
     if (client == null) {
@@ -10614,6 +10598,9 @@ class FileManagerProvider extends ChangeNotifier {
       int previousFilesBytes = 0;
       final stopwatch = Stopwatch()..start();
       ConflictResult? cachedResolution;
+      // issue #83：最后一个文件报 100% 后 WebDAV 仍要 sink.flush()/close()
+      // （大视频可达 20–30s），此处先关进度对话框，收尾继续在后台完成。
+      bool dialogClosedEarly = false;
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) {
@@ -10723,6 +10710,7 @@ class FileManagerProvider extends ChangeNotifier {
           );
 
           await client.downloadFile(remoteItem.path, destPath, (prog) {
+            if (dialogClosedEarly) return;
             bytesDone = previousFilesBytes + (fileSize * prog).round();
             final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
             final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
@@ -10744,6 +10732,12 @@ class FileManagerProvider extends ChangeNotifier {
               currentFileBytes: (fileSize * prog).round(),
               currentFileTotal: fileSize,
             );
+            // issue #83：最后一包到达即关对话框，flush/disconnect/目录刷新
+            // 在后台继续；不让用户对着 100% 的进度环比等 20–30 秒。
+            if (prog >= 1.0 && i == _remoteClipboardItems.length - 1) {
+              dialogClosedEarly = true;
+              progressNotifier.value = null;
+            }
           });
           previousFilesBytes += fileSize;
           bytesDone = previousFilesBytes;
@@ -11822,24 +11816,13 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<RemoteClient?> _createRemoteClient(NetworkConnectionModel conn) async {
-    if (conn.type == 'FTP') {
-      return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'SFTP') {
-      return SftpRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
-      );
-    } else if (conn.type == 'WebDav') {
-      return WebDavRemoteClient(
-        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-        protocol: conn.protocol, rootPath: conn.rootPath,
-      );
-    } else if (isSmbType(conn.type)) {
-      return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-    } else if (conn.type == 'saf') {
-      return SafRemoteClient(rootUri: conn.rootPath);
+    // issue #83：跨服务器复制的源端同样走权威工厂，避免 GET 绕过 SOCKS5。
+    try {
+      return createRemoteClient(conn);
+    } catch (e) {
+      debugPrint('Unsupported remote connection for copy: $e');
+      return null;
     }
-    return null;
   }
 
   /// Recursively counts files in a remote directory (requires listDirectory calls).

@@ -767,11 +767,13 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
 
       for (final path in widget.selectedPaths) {
         try {
-          final type = FileSystemEntity.typeSync(path);
+          // 全部走异步 I/O：属性页此前用 typeSync/statSync/existsSync/lengthSync，
+          // 主线程会直接在 fstatat 上卡住输入分发（issue #91 栈顶同型）。
+          final type = await FileSystemEntity.type(path);
           if (type == FileSystemEntityType.directory) {
             folders++;
             if (widget.selectedPaths.length == 1) {
-              final stat = Directory(path).statSync();
+              final stat = await Directory(path).stat();
               _lastModified = stat.modified;
               final canRead = (stat.mode & 0x100) != 0;
               final canWrite = (stat.mode & 0x80) != 0;
@@ -796,23 +798,20 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
             } catch (_) {}
           } else if (type == FileSystemEntityType.file) {
             files++;
-            final f = File(path);
-            if (f.existsSync()) {
-              bytes += f.lengthSync();
-              if (widget.selectedPaths.length == 1) {
-                final stat = f.statSync();
-                _lastModified = stat.modified;
-                final canRead = (stat.mode & 0x100) != 0;
-                final canWrite = (stat.mode & 0x80) != 0;
-                final l = l10n();
-                if (l != null) {
-                  if (canRead && canWrite) {
-                    _permissions = '${l.prop_read} / ${l.prop_write}';
-                  } else if (canRead) {
-                    _permissions = l.prop_read;
-                  } else if (canWrite) {
-                    _permissions = l.prop_write;
-                  }
+            final stat = await File(path).stat();
+            bytes += stat.size;
+            if (widget.selectedPaths.length == 1) {
+              _lastModified = stat.modified;
+              final canRead = (stat.mode & 0x100) != 0;
+              final canWrite = (stat.mode & 0x80) != 0;
+              final l = l10n();
+              if (l != null) {
+                if (canRead && canWrite) {
+                  _permissions = '${l.prop_read} / ${l.prop_write}';
+                } else if (canRead) {
+                  _permissions = l.prop_read;
+                } else if (canWrite) {
+                  _permissions = l.prop_write;
                 }
               }
             }

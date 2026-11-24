@@ -3,12 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/utils.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/network_connections_service.dart';
-import '../../services/remote/ftp_client.dart';
-import '../../services/remote/lan_client.dart';
 import '../../services/remote/remote_client.dart';
-import '../../services/remote/saf_client.dart';
-import '../../services/remote/sftp_client.dart';
-import '../../services/remote/webdav_client.dart';
 import '../widgets/remote_path_picker.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -57,41 +52,11 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
 
   Future<void> _initClient() async {
     final conn = widget.connection;
-    if (conn.type == 'FTP') {
-      _client = FtpRemoteClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-      );
-    } else if (conn.type == 'SFTP') {
-      _client = SftpRemoteClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-        sshKeyPath: conn.sshKeyPath,
-        sshKeyPassword: conn.sshKeyPassword,
-        authMethod: conn.authMethod,
-      );
-    } else if (conn.type == 'WebDav') {
-      _client = WebDavRemoteClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-        protocol: conn.protocol,
-        rootPath: conn.rootPath,
-      );
-    } else if (NetworkConnectionsService.isSmbType(conn.type)) {
-      _client = LanClient(
-        host: conn.host,
-        port: conn.port,
-        username: conn.username,
-        password: conn.password,
-      );
-    } else if (conn.type == 'saf') {
-      _client = SafRemoteClient(rootUri: conn.rootPath);
+    // issue #83：目录选择器的客户端也会用于后续远程传输，必须带 SOCKS5 设置。
+    try {
+      _client = NetworkConnectionsService.buildRemoteClient(conn);
+    } catch (e) {
+      debugPrint('Unsupported remote connection: $e');
     }
 
     if (_client == null) {

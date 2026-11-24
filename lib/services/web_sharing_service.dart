@@ -56,6 +56,9 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   /// Current locale for web sharing HTML pages (e.g., 'en', 'zh', 'zh_TW', 'ja', etc.)
   String _webLocale = 'en';
 
+  /// 是否已注册原生超时回传（Android 15+ dataSync 6 小时限制，issue #92）
+  bool _timeoutHandlerRegistered = false;
+
   // Notification text (localized via l10n)
   String _notifLocalTitle = 'ZenFile Local Web Share';
   String _notifInternetTitle = 'ZenFile Internet Web Share';
@@ -124,9 +127,25 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     }).toList();
   }
 
+  /// 注册一次原生超时回传：系统因 dataSync 额度到期摘掉前台服务时，
+  /// 必须同步关掉 HttpServer / 公网隧道，否则 UI 状态与实际监听不一致（issue #92）。
+  void _ensureNativeTimeoutHandler() {
+    if (!Platform.isAndroid || _timeoutHandlerRegistered) return;
+    _timeoutHandlerRegistered = true;
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onServiceTimeout') {
+        debugPrint('[ZenFile] Web sharing foreground service timed out by system');
+        if (_isInternetActive) stopInternetTunnel();
+        if (_isLocalActive) await stopLocalServer();
+      }
+      return null;
+    });
+  }
+
   // Real HTTP Local Server lifecycle
   Future<void> startLocalServer(String rootDir) async {
     if (_isLocalActive) return;
+    _ensureNativeTimeoutHandler();
 
     // 如果 rootDir 为空，使用默认的内部存储根目录
     if (rootDir.isEmpty) {
@@ -2931,6 +2950,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   // --- Real Internet Sharing cloud tunnel ---
   Future<void> startInternetTunnel(String rootDir) async {
     if (_isInternetActive) return;
+    _ensureNativeTimeoutHandler();
 
     // 公网隧道暴露面远大于局域网，必须启用访问口令：
     // 用户未设置时自动生成一个并持久化，UI 负责展示给用户。

@@ -115,6 +115,16 @@ class FtpServerService {
         if (kDebugMode) print('FTP Control Server error: $e');
       });
       if (Platform.isAndroid) {
+        // issue #92：Android 15+ 的 dataSync 前台服务 6 小时额度到期时，原生
+        // 会回传 onServiceTimeout；这里必须真正关掉 FTP socket，避免只剩下
+        // 「通知已消失但服务仍在监听」的状态不一致。
+        _channel.setMethodCallHandler((call) async {
+          if (call.method == 'onServiceTimeout') {
+            debugPrint('[ZenFile] FTP foreground service timed out by system');
+            stop();
+          }
+          return null;
+        });
         try {
           await _channel.invokeMethod('startFtpService', {
             'ip': _ipAddress,

@@ -183,6 +183,13 @@ class CryptAutoEncryptService extends ChangeNotifier {
   }
 
   Future<dynamic> _handleNativeCall(MethodCall call) async {
+    // issue #92：dataSync 前台服务 6 小时额度到期，原生已摘通知并 stopSelf，
+    // 这里同步关掉自动加密开关，避免 UI 仍显示「监听中」。
+    if (call.method == 'onServiceTimeout') {
+      debugPrint('[ZenFile] crypt watch foreground service timed out by system');
+      unawaited(setEnabled(false));
+      return null;
+    }
     if (call.method != 'onFileChanged') return null;
     final args = call.arguments as Map?;
     if (args == null) return null;

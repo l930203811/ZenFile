@@ -93,7 +93,7 @@ class CryptWatchForegroundService : Service() {
         if (action == "stop") {
             stopWatchers()
             isRunning = false
-            stopForeground(true)
+            try { stopForeground(STOP_FOREGROUND_REMOVE) } catch (_: Exception) {}
             stopSelf()
             return START_NOT_STICKY
         }
@@ -108,9 +108,28 @@ class CryptWatchForegroundService : Service() {
             intent?.getStringArrayExtra("pendingPaths")?.toList() ?: emptyList()
         applyPaths(paths, pendingPaths)
         isRunning = true
-        // START_STICKY：进程被杀后系统会重建服务（paths 为空时 Dart 侧会在
-        // 下次启动时重新 setPaths；重建期间丢失的事件由 Dart 的兜底扫描补上）
-        return START_STICKY
+        // issue #92：dataSync 前台服务 6 小时额度到期被系统要求停止时，
+        // 重建一个没有 paths 的空监听服务毫无意义，反而会再次触发超时。
+        return START_NOT_STICKY
+    }
+
+    /**
+     * API 35+ 系统回调：dataSync 后台累计 6 小时到期。先通知 Dart 关掉
+     * 自动加密开关，再停监听、摘通知、stopSelf，避免系统硬杀进程。
+     */
+    override fun onTimeout(startId: Int, reason: Int) {
+        Log.w(TAG, "dataSync foreground timeout reason=$reason, stopping crypt watch")
+        try {
+            eventChannel?.invokeMethod("onServiceTimeout", mapOf("reason" to reason))
+        } catch (_: Exception) {
+        }
+        stopWatchers()
+        isRunning = false
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Exception) {
+        }
+        stopSelf(startId)
     }
 
     /** 用 Flutter 传入的目录表重建所有 observer */
@@ -328,6 +347,10 @@ class CryptWatchForegroundService : Service() {
     override fun onDestroy() {
         stopWatchers()
         isRunning = false
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Exception) {
+        }
         super.onDestroy()
     }
 }

@@ -9,10 +9,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import io.flutter.plugin.common.MethodChannel
 
 class WebSharingForegroundService : Service() {
-    private val CHANNEL_ID = "web_sharing_channel"
-    private val NOTIFICATION_ID = 1003
+    companion object {
+        private const val CHANNEL_ID = "web_sharing_channel"
+        private const val NOTIFICATION_ID = 1003
+
+        /**
+         * Dart 侧 Web 分享通道。dataSync 6 小时额度到期时先回传 Dart 关掉
+         * HttpServer/隧道，再摘通知 + stopSelf（issue #92）。
+         */
+        @Volatile
+        var timeoutChannel: MethodChannel? = null
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -20,6 +30,11 @@ class WebSharingForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.getStringExtra("action") == "stop") {
+            shutdown()
+            return START_NOT_STICKY
+        }
+
         val url = intent?.getStringExtra("url") ?: "http://127.0.0.1:8080"
         val isInternet = intent?.getBooleanExtra("isInternet", false) ?: false
         val title = intent?.getStringExtra("title") ?: if (isInternet) "ZenFile Internet Web Share" else "ZenFile Local Web Share"
@@ -60,7 +75,38 @@ class WebSharingForegroundService : Service() {
 
         startForeground(NOTIFICATION_ID, notification)
 
-        return START_STICKY
+        // issue #92：同 FTP 服务，dataSync 后台 6 小时到期必须几秒内 stopSelf，
+        // 否则系统抛 ForegroundServiceDidNotStopInTimeException 杀进程。
+        return START_NOT_STICKY
+    }
+
+    /** API 35+ 系统回调：先让 Dart 停掉真正的分享服务，再摘通知 + stopSelf。 */
+    override fun onTimeout(startId: Int, reason: Int) {
+        try {
+            timeoutChannel?.invokeMethod("onServiceTimeout", mapOf("reason" to reason))
+        } catch (_: Exception) {
+        }
+        shutdown(startId)
+    }
+
+    private fun shutdown(startId: Int? = null) {
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Exception) {
+        }
+        if (startId != null) {
+            stopSelf(startId)
+        } else {
+            stopSelf()
+        }
+    }
+
+    override fun onDestroy() {
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (_: Exception) {
+        }
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
