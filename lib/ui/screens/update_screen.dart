@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.8.3';
+  static const String _latestChangelogVersion = 'v3.8.4';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v384,
     _v383,
     _v382,
     _v381,
@@ -970,7 +971,39 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.8.3 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.4 ────────────────────────────────────────────────
+  static const _Changelog _v384 = _Changelog(
+    version: 'v3.8.4',
+    date: '2026-11-26',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复新安装或未授予权限时进入音频分类可能闪退的问题（第三方音频查询插件重复回复导致）',
+        '修复通过 Shizuku / 受限路径访问 Android/data 时，包名文件夹本身不显示对应应用图标的问题',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '优化大量文件 / 大存储设备下的列表排序、目录枚举、复制进度与图片探测，减少滑动和文件操作时的卡顿',
+        '崩溃报告 / 反馈提交成功后自动清理本地对应记录，避免重复提交',
+        '快传不再保存已配对设备名，统一通过「附近设备」重新扫描连接，避免保存后仍需扫描且偶尔连不上',
+        '文本编辑器顶部加号改为「新建文本文件 / 导入文本文件」入口，三点菜单中的导入项已移除',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed a crash when entering the audio category on a fresh install or before permissions were granted (caused by a third-party audio query plugin replying twice)',
+        'Fixed app icons not showing on the package folders themselves under Android/data when using Shizuku or restricted-path access',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Improved performance on libraries with large numbers of files / large storage devices: sorting, directory enumeration, copy progress and image probing are now smoother, reducing freezes while scrolling or working with files',
+        'Crash / feedback reports are automatically removed locally after a successful upload, preventing duplicate submissions',
+        'Quick Transfer no longer saves paired device names; connections always go through a fresh "Nearby devices" scan, avoiding cases where saved devices still needed a scan and sometimes failed to connect',
+        'The text editor plus button now opens a menu with "New text file" / "Import text file"; the import entry has been removed from the overflow menu',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.8.3（已发布，日志保持发布时的内容，勿改） ─────────────
   static const _Changelog _v383 = _Changelog(
     version: 'v3.8.3',
     date: '2026-11-25',
