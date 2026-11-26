@@ -178,16 +178,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isMuted = false;
   // Playback mode: 0=sequential, 1=list loop, 2=single loop, 3=shuffle
   int _playbackMode = 0;
-  int _repeatMode = 0; // 0=none, 1=one, 2=all (derived from _playbackMode)
   bool _isShuffled = false;
   List<int> _shuffleQueue = const [];
   int _shufflePos = 0;
   int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
   int _aspectRatioMode = 0; // 0=原始比例, 1=拉伸填充, 2=居中, 3=填充屏幕, 4=16:9, 5=4:3, 6=自定义
   double _customAspectRatio = 16 / 9;
-  // 用户是否手动切换过缩放模式。未触碰时，全屏自动用 cover 填满（贴近 MX 无黑边）；
-  // 一旦手动切换，则尊重用户选择，不再自动覆盖。
-  bool _userTouchedAspect = false;
   String? _aspectToast;
   Timer? _aspectToastTimer;
 
@@ -2769,23 +2765,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _shufflePos = 0;
   }
 
-  /// Map unified playback mode to _repeatMode / _isShuffled (same scheme as audio player).
+  /// Map unified playback mode to _isShuffled (same scheme as audio player).
   void _applyPlaybackMode(int mode) {
     switch (mode) {
       case 0: // sequential
-        _repeatMode = 0;
         _isShuffled = false;
         break;
       case 1: // list loop
-        _repeatMode = 2;
         _isShuffled = false;
         break;
       case 2: // single loop
-        _repeatMode = 1;
         _isShuffled = false;
         break;
       case 3: // shuffle
-        _repeatMode = 0;
         _isShuffled = true;
         _buildShuffleQueue();
         break;
@@ -3275,11 +3267,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  void _stopVolumePolling() {
-    _volumePollTimer?.cancel();
-    _volumePollTimer = null;
-  }
-
   void _startLongPress() {
     if (_isLocked) return;
     _previousSpeed = _playbackSpeed;
@@ -3613,7 +3600,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   /// 切换伸缩比例并显示提示词
   void _toggleAspectRatio() {
     setState(() {
-      _userTouchedAspect = true;
       _aspectRatioMode = (_aspectRatioMode + 1) % 7;
       _aspectToast = _aspectRatioLabel();
     });
@@ -3650,7 +3636,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               final value = double.tryParse(controller.text.replaceAll(',', '.'));
               if (value != null && value > 0.1 && value < 10.0) {
                 setState(() {
-                  _userTouchedAspect = true;
                   _customAspectRatio = value;
                   _aspectRatioMode = 6;
                   _aspectToast = _aspectRatioLabel();

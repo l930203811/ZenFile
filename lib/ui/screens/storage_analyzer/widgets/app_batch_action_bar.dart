@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -58,8 +57,6 @@ class AppBatchActionBar extends StatelessWidget {
 
     if (confirm == true) {
       final List<String> toUninstall = selectedPackages.toList();
-      // 在清除选择前捕获 navigator（rootNavigator 保证进度框可被关闭）
-      final navigator = Navigator.of(context, rootNavigator: true);
       onClearSelection();
 
       for (final package in toUninstall) {

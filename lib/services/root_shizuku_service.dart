@@ -1332,13 +1332,4 @@ class SafAndroidDataService {
       await prefs.setString(key, uri);
     } catch (_) {}
   }
-
-  static Future<String?> _getTreeUri(String key) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(key);
-    } catch (_) {
-      return null;
-    }
-  }
 }

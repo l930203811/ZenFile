@@ -215,10 +215,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       icon: Icons.category_rounded,
                       title: L10n.of(context).cat_quick_categories,
                       children: [
-                        ...activeList.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final cat = entry.value;
-                          final labelKey = activeLabels[index];
+                        ...activeList.map((cat) {
                           final label = cat['label'] as String;
                           final icon = cat['icon'] as IconData;
                           final action = cat['action'] as VoidCallback?;

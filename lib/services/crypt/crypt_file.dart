@@ -188,16 +188,6 @@ class CryptFile {
     );
   }
 
-  /// 使用指定密钥解密单个块
-  Uint8List _decryptWithKey(Uint8List key, Uint8List ciphertextAndTag, Uint8List nonce) {
-    // 使用 pinenacl SecretBox 直接解密单个块
-    // 块格式：ciphertext + tag，nonce 通过参数传入
-    final secretBox = SecretBox(key);
-    return Uint8List.fromList(
-      secretBox.decrypt(ByteList(ciphertextAndTag), nonce: nonce),
-    );
-  }
-
   /// 从指定偏移写入明文数据（自动加密，块级读-改-写）
   ///
   /// [offset] 明文偏移（从 0 开始）；[data] 要写入的明文数据。
@@ -420,9 +410,4 @@ class CryptFile {
       throw StateError('File is not open');
     }
   }
-}
-
-/// 扩展方法，用于 let 表达式
-extension _LetExtension<T> on T {
-  R let<R>(R Function(T) block) => block(this);
 }

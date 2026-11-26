@@ -1530,14 +1530,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     _recomputePreview();
   }
 
-  void _applySize(int w, int h) {
-    _pushUndo();
-    _widthCtrl.text = w.toString();
-    _heightCtrl.text = h.toString();
-    _params = _params.copyWith(targetWidth: w, targetHeight: h);
-    _recomputePreview();
-  }
-
   // ---- 旋转/翻转 ----
   void _rotate(int delta) {
     _pushUndo();
@@ -1574,35 +1566,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     {'key': 'cool', 'labelKey': 'editor_filter_cool'},
     {'key': 'warm', 'labelKey': 'editor_filter_warm'},
   ];
-
-  // ---- 证件照常见尺寸预设 ----
-  static const List<_IdPreset> _idPresets = [
-    _IdPreset('editor_passport_413_531', 413, 531),
-    _IdPreset('editor_preset_1inch', 295, 413),
-    _IdPreset('editor_preset_2inch', 413, 579),
-    _IdPreset('editor_preset_small_1inch', 260, 378),
-    _IdPreset('editor_preset_large_1inch', 390, 567),
-    _IdPreset('editor_preset_us_visa', 600, 600),
-  ];
-
-  String _idPresetLabel(String key, L10n l10n) {
-    switch (key) {
-      case 'editor_passport_413_531':
-        return l10n.editor_passport_413_531;
-      case 'editor_preset_1inch':
-        return l10n.editor_preset_1inch;
-      case 'editor_preset_2inch':
-        return l10n.editor_preset_2inch;
-      case 'editor_preset_small_1inch':
-        return l10n.editor_preset_small_1inch;
-      case 'editor_preset_large_1inch':
-        return l10n.editor_preset_large_1inch;
-      case 'editor_preset_us_visa':
-        return l10n.editor_preset_us_visa;
-      default:
-        return key;
-    }
-  }
 
   // ---- 保存 ----
   Future<void> _save({required bool overwrite}) async {
@@ -2315,37 +2278,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     }
   }
 
-  Widget _buildMenuButton<T>({
-    required String label,
-    required List<T> values,
-    required String Function(T) labelBuilder,
-    required ValueChanged<T> onSelected,
-  }) {
-    final scheme = Theme.of(context).colorScheme;
-    return PopupMenuButton<T>(
-      onSelected: onSelected,
-      itemBuilder: (context) => [
-        for (final v in values)
-          PopupMenuItem<T>(value: v, child: Text(labelBuilder(v))),
-      ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          border: Border.all(color: scheme.outline.withAlpha(100)),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(label, style: TextStyle(color: scheme.onSurface)),
-            const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, color: scheme.onSurface, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
   // --- DPI 模式相关状态 ---
   final TextEditingController _widthMMCtrl = TextEditingController();
   final TextEditingController _heightMMCtrl = TextEditingController();
@@ -2953,14 +2885,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     _disposeTextEdit();
     super.dispose();
   }
-}
-
-// ---- 证件照常见尺寸预设 ----
-class _IdPreset {
-  final String key;
-  final int w;
-  final int h;
-  const _IdPreset(this.key, this.w, this.h);
 }
 
 /// 编辑状态快照（撤回栈/取消恢复共用）：参数 + 质量。

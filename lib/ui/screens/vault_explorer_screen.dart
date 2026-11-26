@@ -2940,7 +2940,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       ),
     );
 
-    var ok = 0;
     var fail = 0;
     for (var i = 0; i < sandboxRecs.length; i++) {
       final rec = sandboxRecs[i];
@@ -2954,7 +2953,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               ctl.setOverall((i + done / cnt) / total),
           onFileProgress: ctl.onFile,
         );
-        ok++;
       } catch (e) {
         debugPrint('[vault] 批量解密（沙盒）失败 ${rec.scrambledPath}: $e');
         fail++;
@@ -2981,7 +2979,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           await ops.decryptFile(item.path, onFileProgress: ctl.onFile);
         }
         await VaultImportStore.remove(item.path);
-        ok++;
       } catch (e) {
         debugPrint('[vault] 批量解密（原地）失败 ${item.path}: $e');
         fail++;
@@ -3038,12 +3035,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
     if (confirm != true || !mounted) return;
 
-    var ok = 0;
     var fail = 0;
     for (final rec in sandboxRecs) {
       try {
         await _deleteSandboxRecord(rec);
-        ok++;
       } catch (e) {
         debugPrint('[vault] 批量删除（沙盒）失败 ${rec.scrambledPath}: $e');
         fail++;
@@ -3052,7 +3047,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     for (final item in inplaceItems) {
       try {
         await _deleteInPlaceItem(item);
-        ok++;
       } catch (e) {
         debugPrint('[vault] 批量删除（原地）失败 ${item.path}: $e');
         fail++;

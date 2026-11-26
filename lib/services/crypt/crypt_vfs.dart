@@ -48,13 +48,9 @@
 /// ```
 library;
 
-import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'crypt_config.dart';
 import 'crypt_mount.dart';
 import 'crypt_file.dart';
 import 'crypt_operations.dart';
-import 'rclone_crypt.dart';
 
 export 'crypt_config.dart';
 export 'crypt_mount.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/virus_total_service.dart';
-import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/circled_back_button.dart';
 
 /// APK 安装安全扫描设置页：功能说明 + API Key 配置 + 详细获取指引。

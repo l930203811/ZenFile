@@ -23,7 +23,6 @@ class _DecibelMeterScreenState extends State<DecibelMeterScreen>
   bool _isMeasuring = false;
   String? _errorMsg;
   AnimationController? _animCtrl;
-  double _smoothDb = 0; // 平滑后的指针值（避免指针跳动过快）
 
   @override
   void initState() {
@@ -140,7 +139,6 @@ class _DecibelMeterScreenState extends State<DecibelMeterScreen>
       _errorMsg = null;
       _history.clear();
       _currentDb = 0;
-      _smoothDb = 0;
     });
     _ticker = Timer.periodic(const Duration(milliseconds: 333), (_) {});
   }

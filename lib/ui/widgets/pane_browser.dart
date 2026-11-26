@@ -32,7 +32,6 @@ import 'unknown_file_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'file_operation_progress_dialog.dart';
 import 'file_action_dialogs.dart';
-import 'progress_overlay.dart';
 import 'remote_cloud_badge.dart';
 import 'install_status_badge.dart';
 import 'create_archive_dialog.dart';

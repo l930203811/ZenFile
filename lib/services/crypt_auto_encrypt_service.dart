@@ -340,7 +340,7 @@ class CryptAutoEncryptService extends ChangeNotifier {
         final dir = Directory(plainDir);
         if (!await dir.exists()) continue;
         var hasContent = false;
-        await for (final e in dir.list(followLinks: false)) {
+        await for (final _ in dir.list(followLinks: false)) {
           hasContent = true;
           break;
         }

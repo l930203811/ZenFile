@@ -1161,27 +1161,6 @@ class FtpRemoteClient extends RemoteClient {
     return list;
   }
 
-  /// 取消上传时清理服务端残留的 file-<随机数字>（无后缀）临时文件。
-  ///
-  /// 这些临时文件由服务端在 STOR 过程中创建，正常情况下会在传输完成后被
-  /// 重命名为目标文件。成功上传时不能删除它们（里面可能是真实数据），只
-  /// 有在取消上传时才删除，避免目录里留下残缺垃圾。
-  Future<void> _cleanupStrayTemp(String remoteDir, String targetName) async {
-    if (_ftpConnect == null) return;
-    try {
-      final items = await listDirectory(remoteDir, forceRefresh: true);
-      final cutoff = DateTime.now().subtract(const Duration(seconds: 120));
-      for (final item in items) {
-        if (item.isDirectory) continue;
-        if (item.name == targetName) continue;
-        if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name) &&
-            item.modified.isAfter(cutoff)) {
-          try { await delete(item.path, false); } catch (_) {}
-        }
-      }
-    } catch (_) {}
-  }
-
   /// 上传完成后最终化：部分 FTP/NAS 在 STOR 期间把真实数据写入 file-<随机>
   /// 临时文件，关闭数据连接后才重命名为目标文件。
   ///
@@ -1284,7 +1263,7 @@ class FtpRemoteClient extends RemoteClient {
     return true;
   }
 
-  /// 列出目录内容（带重连保护），供 finalizeUpload / _cleanupStrayTemp 复用，
+  /// 列出目录内容（带重连保护），供 finalizeUpload 复用，
   /// 避免在异常会话上 LIST 卡死。
   /// 注意：调用方必须已在 [_serialize] 内（如 finalizeUpload），或自行串行，
   /// 故此处直接调用 [_listDirectoryInner]（不再经公共 listDirectory 加锁）。

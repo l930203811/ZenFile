@@ -3,7 +3,6 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
 // ⚠️ 与 quick_categories_grid.dart 形成 import 环（那边也 import 本文件取

@@ -348,7 +348,6 @@ class LanClient extends RemoteClient {
       var o = 12;
       o = _skipDnsName(data, o); // 问题段名称
       o += 4; // QTYPE + QCLASS
-      final answerStart = o;
 
       // 部分 Samba 响应（如 OpenWrt/Kwrt）不回显问题段，answer name 直接从
       // 偏移 12 开始（完整编码通配名），answer 的 TYPE/CLASS 紧跟在被当作

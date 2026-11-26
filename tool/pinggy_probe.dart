@@ -22,7 +22,7 @@ Future<void> main() async {
     await client.authenticated;
     stdout.writeln('authenticated: ${stopwatch.elapsed}');
 
-    final fwd = await client.forwardRemote(port: 0);
+    await client.forwardRemote(port: 0);
     stdout.writeln('forwardRemote done: ${stopwatch.elapsed}');
 
     final session = await client.execute('');

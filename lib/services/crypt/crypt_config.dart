@@ -4,8 +4,6 @@
 /// 确保与 rclone、OpenList 创建的加密文件夹 100% 互操作。
 library;
 
-import 'dart:typed_data';
-
 /// 文件名加密模式
 enum FilenameEncryption {
   /// 不加密文件名（仅加密文件内容）

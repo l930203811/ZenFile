@@ -348,8 +348,7 @@ class SocketReader {
   SocketReader(this._socket) {
     _sub = _socket.listen(
       (data) {
-        final Uint8List bytes =
-            data is Uint8List ? data : Uint8List.fromList(data);
+        final Uint8List bytes = data;
         if (bytes.isNotEmpty) {
           _chunks.add(bytes);
           _total += bytes.length;
