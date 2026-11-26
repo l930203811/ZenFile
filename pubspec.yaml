@@ -32,6 +32,14 @@ dependency_overrides:
     git:
       url: https://github.com/MSOB7YY/on_audio_query
       path: packages/on_audio_query_platform_interface
+  # 本地 fork：修复 issue #95「Reply already submitted」主线程崩溃。
+  # 上游 on_audio_query_android 的 onMethodCall 无权限分支 result.error 后未 return，
+  # 查询协程（viewModelScope.launch，Dispatchers.Main.immediate）随后 result.success
+  # 造成二次回复；新装设备未授权即查音频必现。补丁：error/空路径 scan 后补 return、
+  # 入口 replyOnce 防重包装、权限回调改用发起请求时捕获的 result（不再读单例最新值）。
+  # 详见 plugins/on_audio_query_android 内 ZenFile fork patch 注释。
+  on_audio_query_android:
+    path: plugins/on_audio_query_android
   # 本地 fork：修复 audio_service 0.18.18 在 Android 13+ 通知栏不显示媒体控制按钮的问题。
   # 详见 plugins/audio_service 内 AudioService.java 注释（setShowActionsInCompactView 全版本生效 +
   # 任何非 idle 状态均激活 MediaSession/前台服务，确保 13+ 媒体卡片出现）。

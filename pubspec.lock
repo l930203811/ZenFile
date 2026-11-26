@@ -1052,13 +1052,11 @@ packages:
     source: git
     version: "2.9.2"
   on_audio_query_android:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      path: "packages/on_audio_query_android"
-      ref: HEAD
-      resolved-ref: "28d5e98b96df5c7af29a62f81b6853712e99aadb"
-      url: "https://github.com/MSOB7YY/on_audio_query"
-    source: git
+      path: "plugins/on_audio_query_android"
+      relative: true
+    source: path
     version: "1.1.2"
   on_audio_query_ios:
     dependency: transitive
