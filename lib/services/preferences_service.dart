@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/file_manager_provider.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/category_filter_type.dart';
-import '../services/quick_transfer_service.dart';
 import '../services/mpv_audio_output_service.dart';
 
 class PreferencesService {
@@ -50,6 +49,10 @@ class PreferencesService {
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    // 快传旧版会把配对过的对端设备名持久化下来，但实际重连仍要重新打开
+    // 「附近设备」扫描，偶尔还会因此连不上。新版不再保存/展示设备名，
+    // 启动时顺手清掉老版本残留的数据。
+    await _prefs?.remove(_keyQuickTransferKnownPeers);
     await _applyUiNavBarMigration();
     // 预载 Google Drive token（secure storage → 内存缓存），使同步 getter 可用
     await _ensureGdriveTokensLoaded();
@@ -1588,45 +1591,9 @@ class PreferencesService {
     await _prefs?.setString(_keyQuickTransferReceivePath, val);
   }
 
-  // --- 快传已记住设备 ---
+  // --- 快传已记住设备（历史遗留键，已停用） ---
+  // 只保留这个键用于在启动时清理旧版本残留数据；新版本不再读取/写入设备名。
   static const String _keyQuickTransferKnownPeers = 'quick_transfer_known_peers';
-
-  /// 已记住的快传对端设备（按 address 去重，最近连接置顶，最多保留 10 个）。
-  /// 元素结构与 PeerDevice 一致：{address, name, status}。
-  static List<PeerDevice> getQuickTransferKnownPeers() {
-    final raw = _prefs?.getString(_keyQuickTransferKnownPeers);
-    if (raw == null || raw.isEmpty) return <PeerDevice>[];
-    try {
-      final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-      return list.map((m) => PeerDevice.fromMap(m)).toList();
-    } catch (_) {
-      return <PeerDevice>[];
-    }
-  }
-
-  /// 记住一个对端：同 address 去重，最近连接的排在最前，最多保留 10 个。
-  static Future<void> addQuickTransferKnownPeer(PeerDevice peer) async {
-    final peers = getQuickTransferKnownPeers()
-        .where((p) => p.address != peer.address)
-        .toList();
-    peers.insert(0, peer);
-    final trimmed = peers.take(10).toList();
-    final encoded = jsonEncode(
-      trimmed.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
-    );
-    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
-  }
-
-  /// 删除一个已记住的对端（按 address 匹配）。
-  static Future<void> removeQuickTransferKnownPeer(String address) async {
-    final peers = getQuickTransferKnownPeers()
-        .where((p) => p.address != address)
-        .toList();
-    final encoded = jsonEncode(
-      peers.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
-    );
-    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
-  }
 
   static const String _keyHasSelectedLanguage = 'has_selected_language';
 

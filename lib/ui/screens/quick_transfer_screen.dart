@@ -39,7 +39,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   String? _deviceName;
   String? _goIp;
   List<PeerDevice> _peers = [];
-  List<PeerDevice> _knownPeers = [];
   PeerDevice? _connectingPeer;
   P2pConnectionState _conn = P2pConnectionState.disconnected;
 
@@ -95,7 +94,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
     _deviceName = await _svc.getDeviceName();
     _receiveDir = PreferencesService.getQuickTransferReceivePath();
-    _knownPeers = PreferencesService.getQuickTransferKnownPeers();
     await _checkPermission();
     _peersSub = _svc.peersStream.listen((p) {
       if (mounted) setState(() => _peers = p);
@@ -243,26 +241,8 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
 
     // 情况 B：P2P 未连，我作为先点的一方发起原生 connect。
-    // 如果点击的是已记住设备且当前 peers 列表里没有它，说明还没扫描到对方，
-    // 需要先触发一次 discovery，等原生发现到该设备后再 connect。
-    if (!_peers.any((p) => p.address == peer.address)) {
-      final found = await _ensurePeerDiscovered(
-        peer.address,
-        timeout: const Duration(seconds: 8),
-      );
-      if (!found) {
-        if (mounted) {
-          setState(() {
-            _error = L10n.of(context).quick_transfer_peer_unreachable;
-            _busy = false;
-            _connectingPeer = null;
-            _iClickedConnect = false;
-          });
-        }
-        return;
-      }
-    }
-
+    // 设备只来自当前「附近设备」扫描结果；旧版保存设备名后再按名字重连
+    // 仍需重新扫描、偶尔还会连不上，现在统一走当前扫描到的设备。
     _setScanningAnimation(true);
     try {
       // 先清理可能存在的旧组，确保全新建组，避免"已连接"导致 connect 失败
@@ -286,47 +266,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
   }
 
-  /// 确保指定 address 的设备已被原生 WiFi Direct discovery 发现。
-  /// 若当前 peers 列表中已有该设备则立即返回 true；否则启动一次 discovery
-  /// 并在 [timeout] 内轮询等待，发现后返回 true，超时返回 false。
-  Future<bool> _ensurePeerDiscovered(String address, {required Duration timeout}) async {
-    if (_peers.any((p) => p.address == address)) return true;
-
-    if (!_permissionGranted) {
-      await _checkPermission();
-      if (!_permissionGranted) return false;
-    }
-
-    setState(() => _scanning = true);
-    _setScanningAnimation(true);
-    final ok = await _svc.startDiscovery();
-    if (!ok) {
-      if (mounted) {
-        setState(() => _scanning = false);
-        _setScanningAnimation(false);
-      }
-      return false;
-    }
-
-    final deadline = DateTime.now().add(timeout);
-    while (DateTime.now().isBefore(deadline)) {
-      if (_peers.any((p) => p.address == address)) {
-        if (mounted) {
-          setState(() => _scanning = false);
-          _setScanningAnimation(false);
-        }
-        return true;
-      }
-      await Future.delayed(const Duration(milliseconds: 400));
-    }
-
-    if (mounted) {
-      setState(() => _scanning = false);
-      _setScanningAnimation(false);
-    }
-    return false;
-  }
-
   /// 把原生 P2P 连接异常转换为用户友好的本地化提示，避免直接展示
   /// PlatformException(CONNECT_FAILED, reason=0, null, null) 等底层信息。
   String _formatConnectError(Object e, BuildContext context) {
@@ -337,22 +276,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       }
     }
     return e.toString();
-  }
-
-  /// 把对端写入「已记住设备」持久化列表（按 address 去重、最近置顶）。
-  Future<void> _rememberPeer(PeerDevice peer) async {
-    await PreferencesService.addQuickTransferKnownPeer(peer);
-    if (mounted) {
-      setState(() => _knownPeers = PreferencesService.getQuickTransferKnownPeers());
-    }
-  }
-
-  /// 从「已记住设备」列表中移除一个对端（按 address 匹配）。
-  Future<void> _removeKnownPeer(PeerDevice peer) async {
-    await PreferencesService.removeQuickTransferKnownPeer(peer.address);
-    if (mounted) {
-      setState(() => _knownPeers = PreferencesService.getQuickTransferKnownPeers());
-    }
   }
 
   /// 连接建立后（双方都会触发）：建 TCP socket + 执行双向 peer_ready 握手。
@@ -393,13 +316,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
         reader.close();
         socket.destroy();
         return;
-      }
-
-      // 握手成功：把对端写入「已记住设备」，下次可直接点连接按钮重连。
-      // _connectingPeer 在此处仍指向本次连接的对端（错误/teardown 才清空）。
-      final peer = _connectingPeer;
-      if (peer != null) {
-        await _rememberPeer(peer);
       }
 
       // 建立对称传输会话：双方都能随时发送、随时接收
@@ -1134,7 +1050,6 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
             style: Theme.of(context).textTheme.bodySmall,
           ),
         if (!_scanning) const SizedBox(height: 8),
-        _buildKnownPeers(context),
         _buildPeerList(context),
       ],
     );
@@ -1154,10 +1069,8 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   }
 
   Widget _buildPeerList(BuildContext context) {
-    // 已记住的设备已在上方单独列出，这里仅显示未在已记住列表中的实时发现设备，
-    // 避免同一设备重复出现。分区标题已由发现区卡片统一提供。
-    final knownAddrs = _knownPeers.map((p) => p.address).toSet();
-    final livePeers = _peers.where((p) => !knownAddrs.contains(p.address)).toList();
+    // 只展示当前「附近设备」扫描到的设备；旧版持久化的已记住设备已移除。
+    final livePeers = _peers;
     if (livePeers.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -1165,7 +1078,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (int i = 0; i < livePeers.length; i++) ...[
-          if (i > 0 || _knownPeers.isNotEmpty) const SizedBox(height: 8),
+          if (i > 0) const SizedBox(height: 8),
           _deviceRowCard(
             context,
             peer: livePeers[i],
@@ -1178,41 +1091,15 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     );
   }
 
-  /// 已记住设备列表：无标题，每行右侧固定贴附连接按钮（复用 _buildConnectButton）
-  /// 与删除按钮（靠右边缘）。点击左侧设备名称/图标区域亦可发起连接。
-  Widget _buildKnownPeers(BuildContext context) {
-    if (_knownPeers.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (int i = 0; i < _knownPeers.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
-          _deviceRowCard(
-            context,
-            peer: _knownPeers[i],
-            showDelete: true,
-            onTap: (_busy || _conn.connected)
-                ? null
-                : () => _connectPeer(_knownPeers[i]),
-          ),
-        ],
-      ],
-    );
-  }
-
   /// 设备行卡片：圆角浅底行，左端图标徽章 + 名称/地址，右端连接按钮
-  /// （及可选的删除按钮），按钮组固定贴右边缘。左侧整片可点发起连接。
+  /// 固定贴右边缘。左侧整片可点发起连接。
   Widget _deviceRowCard(
     BuildContext context, {
     required PeerDevice peer,
     required VoidCallback? onTap,
-    bool showDelete = false,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final canDelete = !(_busy || _conn.connected);
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withAlpha(90),
@@ -1261,17 +1148,11 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
               ),
             ),
           ),
-          // 右侧：连接按钮 + 删除按钮，固定贴右边缘
+          // 右侧：连接按钮，固定贴右边缘
           Padding(
             padding: const EdgeInsets.only(right: 4),
             child: _buildConnectButton(context, peer),
           ),
-          if (showDelete)
-            IconButton(
-              icon: const Icon(Broken.trash, size: 20),
-              tooltip: L10n.of(context).quick_transfer_forget_device,
-              onPressed: canDelete ? () => _removeKnownPeer(peer) : null,
-            ),
         ],
       ),
     );

@@ -7,6 +7,7 @@ import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/pin_service.dart';
 import '../../services/app_manager_service.dart';
+import '../../core/restricted_path_variant.dart';
 import 'package:path/path.dart' as p;
 import 'dart:typed_data';
 import 'file_action_dialogs.dart';
@@ -119,8 +120,15 @@ class FolderGridItem extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: (() {
+                            // 受限目录（Shizuku/root）下路径可能带不可见的绕过
+                            // 标记（U+200B 零宽字符 / '/./' 组件），裸 endsWith
+                            // 会被断开而漏判，导致 Android/data 下的包名文件夹
+                            // 不显示应用图标（只显示默认文件夹图标）。先剥离
+                            // 标记再判断，干净路径原样返回、行为不变。
+                            final cleanFolderPath =
+                                stripRestrictedVariantMarkers(folder.path);
                             final parentPath = p
-                                .dirname(folder.path)
+                                .dirname(cleanFolderPath)
                                 .toLowerCase();
                             final isPackageFolder =
                                 parentPath.endsWith('/android/data') ||
@@ -129,9 +137,12 @@ class FolderGridItem extends StatelessWidget {
                                 parentPath.endsWith(r'\android\obb');
 
                             if (isPackageFolder && !isSelected) {
+                              // 包名同样用清理后的 basename，避免变体标记随
+                              // folder.name 传给原生 PackageManager 查不到包。
+                              final packageName = p.basename(cleanFolderPath);
                               return FutureBuilder<Uint8List?>(
                                 future: AppManagerService.getAppIcon(
-                                  folder.name,
+                                  packageName,
                                 ),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
