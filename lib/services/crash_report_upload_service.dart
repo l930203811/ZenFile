@@ -30,7 +30,9 @@ class CrashLogFile {
 /// 安全设计：
 ///  * 纯旁路 —— 所有 IO/网络都吞异常，上传失败绝不影响主流程；
 ///  * 端点 / 令牌为空（未部署）时 [upload] 直接返回 false，界面不会报错；
-///  * 日志按份截断 + 总量封顶，防止巨型 tombstone 拖垮请求。
+///  * 日志按份截断 + 总量封顶，防止巨型 tombstone 拖垮请求；
+///  * 上传成功后自动删除已提交的崩溃报告并记入交付台账（防重复提交、
+///    防原生补拷复活），运行时日志除外。
 abstract final class CrashReportUploadService {
   /// 反馈端点（Workers 转发器，收到报告创建为仓库 GitHub Issue）。
   static const String endpoint =
@@ -210,6 +212,10 @@ abstract final class CrashReportUploadService {
             ...PreferencesService.getUploadedCrashReports(),
             ...recordable,
           ]);
+          // 提交成功后删除已上传的崩溃报告，防止重复提交、目录越积越多。
+          // 必须同步记入「已交付台账」：私有存档还在，下次启动原生补拷时
+          // 台账−现状 会把这些名字算进 suppress 名单，删掉的报告才不会复活。
+          await _deleteUploaded(recordable);
         }
       }
       debugPrint('[Feedback] Uploaded (${logs.length} logs)');
@@ -217,6 +223,38 @@ abstract final class CrashReportUploadService {
     } catch (e) {
       debugPrint('[Feedback] Upload error: $e');
       return false;
+    }
+  }
+
+  /// 删除已成功上传的崩溃报告（仅公共目录；运行时日志不删，它是滚动日志）。
+  ///
+  /// 删掉的名字并入「已交付台账」，下次启动原生补拷的 suppress 名单
+  /// （台账 − 公共目录现状）就会包含它们 —— 私有存档里的同名文件不再被
+  /// 镜像回来，用户不会看到「删了又出现」。任何失败都吞掉：清理失败
+  /// 最多是目录里多留几份旧文件（上传台账仍会挡住重复提交），绝不能
+  /// 影响「上传成功」这个既成事实。
+  static Future<void> _deleteUploaded(List<String> names) async {
+    try {
+      final deleted = <String>[];
+      for (final name in names) {
+        try {
+          final file = File(p.join(CrashForensicsService.publicDir, name));
+          if (file.existsSync()) {
+            file.deleteSync();
+            deleted.add(name);
+          }
+        } catch (_) {}
+      }
+      if (deleted.isNotEmpty) {
+        await PreferencesService.saveDeliveredCrashReports(
+          CrashForensicsService.mergeLedger(
+            PreferencesService.getDeliveredCrashReports(),
+            deleted,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[Feedback] Cleanup uploaded reports failed: $e');
     }
   }
 }

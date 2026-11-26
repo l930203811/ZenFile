@@ -11,7 +11,8 @@ import '../../services/crash_report_upload_service.dart';
 ///  * 关于页「问题反馈」（kind == 'feedback'）—— 默认不附带，用户可自行勾选。
 ///
 /// 上传走 [CrashReportUploadService]（Workers 端点转发为 GitHub Issue），
-/// 失败不阻塞关闭，已上传过的日志按台账去重、不会重复发送。
+/// 失败不阻塞关闭，已上传过的日志按台账去重、不会重复发送；提交成功后
+/// 已上传的崩溃报告会被自动删除（运行时日志除外），目录不积压旧报告。
 class CrashReportDialog extends StatefulWidget {
   const CrashReportDialog({
     super.key,
