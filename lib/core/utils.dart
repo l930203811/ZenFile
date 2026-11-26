@@ -36,15 +36,21 @@ class FileUtils {
   static bool use24HourFormat = true;
   static String datePattern = 'yyyy-MM-dd';
 
+  // DateFormat 构造要解析模式串，列表每次重建 × 每个可见项都 new 一个是
+  // 纯浪费；模式只来自有限几种用户设置，按模式缓存实例复用。
+  static final Map<String, DateFormat> _dateFormatCache = {};
+  static DateFormat _cachedFormat(String pattern) =>
+      _dateFormatCache.putIfAbsent(pattern, () => DateFormat(pattern));
+
   static String formatDate(DateTime date, {bool? use24Hour}) {
     final use24 = use24Hour ?? FileUtils.use24HourFormat;
     final timePattern = use24 ? 'HH:mm' : 'hh:mm a';
-    return DateFormat('${FileUtils.datePattern}  $timePattern').format(date);
+    return _cachedFormat('${FileUtils.datePattern}  $timePattern').format(date);
   }
 
   /// 仅日期（不含时间），跟随用户设置的日期格式。
   static String formatDateOnly(DateTime date) {
-    return DateFormat(FileUtils.datePattern).format(date);
+    return _cachedFormat(FileUtils.datePattern).format(date);
   }
 
   /// 紧凑日期（对标 MT 管理器）：今年内「yy-MM-dd HH:mm」（两位年份），
@@ -57,9 +63,9 @@ class FileUtils {
     final now = DateTime.now();
     final dp = FileUtils.datePattern.replaceAll('yyyy', 'yy');
     if (date.year == now.year) {
-      return DateFormat('$dp $timePattern').format(date);
+      return _cachedFormat('$dp $timePattern').format(date);
     }
-    return DateFormat(dp).format(date);
+    return _cachedFormat(dp).format(date);
   }
 
   /// 超紧凑日期（双窗口分屏使用）：今年内省略年份只保留「MM-dd HH:mm」，
@@ -70,9 +76,9 @@ class FileUtils {
     final timePattern = use24 ? 'HH:mm' : 'hh:mm a';
     final now = DateTime.now();
     if (date.year == now.year) {
-      return DateFormat('${_compactMdPattern()} $timePattern').format(date);
+      return _cachedFormat('${_compactMdPattern()} $timePattern').format(date);
     }
-    return DateFormat(FileUtils.datePattern.replaceAll('yyyy', 'yy')).format(date);
+    return _cachedFormat(FileUtils.datePattern.replaceAll('yyyy', 'yy')).format(date);
   }
 
   /// 超紧凑日期今年部分的月日模式（按用户日期格式的月日顺序）。
@@ -672,43 +678,32 @@ class FileUtils {
     }
   }
 
-  static int compareNatural(String a, String b) {
+  static int compareNatural(String a, String b) =>
+      compareNaturalLower(a, b, a.toLowerCase(), b.toLowerCase());
+
+  /// 与 [compareNatural] 完全同语义，但小写串由调用方预计算传入：
+  /// 大目录排序时省掉 O(n log n) 次 toLowerCase 字符串分配。
+  /// 数字段按「有效位数 → 逐位比较」定序，不再构造 BigInt/substring
+  /// （旧实现每次比较都 parse BigInt，数千文件目录排序是主线程卡顿热点）。
+  static int compareNaturalLower(String a, String b, String aLower, String bLower) {
     int i = 0;
     int j = 0;
-    
-    final aLower = a.toLowerCase();
-    final bLower = b.toLowerCase();
 
     while (i < aLower.length && j < bLower.length) {
-      int charA = aLower.codeUnitAt(i);
-      int charB = bLower.codeUnitAt(j);
+      final int charA = aLower.codeUnitAt(i);
+      final int charB = bLower.codeUnitAt(j);
 
       if (_isDigit(charA) && _isDigit(charB)) {
-        int startA = i;
+        final int startA = i;
         while (i < aLower.length && _isDigit(aLower.codeUnitAt(i))) {
           i++;
         }
-        int startB = j;
+        final int startB = j;
         while (j < bLower.length && _isDigit(bLower.codeUnitAt(j))) {
           j++;
         }
-
-        String subA = aLower.substring(startA, i);
-        String subB = bLower.substring(startB, j);
-
-        BigInt? numA = BigInt.tryParse(subA);
-        BigInt? numB = BigInt.tryParse(subB);
-
-        if (numA != null && numB != null) {
-          int cmp = numA.compareTo(numB);
-          if (cmp != 0) return cmp;
-          if (subA.length != subB.length) {
-            return subA.length.compareTo(subB.length);
-          }
-        } else {
-          int cmp = subA.compareTo(subB);
-          if (cmp != 0) return cmp;
-        }
+        final cmp = _compareDigitRuns(aLower, startA, i, bLower, startB, j);
+        if (cmp != 0) return cmp;
       } else {
         if (charA != charB) {
           return charA.compareTo(charB);
@@ -721,6 +716,29 @@ class FileUtils {
     if (i < aLower.length) return 1;
     if (j < bLower.length) return -1;
     return a.compareTo(b);
+  }
+
+  /// 数值比较两段纯数字串 [startA, endA) / [startB, endB)，零分配。
+  /// 数值相等时按原始长度定序（前导零少的在前），与旧 BigInt 实现一致；
+  /// 数值与原始长度都相等返回 0，由调用方继续比较后续字符。
+  static int _compareDigitRuns(
+      String a, int startA, int endA, String b, int startB, int endB) {
+    var sa = startA;
+    var sb = startB;
+    while (sa < endA - 1 && a.codeUnitAt(sa) == 0x30) {
+      sa++;
+    }
+    while (sb < endB - 1 && b.codeUnitAt(sb) == 0x30) {
+      sb++;
+    }
+    final lenA = endA - sa;
+    final lenB = endB - sb;
+    if (lenA != lenB) return lenA.compareTo(lenB);
+    for (var k = 0; k < lenA; k++) {
+      final d = a.codeUnitAt(sa + k) - b.codeUnitAt(sb + k);
+      if (d != 0) return d;
+    }
+    return (endA - startA).compareTo(endB - startB);
   }
 
   static bool _isDigit(int codeUnit) {

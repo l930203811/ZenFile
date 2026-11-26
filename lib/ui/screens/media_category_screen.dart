@@ -144,9 +144,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
   /// 防止自动同步在每次重建时重复触发。
   bool _autoSyncTriggered = false;
 
-  /// 上次扫描到的本地文件数量，用于检测新增文件时触发自动备份。
-  int _previousFileCount = 0;
-
   /// 当前「本地 / 远程」过滤范围。默认显示本地内容。
   _ScopeFilter _scopeFilter = _ScopeFilter.local;
 
@@ -244,18 +241,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
         _autoSyncEnabled = enabled;
       });
     }
-    // 记录初始文件数量，后续扫描后对比以检测新增文件
-    final provider = Provider.of<MediaProvider>(context, listen: false);
-    _previousFileCount = _currentLocalFileCount(provider);
-  }
-
-  /// 获取当前类别的本地文件数量（用于新增文件检测）。
-  int _currentLocalFileCount(MediaProvider provider) {
-    final paths = provider.customCategoryPaths[_categoryLabel] ?? [];
-    final remotePaths = paths.where((p) => p.startsWith('remote://')).toList();
-    if (remotePaths.isEmpty) return 0;
-    // 仅统计本地路径下的分类文件数
-    return _collectCategoryFiles().length;
   }
 
   /// 打开类别界面时自动执行一次本地→远程备份（无需手动点击）。
@@ -2252,7 +2237,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                       final currentCount = _collectCategoryFiles().length;
                       if (provider.isLoaded && currentCount > 0) {
                         _autoSyncTriggered = true;
-                        _previousFileCount = currentCount;
                         _maybeAutoSync();
                       }
                     });
@@ -6133,6 +6117,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
     );
   }
 
+  // 迷你播放器「续播」按钮的文件存在性缓存：position 流每次 tick 都会重建
+  // 按钮，旧实现每次 build 都同步 existsSync（播放期间持续在 UI 线程做 IO）。
+  // 5 秒 TTL 内复用结果，文件被删最多晚 5 秒隐藏按钮。
+  final Map<String, (bool, int)> _resumeExistsCache = {};
+  bool _resumeFileExists(String path) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final hit = _resumeExistsCache[path];
+    if (hit != null && now - hit.$2 < 5000) return hit.$1;
+    final ok = File(path).existsSync();
+    _resumeExistsCache[path] = (ok, now);
+    return ok;
+  }
+
   Widget _buildResumePlayerButton(ThemeData theme) {
     final handler = getAudioHandler();
     final lastPlayed = PreferencesService.getLastPlayedAudio();
@@ -6178,9 +6175,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
                 return const SizedBox.shrink();
               }
 
-              // 检查文件是否还存在
-              final file = File(info['path']!);
-              if (!file.existsSync()) return const SizedBox.shrink();
+              // 检查文件是否还存在（带 TTL 缓存，避免每次 tick 同步 IO）
+              if (!_resumeFileExists(info['path']!)) {
+                return const SizedBox.shrink();
+              }
 
               final path = info['path']!;
               final title = info['title']!;
@@ -6339,8 +6337,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen> {
 
     final path = lastPlayed['path']!;
     final title = lastPlayed['title'] ?? '';
-    final file = File(path);
-    if (!file.existsSync()) return const SizedBox.shrink();
+    if (!_resumeFileExists(path)) return const SizedBox.shrink();
 
     final savedMs = PreferencesService.getVideoPlaybackPosition(path);
     final savedPosition = savedMs != null
@@ -6842,9 +6839,13 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
     final local = await FileManagerProvider.downloadRemoteFileToCache(
       widget.path,
     );
+    // 存在性只在下载完成时异步确认一次；build 里不再每次 existsSync
+    // （滚动重建高频触发同步 IO）。缓存文件此后被清理由 errorBuilder 兜底。
+    final file = local == null ? null : File(local);
+    final exists = file != null && await file.exists();
     if (mounted) {
       setState(() {
-        _cached = local == null ? null : File(local);
+        _cached = exists ? file : null;
         _loading = false;
       });
     }
@@ -6871,7 +6872,7 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
                   ),
                 ),
               )
-            : (_cached != null && _cached!.existsSync()
+            : (_cached != null
                   ? (FileUtils.isSvg(widget.path)
                         ? SvgPicture.file(
                             _cached!,

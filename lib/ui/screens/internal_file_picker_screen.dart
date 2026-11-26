@@ -138,7 +138,18 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
         final folders = <FileItemModel>[];
         final files = <FileItemModel>[];
 
-        final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
+        // 分批 stat（每批 200，批间让出事件循环），避免大目录一次性并发
+        // stat 的 IO 回调淹没事件循环导致 UI 卡顿。
+        final items = <FileItemModel>[];
+        const batch = 200;
+        for (var i = 0; i < entities.length; i += batch) {
+          final chunk = entities.skip(i).take(batch);
+          items.addAll(await Future.wait(
+              chunk.map((e) => FileItemModel.fromEntityAsync(e))));
+          if (i + batch < entities.length) {
+            await Future<void>.delayed(Duration.zero);
+          }
+        }
 
         for (var item in items) {
           try {

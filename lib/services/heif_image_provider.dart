@@ -38,8 +38,11 @@ class HeifDecoder {
     if (!Platform.isAndroid) return null;
     final side = targetSide.clamp(64, 4096);
     final key = '$path|$side';
-    final hit = _cache[key];
-    if (hit != null) return hit;
+    final hit = _cache.remove(key);
+    if (hit != null) {
+      _cache[key] = hit; // 命中即刷新 LRU 位置
+      return hit;
+    }
     try {
       // 用 dynamic 承接：StandardMessageCodec 解出来的是 Map<Object?, Object?>，
       // 直接声明 Map<dynamic, dynamic> 在部分版本上会触发类型转换失败。
@@ -57,7 +60,10 @@ class HeifDecoder {
         w is int ? w : 0,
         h is int ? h : 0,
       );
-      if (_cache.length >= _kCacheLimit) _cache.clear();
+      // 满时淘汰最旧一条而非全清：来回滚动时全清会导致反复跨通道重解码。
+      if (_cache.length >= _kCacheLimit) {
+        _cache.remove(_cache.keys.first);
+      }
       _cache[key] = result;
       return result;
     } catch (_) {
@@ -138,10 +144,17 @@ class HeifImage extends ImageProvider<HeifImage> {
 /// 只读前 16 字节；结果按路径缓存，列表滚动时不会反复开文件。
 bool isHeifFile(File file) {
   final key = file.path;
-  final cached = _heifFlagCache[key];
-  if (cached != null) return cached;
+  final cached = _heifFlagCache.remove(key);
+  if (cached != null) {
+    _heifFlagCache[key] = cached; // 命中即刷新 LRU 位置
+    return cached;
+  }
   final value = _detectHeifSync(file);
-  if (_heifFlagCache.length >= 1024) _heifFlagCache.clear();
+  // 满时淘汰最旧一条而非整体 clear：大目录滚动时 1024 条很快写满，
+  // 全清会让后续滚动反复同步开文件探测（build 路径上的同步 IO 卡顿源）。
+  if (_heifFlagCache.length >= 1024) {
+    _heifFlagCache.remove(_heifFlagCache.keys.first);
+  }
   _heifFlagCache[key] = value;
   return value;
 }
@@ -157,6 +170,21 @@ bool _detectHeifSync(File file) {
       lower.endsWith('.heix') ||
       lower.endsWith('.hevc')) {
     return true;
+  }
+  // 常见非 HEIF 图片格式直接短路：否则每张 .jpg/.png 缩略图都要在 build
+  // 路径上同步 open+read 一次（SD 卡上单次可达数 ms，滚动卡顿源）。
+  // 魔数探测只留给无扩展名 / 未知扩展名（如加密条目）的文件。
+  if (lower.endsWith('.jpg') ||
+      lower.endsWith('.jpeg') ||
+      lower.endsWith('.png') ||
+      lower.endsWith('.gif') ||
+      lower.endsWith('.webp') ||
+      lower.endsWith('.bmp') ||
+      lower.endsWith('.svg') ||
+      lower.endsWith('.ico') ||
+      lower.endsWith('.tif') ||
+      lower.endsWith('.tiff')) {
+    return false;
   }
   RandomAccessFile? raf;
   try {

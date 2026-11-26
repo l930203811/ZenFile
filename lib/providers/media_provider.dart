@@ -738,13 +738,11 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
 /// ThumbnailCache 原为只进不出的 static Map：几千个媒体 × 100~300KB 的
 /// 缩略图常驻可达数百 MB。现按「条目数 + 总字节」双上限淘汰最旧条目。
 class _LruBytesCache {
-  final int maxEntries;
-  final int maxBytes;
+  final int maxEntries = 400;
+  final int maxBytes = 64 * 1024 * 1024;
 
   final LinkedHashMap<String, Uint8List?> _map = LinkedHashMap();
   int _bytes = 0;
-
-  _LruBytesCache({this.maxEntries = 400, this.maxBytes = 64 * 1024 * 1024});
 
   int get byteSize => _bytes;
 
@@ -4553,79 +4551,54 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     final audioStats = await _preloadStats(audioPaths.map((p) => File(p)).toList());
     stats.addAll(audioStats);
 
-    int mediaSortByDate(FileSystemEntity a, FileSystemEntity b) {
-      final aTime = stats[a.path]?.modified;
-      final bTime = stats[b.path]?.modified;
-      if (aTime == null || bTime == null) return 0;
-      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-          ? aTime.compareTo(bTime)
-          : bTime.compareTo(aTime);
+    // 装饰排序：每项只取一次排序键（int），比较器退化为 int.compareTo。
+    // 旧比较器每次比较做两次字符串哈希 map 查找 + DateTime.compareTo，
+    // 数万条 × 8 个列表全在主 isolate，是分类页加载/切排序的卡顿热点。
+    // stat 缺失的条目键取 0（按最小/最旧参与排序；旧实现返回 0 视相等，
+    // 位置同样不确定，仅 stat 失败的罕见条目受影响）。
+    void sortByKey<T>(List<T> list, int Function(T) keyOf, bool ascending) {
+      if (list.length < 2) return;
+      final keyed = list.map((e) => (e: e, key: keyOf(e))).toList();
+      keyed.sort((a, b) =>
+          ascending ? a.key.compareTo(b.key) : b.key.compareTo(a.key));
+      for (var i = 0; i < list.length; i++) {
+        list[i] = keyed[i].e;
+      }
     }
 
-    int mediaSortBySize(FileSystemEntity a, FileSystemEntity b) {
-      final aSize = stats[a.path]?.size;
-      final bSize = stats[b.path]?.size;
-      if (aSize == null || bSize == null) return 0;
-      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-      return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-    }
+    final isOldest = _sortOrder == MediaSortOrder.oldest ||
+        _sortOrder == MediaSortOrder.oldestGrouped;
+    final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+    final isSizeSort = isSmallest || _sortOrder == MediaSortOrder.sizeLargest;
 
-    int audioSortByDate(SongModel a, SongModel b) {
-      final aTime = stats[a.data]?.modified;
-      final bTime = stats[b.data]?.modified;
-      if (aTime == null || bTime == null) return 0;
-      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-          ? aTime.compareTo(bTime)
-          : bTime.compareTo(aTime);
-    }
-
-    int audioSortBySize(SongModel a, SongModel b) {
-      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-      final aSize = a.size;
-      final bSize = b.size;
-      return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-    }
+    int dateKeyOf(String path) =>
+        stats[path]?.modified.millisecondsSinceEpoch ?? 0;
+    int sizeKeyOf(String path) => stats[path]?.size ?? 0;
 
     if (_sortOrder == MediaSortOrder.newest ||
         _sortOrder == MediaSortOrder.newestGrouped ||
         _sortOrder == MediaSortOrder.dateWise ||
         _sortOrder == MediaSortOrder.oldest ||
         _sortOrder == MediaSortOrder.oldestGrouped) {
-      _images.sort(mediaSortByDate);
-      _videos.sort(mediaSortByDate);
-      _screenshots.sort(mediaSortByDate);
-      _audios.sort(audioSortByDate);
-    } else if (_sortOrder == MediaSortOrder.sizeLargest ||
-               _sortOrder == MediaSortOrder.sizeSmallest) {
-      _images.sort(mediaSortBySize);
-      _videos.sort(mediaSortBySize);
-      _screenshots.sort(mediaSortBySize);
-      _audios.sort(audioSortBySize);
+      sortByKey(_images, (e) => dateKeyOf(e.path), isOldest);
+      sortByKey(_videos, (e) => dateKeyOf(e.path), isOldest);
+      sortByKey(_screenshots, (e) => dateKeyOf(e.path), isOldest);
+      sortByKey(_audios, (a) => dateKeyOf(a.data), isOldest);
+    } else if (isSizeSort) {
+      sortByKey(_images, (e) => sizeKeyOf(e.path), isSmallest);
+      sortByKey(_videos, (e) => sizeKeyOf(e.path), isSmallest);
+      sortByKey(_screenshots, (e) => sizeKeyOf(e.path), isSmallest);
+      sortByKey(_audios, (a) => a.size, isSmallest);
     }
 
-    int fileSort(FileSystemEntity a, FileSystemEntity b) {
-      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-      final isLargest = _sortOrder == MediaSortOrder.sizeLargest;
+    int fileKey(FileSystemEntity e) =>
+        isSizeSort ? sizeKeyOf(e.path) : dateKeyOf(e.path);
+    final fileAscending = isSizeSort ? isSmallest : isOldest;
 
-      if (isSmallest || isLargest) {
-        final aSize = stats[a.path]?.size;
-        final bSize = stats[b.path]?.size;
-        if (aSize == null || bSize == null) return 0;
-        return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-      }
-
-      final aTime = stats[a.path]?.modified;
-      final bTime = stats[b.path]?.modified;
-      if (aTime == null || bTime == null) return 0;
-      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-          ? aTime.compareTo(bTime)
-          : bTime.compareTo(aTime);
-    }
-
-    _documents.sort(fileSort);
-    _archives.sort(fileSort);
-    _downloads.sort(fileSort);
-    _apks.sort(fileSort);
+    sortByKey(_documents, fileKey, fileAscending);
+    sortByKey(_archives, fileKey, fileAscending);
+    sortByKey(_downloads, fileKey, fileAscending);
+    sortByKey(_apks, fileKey, fileAscending);
   }
 
   Future<void> deleteMediaItems({

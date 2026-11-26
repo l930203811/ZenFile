@@ -187,8 +187,9 @@ ArchiveIndex buildArchiveIndex(
   );
 }
 
-/// 与 FileUtils.compareNatural 完全同语义，只是把 `toLowerCase()` 的结果作为
-/// 参数传入，供排序前预计算复用（大目录排序时省掉 O(n log n) 次字符串分配）。
+/// 与 FileUtils.compareNaturalLower 完全同语义（本文件保持零 import，供隔离区
+/// 使用，故保留独立副本）。小写串由调用方预计算传入；数字段按有效位数逐位
+/// 比较，不构造 BigInt/substring。
 int compareNaturalLower(String a, String b, String aLower, String bLower) {
   int i = 0;
   int j = 0;
@@ -205,18 +206,8 @@ int compareNaturalLower(String a, String b, String aLower, String bLower) {
       while (j < bLower.length && _isDigit(bLower.codeUnitAt(j))) {
         j++;
       }
-      final subA = aLower.substring(startA, i);
-      final subB = bLower.substring(startB, j);
-      final numA = BigInt.tryParse(subA);
-      final numB = BigInt.tryParse(subB);
-      if (numA != null && numB != null) {
-        final cmp = numA.compareTo(numB);
-        if (cmp != 0) return cmp;
-        if (subA.length != subB.length) return subA.length.compareTo(subB.length);
-      } else {
-        final cmp = subA.compareTo(subB);
-        if (cmp != 0) return cmp;
-      }
+      final cmp = _compareDigitRuns(aLower, startA, i, bLower, startB, j);
+      if (cmp != 0) return cmp;
     } else {
       if (charA != charB) return charA.compareTo(charB);
       i++;
@@ -226,6 +217,26 @@ int compareNaturalLower(String a, String b, String aLower, String bLower) {
   if (i < aLower.length) return 1;
   if (j < bLower.length) return -1;
   return a.compareTo(b);
+}
+
+int _compareDigitRuns(
+    String a, int startA, int endA, String b, int startB, int endB) {
+  var sa = startA;
+  var sb = startB;
+  while (sa < endA - 1 && a.codeUnitAt(sa) == 0x30) {
+    sa++;
+  }
+  while (sb < endB - 1 && b.codeUnitAt(sb) == 0x30) {
+    sb++;
+  }
+  final lenA = endA - sa;
+  final lenB = endB - sb;
+  if (lenA != lenB) return lenA.compareTo(lenB);
+  for (var k = 0; k < lenA; k++) {
+    final d = a.codeUnitAt(sa + k) - b.codeUnitAt(sb + k);
+    if (d != 0) return d;
+  }
+  return (endA - startA).compareTo(endB - startB);
 }
 
 bool _isDigit(int codeUnit) => codeUnit >= 48 && codeUnit <= 57;

@@ -53,7 +53,6 @@ import '../services/remote/remote_client.dart';
 import '../services/remote/remote_media_playlist.dart';
 import '../services/remote/remote_session_recovery.dart';
 import '../services/crypt/crypt.dart';
-import '../services/remote/ftp_client.dart';
 import '../services/remote/lan_client.dart';
 import '../services/remote_streaming_service.dart';
 import '../services/network_connections_service.dart';
@@ -1018,10 +1017,21 @@ class FileManagerProvider extends ChangeNotifier {
     final activeSort = getSortTypeForPath(path);
     switch (activeSort) {
       case FileSortType.nameAsc:
-        items.sort((a, b) => FileUtils.compareNatural(a.name, b.name));
-        break;
       case FileSortType.nameDesc:
-        items.sort((a, b) => FileUtils.compareNatural(b.name, a.name));
+        // 小写键每项只算一次（decorate-sort）：旧实现每次比较都 toLowerCase
+        // 两个字符串，数千文件目录 ≈ 数万次字符串分配，全在主 isolate。
+        final desc = activeSort == FileSortType.nameDesc;
+        final keyed = items
+            .map((e) => (item: e, lower: e.name.toLowerCase()))
+            .toList();
+        keyed.sort((a, b) => desc
+            ? FileUtils.compareNaturalLower(
+                b.item.name, a.item.name, b.lower, a.lower)
+            : FileUtils.compareNaturalLower(
+                a.item.name, b.item.name, a.lower, b.lower));
+        for (var k = 0; k < items.length; k++) {
+          items[k] = keyed[k].item;
+        }
         break;
       case FileSortType.dateNewest:
         items.sort((a, b) => b.modified.compareTo(a.modified));
@@ -1040,11 +1050,13 @@ class FileManagerProvider extends ChangeNotifier {
         items.sort((a, b) => _sortSizeOf(a).compareTo(_sortSizeOf(b)));
         break;
       case FileSortType.type:
-        items.sort((a, b) {
-          final extA = p.extension(a.name).toLowerCase();
-          final extB = p.extension(b.name).toLowerCase();
-          return extA.compareTo(extB);
-        });
+        final keyed = items
+            .map((e) => (item: e, ext: p.extension(e.name).toLowerCase()))
+            .toList();
+        keyed.sort((a, b) => a.ext.compareTo(b.ext));
+        for (var k = 0; k < items.length; k++) {
+          items[k] = keyed[k].item;
+        }
         break;
     }
 
@@ -1069,7 +1081,6 @@ class FileManagerProvider extends ChangeNotifier {
   int _sortSizeOf(FileItemModel item) =>
       item.isDirectory ? (_folderSizes[item.path] ?? 0) : item.size;
 
-  int _sizeSortWarmPending = 0;
   Timer? _sizeSortRefreshTimer;
   final Set<String> _sizeSortWarmInFlight = <String>{};
 
@@ -1097,16 +1108,13 @@ class FileManagerProvider extends ChangeNotifier {
             !e.path.contains(':'))
         .toList();
     if (pending.isEmpty) return;
-    _sizeSortWarmPending += pending.length;
     for (final f in pending) {
       _sizeSortWarmInFlight.add(f.path);
       getFolderSize(f.path).then((_) {
         _sizeSortWarmInFlight.remove(f.path);
-        _sizeSortWarmPending--;
         _scheduleSizeSortRefresh(path);
       }).catchError((_) {
         _sizeSortWarmInFlight.remove(f.path);
-        _sizeSortWarmPending--;
       });
     }
   }
@@ -2748,9 +2756,19 @@ class FileManagerProvider extends ChangeNotifier {
     if (!await dir.exists()) return [];
 
     final entities = await dir.list().toList();
-    final items = await Future.wait(
-      entities.map((e) => FileItemModel.fromEntityAsync(e)),
-    );
+    // 分批 stat（每批 200，批间让出事件循环）：与 MediaProvider._preloadStats
+    // 同款修复——此前 Future.wait 对数千文件一次性并发 stat，IO 回调瞬间
+    // 淹没事件循环，大目录进入时 UI 直接卡住。
+    final items = <FileItemModel>[];
+    const batch = 200;
+    for (var i = 0; i < entities.length; i += batch) {
+      final chunk = entities.skip(i).take(batch);
+      items.addAll(
+          await Future.wait(chunk.map((e) => FileItemModel.fromEntityAsync(e))));
+      if (i + batch < entities.length) {
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
 
     final folders = <FileItemModel>[];
     final files = <FileItemModel>[];
@@ -5566,10 +5584,25 @@ class FileManagerProvider extends ChangeNotifier {
   /// 返回某标签在界面上应展示的文件列表：在原始列表基础上套用「按类别过滤」。
   /// 文件夹始终保留以便继续导航，仅对文件按已选类别集合筛选。单/双窗口共用
   /// 同一全局 [_categoryFilter]，因此两个面板都会同步过滤，无需重新加载目录。
+  /// 过滤结果按「源列表引用 + 过滤版本号」缓存（与 currentFiles getter 同款）：
+  /// pane_browser 每次 build 都调用，数千文件 × 高频 notify 下无缓存的
+  /// where().toList() 是 O(n) 扫描 + 整表分配。
+  final Map<String, (List<FileItemModel>, int, List<FileItemModel>)>
+      _displayFilesCache = {};
+
   List<FileItemModel> getDisplayFilesForTab(FolderTab tab) {
     final items = tab.currentFiles;
     if (_categoryFilter.isEmpty) return items;
-    return items.where((f) => matchesAnyCategory(_categoryFilter, f)).toList();
+    final cached = _displayFilesCache[tab.id];
+    if (cached != null &&
+        identical(cached.$1, items) &&
+        cached.$2 == _categoryFilterVersion) {
+      return cached.$3;
+    }
+    final result =
+        items.where((f) => matchesAnyCategory(_categoryFilter, f)).toList();
+    _displayFilesCache[tab.id] = (items, _categoryFilterVersion, result);
+    return result;
   }
   String get currentPath => activeTab.currentPath;
   bool get isLoading => activeTab.isLoading;
@@ -8278,7 +8311,17 @@ class FileManagerProvider extends ChangeNotifier {
             emptyButUsable = true; // opendir 被放行 ⇒ 目录存在且为空
             return null;
           }
-          final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
+          // 分批 stat，避免大目录一次性并发 stat 淹没事件循环（同 _listPlainDirectory）。
+          final items = <FileItemModel>[];
+          const batch = 200;
+          for (var i = 0; i < entities.length; i += batch) {
+            final chunk = entities.skip(i).take(batch);
+            items.addAll(await Future.wait(
+                chunk.map((e) => FileItemModel.fromEntityAsync(e))));
+            if (i + batch < entities.length) {
+              await Future<void>.delayed(Duration.zero);
+            }
+          }
           final folders = <FileItemModel>[];
           final files = <FileItemModel>[];
           for (var item in items) {
@@ -8701,50 +8744,6 @@ class FileManagerProvider extends ChangeNotifier {
     _sortList(files, currentPath);
     activeTab.currentFiles = [...folders, ...files];
     notifyListeners();
-  }
-
-  /// 上传完成后在后台异步轮询刷新远程目录，直到服务端完成临时文件重命名。
-  ///
-  /// 部分 NAS（如飞牛）在 STOR 期间把真实数据写入 file-<随机> 临时文件，
-  /// 关闭数据连接后才重命名/清理，过程可能持续数秒甚至更久。此前的“单次
-  /// 刷新”和“uploadFile 内部同步等待”都会导致 UI 卡顿——前者来不及(服务端
-  /// 还没重命名），后者阻塞 uploadFile 返回使进度弹窗卡在 100%。
-  ///
-  /// 这里改为：在 finally 之后的**异步任务**里，每 ~600ms 刷新一次目录，直到
-  /// 目录里不再出现 file-<随机> 临时文件（说明服务端已最终化）或达到上限。
-  /// 该任务不 await、不阻塞上传流程与进度弹窗，UI 全程可响应。
-  ///
-  /// **关键**：刷新必须用 [loadDirectoryForTab] 直接针对“目标远程 tab”进行，
-  /// 绝对不能调用 [loadDirectory]（它操作的是全局活跃面板 activeTab）。否则
-  /// 后台轮询每 600ms 都会去刷新 activeTab——一旦用户切到本地面板，轮询会把
-  /// 本地 tab 的 currentPath 写成远程路径、并可能触发远程→本地翻转，导致地址
-  /// 栏“始终显示本地路径”且状态被持久化（重启后才恢复）。
-  /// 等待 FTP 服务端完成上传最终化（把 file-<随机> 临时文件重命名为目标文件）。
-  ///
-  /// 上传时客户端把数据写完 socket 后，服务端往往还在刷盘/重命名，此时若立即
-  /// 收起进度条，用户会看到“进度 100% 但文件还没出现”。本方法循环轮询直到目标
-  /// 文件出现或超时（约 15 秒），让进度条在服务端真正落盘后才消失。
-  ///
-  /// 非 FTP 客户端无需此等待（其上传为原子操作），直接返回。
-  /// 后台异步等待 FTP 服务端把 `file-<随机>` 临时文件最终化为目标文件。
-  ///
-  /// **不再阻塞调用方**：之前这里是同步等待（最多 45s），导致进度条卡在 100%
-  /// 不消失。现在改为后台 fire-and-forget，进度条立即消失，UI 可正常交互。
-  /// 最终化后的目录刷新由 [scheduleRemoteRefreshAfterUpload] 的轮询负责。
-  void _awaitUploadFinalized(RemoteClient client, String dir, String name, int expectedSize) {
-    if (client is! FtpRemoteClient) return;
-    unawaited(Future(() async {
-      const maxAttempts = 90;
-      for (int i = 0; i < maxAttempts; i++) {
-        if (_isOperationCancelled) return;
-        await Future.delayed(const Duration(milliseconds: 500));
-        bool ok = false;
-        try {
-          ok = await client.finalizeUpload(dir, name, expectedSize);
-        } catch (_) {}
-        if (ok) return;
-      }
-    }));
   }
 
   /// 上传完成后后台等待服务端“最终化”（临时文件→目标文件），**期间不刷新可见
@@ -11181,9 +11180,8 @@ class FileManagerProvider extends ChangeNotifier {
       }
 
       // 上传循环结束后，服务端可能还在把临时文件最终化为目标文件。
-      // 最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 后台轮询负责，
-      // 不再调用 _awaitUploadFinalized（避免与 scheduleRemoteRefreshAfterUpload
-      // 同时操作 FTP 连接导致竞争和闪退）。
+      // 最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 后台轮询负责
+      // （上传路径不再自行等待最终化，避免与轮询同时操作 FTP 连接导致竞争和闪退）。
     } catch (e) {
       debugPrint('Error pasting local to remote: $e');
       if (context.mounted) {
@@ -11730,8 +11728,8 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
 
-      // 服务端最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 轮询负责，
-      // 不再调用 _awaitUploadFinalized（避免与轮询同时操作 FTP 连接导致竞争和闪退）。
+      // 服务端最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 轮询负责
+      // （上传路径不再自行等待最终化，避免与轮询同时操作 FTP 连接导致竞争和闪退）。
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -12755,6 +12753,17 @@ class FileManagerProvider extends ChangeNotifier {
     final reader = source.openRead();
     final writer = destination.openWrite();
 
+    // 进度通知节流：openRead 每 64KB 一个 chunk，高速复制时每秒可达数千次
+    // 回调 → 数千次 ValueNotifier 通知 + 进度对象分配，UI 线程被重建淹没。
+    // 字节累计不丢：两次通知之间的 chunk 字节合并成一次回调（调用方只做 +=）。
+    var pendingBytes = 0;
+    final notifyWatch = Stopwatch()..start();
+    // 写盘背压：IOSink.add 只入队不等待，源快目标慢（内部存储 → SD/U 盘）时
+    // 未落盘数据会在内存里无限堆积（ANR 取证 RssHwm≈1.2GB 的成因之一）。
+    // 每积压 4MB await flush 一次，把在途缓冲限制在常数级。
+    var unflushedBytes = 0;
+    const flushThreshold = 4 * 1024 * 1024;
+
     try {
       await for (final chunk in reader) {
         if (_isOperationCancelled) {
@@ -12765,7 +12774,20 @@ class FileManagerProvider extends ChangeNotifier {
           throw Exception('Cancelled');
         }
         writer.add(chunk);
-        onChunkCopied(chunk.length);
+        pendingBytes += chunk.length;
+        unflushedBytes += chunk.length;
+        if (unflushedBytes >= flushThreshold) {
+          await writer.flush();
+          unflushedBytes = 0;
+        }
+        if (notifyWatch.elapsedMilliseconds >= 100) {
+          onChunkCopied(pendingBytes);
+          pendingBytes = 0;
+          notifyWatch.reset();
+        }
+      }
+      if (pendingBytes > 0) {
+        onChunkCopied(pendingBytes);
       }
     } finally {
       await writer.close();
@@ -16150,7 +16172,7 @@ class _BackgroundAwareProgressNotifier extends ValueNotifier<FileOperationProgre
   bool backgroundMode = false;
   VoidCallback? onClosed;
 
-  _BackgroundAwareProgressNotifier({this.onClosed}) : super(null);
+  _BackgroundAwareProgressNotifier() : super(null);
 
   @override
   set value(FileOperationProgress? newValue) {
