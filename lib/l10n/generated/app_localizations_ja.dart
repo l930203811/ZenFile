@@ -8250,6 +8250,9 @@ class L10nJa extends L10n {
   String get ui_image_fit_mode => '表示モード';
 
   @override
+  String get ui_text_editor_new_file => 'テキストファイルを新規作成';
+
+  @override
   String get ui_text_editor_import => 'テキストファイルを読み込む';
 
   @override

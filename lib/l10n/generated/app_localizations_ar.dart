@@ -8482,6 +8482,9 @@ class L10nAr extends L10n {
   String get ui_image_fit_mode => 'وضع العرض';
 
   @override
+  String get ui_text_editor_new_file => 'إنشاء ملف نصي';
+
+  @override
   String get ui_text_editor_import => 'استيراد ملف نصي';
 
   @override

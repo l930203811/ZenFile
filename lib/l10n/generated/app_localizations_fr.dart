@@ -8643,6 +8643,9 @@ class L10nFr extends L10n {
   String get ui_image_fit_mode => 'Mode d\'affichage';
 
   @override
+  String get ui_text_editor_new_file => 'Nouveau fichier texte';
+
+  @override
   String get ui_text_editor_import => 'Importer un fichier texte';
 
   @override

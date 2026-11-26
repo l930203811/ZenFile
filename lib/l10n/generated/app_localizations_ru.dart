@@ -8592,6 +8592,9 @@ class L10nRu extends L10n {
   String get ui_image_fit_mode => 'Режим отображения';
 
   @override
+  String get ui_text_editor_new_file => 'Создать текстовый файл';
+
+  @override
   String get ui_text_editor_import => 'Импортировать текстовый файл';
 
   @override

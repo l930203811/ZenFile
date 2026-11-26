@@ -8607,6 +8607,9 @@ class L10nDe extends L10n {
   String get ui_image_fit_mode => 'Anzeigemodus';
 
   @override
+  String get ui_text_editor_new_file => 'Neue Textdatei';
+
+  @override
   String get ui_text_editor_import => 'Textdatei importieren';
 
   @override

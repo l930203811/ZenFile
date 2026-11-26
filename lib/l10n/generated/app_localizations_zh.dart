@@ -8074,6 +8074,9 @@ class L10nZh extends L10n {
   String get ui_image_fit_mode => '显示模式';
 
   @override
+  String get ui_text_editor_new_file => '新建文本文件';
+
+  @override
   String get ui_text_editor_import => '导入文本文件';
 
   @override
@@ -16828,6 +16831,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_image_fit_mode => '顯示模式';
+
+  @override
+  String get ui_text_editor_new_file => '新增文字檔';
 
   @override
   String get ui_text_editor_import => '匯入文字檔';

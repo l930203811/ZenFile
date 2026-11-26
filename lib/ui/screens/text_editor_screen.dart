@@ -136,7 +136,7 @@ class CodeTextEditingController extends TextEditingController {
 }
 
 class TextEditorScreen extends StatefulWidget {
-  /// 文本文件路径；为 null 时打开空编辑器（可从右上角菜单导入文本文件）。
+  /// 文本文件路径；为 null 时打开空编辑器（可从顶部加号按钮新建或导入文本文件）。
   final String? filePath;
 
   const TextEditorScreen({super.key, this.filePath});
@@ -838,10 +838,38 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             tooltip: L10n.of(context).ui_redo,
             onPressed: _redoHistory.isNotEmpty ? _redo : null,
           ),
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Broken.add_circle),
             tooltip: L10n.of(context).ui_new_txt,
-            onPressed: _createNewFile,
+            onSelected: (value) async {
+              if (value == 'new') {
+                await _createNewFile();
+              } else if (value == 'import') {
+                await _importFile();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'new',
+                child: Row(
+                  children: [
+                    const Icon(Broken.add_square, size: 18),
+                    const SizedBox(width: 12),
+                    Text(L10n.of(context).ui_text_editor_new_file),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'import',
+                child: Row(
+                  children: [
+                    const Icon(Broken.import, size: 18),
+                    const SizedBox(width: 12),
+                    Text(L10n.of(context).ui_text_editor_import),
+                  ],
+                ),
+              ),
+            ],
           ),
           IconButton(
             icon: Icon(_readOnly ? Broken.edit : Broken.lock_1),
@@ -946,24 +974,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
               } else if (value == 'syntax') {
                 _showSyntaxPicker();
-              } else if (value == 'import') {
-                await _importFile();
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'import',
-                child: Row(
-                  children: [
-                    const Icon(Broken.import, size: 18, color: Colors.blueAccent),
-                    const SizedBox(width: 12),
-                    Text(
-                      L10n.of(context).ui_text_editor_import,
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
-                    ),
-                  ],
-                ),
-              ),
               if (isHtml)
                 PopupMenuItem(
                   value: 'html_preview',
