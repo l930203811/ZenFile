@@ -454,10 +454,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       // translucent：不拦截子级命中测试，栏内 5 个按钮仍可正常点按。
       behavior: HitTestBehavior.translucent,
       onVerticalDragEnd: _handleSwipeUpForFavorites,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeInOut,
-        height: _browseBarVisible ? 44 : 0,
+      // issue #83：折叠/展开只重建这一小块（ValueNotifier 驱动），
+      // 不再经整页 setState 重建全部可见列表项。
+      child: ValueListenableBuilder<bool>(
+        valueListenable: DirectoryScreen.browseBarExpanded,
+        builder: (context, expanded, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            height: expanded ? 44 : 0,
+            child: child,
+          );
+        },
         child: ClipRect(child: _buildBrowseActionBar(context, provider)),
       ),
     );
@@ -483,14 +491,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
-  /// 统一的折叠/展开入口：本页 setState + 同步给 HomeScreen 的底栏形状。
+  /// 统一的折叠/展开入口：只更新 ValueNotifier + 同步给 HomeScreen 的底栏形状。
   ///
-  /// 不用裸 setState：底栏顶角是否方角依赖这个状态，漏同步会让底栏与操作栏
-  /// 在折叠瞬间「错形」。
+  /// issue #83：滚动中折叠/展开不再 setState 整页——操作栏经
+  /// [DirectoryScreen.browseBarExpanded] 的 ValueListenableBuilder 局部重建，
+  /// 避免每次滚动触发全列表可见项重建（低端机掉帧的主因之一）。
+  /// 底栏顶角是否方角依赖这个状态，漏同步会让底栏与操作栏在折叠瞬间「错形」。
   void _setBrowseBarVisible(bool value) {
     if (_browseBarVisible == value) return;
+    _browseBarVisible = value;
     DirectoryScreen.browseBarExpanded.value = value;
-    setState(() => _browseBarVisible = value);
   }
 
   /// 用户拖动文件列表时驱动浏览操作栏折叠/展开。

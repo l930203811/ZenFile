@@ -250,9 +250,23 @@ class FolderItem extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Consumer<FileManagerProvider>(
-                          builder: (context, provider, _) {
-                            final activeFilter = provider.filterType;
+                        // issue #83：只 select 本信息行依赖的 5 个显示设置
+                        // （record 相等比较），不再整 provider Consumer——
+                        // 选中/进度等无关 notifyListeners 不再重建滚动中的
+                        // 全部可见项。方法调用经 read，不额外订阅。
+                        Builder(builder: (context) {
+                          final settings = context.select(
+                            (FileManagerProvider p) => (
+                              filter: p.filterType,
+                              hideDate: p.hideTimeAndDate,
+                              count: p.showFolderContentsCount,
+                              size: p.showFolderSizes,
+                              use24: p.use24HourFormat,
+                            ),
+                          );
+                          final provider =
+                              context.read<FileManagerProvider>();
+                          final activeFilter = settings.filter;
                             if (activeFilter != FileFilterType.all) {
                               return FutureBuilder<int>(
                                 future: provider.getMatchingFileCount(

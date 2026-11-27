@@ -550,19 +550,29 @@ class WebDavRemoteClient extends RemoteClient {
     final file = File(localPath);
     final sink = file.openWrite();
     int downloaded = 0;
+    int sinceFlush = 0;
 
     try {
       await for (final chunk in response) {
         if (isCancelled) break;
         sink.add(chunk);
         downloaded += chunk.length;
+        sinceFlush += chunk.length;
+        // issue #83：每 4MB await flush 一次做背压。不 flush 时 add() 只进
+        // IOSink 内存缓冲，网速快于磁盘时进度到 100% 文件却还没落盘——弹窗关了、
+        // 顶部进度条还在跑、目录里迟迟看不到文件（close() 在补排空整个缓冲）。
+        // 周期 flush 让缓冲恒 ≤4MB：进度即真实落盘进度，收尾 close 近乎瞬时。
+        if (sinceFlush >= 4 * 1024 * 1024) {
+          await sink.flush();
+          sinceFlush = 0;
+        }
         if (totalSize > 0) {
           onProgress(downloaded / totalSize);
         }
       }
     } finally {
-      // issue #83：IOSink.close() 自身会 flush 后再关闭，额外的 flush()
-      // 等于多一次 fsync（大视频可阻塞 20–30s，进度环已 100% 仍卡住对话框）。
+      // IOSink.close() 自身会 flush 后再关闭；有上面的周期 flush，这里最多
+      // 排空不足 4MB 的尾巴，不会再出现进度 100% 后卡 10–30 秒。
       await sink.close();
     }
     if (isCancelled) {
@@ -677,6 +687,15 @@ class WebDavRemoteClient extends RemoteClient {
 
   @override
   Future<String?> getStreamUrl(String remotePath) async {
+    // issue #83：配置了 SOCKS5 代理的连接一律走本地流式代理（返回 null）。
+    // 直连 URL 交给 media_kit/libmpv 后由播放器自己建 TCP —— 它不认识本连接
+    // 的 SOCKS5 配置，TailSocks 场景下 100.x 主机仅经 127.0.0.1:1080 可达，
+    // 直连必然失败，表现为无限缓冲。本地代理的取流走本客户端（_createHttpClient
+    // 已拦截到 SOCKS5），目录/下载/播放同一条通道。
+    if (_useProxy) {
+      WebdavDebugLog.log('getStreamUrl: SOCKS5 连接 -> null(走本地代理,播放器直连无法过代理)');
+      return null;
+    }
     // 已通过连接期探测确定走代理（个别 OpenList 302 配置根目录也重定向）
     if (!_supportsDirectStreaming) {
       WebdavDebugLog.log('getStreamUrl: 连接期已判定不支持直连 -> null(走本地代理)');

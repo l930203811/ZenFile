@@ -220,42 +220,51 @@ class FileItem extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Consumer<FileManagerProvider>(
-                          builder: (context, provider, _) {
-                            return Row(
-                              children: [
-                                if (!provider.hideTimeAndDate) ...[
-                                  Expanded(
-                                    child: Text(
-                                      FileUtils.formatDateShort(
-                                        file.modified,
-                                        use24Hour: provider.use24HourFormat,
-                                      ),
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: theme
-                                                .textTheme
-                                                .bodySmall
-                                                ?.color
-                                                ?.withValues(alpha: 0.6),
-                                          ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                        // issue #83：只依赖这两个显示设置（select），不再整
+                        // provider Consumer——选中/进度等任何 notifyListeners
+                        // 都会让滚动中的全部可见项重建，低端机明显掉帧。
+                        Builder(builder: (context) {
+                          final hideTimeAndDate =
+                              context.select<FileManagerProvider, bool>(
+                            (p) => p.hideTimeAndDate,
+                          );
+                          final use24Hour =
+                              context.select<FileManagerProvider, bool>(
+                            (p) => p.use24HourFormat,
+                          );
+                          return Row(
+                            children: [
+                              if (!hideTimeAndDate) ...[
+                                Expanded(
+                                  child: Text(
+                                    FileUtils.formatDateShort(
+                                      file.modified,
+                                      use24Hour: use24Hour,
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                ],
-                                Text(
-                                  FileUtils.formatBytes(file.size, 2),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color
-                                        ?.withValues(alpha: 0.6),
+                                    style: theme.textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: theme
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color
+                                              ?.withValues(alpha: 0.6),
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                               ],
-                            );
-                          },
-                        ),
+                              Text(
+                                FileUtils.formatBytes(file.size, 2),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color
+                                      ?.withValues(alpha: 0.6),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -1002,11 +1011,21 @@ class _TrailingInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final provider = context.watch<FileManagerProvider>();
-    if (!provider.hideActionMenuButtons) return const SizedBox.shrink();
+    // issue #83：只 select 依赖的 3 个设置，不整 provider watch——
+    // 常见路径（未隐藏操作按钮）直接 shrink，选中/进度等通知不再
+    // 触发每个列表项的这层重建。
+    final settings = context.select(
+      (FileManagerProvider p) => (
+        hideMenu: p.hideActionMenuButtons,
+        option: p.trailingInfoType,
+        use24: p.use24HourFormat,
+      ),
+    );
+    if (!settings.hideMenu) return const SizedBox.shrink();
 
-    final option = provider.trailingInfoType;
+    final option = settings.option;
     if (option == 'none') return const SizedBox.shrink();
+    final provider = context.read<FileManagerProvider>();
 
     if (option == 'dateTime') {
       return Padding(
@@ -1014,7 +1033,7 @@ class _TrailingInfoWidget extends StatelessWidget {
         child: Text(
           FileUtils.formatDate(
             item.modified,
-            use24Hour: provider.use24HourFormat,
+            use24Hour: settings.use24,
           ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
