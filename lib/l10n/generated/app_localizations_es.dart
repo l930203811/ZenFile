@@ -299,6 +299,9 @@ class L10nEs extends L10n {
   String get github => 'Ver Código Fuente en GitHub';
 
   @override
+  String get officialWebsite => 'Visitar el sitio web oficial';
+
+  @override
   String get sequeldpdnsorg => 'Contacto: 1@sequel.dpdns.org';
 
   @override
@@ -9190,6 +9193,13 @@ class L10nEs extends L10n {
 
   @override
   String get ui_feedback_hint => 'Describe el problema o sugerencia (opcional)';
+
+  @override
+  String get ui_feedback_email_label => 'Correo de contacto (opcional)';
+
+  @override
+  String get ui_feedback_email_hint =>
+      'Déjalo para que podamos contactarte si hace falta';
 
   @override
   String ui_crash_attach_logs(int count) {

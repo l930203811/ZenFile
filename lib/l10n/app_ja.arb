@@ -279,6 +279,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "GitHubソースコードを見る",
+  "officialWebsite": "公式ウェブサイト",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8855,6 +8856,8 @@
   "ui_crash_dialog_body": "前回アプリが異常終了し、診断レポートを生成しました。問題の説明を添えて開発者に送信すると、原因の特定に役立ちます。",
   "ui_feedback_dialog_body": "問題やご提案をご記入ください。端末情報と診断ログとともに開発者へ送信されます。",
   "ui_feedback_hint": "問題やご提案を記入（任意）",
+  "ui_feedback_email_label": "連絡先メール（任意）",
+  "ui_feedback_email_hint": "必要な場合に開発者から連絡できます",
   "ui_crash_attach_logs": "診断ログを添付（{count} 件）",
   "ui_feedback_send": "送信",
   "ui_feedback_later": "後で",

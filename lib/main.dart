@@ -27,12 +27,15 @@ import 'services/startup_gate.dart';
 import 'services/webdav_debug_log.dart';
 import 'services/thumb_byte_cache.dart';
 import 'services/ui_stall_watchdog.dart';
+import 'services/tap_latency_probe.dart';
+import 'services/input_trace_messenger.dart';
 import 'services/mpv_audio_output_service.dart';
 import 'services/cache_clean_service.dart';
 import 'services/bugly_report_service.dart';
 import 'services/crash_forensics_service.dart';
 import 'ui/widgets/crash_report_dialog.dart';
 import 'ui/widgets/privacy_policy_dialog.dart';
+import 'ui/widgets/gesture_slop_scope.dart';
 import 'services/network_connections_service.dart';
 import 'services/share_intent_service.dart';
 import 'services/pin_service.dart';
@@ -56,9 +59,15 @@ final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 /// material_ui.ColorScheme → Flutter ColorScheme。
 /// 先 fromSeed 填充新增角色（surfaceContainer* 等），再用 OS 动态取色值覆盖传统角色，
 /// 与 dynamic_color 1.x 官方转换逻辑一致。
-ColorScheme? _muiSchemeToFlutter(mui.ColorScheme? scheme, Brightness brightness) {
+ColorScheme? _muiSchemeToFlutter(
+  mui.ColorScheme? scheme,
+  Brightness brightness,
+) {
   if (scheme == null) return null;
-  return ColorScheme.fromSeed(seedColor: scheme.primary, brightness: brightness).copyWith(
+  return ColorScheme.fromSeed(
+    seedColor: scheme.primary,
+    brightness: brightness,
+  ).copyWith(
     primary: scheme.primary,
     onPrimary: scheme.onPrimary,
     primaryContainer: scheme.primaryContainer,
@@ -91,174 +100,242 @@ ColorScheme? _muiSchemeToFlutter(mui.ColorScheme? scheme, Brightness brightness)
 }
 
 void main() {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      ZenFileBinding.ensureInitialized();
+      final messenger = ServicesBinding.instance.defaultBinaryMessenger;
+      if (messenger is InputTraceMessenger) {
+        messenger.verifyInstalled();
+      } else {
+        WebdavDebugLog.logAlways(
+          '[input] BinaryMessenger未接管 ${messenger.runtimeType}',
+        );
+      }
 
-    // 图片解码缓存上限（纯同步内存参数，无 await，不影响启动时序）。
-    _configureImageCache();
+      // 图片解码缓存上限（纯同步内存参数，无 await，不影响启动时序）。
+      _configureImageCache();
 
-    // 捕获 Flutter 框架错误，防止 release 模式闪退
-    FlutterError.onError = (FlutterErrorDetails details) {
-      FlutterError.presentError(details);
-      debugPrint('[ZenFile] Flutter error: ${details.exception}');
-      debugPrint('[ZenFile] Flutter error stack: ${details.stack}');
-      // 崩溃取证：框架层错误也留证。它通常不会杀死进程，但往往正是「用户看到
-      // 的异常表现」的根源，且时间戳能与原生 report 互相印证。
-      // recordError 内部全程 try/catch，绝不会反过来影响这里。
-      CrashForensicsService.recordError(
-          'FlutterError', details.exception, details.stack);
-      // 同步上报 Bugly（非致命异常面板可查）；内部吞异常，绝不影响主流程。
-      unawaited(
-        BuglyReportService.recordError(
+      // 点击延迟取证探针（2026-11-27）：区分「点击被吞」与「点击迟到」。
+      // 只监听指针事件与帧耗时，开销可忽略；日志走 logAlways，正式版也能取到。
+      TapLatencyProbe.start();
+
+      // 捕获 Flutter 框架错误，防止 release 模式闪退
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.presentError(details);
+        debugPrint('[ZenFile] Flutter error: ${details.exception}');
+        debugPrint('[ZenFile] Flutter error stack: ${details.stack}');
+        // ⚠️ 同时写进诊断日志文件：框架错误**不会杀死进程**，用户只看到
+        // 「界面没反应 / 点了没变化」，而 debugPrint 只进 logcat ⇒ 用户拿不到
+        // ⇒ 这类错误在真机上等于完全不可见。详见 [_logRuntimeError] 的说明。
+        _logRuntimeError('框架错误', details.exception, details.stack);
+        // 崩溃取证：框架层错误也留证。它通常不会杀死进程，但往往正是「用户看到
+        // 的异常表现」的根源，且时间戳能与原生 report 互相印证。
+        // recordError 内部全程 try/catch，绝不会反过来影响这里。
+        CrashForensicsService.recordError(
+          'FlutterError',
           details.exception,
           details.stack,
-          tag: 'FlutterError',
-        ),
-      );
-    };
+        );
+        // 同步上报 Bugly（非致命异常面板可查）；内部吞异常，绝不影响主流程。
+        unawaited(
+          BuglyReportService.recordError(
+            details.exception,
+            details.stack,
+            tag: 'FlutterError',
+          ),
+        );
+      };
 
-    // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
-    // native library may be missing (e.g. when media_kit jars for armeabi-v7a
-    // are not packaged), an uncaught error here would prevent runApp() from
-    // executing, resulting in a white screen. Wrap in try-catch so the app
-    // always launches; media playback will simply be unavailable if it fails.
-    try {
-      MediaKit.ensureInitialized();
-    } catch (e) {
-      debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
-    }
-    // 崩溃现场保全：把上一次运行的日志另存为 `webdav_debug.log.prev`，
-    // 再开始写本次的 `[boot]` 序列（否则现场会被本进程的日志淹没）。
-    // 同步 IO 且已有上限（2MB），放在 MediaKit 初始化之后、首条日志之前。
-    WebdavDebugLog.snapshotPrevious();
-    WebdavDebugLog.log('[boot] MediaKit ok');
-
-    try {
-      await PreferencesService.init();
-    } catch (e) {
-      debugPrint('[ZenFile] PreferencesService.init failed: $e');
-    }
-    WebdavDebugLog.log('[boot] prefs ok');
-
-    // 启动里程碑哨兵（**诊断版专用**）。
-    //
-    // `WebdavDebugLog.enabled == false` 时 `log()` 直接 return，release 下零开销；
-    // 一旦打开开关，这些行是**无 adb** 真机排查里唯一能回答「崩在哪一步」的依据：
-    // 日志停在哪个里程碑，故障就在它之后那段初始化里；**一行都没有**则说明崩在
-    // Dart 之前（引擎 / 原生层，Dart 侧再怎么写日志也看不到）。
-    //
-    // ⚠️ 这里**绝不能有 `await`**：`runApp()` 之前任何挂住的 await 都会让应用起不来，
-    // 那样连「进程启动过」都不留痕，排查会彻底失去着力点（2026-09-23 已因此白跑
-    // 一轮构建）。安装包指纹要 await 一次原生通道，故移到 `runApp()` **之后**再写
-    // —— 见 [_logBootFingerprint]。
-    WebdavDebugLog.log('[boot] main() entered');
-
-    try {
-      await PinService.init();
-    } catch (e) {
-      debugPrint('[ZenFile] PinService.init failed: $e');
-    }
-    WebdavDebugLog.log('[boot] pin ok');
-
-    // ⚠️ 启动提速（2026-10-30）：NetworkConnections / CryptAutoEncrypt /
-    // RecycleBin 三个服务此前在这里串行 await，但它们各自都藏着慢 IO——
-    // secure storage 的 Keystore 解密读（连接凭据）、自动加密的兜底补加密
-    // 扫描、回收站过期项的文件删除清理——低端机上把首帧拖后 1~2 秒。
-    // 它们都不影响首帧渲染，且页面真正用到时（连接页 / 加密目录写文件 /
-    // 回收站）远晚于启动后的几百毫秒，故移到 runApp 之后并行执行
-    // （见下方 [_initDeferredServices]）。各 init 内部自带幂等与异常兜底，
-    // 语义不变。
-
-    // Load custom font dynamically if configured
-    try {
-      final customFontPath = PreferencesService.getCustomFontPath();
-      if (customFontPath != null && customFontPath.isNotEmpty) {
-        final file = File(customFontPath);
-        if (file.existsSync()) {
-          final loader = FontLoader('CustomFont');
-          final bytes = await file.readAsBytes();
-          loader.addFont(Future.value(ByteData.sublistView(bytes)));
-          await loader.load();
-          debugPrint('Successfully loaded custom font at startup');
-        }
+      // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
+      // native library may be missing (e.g. when media_kit jars for armeabi-v7a
+      // are not packaged), an uncaught error here would prevent runApp() from
+      // executing, resulting in a white screen. Wrap in try-catch so the app
+      // always launches; media playback will simply be unavailable if it fails.
+      try {
+        MediaKit.ensureInitialized();
+      } catch (e) {
+        debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
       }
-    } catch (e) {
-      debugPrint('Error loading custom font at startup: $e');
-    }
-    WebdavDebugLog.log('[boot] font ok');
+      // 崩溃现场保全：把上一次运行的日志另存为 `webdav_debug.log.prev`，
+      // 再开始写本次的 `[boot]` 序列（否则现场会被本进程的日志淹没）。
+      // 同步 IO 且已有上限（2MB），放在 MediaKit 初始化之后、首条日志之前。
+      WebdavDebugLog.snapshotPrevious();
+      WebdavDebugLog.log('[boot] MediaKit ok');
 
-    // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
-    // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
-    // audio_background_handler 在首次播放时经 permission_handler 动态申请。
-    try {
-      await AudioService.init(
-        builder: () => getAudioHandler(),
-        config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
-          androidNotificationChannelName: 'ZenFile Audio Player',
-          // ⚠️ 必须指向「确定打进 APK」的资源：本项目的 AndroidManifest 已把应用图标
-          // 换成 @drawable/ic_launcher_*（多图标切换），而 build.gradle.kts 里
-          // isShrinkResources = true ⇒ 只被 Dart 字符串引用的资源（AGP 看不见）会被裁掉，
-          // 用 'mipmap/ic_launcher' 会解析成 0 ⇒ setSmallIcon(0) ⇒ Android 11+ 抛
-          // 「Invalid notification (no valid small icon)」⇒ 播放/切歌时进程被杀。
-          // ic_stat_zenfile 已在 res/raw/keep.xml 登记，保证不被裁。
-          androidNotificationIcon: 'drawable/ic_stat_zenfile',
-          androidShowNotificationBadge: true,
-          androidStopForegroundOnPause: false,
-          // 允许点击通知空白区域启动 MainActivity，从而跳转到音频播放页。
-          // fork 版 audio_service 在 androidNotificationClickStartsActivity: true 时
-          // 会自动生成有效的 contentIntent，不会传入 null。
-          androidNotificationClickStartsActivity: true,
-          notificationColor: Color(0xFF6200EE),
+      try {
+        await PreferencesService.init();
+      } catch (e) {
+        debugPrint('[ZenFile] PreferencesService.init failed: $e');
+      }
+      WebdavDebugLog.log('[boot] prefs ok');
+
+      // 启动里程碑哨兵（**诊断版专用**）。
+      //
+      // `WebdavDebugLog.enabled == false` 时 `log()` 直接 return，release 下零开销；
+      // 一旦打开开关，这些行是**无 adb** 真机排查里唯一能回答「崩在哪一步」的依据：
+      // 日志停在哪个里程碑，故障就在它之后那段初始化里；**一行都没有**则说明崩在
+      // Dart 之前（引擎 / 原生层，Dart 侧再怎么写日志也看不到）。
+      //
+      // ⚠️ 这里**绝不能有 `await`**：`runApp()` 之前任何挂住的 await 都会让应用起不来，
+      // 那样连「进程启动过」都不留痕，排查会彻底失去着力点（2026-09-23 已因此白跑
+      // 一轮构建）。安装包指纹要 await 一次原生通道，故移到 `runApp()` **之后**再写
+      // —— 见 [_logBootFingerprint]。
+      WebdavDebugLog.log('[boot] main() entered');
+
+      try {
+        await PinService.init();
+      } catch (e) {
+        debugPrint('[ZenFile] PinService.init failed: $e');
+      }
+      WebdavDebugLog.log('[boot] pin ok');
+
+      // ⚠️ 启动提速（2026-10-30）：NetworkConnections / CryptAutoEncrypt /
+      // RecycleBin 三个服务此前在这里串行 await，但它们各自都藏着慢 IO——
+      // secure storage 的 Keystore 解密读（连接凭据）、自动加密的兜底补加密
+      // 扫描、回收站过期项的文件删除清理——低端机上把首帧拖后 1~2 秒。
+      // 它们都不影响首帧渲染，且页面真正用到时（连接页 / 加密目录写文件 /
+      // 回收站）远晚于启动后的几百毫秒，故移到 runApp 之后并行执行
+      // （见下方 [_initDeferredServices]）。各 init 内部自带幂等与异常兜底，
+      // 语义不变。
+
+      // Load custom font dynamically if configured
+      try {
+        final customFontPath = PreferencesService.getCustomFontPath();
+        if (customFontPath != null && customFontPath.isNotEmpty) {
+          final file = File(customFontPath);
+          if (file.existsSync()) {
+            final loader = FontLoader('CustomFont');
+            final bytes = await file.readAsBytes();
+            loader.addFont(Future.value(ByteData.sublistView(bytes)));
+            await loader.load();
+            debugPrint('Successfully loaded custom font at startup');
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading custom font at startup: $e');
+      }
+      WebdavDebugLog.log('[boot] font ok');
+
+      // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
+      // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
+      // audio_background_handler 在首次播放时经 permission_handler 动态申请。
+      try {
+        await AudioService.init(
+          builder: () => getAudioHandler(),
+          config: const AudioServiceConfig(
+            androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+            androidNotificationChannelName: 'ZenFile Audio Player',
+            // ⚠️ 必须指向「确定打进 APK」的资源：本项目的 AndroidManifest 已把应用图标
+            // 换成 @drawable/ic_launcher_*（多图标切换），而 build.gradle.kts 里
+            // isShrinkResources = true ⇒ 只被 Dart 字符串引用的资源（AGP 看不见）会被裁掉，
+            // 用 'mipmap/ic_launcher' 会解析成 0 ⇒ setSmallIcon(0) ⇒ Android 11+ 抛
+            // 「Invalid notification (no valid small icon)」⇒ 播放/切歌时进程被杀。
+            // ic_stat_zenfile 已在 res/raw/keep.xml 登记，保证不被裁。
+            androidNotificationIcon: 'drawable/ic_stat_zenfile',
+            androidShowNotificationBadge: true,
+            androidStopForegroundOnPause: false,
+            // 允许点击通知空白区域启动 MainActivity，从而跳转到音频播放页。
+            // fork 版 audio_service 在 androidNotificationClickStartsActivity: true 时
+            // 会自动生成有效的 contentIntent，不会传入 null。
+            androidNotificationClickStartsActivity: true,
+            notificationColor: Color(0xFF6200EE),
+          ),
+        );
+        isAudioServiceInitialized = true;
+      } catch (e) {
+        isAudioServiceInitialized = false;
+        debugPrint('[ZenFile] Media notification init failed: $e');
+      }
+      WebdavDebugLog.log('[boot] audio_service ok=$isAudioServiceInitialized');
+
+      WebdavDebugLog.log('[boot] runApp() calling');
+      runApp(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => FileManagerProvider()),
+            ChangeNotifierProvider(create: (_) => MediaProvider()),
+          ],
+          child: ZenFileApp(key: appStateKey),
         ),
       );
-      isAudioServiceInitialized = true;
-    } catch (e) {
-      isAudioServiceInitialized = false;
-      debugPrint('[ZenFile] Media notification init failed: $e');
+
+      StartupGate.instance.armColdStart();
+
+      // 「界面真的起来了」的证明。与上面的里程碑合起来可区分「崩在起 UI 之前」
+      // 与「UI 起来了才崩」——这两者要查的方向完全相反。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WebdavDebugLog.log('[boot] first frame rendered');
+      });
+
+      // 延迟初始化的服务（见上方「启动提速」注释）：runApp 之后立即并行启动，
+      // 不等待、不阻塞首帧之后的任何渲染路径。
+      unawaited(_initDeferredServices());
+
+      // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
+      // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
+      unawaited(_logBootFingerprint());
+
+      // 崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
+      // 与指纹哨兵同理，**只能**放在 `runApp()` 之后（要 await 原生通道）。
+      unawaited(_checkCrashForensics());
+
+      // 让之后写下的每份 dart_error 报告自带「版本 + 机型」。同样只能在
+      // `runApp()` 之后，理由见 [_primeCrashEnvironment]。
+      unawaited(_primeCrashEnvironment());
+    },
+    (error, stackTrace) {
+      // 捕获所有未处理的异步错误，防止 release 模式闪退
+      debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
+      _logRuntimeError('异步错误', error, stackTrace);
+      CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
+      unawaited(
+        BuglyReportService.recordError(error, stackTrace, tag: 'AsyncError'),
+      );
+    },
+  );
+}
+
+/// 把运行时异常写进诊断日志文件（用户可直接导出）。
+///
+/// ## 为什么必须写进文件而不是只 debugPrint
+///
+/// 框架错误（如「setState() called during build」「A RenderFlex overflowed」、
+/// 「无法在 dispose 后使用」…）**不会杀死进程**，用户看到的是「界面没反应 /
+/// 点了没变化」，而日志只进 logcat —— 用户拿不到 logcat，于是这类错误
+/// 在真机上等于**完全不可见**。
+///
+/// 最新的现象描述是「奇数次点击失败、偶数次成功」，这与「回调执行了但
+/// 重建抛异常导致画面没更新」高度吻合 ⇒ 必须让框架错误可见。
+///
+/// 限频：同一类错误 3 秒内只记一次，避免异常风暴把日志刷爆。
+final Set<String> _recentErrorKeys = <String>{};
+DateTime? _lastRuntimeErrorAt;
+
+void _logRuntimeError(String tag, Object error, StackTrace? stack) {
+  try {
+    final msg = error.toString();
+    final key = '$tag|${msg.length > 120 ? msg.substring(0, 120) : msg}';
+    final now = DateTime.now();
+    final last = _lastRuntimeErrorAt;
+    if (last == null || now.difference(last) >= const Duration(seconds: 3)) {
+      _lastRuntimeErrorAt = now;
+      _recentErrorKeys.add(key);
+      if (_recentErrorKeys.length > 50)
+        _recentErrorKeys.remove(_recentErrorKeys.first);
+    } else if (_recentErrorKeys.contains(key)) {
+      // 同类错误在限频窗口内：静默，避免刷屏。
+      return;
+    } else {
+      _recentErrorKeys.add(key);
     }
-    WebdavDebugLog.log('[boot] audio_service ok=$isAudioServiceInitialized');
-
-    WebdavDebugLog.log('[boot] runApp() calling');
-    runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => FileManagerProvider()),
-          ChangeNotifierProvider(create: (_) => MediaProvider()),
-        ],
-        child: ZenFileApp(key: appStateKey),
-      ),
-    );
-
-    // 「界面真的起来了」的证明。与上面的里程碑合起来可区分「崩在起 UI 之前」
-    // 与「UI 起来了才崩」——这两者要查的方向完全相反。
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      WebdavDebugLog.log('[boot] first frame rendered');
-    });
-
-    // 延迟初始化的服务（见上方「启动提速」注释）：runApp 之后立即并行启动，
-    // 不等待、不阻塞首帧之后的任何渲染路径。
-    unawaited(_initDeferredServices());
-
-    // 安装包指纹（`apk=` 那一行）挪到这里：它要 await 一次原生通道，
-    // **必须**在 `runApp()` 之后，原因见 [_logBootFingerprint]。
-    unawaited(_logBootFingerprint());
-
-    // 崩溃取证：把「上次异常退出」的证据导出到用户随手可取的目录。
-    // 与指纹哨兵同理，**只能**放在 `runApp()` 之后（要 await 原生通道）。
-    unawaited(_checkCrashForensics());
-
-    // 让之后写下的每份 dart_error 报告自带「版本 + 机型」。同样只能在
-    // `runApp()` 之后，理由见 [_primeCrashEnvironment]。
-    unawaited(_primeCrashEnvironment());
-  }, (error, stackTrace) {
-    // 捕获所有未处理的异步错误，防止 release 模式闪退
-    debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
-    CrashForensicsService.recordError('runZonedGuarded', error, stackTrace);
-    unawaited(
-      BuglyReportService.recordError(error, stackTrace, tag: 'AsyncError'),
-    );
-  });
+    // 只取前 6 帧：够定位，又不至于把日志撑爆。
+    final frames = stack == null
+        ? ''
+        : ' | ${stack.toString().split('\n').take(6).map((s) => s.trim()).join(' <- ')}';
+    WebdavDebugLog.logAlways('[异常] $tag: $msg$frames');
+  } catch (_) {
+    // 诊断绝不能影响主流程
+  }
 }
 
 /// 启动提速：把与首帧渲染无关、但内含慢 IO 的三个服务初始化挪到
@@ -340,6 +417,18 @@ String _relieveMemoryPressure(String reason) {
       '/${cache.currentSize}张'
       ' thumb=${(ThumbnailCache.memoryBytes / 1048576).toStringAsFixed(1)}MB'
       ' tile=${(ThumbByteCache.byteSize / 1048576).toStringAsFixed(1)}MB';
+  // ⚠️ 媒体索引的条数也要打出来（2026-11-27）。
+  //
+  // 真机日志显示：这台机器在 RSS=258MB 时就回调 system-low-memory，
+  // 而上面三个缓存**永远是 0** ⇒ 系统喊内存紧张时我们其实**什么都没释放**。
+  // 那 258MB 去了哪？先排除 GPU 侧（layerCache/pictureCache 实测≈0），
+  // 剩下的最大嫌疑就是媒体索引（mtime/size/视频资产/各分类列表），
+  // 它们全是 Dart 对象、条数多但此前完全不可见。
+  // 打出条数，下一份日志就能直接判断是不是它 —— 不再靠猜。
+  String mediaIndex = '';
+  try {
+    mediaIndex = ' ${MediaProvider.memoryFootprint()}';
+  } catch (_) {}
   try {
     cache.clear();
     cache.clearLiveImages();
@@ -350,7 +439,31 @@ String _relieveMemoryPressure(String reason) {
   try {
     ThumbByteCache.clearAll();
   } catch (_) {}
-  return '$reason 释放前: $before';
+  return '$reason 释放前: $before$mediaIndex${_processMemoryLine()}';
+}
+
+/// 进程级内存占用（RSS + 峰值 RSS）。
+///
+/// ## 为什么必须带上它
+///
+/// 之前 `[mem] system-low-memory` 只打印三个 Dart 缓存的占用，而这三个缓存
+/// **经常是 0**（原生 Bitmap 与 Dart 主列表都不在它们的口径内）。于是日志
+/// 给出「系统说内存紧张，但我们什么都没占」的矛盾读数，真相无从判断。
+///
+/// [ProcessInfo.currentRss] 是**整个进程**的常驻内存（含原生堆、GPU 资源、
+/// Flutter 引擎、Dart 堆），maxRss 是历史峰值 —— 这正是 Android 的
+/// `onTrimMemory` 与历史 ANR 报告里 `RssHwmKb` 看到的东西。
+/// 有了它，下一轮就能一眼分清「吃内存的是原生侧还是 Dart 侧」。
+String _processMemoryLine() {
+  var rss = -1;
+  var peak = -1;
+  try {
+    rss = ProcessInfo.currentRss;
+    peak = ProcessInfo.maxRss;
+  } catch (_) {}
+  if (rss < 0) return '';
+  return '  RSS=${(rss / 1048576).toStringAsFixed(0)}MB'
+      '  peakRSS=${(peak / 1048576).toStringAsFixed(0)}MB';
 }
 
 /// 当前缓存占用摘要（给卡顿看门狗当现场信息用）。
@@ -360,7 +473,8 @@ String _memoryStatsLine() {
       '  img=${(cache.currentSizeBytes / 1048576).toStringAsFixed(1)}MB'
       '/${cache.currentSize}张'
       '  thumb=${(ThumbnailCache.memoryBytes / 1048576).toStringAsFixed(1)}MB'
-      '  tile=${(ThumbByteCache.byteSize / 1048576).toStringAsFixed(1)}MB';
+      '  tile=${(ThumbByteCache.byteSize / 1048576).toStringAsFixed(1)}MB'
+      '${_processMemoryLine()}';
 }
 
 /// 启动指纹哨兵：记下「本机跑的到底是哪个包」+ 当前 AO 档位 / 日志开关状态。
@@ -415,8 +529,10 @@ Future<void> _primeCrashEnvironment() async {
     }
     try {
       final info = await DeviceInfoPlugin().androidInfo;
-      parts.add('${info.manufacturer} ${info.model} · '
-          'Android ${info.version.release} (SDK ${info.version.sdkInt})');
+      parts.add(
+        '${info.manufacturer} ${info.model} · '
+        'Android ${info.version.release} (SDK ${info.version.sdkInt})',
+      );
     } catch (_) {
       // 非 Android / 插件不可用时只留版本那一项
     }
@@ -528,9 +644,16 @@ void _notifyCrashReportSaved(List<String> notified) {
   });
 }
 
-const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
+const _gestureExclusionChannel = MethodChannel(
+  'com.sequl.zenfile/gesture_exclusion',
+);
 
-Future<void> _updateSystemGestureExclusion(bool disableLeftBack, double width, double screenHeight, double devicePixelRatio) async {
+Future<void> _updateSystemGestureExclusion(
+  bool disableLeftBack,
+  double width,
+  double screenHeight,
+  double devicePixelRatio,
+) async {
   if (!Platform.isAndroid) return;
   try {
     final List<Map<String, int>> rects = [];
@@ -544,16 +667,12 @@ Future<void> _updateSystemGestureExclusion(bool disableLeftBack, double width, d
       final top = (topDp * devicePixelRatio).toInt();
       final right = (width * devicePixelRatio).toInt();
       final bottom = ((topDp + exclusionHeight) * devicePixelRatio).toInt();
-      rects.add({
-        'left': left,
-        'top': top,
-        'right': right,
-        'bottom': bottom,
-      });
+      rects.add({'left': left, 'top': top, 'right': right, 'bottom': bottom});
     }
-    await _gestureExclusionChannel.invokeMethod('setSystemGestureExclusionRects', {
-      'rects': rects,
-    });
+    await _gestureExclusionChannel.invokeMethod(
+      'setSystemGestureExclusionRects',
+      {'rects': rects},
+    );
   } catch (e) {
     debugPrint('Failed to set system gesture exclusion: $e');
   }
@@ -609,8 +728,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   // 缓存主题对象，避免键盘 Insets 逐帧变化时每帧重建整套 ThemeData（builder 内仅为取导航栏颜色）。
   ThemeData? _cachedThemeLight;
   ThemeData? _cachedThemeDark;
-  String? _cachedThemeLightKey;
-  String? _cachedThemeDarkKey;
+  // 主题缓存键：字体 | AMOLED | 种子色 | 动态浅色方案 | 动态深色方案。
+  // 变化时才重算（见 build 里那段注释：每次重算 = 2 次 fromSeed(fidelity) + 4 次 ThemeData）。
+  String? _themeCacheKey;
   // 缓存上次的 SystemUiOverlayStyle，避免每帧调用平台通道 setSystemUIOverlayStyle。
   SystemUiOverlayStyle? _cachedOverlayStyle;
   String? _lastOverlayKey;
@@ -636,9 +756,15 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     _initAppLock();
     final hideNav = PreferencesService.getHideNavigationBar();
     if (hideNav) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top],
+      );
     } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
     }
     _lastHideNavigationBar = hideNav;
     SystemChrome.setSystemUIChangeCallback((bool visible) async {
@@ -650,7 +776,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           // 此时再改一次 decorView 的 systemUiVisibility 会让输入法做一次额外
           // 的 insets 重新分发 ⇒ 动画「顿一下」。等键盘收完（下次回调）再补。
           if (PreferencesService.getHideNavigationBar() && !_isImeVisible()) {
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+            SystemChrome.setEnabledSystemUIMode(
+              SystemUiMode.manual,
+              overlays: [SystemUiOverlay.top],
+            );
           }
         }
       }
@@ -672,13 +801,22 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     // 只在 `main()` 里跑一次，重复调用无副作用。
     UiStallWatchdog.start(
       context: _memoryStatsLine,
-      onStall: (stall) => _relieveMemoryPressure('ui-stall-${stall.inMilliseconds}ms'),
+      // ⚠️ 这条路径以前**把返回值丢掉了**，于是「每次 ≥2.5s 卡顿都会静默清空
+      // 三个缓存」这件事在日志里完全看不见 —— 只能从「下一次 [mem] 打印时三个
+      // 缓存都是 0」反推，是「始终排查不出原因」的关键盲区之一。
+      // 现在把它记下来，并带上进程 RSS / Dart 堆占用。
+      onStall: (stall) {
+        final line = _relieveMemoryPressure(
+          'ui-stall-${stall.inMilliseconds}ms',
+        );
+        WebdavDebugLog.logAlways('[stall] 卡顿自愈 $line');
+      },
       // 启动时通常还没收到生命周期回调，用当前状态做初值；后续变化由
       // didChangeAppLifecycleState 同步，后台期间看门狗会完全停表。
       foreground:
           WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused &&
-              WidgetsBinding.instance.lifecycleState != AppLifecycleState.hidden &&
-              WidgetsBinding.instance.lifecycleState != AppLifecycleState.detached,
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.hidden &&
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.detached,
     );
   }
 
@@ -715,7 +853,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       // 该通道是 Android 专属实现：桌面端必然 MissingPluginException。
       // 查询失败必须按「非选择器启动」放行，否则 _pickerInfoChecked 永远
       // 为 false，home 恒为空白 Scaffold（桌面端首页空白的根因）。
-      debugPrint('[ZenFile] loadSystemPickerInfo failed (treated as non-picker): $e');
+      debugPrint(
+        '[ZenFile] loadSystemPickerInfo failed (treated as non-picker): $e',
+      );
       if (!mounted) return;
       setState(() => _pickerInfoChecked = true);
     }
@@ -823,6 +963,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     // 看门狗只在前台计时：退到后台停心跳、回前台重置基准，否则整段后台
     // 冻结时间会被误记成「UI 卡顿」（日志里曾出现 15,938,050ms 的假卡顿）。
     UiStallWatchdog.setForeground(state == AppLifecycleState.resumed);
+    // 切后台时把缓冲区里的日志**同步**落盘：进程可能在后台被系统回收，
+    // 300ms 的异步节流窗口会丢掉最后几行（而这几行往往正是现场）。
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      WebdavDebugLog.flushSync();
+    }
     if (state == AppLifecycleState.resumed) {
       // 系统可能在应用切到后台/恢复时重置系统 UI 样式，恢复时重新应用缓存的样式
       // （仅在确有缓存时调用，不引入每帧平台通道开销）。
@@ -944,7 +1091,8 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
           // 判断是否远程路径：remote:// 前缀或 http(s) 流式 URL
           final id = item.id;
-          final bool isRemote = id.startsWith('remote://') ||
+          final bool isRemote =
+              id.startsWith('remote://') ||
               id.startsWith('http://') ||
               id.startsWith('https://');
 
@@ -1003,18 +1151,26 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Column(
                 children: [
                   Text(
                     L10n.of(ctx).ui_select_language_title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Select Language / 选择语言',
-                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -1028,52 +1184,133 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                       Text(
                         L10n.of(ctx).ui_select_language_desc,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 20),
-                      _buildLanguageOption(ctx, 'system', L10n.of(ctx).ui_follow_system, 'Auto / System', selectedLocale == 'system', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'system',
+                        L10n.of(ctx).ui_follow_system,
+                        'Auto / System',
+                        selectedLocale == 'system',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'zh', '简体中文', 'Simplified Chinese', selectedLocale == 'zh', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'zh',
+                        '简体中文',
+                        'Simplified Chinese',
+                        selectedLocale == 'zh',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'en', 'English', 'English', selectedLocale == 'en', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'en',
+                        'English',
+                        'English',
+                        selectedLocale == 'en',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'zh_TW', '繁體中文', 'Traditional Chinese', selectedLocale == 'zh_TW', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'zh_TW',
+                        '繁體中文',
+                        'Traditional Chinese',
+                        selectedLocale == 'zh_TW',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'ja', '日本語', 'Japanese', selectedLocale == 'ja', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'ja',
+                        '日本語',
+                        'Japanese',
+                        selectedLocale == 'ja',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'ko', '한국어', 'Korean', selectedLocale == 'ko', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'ko',
+                        '한국어',
+                        'Korean',
+                        selectedLocale == 'ko',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'de', 'Deutsch', 'German', selectedLocale == 'de', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'de',
+                        'Deutsch',
+                        'German',
+                        selectedLocale == 'de',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'fr', 'Français', 'French', selectedLocale == 'fr', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'fr',
+                        'Français',
+                        'French',
+                        selectedLocale == 'fr',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'es', 'Español', 'Spanish', selectedLocale == 'es', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'es',
+                        'Español',
+                        'Spanish',
+                        selectedLocale == 'es',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'ru', 'Русский', 'Russian', selectedLocale == 'ru', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'ru',
+                        'Русский',
+                        'Russian',
+                        selectedLocale == 'ru',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                       const SizedBox(height: 12),
-                      _buildLanguageOption(ctx, 'ar', 'العربية', 'Arabic', selectedLocale == 'ar', (val) {
-                        setDialogState(() => selectedLocale = val);
-                      }),
+                      _buildLanguageOption(
+                        ctx,
+                        'ar',
+                        'العربية',
+                        'Arabic',
+                        selectedLocale == 'ar',
+                        (val) {
+                          setDialogState(() => selectedLocale = val);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -1096,9 +1333,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                   },
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('确定 / Confirm', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    '确定 / Confirm',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             );
@@ -1165,7 +1407,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) => _startMediaLoad());
   }
 
-  Widget _buildLanguageOption(BuildContext ctx, String locale, String label, String subtitle, bool isSelected, ValueChanged<String> onTap) {
+  Widget _buildLanguageOption(
+    BuildContext ctx,
+    String locale,
+    String label,
+    String subtitle,
+    bool isSelected,
+    ValueChanged<String> onTap,
+  ) {
     final theme = Theme.of(ctx);
     return InkWell(
       onTap: () => onTap(locale),
@@ -1173,18 +1422,26 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.1) : theme.colorScheme.surface,
+          color: isSelected
+              ? theme.colorScheme.primary.withValues(alpha: 0.1)
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.3),
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.dividerColor.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Row(
           children: [
             Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1195,7 +1452,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                     label,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
@@ -1245,7 +1504,8 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         // 仅信任 isGranted 会在「清除数据/缓存」后出现误判（报已授权但实际被拒，
         // 即「幽灵授权」），故仍需真实目录枚举兜底 —— 但枚举确认**不在启动关键
         // 路径上同步执行**（见下方「乐观放行」注释），只在放行后、媒体扫描前确认。
-        final rawManageGranted = await Permission.manageExternalStorage.isGranted;
+        final rawManageGranted =
+            await Permission.manageExternalStorage.isGranted;
         if (rawManageGranted) {
           // 启动提速（2026-10-30）：此处**不再**同步跑目录枚举确认（它要等存储
           // FUSE 挂载唤醒，冷启动可达数秒，是覆盖安装后启动黑/白屏的根因）。
@@ -1272,10 +1532,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         // 仅媒体权限而卡在授权循环。
         if (!manageStorageGranted && standardStorageGranted) {
           manageStorageGranted = await _verifyManageStorageAccess();
-          debugPrint('[ZenFile] MIUI-like storage fallback probe: granted=$manageStorageGranted');
+          debugPrint(
+            '[ZenFile] MIUI-like storage fallback probe: granted=$manageStorageGranted',
+          );
         }
 
-        mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+        mediaOnlyPermission =
+            !manageStorageGranted && (standardStorageGranted && audioGranted);
       } catch (e) {
         debugPrint('[ZenFile] Permission check failed: $e');
         manageStorageGranted = false;
@@ -1297,7 +1560,8 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       final setupDone = PreferencesService.getPermissionSetupDone();
       final hasPermission = manageStorageGranted && setupDone;
 
-      final wasPermissionDenied = _hasPermission == false || _hasPermission == null;
+      final wasPermissionDenied =
+          _hasPermission == false || _hasPermission == null;
 
       if (mounted) {
         setState(() {
@@ -1320,7 +1584,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       if (manageNeedsBackgroundVerify) {
         final verified = await _verifyManageStorageAccess();
         if (!verified) {
-          debugPrint('[ZenFile] Ghost grant detected after entry, reverting to setup screen');
+          debugPrint(
+            '[ZenFile] Ghost grant detected after entry, reverting to setup screen',
+          );
           if (mounted) {
             setState(() {
               _hasPermission = false;
@@ -1445,6 +1711,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         builder: (ctx) {
           final theme = Theme.of(ctx);
           return AlertDialog(
+            // 更新日志是长文本，放宽弹窗上限方便阅读；窄屏仍受 insetPadding
+            // 约束，不会顶满屏幕。
+            constraints: const BoxConstraints(maxWidth: 440),
             icon: Icon(
               Icons.new_releases_rounded,
               size: 30,
@@ -1511,19 +1780,63 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 ],
               ),
             ),
+            // 低 dpi / 窄屏下三个按钮直接进 actions 会被挤成竖排且全靠右。
+            // 用 Row：三个按钮永远同一行，文字按钮用 Flexible(loose) 包裹，
+            // 长语言下按钮内文字折行而不是把「更新」挤到下一行。
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, _UpdatePromptAction.ignore),
-                child: Text(l10n.update_dialog_ignore),
-              ),
-              TextButton(
-                onPressed: () =>
-                    Navigator.pop(ctx, _UpdatePromptAction.noRemind),
-                child: Text(l10n.update_dialog_no_remind),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, _UpdatePromptAction.update),
-                child: Text(l10n.update_dialog_update),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: TextButton(
+                      onPressed: () =>
+                          Navigator.pop(ctx, _UpdatePromptAction.ignore),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        l10n.update_dialog_ignore,
+                        style: const TextStyle(fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: TextButton(
+                      onPressed: () =>
+                          Navigator.pop(ctx, _UpdatePromptAction.noRemind),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        l10n.update_dialog_no_remind,
+                        style: const TextStyle(fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  FilledButton(
+                    onPressed: () =>
+                        Navigator.pop(ctx, _UpdatePromptAction.update),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(64, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.update_dialog_update,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
               ),
             ],
           );
@@ -1579,8 +1892,11 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       try {
         // 与 NFile 原项目一致：使用 permission_handler 的 request() 方法
         // 真实探测：防止系统误报已授权而实际仍被拒，导致后续扫描闪退。
-        final manageStorageGrantedRaw = await Permission.manageExternalStorage.request().isGranted;
-        bool manageStorageGranted = manageStorageGrantedRaw && await _verifyManageStorageAccess();
+        final manageStorageGrantedRaw = await Permission.manageExternalStorage
+            .request()
+            .isGranted;
+        bool manageStorageGranted =
+            manageStorageGrantedRaw && await _verifyManageStorageAccess();
         bool standardStorageGranted = false;
         bool audioGranted = true;
         try {
@@ -1589,7 +1905,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           if (sdk >= 33) {
             audioGranted = await Permission.audio.request().isGranted;
           } else {
-            standardStorageGranted = await Permission.storage.request().isGranted;
+            standardStorageGranted = await Permission.storage
+                .request()
+                .isGranted;
           }
         } catch (_) {}
 
@@ -1598,10 +1916,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         // 用真实目录枚举再次确认，避免误判为仅媒体权限而卡在授权循环。
         if (!manageStorageGranted && (standardStorageGranted || audioGranted)) {
           manageStorageGranted = await _verifyManageStorageAccess();
-          debugPrint('[ZenFile] MIUI-like storage fallback probe after request: granted=$manageStorageGranted');
+          debugPrint(
+            '[ZenFile] MIUI-like storage fallback probe after request: granted=$manageStorageGranted',
+          );
         }
 
-        final mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+        final mediaOnlyPermission =
+            !manageStorageGranted && (standardStorageGranted && audioGranted);
         // 必须授予「所有文件管理」权限才放行（见 _checkStoragePermission 说明）。
         // 授权成功后持久化「已完成权限配置」标志：清除应用数据会清空该标志，
         // 从而让下一次启动重新弹窗引导（与首次安装一致）。
@@ -1614,7 +1935,8 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {
             _hasPermission = hasPermission;
-            _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
+            _isMediaOnlyPermission =
+                mediaOnlyPermission && !manageStorageGranted;
             if (!hasPermission) {
               _isPermanentlyDenied = true;
             }
@@ -1722,20 +2044,30 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
   Locale? _getLocale() => _locale;
 
-
   Locale? _localeFromCode(String code) {
     switch (code) {
-      case 'system': return null; // 跟随系统语言
-      case 'en': return const Locale('en', 'US');
-      case 'zh_TW': return const Locale('zh', 'TW');
-      case 'ja': return const Locale('ja', 'JP');
-      case 'ko': return const Locale('ko', 'KR');
-      case 'de': return const Locale('de', 'DE');
-      case 'fr': return const Locale('fr', 'FR');
-      case 'es': return const Locale('es', 'ES');
-      case 'ru': return const Locale('ru', 'RU');
-      case 'ar': return const Locale('ar', 'SA');
-      default: return const Locale('zh', 'CN');
+      case 'system':
+        return null; // 跟随系统语言
+      case 'en':
+        return const Locale('en', 'US');
+      case 'zh_TW':
+        return const Locale('zh', 'TW');
+      case 'ja':
+        return const Locale('ja', 'JP');
+      case 'ko':
+        return const Locale('ko', 'KR');
+      case 'de':
+        return const Locale('de', 'DE');
+      case 'fr':
+        return const Locale('fr', 'FR');
+      case 'es':
+        return const Locale('es', 'ES');
+      case 'ru':
+        return const Locale('ru', 'RU');
+      case 'ar':
+        return const Locale('ar', 'SA');
+      default:
+        return const Locale('zh', 'CN');
     }
   }
 
@@ -1748,10 +2080,40 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FileManagerProvider>(
-      builder: (context, fileManager, _) {
-        final currentAccentOption = fileManager.accentColorOption;
-        final baseSeedColor = PreferencesService.getSeedColor(currentAccentOption);
+    // ⚠️ 这里**必须**是 Selector 而不是 Consumer（2026-11-27 卡顿修复）。
+    //
+    // FileManagerProvider 里有 185 处 notifyListeners()，而 Consumer 会让
+    // **每一次**通知都重建整棵 MaterialApp —— 连带把下面两套主题重算一遍。
+    // 旧写法每次通知要付 2 次 ColorScheme.fromSeed(fidelity)（M3 里最贵的色调
+    // 映射）+ 4 次 ThemeData 构造（getAppTheme 内部还额外建了一个 ThemeData
+    // 只为取 textTheme）。低端机上单次通知就能吃掉一两帧预算，启动期几十次
+    // 通知直接表现为「打开应用后特别卡顿」，指针事件被挤到几百个 IO 回调之后
+    // 才处理 —— 用户看到的就是「点了没反应，再点一次才生效」。
+    //
+    // MaterialApp 这一层真正依赖的只有下面 5 个字段；其余 provider 状态由各页面
+    // 自己的 context.watch / Consumer 订阅，重建范围不变、行为不变。
+    return Selector<
+      FileManagerProvider,
+      ({
+        String accent,
+        String font,
+        bool amoled,
+        bool hideNavBar,
+        bool disableLeftBack,
+      })
+    >(
+      selector: (_, fm) => (
+        accent: fm.accentColorOption,
+        font: fm.fontFamilyOption,
+        amoled: fm.amoledMode,
+        hideNavBar: fm.hideNavigationBar,
+        disableLeftBack: fm.disableLeftBackGesture,
+      ),
+      builder: (context, sel, _) {
+        final currentAccentOption = sel.accent;
+        final baseSeedColor = PreferencesService.getSeedColor(
+          currentAccentOption,
+        );
 
         return DynamicColorBuilder(
           builder: (mui.ColorScheme? dynamicLight, mui.ColorScheme? dynamicDark) {
@@ -1761,6 +2123,34 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
             final activeDarkScheme = currentAccentOption == 'dynamic'
                 ? _muiSchemeToFlutter(dynamicDark, Brightness.dark)
                 : null;
+
+            // 主题缓存：MaterialApp 的 theme/darkTheme 与下面 builder 里取导航栏
+            // 颜色用的是**同一组输入**，这里一次算好两套、内外共用，避免每次通知
+            // 都重算 2 次 fromSeed(fidelity) + 4 次 ThemeData 构造。
+            //
+            // 键里用 ColorScheme.hashCode 是安全的：ColorScheme 按值实现了
+            // ==/hashCode（逐字段比较），同样的动态取色算出来的 hashCode 相同，
+            // 不会每次都判为「变了」。
+            final themeKey =
+                '${sel.font}|${sel.amoled}|${baseSeedColor.toString()}'
+                '|${activeLightScheme?.hashCode ?? -1}'
+                '|${activeDarkScheme?.hashCode ?? -1}';
+            if (_themeCacheKey != themeKey) {
+              _themeCacheKey = themeKey;
+              _cachedThemeLight = AppTheme.getAppTheme(
+                light: true,
+                seed: baseSeedColor,
+                customScheme: activeLightScheme,
+                fontFamily: sel.font,
+              );
+              _cachedThemeDark = AppTheme.getAppTheme(
+                light: false,
+                pitchBlack: sel.amoled,
+                seed: baseSeedColor,
+                customScheme: activeDarkScheme,
+                fontFamily: sel.font,
+              );
+            }
 
             return MaterialApp(
               navigatorKey: navigatorKey,
@@ -1792,64 +2182,41 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 }
                 return const Locale('en', 'US');
               },
-              theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
-              darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
+              theme: _cachedThemeLight!,
+              darkTheme: _cachedThemeDark!,
               themeMode: _themeMode,
               builder: (context, child) {
                 final isDark = _themeMode == ThemeMode.system
-                    ? (MediaQuery.platformBrightnessOf(context) == Brightness.dark)
+                    ? (MediaQuery.platformBrightnessOf(context) ==
+                          Brightness.dark)
                     : (_themeMode == ThemeMode.dark);
 
-                // 主题仅依赖以下输入，键盘 Insets 动画期间这些输入都不变；
-                // 因此缓存 ThemeData，避免每帧重建整套主题（主线程重活，会导致低端机键盘像幻灯片般弹出）。
-                final font = fileManager.fontFamilyOption;
-                final amoled = fileManager.amoledMode;
-                final seedKey = baseSeedColor.toString();
-                final lightSchemeKey = activeLightScheme?.hashCode ?? -1;
-                final darkSchemeKey = activeDarkScheme?.hashCode ?? -1;
-                final themeKey = '$font|$amoled|$seedKey|$lightSchemeKey|$darkSchemeKey';
-
-                ThemeData theme;
-                if (isDark) {
-                  if (_cachedThemeDark == null || _cachedThemeDarkKey != themeKey) {
-                    _cachedThemeDark = AppTheme.getAppTheme(
-                      light: false,
-                      pitchBlack: amoled,
-                      seed: baseSeedColor,
-                      customScheme: activeDarkScheme,
-                      fontFamily: font,
-                    );
-                    _cachedThemeDarkKey = themeKey;
-                  }
-                  theme = _cachedThemeDark!;
-                } else {
-                  if (_cachedThemeLight == null || _cachedThemeLightKey != themeKey) {
-                    _cachedThemeLight = AppTheme.getAppTheme(
-                      light: true,
-                      seed: baseSeedColor,
-                      customScheme: activeLightScheme,
-                      fontFamily: font,
-                    );
-                    _cachedThemeLightKey = themeKey;
-                  }
-                  theme = _cachedThemeLight!;
-                }
+                // 主题已在上一层的缓存里算好（theme/darkTheme 与这里取色共用同一组
+                // 输入），此处直接按当前亮度挑一套即可 —— 不再重复构造。
+                final theme = isDark ? _cachedThemeDark! : _cachedThemeLight!;
 
                 final navBarColor = theme.scaffoldBackgroundColor;
 
                 // 导航栏颜色与 SystemUiOverlayStyle 仅在 isDark / 主题变化时改变；
                 // 键盘 Insets 逐帧变化时这些输入都不变，因此仅在变化时调用平台通道，
                 // 避免每帧 setSystemUIOverlayStyle 的平台通道往返导致的掉帧。
-                final overlayKey = '${isDark ? "d" : "l"}|${navBarColor.toString()}';
+                final overlayKey =
+                    '${isDark ? "d" : "l"}|${navBarColor.toString()}';
                 if (_lastOverlayKey != overlayKey) {
                   _lastOverlayKey = overlayKey;
                   _cachedOverlayStyle = SystemUiOverlayStyle(
                     statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                    statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+                    statusBarIconBrightness: isDark
+                        ? Brightness.light
+                        : Brightness.dark,
+                    statusBarBrightness: isDark
+                        ? Brightness.dark
+                        : Brightness.light,
                     systemNavigationBarColor: navBarColor,
                     systemNavigationBarDividerColor: Colors.transparent,
-                    systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                    systemNavigationBarIconBrightness: isDark
+                        ? Brightness.light
+                        : Brightness.dark,
                     systemNavigationBarContrastEnforced: false,
                     systemStatusBarContrastEnforced: false,
                   );
@@ -1857,16 +2224,22 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 }
 
                 // 仅在开关变化时调用平台通道，避免键盘 Insets 逐帧变化时每帧调用。
-                if (_lastHideNavigationBar != fileManager.hideNavigationBar) {
-                  _lastHideNavigationBar = fileManager.hideNavigationBar;
-                  if (fileManager.hideNavigationBar) {
-                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+                if (_lastHideNavigationBar != sel.hideNavBar) {
+                  _lastHideNavigationBar = sel.hideNavBar;
+                  if (sel.hideNavBar) {
+                    SystemChrome.setEnabledSystemUIMode(
+                      SystemUiMode.manual,
+                      overlays: [SystemUiOverlay.top],
+                    );
                   } else {
-                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+                    SystemChrome.setEnabledSystemUIMode(
+                      SystemUiMode.manual,
+                      overlays: SystemUiOverlay.values,
+                    );
                   }
                 }
 
-                final disableLeftBack = fileManager.disableLeftBackGesture;
+                final disableLeftBack = sel.disableLeftBack;
                 // 按aspect取值：整取 MediaQuery.of 会订阅整份 MediaQueryData，
                 // 键盘 Insets 动画期间这个 builder 每帧重跑一遍（虽然 child 是同一
                 // 实例、Navigator 不会跟着重建，但没必要付这笔钱）。
@@ -1874,17 +2247,36 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
                 // 手势排他区域仅在开关或屏幕尺寸变化时改变，键盘 Insets 动画期间完全不变；
                 // 仅在其变化时调度平台通道调用，避免每帧 setSystemGestureExclusionRects。
-                final gestureKey = '$disableLeftBack|${size.height}|$devicePixelRatio';
+                final gestureKey =
+                    '$disableLeftBack|${size.height}|$devicePixelRatio';
                 if (_lastGestureKey != gestureKey) {
                   _lastGestureKey = gestureKey;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _updateSystemGestureExclusion(disableLeftBack, 40.0, size.height, devicePixelRatio);
+                    _updateSystemGestureExclusion(
+                      disableLeftBack,
+                      40.0,
+                      size.height,
+                      devicePixelRatio,
+                    );
                   });
                 }
 
                 return AnnotatedRegion<SystemUiOverlayStyle>(
                   value: _cachedOverlayStyle!,
-                  child: child!,
+                  // ⚠️ 全局放宽手势 slop（2026-11-28 第十一轮）。
+                  //
+                  // `LongPressGestureRecognizer` 的 `preAcceptSlopTolerance`
+                  // 取自 `MediaQuery.gestureSettings`，**长按死线到达前手指
+                  // 累计移动超过它就直接 reject ⇒ 长按永不触发**。
+                  // 平台在 Android 上通常只给 8 逻辑像素（比 Flutter 兜底的
+                  // 18px 还小），低端机上「按住」几乎不可能纹丝不动 ⇒
+                  // **所有支持长按的按钮长按全灭**，而普通点击正常
+                  // （点击不靠定时器，抬起即触发）。
+                  //
+                  // 详见 [GestureSlopScope] 的注释。放在 `MaterialApp.builder`
+                  // 里是因为 `MediaQuery.fromView` 建在 `View` 层（高于整棵
+                  // App 树），只有在这里才能覆盖全 App。
+                  child: GestureSlopScope(child: child!),
                 );
               },
               // ⚠️ 首页**不能**在处理外部分享时被换成别的页面：HomeScreen 一旦
@@ -1900,33 +2292,34 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                   (!_isFirstLaunch && !_privacyAccepted
                   ? PrivacyGateScreen(onAccepted: _onPrivacyAccepted)
                   : (!_pickerInfoChecked ||
-                        _hasPermission == null ||
-                        !_appLockChecked
-                  ? const Scaffold()
-                  : (_hasPermission == true
-                        ? (_appLockEnabled && !_appUnlocked
-                              ? RemoteGuardScreen(
-                                  mode: RemoteGuardMode.appLock,
-                                  onUnlocked: _onAppUnlocked,
-                                )
-                              : (_pickerInfo.isPicker
-                                    ? _SystemFilePickerHost(
-                                        key: ValueKey(
-                                          'picker-session-$_pickerSession',
-                                        ),
-                                        info: _pickerInfo,
+                            _hasPermission == null ||
+                            !_appLockChecked
+                        ? const Scaffold()
+                        : (_hasPermission == true
+                              ? (_appLockEnabled && !_appUnlocked
+                                    ? RemoteGuardScreen(
+                                        mode: RemoteGuardMode.appLock,
+                                        onUnlocked: _onAppUnlocked,
                                       )
-                                    : HomeScreen(
-                                        toggleTheme: _toggleTheme,
-                                        themeMode: _themeMode,
-                                      )))
-                        : _StoragePermissionShield(
-                            onRequestPermission: _requestStoragePermission,
-                            onOpenSettings:
-                                _openManageExternalStorageSettings,
-                            isPermanentlyDenied: _isPermanentlyDenied,
-                            isMediaOnly: _isMediaOnlyPermission,
-                          )))),
+                                    : (_pickerInfo.isPicker
+                                          ? _SystemFilePickerHost(
+                                              key: ValueKey(
+                                                'picker-session-$_pickerSession',
+                                              ),
+                                              info: _pickerInfo,
+                                            )
+                                          : HomeScreen(
+                                              toggleTheme: _toggleTheme,
+                                              themeMode: _themeMode,
+                                            )))
+                              : _StoragePermissionShield(
+                                  onRequestPermission:
+                                      _requestStoragePermission,
+                                  onOpenSettings:
+                                      _openManageExternalStorageSettings,
+                                  isPermanentlyDenied: _isPermanentlyDenied,
+                                  isMediaOnly: _isMediaOnlyPermission,
+                                )))),
             );
           },
         );
@@ -2023,15 +2416,21 @@ class _StoragePermissionShield extends StatelessWidget {
                     isMediaOnly ? Broken.document_sketch : Broken.folder_cross,
                     size: 72,
                     color: isMediaOnly
-                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.8)
-                        : Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.8)
+                        : Theme.of(
+                            context,
+                          ).colorScheme.error.withValues(alpha: 0.8),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     isMediaOnly
                         ? L10n.of(context).msg_media_only_permission_title
                         : L10n.of(context).msga1b2c3d6,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
@@ -2039,10 +2438,12 @@ class _StoragePermissionShield extends StatelessWidget {
                     isMediaOnly
                         ? L10n.of(context).msg_media_only_permission_desc
                         : (isPermanentlyDenied
-                            ? L10n.of(context).ui_open_settings_desc
-                            : L10n.of(context).zenfile),
+                              ? L10n.of(context).ui_open_settings_desc
+                              : L10n.of(context).zenfile),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                   ),
                   const SizedBox(height: 32),
                   if (isPermanentlyDenied || isMediaOnly) ...[
@@ -2050,26 +2451,42 @@ class _StoragePermissionShield extends StatelessWidget {
                       // media-only 时点击「确定」先尝试重新 request + 真实目录探测放行，
                       // 避免 MIUI 等 ROM 把传统存储权限与所有文件权限合并管理时
                       // 跳转设置页出现循环授权、无法进入应用的问题。
-                      onPressed: isMediaOnly ? onRequestPermission : onOpenSettings,
+                      onPressed: isMediaOnly
+                          ? onRequestPermission
+                          : onOpenSettings,
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       icon: const Icon(Broken.shield_tick),
-                      label: Text(L10n.of(context).msg_grant_full_storage_permission,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      label: Text(
+                        L10n.of(context).msg_grant_full_storage_permission,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(height: 12),
                   ] else ...[
                     FilledButton.icon(
                       onPressed: onRequestPermission,
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       icon: const Icon(Broken.shield_tick),
-                      label: Text(L10n.of(context).msga1b2c3d7,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      label: Text(
+                        L10n.of(context).msga1b2c3d7,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextButton.icon(
@@ -2131,7 +2548,8 @@ void _cancelAutoCleanTimer() {
 /// 清空（而非按 mtime 筛选），因此与间隔设定无关、必然生效。
 void _autoCleanRemoteCache() {
   try {
-    final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
+    final autoCleanMinutes =
+        PreferencesService.getRemoteCacheAutoCleanMinutes();
     if (autoCleanMinutes <= 0) return; // 未启用自动清理（「不自动清理」选项）
 
     final baseDir = Directory(CacheCleanService.basePath);
@@ -2148,7 +2566,9 @@ void _autoCleanRemoteCache() {
     );
 
     // 记录本次清理时间
-    PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
+    PreferencesService.saveRemoteCacheLastCleanTime(
+      DateTime.now().millisecondsSinceEpoch,
+    );
   } catch (e) {
     debugPrint('自动清理缓存失败: $e');
   }

@@ -5,6 +5,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/app_version.dart';
+import '../../core/app_links.dart';
 import '../widgets/crash_report_dialog.dart';
 import '../widgets/privacy_policy_dialog.dart';
 import 'special_thanks_screen.dart';
@@ -358,6 +359,14 @@ class AboutZenFileScreen extends StatelessWidget {
                     icon: Icons.code_rounded,
                     label: L10n.of(context).github,
                     onTap: () => _launchUrl(context, 'https://github.com/l930203811/ZenFile'),
+                  ),
+                  const SizedBox(height: 10),
+                  // 官方网站：项目介绍站（功能展示 / 截图预览 / 下载镜像）
+                  _buildSocialAction(
+                    context,
+                    icon: Icons.language_rounded,
+                    label: L10n.of(context).officialWebsite,
+                    onTap: () => _launchUrl(context, kOfficialWebsiteUrl),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(

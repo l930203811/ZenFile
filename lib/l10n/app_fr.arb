@@ -275,6 +275,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "Voir le code source GitHub",
+  "officialWebsite": "Visiter le site officiel",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8851,6 +8852,8 @@
   "ui_crash_dialog_body": "L'application s'est arrêtée de manière inattendue et un rapport de diagnostic a été généré. Vous pouvez décrire le problème et l'envoyer au développeur pour nous aider à le localiser et le corriger.",
   "ui_feedback_dialog_body": "Décrivez le problème ou la suggestion ; ils seront envoyés au développeur avec les informations de l'appareil et les journaux de diagnostic.",
   "ui_feedback_hint": "Décrivez le problème ou la suggestion (facultatif)",
+  "ui_feedback_email_label": "E-mail de contact (facultatif)",
+  "ui_feedback_email_hint": "Laissez-le pour que nous puissions vous recontacter",
   "ui_crash_attach_logs": "Joindre les journaux de diagnostic ({count})",
   "ui_feedback_send": "Envoyer",
   "ui_feedback_later": "Plus tard",

@@ -21,10 +21,13 @@ class MediaThumbnailService {
   /// Returns JPEG-encoded bytes, or null if generation failed.
   static Future<Uint8List?> generateVideoThumbnail(String filePath) async {
     try {
-      final result = await _channel.invokeMethod('generateMediaThumbnail', {
-        'filePath': filePath,
-        'isVideo': true,
-      });
+      final result = await _runBoundedNativeThumb(() => _channel.invokeMethod(
+        'generateMediaThumbnail',
+        {
+          'filePath': filePath,
+          'isVideo': true,
+        },
+      ));
       if (result is Uint8List) return result;
       if (result is List<int>) return Uint8List.fromList(result);
       return null;
@@ -37,15 +40,48 @@ class MediaThumbnailService {
   /// Returns JPEG-encoded bytes, or null if no artwork found.
   static Future<Uint8List?> generateAudioThumbnail(String filePath) async {
     try {
-      final result = await _channel.invokeMethod('generateMediaThumbnail', {
-        'filePath': filePath,
-        'isVideo': false,
-      });
+      final result = await _runBoundedNativeThumb(() => _channel.invokeMethod(
+        'generateMediaThumbnail',
+        {
+          'filePath': filePath,
+          'isVideo': false,
+        },
+      ));
       if (result is Uint8List) return result;
       if (result is List<int>) return Uint8List.fromList(result);
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  /// 原生缩略图解码的**并发上限**。
+  ///
+  /// 原生侧已经是固定 3 线程（`MainActivity.thumbnailExecutor`），但 Dart 侧若
+  /// 一次性发起几十个请求，每个都会占住一个 MethodChannel 的 pending 回调，
+  /// Dart 侧还会排几十个 Future。滚动一个大目录时这很常见。
+  ///
+  /// 放在本类而不是 [MediaProvider] 那边，是因为**所有**走原生解码的路径都经过
+  /// 这里（分类页视频瓦片、文件列表回退、远程视频缩略图），一处收口最不容易漏。
+  static const int _kMaxNativeThumbConcurrency = 4;
+  static int _nativeThumbRunning = 0;
+  static final List<Completer<void>> _nativeThumbWaiters = <Completer<void>>[];
+
+  /// 把原生缩略图解码的并发压在 [_kMaxNativeThumbConcurrency] 以内。
+  static Future<T> _runBoundedNativeThumb<T>(Future<T> Function() task) async {
+    while (_nativeThumbRunning >= _kMaxNativeThumbConcurrency) {
+      final c = Completer<void>();
+      _nativeThumbWaiters.add(c);
+      await c.future;
+    }
+    _nativeThumbRunning++;
+    try {
+      return await task();
+    } finally {
+      _nativeThumbRunning--;
+      if (_nativeThumbWaiters.isNotEmpty) {
+        _nativeThumbWaiters.removeAt(0).complete();
+      }
     }
   }
 

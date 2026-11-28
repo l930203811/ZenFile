@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zenfile/services/webdav_debug_log.dart';
+import 'package:zenfile/services/build_trigger_counter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../models/file_item_model.dart';
@@ -342,7 +343,25 @@ class ClipboardTask {
 }
 
 class FileManagerProvider extends ChangeNotifier {
-  // 远程源目录变化广播：剪切/移动远程文件后，通知全屏 RemoteExplorerScreen 刷新，
+  @override
+  void notifyListeners() {
+    // ⚠️ 诊断计数（2026-11-27）：这里**只加一个整数自增**，不改变任何行为。
+    //
+    // 为什么要在这里数：浏览页整个被包在 `Consumer<FileManagerProvider>` 里，
+    // 所以**每一次** notifyListeners 都会把浏览页整页重跑一遍 build。
+    // 本 provider 有 185 处 notifyListeners，真机日志显示新版本仍残留
+    // 41~106ms 的 build 段 —— 但日志本身看不出「是谁触发的」。
+    //
+    // 探针（services/tap_latency_probe.dart）会在打印掉帧日志时带上这个计数的
+    // 增量，于是下一份日志能直接区分：
+    //   · 计数在涨 ⇒ 是 provider 通知把整页重跑了 ⇒ 要收窄订阅范围；
+    //   · 计数不动 ⇒ 是滚动/动画引起的 build+layout+paint ⇒ 要降绘制成本。
+    // 两种成因的修法完全相反，所以必须先分清。
+    BuildTriggerCounter.fileManagerNotifications++;
+    super.notifyListeners();
+  }
+
+  /// 远程源目录变化广播：剪切/移动远程文件后，通知全屏 RemoteExplorerScreen 刷新，
   // 避免“原文件残留 / 返回后页面丢失”。远程 tab 由 provider 直接刷新。
   final StreamController<RemoteSourceChanged> _remoteSourceChangedController =
       StreamController<RemoteSourceChanged>.broadcast();
@@ -517,8 +536,15 @@ class FileManagerProvider extends ChangeNotifier {
   bool get isDragging => _isDragging;
 
   void setDragging(bool value) {
+    // 故意不 notifyListeners（与 setFileDragInteracting / setCategoryReorderInteracting
+    // 同一策略，2026-11-27）：isDragging 只被 home 的滑动 Listener 在**指针事件
+    // 回调里**用 context.read 读取，不参与任何 build。
+    //
+    // 此前这里每通知一次，整棵 MaterialApp 就会重建一次（外层 Consumer），
+    // 而长按拖拽的「开始 / 结束」各触发一次 ⇒ 拖一次文件 = 两次全量重建。
+    // 低端机上这两次重建（各含 2 次 ColorScheme.fromSeed(fidelity) + 4 次
+    // ThemeData 构造）足以把拖拽过程卡到掉帧。
     _isDragging = value;
-    notifyListeners();
   }
 
   /// 当前操作是否已被「取消」中断（长任务据此抛 `Cancelled`）。

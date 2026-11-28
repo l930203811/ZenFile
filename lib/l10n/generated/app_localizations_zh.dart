@@ -288,6 +288,9 @@ class L10nZh extends L10n {
   String get github => '查看 GitHub 源代码';
 
   @override
+  String get officialWebsite => '访问官方网站';
+
+  @override
   String get sequeldpdnsorg => '联系邮箱：1@sequel.dpdns.org';
 
   @override
@@ -8591,6 +8594,12 @@ class L10nZh extends L10n {
   String get ui_feedback_hint => '请描述遇到的问题或建议（可留空）';
 
   @override
+  String get ui_feedback_email_label => '联系邮箱（选填）';
+
+  @override
+  String get ui_feedback_email_hint => '填写后方便开发者在需要时与您联系';
+
+  @override
   String ui_crash_attach_logs(int count) {
     return '附带诊断日志（$count 份）';
   }
@@ -9075,6 +9084,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get github => '檢視 GitHub 原始碼';
+
+  @override
+  String get officialWebsite => '造訪官方網站';
 
   @override
   String get sequeldpdnsorg => '聯絡郵箱：1@sequel.dpdns.org';
@@ -17348,6 +17360,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_feedback_hint => '請描述遇到的問題或建議（可留空）';
+
+  @override
+  String get ui_feedback_email_label => '聯絡電子郵件（選填）';
+
+  @override
+  String get ui_feedback_email_hint => '填寫後方便開發者在需要時與您聯絡';
 
   @override
   String ui_crash_attach_logs(int count) {

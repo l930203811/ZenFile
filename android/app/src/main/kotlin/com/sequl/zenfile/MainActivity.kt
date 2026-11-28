@@ -23,6 +23,9 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
+import android.view.MotionEvent
+import android.view.KeyEvent
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -72,6 +75,26 @@ class MainActivity : AudioServiceFragmentActivity() {
     private var storageEventChannel: MethodChannel? = null
     private val SHIZUKU_REQUEST_CODE = 10001
     private val executor = Executors.newCachedThreadPool()
+
+    /**
+     * 缩略图解码专用线程池（**固定 3 线程**）。
+     *
+     * ## 为什么不能共用 [executor]
+     *
+     * [executor] 是 `newCachedThreadPool()` —— **无上限**。而缩略图解码是
+     * **全分辨率**操作（单次 8~33MB 位图，见 [decodeThumbnailBytes]）：
+     * 几十个视频同时要缩略图 ⇒ 几十个全分辨率解码并发 ⇒ 原生堆几百 MB ⇒
+     * Android 回调 `onTrimMemory` ⇒ Dart 侧清空三个缓存 ⇒ **所有缩略图重新
+     * 解码** ⇒ 再来一轮。这是「打开就卡、越用越卡、怎么都查不出原因」的
+     * 正反馈闭环之一。
+     *
+     * 固定 3 线程把并发钉死；超出的请求只是排在队列里（Runnable 很轻），
+     * 不会变成几十个占着 1MB 栈的线程。
+     */
+    private val thumbnailExecutor = Executors.newFixedThreadPool(3)
+
+    /** 缩略图目标边长（px）。与 Dart 侧分类页瓦片尺寸一致。 */
+    private val thumbMaxSize = 300
     private var pendingPermissionResult: MethodChannel.Result? = null
     private var safPermissionResult: MethodChannel.Result? = null
     private val SAF_REQUEST_CODE = 10002
@@ -163,6 +186,240 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
     }
 
+    // ===== 原生主线程看门狗（2026-11-28 新增，诊断用） =====
+    //
+    // ## 为什么必须有它
+    //
+    // Dart 侧探针测到的「主线程阻塞 1724ms」只能说明 **Android 主线程**被整段
+    // 占住（Dart UI isolate 默认就跑在主线程上，主线程一卡，vsync 迟到、触摸与
+    // IME 按键全部排队 ⇒ 用户看到「要点两次」），却**说不出是谁占的**：
+    // 是 Dart 代码、是第三方插件（photo_manager / on_audio_query 的 MediaStore 查询）、
+    // 还是我们自己的原生代码。
+    //
+    // 本看门狗从**后台线程**每 200ms 往主线程 Looper 投一个空任务，测量它的
+    // **执行延迟**；一旦超过阈值就抓取**主线程当时的调用栈**并落盘。
+    // ⇒ 下一份日志里能直接看到「卡在哪个栈帧」，一次定位，不用再猜。
+    //
+    // ## 为什么不会自己变成噪声源
+    //
+    // * 探针线程只做「post + await」，不碰主线程的数据；
+    // * 阈值 400ms、同一阻塞最多每 2 秒报一次；
+    // * 落盘在**探针线程**做（后台线程），不会反过来阻塞主线程；
+    // * 栈信息只取前 15 帧，够定位又不至于把日志撑爆。
+    private fun startMainThreadWatchdog() {
+        val mainThread = Looper.getMainLooper().thread
+        val watchdog = Thread({
+            var lastReportAt = 0L
+            var running = true
+            while (running && !Thread.currentThread().isInterrupted) {
+                val latch = java.util.concurrent.CountDownLatch(1)
+                val postedAt = SystemClock.uptimeMillis()
+                mainHandler.post { latch.countDown() }
+                // ⚠️ **必须在阻塞进行中抓栈**（2026-11-28 修正）。
+                //
+                // 上一版是「等阻塞结束后再抓」，结果只拿到
+                // `MessageQueue.nativePollOnce`（主线程**空闲待命**）这种毫无
+                // 信息量的栈 —— 白抓。正确做法：投完任务后只等 300ms，
+                // 若任务**还没执行**，说明主线程此刻仍被占着 ⇒ 立刻抓栈。
+                var fired = false
+                try {
+                    fired = latch.await(300, java.util.concurrent.TimeUnit.MILLISECONDS)
+                } catch (e: InterruptedException) {
+                    running = false
+                }
+                if (!running) break
+                if (!fired) {
+                    val now = SystemClock.uptimeMillis()
+                    if (now - lastReportAt > 2000) {
+                        lastReportAt = now
+                        val delay = now - postedAt
+                        appendDiagnosticLog(
+                            "[native] 主线程阻塞 ${delay}ms（采样于阻塞中）" +
+                                " 主线程: ${stackOf(mainThread)}" +
+                                " | Dart线程: ${dartThreadStack()}"
+                        )
+                    }
+                }
+                // 等它真正跑完（最多 2s），否则会把「投递本身」误算成阻塞。
+                try {
+                    latch.await(2, java.util.concurrent.TimeUnit.SECONDS)
+                } catch (e: InterruptedException) {
+                    running = false
+                }
+                try {
+                    Thread.sleep(200)
+                } catch (e: InterruptedException) {
+                    running = false
+                }
+            }
+        }, "ZenFileMainThreadWatchdog")
+        watchdog.isDaemon = true
+        watchdog.start()
+    }
+
+    /// 抓某个线程当前的调用栈（前 15 帧）。
+    private fun stackOf(thread: Thread): String {
+        val stack = try {
+            thread.stackTrace
+        } catch (t: Throwable) {
+            emptyArray<StackTraceElement>()
+        }
+        return stack.take(15).joinToString(" <- ") { f ->
+            "${f.className}.${f.methodName}(${f.fileName ?: "?"}:${f.lineNumber})"
+        }
+    }
+
+    /// 抓 **Dart isolate 所在线程**的调用栈。
+    ///
+    /// Flutter 的 Dart UI isolate 跑在名为 `flutter` 的独立线程上（**不是**
+    /// Android 主线程）⇒ 卡住 Dart 时，Android 主线程的栈是「空闲待命」，
+    /// 真正的原因在 Dart 线程上。Dart 卡在同步 IO 时，这段栈会直接显示
+    /// `java.io.*` / `dart:*` 的具体调用点。
+    private fun dartThreadStack(): String {
+        return try {
+            val t = Thread.getAllStackTraces().keys.firstOrNull {
+                it.name.contains("flutter", ignoreCase = true) &&
+                    it != Thread.currentThread()
+            } ?: return "(未找到 flutter 线程)"
+            stackOf(t)
+        } catch (t: Throwable) {
+            "(抓取失败: ${t.message})"
+        }
+    }
+
+    /// 把一行诊断追加到与 Dart 侧同一个日志文件（用户只需取一个文件）。
+    private fun appendDiagnosticLog(line: String) {
+        Log.w("ZenFileWatchdog", line)
+        try {
+            val dir = File("/storage/emulated/0/ZenFile")
+            if (!dir.exists()) dir.mkdirs()
+            val f = File(dir, "webdav_debug.log")
+            val ts = java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                java.util.Locale.US
+            ).format(java.util.Date())
+            f.appendText("[$ts] $line\n")
+        } catch (t: Throwable) {
+            Log.w("ZenFileWatchdog", "append failed: ${t.message}")
+        }
+    }
+
+    // ===== 触摸事件取证（2026-11-28 新增） =====
+    //
+    // ## 为什么必须加
+    //
+    // 用户实测（华为畅享 e20）确认：「没反应」的点击**连按下的视觉反馈都没有**，
+    // 软键盘里的字符也**根本没进输入框**，且当时界面完全空闲。
+    // ⇒ 事件在**到达 Flutter 之前**就没了。
+    //
+    // 本层日志能一刀切开两种可能：
+    // * 这里**有**记录、Flutter 侧**没有** ⇒ 事件进了窗口却没进引擎/框架；
+    // * 这里**也没有**记录 ⇒ 事件连 App 的窗口都没进来（被系统层/其它窗口吃掉）。
+    //
+    // ⚠️ **绝不能在 dispatchTouchEvent 里直接写文件** —— 那是主线程，
+    //    同步写 FUSE 外部存储会**自己制造卡顿**（这正是第七轮修掉的坑）。
+    //    所以这里只往内存队列里塞字符串，由独立的写盘线程批量落盘。
+    private val touchLogQueue = java.util.concurrent.ConcurrentLinkedQueue<String>()
+
+    private fun startTouchLogger() {
+        val writer = Thread({
+            while (!Thread.currentThread().isInterrupted) {
+                try {
+                    val sb = StringBuilder()
+                    var n = 0
+                    while (n < 200) {
+                        val line = touchLogQueue.poll() ?: break
+                        sb.append(line)
+                        n++
+                    }
+                    if (sb.isNotEmpty()) {
+                        val dir = File("/storage/emulated/0/ZenFile")
+                        if (!dir.exists()) dir.mkdirs()
+                        val f = File(dir, "webdav_debug.log")
+                        f.appendText(sb.toString())
+                    }
+                    Thread.sleep(150)
+                } catch (e: InterruptedException) {
+                    return@Thread
+                } catch (t: Throwable) {
+                    // 诊断绝不能影响主流程
+                }
+            }
+        }, "ZenFileTouchLogger")
+        writer.isDaemon = true
+        writer.start()
+    }
+
+    /// 记录每一个进入 **App 窗口** 的触摸事件。
+    ///
+    /// 关键点：这是 Activity 层的 `dispatchTouchEvent`，**在** View 树之前被调用
+    /// ⇒ 「这里有没有记录」= 「触摸有没有到达本 App 的窗口」。
+    /// 软键盘自己占一个窗口，它的按键**不会**出现在这里（那是正常的）。
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val action = ev.actionMasked
+        try {
+            // 只记 down / up / cancel：MOVE 太密集，会把日志冲爆。
+            if (action != MotionEvent.ACTION_MOVE) {
+                val name = when (action) {
+                    MotionEvent.ACTION_DOWN -> "DOWN"
+                    MotionEvent.ACTION_UP -> "UP"
+                    MotionEvent.ACTION_CANCEL -> "CANCEL"
+                    MotionEvent.ACTION_POINTER_DOWN -> "PTR_DOWN"
+                    MotionEvent.ACTION_POINTER_UP -> "PTR_UP"
+                    else -> "a$action"
+                }
+                touchLogQueue.add(
+                    "[touch] $name x=${ev.x.toInt()} y=${ev.y.toInt()} " +
+                        "eventTime=${ev.eventTime} downTime=${ev.downTime} " +
+                        "wall=${System.currentTimeMillis()} " +
+                        "pointers=${ev.pointerCount} " +
+                        "tool=${ev.getToolType(ev.actionIndex)} " +
+                        "source=${ev.source} buttons=${ev.buttonState}\n"
+                )
+            }
+        } catch (t: Throwable) {
+            // 诊断绝不能影响主流程
+        }
+        val handled = super.dispatchTouchEvent(ev)
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP ||
+            action == MotionEvent.ACTION_CANCEL
+        ) {
+            touchLogQueue.add(
+                "[touch] dispatch结果 action=$action handled=$handled " +
+                    "wall=${System.currentTimeMillis()}\n"
+            )
+        }
+        return handled
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK ||
+            event.keyCode == KeyEvent.KEYCODE_ESCAPE
+        ) {
+            val action = when (event.action) {
+                KeyEvent.ACTION_DOWN -> "DOWN"
+                KeyEvent.ACTION_UP -> "UP"
+                else -> "a${event.action}"
+            }
+            touchLogQueue.add(
+                "[back-key] $action key=${event.keyCode} " +
+                    "eventTime=${event.eventTime} downTime=${event.downTime} " +
+                    "wall=${System.currentTimeMillis()} repeat=${event.repeatCount}\n"
+            )
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        touchLogQueue.add(
+            "[back] onBackPressed wall=${System.currentTimeMillis()} " +
+                "uptime=${SystemClock.uptimeMillis()}\n" +
+                Thread.currentThread().stackTrace.take(12).joinToString("\n") + "\n"
+        )
+        super.onBackPressed()
+    }
+
     /// 结束一次钉图请求并回传结果；重复调用只会生效一次。
     private fun finishIconPin(shortcut: Boolean, value: String) {
         if (shortcut) {
@@ -241,6 +498,15 @@ class MainActivity : AudioServiceFragmentActivity() {
         // APP_ID 未填时内部直接跳过（见 BuglyBridge.kt）。
         BuglyBridge.init(this)
         super.onCreate(savedInstanceState)
+        // 原生主线程看门狗：与 Dart 侧探针互为印证（Dart 只能看到「堵住了」，
+        // 这里能直接看到「堵在哪个栈帧」）。详见 [startMainThreadWatchdog]。
+        startMainThreadWatchdog()
+        // 触摸事件取证：只入队，落盘由独立线程做（绝不在主线程写文件）。
+        startTouchLogger()
+        touchLogQueue.add(
+            "[input] 原生输入取证启动 device=${Build.MANUFACTURER}/${Build.MODEL} " +
+                "sdk=${Build.VERSION.SDK_INT} wall=${System.currentTimeMillis()}\n"
+        )
         try {
             Shizuku.addBinderReceivedListenerSticky {
                 // Binder ready
@@ -393,7 +659,26 @@ class MainActivity : AudioServiceFragmentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        releaseImageReaderSurfaceProducers()
         super.onDestroy()
+    }
+
+    // Flutter does not release these before detaching JNI; queued ImageReader callbacks then crash.
+    private fun releaseImageReaderSurfaceProducers() {
+        try {
+            val engine = flutterEngine ?: return
+            val renderer = engine.renderer
+            val field = renderer.javaClass.getDeclaredField("imageReaderProducers")
+            field.isAccessible = true
+            val producers = field.get(renderer) as? List<*> ?: return
+            val release = producers.firstOrNull()?.javaClass?.getMethod("release") ?: return
+            release.isAccessible = true
+            producers.toList().forEach { producer -> release.invoke(producer) }
+        } catch (e: ReflectiveOperationException) {
+            Log.w("MainActivity", "Unable to release ImageReader surface producers", e)
+        } catch (e: SecurityException) {
+            Log.w("MainActivity", "Unable to release ImageReader surface producers", e)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -1147,34 +1432,20 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "generateMediaThumbnail" -> {
                     val filePath = call.argument<String>("filePath") ?: ""
                     val isVideo = call.argument<Boolean>("isVideo") ?: false
-                    executor.execute {
+                    // ⚠️ 走**专用**的固定线程池，而不是共享的 newCachedThreadPool：
+                    //
+                    // 缩略图解码是全分辨率操作（见 [decodeThumbnailBytes]），单次可产生
+                    // 8~33MB 的位图。共享池是无上限的 newCachedThreadPool，几十个视频
+                    // 同时要缩略图就会并发几十个全分辨率解码 ⇒ 原生堆几百 MB ⇒
+                    // Android 回调 onTrimMemory ⇒ Dart 侧清空三个缓存 ⇒ 所有缩略图
+                    // **重新解码** ⇒ 再来一轮（正反馈死循环，也是「始终排查不出原因」
+                    // 的根源之一）。
+                    //
+                    // 固定 3 线程把并发钉死；排队的任务只是 Runnable，不占线程栈。
+                    thumbnailExecutor.execute {
                         try {
-                            val retriever = MediaMetadataRetriever()
-                            retriever.setDataSource(filePath)
-                            var bitmap: Bitmap? = null
-                            if (isVideo) {
-                                bitmap = retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-                            } else {
-                                val embeddedPicture = retriever.embeddedPicture
-                                if (embeddedPicture != null) {
-                                    bitmap = BitmapFactory.decodeByteArray(embeddedPicture, 0, embeddedPicture.size)
-                                }
-                            }
-                            retriever.release()
-                            if (bitmap != null) {
-                                val scaledBitmap = if (bitmap.width > 300 || bitmap.height > 300) {
-                                    val scale = 300f / maxOf(bitmap.width, bitmap.height)
-                                    Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
-                                } else {
-                                    bitmap
-                                }
-                                val stream = ByteArrayOutputStream()
-                                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
-                                val bytes = stream.toByteArray()
-                                runOnUiThread { result.success(bytes) }
-                            } else {
-                                runOnUiThread { result.success(null) }
-                            }
+                            val bytes = decodeThumbnailBytes(filePath, isVideo)
+                            runOnUiThread { result.success(bytes) }
                         } catch (e: Exception) {
                             e.printStackTrace()
                             runOnUiThread { result.success(null) }
@@ -3414,6 +3685,133 @@ class MainActivity : AudioServiceFragmentActivity() {
             resultList.add(appMap)
         }
         return resultList
+    }
+
+    /**
+     * 解码一张媒体的缩略图并编码成 JPEG 字节；失败返回 null。
+     *
+     * ## 为什么不能直接用 `getFrameAtTime`
+     *
+     * `getFrameAtTime` 返回的是**全分辨率帧**：1080p 一帧 = 1920×1080×4 = **8.3MB**，
+     * 4K = 3840×2160×4 = **33MB**。老实现先取全分辨率帧、再 `createScaledBitmap`
+     * 缩到 300，而且**原图既没有 `recycle()`、只能等 GC 才释放** ⇒
+     * 单次调用净泄漏一张全尺寸位图。并发十几个就是几百 MB 原生堆 ——
+     * 这正是历史上 `RssHwmKb ≈ 1.2 GB` 的直接来源之一。
+     *
+     * 现在：
+     * * **API 27+** 用 `getScaledFrameAtTime`，**解码器直接按目标尺寸输出**，
+     *   全分辨率帧根本不会被分配；目标尺寸由视频自身宽高换算而来，
+     *   **保持原始宽高比**。
+     * * **API 24~26** 没有该 API，退回全分辨率路径，但显式 `recycle()` 掉原图。
+     * * 音频内嵌封面用 `inSampleSize` **降采样解码**，不整张进内存。
+     */
+    private fun decodeThumbnailBytes(filePath: String, isVideo: Boolean): ByteArray? {
+        val retriever = MediaMetadataRetriever()
+        try {
+            retriever.setDataSource(filePath)
+            val bitmap: Bitmap? = if (isVideo) {
+                decodeVideoFrame(retriever)
+            } else {
+                val embedded = retriever.embeddedPicture
+                if (embedded == null) null else decodeSampled(embedded, thumbMaxSize)
+            }
+            if (bitmap == null) return null
+            try {
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+                return stream.toByteArray()
+            } finally {
+                // 用完立刻回收：位图是原生堆对象，缩略图这一层完全不需要留着它。
+                bitmap.recycle()
+            }
+        } finally {
+            retriever.release()
+        }
+    }
+
+    /** 取出视频的一帧并缩到 [thumbMaxSize]。 */
+    private fun decodeVideoFrame(retriever: MediaMetadataRetriever): Bitmap? {
+        val w = retriever.extractMetadata(
+            MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
+        )?.toIntOrNull() ?: 0
+        val h = retriever.extractMetadata(
+            MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
+        )?.toIntOrNull() ?: 0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            // API 27+：按目标宽高**直接解码**，不分配全分辨率帧。
+            // 宽高按视频自身比例换算，避免 getScaledFrameAtTime 的宽高约束
+            // 导致画面变形。
+            val tw: Int
+            val th: Int
+            if (w > 0 && h > 0) {
+                val scale = thumbMaxSize.toFloat() / maxOf(w, h)
+                tw = (w * scale).toInt().coerceAtLeast(1)
+                th = (h * scale).toInt().coerceAtLeast(1)
+            } else {
+                tw = thumbMaxSize
+                th = thumbMaxSize
+            }
+            val scaled: Bitmap? = try {
+                retriever.getScaledFrameAtTime(
+                    1000000,
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
+                    tw,
+                    th,
+                )
+            } catch (e: Throwable) {
+                null
+            }
+            if (scaled != null) return scaled
+            // 兜底：个别机型/编码的 `getScaledFrameAtTime` 会抛异常或返回 null。
+            // 这里退回「全分辨率帧 + 立即缩放 + 立即 recycle」的旧路径，
+            // 保证缩略图**不会因为优化而彻底消失**（老实现能出图，这里就必须能出图）。
+            val full: Bitmap? = try {
+                retriever.getFrameAtTime(
+                    1000000,
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
+                )
+            } catch (e2: Throwable) {
+                null
+            }
+            if (full == null) return null
+            return scaleAndRecycle(full, thumbMaxSize)
+        }
+        // API 24~26：只能取全分辨率帧 —— 取完立刻缩放并**回收原图**，
+        // 不能像老实现那样把 8~33MB 的原图留给 GC。
+        val full = retriever.getFrameAtTime(
+            1000000,
+            MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
+        ) ?: return null
+        return scaleAndRecycle(full, thumbMaxSize)
+    }
+
+    /** 缩到最长边 [maxSize]，并**立即回收**原图（原图可达 33MB，不能等 GC）。 */
+    private fun scaleAndRecycle(src: Bitmap, maxSize: Int): Bitmap {
+        if (src.width <= maxSize && src.height <= maxSize) return src
+        val scale = maxSize.toFloat() / maxOf(src.width, src.height)
+        val scaled = Bitmap.createScaledBitmap(
+            src,
+            (src.width * scale).toInt().coerceAtLeast(1),
+            (src.height * scale).toInt().coerceAtLeast(1),
+            true,
+        )
+        if (scaled !== src) src.recycle()
+        return scaled
+    }
+
+    /** 按 [maxSize] **降采样解码**（不先整张解码再缩小）。 */
+    private fun decodeSampled(bytes: ByteArray, maxSize: Int): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sample = 1
+        while (bounds.outWidth / (sample * 2) >= maxSize &&
+            bounds.outHeight / (sample * 2) >= maxSize
+        ) {
+            sample *= 2
+        }
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
     }
 
     private fun getAppIcon(packageName: String): ByteArray? {

@@ -288,6 +288,9 @@ class L10nKo extends L10n {
   String get github => 'GitHub 소스 보기';
 
   @override
+  String get officialWebsite => '공식 웹사이트';
+
+  @override
   String get sequeldpdnsorg => '연락처: 1@sequel.dpdns.org';
 
   @override
@@ -8787,6 +8790,12 @@ class L10nKo extends L10n {
 
   @override
   String get ui_feedback_hint => '문제나 제안을 입력하세요(선택 사항)';
+
+  @override
+  String get ui_feedback_email_label => '연락처 이메일(선택)';
+
+  @override
+  String get ui_feedback_email_hint => '필요할 때 개발자가 연락할 수 있습니다';
 
   @override
   String ui_crash_attach_logs(int count) {

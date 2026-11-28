@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 /// WebDAV / 远程流式播放诊断日志。
@@ -84,12 +85,37 @@ class WebdavDebugLog {
   /// ⇒ 抓崩溃只开 [enabled]；查 AO 才额外把本开关置 true（两者都开才真正订阅）。
   static bool aoDiagnostics = false;
 
-  /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
+  /// 待落盘的日志行（内存缓冲）。
+  ///
+  /// ## 为什么必须缓冲而不是直接写文件（2026-11-28 关键修复）
+  ///
+  /// 旧实现是 `file.writeAsStringSync(line, mode: FileMode.append, flush: true)` ——
+  /// **同步 + flush**，写的是 `/storage/emulated/0/...`，在 Android 上是 **FUSE**
+  /// 挂载（sdcardfs/fuse）。FUSE 的一次「写 + fsync」要走用户态守护进程，
+  /// 在存储繁忙时（**而存储恰恰是繁忙的：ZenFile 正在扫描整棵目录树**）
+  /// 单次写入可以耗时数百毫秒甚至数秒。
+  ///
+  /// 而这段同步写发生在 **UI isolate** 上 ⇒ 每次记一行日志都会**把界面卡住**。
+  /// 真机日志里那条「主线程阻塞 1724ms」的时间点，恰好就在探针写
+  /// 「探针启动 v3」这行日志之后 —— 探针**自己制造了它要测量的卡顿**。
+  ///
+  /// 现在改成：写日志只往内存队列里塞一行（纳秒级），真正的落盘由
+  /// [flush] 用**全异步**的文件 API 完成（`await file.writeAsString`）。
+  /// 异步写由 IO 线程执行，UI isolate 只是 await ⇒ **不再阻塞界面**，
+  /// 同时保留 `flush: true` 的落盘持久性（崩溃现场不丢）。
+  static final List<String> _pending = <String>[];
+
+  /// 落盘节流计时器：把高频日志攒成批，避免每行一次 open/close。
+  static Timer? _flushTimer;
+
+  /// 是否正在落盘（防止并发写同一个文件）。
+  static bool _flushing = false;
+
+  /// 写入一行日志（**异步落盘**，见 [_pending] 的说明）。
   static void log(String msg) {
     if (!enabled) return;
     _write(msg);
   }
-
   /// 写入一行**不受 [enabled] 控制**的日志，只用于「低频、必现、用户无 adb」
   /// 的失败现场。
   ///
@@ -109,6 +135,66 @@ class WebdavDebugLog {
 
   static void _write(String msg) {
     try {
+      final ts = DateTime.now().toIso8601String();
+      _pending.add('[$ts] $msg\n');
+      _scheduleFlush();
+    } catch (_) {
+      // 日志绝不能影响主流程
+    }
+  }
+
+  /// 安排一次落盘（300ms 内合并写）。
+  ///
+  /// 用 `Timer` 而不是 `scheduleMicrotask`：微任务队列会被 UI isolate 上
+  /// 其它微任务（目录遍历等）无限推迟，反而让日志迟迟不落盘。
+  static void _scheduleFlush() {
+    _flushTimer ??= Timer(const Duration(milliseconds: 300), () {
+      _flushTimer = null;
+      // ignore: unawaited_futures
+      flush();
+    });
+  }
+
+  /// 把缓冲区的日志**异步**写到文件。
+  ///
+  /// 全程使用异步文件 API（`await`），IO 在 IO 线程完成，UI isolate 不阻塞。
+  /// 调用方无需 await（内部自带并发保护）。
+  static Future<void> flush() async {
+    if (_flushing) return;
+    if (_pending.isEmpty) return;
+    _flushing = true;
+    final lines = _pending.join();
+    _pending.clear();
+    try {
+      final file = File(filePath);
+      final parent = file.parent;
+      if (!await parent.exists()) {
+        await parent.create(recursive: true);
+      }
+      // 超过上限则清空重写（异步 length()，不做同步 stat）。
+      final len = await file.length();
+      if (len > _maxBytes) {
+        await file.writeAsString('', mode: FileMode.write, flush: true);
+      }
+      await file.writeAsString(lines, mode: FileMode.append, flush: true);
+    } catch (_) {
+      // 日志绝不能影响主流程
+    } finally {
+      _flushing = false;
+      // 落盘期间又攒了新的行 → 再排一次。
+      if (_pending.isNotEmpty) _scheduleFlush();
+    }
+  }
+
+  /// **同步**落盘（仅用于「必须马上进文件」的关键现场，如崩溃前）。
+  ///
+  /// 绝大多数日志走 [flush] 即可；只有在进程即将被系统杀死、来不及等
+  /// 300ms 节流窗口时才用本方法（例如切后台时主动落盘）。
+  static void flushSync() {
+    try {
+      _flushTimer?.cancel();
+      _flushTimer = null;
+      if (_pending.isEmpty) return;
       final file = File(filePath);
       if (!file.parent.existsSync()) {
         file.parent.createSync(recursive: true);
@@ -116,9 +202,9 @@ class WebdavDebugLog {
       if (file.existsSync() && file.lengthSync() > _maxBytes) {
         file.writeAsStringSync('', mode: FileMode.write, flush: true);
       }
-      final ts = DateTime.now().toIso8601String();
-      final line = '[$ts] $msg\n';
-      file.writeAsStringSync(line, mode: FileMode.append, flush: true);
+      final text = _pending.join();
+      _pending.clear();
+      file.writeAsStringSync(text, mode: FileMode.append, flush: true);
     } catch (_) {
       // 日志绝不能影响主流程
     }
@@ -144,6 +230,8 @@ class WebdavDebugLog {
   static void snapshotPrevious() {
     if (!enabled) return;
     try {
+      // 先把缓冲区落盘，保证 .prev 里包含「本次启动之前」的最后几行。
+      flushSync();
       final file = File(filePath);
       if (!file.existsSync() || file.lengthSync() == 0) return;
       final prev = File('$filePath.prev');
@@ -159,6 +247,9 @@ class WebdavDebugLog {
   /// 清空日志（每次开始新的排查时可调用）。
   static void clear() {
     try {
+      _flushTimer?.cancel();
+      _flushTimer = null;
+      _pending.clear();
       final file = File(filePath);
       if (file.parent.existsSync()) {
         file.writeAsStringSync('', mode: FileMode.write, flush: true);

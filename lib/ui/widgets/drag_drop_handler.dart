@@ -139,14 +139,21 @@ class _DragDropHandlerState extends State<DragDropHandler> {
         connection: widget.connection,
       ),
       feedback: feedback,
-      // 未选中状态：长按不移动则触发选中；选中状态：拖拽释放不触发 onLongPress
+      // 未选中状态：长按即选中（由 DraggableItem 在**长按被识别的瞬间**触发）；
+      // 选中状态：不再触发长按动作（避免弹出多选菜单）。
       onLongPress: isSelected ? null : widget.onLongPress,
-      // 拖拽开始时如果未选中，自动选中当前文件
-      onDragStarted: isSelected ? null : () {
-        if (widget.onLongPress != null) {
-          widget.onLongPress!();
-        }
-      },
+      // ⚠️ 这里**不再**在 onDragStarted 里调 `widget.onLongPress`（2026-11-28 修复）。
+      //
+      // 旧实现里长按动作被触发了**三次**：
+      //   ① `DraggableItem.onDragStarted` 里调一次（长按被识别的瞬间）；
+      //   ② 本文件的 `onDragStarted` 里又调一次；
+      //   ③ `DraggableItem.onDragEnd`（`!_hasMoved`）里第三次。
+      // ⇒ 长按一个文件时它被「选中 → 取消 → 再选中」来回抵消，
+      //    **净效果为零** ⇒ 用户看到的就是「长按完全无响应」（实测 100% 复现）。
+      //
+      // 现在长按动作**只在 `DraggableItem.onDragStarted` 里触发一次**，
+      // 语义清晰且「按住不动」也能生效。
+      onDragStarted: null,
       child: widget.child,
     );
 

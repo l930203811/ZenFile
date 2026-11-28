@@ -1,10 +1,11 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/build_trigger_counter.dart';
+import '../../services/webdav_debug_log.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
@@ -656,43 +657,74 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   OverlayEntry? _overlayEntry;
   OverlayEntry? _menuOverlayEntry;
   final GlobalKey _gridKey = GlobalKey();
+
+  /// 每个分类卡片图标（InkWell）的 GlobalKey，**按分类 id 复用**。
+  ///
+  /// ## 为什么必须复用（2026-11-28 关键修复）
+  ///
+  /// 原实现在 itemBuilder 里写的是 `final iconKey = GlobalKey();` ——
+  /// **每次 build 都新建一个**，并把它当作 `InkWell` 的 `key`：
+  /// ```dart
+  /// child: InkWell(key: iconKey, onTap: () { ... })
+  /// ```
+  ///
+  /// Flutter 的匹配规则是：**key 变了 ⇒ 旧 Element 匹配不上 ⇒ 被销毁重建**。
+  /// 于是每一次重建都会把**所有**卡片的 `InkWell` 连同它内部的
+  /// `RawGestureDetector` 一起 dispose 掉。
+  ///
+  /// 后果是致命的：**落在「按下—抬起」窗口内的手势被 dispose ⇒ `onTap`
+  /// 永不触发 ⇒ 用户看到「点了没反应」**；连按压的涟漪/鼓起动画也会被抹掉
+  /// （正好对应用户实测的「完全没有按下反馈」）。
+  ///
+  /// 而本网格是 `context.watch<MediaProvider>()` ⇒ **MediaProvider 每一次
+  /// notifyListeners 都会重建整张网格**。真机日志里媒体扫描期间通知不断，
+  /// 于是「点击落在通知窗口里就被吞」——用户点 A 失败、点 B 成功、点 C 失败，
+  /// 呈现出**交替生效**的样子（谁落在通知窗口里谁失败，与按钮本身无关）。
+  ///
+  /// 复用同一个 key 后：重建时 Element 得以保留 ⇒ **在飞手势不再被取消**。
+  /// 顺带修掉「重建后 `iconKey.currentContext` 变 null ⇒ 导航动画退化成
+  /// 无动画直推」（2026-11-28 第十五轮：分类页进出场动画已整体移除，
+  /// 这个 key 现在只用于保证 `InkWell` 的 Element 身份稳定）。
+  ///
+  /// 同文件 `_CustomizeCategoriesSheetState._getItemKey`（:2213）早就是
+  /// 这个正确写法，这里对齐。
+  final Map<String, GlobalKey> _cardKeys = <String, GlobalKey>{};
+
+  GlobalKey _getCardKey(String labelKey) {
+    return _cardKeys.putIfAbsent(labelKey, () => GlobalKey());
+  }
   // 长按菜单→拖拽切换用
   Offset? _longPressOrigin;
 
-  /// 从图标位置扩散进入目标页面
-  void _navigateWithExpand({
-    required GlobalKey iconKey,
-    required Color color,
-    required Widget targetPage,
-  }) {
-    final renderBox = iconKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) {
-      // 无图标位置可扩散时直接推入（仍走壳内导航，保留底栏）。
-      ShellNavigator.push(context, MaterialPageRoute(builder: (_) => targetPage));
-      return;
-    }
-
-    final iconPos = renderBox.localToGlobal(Offset.zero);
-    final iconSize = renderBox.size;
-    final center = Offset(
-      iconPos.dx + iconSize.width / 2,
-      iconPos.dy + iconSize.height / 2,
-    );
-
-    final screenSize = MediaQuery.sizeOf(context);
-    final dx = max(center.dx, screenSize.width - center.dx);
-    final dy = max(center.dy, screenSize.height - center.dy);
-    final radius = sqrt(dx * dx + dy * dy);
-
+  /// 进入分类页（**无进出场动画**）。
+  ///
+  /// ## 为什么移除展开 / 收缩动画（2026-11-28 第十五轮，用户明确要求）
+  ///
+  /// 原实现是「从图标中心扩散进入」的 [_RadialExpandRoute] + [_RadialTransition]：
+  /// 进入时叠一层彩色薄雾、退出时再收一次。用户在华为畅享 E20 上排查
+  /// 「点一下没反应 / 长按没按压反馈」时怀疑与动画有关，并明确表示
+  /// **「即便不是和动画有关也没关系，目前动画效果没有必要保留」**。
+  ///
+  /// 除了观感，这段动画在这台机器上还有实打实的代价：
+  ///
+  /// * 转场期间每帧都要合成一整层全屏 `ColoredBox`（`Stack` + `RepaintBoundary`），
+  ///   而这台机器单帧 raster 本就能到 300ms+ ⇒ 动画期间只会更容易掉帧、
+  ///   把 UI isolate 占得更久 ⇒ 触摸事件排在队列里等 ⇒ 主观上「点了没反应」；
+  /// * 转场期间路由还处在 `Navigator` 的转场状态里，命中测试与 `ModalBarrier`
+  ///   的行为和静止态不同，容易和手势竞技场搅在一起。
+  ///
+  /// ⇒ 现在改成**零时长**的路由推入：没有任何进出场动画，也没有全屏彩色遮罩
+  ///    参与合成。导航本身（壳内 push、保留底栏）完全不变。
+  void _navigateToCategory({required Widget targetPage}) {
     // 走壳内导航：分类页（图片/视频/音频/文档/下载/截图/压缩包/安装包/最近…）
-    // 进入后底部 4-tab 保持可见；扩散动画在内容区内播放。
+    // 进入后底部 4-tab 保持可见。
     ShellNavigator.push(
       context,
-      _RadialExpandRoute(
-        center: center,
-        maxRadius: radius,
-        color: color,
-        child: targetPage,
+      PageRouteBuilder<void>(
+        // 零时长 ⇒ 不播任何转场动画（进入即显示，退出即消失）。
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => targetPage,
       ),
     );
   }
@@ -1257,6 +1289,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
   @override
   Widget build(BuildContext context) {
+    // 诊断计数（2026-11-27）：见 services/build_trigger_counter.dart。
+    BuildTriggerCounter.categoryGridBuilds++;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
@@ -1379,7 +1413,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final iconSize =
                         metrics.itemWidth *
                         (columns == 4 ? 0.46 : (columns == 3 ? 0.40 : 0.30));
-                    final grid = GridView.builder(
+                    final grid = RepaintBoundary(
+                      // ⚠️ RepaintBoundary（2026-11-27 性能修复）：
+                      // 分类网格每张卡片都带一个 `BoxShadow(blurRadius: 8)`（GPU 高斯
+                      // 模糊）+ 渐变 + 描边。原先**全库没有一处 RepaintBoundary**，
+                      // 于是别的控件一重绘，这些模糊就得整批重做一遍。
+                      // 套上边界后，网格自己不变就复用已光栅化的图层。
+                      child: GridView.builder(
                   key: _gridKey,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -1430,7 +1470,10 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final action = cat['action'] as VoidCallback?;
                     final showLabels =
                         PreferencesService.getShowCategoryLabels();
-                    final iconKey = GlobalKey();
+                    // ⚠️ 按分类 id **复用** GlobalKey（见 _getCardKey 的注释）：
+                    // 每次 build 新建 GlobalKey 会让 InkWell 的 Element 被销毁重建，
+                    // 从而 dispose 掉正在飞行的手势 ⇒ onTap 永不触发 ⇒「点了没反应」。
+                    final iconKey = _getCardKey(labelKey);
 
                     final isBeingDragged =
                         _isDragging && _draggingIndex == index;
@@ -1450,7 +1493,36 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     return LiquidPressable(
                       pressScale: 1.035,
                       child: GestureDetector(
+                      // ⚠️ 显式 opaque（2026-11-28 第十四轮）。
+                      //
+                      // 默认的 deferToChild 语义下，本识别器只有在**子级先被命中**
+                      // 时才进入命中路径。分类卡里有几处「空白区」（卡片内边距、
+                      // 装饰层透明边框之外的区域）一旦子级没命中，
+                      // 长按识别器就**根本不在命中路径里** ⇒ 长按永远收不到事件。
+                      // opaque 让整张卡片（含内边距）都算命中，
+                      // 保证长按识别器 100% 在路径中。
+                      behavior: HitTestBehavior.opaque,
+                      onLongPressDown: (_) {
+                        // ⚠️ 决定性取证（2026-11-28 第十四轮）。
+                        //
+                        // `onLongPressDown` 在**长按识别器收到 pointer down 的那一刻**
+                        // 就触发（框架源码 `gestures/long_press.dart`
+                        // → `handlePrimaryPointer` → `_checkLongPressDown`），
+                        // 与死线、竞技场、slop **全都无关**。
+                        //
+                        // ⇒ 因此它能一刀切开两类完全不同的故障：
+                        //   * 有这条日志、但没有「长按菜单抢到手势」
+                        //     ⇒ 识别器**在命中路径里**，问题在死线/竞技场/slop；
+                        //   * **没有**这条日志
+                        //     ⇒ 手指压根没落在带长按识别器的控件上
+                        //       （或控件在按下瞬间被换掉）。
+                        WebdavDebugLog.logAlways('[tap] 长按下压(分类卡) $label');
+                      },
                       onLongPressStart: (details) {
+                        // 取证：长按识别器抢到了手势 ⇒ 子级的 tap 会被 reject
+                        // ⇒ 用户看到的就是「点了没反应」。这条日志能直接分辨
+                        // 「被长按抢走」与「被重建取消」。
+                        WebdavDebugLog.logAlways('[tap] 长按菜单抢到手势 $label');
                         fm.setCategoryReorderInteracting(true);
                         _longPressOrigin = details.globalPosition;
                         _showCategoryContextMenu(
@@ -1531,11 +1603,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                               child: InkWell(
                                 key: iconKey,
                                 onTap: () {
+                                  // 取证：这条 onTap **真的执行了**吗？
+                                  // 与全局探针的「点击#N」对齐，就能区分
+                                  // 「手势被吞（回调没跑）」与「回调跑了但效果没出来」。
+                                  WebdavDebugLog.logAlways('[tap] 分类卡片 onTap $label');
                                   if (!_isDragging) {
                                     if (pageBuilder != null) {
-                                      _navigateWithExpand(
-                                        iconKey: iconKey,
-                                        color: color,
+                                      _navigateToCategory(
                                         targetPage: pageBuilder(),
                                       );
                                     } else {
@@ -1600,7 +1674,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       ),
                     );
                   },
-                    );
+                    )
+                            );
                     // 直接返回：本组件不在内部滚动（见类顶部注释），
                     // 否则可视区高度=内容高度 ⇒ 永远滚不动。
                     return grid;
@@ -1691,7 +1766,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
         final count = cat['count'] as String;
         final pageBuilder = cat['pageBuilder'] as Widget Function()?;
         final action = cat['action'] as VoidCallback?;
-        final iconKey = GlobalKey();
+        // ⚠️ 列表样式下的图标 **不再** 需要 GlobalKey：扩散动画已于
+        // 2026-11-28 第十五轮移除（见 [_navigateToCategory] 的说明），
+        // 图标位置只用于给动画当圆心。现在不需要位置信息了。
         row = _buildListRow(
           theme,
           icon: icon,
@@ -1700,11 +1777,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           count: count,
           onTap: () {
             if (pageBuilder != null) {
-              _navigateWithExpand(
-                iconKey: iconKey,
-                color: color,
-                targetPage: pageBuilder(),
-              );
+              _navigateToCategory(targetPage: pageBuilder());
             } else {
               action?.call();
             }
@@ -1745,6 +1818,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       child: GestureDetector(
         // InkWell 只有 onLongPress，这里需要区分 start/end（长按菜单在
         // start 弹出、end 复位 reorder 标志），故外层用 GestureDetector 承接。
+        // ⚠️ opaque：保证整行（含内边距空白）都在长按识别器的命中路径里
+        // （原理同分类卡，详见分类卡处的注释）。
+        behavior: HitTestBehavior.opaque,
+        onLongPressDown: (_) {
+          // 取证：见分类卡处注释（onLongPressDown = 识别器收到了 down）。
+          WebdavDebugLog.logAlways('[tap] 长按下压(列表行) $label');
+        },
         onLongPressStart: onLongPressStart,
         onLongPressEnd: onLongPressEnd,
         child: Material(
@@ -1837,6 +1917,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     return LiquidPressable(
       pressScale: 1.035,
       child: GestureDetector(
+      // ⚠️ opaque：与分类卡同理，保证长按识别器一定在命中路径里。
+      behavior: HitTestBehavior.opaque,
+      onLongPressDown: (_) {
+        // 取证：见分类卡处注释（onLongPressDown = 识别器收到了 down）。
+        WebdavDebugLog.logAlways('[tap] 长按下压(系统入口) $label');
+      },
       onLongPressStart: (details) {
         fm.setCategoryReorderInteracting(true);
         _longPressOrigin = details.globalPosition;
@@ -2079,94 +2165,6 @@ child: IntrinsicWidth(
         ],
       ),
     );
-  }
-}
-
-/// 从图标中心扩散的圆形遮罩动画路由
-class _RadialExpandRoute extends PageRouteBuilder<void> {
-  final Offset center;
-  final double maxRadius;
-  final Color color;
-  final Widget child;
-
-  _RadialExpandRoute({
-    required this.center,
-    required this.maxRadius,
-    required this.color,
-    required this.child,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 400),
-         reverseTransitionDuration: const Duration(milliseconds: 350),
-         pageBuilder: (context, animation, secondaryAnimation) => child,
-         transitionsBuilder: (context, animation, secondaryAnimation, page) {
-           return _RadialTransition(
-             center: center,
-             maxRadius: maxRadius,
-             color: color,
-             animation: animation,
-             child: page,
-           );
-         },
-       );
-}
-
-class _RadialTransition extends StatelessWidget {
-  final Offset center;
-  final double maxRadius;
-  final Color color;
-  final Animation<double> animation;
-  final Widget child;
-
-  const _RadialTransition({
-    required this.center,
-    required this.maxRadius,
-    required this.color,
-    required this.animation,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        // 动画完成后直接显示目标页面，避免彩色蒙层遮挡内容
-        if (animation.value >= 1.0) {
-          return child;
-        }
-        // 进入时圆形从0扩展到maxRadius，退出时反向
-        final radius = animation.value * maxRadius;
-        return Stack(
-          children: [
-            // 底层：扩散的彩色圆形
-            ClipPath(
-              clipper: _CircleClipper(center: center, radius: radius),
-              child: ColoredBox(
-                color: color.withValues(alpha: 0.15 * animation.value),
-                child: child,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _CircleClipper extends CustomClipper<Path> {
-  final Offset center;
-  final double radius;
-
-  _CircleClipper({required this.center, required this.radius});
-
-  @override
-  Path getClip(Size size) {
-    return Path()..addOval(Rect.fromCircle(center: center, radius: radius));
-  }
-
-  @override
-  bool shouldReclip(covariant _CircleClipper oldDelegate) {
-    return oldDelegate.radius != radius;
   }
 }
 

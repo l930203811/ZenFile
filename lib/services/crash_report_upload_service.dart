@@ -151,11 +151,13 @@ abstract final class CrashReportUploadService {
   ///
   /// [includeLogs] 为 true 时附带 [logNames] 对应的日志内容（自动剔除已上传
   /// 与缺失的）；[extraMeta] 是附加的环境描述行（机型/版本等）。
+  /// [email] 是用户选填的联系邮箱，便于开发者需要时回信（服务端按需使用）。
   /// 成功返回 true 并把日志名记入「已上传」台账。
   static Future<bool> upload({
     required String description,
     required String kind, // 'crash' | 'feedback'
     String? extraMeta,
+    String? email,
     bool includeLogs = false,
     List<String> logNames = const <String>[],
   }) async {
@@ -167,16 +169,25 @@ abstract final class CrashReportUploadService {
       final logs = includeLogs
           ? await _readLogs(filterUnuploaded(logNames))
           : const <CrashLogFile>[];
+      // 邮箱同时并入 description 正文：服务端转发器（Workers）只取
+      // description/meta 生成 Issue，未必认识新增的 email 字段；把它附在
+      // 正文末尾，保证无论服务端是否升级，开发者都能看到联系邮箱。
+      final cleanEmail = (email ?? '').trim();
+      final trimmedDesc = description.trim();
+      final bodyWithEmail = cleanEmail.isEmpty
+          ? trimmedDesc
+          : '$trimmedDesc\n\n联系邮箱：$cleanEmail';
       final payload = jsonEncode(<String, dynamic>{
         'type': kind,
-        'description': description.trim().substring(
+        'description': bodyWithEmail.substring(
           0,
-          description.trim().length.clamp(0, 4000),
+          bodyWithEmail.length.clamp(0, 4000),
         ),
         'meta': (extraMeta ?? '').substring(
           0,
           (extraMeta ?? '').length.clamp(0, 2000),
         ),
+        'email': cleanEmail.substring(0, cleanEmail.length.clamp(0, 200)),
         'logs': [
           for (final l in logs)
             <String, String>{'name': l.name, 'content': l.content},

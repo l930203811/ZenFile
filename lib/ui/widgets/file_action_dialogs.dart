@@ -279,6 +279,16 @@ class FileActionDialogs {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
+              // 默认 AlertDialog 最大宽度只有 320dp，德语等长语言下三个按钮
+              // （不再提示/取消/删除）文字总长会撑爆弹窗、删除按钮溢出屏幕。
+              // 放宽到最多 440dp，同时不超过屏宽减边距。
+              constraints: BoxConstraints(
+                minWidth: 280,
+                maxWidth: (MediaQuery.sizeOf(context).width - 40).clamp(
+                  280.0,
+                  440.0,
+                ),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,74 +324,109 @@ class FileActionDialogs {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
+              // 低 dpi / 窄屏下若把三个按钮直接塞进 actions（OverflowBar），
+              // 会被挤成竖排、且全部靠右。这里改成一个 Row：三个按钮永远同一行，
+              // 「不再提示」「取消」用 Flexible(loose) 包裹，长语言下按钮内文字
+              // 折行而不是把「删除」挤到下一行；「删除」固定宽度保持醒目。
               actions: [
-                // 「不再提示」不再用勾选框，而是独立按钮放在「取消」左侧：
-                // 点击后先二次提醒恢复路径，确认才关闭删除确认并执行本次删除。
-                if (showSkipCheckbox)
-                  TextButton(
-                    onPressed: () async {
-                      final l10n = L10n.of(context);
-                      final accepted = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text(l10n.ui_delete_confirm_dont_ask_title),
-                          content: Text(l10n.ui_delete_confirm_dont_ask_hint),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: Text(l10n.ui_cancel),
-                            ),
-                            FilledButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: FilledButton.styleFrom(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 「不再提示」不再用勾选框，而是独立按钮放在「取消」左侧：
+                    // 点击后先二次提醒恢复路径，确认才关闭删除确认并执行本次删除。
+                    if (showSkipCheckbox)
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: TextButton(
+                          onPressed: () async {
+                            final l10n = L10n.of(context);
+                            final accepted = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(l10n.ui_delete_confirm_dont_ask_title),
+                                content: Text(l10n.ui_delete_confirm_dont_ask_hint),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: Text(l10n.ui_cancel),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    style: FilledButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Text(l10n.ui_confirm),
+                                  ),
+                                ],
                               ),
-                              child: Text(l10n.ui_confirm),
-                            ),
-                          ],
+                            );
+                            if (accepted != true) return;
+                            await PreferencesService
+                                .saveDeleteConfirmEnabled(false);
+                            if (!pageContext.mounted) return;
+                            try {
+                              pageContext
+                                  .read<FileManagerProvider>()
+                                  .setDeleteConfirmEnabled(false);
+                            } catch (_) {}
+                            if (context.mounted) {
+                              Navigator.pop(context, (true, moveToTrash));
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            L10n.of(context).ui_delete_confirm_dont_ask,
+                            style: const TextStyle(fontSize: 13),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                      );
-                      if (accepted != true) return;
-                      await PreferencesService.saveDeleteConfirmEnabled(false);
-                      if (!pageContext.mounted) return;
-                      try {
-                        pageContext
-                            .read<FileManagerProvider>()
-                            .setDeleteConfirmEnabled(false);
-                      } catch (_) {}
-                      if (context.mounted) {
-                        Navigator.pop(context, (true, moveToTrash));
-                      }
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    if (showSkipCheckbox) const SizedBox(width: 4),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context, (false, false)),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          L10n.of(context).ui_cancel,
+                          style: const TextStyle(fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      L10n.of(context).ui_delete_confirm_dont_ask,
-                      style: const TextStyle(fontSize: 13),
+                    const SizedBox(width: 4),
+                    FilledButton(
+                      onPressed: () =>
+                          Navigator.pop(context, (true, moveToTrash)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        minimumSize: const Size(64, 36),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        L10n.of(context).ui_delete,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ),
-                  ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, (false, false)),
-                  child: Text(L10n.of(context).ui_cancel),
-                ),
-                FilledButton(
-                  onPressed: () =>
-                      Navigator.pop(context, (true, moveToTrash)),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(L10n.of(context).ui_delete),
+                  ],
                 ),
               ],
             );

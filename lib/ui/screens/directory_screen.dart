@@ -31,6 +31,7 @@ import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
 import '../../services/folder_share_service.dart';
 import '../../services/preferences_service.dart';
+import '../../services/build_trigger_counter.dart';
 import '../widgets/pane_browser.dart';
 import '../widgets/file_operation_progress_dialog.dart';
 import '../../services/network_connections_service.dart';
@@ -1548,6 +1549,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   Widget build(BuildContext context) {
     return Consumer<FileManagerProvider>(
       builder: (context, provider, child) {
+        // 诊断计数（2026-11-27）：本浏览页被整页包在 Consumer 里，
+        // 任何一次 provider 通知都会让这里整页重跑 build。
+        // 计数用于在下一份真机日志里区分「被通知触发」与「滚动/动画触发」。
+        BuildTriggerCounter.browsePageBuilds++;
         final theme = Theme.of(context);
         final isSelectionMode = provider.isSelectionMode;
         // 多选模式下也保留父目录项与顶部固定区域：避免列表整体上跳、相邻文件错位误触。
@@ -1914,7 +1919,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                           }
                                           return false;
                                         },
-                                        child: CustomScrollView(
+                                        // ⚠️ RepaintBoundary（2026-11-27 性能修复）：
+                                        // 文件列表是浏览页最大的一块内容。本项目原先**全库
+                                        // 没有一处 RepaintBoundary**，于是任何一处的重绘
+                                        // （底栏胶囊动画、标签栏指示器、分类卡片阴影……）
+                                        // 都会把脏区一路**上传到根**，逼迫**整屏**重新
+                                        // 光栅化 —— 真机日志实测：
+                                        //   掉帧 402ms (build 56ms, raster 328ms)
+                                        // CPU 侧只占 56ms，光栅化却要 328ms。
+                                        // 套上边界后，列表之外的动画不再牵连它。
+                                        child: RepaintBoundary(
+                                          child: CustomScrollView(
                                       controller: _scrollController,
                                       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                                       slivers: [
@@ -2121,6 +2136,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                     ],
                   ),
+                                ),
                                     ),
                                     ),
                                   ],

@@ -927,10 +927,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
   // ② 把 [_latestChangelogVersion] 改成新版本号。其余卡片会自动变为折叠态。
 
   /// 当前版本（那张始终展开、不可折叠的卡片）的版本号。
-  static const String _latestChangelogVersion = 'v3.8.4';
+  static const String _latestChangelogVersion = 'v3.8.5';
 
   /// 全部版本的更新日志，**最新在最前**。
   static const List<_Changelog> _changelogs = <_Changelog>[
+    _v385,
     _v384,
     _v383,
     _v382,
@@ -971,7 +972,41 @@ class _UpdateScreenState extends State<UpdateScreen> {
     _v320,
   ];
 
-  /// ── 当前版本：v3.8.4 ────────────────────────────────────────────────
+  /// ── 当前版本：v3.8.5 ────────────────────────────────────────────────
+  static const _Changelog _v385 = _Changelog(
+    version: 'v3.8.5',
+    date: '2026-11-29',
+    zh: [
+      _ChangeSection('✨ 修复', [
+        '修复启用 SOCKS5 代理时在线播放远程视频一直缓冲、无法播放的问题（播放链路改为与目录浏览使用同一套代理）',
+        '修复复制文件进度到 100% 后文件迟迟不出现、进度条持续运行的问题（进度改为真实落盘进度）',
+        '修复删除确认等弹窗在部分语言或低分辨率屏幕上按钮挤压、文字溢出的问题',
+        '修复文件列表滚动时整页频繁重建导致的掉帧卡顿',
+      ]),
+      _ChangeSection('✨ 优化', [
+        '反馈与崩溃报告现在默认附带日志文件，并新增选填邮箱地址（支持多语言）',
+        '启动更新提示的更新内容区域适当加宽，长文本更易阅读',
+        '优化大存储设备上的分类扫描、排序与大小统计，减少启动和滑动时的卡顿',
+        '优化了其他一些细节',
+      ]),
+    ],
+    en: [
+      _ChangeSection('✨ Fixes', [
+        'Fixed remote videos endlessly buffering and failing to play when a SOCKS5 proxy is enabled (playback now uses the same proxy settings as directory browsing)',
+        'Fixed copies reaching 100% progress while the file took a long time to appear and the progress bar kept running (progress now reflects real data written to disk)',
+        'Fixed buttons being squeezed and text overflowing in the delete-confirmation and similar dialogs under some languages or low-resolution screens',
+        'Fixed frame drops caused by frequent full-page rebuilds while scrolling file lists',
+      ]),
+      _ChangeSection('✨ Improvements', [
+        'Feedback and crash reports now attach log files by default and include an optional email address (localized)',
+        'Widened the changelog area in the startup update dialog for easier reading of long text',
+        'Improved category scanning, sorting and size statistics on large-storage devices, reducing freezes at startup and while scrolling',
+        'Other minor improvements',
+      ]),
+    ],
+  );
+
+  /// ── 上一版：v3.8.4（已发布，日志保持发布时的内容，勿改） ───────────
   static const _Changelog _v384 = _Changelog(
     version: 'v3.8.4',
     date: '2026-11-26',

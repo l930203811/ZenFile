@@ -28,6 +28,45 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
   /// 新建时列表自动滚到最右：新标签页露出，旧标签页被往左挤出可视区。
   int? _lastTabCount;
 
+  /// 双击判定窗口（与 Flutter 的 kDoubleTapTimeout 对齐）。
+  static const Duration _doubleTapWindow = Duration(milliseconds: 300);
+
+  /// 上一次标签单击的时刻 / 下标（用于自行判定双击，见 [_handleTabTap]）。
+  DateTime? _lastTabTapAt;
+  int? _lastTabTapIndex;
+
+  /// 标签单击 / 双击的手动判定。
+  ///
+  /// ⚠️ 不能再用 InkWell 的 `onDoubleTap`（2026-11-27 修复）：
+  /// Flutter 里同一个 widget **同时挂 onTap 与 onDoubleTap** 时，双击识别器会在
+  /// 手势竞技场里 hold 住指针，直到 kDoubleTapTimeout（300ms）超时才让 tap
+  /// 胜出 ⇒ **单击回调被推迟约 300ms**。在卡顿的机器上这 300ms 再叠上掉帧，
+  /// 标签栏就表现为「点了没反应，得点两下才切过去」。
+  ///
+  /// 改为自行判定：单击**立即**切标签（零延迟）；300ms 内对同一标签的第二次
+  /// 点击才算双击（关闭标签）。
+  void _handleTabTap(int index) {
+    final provider = widget.provider;
+    // 两次点击之间标签可能已被别处关闭（下标越界）→ 直接忽略这一次。
+    if (index < 0 || index >= provider.tabs.length) return;
+    final now = DateTime.now();
+    final lastAt = _lastTabTapAt;
+    final isDouble = _lastTabTapIndex == index &&
+        lastAt != null &&
+        now.difference(lastAt) <= _doubleTapWindow;
+    if (isDouble) {
+      _lastTabTapAt = null;
+      _lastTabTapIndex = null;
+      if (provider.tabs.length > 1 && !provider.tabs[index].isPinned) {
+        provider.closeTab(index);
+      }
+      return;
+    }
+    _lastTabTapAt = now;
+    _lastTabTapIndex = index;
+    provider.setActiveTab(index);
+  }
+
   /// 标签之间的横向间距（每个标签右侧留白）。
   /// 指示器宽度要把它扣掉，否则胶囊会比标签宽 4dp、压到相邻标签上。
   static const double _tabGap = 4;
@@ -199,25 +238,33 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
                 controller: widget.scrollController,
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                child: Stack(
-                  key: _stackKey,
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (_indicatorMeasured)
-                      Positioned(
-                        left: _indLeft.value,
-                        top: 0,
-                        bottom: 0,
-                        width: math.max(0.0, _indWidth.value),
-                        child: IgnorePointer(child: _buildIndicator(theme)),
+                child: RepaintBoundary(
+                  // ⚠️ RepaintBoundary（2026-11-27 性能修复）：
+                  // 标签栏的滑动胶囊每帧都在动。本项目原先**全库没有一处
+                  // RepaintBoundary**，脏区一路上传到根 ⇒ 每一帧都要把**整屏**
+                  // （文件列表 + 分类网格 + 底栏）重新光栅化。
+                  // 真机日志实测：`掉帧 402ms (build 56ms, raster 328ms)`。
+                  // 套上边界后，胶囊动画只重画标签栏这一条。
+                  child: Stack(
+                    key: _stackKey,
+                    clipBehavior: Clip.none,
+                    children: [
+                      if (_indicatorMeasured)
+                        Positioned(
+                          left: _indLeft.value,
+                          top: 0,
+                          bottom: 0,
+                          width: math.max(0.0, _indWidth.value),
+                          child: IgnorePointer(child: _buildIndicator(theme)),
+                        ),
+                      Row(
+                        children: [
+                          for (var i = 0; i < tabs.length; i++)
+                            _buildTabItem(context, theme, i),
+                        ],
                       ),
-                    Row(
-                      children: [
-                        for (var i = 0; i < tabs.length; i++)
-                          _buildTabItem(context, theme, i),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -454,12 +501,8 @@ class _DirectoryTabBarState extends State<DirectoryTabBar>
                       )),
           borderRadius: BorderRadius.circular(10),
           child: InkWell(
-            onTap: () => provider.setActiveTab(index),
-            onDoubleTap: () {
-              if (tabs.length > 1 && !tab.isPinned) {
-                provider.closeTab(index);
-              }
-            },
+            // ⚠️ 这里只挂 onTap，**不再挂 onDoubleTap**（见 [_handleTabTap] 注释）。
+            onTap: () => _handleTabTap(index),
             // 长按菜单的锚点取自 [_itemKeys]（挂在外层 Container 上，是真正的
             // RenderBox）。⚠️ 绝不能再用 `context.findRenderObject()`：
             // `itemBuilder` 拿到的 context 是 sliver 自己的 element，它的

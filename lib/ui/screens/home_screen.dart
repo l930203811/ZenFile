@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../services/webdav_debug_log.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../models/network_connection_model.dart';
@@ -19,6 +20,7 @@ import '../widgets/shell_metrics_stable.dart';
 import '../widgets/zenfile_bottom_nav_bar.dart';
 import 'all_recent_files_screen.dart';
 import '../../services/preferences_service.dart';
+import '../../services/build_trigger_counter.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/startup_gate.dart';
 import '../../services/intent_handler_service.dart';
@@ -39,7 +41,11 @@ class HomeScreen extends StatefulWidget {
   /// 当前主题模式（跟随系统/浅色/深色）：顶栏主题按钮按它决定图标与提示，
   /// 三态循环由 main.dart 的 toggleTheme 驱动，本组件只做展示。
   final ThemeMode themeMode;
-  const HomeScreen({super.key, required this.toggleTheme, required this.themeMode});
+  const HomeScreen({
+    super.key,
+    required this.toggleTheme,
+    required this.themeMode,
+  });
 
   // —— 跨路由 tab 切换请求（「导航栏常驻其他页面」）——
   //
@@ -65,7 +71,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   // 当前高亮的「自定义底部槽位」（承载页面的槽位，如最近页 / 分类入口页）；-1 = 无。
   // 内置 tab 的高亮由 _currentIndex 决定；两者互斥 —— 只要 _activeBottomSlot != -1，
@@ -132,7 +139,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _currentIndex = context.read<FileManagerProvider>().defaultToBrowseScreen ? 1 : 0;
+    _currentIndex = context.read<FileManagerProvider>().defaultToBrowseScreen
+        ? 1
+        : 0;
     // 默认停在浏览页时（设置里的开关）必须当帧就构建，否则首帧是空白。
     _browseTabBuilt = _currentIndex == _browseTabIndex;
     // 浏览操作栏折叠/展开时，4-tab 的顶角要在「方角（与操作栏拼成整块）」和
@@ -178,8 +187,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         // 穷举首个目录、loadMedia() 会扫全量索引，与 IME 收起动画抢帧就是
         // 「密码输完进分类页，键盘慢慢缩回去」。
         await StartupGate.instance.waitIfSettling();
+        await StartupGate.instance.waitForColdStartIdle();
         if (!mounted) return;
-        debugPrint('[ZenFile] HomeScreen postFrame: calling fileManager.init()');
+        debugPrint(
+          '[ZenFile] HomeScreen postFrame: calling fileManager.init()',
+        );
         await fileManager.init();
         debugPrint('[ZenFile] HomeScreen postFrame: init() done');
         // ⚠️ 桌面端没有存储权限闸门：loadMedia 必须无条件执行（媒体/文档等
@@ -208,10 +220,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     _fmRef = fileManager;
     if (!_featureRequestListenersAttached) {
       _featureRequestListenersAttached = true;
-      fileManager.settingsSearchRequestNotifier
-          .addListener(_onSettingsSearchRequested);
-      fileManager.quickActionRequestNotifier
-          .addListener(_onQuickActionRequested);
+      fileManager.settingsSearchRequestNotifier.addListener(
+        _onSettingsSearchRequested,
+      );
+      fileManager.quickActionRequestNotifier.addListener(
+        _onQuickActionRequested,
+      );
     }
     // 检查是否需要从设置页面跳转到浏览标签。
     // ⚠️ 不要在这里复位布尔：ValueListenableBuilder 那条链才是唯一会消费
@@ -224,14 +238,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   @override
   void dispose() {
-    DirectoryScreen.browseBarExpanded.removeListener(_onBrowseBarExpandedChanged);
+    DirectoryScreen.browseBarExpanded.removeListener(
+      _onBrowseBarExpandedChanged,
+    );
     HomeScreen.pendingTabSwitch.removeListener(_onPendingTabSwitch);
     ShareIntentGate.pending.removeListener(_onPendingShareIntent);
-    _fmRef?.settingsSearchRequestNotifier
-        .removeListener(_onSettingsSearchRequested);
-    _fmRef?.quickActionRequestNotifier
-        .removeListener(_onQuickActionRequested);
+    _fmRef?.settingsSearchRequestNotifier.removeListener(
+      _onSettingsSearchRequested,
+    );
+    _fmRef?.quickActionRequestNotifier.removeListener(_onQuickActionRequested);
     WidgetsBinding.instance.removeObserver(this);
+    // 回前台的媒体刷新延时定时器（见 didChangeAppLifecycleState）。
+    _resumeRefreshTimer?.cancel();
+    _resumeRefreshTimer = null;
     super.dispose();
   }
 
@@ -246,14 +265,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   /// 必须与「4-tab 到底有没有落在底部、操作栏到底显不显示」严格对齐：
   /// 壳内页盖在上面、导航栏关掉、导航栏放在顶部、操作栏开关关闭、操作栏被
   /// 列表滚到折叠 —— 这些情况都不能拼，否则会剩一只「平顶胶囊」或两侧缺口。
-  bool _navBarAttached(FileManagerProvider provider) =>
+  bool _navBarAttached({
+    required bool showFloatingAddButton,
+    required bool bottomNavBarEnabled,
+    required bool persistentTabBar,
+    required bool showBottomActionBar,
+  }) =>
       _currentIndex == 1 &&
       !ShellNavigator.hasPages &&
       DirectoryScreen.browseBarExpanded.value &&
-      provider.showFloatingAddButton &&
-      provider.bottomNavBarEnabled &&
-      provider.persistentTabBar &&
-      provider.showBottomActionBar;
+      showFloatingAddButton &&
+      bottomNavBarEnabled &&
+      persistentTabBar &&
+      showBottomActionBar;
 
   void _switchTab(int index) {
     // 壳内有页面（媒体分类页 / 最近页等）时，先收起它们再切页，
@@ -297,7 +321,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     HomeScreen.pendingTabSwitch.value = -1;
     if (!mounted) return;
     // 收起首页之上的全屏路由，露出 HomeScreen（首页即根路由）。
-    Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).popUntil((route) => route.isFirst);
     if (code >= HomeScreen.pendingSlotTabBase) {
       final slot = code - HomeScreen.pendingSlotTabBase;
       // 与 _switchTab 同款收尾：壳内页面与槽位高亮先清空，再打开目标槽位。
@@ -379,23 +406,47 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      try {
-        Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
-          if (hasFullPermission) {
-            try {
-              context.read<MediaProvider>().refreshMediaBackground();
-            } catch (_) {}
-          }
-        });
-      } catch (_) {}
+      // ⚠️⚠️ **回前台的媒体刷新必须延后**（2026-11-27 修复）⚠️⚠️
+      //
+      // 真机日志（华为畅享 e20）实测：
+      //   `[tap] 掉帧 1724ms (build 0ms, raster 6ms, vsync等待 1717ms, ...)`
+      // ⇒ 回前台后 **UI 线程被整整占住 1.7 秒**；build 0ms / raster 6ms 说明
+      // 这 1.7 秒**根本不在 Flutter 的构建/光栅里**，而是媒体刷新链路里的
+      // 重活（MediaStore 全量查询 + 分类大小统计 + 全盘遍历）占住了主 isolate。
+      // 那 1.7 秒里 Android 主线程不派发 MotionEvent、不处理 IME 按键
+      // ⇒ **用户点任意按钮、点任意输入框都要点两次才响应**。
+      //
+      // 延后的目的：用户切回应用后的**第一次点击**必须落在完全空闲的界面上，
+      // 不能正好撞上这段后台刷新。延后不影响功能——刷新的目的只是捡回
+      // 在后台被改动的文件，晚 1.2 秒无感。
+      _resumeRefreshTimer?.cancel();
+      _resumeRefreshTimer = Timer(const Duration(milliseconds: 1200), () {
+        _resumeRefreshTimer = null;
+        if (!mounted) return;
+        WebdavDebugLog.logAlways('[tap] 回到前台，触发媒体后台刷新');
+        try {
+          Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
+            if (hasFullPermission) {
+              try {
+                context.read<MediaProvider>().refreshMediaBackground();
+              } catch (_) {}
+            }
+          });
+        } catch (_) {}
+      });
       // 回到前台时顺手给当前远程会话做一次体检：切后台期间底层 socket 常被
       // 系统/服务器回收（Dart 侧仍以为自己连着），不体检的话用户回来第一次
       // 操作必然失败、只能退出连接重进。fire-and-forget，内部自带超时。
       try {
-        unawaited(context.read<FileManagerProvider>().checkActiveRemoteSession());
+        unawaited(
+          context.read<FileManagerProvider>().checkActiveRemoteSession(),
+        );
       } catch (_) {}
     }
   }
+
+  /// 回前台的媒体刷新延时定时器（见 [didChangeAppLifecycleState]）。
+  Timer? _resumeRefreshTimer;
 
   Future<void> _handleRefresh() async {
     if (_isRefreshing) return;
@@ -431,11 +482,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(L10n.of(context).msg05cea075, style: TextStyle(fontSize: 14)),
+          content: Text(
+            L10n.of(context).msg05cea075,
+            style: TextStyle(fontSize: 14),
+          ),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -443,10 +499,43 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<FileManagerProvider>();
+    // 诊断计数（2026-11-27）：见 services/build_trigger_counter.dart。
+    BuildTriggerCounter.homePageBuilds++;
+    // ⚠️ 这里**必须**是 `context.select` 而不是 `context.watch`（2026-11-27 修复）。
+    //
+    // FileManagerProvider 里有 185 处 notifyListeners()，而 `context.watch` 会让
+    // **每一次**通知都重建整个 HomeScreen（Scaffold + 抽屉 + 底栏 + body）。
+    // 首页的**布局**真正依赖的只有下面 4 个布尔量；其余 provider 状态由各页面
+    // 自己的 context.watch / Consumer 订阅（body 内那两个 Consumer 仍然订阅
+    // 全量 provider，行为不变）。
+    //
+    // 旧写法让「选中了几个文件」「剪贴板里有什么」这类与首页布局无关的变化，
+    // 也能把整棵首页重跑一遍 build —— 真机日志实测 build 侧就要 56ms。
+    final navState = context
+        .select<
+          FileManagerProvider,
+          ({
+            bool showFloatingAddButton,
+            bool bottomNavBarEnabled,
+            bool persistentTabBar,
+            bool showBottomActionBar,
+          })
+        >(
+          (fm) => (
+            showFloatingAddButton: fm.showFloatingAddButton,
+            bottomNavBarEnabled: fm.bottomNavBarEnabled,
+            persistentTabBar: fm.persistentTabBar,
+            showBottomActionBar: fm.showBottomActionBar,
+          ),
+        );
     // 「底部控制台是否拼成整块」的唯一判定：4-tab 的顶角与本页操作栏的下沿
     // 圆角/描边都从这里取值，保证同帧一致（各算一遍必然错一帧）。
-    final navAttached = _navBarAttached(provider);
+    final navAttached = _navBarAttached(
+      showFloatingAddButton: navState.showFloatingAddButton,
+      bottomNavBarEnabled: navState.bottomNavBarEnabled,
+      persistentTabBar: navState.persistentTabBar,
+      showBottomActionBar: navState.showBottomActionBar,
+    );
     // 浏览页内的返回（返回上一级 / 远程根→本地根）由内部 directory_screen /
     // pane_browser 的 PopScope 与 provider.goBack 处理；home 层绝不在此弹出
     // 路由，否则会直接跳到分类页。分类页等非浏览 tab 的返回仍走下方 onPopInvoked。
@@ -475,13 +564,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         // 本层必须让行，否则会同时弹出「再按一次退出」。
         if (_currentIndex == _settingsTabIndex && _settingsSearching) return;
         // 浏览页路径栏处于编辑态时，返回键仅退出编辑并停留在浏览页（不切换标签页/不导航）
-        if (_currentIndex == 1 && provider.isPathEditing) {
-          provider.exitPathEditing();
+        if (_currentIndex == 1 &&
+            context.read<FileManagerProvider>().isPathEditing) {
+          context.read<FileManagerProvider>().exitPathEditing();
           return;
         }
         // 浏览页有选中状态时，清除选中而非切换页面
-        if (_currentIndex == 1 && provider.isSelectionMode) {
-          provider.clearSelection();
+        if (_currentIndex == 1 &&
+            context.read<FileManagerProvider>().isSelectionMode) {
+          context.read<FileManagerProvider>().clearSelection();
           return;
         }
         if (_currentIndex == 1) {
@@ -504,310 +595,380 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       },
       child: ShellMetricsStable(
         child: Scaffold(
-        key: _scaffoldKey,
-        // 键盘弹起时不再逐帧重排背后的重界面（文件列表/抽屉），避免"幻灯片式"
-        // 慢弹与输入延迟。对话框(AlertDialog)自带 AnimatedPadding+viewInsets 会上移，
-        // 底部弹窗同理，交互不受影响。
-        resizeToAvoidBottomInset: false,
-        // 内容延伸到底栏（4-tab / 浏览操作栏）后面：底栏不再是一条无内容的
-        // 「空带」，列表从胶囊底下穿过、在两侧留白处可见 —— 消除「底板」观感。
-        // Scaffold 会把 body 的 MediaQuery.padding.bottom 抬升到底栏总高，
-        // 各页面按 paddingOf(context).bottom 留白即可不被永久遮挡。
-        extendBody: true,
-        drawer: ZenFileDrawer(
-          toggleTheme: widget.toggleTheme,
-          onNavigateTab: (index) => _switchTab(index),
-          width: _screenW * 0.675,
-          // 左抽屉「收藏夹」一项：先收起抽屉，等关闭动画走完再弹底部面板。
-          onOpenFavorites: _openFavoritesFromDrawer,
-        ),
-        // 右侧抽屉（endDrawer）已下线：收藏夹改为底部半屏面板。入口为
-        // 左抽屉「收藏夹」一项 / 底部导航栏上滑（导航栏开启时）/
-        // 浏览页底部操作栏上滑，统一走 FavoritesSheet.show。
-        // 订阅「导航栏该不该藏」的两个来源：
-        //  1) childSelectionMode —— 媒体分类页等进入多选，让页面自身操作栏贴底
-        //     （而不是叠在 4-tab 上方）；
-        //  2) childImmersive     —— 视频控制条 / 图片操作按钮被隐藏的沉浸态，
-        //     整条收起把屏幕让给内容，控制条唤出时再显示。
-        bottomNavigationBar: ListenableBuilder(
-          listenable: ShellNavigator.navBarHidden,
-          builder: (_, __) => _buildNavBottomBar(
-            provider.showBottomActionBar,
-            navAttached,
+          key: _scaffoldKey,
+          // 键盘弹起时不再逐帧重排背后的重界面（文件列表/抽屉），避免"幻灯片式"
+          // 慢弹与输入延迟。对话框(AlertDialog)自带 AnimatedPadding+viewInsets 会上移，
+          // 底部弹窗同理，交互不受影响。
+          resizeToAvoidBottomInset: false,
+          // 内容延伸到底栏（4-tab / 浏览操作栏）后面：底栏不再是一条无内容的
+          // 「空带」，列表从胶囊底下穿过、在两侧留白处可见 —— 消除「底板」观感。
+          // Scaffold 会把 body 的 MediaQuery.padding.bottom 抬升到底栏总高，
+          // 各页面按 paddingOf(context).bottom 留白即可不被永久遮挡。
+          extendBody: true,
+          drawer: ZenFileDrawer(
+            toggleTheme: widget.toggleTheme,
+            onNavigateTab: (index) => _switchTab(index),
+            width: _screenW * 0.675,
+            // 左抽屉「收藏夹」一项：先收起抽屉，等关闭动画走完再弹底部面板。
+            onOpenFavorites: _openFavoritesFromDrawer,
           ),
-        ),
-        body: ShellBody(
-          child: Consumer<FileManagerProvider>(
-          builder: (context, provider, _) {
-            return Listener(
-              onPointerDown: (event) {
-                final fileProvider = context.read<FileManagerProvider>();
-                // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
-                // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
-                // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
-                // 注意：此处刻意不拦截 fileDragInteracting。该标志在任一文件项
-                // 按下时即置位，若在此 return，落在文件上的滑动（浏览页绝大部分
-                // 面积）将永远拿不到起始点，表现为「左右滑动切页失效/极不灵敏」。
-                // 真正的拖拽抑制下移到 move/up 阶段按「拖拽是否真的开始」判定。
-                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting) {
-                  _activePointers[event.pointer] = event.position;
-                  return;
-                }
-                _activePointers[event.pointer] = event.position;
-                if (_activePointers.length == 1) {
-                  // 单指开始追踪
-                  _dragStartedDuringGesture = false;
-                  _singleFingerStart = event.position;
-                  _singleFingerLast = event.position;
-                  _singleFingerStartTime = DateTime.now();
-                  _singleFingerLastTime = DateTime.now();
-                } else if (_activePointers.length == 2) {
-                  // 双指开始追踪
-                  _singleFingerStart = null;
-                  _singleFingerLast = null;
-                  final positions = _activePointers.values.toList();
-                  _dualFingerStartCenter = Offset(
-                    (positions[0].dx + positions[1].dx) / 2,
-                    (positions[0].dy + positions[1].dy) / 2,
-                  );
-                }
-              },
-              onPointerMove: (event) {
-                if (_activePointers.containsKey(event.pointer)) {
-                  _activePointers[event.pointer] = event.position;
-                }
-                final fp = context.read<FileManagerProvider>();
-                // 分类页拖拽排序期间：放弃本次单指滑动追踪，避免误触切页
-                if (fp.categoryReorderInteracting) {
-                  _singleFingerStart = null;
-                  _singleFingerLast = null;
-                  return;
-                }
-                // 文件长按拖拽「真正开始」后：放弃本次滑动追踪。仅凭
-                // fileDragInteracting 不够——它在任一文件项按下时就置位，
-                // 会把正常滑动一并误杀（v1.1.41 切页迟钝的根因）。
-                if (fp.isDragging) {
-                  _dragStartedDuringGesture = true;
-                  _singleFingerStart = null;
-                  _singleFingerLast = null;
-                  return;
-                }
-                if (_activePointers.length == 1 && _singleFingerLast != null) {
-                  _singleFingerLast = event.position;
-                  _singleFingerLastTime = DateTime.now();
-                }
-              },
-              onPointerUp: (event) {
-                // 双指滑动处理
-                if (_activePointers.length == 2 && _dualFingerStartCenter != null) {
-                  final fileProvider = context.read<FileManagerProvider>();
-                  if (fileProvider.enableDualFingerSwipe) {
-                    final positions = _activePointers.values.toList();
-                    final endCenter = Offset(
-                      (positions[0].dx + positions[1].dx) / 2,
-                      (positions[0].dy + positions[1].dy) / 2,
-                    );
-                    final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
-                    if (deltaX < -_dualFingerSwipeThreshold) {
-                      // 向左滑动：分类→浏览（滑动仅三态：左抽屉→分类→浏览，传输/设置
-                      // 等自定义槽位不参与滑动）。浏览页再左滑不动作 —— 右侧抽屉已下线，
-                      // 收藏夹改由「底部导航栏 / 浏览页底部操作栏」上滑唤起。
-                      if (_currentIndex < 1) {
-                        _switchTab(_currentIndex + 1);
-                      }
-                    } else if (deltaX > _dualFingerSwipeThreshold) {
-                      // 向右滑动：分类页开左抽屉，浏览页切回分类
-                      if (_currentIndex == 0) {
-                        _scaffoldKey.currentState?.openDrawer();
-                      } else {
-                        if (!fileProvider.isSelectionMode) {
-                          _switchTab(0);
-                          context.read<MediaProvider>().refreshMediaBackground();
+          // 右侧抽屉（endDrawer）已下线：收藏夹改为底部半屏面板。入口为
+          // 左抽屉「收藏夹」一项 / 底部导航栏上滑（导航栏开启时）/
+          // 浏览页底部操作栏上滑，统一走 FavoritesSheet.show。
+          // 订阅「导航栏该不该藏」的两个来源：
+          //  1) childSelectionMode —— 媒体分类页等进入多选，让页面自身操作栏贴底
+          //     （而不是叠在 4-tab 上方）；
+          //  2) childImmersive     —— 视频控制条 / 图片操作按钮被隐藏的沉浸态，
+          //     整条收起把屏幕让给内容，控制条唤出时再显示。
+          bottomNavigationBar: ListenableBuilder(
+            listenable: ShellNavigator.navBarHidden,
+            builder: (_, __) =>
+                _buildNavBottomBar(navState.showBottomActionBar, navAttached),
+          ),
+          body: ShellBody(
+            // ⚠️ 这里刻意**不再**套 Consumer<FileManagerProvider>（2026-11-27 修复）。
+            //
+            // 旧写法让 FileManagerProvider 的**每一次** notifyListeners()（本项目共
+            // 185 处）都重建整个 body —— 也就是同时重建顶栏 + 全部 4 个 tab。
+            // 真机日志实测 build 侧一次就要 56ms（掉帧 402ms = build 56 + raster 328）。
+            //
+            // 这层 Consumer 里**只有一个 build 期读取**：顶栏的 showBottomActionBar，
+            // 它已经在上面的 context.select 里取到（navState.showBottomActionBar）。
+            // 其余对 provider 的访问都在**指针回调 / microtask** 里，属于运行时调用，
+            // 用 context.read 即可，不需要订阅。
+            //
+            // 各 tab 本来就自己订阅（详见下面 IndexedStack 处的逐条注释），所以去掉
+            // 这层订阅后**刷新行为完全不变**，只是不再牵连与本次变化无关的界面。
+            child: Builder(
+              builder: (context) {
+                return Listener(
+                  onPointerDown: (event) {
+                    final fileProvider = context.read<FileManagerProvider>();
+                    // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
+                    // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
+                    // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
+                    // 注意：此处刻意不拦截 fileDragInteracting。该标志在任一文件项
+                    // 按下时即置位，若在此 return，落在文件上的滑动（浏览页绝大部分
+                    // 面积）将永远拿不到起始点，表现为「左右滑动切页失效/极不灵敏」。
+                    // 真正的拖拽抑制下移到 move/up 阶段按「拖拽是否真的开始」判定。
+                    if (fileProvider.breadcrumbInteracting ||
+                        fileProvider.categoryReorderInteracting ||
+                        fileProvider.tabBarInteracting) {
+                      _activePointers[event.pointer] = event.position;
+                      return;
+                    }
+                    _activePointers[event.pointer] = event.position;
+                    if (_activePointers.length == 1) {
+                      // 单指开始追踪
+                      _dragStartedDuringGesture = false;
+                      _singleFingerStart = event.position;
+                      _singleFingerLast = event.position;
+                      _singleFingerStartTime = DateTime.now();
+                      _singleFingerLastTime = DateTime.now();
+                    } else if (_activePointers.length == 2) {
+                      // 双指开始追踪
+                      _singleFingerStart = null;
+                      _singleFingerLast = null;
+                      final positions = _activePointers.values.toList();
+                      _dualFingerStartCenter = Offset(
+                        (positions[0].dx + positions[1].dx) / 2,
+                        (positions[0].dy + positions[1].dy) / 2,
+                      );
+                    }
+                  },
+                  onPointerMove: (event) {
+                    if (_activePointers.containsKey(event.pointer)) {
+                      _activePointers[event.pointer] = event.position;
+                    }
+                    final fp = context.read<FileManagerProvider>();
+                    // 分类页拖拽排序期间：放弃本次单指滑动追踪，避免误触切页
+                    if (fp.categoryReorderInteracting) {
+                      _singleFingerStart = null;
+                      _singleFingerLast = null;
+                      return;
+                    }
+                    // 文件长按拖拽「真正开始」后：放弃本次滑动追踪。仅凭
+                    // fileDragInteracting 不够——它在任一文件项按下时就置位，
+                    // 会把正常滑动一并误杀（v1.1.41 切页迟钝的根因）。
+                    if (fp.isDragging) {
+                      _dragStartedDuringGesture = true;
+                      _singleFingerStart = null;
+                      _singleFingerLast = null;
+                      return;
+                    }
+                    if (_activePointers.length == 1 &&
+                        _singleFingerLast != null) {
+                      _singleFingerLast = event.position;
+                      _singleFingerLastTime = DateTime.now();
+                    }
+                  },
+                  onPointerUp: (event) {
+                    // 双指滑动处理
+                    if (_activePointers.length == 2 &&
+                        _dualFingerStartCenter != null) {
+                      final fileProvider = context.read<FileManagerProvider>();
+                      if (fileProvider.enableDualFingerSwipe) {
+                        final positions = _activePointers.values.toList();
+                        final endCenter = Offset(
+                          (positions[0].dx + positions[1].dx) / 2,
+                          (positions[0].dy + positions[1].dy) / 2,
+                        );
+                        final deltaX =
+                            endCenter.dx - _dualFingerStartCenter!.dx;
+                        if (deltaX < -_dualFingerSwipeThreshold) {
+                          // 向左滑动：分类→浏览（滑动仅三态：左抽屉→分类→浏览，传输/设置
+                          // 等自定义槽位不参与滑动）。浏览页再左滑不动作 —— 右侧抽屉已下线，
+                          // 收藏夹改由「底部导航栏 / 浏览页底部操作栏」上滑唤起。
+                          if (_currentIndex < 1) {
+                            _switchTab(_currentIndex + 1);
+                          }
+                        } else if (deltaX > _dualFingerSwipeThreshold) {
+                          // 向右滑动：分类页开左抽屉，浏览页切回分类
+                          if (_currentIndex == 0) {
+                            _scaffoldKey.currentState?.openDrawer();
+                          } else {
+                            if (!fileProvider.isSelectionMode) {
+                              _switchTab(0);
+                              context
+                                  .read<MediaProvider>()
+                                  .refreshMediaBackground();
+                            }
+                          }
                         }
                       }
                     }
-                  }
-                }
-                // 单指滑动处理（Listener 级别，不进入手势竞技场）
-                if (_activePointers.length == 1 && _singleFingerStart != null) {
-                  final fileProvider = context.read<FileManagerProvider>();
-                  // 本次手势真的拖拽过文件 / 正在拖拽 / 分类排序拖拽：不切页
-                  if (_dragStartedDuringGesture || fileProvider.isDragging || fileProvider.categoryReorderInteracting) {
-                    _singleFingerStart = null;
-                    _singleFingerLast = null;
-                  } else if (fileProvider.enableSingleFingerSwipe) {
-                    // 用缓存的 _screenW：在事件回调里调 MediaQuery.of 同样会注册
-                    // 整份依赖（didChangeDependencies 所在的 element），后果同上。
-                    final screenWidth = _screenW;
-                    final startX = _singleFingerStart!.dx;
-                    // 屏幕边缘留给系统返回手势，不处理
-                    if (startX >= _swipeEdgeGuard && startX <= screenWidth - _swipeEdgeGuard) {
-                      final endPos = _singleFingerLast ?? event.position;
-                      final dx = endPos.dx - _singleFingerStart!.dx;
-                      final dy = endPos.dy - _singleFingerStart!.dy;
-                      // 明显竖向滚动不切页；给 1.2 倍斜向容差，避免斜划被吞掉
-                      final horizontalDominant = dy.abs() <= dx.abs() * 1.2;
-                      // 最小水平位移 64px（v1.1.41 为 80px，偏迟钝）
-                      if (horizontalDominant && dx.abs() >= _swipeMinDistance) {
-                        // 速度按「整段手势时长」计算。v1.1.41 用的是「最后一次
-                        // move 到抬手」的间隔，抬手前稍作停顿速度就趋近 0，
-                        // 导致明明滑了很远也不切页——这是迟钝的第二大来源。
-                        final startT = _singleFingerStartTime ?? DateTime.now();
-                        final lastT = _singleFingerLastTime ?? DateTime.now();
-                        final totalMs = lastT.difference(startT).inMilliseconds;
-                        final velocity = totalMs > 0 ? (dx / totalMs) * 1000 : 0.0; // px/s
-                        // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
-                        if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
-                          if (dx < 0) {
-                            // 向左滑动：分类→浏览（滑动仅三态：左抽屉→分类→浏览，传输/
-                            // 设置等自定义槽位不参与滑动）。浏览页再左滑不动作。
-                            if (_currentIndex < 1) {
-                              _switchTab(_currentIndex + 1);
-                            }
-                          } else {
-                            // 向右滑动：分类页开左抽屉，浏览页切回分类
-                            if (_currentIndex == 0) {
-                              _scaffoldKey.currentState?.openDrawer();
-                            } else {
-                              if (!fileProvider.isSelectionMode) {
-                                _switchTab(0);
-                                context.read<MediaProvider>().refreshMediaBackground();
+                    // 单指滑动处理（Listener 级别，不进入手势竞技场）
+                    if (_activePointers.length == 1 &&
+                        _singleFingerStart != null) {
+                      final fileProvider = context.read<FileManagerProvider>();
+                      // 本次手势真的拖拽过文件 / 正在拖拽 / 分类排序拖拽：不切页
+                      if (_dragStartedDuringGesture ||
+                          fileProvider.isDragging ||
+                          fileProvider.categoryReorderInteracting) {
+                        _singleFingerStart = null;
+                        _singleFingerLast = null;
+                      } else if (fileProvider.enableSingleFingerSwipe) {
+                        // 用缓存的 _screenW：在事件回调里调 MediaQuery.of 同样会注册
+                        // 整份依赖（didChangeDependencies 所在的 element），后果同上。
+                        final screenWidth = _screenW;
+                        final startX = _singleFingerStart!.dx;
+                        // 屏幕边缘留给系统返回手势，不处理
+                        if (startX >= _swipeEdgeGuard &&
+                            startX <= screenWidth - _swipeEdgeGuard) {
+                          final endPos = _singleFingerLast ?? event.position;
+                          final dx = endPos.dx - _singleFingerStart!.dx;
+                          final dy = endPos.dy - _singleFingerStart!.dy;
+                          // 明显竖向滚动不切页；给 1.2 倍斜向容差，避免斜划被吞掉
+                          final horizontalDominant = dy.abs() <= dx.abs() * 1.2;
+                          // 最小水平位移 64px（v1.1.41 为 80px，偏迟钝）
+                          if (horizontalDominant &&
+                              dx.abs() >= _swipeMinDistance) {
+                            // 速度按「整段手势时长」计算。v1.1.41 用的是「最后一次
+                            // move 到抬手」的间隔，抬手前稍作停顿速度就趋近 0，
+                            // 导致明明滑了很远也不切页——这是迟钝的第二大来源。
+                            final startT =
+                                _singleFingerStartTime ?? DateTime.now();
+                            final lastT =
+                                _singleFingerLastTime ?? DateTime.now();
+                            final totalMs = lastT
+                                .difference(startT)
+                                .inMilliseconds;
+                            final velocity = totalMs > 0
+                                ? (dx / totalMs) * 1000
+                                : 0.0; // px/s
+                            // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
+                            if (velocity.abs() >= _swipeMinVelocity ||
+                                dx.abs() >= _swipeLongDistance) {
+                              if (dx < 0) {
+                                // 向左滑动：分类→浏览（滑动仅三态：左抽屉→分类→浏览，传输/
+                                // 设置等自定义槽位不参与滑动）。浏览页再左滑不动作。
+                                if (_currentIndex < 1) {
+                                  _switchTab(_currentIndex + 1);
+                                }
+                              } else {
+                                // 向右滑动：分类页开左抽屉，浏览页切回分类
+                                if (_currentIndex == 0) {
+                                  _scaffoldKey.currentState?.openDrawer();
+                                } else {
+                                  if (!fileProvider.isSelectionMode) {
+                                    _switchTab(0);
+                                    context
+                                        .read<MediaProvider>()
+                                        .refreshMediaBackground();
+                                  }
+                                }
                               }
                             }
                           }
                         }
                       }
                     }
-                  }
-                }
-                _activePointers.remove(event.pointer);
-                if (_activePointers.length < 2) {
-                  _dualFingerStartCenter = null;
-                }
-                if (_activePointers.isEmpty) {
-                  _singleFingerStart = null;
-                  _singleFingerLast = null;
-                  _singleFingerStartTime = null;
-                  _dragStartedDuringGesture = false;
-                  // 分类拖拽排序结束：恢复左右滑动切页能力。
-                  // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
-                  // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
-                  context.read<FileManagerProvider>().setCategoryReorderInteracting(false);
-                }
-              },
-              onPointerCancel: (event) {
-                _activePointers.remove(event.pointer);
-                if (_activePointers.length < 2) {
-                  _dualFingerStartCenter = null;
-                }
-                if (_activePointers.isEmpty) {
-                  _singleFingerStart = null;
-                  _singleFingerLast = null;
-                  _singleFingerStartTime = null;
-                  _dragStartedDuringGesture = false;
-                  // 分类拖拽排序结束：恢复左右滑动切页能力。
-                  // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
-                  // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
-                  context.read<FileManagerProvider>().setCategoryReorderInteracting(false);
-                }
-              },
-          child: Column(
-            children: [
-              ListenableBuilder(
-                listenable: ShellNavigator.navBarHidden,
-                builder: (_, __) =>
-                    _buildNavTopBar(provider.showBottomActionBar),
-              ),
-              Expanded(
-                child: Consumer<FileManagerProvider>(
-            builder: (context, provider, _) {
-              return ValueListenableBuilder<bool>(
-                valueListenable: provider.navigateToBrowseTabNotifier,
-                builder: (context, shouldNavigate, __) {
-                  if (shouldNavigate) {
-                    // 使用 microtask 确保在当前 build 完成后立即切换。
-                    // 注意：无论当前是否已在浏览标签都执行——若已在该标签，
-                    // _switchTab(1) 为 no-op，但仍会消费 pending 导航（加载目录 + 高亮），
-                    // 使“分类页/最近页/浏览页”任意入口的定位行为完全一致。
-                    scheduleMicrotask(() {
-                      if (mounted) {
-                        _switchTab(1);
-                        provider.setNavigateToBrowseTab(false);
-                        // 消费 pending 浏览导航。
-                        // ⚠️ pending 目录的加载必须放进 addPostFrameCallback：
-                        // 浏览 tab 是惰性构建的，首次进入时 _switchTab(1) 触发的
-                        // 本帧重建里 DirectoryScreen 才真正 mount。若在 microtask
-                        // 里同步 loadDirectory（zip:// 虚拟路径等异步加载），目录
-                        // 加载与浏览页首帧构建时序交叠——加载完成晚于首帧时页面
-                        // 仍显示 remembered/默认目录，表现为「点了压缩包却停在
-                        // 普通目录」。postFrame 保证加载发生在 DirectoryScreen
-                        // 完成首次 build 之后，任何入口（分类页/浏览页/所在位置）
-                        // 的定位行为都一致。
-                        // 先在 microtask 内取值并闭环 pending 状态（防残留被后续
-                        // 导航串台），postFrame 只负责执行加载（纯 provider 调用，
-                        // 不碰 context；mounted 仅作防御）。
-                        if (provider.pendingBrowsePath != null) {
-                          final targetPath = provider.pendingBrowsePath!;
-                          final highlightPaths = provider.pendingHighlightedPaths;
-                          provider.clearPendingBrowseNavigation();
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (!mounted) return;
-                            provider.loadDirectory(targetPath);
-                            provider.setHighlightedPaths(highlightPaths);
-                          });
-                        }
-                      }
-                    });
-                  }
-                  return IndexedStack(
-                    index: _currentIndex,
+                    _activePointers.remove(event.pointer);
+                    if (_activePointers.length < 2) {
+                      _dualFingerStartCenter = null;
+                    }
+                    if (_activePointers.isEmpty) {
+                      _singleFingerStart = null;
+                      _singleFingerLast = null;
+                      _singleFingerStartTime = null;
+                      _dragStartedDuringGesture = false;
+                      // 分类拖拽排序结束：恢复左右滑动切页能力。
+                      // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
+                      // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
+                      context
+                          .read<FileManagerProvider>()
+                          .setCategoryReorderInteracting(false);
+                    }
+                  },
+                  onPointerCancel: (event) {
+                    _activePointers.remove(event.pointer);
+                    if (_activePointers.length < 2) {
+                      _dualFingerStartCenter = null;
+                    }
+                    if (_activePointers.isEmpty) {
+                      _singleFingerStart = null;
+                      _singleFingerLast = null;
+                      _singleFingerStartTime = null;
+                      _dragStartedDuringGesture = false;
+                      // 分类拖拽排序结束：恢复左右滑动切页能力。
+                      // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
+                      // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
+                      context
+                          .read<FileManagerProvider>()
+                          .setCategoryReorderInteracting(false);
+                    }
+                  },
+                  child: Column(
                     children: [
-                      _buildHomeTab(),
-                      if (!_browseTabBuilt)
-                        const SizedBox.shrink()
-                      else
-                        DirectoryScreen(
-                          toggleTheme: widget.toggleTheme,
-                          onNavigateTab: (index) => _switchTab(index),
-                          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-                          onRefresh: () => _handleRefresh(),
-                          // IndexedStack 会构建全部子页，浏览页的 PopScope 也会注册到
-                          // 本页同一个 route 上并被返回键触发；必须告诉它「现在是不是
-                          // 当前显示页」，否则在分类页按返回时它会把壳内页面的返回当作
-                          // 浏览页后退，走到 _switchTab(0) → ShellNavigator.popAll()，
-                          // 直接清空壳内栈（从查看器返回却跳回分类页）。
-                          isActive: _currentIndex == 1,
-                          // 与 4-tab 拼成整块时，本页操作栏只圆上角、不画底边描边。
-                          navBarAttached: navAttached,
+                      ListenableBuilder(
+                        listenable: ShellNavigator.navBarHidden,
+                        builder: (_, __) =>
+                            _buildNavTopBar(navState.showBottomActionBar),
+                      ),
+                      Expanded(
+                        // ⚠️ 这里刻意**不再**套 Consumer<FileManagerProvider>（2026-11-27 修复）。
+                        //
+                        // 旧写法让 FileManagerProvider 的**每一次** notifyListeners()（共 185 处）
+                        // 都重建整个 IndexedStack —— 也就是**同时重建全部 4 个 tab**
+                        // （分类网格 / 浏览页文件列表 / 传输页 / 设置页）。真机日志实测
+                        // build 侧一次就要 56ms。
+                        //
+                        // 而每个 tab 本来就自己订阅了：
+                        // · DirectoryScreen.build → Consumer<FileManagerProvider>（directory_screen.dart:1549）
+                        // · QuickCategoriesGrid → Consumer + watch（quick_categories_grid.dart:2430 / 3138，
+                        //   后者注释明写「自身订阅 provider，不依赖祖先是否 watch」）
+                        // · MoreSettingsScreen → context.watch（more_settings_screen.dart:196）
+                        // · TransfersScreen → 根本不读 FileManagerProvider
+                        // 所以去掉这层订阅，各 tab 的刷新行为**完全不变**，只是不再牵连
+                        // 与本次变化无关的另外 3 个 tab。
+                        child: Builder(
+                          builder: (context) {
+                            // 这里只取实例做**运行时**调用（microtask 里读 pendingBrowsePath 等），
+                            // 不订阅 —— 订阅交给各自的 tab。
+                            final provider = context
+                                .read<FileManagerProvider>();
+                            return ValueListenableBuilder<bool>(
+                              valueListenable:
+                                  provider.navigateToBrowseTabNotifier,
+                              builder: (context, shouldNavigate, __) {
+                                if (shouldNavigate) {
+                                  // 使用 microtask 确保在当前 build 完成后立即切换。
+                                  // 注意：无论当前是否已在浏览标签都执行——若已在该标签，
+                                  // _switchTab(1) 为 no-op，但仍会消费 pending 导航（加载目录 + 高亮），
+                                  // 使“分类页/最近页/浏览页”任意入口的定位行为完全一致。
+                                  scheduleMicrotask(() {
+                                    if (mounted) {
+                                      _switchTab(1);
+                                      provider.setNavigateToBrowseTab(false);
+                                      // 消费 pending 浏览导航。
+                                      // ⚠️ pending 目录的加载必须放进 addPostFrameCallback：
+                                      // 浏览 tab 是惰性构建的，首次进入时 _switchTab(1) 触发的
+                                      // 本帧重建里 DirectoryScreen 才真正 mount。若在 microtask
+                                      // 里同步 loadDirectory（zip:// 虚拟路径等异步加载），目录
+                                      // 加载与浏览页首帧构建时序交叠——加载完成晚于首帧时页面
+                                      // 仍显示 remembered/默认目录，表现为「点了压缩包却停在
+                                      // 普通目录」。postFrame 保证加载发生在 DirectoryScreen
+                                      // 完成首次 build 之后，任何入口（分类页/浏览页/所在位置）
+                                      // 的定位行为都一致。
+                                      // 先在 microtask 内取值并闭环 pending 状态（防残留被后续
+                                      // 导航串台），postFrame 只负责执行加载（纯 provider 调用，
+                                      // 不碰 context；mounted 仅作防御）。
+                                      if (provider.pendingBrowsePath != null) {
+                                        final targetPath =
+                                            provider.pendingBrowsePath!;
+                                        final highlightPaths =
+                                            provider.pendingHighlightedPaths;
+                                        provider.clearPendingBrowseNavigation();
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                              if (!mounted) return;
+                                              provider.loadDirectory(
+                                                targetPath,
+                                              );
+                                              provider.setHighlightedPaths(
+                                                highlightPaths,
+                                              );
+                                            });
+                                      }
+                                    }
+                                  });
+                                }
+                                return IndexedStack(
+                                  index: _currentIndex,
+                                  children: [
+                                    _buildHomeTab(),
+                                    if (!_browseTabBuilt)
+                                      const SizedBox.shrink()
+                                    else
+                                      DirectoryScreen(
+                                        toggleTheme: widget.toggleTheme,
+                                        onNavigateTab: (index) =>
+                                            _switchTab(index),
+                                        onOpenDrawer: () => _scaffoldKey
+                                            .currentState
+                                            ?.openDrawer(),
+                                        onRefresh: () => _handleRefresh(),
+                                        // IndexedStack 会构建全部子页，浏览页的 PopScope 也会注册到
+                                        // 本页同一个 route 上并被返回键触发；必须告诉它「现在是不是
+                                        // 当前显示页」，否则在分类页按返回时它会把壳内页面的返回当作
+                                        // 浏览页后退，走到 _switchTab(0) → ShellNavigator.popAll()，
+                                        // 直接清空壳内栈（从查看器返回却跳回分类页）。
+                                        isActive: _currentIndex == 1,
+                                        // 与 4-tab 拼成整块时，本页操作栏只圆上角、不画底边描边。
+                                        navBarAttached: navAttached,
+                                      ),
+                                    TransfersScreen(
+                                      onNavigateTab: (index) =>
+                                          _switchTab(index),
+                                    ),
+                                    // 第 4 页「设置」：内嵌渲染（不再 push 全屏路由）。
+                                    // embedded=true 才会隐藏返回箭头并关掉 Scaffold/AppBar 的 primary
+                                    // 状态栏占位；onSearchActiveChanged 供返回键去重（见 _settingsSearching）。
+                                    // 未首次进入时用占位：避免一启动就构建/布局这 75 个卡片（惰性构建）。
+                                    if (!_settingsTabBuilt)
+                                      const SizedBox.shrink()
+                                    else
+                                      MoreSettingsScreen(
+                                        embedded: true,
+                                        // 由全局搜索「在设置中搜索」注入的查询词与请求序号。
+                                        initialQuery: _settingsTabQuery,
+                                        searchRequestId: _settingsTabQueryId,
+                                        onSearchActiveChanged: (v) =>
+                                            _settingsSearching = v,
+                                      ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         ),
-                      TransfersScreen(onNavigateTab: (index) => _switchTab(index)),
-                      // 第 4 页「设置」：内嵌渲染（不再 push 全屏路由）。
-                      // embedded=true 才会隐藏返回箭头并关掉 Scaffold/AppBar 的 primary
-                      // 状态栏占位；onSearchActiveChanged 供返回键去重（见 _settingsSearching）。
-                      // 未首次进入时用占位：避免一启动就构建/布局这 75 个卡片（惰性构建）。
-                      if (!_settingsTabBuilt)
-                        const SizedBox.shrink()
-                      else
-                        MoreSettingsScreen(
-                          embedded: true,
-                          // 由全局搜索「在设置中搜索」注入的查询词与请求序号。
-                          initialQuery: _settingsTabQuery,
-                          searchRequestId: _settingsTabQueryId,
-                          onSearchActiveChanged: (v) => _settingsSearching = v,
-                        ),
+                      ),
                     ],
-                  );
-                },
-              );
-            },
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
-      ),
-        );
-      },
-    ),
-      ),
         ),
       ),
     );
@@ -935,13 +1096,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     // ⚠️ 本方法由 ListenableBuilder 的 builder 闭包调用（build L518），
     // 此刻 HomeScreen 元素不在 build ⇒ 禁用 context.select（provider 断言会炸，
     // Windows debug 红屏）。响应性由 build() 顶部的 context.watch 整体订阅兜住。
-    final navEnabled =
-        context.read<FileManagerProvider>().bottomNavBarEnabled;
+    final navEnabled = context.read<FileManagerProvider>().bottomNavBarEnabled;
     // 多选操作栏覆盖 4-tab：任一页面进入选择模式（长按多选）时隐藏整条底栏
     // （4-tab 或工具按钮行），让页面自身 bottomNavigationBar 的多选操作栏落到
     // 屏幕最底部，而不是悬在导航栏上方。
-    final selecting =
-        context.read<FileManagerProvider>().isSelectionMode;
+    final selecting = context.read<FileManagerProvider>().isSelectionMode;
     if (selecting ||
         ShellNavigator.childSelectionMode.value ||
         ShellNavigator.childImmersive.value) {
@@ -1071,75 +1230,93 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // 全局搜索：图标样式，点击进入全局搜索页
-                  IconButton(
-                    icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).ui_global_search_hint,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
-                      );
-                    },
-                  ),
-                  // 常用功能：排序
-                  IconButton(
-                    icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                    tooltip: L10n.of(context).msg97301f64,
-                    onPressed: () {
-                      _switchTab(1);
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        final provider = context.read<FileManagerProvider>();
-                        SortModal.show(context, provider);
-                      });
-                    },
-                  ),
-                  // 常用功能：切换主题（三态：跟随系统 → 浅色 → 深色 → 循环）
-                  // 图标展示**当前**模式：跟随系统=monitor、浅色=sun、深色=moon，
-                  // 点按由 main.dart 循环切到下一态。
-                  IconButton(
-                    icon: Icon(
-                      switch (widget.themeMode) {
-                        ThemeMode.system => Broken.monitor,
-                        ThemeMode.light => Broken.sun_1,
-                        ThemeMode.dark => Broken.moon,
-                      },
-                      color: theme.colorScheme.primary,
-                    ),
-                    tooltip: switch (widget.themeMode) {
-                      ThemeMode.system => L10n.of(context).ui_follow_system,
-                      ThemeMode.light => L10n.of(context).msg8755e992,
-                      ThemeMode.dark => L10n.of(context).ui_dark_mode,
-                    },
-                    onPressed: widget.toggleTheme,
-                  ),
-                  // 常用功能：单/双窗口（语义为「显示切换目标」：单窗模式 → 图标
-                  // 数字 2 + 长按提示「双窗口」；双窗模式 → 数字 1 + 提示「单窗口」）
-                  //
-                  // ⚠️ 必须用 Broken 图标字体：顶栏其它按钮（抽屉 / 搜索 / 刷新 /
-                  // 排序 / 主题 / 设置）全是这套「断线描边」风格，换成 Material 的
-                  // outlined 图标笔触偏实、圆角也不一样，一眼能看出是外来户。
-                  // 单/双窗统一用 Broken.stop 圆角方框（无中间竖线），仅靠数字区分。
-                  IconButton(
-                    // 单/双窗口：在圆角方框底子上叠一个数字徽标——单窗显「2」、
-                    // 双窗显「1」，表示点按后将切换到的目标模式。纯图形在 24dp 下
-                    // 几乎分不出差别，数字一眼可辨，且不破坏顶栏的断线描边风格。
-                    icon: _SplitWindowBadge(
-                      isDual:
-                          context.read<FileManagerProvider>().enableSplitScreen,
-                      color: theme.colorScheme.primary,
-                      background: theme.appBarTheme.backgroundColor ??
-                          theme.colorScheme.surface,
-                    ),
-                    tooltip: context.read<FileManagerProvider>().enableSplitScreen
-                        ? L10n.of(context).ui_single_window
-                        : L10n.of(context).ui_dual_window,
-                    onPressed: () {
-                      // 切换单/双窗口前先跳到文件浏览页，方便用户直接看到布局
-                      // 变化（参考排序按钮：_switchTab(1) 切到浏览页）。
-                      _switchTab(1);
-                      context.read<FileManagerProvider>().toggleSplitScreen();
-                    },
-                  ),
+                        IconButton(
+                          icon: Icon(
+                            Broken.search_normal,
+                            color: theme.colorScheme.primary,
+                          ),
+                          tooltip: L10n.of(context).ui_global_search_hint,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const GlobalSearchScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        // 常用功能：排序
+                        IconButton(
+                          icon: Icon(
+                            Broken.filter_edit,
+                            color: theme.colorScheme.primary,
+                          ),
+                          tooltip: L10n.of(context).msg97301f64,
+                          onPressed: () {
+                            _switchTab(1);
+                            Future.delayed(
+                              const Duration(milliseconds: 300),
+                              () {
+                                final provider = context
+                                    .read<FileManagerProvider>();
+                                SortModal.show(context, provider);
+                              },
+                            );
+                          },
+                        ),
+                        // 常用功能：切换主题（三态：跟随系统 → 浅色 → 深色 → 循环）
+                        // 图标展示**当前**模式：跟随系统=monitor、浅色=sun、深色=moon，
+                        // 点按由 main.dart 循环切到下一态。
+                        IconButton(
+                          icon: Icon(switch (widget.themeMode) {
+                            ThemeMode.system => Broken.monitor,
+                            ThemeMode.light => Broken.sun_1,
+                            ThemeMode.dark => Broken.moon,
+                          }, color: theme.colorScheme.primary),
+                          tooltip: switch (widget.themeMode) {
+                            ThemeMode.system => L10n.of(
+                              context,
+                            ).ui_follow_system,
+                            ThemeMode.light => L10n.of(context).msg8755e992,
+                            ThemeMode.dark => L10n.of(context).ui_dark_mode,
+                          },
+                          onPressed: widget.toggleTheme,
+                        ),
+                        // 常用功能：单/双窗口（语义为「显示切换目标」：单窗模式 → 图标
+                        // 数字 2 + 长按提示「双窗口」；双窗模式 → 数字 1 + 提示「单窗口」）
+                        //
+                        // ⚠️ 必须用 Broken 图标字体：顶栏其它按钮（抽屉 / 搜索 / 刷新 /
+                        // 排序 / 主题 / 设置）全是这套「断线描边」风格，换成 Material 的
+                        // outlined 图标笔触偏实、圆角也不一样，一眼能看出是外来户。
+                        // 单/双窗统一用 Broken.stop 圆角方框（无中间竖线），仅靠数字区分。
+                        IconButton(
+                          // 单/双窗口：在圆角方框底子上叠一个数字徽标——单窗显「2」、
+                          // 双窗显「1」，表示点按后将切换到的目标模式。纯图形在 24dp 下
+                          // 几乎分不出差别，数字一眼可辨，且不破坏顶栏的断线描边风格。
+                          icon: _SplitWindowBadge(
+                            isDual: context
+                                .read<FileManagerProvider>()
+                                .enableSplitScreen,
+                            color: theme.colorScheme.primary,
+                            background:
+                                theme.appBarTheme.backgroundColor ??
+                                theme.colorScheme.surface,
+                          ),
+                          tooltip:
+                              context
+                                  .read<FileManagerProvider>()
+                                  .enableSplitScreen
+                              ? L10n.of(context).ui_single_window
+                              : L10n.of(context).ui_dual_window,
+                          onPressed: () {
+                            // 切换单/双窗口前先跳到文件浏览页，方便用户直接看到布局
+                            // 变化（参考排序按钮：_switchTab(1) 切到浏览页）。
+                            _switchTab(1);
+                            context
+                                .read<FileManagerProvider>()
+                                .toggleSplitScreen();
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -1149,7 +1326,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   LiquidPressable(
                     pressScale: 1.12,
                     child: IconButton(
-                      icon: Icon(Broken.setting_2, color: theme.colorScheme.primary),
+                      icon: Icon(
+                        Broken.setting_2,
+                        color: theme.colorScheme.primary,
+                      ),
                       tooltip: L10n.of(context).ui_personalize_settings,
                       onPressed: () => _switchTab(_settingsTabIndex),
                     ),
@@ -1157,7 +1337,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 ],
               ),
             ),
-            Divider(height: 0.5, thickness: 0.5, color: theme.dividerColor.withValues(alpha: 0.08)),
+            Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: theme.dividerColor.withValues(alpha: 0.08),
+            ),
           ],
         ),
       ),
@@ -1442,11 +1626,7 @@ class _SplitWindowBadge extends StatelessWidget {
         children: [
           // 单/双窗统一用 Broken.stop（圆角矩形轮廓）：去掉 grid_4 的中间竖线，
           // 两种模式底子一致，仅靠中间数字区分（与顶栏其它断线描边按钮同风格）。
-          Icon(
-            Broken.stop,
-            size: 24,
-            color: color,
-          ),
+          Icon(Broken.stop, size: 24, color: color),
           // 语义为「显示切换目标」：单窗模式下数字 2（点按切到双窗），
           // 双窗模式下数字 1（点按切回单窗），与长按 tooltip 的目标态文案一致。
           Text(

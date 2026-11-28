@@ -616,6 +616,12 @@ abstract class L10n {
   /// **'查看 GitHub 源代码'**
   String get github;
 
+  /// No description provided for @officialWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问官方网站'**
+  String get officialWebsite;
+
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
@@ -16095,6 +16101,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'请描述遇到的问题或建议（可留空）'**
   String get ui_feedback_hint;
+
+  /// 反馈弹窗中的选填联系邮箱输入框标签
+  ///
+  /// In zh, this message translates to:
+  /// **'联系邮箱（选填）'**
+  String get ui_feedback_email_label;
+
+  /// 反馈弹窗邮箱输入框的占位提示
+  ///
+  /// In zh, this message translates to:
+  /// **'填写后方便开发者在需要时与您联系'**
+  String get ui_feedback_email_hint;
 
   /// No description provided for @ui_crash_attach_logs.
   ///

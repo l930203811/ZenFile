@@ -303,6 +303,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "查看 GitHub 源代码",
+  "officialWebsite": "访问官方网站",
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -9323,6 +9324,10 @@
   "ui_feedback_dialog_body": "请描述您遇到的问题或建议，将连同设备信息与诊断日志一并上报给开发者。",
   "@ui_feedback_dialog_body": {},
   "ui_feedback_hint": "请描述遇到的问题或建议（可留空）",
+  "ui_feedback_email_label": "联系邮箱（选填）",
+  "@ui_feedback_email_label": {"description": "反馈弹窗中的选填联系邮箱输入框标签"},
+  "ui_feedback_email_hint": "填写后方便开发者在需要时与您联系",
+  "@ui_feedback_email_hint": {"description": "反馈弹窗邮箱输入框的占位提示"},
   "@ui_feedback_hint": {},
   "ui_crash_attach_logs": "附带诊断日志（{count} 份）",
   "@ui_crash_attach_logs": {

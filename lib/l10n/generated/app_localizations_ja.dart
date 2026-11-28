@@ -289,6 +289,9 @@ class L10nJa extends L10n {
   String get github => 'GitHubソースコードを見る';
 
   @override
+  String get officialWebsite => '公式ウェブサイト';
+
+  @override
   String get sequeldpdnsorg => '連絡先メール：1@sequel.dpdns.org';
 
   @override
@@ -8776,6 +8779,12 @@ class L10nJa extends L10n {
 
   @override
   String get ui_feedback_hint => '問題やご提案を記入（任意）';
+
+  @override
+  String get ui_feedback_email_label => '連絡先メール（任意）';
+
+  @override
+  String get ui_feedback_email_hint => '必要な場合に開発者から連絡できます';
 
   @override
   String ui_crash_attach_logs(int count) {

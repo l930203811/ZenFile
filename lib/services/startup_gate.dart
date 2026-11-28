@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+
+import 'webdav_debug_log.dart';
 
 /// 冷启动「静默期」闸门。
 ///
@@ -44,6 +47,58 @@ class StartupGate {
   /// 轮询间隔：只读 metrics，不触发重建、不进 build。
   static const Duration _poll = Duration(milliseconds: 32);
 
+  static const Duration _coldStartMinWait = Duration(seconds: 1);
+  static const Duration _coldStartQuiet = Duration(milliseconds: 800);
+  static const Duration _coldStartMaxWait = Duration(seconds: 6);
+
+  DateTime? _coldStartAt;
+  DateTime? _lastInputAt;
+  bool _inputObserverAttached = false;
+
+  void armColdStart() {
+    final now = DateTime.now();
+    _coldStartAt = now;
+    _lastInputAt = now;
+    if (_inputObserverAttached) return;
+    _inputObserverAttached = true;
+    GestureBinding.instance.pointerRouter.addGlobalRoute(
+      _handlePointerActivity,
+    );
+  }
+
+  void noteInput() {
+    if (_coldStartAt == null) return;
+    _lastInputAt = DateTime.now();
+  }
+
+  void _handlePointerActivity(PointerEvent event) {
+    noteInput();
+  }
+
+  Future<void> waitForColdStartIdle() async {
+    final startedAt = _coldStartAt;
+    if (startedAt == null) return;
+    final deadline = startedAt.add(_coldStartMaxWait);
+    final notBefore = startedAt.add(_coldStartMinWait);
+
+    while (true) {
+      final now = DateTime.now();
+      final quietAfter = (_lastInputAt ?? startedAt).add(_coldStartQuiet);
+      if ((!now.isBefore(notBefore) && !now.isBefore(quietAfter)) ||
+          !now.isBefore(deadline)) {
+        break;
+      }
+      await Future<void>.delayed(_poll);
+    }
+
+    _coldStartAt = null;
+    _lastInputAt = null;
+    WebdavDebugLog.logAlways(
+      '[startup] 后台初始化已等待输入安静 '
+      '${DateTime.now().difference(startedAt).inMilliseconds}ms',
+    );
+  }
+
   /// 当前是否处于静默期。
   bool get isSettling {
     final until = _until;
@@ -71,8 +126,13 @@ class StartupGate {
 
     while (DateTime.now().isBefore(deadline)) {
       final inset =
-          WidgetsBinding.instance.platformDispatcher.implicitView?.viewInsets.bottom ??
-              0;
+          WidgetsBinding
+              .instance
+              .platformDispatcher
+              .implicitView
+              ?.viewInsets
+              .bottom ??
+          0;
       final now = DateTime.now();
       // 两个条件都满足才放行：键盘确实收起了，且已过最小等待。
       if (inset <= 0 && !now.isBefore(minUntil)) break;

@@ -46,6 +46,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/media_thumbnail_service.dart';
 import '../../services/preferences_service.dart';
+import '../../services/webdav_debug_log.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'crypt_progress_dialog.dart';
@@ -159,6 +160,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
     String path,
     VoidCallback openAction,
   ) {
+    // 取证：列表项的 onTap **真的执行了**吗？
+    // 与全局探针的「点击#N」对齐 ⇒ 能把「手势被吞（回调没跑）」与
+    // 「回调跑了但效果没出来」彻底分开。
+    WebdavDebugLog.logAlways('[tap] 浏览项 onTap 执行');
     _activatePane(provider);
     if (isSelectionMode || _isDesktop) {
       provider.toggleSelection(path);
@@ -166,6 +171,20 @@ class _PaneBrowserState extends State<PaneBrowser> {
       openAction();
     }
   }
+
+  /// 列表项的**稳定 key**（按路径 + 来源）。
+  ///
+  /// ## 为什么必须有它（2026-11-28）
+  ///
+  /// SliverList 没有 key 时，Flutter **按下标**匹配子项：目录内容一变
+  /// （provider 一次通知就够），同一下标上的控件就被换成另一个文件/文件夹，
+  /// 类型不同则 Element 被销毁重建 ⇒ **正在飞行的手势被 dispose ⇒ onTap 永不触发**
+  /// ⇒ 用户看到「点文件夹没反应」。
+  ///
+  /// 按路径给 key 后，Element 跟着「这个条目」走，列表刷新/排序/增删都不会
+  /// 再把在飞手势弄丢。加 `isRemote` 前缀是为了避免远程路径与本地路径撞 key。
+  static String _browseItemKey(FileItemModel item) =>
+      'browse:${item.isRemote ? 'r' : 'l'}:${item.path}';
 
   /// 桌面端为条目附加「双击打开 + 右键上下文菜单」。
   Widget _wrapDesktopMouse(
@@ -176,6 +195,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
   ) {
     if (!_isDesktop) return child;
     return GestureDetector(
+      key: ValueKey<String>(_browseItemKey(item)),
       onDoubleTap: () {
         _activatePane(provider);
         if (item.isDirectory) {
@@ -215,8 +235,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         provider.selectedPaths.contains(item.path) &&
         provider.selectedPaths.length > 1;
 
-    final overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final action = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
@@ -329,7 +348,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
   }
 
   /// 构造「返回父目录」的虚拟文件夹项。
-  FileItemModel _parentDirectoryItem(FileManagerProvider provider, FolderTab tab) {
+  FileItemModel _parentDirectoryItem(
+    FileManagerProvider provider,
+    FolderTab tab,
+  ) {
     // zip://（压缩包内浏览）路径不能直接 p.dirname —— 会切坏虚拟路径
     //（丢 `|` 后的内部目录/破坏尾斜杠），必须走 provider 的 zip 感知父路径。
     final parentPath = provider.navigationParentPath(tab.currentPath);
@@ -371,6 +393,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       if (tab.selectedPaths.isNotEmpty) provider.clearSelection();
       _goUp(provider, tab);
     }
+
     if (isGrid) {
       return FolderGridItem(
         folder: folder,
@@ -401,7 +424,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
     // zip://（压缩包内浏览）v2：放行写操作（copy/cut/delete/rename/extract），
     // 由 provider 层的 zip 重写链路处理；其余动作（archive/encrypt/...）仍拦截。
     if (path.startsWith('zip://') &&
-        !const ['extract', 'copy', 'cut', 'delete', 'rename'].contains(action)) {
+        !const [
+          'extract',
+          'copy',
+          'cut',
+          'delete',
+          'rename',
+        ].contains(action)) {
       return;
     }
     switch (action) {
@@ -440,7 +469,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (provider.activeTab.isRemote ||
             path.startsWith('remote://') ||
             path.startsWith('cryptremote://')) {
-          await BulkCryptActions.encryptRemoteInPlace(context, provider, [path]);
+          await BulkCryptActions.encryptRemoteInPlace(context, provider, [
+            path,
+          ]);
         } else {
           await _handleEncrypt(context, provider, path);
         }
@@ -450,7 +481,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (provider.activeTab.isCryptRemote ||
             provider.activeTab.isRemote ||
             path.startsWith('cryptremote://')) {
-          await BulkCryptActions.decryptRemoteInPlace(context, provider, [path]);
+          await BulkCryptActions.decryptRemoteInPlace(context, provider, [
+            path,
+          ]);
         } else {
           await _handleDecrypt(context, provider, path);
         }
@@ -478,7 +511,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
           await BatchRenameDialog.show(context, provider);
         } else {
           // zip:// 条目（目录带尾斜杠）用虚拟路径感知的显示名，p.basename 会拿到空串
-          final currentName = FileUtils.zipEntryDisplayName(path) ?? p.posix.basename(path);
+          final currentName =
+              FileUtils.zipEntryDisplayName(path) ?? p.posix.basename(path);
           final newName = await FileActionDialogs.showRenameDialog(
             context,
             currentName: currentName,
@@ -498,7 +532,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isMulti =
             provider.selectedPaths.isNotEmpty &&
             provider.selectedPaths.contains(path);
-        final (confirm, toTrash) = await FileActionDialogs.showDeleteConfirmDialog(
+        final (
+          confirm,
+          toTrash,
+        ) = await FileActionDialogs.showDeleteConfirmDialog(
           context,
           content: isMulti
               ? L10n.of(context).count1(provider.selectedPaths.length)
@@ -509,8 +546,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
           // 远程 / 加密远程标签页里的条目是纯服务器路径（无 remote:// 前缀，
           // 路径自动判定不了），按所在 pane 的标签页状态显式传入：
           // 这些删除不经过回收站，弹窗勾选框灰色禁用。
-          recycleBinSupported: !(provider.tabs[widget.tabIndex].isRemote ||
-              provider.tabs[widget.tabIndex].isCryptRemote),
+          recycleBinSupported:
+              !(provider.tabs[widget.tabIndex].isRemote ||
+                  provider.tabs[widget.tabIndex].isCryptRemote),
         );
         if (confirm) {
           try {
@@ -655,7 +693,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
   }
 
   /// 处理加密操作
-  Future<void> _handleEncrypt(BuildContext context, FileManagerProvider provider, String path) async {
+  Future<void> _handleEncrypt(
+    BuildContext context,
+    FileManagerProvider provider,
+    String path,
+  ) async {
     // 加密是「保护方向」操作，不过保险箱会话闸门（闸门只守明文出口：解密/预览/导出）。
     if (!await _ensureMasterPassword(context)) return;
 
@@ -670,7 +712,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<CryptProgressData?>(
         valueListenable: ctl.notifier,
-        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_encrypting, progress: v),
+        builder: (_, v, __) => CryptProgressDialog(
+          message: L10n.of(context).vault_encrypting,
+          progress: v,
+        ),
       ),
     );
 
@@ -701,7 +746,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
       if (context.mounted) {
         Navigator.pop(context); // 关闭进度对话框
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).vault_encrypt_failed(e.toString()))),
+          SnackBar(
+            content: Text(L10n.of(context).vault_encrypt_failed(e.toString())),
+          ),
         );
       }
     } finally {
@@ -710,7 +757,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
   }
 
   /// 处理解密操作
-  Future<void> _handleDecrypt(BuildContext context, FileManagerProvider provider, String path) async {
+  Future<void> _handleDecrypt(
+    BuildContext context,
+    FileManagerProvider provider,
+    String path,
+  ) async {
     // 需求5：解密同样先过保险箱会话闸门
     if (!await requireVaultSessionUnlock(context)) return;
     if (!await _ensureMasterPassword(context)) return;
@@ -722,7 +773,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
       barrierDismissible: false,
       builder: (_) => ValueListenableBuilder<CryptProgressData?>(
         valueListenable: ctl.notifier,
-        builder: (_, v, __) => CryptProgressDialog(message: L10n.of(context).vault_decrypting, progress: v),
+        builder: (_, v, __) => CryptProgressDialog(
+          message: L10n.of(context).vault_decrypting,
+          progress: v,
+        ),
       ),
     );
 
@@ -745,7 +799,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
       if (context.mounted) {
         Navigator.pop(context); // 关闭进度对话框
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).vault_decrypt_failed(e.toString()))),
+          SnackBar(
+            content: Text(L10n.of(context).vault_decrypt_failed(e.toString())),
+          ),
         );
       }
     } finally {
@@ -788,12 +844,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
           final w = _scrollController.position.viewportDimension;
           // pane 实际宽度 = CustomScrollView 在外层 Expanded 里的宽度；
           // 单窗口时 w 即屏宽，双窗口时为屏宽一半左右。gridDelegate 用的就是它。
-          final crossAxisCount = (w / (110 * provider.iconScale)).floor().clamp(2, 10);
+          final crossAxisCount = (w / (110 * provider.iconScale)).floor().clamp(
+            2,
+            10,
+          );
           final row = idx ~/ crossAxisCount;
-          final itemHeight = (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(100.0, 300.0);
+          final itemHeight =
+              (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(
+                100.0,
+                300.0,
+              );
           itemCenter = row * itemHeight + itemHeight / 2;
         } else {
-          final itemHeight = (72 * provider.itemPaddingMultiplier).clamp(40.0, 150.0);
+          final itemHeight = (72 * provider.itemPaddingMultiplier).clamp(
+            40.0,
+            150.0,
+          );
           itemCenter = idx * itemHeight + itemHeight / 2;
         }
         final viewport = _scrollController.position.viewportDimension;
@@ -812,7 +878,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
         curve: Curves.easeInOut,
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: isActive ? 1.0 : 0.85),
+          color: theme.colorScheme.surface.withValues(
+            alpha: isActive ? 1.0 : 0.85,
+          ),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isActive
@@ -839,8 +907,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   if (tab.isLoading)
                     LinearProgressIndicator(
                       minHeight: 2.0,
-                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 
-                        0.1,
+                      backgroundColor: theme.colorScheme.primary.withValues(
+                        alpha: 0.1,
                       ),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         theme.colorScheme.primary,
@@ -863,8 +931,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       decoration: BoxDecoration(
                         color: isActive
                             ? theme.colorScheme.primary.withValues(alpha: 0.28)
-                            : theme.colorScheme.surfaceVariant.withValues(alpha: 
-                                0.25,
+                            : theme.colorScheme.surfaceVariant.withValues(
+                                alpha: 0.25,
                               ),
                         border: Border(
                           top: isActive
@@ -1010,8 +1078,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: GestureDetector(
-                                onTap: () =>
-                                    _showClipboardMenu(provider),
+                                onTap: () => _showClipboardMenu(provider),
                                 child: Container(
                                   height: 22,
                                   margin: const EdgeInsets.only(left: 8),
@@ -1023,8 +1090,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     // 接近实色的背景，覆盖到文件计数时不透出下层文字
                                     color: provider.isCut
                                         ? Colors.orange.withValues(alpha: 0.92)
-                                        : theme.colorScheme.primary.withValues(alpha: 
-                                            0.92,
+                                        : theme.colorScheme.primary.withValues(
+                                            alpha: 0.92,
                                           ),
                                     border: Border.all(
                                       color: provider.isCut
@@ -1163,7 +1230,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                           forceRefresh: true,
                                         ),
                                   ),
-                                  if (displayFiles.isEmpty && !showParentDirectory)
+                                  if (displayFiles.isEmpty &&
+                                      !showParentDirectory)
                                     SliverFillRemaining(
                                       hasScrollBody: false,
                                       child: Center(
@@ -1254,13 +1322,32 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                   ),
                                                   delegate: SliverChildBuilderDelegate(
                                                     (context, index) {
-                                                      if (showParentDirectory && index == 0) {
-                                                        return _buildParentDirectoryItem(context, provider, tab, isGrid: true);
+                                                      if (showParentDirectory &&
+                                                          index == 0) {
+                                                        return _buildParentDirectoryItem(
+                                                          context,
+                                                          provider,
+                                                          tab,
+                                                          isGrid: true,
+                                                        );
                                                       }
-                                                      final item = displayFiles[index - (showParentDirectory ? 1 : 0)];
-                                                      final isSelected = tab.selectedPaths.contains(item.path);
+                                                      final item =
+                                                          displayFiles[index -
+                                                              (showParentDirectory
+                                                                  ? 1
+                                                                  : 0)];
+                                                      final isSelected = tab
+                                                          .selectedPaths
+                                                          .contains(item.path);
                                                       if (item.isDirectory) {
                                                         final itemLongPress = () {
+                                                          // 取证：浏览项的长按动作真的执行了吗？
+                                                          // 用户反馈「所有支持长按的按钮长按都无响应」，
+                                                          // 浏览项是必查项之一。
+                                                          WebdavDebugLog.logAlways(
+                                                            '[tap] 浏览项长按执行 grid-item '
+                                                            'dragDrop=${provider.enableDragDrop}',
+                                                          );
                                                           _activatePane(
                                                             provider,
                                                           );
@@ -1274,59 +1361,94 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                           provider,
                                                           item,
                                                           DragDropHandler(
-                                                          path: item.path,
-                                                          isDirectory: true,
-                                                          onLongPress:
-                                                              itemLongPress,
-                                                          isRemote:
-                                                              item.isRemote,
-                                                          remoteItems:
-                                                              item.remoteSource !=
-                                                                  null
-                                                              ? [
-                                                                  item.remoteSource!,
-                                                                ]
-                                                              : null,
-                                                          connection:
-                                                              item.isRemote
-                                                              ? tab.remoteConnection
-                                                              : null,
-                                                          child: FolderGridItem(
-                                                            folder: item,
-                                                            isSelected:
-                                                                isSelected,
-                                                            iconScale: provider
-                                                                .iconScale,
-                                                            itemPaddingMultiplier:
-                                                                provider
-                                                                    .itemPaddingMultiplier,
-                                                            onTap: () => _handleItemTap(
-                                                              provider,
-                                                              isSelectionMode,
-                                                              item.path,
-                                                              () => _openFolder(
-                                                                provider,
-                                                                item.path,
-                                                              ),
-                                                            ),
-                                                            onLongPress:
-                                                                provider
-                                                                    .enableDragDrop
-                                                                ? null
-                                                                : itemLongPress,
-                                                            onIconTap:
-                                                                itemLongPress,
-                                                            onAction: (action) =>
-                                                                _handleAction(
-                                                                  context,
-                                                                  action,
-                                                                  item.path,
+                                                            // ⚠️ **稳定 key：按路径，而不是按下标**（2026-11-28 修复）
+                                                            //
+                                                            // SliverList 没有 key 时，Flutter **按下标**匹配子项：
+                                                            // 目录内容一变（provider 一次通知就够），
+                                                            // 同一下标上的控件就被**换成另一个文件/文件夹**——
+                                                            // 类型不同则 Element 被销毁重建，
+                                                            // **正在飞行的手势随之被 dispose ⇒ onTap 永不触发**
+                                                            // ⇒ 用户看到「点文件夹没反应」。
+                                                            //
+                                                            // 按路径给 key 后，Element 跟着「这个条目」走，
+                                                            // 列表刷新/排序/增删都不会再把在飞手势弄丢。
+                                                            key:
+                                                                ValueKey<
+                                                                  String
+                                                                >(
+                                                                  _browseItemKey(
+                                                                    item,
+                                                                  ),
                                                                 ),
-                                                          ),
+                                                            path: item.path,
+                                                            isDirectory: true,
+                                                            onLongPress:
+                                                                itemLongPress,
+                                                            isRemote:
+                                                                item.isRemote,
+                                                            remoteItems:
+                                                                item.remoteSource !=
+                                                                    null
+                                                                ? [
+                                                                    item.remoteSource!,
+                                                                  ]
+                                                                : null,
+                                                            connection:
+                                                                item.isRemote
+                                                                ? tab.remoteConnection
+                                                                : null,
+                                                            child: FolderGridItem(
+                                                              key:
+                                                                  ValueKey<
+                                                                    String
+                                                                  >(
+                                                                    _browseItemKey(
+                                                                      item,
+                                                                    ),
+                                                                  ),
+                                                              folder: item,
+                                                              isSelected:
+                                                                  isSelected,
+                                                              iconScale: provider
+                                                                  .iconScale,
+                                                              itemPaddingMultiplier:
+                                                                  provider
+                                                                      .itemPaddingMultiplier,
+                                                              onTap: () => _handleItemTap(
+                                                                provider,
+                                                                isSelectionMode,
+                                                                item.path,
+                                                                () =>
+                                                                    _openFolder(
+                                                                      provider,
+                                                                      item.path,
+                                                                    ),
+                                                              ),
+                                                              onLongPress:
+                                                                  provider
+                                                                      .enableDragDrop
+                                                                  ? null
+                                                                  : itemLongPress,
+                                                              onIconTap:
+                                                                  itemLongPress,
+                                                              onAction: (action) =>
+                                                                  _handleAction(
+                                                                    context,
+                                                                    action,
+                                                                    item.path,
+                                                                  ),
+                                                            ),
                                                           ),
                                                         );
                                                       } else {
                                                         final itemLongPress = () {
+                                                          // 取证：浏览项的长按动作真的执行了吗？
+                                                          // 用户反馈「所有支持长按的按钮长按都无响应」，
+                                                          // 浏览项是必查项之一。
+                                                          WebdavDebugLog.logAlways(
+                                                            '[tap] 浏览项长按执行 grid-item '
+                                                            'dragDrop=${provider.enableDragDrop}',
+                                                          );
                                                           _activatePane(
                                                             provider,
                                                           );
@@ -1340,96 +1462,132 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                           provider,
                                                           item,
                                                           DragDropHandler(
-                                                          path: item.path,
-                                                          isDirectory: false,
-                                                          onLongPress:
-                                                              itemLongPress,
-                                                          isRemote:
-                                                              item.isRemote,
-                                                          remoteItems:
-                                                              item.remoteSource !=
-                                                                  null
-                                                              ? [
-                                                                  item.remoteSource!,
-                                                                ]
-                                                              : null,
-                                                          connection:
-                                                              item.isRemote
-                                                              ? tab.remoteConnection
-                                                              : null,
-                                                          child: FileGridItem(
-                                                            file: item,
-                                                            isSelected:
-                                                                isSelected,
-                                                            iconScale: provider
-                                                                .iconScale,
-                                                            itemPaddingMultiplier:
-                                                                provider
-                                                                    .itemPaddingMultiplier,
-                                                            onTap: () => _handleItemTap(
-                                                              provider,
-                                                              isSelectionMode,
-                                                              item.path,
-                                                              () => provider.openFile(
-                                                                context,
-                                                                item.path,
-                                                              ),
-                                                            ),
-                                                            onLongPress:
-                                                                provider
-                                                                    .enableDragDrop
-                                                                ? null
-                                                                : itemLongPress,
-                                                            onIconTap:
-                                                                itemLongPress,
-                                                            onAction: (action) =>
-                                                                _handleAction(
-                                                                  context,
-                                                                  action,
-                                                                  item.path,
+                                                            key:
+                                                                ValueKey<
+                                                                  String
+                                                                >(
+                                                                  _browseItemKey(
+                                                                    item,
+                                                                  ),
                                                                 ),
-                                                          ),
+                                                            path: item.path,
+                                                            isDirectory: false,
+                                                            onLongPress:
+                                                                itemLongPress,
+                                                            isRemote:
+                                                                item.isRemote,
+                                                            remoteItems:
+                                                                item.remoteSource !=
+                                                                    null
+                                                                ? [
+                                                                    item.remoteSource!,
+                                                                  ]
+                                                                : null,
+                                                            connection:
+                                                                item.isRemote
+                                                                ? tab.remoteConnection
+                                                                : null,
+                                                            child: FileGridItem(
+                                                              key:
+                                                                  ValueKey<
+                                                                    String
+                                                                  >(
+                                                                    _browseItemKey(
+                                                                      item,
+                                                                    ),
+                                                                  ),
+                                                              file: item,
+                                                              isSelected:
+                                                                  isSelected,
+                                                              iconScale: provider
+                                                                  .iconScale,
+                                                              itemPaddingMultiplier:
+                                                                  provider
+                                                                      .itemPaddingMultiplier,
+                                                              onTap: () => _handleItemTap(
+                                                                provider,
+                                                                isSelectionMode,
+                                                                item.path,
+                                                                () => provider
+                                                                    .openFile(
+                                                                      context,
+                                                                      item.path,
+                                                                    ),
+                                                              ),
+                                                              onLongPress:
+                                                                  provider
+                                                                      .enableDragDrop
+                                                                  ? null
+                                                                  : itemLongPress,
+                                                              onIconTap:
+                                                                  itemLongPress,
+                                                              onAction: (action) =>
+                                                                  _handleAction(
+                                                                    context,
+                                                                    action,
+                                                                    item.path,
+                                                                  ),
+                                                            ),
                                                           ),
                                                         );
                                                       }
                                                     },
                                                     childCount:
-                                                        displayFiles.length + (showParentDirectory ? 1 : 0),
+                                                        displayFiles.length +
+                                                        (showParentDirectory
+                                                            ? 1
+                                                            : 0),
                                                   ),
                                                 );
                                               },
                                             )
                                           : SliverList(
-                                              delegate: SliverChildBuilderDelegate((
-                                                context,
-                                                index,
-                                              ) {
-                                                if (showParentDirectory && index == 0) {
-                                                  return _buildParentDirectoryItem(context, provider, tab, isGrid: false);
-                                                }
-                                                final item = displayFiles[index - (showParentDirectory ? 1 : 0)];
-                                                final isSelected = tab.selectedPaths.contains(item.path);
-                                                if (item.isDirectory) {
-                                                  return _buildCompactFolderItem(
-                                                    context,
-                                                    provider,
-                                                    item,
-                                                    isSelected,
-                                                    isSelectionMode,
-                                                    tab.remoteConnection,
-                                                  );
-                                                } else {
-                                                  return _buildCompactFileItem(
-                                                    context,
-                                                    provider,
-                                                    item,
-                                                    isSelected,
-                                                    isSelectionMode,
-                                                    tab.remoteConnection,
-                                                    tab.remoteClient,
-                                                  );
-                                                }
-                                              }, childCount: displayFiles.length + (showParentDirectory ? 1 : 0)),
+                                              delegate: SliverChildBuilderDelegate(
+                                                (context, index) {
+                                                  if (showParentDirectory &&
+                                                      index == 0) {
+                                                    return _buildParentDirectoryItem(
+                                                      context,
+                                                      provider,
+                                                      tab,
+                                                      isGrid: false,
+                                                    );
+                                                  }
+                                                  final item =
+                                                      displayFiles[index -
+                                                          (showParentDirectory
+                                                              ? 1
+                                                              : 0)];
+                                                  final isSelected = tab
+                                                      .selectedPaths
+                                                      .contains(item.path);
+                                                  if (item.isDirectory) {
+                                                    return _buildCompactFolderItem(
+                                                      context,
+                                                      provider,
+                                                      item,
+                                                      isSelected,
+                                                      isSelectionMode,
+                                                      tab.remoteConnection,
+                                                    );
+                                                  } else {
+                                                    return _buildCompactFileItem(
+                                                      context,
+                                                      provider,
+                                                      item,
+                                                      isSelected,
+                                                      isSelectionMode,
+                                                      tab.remoteConnection,
+                                                      tab.remoteClient,
+                                                    );
+                                                  }
+                                                },
+                                                childCount:
+                                                    displayFiles.length +
+                                                    (showParentDirectory
+                                                        ? 1
+                                                        : 0),
+                                              ),
                                             ),
                                     ),
                                 ],
@@ -1457,14 +1615,19 @@ class _PaneBrowserState extends State<PaneBrowser> {
     VoidCallback? onTapOverride,
   }) {
     final theme = Theme.of(context);
-    final isHighlighted = !isParentItem &&
+    final isHighlighted =
+        !isParentItem &&
         (provider.forceHighlightedPaths.contains(folder.path) ||
-        (provider.enableFolderHighlight &&
-            provider.highlightedPaths.contains(folder.path)));
+            (provider.enableFolderHighlight &&
+                provider.highlightedPaths.contains(folder.path)));
 
     final itemLongPress = isParentItem
         ? null
         : () {
+            WebdavDebugLog.logAlways(
+              '[tap] 浏览项长按执行 compact-folder '
+              'dragDrop=${provider.enableDragDrop}',
+            );
             _activatePane(provider);
             provider.toggleSelection(folder.path);
           };
@@ -1474,243 +1637,269 @@ class _PaneBrowserState extends State<PaneBrowser> {
       provider,
       folder,
       DragDropHandler(
-      path: folder.path,
-      isDirectory: true,
-      onLongPress: itemLongPress,
-      isRemote: folder.isRemote,
-      remoteItems: folder.remoteSource != null ? [folder.remoteSource!] : null,
-      connection: folder.isRemote ? remoteConnection : null,
-      child: InkWell(
-        onTap: onTapOverride ??
-            () => _handleItemTap(
-              provider,
-              isSelectionMode,
-              folder.path,
-              () => _openFolder(provider, folder.path),
-            ),
-        onLongPress: provider.enableDragDrop ? null : itemLongPress,
-        child: Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
-                    : isHighlighted
-                    ? theme.colorScheme.primary.withValues(alpha: 0.05)
-                    : Colors.transparent,
-                border: isHighlighted
-                    ? Border(
-                        left: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 3,
-                        ),
-                      )
-                    : null,
+        key: ValueKey<String>(_browseItemKey(folder)),
+        path: folder.path,
+        isDirectory: true,
+        onLongPress: itemLongPress,
+        isRemote: folder.isRemote,
+        remoteItems: folder.remoteSource != null
+            ? [folder.remoteSource!]
+            : null,
+        connection: folder.isRemote ? remoteConnection : null,
+        child: InkWell(
+          onTap:
+              onTapOverride ??
+              () => _handleItemTap(
+                provider,
+                isSelectionMode,
+                folder.path,
+                () => _openFolder(provider, folder.path),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: itemLongPress,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+          onLongPress: provider.enableDragDrop ? null : itemLongPress,
+          child: Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.4,
+                        )
+                      : isHighlighted
+                      ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                      : Colors.transparent,
+                  border: isHighlighted
+                      ? Border(
+                          left: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 3,
                           ),
-                          child: Icon(
-                            isSelected
-                                ? Broken.tick_circle
-                                : FileUtils.getFolderIcon(
-                                    provider.folderIconOption,
-                                  ),
-                            color: isSelected
-                                ? theme.colorScheme.onPrimary
-                                : theme.colorScheme.primary,
-                            size: 16,
-                          ),
-                        ),
-                        if (folder.isRemote &&
-                            provider.effectiveShowRemoteCloudBadge)
-                          RemoteCloudBadge(size: 9),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Padding(
-                      // 右侧为三点按钮预留 20px，避免文字与按钮重叠
-                      padding: const EdgeInsets.only(right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                        )
+                      : null,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: itemLongPress,
+                      child: Stack(
                         children: [
-                          Text(
-                            folder.name,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                            maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
-                            overflow: TextOverflow.ellipsis,
+                            child: Icon(
+                              isSelected
+                                  ? Broken.tick_circle
+                                  : FileUtils.getFolderIcon(
+                                      provider.folderIconOption,
+                                    ),
+                              color: isSelected
+                                  ? theme.colorScheme.onPrimary
+                                  : theme.colorScheme.primary,
+                              size: 16,
+                            ),
                           ),
-                          const SizedBox(height: 1),
-                          // issue #83：只 select 本信息行依赖的 5 个显示设置
-                          // （record 相等比较），不再整 provider Consumer，
-                          // 无关 notifyListeners 不重建滚动中的全部可见项。
-                          Builder(builder: (context) {
-                            final settings = context.select(
-                              (FileManagerProvider p) => (
-                                filter: p.filterType,
-                                hideDate: p.hideTimeAndDate,
-                                count: p.showFolderContentsCount,
-                                size: p.showFolderSizes,
-                                use24: p.use24HourFormat,
-                              ),
-                            );
-                            final provider =
-                                context.read<FileManagerProvider>();
-                            final activeFilter = settings.filter;
-                              if (activeFilter != FileFilterType.all) {
-                                return FutureBuilder<int>(
-                                  future: provider.getMatchingFileCount(
-                                    folder.path,
-                                    activeFilter,
-                                  ),
-                                  builder: (context, snapshot) {
-                                    final count = snapshot.data ?? 0;
-                                    final name = provider.getFilterTypeName(
-                                      activeFilter,
-                                      count,
-                                    );
-                                    return Text(
-                                      '$count $name',
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: theme.colorScheme.primary,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10.5,
-                                          ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    );
-                                  },
-                                );
-                              } else {
-                                final showCount = provider.showFolderContentsCount;
-                                final showSize = provider.showFolderSizes;
-                                final showDate = !provider.hideTimeAndDate;
-
-                                if (!showCount && !showSize && !showDate) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return FutureBuilder<List<int>>(
-                                  future: Future.wait([
-                                    showCount
-                                        ? provider.getFolderItemCount(
-                                            folder.path,
-                                            isRemote: folder.isRemote,
-                                          )
-                                        : Future.value(-1),
-                                    showSize
-                                        ? provider.getFolderSize(
-                                            folder.path,
-                                            isRemote: folder.isRemote,
-                                          )
-                                        : Future.value(-1),
-                                  ]),
-                                  builder: (context, snapshot) {
-                                    final data = snapshot.data;
-                                    final count = (data != null && data[0] != -1) ? data[0] : null;
-                                    final size = (data != null && data[1] != -1) ? data[1] : null;
-
-                                    final parts = <String>[];
-                                    if (count != null) {
-                                      parts.add(count == 1
-                                          ? L10n.of(context).msg32a1bd25
-                                          : L10n.of(context).count4(count));
-                                    }
-                                    if (size != null) {
-                                      parts.add(FileUtils.formatBytes(size, 1));
-                                    }
-                                    if (showDate) {
-                                      parts.add(FileUtils.formatDateCompact(
-                                        folder.modified,
-                                        use24Hour: provider.use24HourFormat,
-                                      ));
-                                    }
-
-                                    if (parts.isEmpty) {
-                                      return const SizedBox.shrink();
-                                    }
-
-                                    return Text(
-                                      parts.join(' • '),
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.textTheme.bodySmall?.color
-                                            ?.withValues(alpha: 0.55),
-                                        fontSize: 10.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    );
-                                  },
-                                );
-                              }
-                            },
-                          ),
+                          if (folder.isRemote &&
+                              provider.effectiveShowRemoteCloudBadge)
+                            RemoteCloudBadge(size: 9),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
-            // context 即 SliverList 自身的 context，provider 禁止在此调用
-            // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
-            // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
-            // 重建整个列表，因此这里直接 read 读取当前值即可。
-            if (!context.read<FileManagerProvider>().hideActionMenuButtons)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.more_vert, size: 13),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  onPressed: () {
-                    _activatePane(provider);
-                    FileActionSheet.show(
-                      context,
-                      (action) => _handleAction(context, action, folder.path),
-                      isArchive: false,
-                      showSetAsHome: true,
-                      // 文件夹也提供「打开方式」（用第三方应用打开目录）
-                      openWith: true,
-                      isCurrentHome: provider.homeDirectory == folder.path,
-                      showShare: !folder.isRemote,
-                      // 需传 filePath 才会显示加/解密项；远程加密目录据此显示「解密下载」
-                      filePath: folder.path,
-                      isEncrypted: folder.isEncrypted,
-                      isPinned: PinService.isPinned(folder.path),
-                    );
-                  },
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Padding(
+                        // 右侧为三点按钮预留 20px，避免文字与按钮重叠
+                        padding: const EdgeInsets.only(right: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              folder.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                              maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 1),
+                            // issue #83：只 select 本信息行依赖的 5 个显示设置
+                            // （record 相等比较），不再整 provider Consumer，
+                            // 无关 notifyListeners 不重建滚动中的全部可见项。
+                            Builder(
+                              builder: (context) {
+                                final settings = context.select(
+                                  (FileManagerProvider p) => (
+                                    filter: p.filterType,
+                                    hideDate: p.hideTimeAndDate,
+                                    count: p.showFolderContentsCount,
+                                    size: p.showFolderSizes,
+                                    use24: p.use24HourFormat,
+                                  ),
+                                );
+                                final provider = context
+                                    .read<FileManagerProvider>();
+                                final activeFilter = settings.filter;
+                                if (activeFilter != FileFilterType.all) {
+                                  return FutureBuilder<int>(
+                                    future: provider.getMatchingFileCount(
+                                      folder.path,
+                                      activeFilter,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      final count = snapshot.data ?? 0;
+                                      final name = provider.getFilterTypeName(
+                                        activeFilter,
+                                        count,
+                                      );
+                                      return Text(
+                                        '$count $name',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10.5,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  final showCount =
+                                      provider.showFolderContentsCount;
+                                  final showSize = provider.showFolderSizes;
+                                  final showDate = !provider.hideTimeAndDate;
+
+                                  if (!showCount && !showSize && !showDate) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  return FutureBuilder<List<int>>(
+                                    future: Future.wait([
+                                      showCount
+                                          ? provider.getFolderItemCount(
+                                              folder.path,
+                                              isRemote: folder.isRemote,
+                                            )
+                                          : Future.value(-1),
+                                      showSize
+                                          ? provider.getFolderSize(
+                                              folder.path,
+                                              isRemote: folder.isRemote,
+                                            )
+                                          : Future.value(-1),
+                                    ]),
+                                    builder: (context, snapshot) {
+                                      final data = snapshot.data;
+                                      final count =
+                                          (data != null && data[0] != -1)
+                                          ? data[0]
+                                          : null;
+                                      final size =
+                                          (data != null && data[1] != -1)
+                                          ? data[1]
+                                          : null;
+
+                                      final parts = <String>[];
+                                      if (count != null) {
+                                        parts.add(
+                                          count == 1
+                                              ? L10n.of(context).msg32a1bd25
+                                              : L10n.of(context).count4(count),
+                                        );
+                                      }
+                                      if (size != null) {
+                                        parts.add(
+                                          FileUtils.formatBytes(size, 1),
+                                        );
+                                      }
+                                      if (showDate) {
+                                        parts.add(
+                                          FileUtils.formatDateCompact(
+                                            folder.modified,
+                                            use24Hour: provider.use24HourFormat,
+                                          ),
+                                        );
+                                      }
+
+                                      if (parts.isEmpty) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Text(
+                                        parts.join(' • '),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.color
+                                                  ?.withValues(alpha: 0.55),
+                                              fontSize: 10.5,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-          ],
+              // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
+              // context 即 SliverList 自身的 context，provider 禁止在此调用
+              // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
+              // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
+              // 重建整个列表，因此这里直接 read 读取当前值即可。
+              if (!context.read<FileManagerProvider>().hideActionMenuButtons)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_vert, size: 13),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    onPressed: () {
+                      _activatePane(provider);
+                      FileActionSheet.show(
+                        context,
+                        (action) => _handleAction(context, action, folder.path),
+                        isArchive: false,
+                        showSetAsHome: true,
+                        // 文件夹也提供「打开方式」（用第三方应用打开目录）
+                        openWith: true,
+                        isCurrentHome: provider.homeDirectory == folder.path,
+                        showShare: !folder.isRemote,
+                        // 需传 filePath 才会显示加/解密项；远程加密目录据此显示「解密下载」
+                        filePath: folder.path,
+                        isEncrypted: folder.isEncrypted,
+                        isPinned: PinService.isPinned(folder.path),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -1733,6 +1922,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final iconColor = FileUtils.getColorForFile(displayPath, context);
 
     final itemLongPress = () {
+      WebdavDebugLog.logAlways(
+        '[tap] 浏览项长按执行 compact-file '
+        'dragDrop=${provider.enableDragDrop}',
+      );
       _activatePane(provider);
       provider.toggleSelection(file.path);
     };
@@ -1742,174 +1935,183 @@ class _PaneBrowserState extends State<PaneBrowser> {
       provider,
       file,
       DragDropHandler(
-      path: file.path,
-      isDirectory: false,
-      onLongPress: itemLongPress,
-      isRemote: file.isRemote,
-      remoteItems: file.remoteSource != null ? [file.remoteSource!] : null,
-      connection: file.isRemote ? remoteConnection : null,
-      child: InkWell(
-        onTap: () => _handleItemTap(
-          provider,
-          isSelectionMode,
-          file.path,
-          () => provider.openFile(context, file.path),
-        ),
-        onLongPress: provider.enableDragDrop ? null : itemLongPress,
-        child: Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
-                    : isHighlighted
-                    ? theme.colorScheme.primary.withValues(alpha: 0.05)
-                    : Colors.transparent,
-                border: isHighlighted
-                    ? Border(
-                        left: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 3,
+        key: ValueKey<String>(_browseItemKey(file)),
+        path: file.path,
+        isDirectory: false,
+        onLongPress: itemLongPress,
+        isRemote: file.isRemote,
+        remoteItems: file.remoteSource != null ? [file.remoteSource!] : null,
+        connection: file.isRemote ? remoteConnection : null,
+        child: InkWell(
+          onTap: () => _handleItemTap(
+            provider,
+            isSelectionMode,
+            file.path,
+            () => provider.openFile(context, file.path),
+          ),
+          onLongPress: provider.enableDragDrop ? null : itemLongPress,
+          child: Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.4,
+                        )
+                      : isHighlighted
+                      ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                      : Colors.transparent,
+                  border: isHighlighted
+                      ? Border(
+                          left: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 3,
+                          ),
+                        )
+                      : null,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: itemLongPress,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : iconColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                      )
-                    : null,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: itemLongPress,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : iconColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: _CompactMediaThumbnail(
-                          file: file,
-                          isSelected: isSelected,
-                          iconColor: iconColor,
-                          remoteClient: remoteClient,
-                          connection: file.isRemote ? remoteConnection : null,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: _CompactMediaThumbnail(
+                            file: file,
+                            isSelected: isSelected,
+                            iconColor: iconColor,
+                            remoteClient: remoteClient,
+                            connection: file.isRemote ? remoteConnection : null,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Padding(
-                      // 右侧为三点按钮预留 20px，避免文字与按钮重叠
-                      padding: const EdgeInsets.only(right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            file.name,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                            maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 1),
-                          Row(
-                            children: [
-                              if (!provider.hideTimeAndDate) ...[
-                                Expanded(
-                                  child: Text(
-                                    FileUtils.formatDateCompact(
-                                      file.modified,
-                                      use24Hour: provider.use24HourFormat,
-                                    ),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color
-                                          ?.withValues(alpha: 0.55),
-                                      fontSize: 9,
-                                      letterSpacing: -0.2,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 3),
-                              ],
-                              Text(
-                                FileUtils.formatBytesCompact(file.size, 1),
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.textTheme.bodySmall?.color
-                                      ?.withValues(alpha: 0.55),
-                                  fontSize: 9,
-                                  letterSpacing: -0.2,
-                                ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Padding(
+                        // 右侧为三点按钮预留 20px，避免文字与按钮重叠
+                        padding: const EdgeInsets.only(right: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              file.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
                               ),
-                              // 安装包：在大小后面追加「已安装 / 未安装」标识
-                              // （双栏图标只有 24px，放不下图标下方的标识）。
-                              if (!file.isEncrypted &&
-                                  !file.isRemote &&
-                                  FileUtils.isInstallPackage(displayPath)) ...[
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: InstallStatusBadge(
-                                    path: file.path,
-                                    size: file.size,
-                                    modifiedMs:
-                                        file.modified.millisecondsSinceEpoch,
-                                    compact: true,
+                              maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 1),
+                            Row(
+                              children: [
+                                if (!provider.hideTimeAndDate) ...[
+                                  Expanded(
+                                    child: Text(
+                                      FileUtils.formatDateCompact(
+                                        file.modified,
+                                        use24Hour: provider.use24HourFormat,
+                                      ),
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .textTheme
+                                                .bodySmall
+                                                ?.color
+                                                ?.withValues(alpha: 0.55),
+                                            fontSize: 9,
+                                            letterSpacing: -0.2,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                ],
+                                Text(
+                                  FileUtils.formatBytesCompact(file.size, 1),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withValues(alpha: 0.55),
+                                    fontSize: 9,
+                                    letterSpacing: -0.2,
                                   ),
                                 ),
+                                // 安装包：在大小后面追加「已安装 / 未安装」标识
+                                // （双栏图标只有 24px，放不下图标下方的标识）。
+                                if (!file.isEncrypted &&
+                                    !file.isRemote &&
+                                    FileUtils.isInstallPackage(
+                                      displayPath,
+                                    )) ...[
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: InstallStatusBadge(
+                                      path: file.path,
+                                      size: file.size,
+                                      modifiedMs:
+                                          file.modified.millisecondsSinceEpoch,
+                                      compact: true,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
-            // context 即 SliverList 自身的 context，provider 禁止在此调用
-            // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
-            // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
-            // 重建整个列表，因此这里直接 read 读取当前值即可。
-            if (!context.read<FileManagerProvider>().hideActionMenuButtons)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.more_vert, size: 13),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  onPressed: () {
-                    _activatePane(provider);
-                    FileActionSheet.show(
-                      context,
-                      (action) => _handleAction(context, action, file.path),
-                      isArchive: FileUtils.isArchive(displayPath),
-                      openWith: !file.isDirectory,
-                      showShare: !file.isRemote,
-                      // 需传 filePath 才会显示加/解密项；远程加密文件据此显示「解密下载」
-                      filePath: file.path,
-                      isEncrypted: file.isEncrypted,
-                      isPinned: PinService.isPinned(file.path),
-                    );
-                  },
+                  ],
                 ),
               ),
-          ],
+              // 注意：此处位于 SliverChildBuilderDelegate 的条目构建器内，
+              // context 即 SliverList 自身的 context，provider 禁止在此调用
+              // context.select（会触发 SliverWithKeepAliveWidget 断言红屏）。
+              // 顶层 build 已用 context.watch 整体监听，provider 任何变更都会
+              // 重建整个列表，因此这里直接 read 读取当前值即可。
+              if (!context.read<FileManagerProvider>().hideActionMenuButtons)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_vert, size: 13),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    onPressed: () {
+                      _activatePane(provider);
+                      FileActionSheet.show(
+                        context,
+                        (action) => _handleAction(context, action, file.path),
+                        isArchive: FileUtils.isArchive(displayPath),
+                        openWith: !file.isDirectory,
+                        showShare: !file.isRemote,
+                        // 需传 filePath 才会显示加/解密项；远程加密文件据此显示「解密下载」
+                        filePath: file.path,
+                        isEncrypted: file.isEncrypted,
+                        isPinned: PinService.isPinned(file.path),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -2454,7 +2656,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             height: double.infinity,
             cacheWidth: 80,
             cacheHeight: 80,
-            errorBuilder: (context, error, stackTrace) => UnknownFileIcon(size: 18),
+            errorBuilder: (context, error, stackTrace) =>
+                UnknownFileIcon(size: 18),
           ),
         ],
       );

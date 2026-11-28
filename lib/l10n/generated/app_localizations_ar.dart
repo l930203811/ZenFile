@@ -292,6 +292,9 @@ class L10nAr extends L10n {
   String get github => 'عرض الكود المصدري على GitHub';
 
   @override
+  String get officialWebsite => 'زيارة الموقع الرسمي';
+
+  @override
   String get sequeldpdnsorg => 'التواصل: 1@sequel.dpdns.org';
 
   @override
@@ -9038,6 +9041,12 @@ class L10nAr extends L10n {
 
   @override
   String get ui_feedback_hint => 'صف المشكلة أو الاقتراح (اختياري)';
+
+  @override
+  String get ui_feedback_email_label => 'البريد الإلكتروني (اختياري)';
+
+  @override
+  String get ui_feedback_email_hint => 'اتركه لكي يتمكن المطور من التواصل معك';
 
   @override
   String ui_crash_attach_logs(int count) {

@@ -289,6 +289,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "檢視 GitHub 原始碼",
+  "officialWebsite": "造訪官方網站",
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8999,6 +9000,8 @@
   "ui_crash_dialog_body": "上次應用程式異常結束，已自動產生診斷報告。您可以補充描述遇到的問題，一併回報給開發者，協助我們定位修復。",
   "ui_feedback_dialog_body": "請描述您遇到的問題或建議，將連同裝置資訊與診斷日誌一併回報給開發者。",
   "ui_feedback_hint": "請描述遇到的問題或建議（可留空）",
+  "ui_feedback_email_label": "聯絡電子郵件（選填）",
+  "ui_feedback_email_hint": "填寫後方便開發者在需要時與您聯絡",
   "ui_crash_attach_logs": "附帶診斷日誌（{count} 份）",
   "ui_feedback_send": "回報",
   "ui_feedback_later": "稍後再說",

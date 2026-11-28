@@ -6,6 +6,8 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../core/theme.dart';
+import '../../services/tap_latency_probe.dart';
+import '../../services/webdav_debug_log.dart';
 import 'liquid_glass_panel.dart';
 
 /// ── 液态玻璃底栏（Liquid Glass Bottom Bar）─────────────────────────────
@@ -380,6 +382,8 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
   }
 
   void _handleTap(int index) {
+    // 取证探针：确认「点击回调真的到达」以及到达得多晚（2026-11-27）。
+    TapLatencyProbe.markControlTap(index);
     _position.animateTo(index.toDouble());
     _ensureTicking();
     widget.onSelect(index);
@@ -483,24 +487,27 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
                     // 不裁切会在胶囊外露出一圈淡色「光晕」。裁掉后观感是「鼓到贴边」。
                     child: ClipRRect(
                       borderRadius: shape,
-                      child: Stack(
-                        children: [
-                          // 不要在这层套 RepaintBoundary：BackdropFilter 需要拿到祖先
-                          // 合成层里的真实背景，多插一层可能采不到而退化成「只有半透明底、没有模糊」。
-                          Positioned.fill(
-                            child: _buildGlassContainer(shape, attached),
-                          ),
-                          Positioned.fill(child: _buildIndicator(inner)),
-                          Positioned.fill(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: kLiquidInset,
-                              ),
-                              child: _buildItems(),
+                      // ⚠️ RepaintBoundary（2026-11-27 性能修复）：
+                      // 底栏的滑动胶囊 + 按压鼓包**每帧都在动**。而本项目原先
+                      // **全库一个 RepaintBoundary 都没有**，于是每一帧的脏区都会
+                      // 一路上传到根，逼迫**整屏**（分类网格 + 浏览页文件列表 + 顶栏）
+                      // 重新光栅化 —— 真机日志实测：
+                      //   掉帧 402ms (build 56ms, raster 328ms)
+                      // CPU 侧只占 56ms，光栅化却要 328ms，正是「重绘半径 = 整屏」
+                      // 的典型形态。
+                      //
+                      // 套上边界后，胶囊动画只重画底栏这一小块，上面两块静态内容
+                      // 直接复用已光栅化的图层。
+                      //
+                      // ⚠️ **不能无条件套**：BackdropFilter 需要拿到**祖先**合成层
+                      // 里的真实背景，多插一层边界可能采不到而退化成「只有半透明底、
+                      // 没有模糊」。所以只在**不含模糊**的形态（showGlassPlate=false，
+                      // 即 4-tab 底栏走 _buildCapsuleOutline）才加边界。
+                      child: widget.showGlassPlate
+                          ? _buildBarStack(shape, attached, inner)
+                          : RepaintBoundary(
+                              child: _buildBarStack(shape, attached, inner),
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ),
@@ -509,6 +516,29 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
           },
         );
       },
+    );
+  }
+
+  /// 底栏的三层内容：玻璃底板 / 滑动胶囊 / 槽位内容。
+  ///
+  /// 抽成独立方法，是为了在调用处能按「有没有 BackdropFilter」决定是否套
+  /// RepaintBoundary（见调用处那段注释）。
+  Widget _buildBarStack(BorderRadius shape, double attached, double inner) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: _buildGlassContainer(shape, attached),
+        ),
+        Positioned.fill(child: _buildIndicator(inner)),
+        Positioned.fill(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: kLiquidInset,
+            ),
+            child: _buildItems(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -612,17 +642,46 @@ class _LiquidBottomBarState extends State<LiquidBottomBar>
               child: Semantics(
                 button: true,
                 selected: i == widget.selectedIndex,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _handleTap(i),
-                  onLongPress: widget.onLongPressItem == null
-                      ? null
-                      : () => widget.onLongPressItem!(i),
-                  child: Center(
-                    child: widget.itemBuilder(
-                      context,
-                      i,
-                      i == widget.selectedIndex,
+                // 取证探针：记录「按下」的时刻（2026-11-27）。
+                //
+                // ⚠️ Listener 必须套在 GestureDetector **外面**：内层的
+                // GestureDetector 用的是 HitTestBehavior.opaque，命中测试在它
+                // 那里就终止了，放在它里面的 Listener 收不到指针事件。
+                // 外层的 Listener 默认 deferToChild，不影响子级的命中与手势。
+                child: Listener(
+                  onPointerDown: (event) =>
+                      TapLatencyProbe.markControlDown(event, i),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _handleTap(i),
+                    onLongPressDown: widget.onLongPressItem == null
+                        ? null
+                        : (_) {
+                            // 取证：`onLongPressDown` 在**识别器收到 down 的瞬间**触发，
+                            // 与死线/竞技场/slop 无关。
+                            // 有这条 ⇒ 识别器在命中路径里，问题在死线/竞技场；
+                            // 无这条 ⇒ 手指没落在带长按识别器的控件上。
+                            WebdavDebugLog.logAlways(
+                              '[tap] 长按下压(底栏) slot=$i',
+                            );
+                          },
+                    onLongPress: widget.onLongPressItem == null
+                        ? null
+                        : () {
+                            // 取证：长按识别器真的赢下手势竞技场了吗？
+                            // 用户反馈「所有支持长按的按钮长按都无响应」，
+                            // 底栏是必查项之一。
+                            WebdavDebugLog.logAlways(
+                              '[tap] 底栏长按 slot=$i',
+                            );
+                            widget.onLongPressItem!(i);
+                          },
+                    child: Center(
+                      child: widget.itemBuilder(
+                        context,
+                        i,
+                        i == widget.selectedIndex,
+                      ),
                     ),
                   ),
                 ),

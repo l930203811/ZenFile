@@ -6,9 +6,9 @@ import '../../services/crash_report_upload_service.dart';
 
 /// 用户反馈 / 崩溃上报弹窗。
 ///
-/// 两种入口共用：
-///  * 崩溃后启动提示（[CrashReportDialog.kind] == 'crash'）—— 默认附带诊断日志；
-///  * 关于页「问题反馈」（kind == 'feedback'）—— 默认不附带，用户可自行勾选。
+/// 两种入口共用：崩溃后启动提示（'crash'）与关于页「问题反馈」（'feedback'）。
+/// 两者都**默认勾选附带诊断日志**（可手动取消），并提供选填联系邮箱，
+/// 便于开发者需要补充信息时回信。
 ///
 /// 上传走 [CrashReportUploadService]（Workers 端点转发为 GitHub Issue），
 /// 失败不阻塞关闭，已上传过的日志按台账去重、不会重复发送；提交成功后
@@ -44,15 +44,17 @@ class CrashReportDialog extends StatefulWidget {
 
 class _CrashReportDialogState extends State<CrashReportDialog> {
   final _controller = TextEditingController();
+  final _emailController = TextEditingController();
   final _focusNode = FocusNode();
-  bool _includeLogs = false;
+  // 崩溃与问题反馈都默认勾选日志：多数反馈不带日志等于没有现场，
+  // 开发者无法定位；用户可自行取消。
+  bool _includeLogs = true;
   bool _uploading = false;
   String? _meta;
 
   @override
   void initState() {
     super.initState();
-    _includeLogs = widget.kind == 'crash';
     // 环境行（机型 + 安装包指纹）：异步取，失败不影响弹窗
     CrashForensicsService.describe().then((v) {
       if (mounted && v != null && v.isNotEmpty) {
@@ -64,6 +66,7 @@ class _CrashReportDialogState extends State<CrashReportDialog> {
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -75,6 +78,7 @@ class _CrashReportDialogState extends State<CrashReportDialog> {
       description: _controller.text,
       kind: widget.kind,
       extraMeta: _meta,
+      email: _emailController.text,
       includeLogs: _includeLogs,
       logNames: widget.logNames,
     );
@@ -134,6 +138,19 @@ class _CrashReportDialogState extends State<CrashReportDialog> {
                   hintText: l10n.ui_feedback_hint,
                   border: const OutlineInputBorder(),
                   isDense: true,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                maxLength: 200,
+                decoration: InputDecoration(
+                  labelText: l10n.ui_feedback_email_label,
+                  hintText: l10n.ui_feedback_email_hint,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  prefixIcon: const Icon(Icons.alternate_email, size: 18),
                 ),
               ),
               if (pendingLogs.isNotEmpty) ...[

@@ -279,6 +279,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "View GitHub Source",
+  "officialWebsite": "Visit the Official Website",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8917,6 +8918,8 @@
   "ui_crash_dialog_body": "The app exited unexpectedly last time and a diagnostic report was generated. You can describe the problem and send it to the developer to help us locate and fix it.",
   "ui_feedback_dialog_body": "Describe the issue or suggestion; it will be sent to the developer together with device info and diagnostic logs.",
   "ui_feedback_hint": "Describe the issue or suggestion (optional)",
+  "ui_feedback_email_label": "Contact email (optional)",
+  "ui_feedback_email_hint": "Leave it so we can reach you if needed",
   "ui_crash_attach_logs": "Attach diagnostic logs ({count})",
   "ui_feedback_send": "Send",
   "ui_feedback_later": "Later",

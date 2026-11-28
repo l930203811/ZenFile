@@ -275,6 +275,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "GitHub 소스 보기",
+  "officialWebsite": "공식 웹사이트",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8851,6 +8852,8 @@
   "ui_crash_dialog_body": "지난번에 앱이 비정상 종료되어 진단 보고서가 생성되었습니다. 문제를 설명하여 개발자에게 보내주시면 원인 파악에 큰 도움이 됩니다.",
   "ui_feedback_dialog_body": "문제나 제안을 설명해 주세요. 기기 정보 및 진단 로그와 함께 개발자에게 전송됩니다.",
   "ui_feedback_hint": "문제나 제안을 입력하세요(선택 사항)",
+  "ui_feedback_email_label": "연락처 이메일(선택)",
+  "ui_feedback_email_hint": "필요할 때 개발자가 연락할 수 있습니다",
   "ui_crash_attach_logs": "진단 로그 첨부({count}개)",
   "ui_feedback_send": "보내기",
   "ui_feedback_later": "나중에",

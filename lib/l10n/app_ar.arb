@@ -275,6 +275,7 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "github": "عرض الكود المصدري على GitHub",
+  "officialWebsite": "زيارة الموقع الرسمي",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -8851,6 +8852,8 @@
   "ui_crash_dialog_body": "خرج التطبيق بشكل غير متوقع في المرة الأخيرة وتم إنشاء تقرير تشخيصي. يمكنك وصف المشكلة وإرسالها للمطور لمساعدتنا في تحديد المشكلة وإصلاحها.",
   "ui_feedback_dialog_body": "صف المشكلة أو الاقتراح، وسيتم إرسالها للمطور مع معلومات الجهاز وسجلات التشخيص.",
   "ui_feedback_hint": "صف المشكلة أو الاقتراح (اختياري)",
+  "ui_feedback_email_label": "البريد الإلكتروني (اختياري)",
+  "ui_feedback_email_hint": "اتركه لكي يتمكن المطور من التواصل معك",
   "ui_crash_attach_logs": "إرفاق سجلات التشخيص ({count})",
   "ui_feedback_send": "إرسال",
   "ui_feedback_later": "لاحقاً",
